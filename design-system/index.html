@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argo Method | Master Design System v2.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        argo: {
+                            navy: '#1A1C2E',
+                            indigo: '#5C62FF',
+                            grey: '#717691',
+                            neutral: '#FDFBFF',
+                            border: '#E2E4EB'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        'argo-sm': '4px',
+                        'argo-md': '8px',
+                        'argo-lg': '12px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #FDFBFF;
+            color: #1A1C2E;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .sidebar-link.active {
+            background-color: #F5F5FF;
+            border-right: 3px solid #5C62FF;
+            color: #5C62FF;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #E2E4EB;
+        }
+
+        .compass-grid {
+            stroke: #E2E4EB;
+            stroke-width: 1px;
+            fill: none;
+        }
+
+        .compass-axis {
+            stroke: #717691;
+            stroke-width: 1px;
+            stroke-dasharray: 4;
+        }
+
+        .compass-stroke {
+            stroke: #5C62FF;
+            stroke-width: 2px;
+            fill: rgba(92, 98, 255, 0.15);
+            stroke-linejoin: round;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="w-64 border-r border-argo-border bg-white fixed h-full overflow-y-auto z-10">
+            <div class="p-6 border-b border-argo-border">
+                <div class="flex items-center gap-2">
+                    <div
+                        class="w-8 h-8 bg-argo-indigo rounded-argo-sm flex items-center justify-center text-white font-display font-bold">
+                        A</div>
+                    <span class="font-display font-bold text-lg tracking-tight">ARGO METHOD</span>
+                </div>
+                <div class="text-[10px] text-argo-grey mt-1 font-medium tracking-widest uppercase">Design System v2.0
+                </div>
+            </div>
+
+            <nav class="p-4 space-y-1">
+                <div class="px-3 py-2 text-xs font-semibold text-argo-grey uppercase tracking-wider">Configuración</div>
+                <a href="#tokens"
+                    class="sidebar-link block px-3 py-2 rounded-argo-sm text-sm font-medium hover:bg-gray-50 transition-colors">Fundamentos
+                    & Tokens</a>
+                <a href="#components"
+                    class="sidebar-link block px-3 py-2 rounded-argo-sm text-sm font-medium hover:bg-gray-50 transition-colors">Librería
+                    de Componentes</a>
+                <a href="#dataviz"
+                    class="sidebar-link block px-3 py-2 rounded-argo-sm text-sm font-medium hover:bg-gray-50 transition-colors">Visualización
+                    de Datos</a>
+
+                <div class="px-3 py-2 pt-6 text-xs font-semibold text-argo-grey uppercase tracking-wider">Protocolo
+                </div>
+                <a href="#writing"
+                    class="sidebar-link block px-3 py-2 rounded-argo-sm text-sm font-medium hover:bg-gray-50 transition-colors">UX
+                    Writing Matrix</a>
+                <a href="#patterns"
+                    class="sidebar-link block px-3 py-2 rounded-argo-sm text-sm font-medium hover:bg-gray-50 transition-colors">Patrones
+                    de Interfaz</a>
+            </nav>
+
+            <div class="absolute bottom-0 w-full p-4 border-t border-argo-border bg-gray-50">
+                <div class="text-[11px] text-argo-grey flex justify-between">
+                    <span>© 2026 Argo Project</span>
+                    <span class="font-bold">STATUS: STABLE</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 ml-64 p-12 max-w-6xl">
+
+            <!-- Header -->
+            <header class="mb-16">
+                <h1 class="font-display text-4xl font-bold mb-4 tracking-tight">Arquitectura de Sintonía Deportiva</h1>
+                <p class="text-argo-grey text-lg max-w-2xl leading-relaxed">
+                    Un sistema de diseño riguroso, pedagógico y de alto rendimiento diseñado para la cartografía de
+                    perfiles infantiles. Basado en la neutralidad emocional y la autoridad del dato.
+                </p>
+            </header>
+
+            <!-- Sección: Tokens -->
+            <section id="tokens" class="mb-20">
+                <h2 class="font-display text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-2 h-8 bg-argo-indigo rounded-full"></span>
+                    Fundamentos & Tokens
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Colores -->
+                    <div class="space-y-4">
+                        <h3 class="text-xs font-bold text-argo-grey uppercase tracking-wider">Sistema de Color</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-argo-md border border-argo-border">
+                                <div class="w-10 h-10 bg-[#1A1C2E] rounded-argo-sm border border-argo-border"></div>
+                                <div>
+                                    <div class="text-sm font-bold">Argo Navy</div>
+                                    <div class="text-xs text-argo-grey">#1A1C2E</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-argo-md border border-argo-border">
+                                <div class="w-10 h-10 bg-[#5C62FF] rounded-argo-sm border border-argo-border"></div>
+                                <div>
+                                    <div class="text-sm font-bold">Argo Indigo</div>
+                                    <div class="text-xs text-argo-grey">#5C62FF</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 bg-white rounded-argo-md border border-argo-border">
+                                <div class="w-10 h-10 bg-[#717691] rounded-argo-sm border border-argo-border"></div>
+                                <div>
+                                    <div class="text-sm font-bold">Argo Grey</div>
+                                    <div class="text-xs text-argo-grey">#717691</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tipografía -->
+                    <div class="space-y-4 col-span-2">
+                        <h3 class="text-xs font-bold text-argo-grey uppercase tracking-wider">Escala Tipográfica</h3>
+                        <div class="p-6 bg-white rounded-argo-lg border border-argo-border space-y-6">
+                            <div>
+                                <span
+                                    class="text-[10px] text-argo-grey font-bold uppercase tracking-widest block mb-1">Display
+                                    / Outfit</span>
+                                <p class="font-display text-3xl font-bold tracking-tight">Visualizamos la Sintonía</p>
+                            </div>
+                            <div>
+                                <span
+                                    class="text-[10px] text-argo-grey font-bold uppercase tracking-widest block mb-1">Body
+                                    / Inter</span>
+                                <p class="text-sm text-argo-navy leading-relaxed italic">
+                                    "El objetivo del sistema no es diagnosticar, sino ofrecer una fotografía de sintonía
+                                    en el presente dinámico."
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Componentes -->
+            <section id="components" class="mb-20">
+                <h2 class="font-display text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-2 h-8 bg-argo-indigo rounded-full"></span>
+                    Librería de Componentes
+                </h2>
+
+                <!-- Botones -->
+                <div class="mb-12">
+                    <h3 class="text-xs font-bold text-argo-grey uppercase tracking-wider mb-6">Acciones (Buttons)</h3>
+                    <div
+                        class="flex flex-wrap gap-6 items-center bg-gray-50 p-8 rounded-argo-lg border border-dashed border-argo-border">
+                        <button
+                            class="px-6 py-2.5 bg-argo-indigo text-white text-sm font-semibold rounded-argo-sm border border-argo-indigo hover:bg-[#4B51E6] transition-all">Acción
+                            Primaria</button>
+                        <button
+                            class="px-6 py-2.5 bg-transparent text-argo-indigo text-sm font-semibold rounded-argo-sm border border-argo-indigo hover:bg-indigo-50 transition-all">Exploración</button>
+                        <button
+                            class="px-6 py-2.5 bg-transparent text-argo-navy text-sm font-semibold rounded-argo-sm hover:underline">Omitir</button>
+                        <button disabled
+                            class="px-6 py-2.5 bg-gray-200 text-gray-400 text-sm font-semibold rounded-argo-sm border border-gray-200 cursor-not-allowed">Procesando...</button>
+                    </div>
+                </div>
+
+                <!-- Inputs -->
+                <div class="mb-12">
+                    <h3 class="text-xs font-bold text-argo-grey uppercase tracking-wider mb-6">Campos de Observación
+                        (Inputs)</h3>
+                    <div
+                        class="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-8 rounded-argo-lg border border-argo-border shadow-sm">
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-bold text-argo-navy uppercase tracking-widest">Nombre del
+                                Deportista</label>
+                            <input type="text" placeholder="Ej: Mateo Ricci"
+                                class="w-full px-4 py-3 bg-argo-neutral border border-argo-border rounded-argo-sm focus:outline-none focus:border-argo-indigo text-sm">
+                            <p class="text-[11px] text-argo-grey italic">Sugerencia: Utilice el nombre registrado
+                                oficialmente.</p>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[11px] font-bold text-argo-navy uppercase tracking-widest">Nivel de
+                                Sensibilidad</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" class="flex-1 accent-argo-indigo">
+                                <span class="text-xs font-bold text-argo-indigo">75%</span>
+                            </div>
+                            <p class="text-[11px] text-argo-grey italic">Afecta la saturación del vector en la Brújula.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alerts / Notas de Sintonía -->
+                <div>
+                    <h3 class="text-xs font-bold text-argo-grey uppercase tracking-wider mb-6">Mensajes de Sistema
+                        (Notas de Sintonía)</h3>
+                    <div class="space-y-4">
+                        <div class="flex gap-4 p-5 bg-[#F5F5FF] border-l-4 border-argo-indigo rounded-r-argo-md">
+                            <div class="w-5 h-5 flex-shrink-0 mt-0.5">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-argo-indigo">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-argo-navy mb-1">Alineación Pedagógica Requerida</h4>
+                                <p class="text-xs text-argo-grey leading-relaxed italic">Se ha detectado una varianza
+                                    del 15%. Se recomienda revisar los drivers de motivación del perfil para mantener la
+                                    autoridad del informe.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: Data Visualization -->
+            <section id="dataviz" class="mb-20">
+                <h2 class="font-display text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-2 h-8 bg-argo-indigo rounded-full"></span>
+                    Visualización de Datos
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <!-- Brújula DISC -->
+                    <div class="p-10 bg-white rounded-argo-lg border border-argo-border flex flex-col items-center">
+                        <h3 class="text-xs font-bold text-argo-grey uppercase tracking-widest mb-10">La Brújula Maestral
+                            (DISC)</h3>
+                        <svg width="240" height="240" viewBox="0 0 100 100" class="overflow-visible">
+                            <!-- Background Circles -->
+                            <circle cx="50" cy="50" r="45" class="compass-grid" />
+                            <circle cx="50" cy="50" r="30" class="compass-grid" />
+                            <circle cx="50" cy="50" r="15" class="compass-grid" />
+
+                            <!-- Axes -->
+                            <line x1="50" y1="5" x2="50" y2="95" class="compass-axis" />
+                            <line x1="5" y1="50" x2="95" y2="50" class="compass-axis" />
+
+                            <!-- Legend Labels -->
+                            <text x="50" y="2" text-anchor="middle"
+                                class="text-[6px] font-bold fill-argo-navy tracking-widest font-display">DOMINANCIA
+                                (D)</text>
+                            <text x="98" y="52" text-anchor="start"
+                                class="text-[6px] font-bold fill-argo-navy tracking-widest font-display">INFLUENCIA
+                                (I)</text>
+                            <text x="50" y="100" text-anchor="middle"
+                                class="text-[6px] font-bold fill-argo-navy tracking-widest font-display">ESTABILIDAD
+                                (S)</text>
+                            <text x="0" y="52" text-anchor="end"
+                                class="text-[6px] font-bold fill-argo-navy tracking-widest font-display">CONCIENCIA
+                                (C)</text>
+
+                            <!-- Data Polygon -->
+                            <path d="M 50,20 L 80,50 L 50,75 L 25,50 Z" class="compass-stroke" />
+                            <circle cx="50" cy="20" r="1.5" fill="#5C62FF" />
+                            <circle cx="80" cy="50" r="1.5" fill="#5C62FF" />
+                            <circle cx="50" cy="75" r="1.5" fill="#5C62FF" />
+                            <circle cx="25" cy="50" r="1.5" fill="#5C62FF" />
+                        </svg>
+                        <p class="mt-8 text-center text-xs text-argo-grey italic leading-relaxed px-4">
+                            Los vectores no representan puntuación, sino una tendencia de comportamiento dentro del área
+                            de sintonía.
+                        </p>
+                    </div>
+
+                    <!-- Trend Lines -->
+                    <div class="p-10 bg-white rounded-argo-lg border border-argo-border">
+                        <h3 class="text-xs font-bold text-argo-grey uppercase tracking-widest mb-10">Línea de Tendencia
+                            (Sintonía)</h3>
+                        <div class="h-40 flex items-end gap-1 mb-6">
+                            <!-- Simulated smooth bar chart / trend -->
+                            <div class="w-full bg- Argo-indigo opacity-20 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 40%"></div>
+                            <div class="w-full bg-argo-indigo opacity-30 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 55%"></div>
+                            <div class="w-full bg-argo-indigo opacity-50 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 45%"></div>
+                            <div class="w-full bg-argo-indigo opacity-60 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 70%"></div>
+                            <div class="w-full bg-argo-indigo opacity-80 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 65%"></div>
+                            <div class="w-full bg-argo-indigo opacity-100 hover:opacity-100 transition-all rounded-t-sm"
+                                style="height: 85%"></div>
+                        </div>
+                        <div
+                            class="flex justify-between text-[10px] text-argo-grey font-bold uppercase tracking-widest">
+                            <span>Fase Inicial</span>
+                            <span>Seguimiento Actual</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección: UX Writing Matrix -->
+            <section id="writing" class="mb-20">
+                <h2 class="font-display text-2xl font-bold mb-8 flex items-center gap-3">
+                    <span class="w-2 h-8 bg-argo-indigo rounded-full"></span>
+                    UX Writing Matrix
+                </h2>
+
+                <div class="overflow-hidden border border-argo-border rounded-argo-lg bg-white">
+                    <table class="w-full text-left">
+                        <thead class="bg-argo-navy text-white text-[10px] uppercase tracking-widest">
+                            <tr>
+                                <th class="px-6 py-4 font-bold uppercase tracking-widest">Lenguaje Directo</th>
+                                <th class="px-6 py-4 font-bold uppercase tracking-widest text-[#A5A9FF]">Lenguaje ARGO
+                                    (Sintonía)</th>
+                                <th class="px-6 py-4 font-bold uppercase tracking-widest">Fundamento</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs divide-y divide-argo-border">
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-5 border-argo-border font-medium italic">"El niño está muy agresivo."
+                                </td>
+                                <td class="px-6 py-5 font-bold text-argo-indigo">"Se observa un vector de decisión de
+                                    alta intensidad."</td>
+                                <td class="px-6 py-5 text-argo-grey italic">Neutralidad emocional.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-5 border-argo-border font-medium italic">"Hay un error en el
+                                    diagnóstico."</td>
+                                <td class="px-6 py-5 font-bold text-argo-indigo">"Se sugiere calibrar los drivers para
+                                    mayor sintonía."</td>
+                                <td class="px-6 py-5 text-argo-grey italic">Orientación pedagógica.</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-5 border-argo-border font-medium italic">"Este perfil es aburrido."
+                                </td>
+                                <td class="px-6 py-5 font-bold text-argo-indigo">"Manifiesta preferencia por ritmos de
+                                    baja reactividad."</td>
+                                <td class="px-6 py-5 text-argo-grey italic">Respeto al temperamento.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="mt-32 pt-12 border-t border-argo-border text-center">
+                <p class="text-[11px] text-argo-grey font-bold uppercase tracking-[0.2em]">Fin de la Documentación
+                    Principal</p>
+                <p class="text-[10px] text-argo-grey mt-2">v2.0.1 Stable Release | Argo Method Protocol</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <script>
+        // Simple Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+
+                // Active link state
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Initial active state
+        document.querySelector('.sidebar-link').classList.add('active');
+    </script>
+</body>
+
+</html>
