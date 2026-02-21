@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Scan } from 'lucide-react';
+import { APP_VERSION } from '../../lib/version';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -47,7 +48,7 @@ export const AppLayout: React.FC<LayoutProps> = ({ children }) => {
 
                 {/* Footer: Professional Authority */}
                 <footer className="border-t border-argo-border py-6 px-8 flex justify-between items-center bg-gray-50/50">
-                    <span className="text-[10px] text-argo-grey font-bold uppercase tracking-widest">Protocol v2.0.1 • Allied Observer</span>
+                    <span className="text-[10px] text-argo-grey font-bold uppercase tracking-widest">Protocol v{APP_VERSION} • Allied Observer</span>
                     <span className="text-[10px] text-argo-grey font-medium uppercase tracking-widest">© 2026 ARGO PROJECT</span>
                 </footer>
             </div>

@@ -30,8 +30,6 @@ dist-ssr
 
 # Archives
 *.zip
-Archive.zip
-design-system.zip
 
-# Build outputs
-Design System/
+# Design system assets (PDFs, large binaries)
+design-system/assets/
