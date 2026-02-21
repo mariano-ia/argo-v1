@@ -100,8 +100,7 @@ export async function generateAISections(
     base: ReportData,
     ctx: ReportContext
 ): Promise<AIResult> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const apiKey = (import.meta as any).env?.VITE_OPENAI_API_KEY as string | undefined;
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
     if (!apiKey) throw new Error('VITE_OPENAI_API_KEY no está configurada');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
