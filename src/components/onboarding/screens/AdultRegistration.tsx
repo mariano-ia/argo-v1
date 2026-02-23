@@ -1,0 +1,183 @@
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
+
+interface AdultData {
+    nombreAdulto: string;
+    email: string;
+    nombreNino: string;
+    edad: number;
+    deporte: string;
+}
+
+interface Props {
+    onComplete: (data: AdultData) => void;
+}
+
+const DEPORTES = [
+    'Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación',
+    'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro',
+];
+
+const CHECKS = [
+    (nombre: string) => `Entiendo que Argo Method es una "fotografía del presente" y no una etiqueta permanente para ${nombre || 'mi hijo/a'}.`,
+    (nombre: string) => `Acepto que el objetivo de este informe es priorizar el disfrute y el bienestar de ${nombre || 'mi hijo/a'} por sobre el rendimiento competitivo.`,
+    () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
+];
+
+export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
+    const [nombreAdulto, setNombreAdulto] = useState('');
+    const [email, setEmail]               = useState('');
+    const [nombreNino, setNombreNino]     = useState('');
+    const [edad, setEdad]                 = useState(10);
+    const [deporte, setDeporte]           = useState('');
+    const [deporteCustom, setDeporteCustom] = useState('');
+    const [checks, setChecks]             = useState([false, false, false]);
+
+    const deporteFinal = deporte === 'Otro' ? deporteCustom : deporte;
+
+    const isValid =
+        nombreAdulto.trim() &&
+        email.includes('@') &&
+        nombreNino.trim() &&
+        deporteFinal.trim() &&
+        checks.every(Boolean);
+
+    const toggleCheck = (i: number) => {
+        setChecks(prev => prev.map((v, idx) => idx === i ? !v : v));
+    };
+
+    const handleSubmit = () => {
+        if (!isValid) return;
+        onComplete({
+            nombreAdulto: nombreAdulto.trim(),
+            email: email.trim(),
+            nombreNino: nombreNino.trim(),
+            edad,
+            deporte: deporteFinal.trim(),
+        });
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 max-w-lg mx-auto"
+        >
+            <div>
+                <div className="text-[10px] font-bold text-argo-indigo uppercase tracking-[0.2em] mb-1">
+                    Paso 1 · El Adulto
+                </div>
+                <h2 className="font-display text-2xl font-bold text-argo-navy">Acuerdo de Sintonía</h2>
+                <p className="text-sm text-argo-grey mt-1">
+                    Completá estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
+                </p>
+            </div>
+
+            {/* Form fields */}
+            <div className="space-y-4">
+                {[
+                    { label: 'Tu nombre (adulto)', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Laura García', type: 'text' },
+                    { label: 'Tu email', value: email, setter: setEmail, placeholder: 'correo@ejemplo.com', type: 'email' },
+                    { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Mateo', type: 'text' },
+                ].map(f => (
+                    <div key={f.label} className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                            {f.label}
+                        </label>
+                        <input
+                            type={f.type}
+                            value={f.value}
+                            onChange={e => f.setter(e.target.value)}
+                            placeholder={f.placeholder}
+                            className="w-full border border-argo-border rounded-argo-sm px-4 py-3 text-sm text-argo-navy focus:outline-none focus:border-argo-indigo"
+                        />
+                    </div>
+                ))}
+
+                {/* Edad */}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                        Edad del deportista — {edad} años
+                    </label>
+                    <input
+                        type="range" min={5} max={18} value={edad}
+                        onChange={e => setEdad(Number(e.target.value))}
+                        className="w-full accent-argo-indigo"
+                    />
+                    <div className="flex justify-between text-[10px] text-argo-grey">
+                        <span>5</span><span>11</span><span>18</span>
+                    </div>
+                </div>
+
+                {/* Deporte */}
+                <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">Deporte</label>
+                    <div className="flex flex-wrap gap-2">
+                        {DEPORTES.map(d => (
+                            <button
+                                key={d}
+                                onClick={() => setDeporte(d)}
+                                className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${
+                                    deporte === d
+                                        ? 'bg-argo-navy text-white border-argo-navy'
+                                        : 'bg-white border-argo-border text-argo-grey hover:border-argo-navy'
+                                }`}
+                            >
+                                {d}
+                            </button>
+                        ))}
+                    </div>
+                    {deporte === 'Otro' && (
+                        <input
+                            type="text"
+                            value={deporteCustom}
+                            onChange={e => setDeporteCustom(e.target.value)}
+                            placeholder="Escribí el deporte..."
+                            className="w-full border border-argo-border rounded-argo-sm px-4 py-2.5 text-sm text-argo-navy focus:outline-none focus:border-argo-indigo"
+                        />
+                    )}
+                </div>
+            </div>
+
+            {/* Checkboxes */}
+            <div className="space-y-3">
+                <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                    Compromisos filosóficos
+                </div>
+                {CHECKS.map((textFn, i) => (
+                    <button
+                        key={i}
+                        onClick={() => toggleCheck(i)}
+                        className={`w-full flex items-start gap-3 p-4 rounded-argo-sm border text-left transition-all ${
+                            checks[i]
+                                ? 'border-argo-indigo bg-argo-indigo/5'
+                                : 'border-argo-border bg-white hover:border-argo-indigo/40'
+                        }`}
+                    >
+                        <div className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
+                            checks[i] ? 'bg-argo-indigo border-argo-indigo' : 'border-argo-border'
+                        }`}>
+                            {checks[i] && (
+                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
+                        </div>
+                        <span className="text-sm text-argo-navy leading-relaxed">{textFn(nombreNino)}</span>
+                    </button>
+                ))}
+            </div>
+
+            <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleSubmit}
+                disabled={!isValid}
+                className="w-full bg-argo-navy text-white font-bold py-4 rounded-argo-sm flex items-center justify-center gap-2 uppercase tracking-widest text-xs disabled:opacity-40 transition-all"
+            >
+                Continuar <ChevronRight size={16} />
+            </motion.button>
+        </motion.div>
+    );
+};

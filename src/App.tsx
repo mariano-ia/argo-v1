@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppLayout } from './components/layout/AppLayout';
 import { SelectionStepper } from './components/ui/SelectionStepper';
 import { getReportData, EjeInput, MotorInput } from './lib/argosEngine';
-import { ArrowRight, RotateCcw, Microscope } from 'lucide-react';
+import { ArrowRight, RotateCcw, Microscope, Anchor } from 'lucide-react';
 import { SimulationView } from './components/SimulationView';
 import { FullReport } from './components/FullReport';
+import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
 
 function App() {
-    const [mode, setMode] = useState<'app' | 'simulation'>('simulation');
+    const [mode, setMode] = useState<'app' | 'simulation' | 'onboarding'>('simulation');
 
     // Legacy App State
     const [step, setStep] = useState<'inputs' | 'report'>('inputs');
@@ -19,17 +20,33 @@ function App() {
 
     return (
         <AppLayout>
-            <div className="flex justify-end -mb-4 relative z-20">
+            <div className="flex justify-end gap-2 -mb-4 relative z-20">
+                <button
+                    onClick={() => setMode('onboarding')}
+                    className={`flex items-center gap-2 px-3 py-1.5 border rounded-full text-[10px] font-bold transition-all uppercase tracking-widest ${
+                        mode === 'onboarding'
+                            ? 'bg-argo-indigo text-white border-argo-indigo'
+                            : 'bg-gray-50 border-argo-border text-argo-grey hover:text-argo-indigo hover:border-argo-indigo'
+                    }`}
+                >
+                    <Anchor size={12} /> La Odisea
+                </button>
                 <button
                     onClick={() => setMode(mode === 'app' ? 'simulation' : 'app')}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-argo-border rounded-full text-[10px] font-bold text-argo-grey hover:text-argo-indigo hover:border-argo-indigo transition-all uppercase tracking-widest"
+                    className={`flex items-center gap-2 px-3 py-1.5 border rounded-full text-[10px] font-bold transition-all uppercase tracking-widest ${
+                        mode === 'simulation' || mode === 'app'
+                            ? 'bg-gray-50 border-argo-border text-argo-grey hover:text-argo-indigo hover:border-argo-indigo'
+                            : 'bg-gray-50 border-argo-border text-argo-grey hover:text-argo-indigo hover:border-argo-indigo'
+                    }`}
                 >
                     <Microscope size={12} />
                     {mode === 'app' ? 'Ir al Simulador' : 'Ver App Usuario'}
                 </button>
             </div>
 
-            {mode === 'simulation' ? (
+            {mode === 'onboarding' ? (
+                <OnboardingFlow />
+            ) : mode === 'simulation' ? (
                 <SimulationView />
             ) : (
                 <AnimatePresence mode="wait">

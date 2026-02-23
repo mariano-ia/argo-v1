@@ -1,5 +1,12 @@
 
 import { EjeInput, MotorInput, ARQUETIPOS } from './argosEngine';
+import { Axis } from './onboardingData';
+
+export interface QuestionAnswer {
+    axis: Axis;
+    responseTimeMs: number;
+}
+
 
 export type AnswerOption = 'IMP' | 'CON' | 'SOS' | 'EST';
 
@@ -57,6 +64,68 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
     return {
         counts,
         eje: axis,
+        motor,
+        arquetipoLabel: arch ? arch.label : 'Desconocido',
+        arquetipoId: arch ? arch.id : 'unknown',
+    };
+}
+
+/**
+ * Resolves a full profile from the gamified onboarding answers.
+ * Motor is determined primarily by average response time per the spec:
+ *   < 5 000 ms avg → Rápido
+ *   > 12 000 ms avg → Lento
+ *   otherwise → Medio (falls back to score-difference for tie-breaking)
+ */
+export function resolveFromAnswers(answers: QuestionAnswer[]): ProfileResult {
+    // — Eje from axis counts —
+    const axisCounts: Record<Axis, number> = { D: 0, I: 0, S: 0, C: 0 };
+    answers.forEach(a => { axisCounts[a.axis]++; });
+
+    const sorted = (Object.keys(axisCounts) as Axis[]).sort(
+        (a, b) => axisCounts[b] - axisCounts[a]
+    );
+
+    const dominantAxis = sorted[0];
+    const topCount    = axisCounts[sorted[0]];
+    const secondCount = axisCounts[sorted[1]];
+    const diff        = topCount - secondCount;
+    const total       = answers.length;
+
+    // — Motor from average response time —
+    const avgMs = total > 0
+        ? answers.reduce((sum, a) => sum + a.responseTimeMs, 0) / total
+        : 5000;
+
+    let motor: MotorInput;
+    if (avgMs < 5000) {
+        motor = 'Rápido';
+    } else if (avgMs > 12000) {
+        motor = 'Lento';
+    } else {
+        // Medium time range — use score-difference as tiebreaker
+        if (diff >= Math.ceil(total * 0.25)) {
+            motor = 'Rápido';
+        } else if (diff <= 1) {
+            motor = 'Lento';
+        } else {
+            motor = 'Medio';
+        }
+    }
+
+    const arch = ARQUETIPOS.find(a => a.eje === dominantAxis && a.motor === motor);
+
+    // Map Axis back to AnswerOption for counts compatibility
+    const legacyCounts: Record<AnswerOption, number> = {
+        IMP: axisCounts.D,
+        CON: axisCounts.I,
+        SOS: axisCounts.S,
+        EST: axisCounts.C,
+    };
+
+    return {
+        counts: legacyCounts,
+        eje: dominantAxis,
         motor,
         arquetipoLabel: arch ? arch.label : 'Desconocido',
         arquetipoId: arch ? arch.id : 'unknown',
