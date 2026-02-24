@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.3",
     "lucide-react": "^0.323.0",
@@ -20,6 +19,7 @@
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
+    "@vercel/node": "^5.1.0",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
