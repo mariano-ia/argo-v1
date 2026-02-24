@@ -11,8 +11,31 @@ interface FullReportProps {
     deporte?: string;
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Splits a long text string into readable paragraphs.
+ * Uses double newlines first, then groups sentences in pairs.
+ */
+function splitParagraphs(text: string): string[] {
+    if (!text) return [];
+    // If the text already has paragraph breaks, respect them
+    if (text.includes('\n\n')) {
+        return text.split('\n\n').map(p => p.trim()).filter(Boolean);
+    }
+    // Otherwise split on sentence boundaries and group in pairs
+    const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];
+    const paragraphs: string[] = [];
+    for (let i = 0; i < sentences.length; i += 2) {
+        paragraphs.push([sentences[i], sentences[i + 1]].filter(Boolean).join(' ').trim());
+    }
+    return paragraphs;
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
 const SectionTitle: React.FC<{ number: string; title: string; light?: boolean }> = ({ number, title, light }) => (
-    <div className="flex items-center gap-3 mb-4">
+    <div className="flex items-center gap-3 mb-5">
         <span className={`w-7 h-7 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${light ? 'bg-white/20 text-white' : 'bg-argo-navy text-white'}`}>
             {number}
         </span>
@@ -28,14 +51,64 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
     </div>
 );
 
-// Skeleton placeholder shown while AI generates
 const AISkeleton: React.FC = () => (
     <div className="space-y-2 animate-pulse">
         <div className="h-3 bg-argo-border rounded w-full" />
         <div className="h-3 bg-argo-border rounded w-5/6" />
         <div className="h-3 bg-argo-border rounded w-4/6" />
+        <div className="h-3 bg-argo-border rounded w-full mt-4" />
+        <div className="h-3 bg-argo-border rounded w-3/4" />
     </div>
 );
+
+/**
+ * Renders a text section with proper paragraph breaks and optional bold lead sentence.
+ */
+const TextBlock: React.FC<{ text: string; leadBold?: boolean }> = ({ text, leadBold }) => {
+    const paragraphs = splitParagraphs(text);
+    return (
+        <div className="space-y-3">
+            {paragraphs.map((para, idx) => {
+                if (leadBold && idx === 0) {
+                    // Bold the first sentence of the lead paragraph
+                    const firstDot = para.search(/[.!?]/);
+                    if (firstDot !== -1) {
+                        const lead = para.slice(0, firstDot + 1);
+                        const rest = para.slice(firstDot + 1).trim();
+                        return (
+                            <p key={idx} className="text-sm text-argo-grey leading-relaxed">
+                                <strong className="text-argo-navy font-semibold">{lead}</strong>
+                                {rest && ` ${rest}`}
+                            </p>
+                        );
+                    }
+                }
+                return (
+                    <p key={idx} className="text-sm text-argo-grey leading-relaxed">
+                        {para}
+                    </p>
+                );
+            })}
+        </div>
+    );
+};
+
+/**
+ * Checklist item with a colored left bar.
+ */
+const ChecklistBlock: React.FC<{ label: string; text: string; color: string; isLoading: boolean }> = ({
+    label, text, color, isLoading,
+}) => (
+    <div className={`flex gap-0 rounded-lg overflow-hidden border border-argo-border`}>
+        <div className={`w-1 flex-shrink-0 ${color}`} />
+        <div className="flex-1 p-4">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-argo-navy mb-2">{label}</div>
+            {isLoading ? <AISkeleton /> : <TextBlock text={text} />}
+        </div>
+    </div>
+);
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoading, deporte }) => {
     const {
@@ -44,9 +117,8 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
         palabrasPuente, palabrasRuido, guia, reseteo, ecos, checklist,
     } = report;
 
-    // Sections rewritten by AI
     const aiSections = ['wow', 'motorDesc', 'combustible', 'corazon', 'reseteo', 'ecos', 'checklist'];
-    const isLoading = (section: string) => aiLoading && aiSections.includes(section);
+    const isLoading = (section: string) => !!aiLoading && aiSections.includes(section);
 
     return (
         <motion.div
@@ -92,26 +164,26 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 0. Bienvenida */}
             <Card>
                 <SectionTitle number="0" title="El Contrato de Sintonía" />
-                <p className="text-sm text-argo-grey leading-relaxed italic border-l-4 border-argo-indigo pl-5">
-                    {bienvenida}
-                </p>
+                <blockquote className="border-l-4 border-argo-indigo pl-5">
+                    <TextBlock text={bienvenida} />
+                </blockquote>
             </Card>
 
             {/* 1. WOW */}
             <Card>
                 <SectionTitle number="1" title="Su lugar en la Nave" />
-                {isLoading('wow') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{wow}</p>}
+                {isLoading('wow') ? <AISkeleton /> : <TextBlock text={wow} leadBold />}
             </Card>
 
             {/* 2 + 3 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <SectionTitle number="2" title="El Ritmo del Motor" />
-                    {isLoading('motorDesc') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{motorDesc}</p>}
+                    {isLoading('motorDesc') ? <AISkeleton /> : <TextBlock text={motorDesc} />}
                 </Card>
                 <Card>
                     <SectionTitle number="3" title="El Combustible" />
-                    {isLoading('combustible') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{combustible}</p>}
+                    {isLoading('combustible') ? <AISkeleton /> : <TextBlock text={combustible} />}
                 </Card>
             </div>
 
@@ -119,11 +191,11 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                     <SectionTitle number="4" title="Vida en el Grupo" />
-                    <p className="text-sm text-argo-grey leading-relaxed">{grupoEspacio}</p>
+                    <TextBlock text={grupoEspacio} />
                 </Card>
                 <Card>
                     <SectionTitle number="5" title="Lenguaje de Intención" />
-                    {isLoading('corazon') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{corazon}</p>}
+                    {isLoading('corazon') ? <AISkeleton /> : <TextBlock text={corazon} />}
                 </Card>
             </div>
 
@@ -178,14 +250,14 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
                                             Activadores
                                         </div>
-                                        <p className="text-xs text-argo-grey leading-relaxed">{row.activador}</p>
+                                        <TextBlock text={row.activador} />
                                     </div>
                                     <div className="p-5">
                                         <div className="text-[9px] font-bold text-red-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
                                             A evitar
                                         </div>
-                                        <p className="text-xs text-argo-grey leading-relaxed">{row.desmotivacion}</p>
+                                        <TextBlock text={row.desmotivacion} />
                                     </div>
                                 </div>
                             </div>
@@ -197,34 +269,37 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 9. Reseteo */}
             <Card>
                 <SectionTitle number="9" title="Gestión del Desajuste" />
-                {isLoading('reseteo') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{reseteo}</p>}
+                {isLoading('reseteo') ? <AISkeleton /> : <TextBlock text={reseteo} leadBold />}
             </Card>
 
             {/* 10. Ecos */}
             <Card>
                 <SectionTitle number="10" title="Ecos de la Nave" />
-                {isLoading('ecos') ? <AISkeleton /> : <p className="text-sm text-argo-grey leading-relaxed">{ecos}</p>}
+                {isLoading('ecos') ? <AISkeleton /> : <TextBlock text={ecos} />}
             </Card>
 
             {/* 11. Checklist */}
             <Card>
                 <SectionTitle number="11" title="Checklist del Día" />
-                <div className="space-y-5">
-                    {([
-                        { label: 'Antes', text: checklist.antes },
-                        { label: 'Durante', text: checklist.durante },
-                        { label: 'Después', text: checklist.despues },
-                    ] as const).map(({ label, text }) => (
-                        <div key={label} className="flex gap-4">
-                            <span className="text-[10px] font-bold text-argo-indigo uppercase tracking-widest w-16 flex-shrink-0 pt-0.5">
-                                {label}
-                            </span>
-                            {isLoading('checklist')
-                                ? <AISkeleton />
-                                : <p className="text-sm text-argo-grey leading-relaxed">{text}</p>
-                            }
-                        </div>
-                    ))}
+                <div className="space-y-3">
+                    <ChecklistBlock
+                        label="Antes del entrenamiento"
+                        text={checklist.antes}
+                        color="bg-argo-indigo"
+                        isLoading={isLoading('checklist')}
+                    />
+                    <ChecklistBlock
+                        label="Durante el entrenamiento"
+                        text={checklist.durante}
+                        color="bg-argo-navy"
+                        isLoading={isLoading('checklist')}
+                    />
+                    <ChecklistBlock
+                        label="Después del entrenamiento"
+                        text={checklist.despues}
+                        color="bg-green-500"
+                        isLoading={isLoading('checklist')}
+                    />
                 </div>
                 <p className="text-[10px] text-argo-grey/40 text-center mt-8 uppercase tracking-widest">
                     Diseñado bajo los principios de seguridad emocional de Argo Method

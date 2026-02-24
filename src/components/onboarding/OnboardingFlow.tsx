@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { QUESTIONS, STORY_SLIDES } from '../../lib/onboardingData';
+import { STORY_SLIDES } from '../../lib/onboardingData';
+import { useQuestions } from '../../lib/useQuestions';
 import { QuestionAnswer, resolveFromAnswers } from '../../lib/profileResolver';
 import { getReportData } from '../../lib/argosEngine';
 import { generateAISections, AISections, ReportContext } from '../../lib/openaiService';
@@ -75,6 +76,7 @@ const SCREENS: ScreenDef[] = [
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const OnboardingFlow: React.FC = () => {
+    const { questions } = useQuestions();
     const [screenIndex, setScreenIndex] = useState(0);
     const [adultData, setAdultData]     = useState<AdultData | null>(null);
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
@@ -94,7 +96,7 @@ export const OnboardingFlow: React.FC = () => {
     useEffect(() => {
         const currentScreen = SCREENS[screenIndex];
         if (currentScreen.type !== 'child-completion') return;
-        if (!adultData || answers.length < QUESTIONS.length) return;
+        if (!adultData || answers.length < questions.length) return;
 
         const profile = resolveFromAnswers(answers);
         const report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
@@ -172,9 +174,9 @@ export const OnboardingFlow: React.FC = () => {
                 {screen.type === 'question' && (
                     <QuestionScreen
                         key={`q-${screen.questionIndex}`}
-                        question={QUESTIONS[screen.questionIndex]}
+                        question={questions[screen.questionIndex]}
                         questionIndex={answers.length}
-                        totalQuestions={QUESTIONS.length}
+                        totalQuestions={questions.length}
                         nombreNino={nombre}
                         onAnswer={handleAnswer}
                     />

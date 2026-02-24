@@ -3,13 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppLayout } from './components/layout/AppLayout';
 import { SelectionStepper } from './components/ui/SelectionStepper';
 import { getReportData, EjeInput, MotorInput } from './lib/argosEngine';
-import { ArrowRight, RotateCcw, Microscope, Anchor } from 'lucide-react';
+import { ArrowRight, RotateCcw, Microscope, Anchor, Settings } from 'lucide-react';
 import { SimulationView } from './components/SimulationView';
 import { FullReport } from './components/FullReport';
 import { OnboardingFlow } from './components/onboarding/OnboardingFlow';
+import { QuestionManager } from './components/admin/QuestionManager';
 
 function App() {
-    const [mode, setMode] = useState<'app' | 'simulation' | 'onboarding'>('simulation');
+    const [mode, setMode] = useState<'app' | 'simulation' | 'onboarding' | 'admin'>('simulation');
 
     // Legacy App State
     const [step, setStep] = useState<'inputs' | 'report'>('inputs');
@@ -42,9 +43,21 @@ function App() {
                     <Microscope size={12} />
                     {mode === 'app' ? 'Ir al Simulador' : 'Ver App Usuario'}
                 </button>
+                <button
+                    onClick={() => setMode(mode === 'admin' ? 'simulation' : 'admin')}
+                    className={`flex items-center gap-2 px-3 py-1.5 border rounded-full text-[10px] font-bold transition-all uppercase tracking-widest ${
+                        mode === 'admin'
+                            ? 'bg-argo-navy text-white border-argo-navy'
+                            : 'bg-gray-50 border-argo-border text-argo-grey hover:text-argo-navy hover:border-argo-navy'
+                    }`}
+                >
+                    <Settings size={12} /> Admin
+                </button>
             </div>
 
-            {mode === 'onboarding' ? (
+            {mode === 'admin' ? (
+                <QuestionManager />
+            ) : mode === 'onboarding' ? (
                 <OnboardingFlow />
             ) : mode === 'simulation' ? (
                 <SimulationView />
