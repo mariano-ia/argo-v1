@@ -122,7 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            from: 'Argo Method <onboarding@resend.dev>',
+            from: 'Argo Method <noreply@argomethod.com>',
             to: [toEmail],
             subject: `Informe de Sintonía Argo · ${nombreNino} · ${arquetipo}`,
             html,
