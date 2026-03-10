@@ -46,7 +46,7 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
         <div className="space-y-2">
             <div className="relative h-8 flex items-center">
                 {/* Ocean track */}
-                <div className="absolute inset-x-0 h-2 rounded-full bg-sky-100 overflow-hidden">
+                <div className="absolute inset-x-0 h-2 rounded-full bg-white/40 overflow-hidden">
                     <motion.div
                         className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"
                         initial={{ width: 0 }}
@@ -89,7 +89,7 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
                 </motion.div>
             </div>
 
-            <p className="text-center text-[11px] font-bold text-sky-600 uppercase tracking-widest">
+            <p className="text-center text-[11px] font-medium text-[#1D1D1F]/55 uppercase tracking-widest">
                 Decisión {current + 1} de {total}
             </p>
         </div>
@@ -212,12 +212,13 @@ export const QuestionScreen: React.FC<Props> = ({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-white rounded-2xl px-6 py-7 border border-[#D2D2D7]"
+                className="bg-white/92 backdrop-blur-md rounded-2xl px-6 py-7"
+                style={{ border: '1px solid rgba(255,255,255,0.65)' }}
             >
                 <p className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-2">
                     {question.title}
                 </p>
-                <p className="text-xl font-medium text-[#1D1D1F] leading-snug" style={{ letterSpacing: '-0.01em' }}>
+                <p className="text-[#1D1D1F] leading-snug" style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em' }}>
                     {intro}
                 </p>
             </motion.div>

@@ -62,7 +62,7 @@ export const AdultReport: React.FC<Props> = ({
         ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
         : report;
 
-    const maduracionTemprana = adultData.edad < 7;
+    const maduracionTemprana = adultData.edad < 10;
 
     const doSend = useCallback(() => {
         if (hasSentRef.current) return;

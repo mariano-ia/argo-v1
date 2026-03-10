@@ -1,13 +1,9 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
-
-const ArgonautsScene = lazy(() =>
-    import('../components/ArgonautsScene').then(m => ({ default: m.ArgonautsScene }))
-);
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 // #1D1D1F  text-argo-navy
@@ -243,12 +239,6 @@ export const Landing: React.FC = () => {
                     </span>
                 </motion.div>
 
-                {/* ── Argonauts ── */}
-                <div className="hidden md:block absolute bottom-0 right-0 w-[600px] h-[210px]">
-                    <Suspense fallback={null}>
-                        <ArgonautsScene />
-                    </Suspense>
-                </div>
             </section>
 
             <Divider />

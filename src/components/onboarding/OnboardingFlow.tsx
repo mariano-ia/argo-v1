@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ADULT_INTRO_SLIDES, STORY_SLIDES } from '../../lib/onboardingData';
 import { useQuestions } from '../../lib/useQuestions';
 import { QuestionAnswer, resolveFromAnswers } from '../../lib/profileResolver';
@@ -15,6 +15,118 @@ import { QuestionScreen } from './screens/QuestionScreen';
 import { MiniGame2 } from './screens/MiniGame2';
 import { ChildCompletion } from './screens/ChildCompletion';
 import { AdultReport } from './screens/AdultReport';
+
+// ─── Ocean background (shown behind question screens) ─────────────────────────
+
+const OceanBackground: React.FC = () => (
+    <div className="absolute inset-0 overflow-hidden">
+        {/* Sky + horizon gradient */}
+        <div
+            className="absolute inset-0"
+            style={{
+                background: 'linear-gradient(180deg, #A8CCE2 0%, #BED8EE 26%, #D4E8F6 40%, #E2C890 52%, #C89860 59%, #78AECA 61%, #5A8EAE 78%, #3E6E8E 100%)',
+            }}
+        />
+
+        {/* Blurred cloud shapes */}
+        <motion.div
+            className="absolute rounded-full pointer-events-none"
+            style={{ top: '7%', left: '62%', width: 92, height: 26, background: 'rgba(255,255,255,0.52)', filter: 'blur(13px)' }}
+            animate={{ x: [0, 14, 0] }}
+            transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+            className="absolute rounded-full pointer-events-none"
+            style={{ top: '14%', left: '14%', width: 58, height: 18, background: 'rgba(255,255,255,0.38)', filter: 'blur(10px)' }}
+            animate={{ x: [0, -9, 0] }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.div
+            className="absolute rounded-full pointer-events-none"
+            style={{ top: '5%', left: '36%', width: 108, height: 30, background: 'rgba(255,255,255,0.44)', filter: 'blur(15px)' }}
+            animate={{ x: [0, 7, 0] }}
+            transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }}
+        />
+
+        {/* Wave 1 — far, slowest */}
+        <motion.div
+            className="absolute left-0 w-[200%]"
+            style={{ top: '57%', bottom: 0 }}
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
+        >
+            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
+                <path
+                    d="M0,20 C175,8 350,32 525,20 C700,8 875,32 1050,20 C1225,8 1400,32 1400,20 L1400,300 L0,300 Z"
+                    fill="#6496B4"
+                />
+            </svg>
+        </motion.div>
+
+        {/* Wave 2 — mid */}
+        <motion.div
+            className="absolute left-0 w-[200%]"
+            style={{ top: '62%', bottom: 0 }}
+            animate={{ x: ['-50%', '0%'] }}
+            transition={{ duration: 6.5, repeat: Infinity, ease: 'linear' }}
+        >
+            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
+                <path
+                    d="M0,16 C116,6 233,26 350,16 C466,6 583,26 700,16 C816,6 933,26 1050,16 C1166,6 1283,26 1400,16 L1400,300 L0,300 Z"
+                    fill="#5282A6"
+                />
+            </svg>
+        </motion.div>
+
+        {/* Wave 3 — near, fastest, lighter crest */}
+        <motion.div
+            className="absolute left-0 w-[200%]"
+            style={{ top: '67%', bottom: 0 }}
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: 'linear' }}
+        >
+            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
+                <defs>
+                    <linearGradient id="oceanFrontWave" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#86B6D2" stopOpacity="0.7" />
+                        <stop offset="12%" stopColor="#40709C" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#2E5A7C" stopOpacity="1" />
+                    </linearGradient>
+                </defs>
+                <path
+                    d="M0,12 C70,4 140,20 210,12 C280,4 350,20 420,12 C490,4 560,20 630,12 C700,4 770,20 840,12 C910,4 980,20 1050,12 C1120,4 1190,20 1260,12 C1330,4 1400,18 1400,12 L1400,300 L0,300 Z"
+                    fill="url(#oceanFrontWave)"
+                />
+            </svg>
+        </motion.div>
+
+        {/* Shimmer streaks on water surface */}
+        <motion.div
+            className="absolute pointer-events-none w-[160%]"
+            style={{ top: '64%', left: '-5%' }}
+            animate={{ x: ['0%', '3%', '0%'], opacity: [0.5, 0.85, 0.5] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+            <svg viewBox="0 0 900 16" className="w-full" style={{ height: 8 }}>
+                <path d="M20,5 Q120,2 250,6 Q380,10 500,4 Q620,0 740,5 Q860,9 900,4"
+                    stroke="rgba(255,255,255,0.30)" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                <path d="M0,11 Q110,8 250,12 Q390,16 510,10 Q650,5 780,11 Q880,15 900,10"
+                    stroke="rgba(255,255,255,0.16)" strokeWidth="1" fill="none" strokeLinecap="round" />
+            </svg>
+        </motion.div>
+        <motion.div
+            className="absolute pointer-events-none w-[130%]"
+            style={{ top: '73%', left: '0%' }}
+            animate={{ x: ['2%', '0%', '2%'], opacity: [0.45, 0.72, 0.45] }}
+            transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+        >
+            <svg viewBox="0 0 800 14" className="w-full" style={{ height: 6 }}>
+                <path d="M0,5 Q90,2 200,6 Q310,10 430,4 Q550,0 670,5 Q770,9 800,4"
+                    stroke="rgba(255,255,255,0.20)" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+            </svg>
+        </motion.div>
+    </div>
+);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,7 +144,7 @@ type ScreenDef =
     | { type: 'adult-intro'; slideIndex: number }
     | { type: 'adult-registration' }
     | { type: 'device-handoff' }
-    | { type: 'story'; slideId: string; continueLabel?: string }
+    | { type: 'story'; slideId: string; continueLabel?: string; useOceanBg?: boolean }
     | { type: 'minigame1' }
     | { type: 'question'; questionIndex: number }
     | { type: 'minigame2' }
@@ -46,11 +158,11 @@ const SCREENS: ScreenDef[] = [
     { type: 'adult-intro', slideIndex: 2 },
     { type: 'adult-registration' },
     { type: 'device-handoff' },
-    // Child story intro
-    { type: 'story', slideId: 'intro_a' },
-    { type: 'story', slideId: 'intro_b' },
-    { type: 'story', slideId: 'intro_c' },
-    { type: 'story', slideId: 'intro_0', continueLabel: '¡A bordo!' },
+    // Child story intro — ocean background
+    { type: 'story', slideId: 'intro_a', useOceanBg: true },
+    { type: 'story', slideId: 'intro_b', useOceanBg: true },
+    { type: 'story', slideId: 'intro_c', useOceanBg: true },
+    { type: 'story', slideId: 'intro_0', continueLabel: '¡A bordo!', useOceanBg: true },
     // Phase 2: La Partida
     { type: 'question', questionIndex: 0 },
     { type: 'question', questionIndex: 1 },
@@ -165,6 +277,24 @@ export const OnboardingFlow: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto py-8 px-4 min-h-[80vh]">
+            {/* Ocean background — persists across question + ocean story screens */}
+            <AnimatePresence>
+                {(screen.type === 'question' || (screen.type === 'story' && screen.useOceanBg)) && (
+                    <motion.div
+                        key="ocean-bg"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="fixed inset-0 overflow-hidden pointer-events-none"
+                        style={{ zIndex: 0 }}
+                    >
+                        <OceanBackground />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <div className="relative" style={{ zIndex: 1 }}>
             <AnimatePresence mode="wait">
                 {screen.type === 'adult-intro' && (
                     <AdultIntroSlide
@@ -200,6 +330,7 @@ export const OnboardingFlow: React.FC = () => {
                         deporte={deporte}
                         onContinue={advance}
                         continueLabel={screen.continueLabel}
+                        useOceanBg={screen.useOceanBg}
                     />
                 )}
 
@@ -242,6 +373,7 @@ export const OnboardingFlow: React.FC = () => {
                     />
                 )}
             </AnimatePresence>
+            </div>
         </div>
     );
 };

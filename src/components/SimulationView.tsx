@@ -329,12 +329,12 @@ export const SimulationView: React.FC = () => {
                                     </label>
                                     <input
                                         type="range"
-                                        min={6} max={18} value={edad}
+                                        min={8} max={16} value={edad}
                                         onChange={e => setEdad(Number(e.target.value))}
                                         className="w-full accent-argo-indigo"
                                     />
                                     <div className="flex justify-between text-[10px] text-argo-grey">
-                                        <span>6</span><span>12</span><span>18</span>
+                                        <span>8</span><span>12</span><span>16</span>
                                     </div>
                                 </div>
 

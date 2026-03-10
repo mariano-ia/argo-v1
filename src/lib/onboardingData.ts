@@ -24,7 +24,7 @@ export const ADULT_INTRO_SLIDES: StorySlideData[] = [
     {
         id: 'adult_intro_1',
         title: 'Bienvenido a Argo',
-        body: 'Argo es una herramienta de autoconocimiento deportivo para chicos y chicas de 5 a 18 años. A través de una historia interactiva, identificamos cómo se motiva el deportista, cómo aprende y cómo reacciona bajo presión.',
+        body: 'Argo es una herramienta de autoconocimiento deportivo para chicos y chicas de 8 a 16 años. A través de una historia interactiva, identificamos cómo se motiva el deportista, cómo aprende y cómo reacciona bajo presión.',
     },
     {
         id: 'adult_intro_2',
