@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -64,7 +64,7 @@ const ARCHETYPE_DESCRIPTIONS: Record<string, string> = {
 };
 
 const EJE_COLOR: Record<string, string> = {
-    D: '#ef4444',
+    D: '#f97316',
     I: '#f59e0b',
     S: '#22c55e',
     C: '#6366f1',
@@ -106,14 +106,12 @@ const ROTATING_PROFILES = [
     },
 ];
 
-// ─── Slot machine config: direction (-1 = from top, 1 = from bottom) + delay ──
-// Each row = one profile transition; each column = [Conducta, Motor, Sintonía]
-const SLOT_CONFIGS = [
-    [{ dir: -1, delay: 0,    dur: 0.30 }, { dir:  1, delay: 0.18, dur: 0.26 }, { dir: -1, delay: 0.07, dur: 0.32 }],
-    [{ dir:  1, delay: 0.12, dur: 0.28 }, { dir: -1, delay: 0,    dur: 0.34 }, { dir:  1, delay: 0.22, dur: 0.25 }],
-    [{ dir: -1, delay: 0.08, dur: 0.32 }, { dir:  1, delay: 0.04, dur: 0.28 }, { dir: -1, delay: 0.20, dur: 0.30 }],
-    [{ dir:  1, delay: 0,    dur: 0.26 }, { dir: -1, delay: 0.16, dur: 0.32 }, { dir:  1, delay: 0.06, dur: 0.28 }],
-];
+// ─── Slot machine — generates a fresh random config per transition ────────────
+const randomSlotConf = () => [0, 1, 2].map(() => ({
+    dir: Math.random() > 0.5 ? 1 : -1,
+    delay: Math.random() * 0.22,
+    dur: 0.24 + Math.random() * 0.14,
+}));
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
@@ -134,14 +132,18 @@ export const Landing: React.FC = () => {
     const navigate = useNavigate();
     const { lang, setLang, t } = useLang();
 
-    // Rotating profile index for El Sistema section
+    // Rotating profile index + random slot config per transition
     const [profileIdx, setProfileIdx] = useState(0);
+    const slotConfRef = useRef(randomSlotConf());
     useEffect(() => {
-        const id = setInterval(() => setProfileIdx(i => (i + 1) % ROTATING_PROFILES.length), 3000);
+        const id = setInterval(() => {
+            slotConfRef.current = randomSlotConf();
+            setProfileIdx(i => (i + 1) % ROTATING_PROFILES.length);
+        }, 3000);
         return () => clearInterval(id);
     }, []);
     const profile = ROTATING_PROFILES[profileIdx];
-    const slotConf = SLOT_CONFIGS[profileIdx % SLOT_CONFIGS.length];
+    const slotConf = slotConfRef.current;
 
     // Selected archetype for description card
     const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
@@ -153,7 +155,7 @@ export const Landing: React.FC = () => {
             {/* ── NAV ── */}
             <nav style={{ borderBottom: '1px solid #D2D2D7' }}
                  className="sticky top-0 z-50 bg-white/95 backdrop-blur-md">
-                <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between">
+                <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
                     <span style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '-0.01em' }}
                           className="text-argo-navy">
                         Argo Method
@@ -182,7 +184,7 @@ export const Landing: React.FC = () => {
             </nav>
 
             {/* ── HERO ── */}
-            <section className="max-w-5xl mx-auto px-6 pt-32 pb-36">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 pt-20 pb-20 md:pt-32 md:pb-36">
                 <motion.div {...fadeUp(0)}>
                     <SectionLabel>
                         {lang === 'es' ? 'Ciencia del Comportamiento' : 'Behavioral Science'}
@@ -241,8 +243,8 @@ export const Landing: React.FC = () => {
             <Divider />
 
             {/* ── EL MITO ── */}
-            <section className="max-w-5xl mx-auto px-6 py-32">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-20">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
                     <motion.div {...fadeUp(0)}>
                         <SectionLabel>
                             {lang === 'es' ? 'El origen · La nave Argos' : 'The origin · The Argo ship'}
@@ -272,7 +274,7 @@ export const Landing: React.FC = () => {
             <Divider />
 
             {/* ── EL SISTEMA ── */}
-            <section className="max-w-5xl mx-auto px-6 py-32">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <motion.div {...fadeUp(0)} className="mb-16">
                     <SectionLabel>
                         {lang === 'es' ? 'El sistema · Tres dimensiones' : 'The system · Three dimensions'}
@@ -315,10 +317,10 @@ export const Landing: React.FC = () => {
                 {/* Slot-machine rotating profile card */}
                 <div
                     className="grid grid-cols-1 md:grid-cols-3 gap-px"
-                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden' }}
+                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}
                 >
                     {/* Conducta */}
-                    <div style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white overflow-hidden">
+                    <div className="p-6 md:p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             01 · {lang === 'es' ? 'Conducta' : 'Behavior'}
                         </p>
@@ -348,7 +350,7 @@ export const Landing: React.FC = () => {
                     </div>
 
                     {/* Motor */}
-                    <div style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white overflow-hidden">
+                    <div className="p-6 md:p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             02 · Motor
                         </p>
@@ -378,7 +380,7 @@ export const Landing: React.FC = () => {
                     </div>
 
                     {/* Sintonía */}
-                    <div className="p-10 bg-white overflow-hidden">
+                    <div className="p-6 md:p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             03 · {lang === 'es' ? 'Sintonía' : 'Synergy'}
                         </p>
@@ -404,7 +406,7 @@ export const Landing: React.FC = () => {
             <Divider />
 
             {/* ── ARQUETIPOS ── */}
-            <section className="max-w-5xl mx-auto px-6 py-32">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <motion.div {...fadeUp(0)} className="mb-16">
                     <SectionLabel>
                         {lang === 'es' ? 'La cartografía · 12 perfiles' : 'The map · 12 profiles'}
@@ -417,7 +419,7 @@ export const Landing: React.FC = () => {
                 </motion.div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px"
-                     style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', boxShadow: 'none' }}>
+                     style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}>
                     {ARCHETYPES.map(({ label, motor, eje }, i) => {
                         const isSelected = selectedArchetype === label;
                         return (
@@ -426,13 +428,11 @@ export const Landing: React.FC = () => {
                                 {...fadeUp(i * 0.03)}
                                 onClick={() => setSelectedArchetype(isSelected ? null : label)}
                                 style={{
-                                    borderRight: '1px solid #D2D2D7',
-                                    borderBottom: '1px solid #D2D2D7',
                                     cursor: 'pointer',
                                     backgroundColor: isSelected ? EJE_COLOR[eje] : '#ffffff',
                                     transition: 'background-color 0.2s ease',
                                 }}
-                                className="p-6"
+                                className="p-4 md:p-6"
                             >
                                 <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : EJE_COLOR[eje], marginBottom: '10px' }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
@@ -481,7 +481,7 @@ export const Landing: React.FC = () => {
             <Divider />
 
             {/* ── SALVAGUARDA ÉTICA ── */}
-            <section className="max-w-5xl mx-auto px-6 py-32">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <div className="max-w-2xl mx-auto text-center">
                     <motion.div {...fadeUp(0)}>
                         <SectionLabel>
@@ -509,7 +509,7 @@ export const Landing: React.FC = () => {
             <Divider />
 
             {/* ── CTA FINAL ── */}
-            <section className="max-w-5xl mx-auto px-6 py-32 text-center">
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32 text-center">
                 <motion.div {...fadeUp(0)}>
                     <h2 style={{ fontWeight: 300, fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', lineHeight: 1.08, letterSpacing: '-0.03em' }} className="mb-6 text-argo-navy">
                         {lang === 'es'
@@ -541,7 +541,7 @@ export const Landing: React.FC = () => {
 
             {/* ── FOOTER ── */}
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-10">
-                <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div style={{ fontWeight: 500, fontSize: '13px' }} className="text-argo-navy">
                         Argo Method
                         <span style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', marginLeft: '12px' }}>
