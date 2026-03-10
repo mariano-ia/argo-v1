@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
@@ -21,19 +21,47 @@ const fadeUp = (delay = 0) => ({
 
 // ─── Twelve archetypes ───────────────────────────────────────────────────────
 const ARCHETYPES = [
-    { label: 'Impulsor Dinámico',      motor: 'Rápido', eje: 'D' },
-    { label: 'Impulsor Decidido',      motor: 'Medio',  eje: 'D' },
-    { label: 'Impulsor Persistente',   motor: 'Lento',  eje: 'D' },
-    { label: 'Conector Dinámico',      motor: 'Rápido', eje: 'I' },
-    { label: 'Conector Decidido',      motor: 'Medio',  eje: 'I' },
-    { label: 'Conector Persistente',   motor: 'Lento',  eje: 'I' },
-    { label: 'Sostenedor Dinámico',    motor: 'Rápido', eje: 'S' },
-    { label: 'Sostenedor Decidido',    motor: 'Medio',  eje: 'S' },
-    { label: 'Sostenedor Persistente', motor: 'Lento',  eje: 'S' },
-    { label: 'Estratega Dinámico',     motor: 'Rápido', eje: 'C' },
-    { label: 'Estratega Decidido',     motor: 'Medio',  eje: 'C' },
-    { label: 'Estratega Persistente',  motor: 'Lento',  eje: 'C' },
+    { label: 'Impulsor Dinámico',    motor: 'Dinámico', eje: 'D' },
+    { label: 'Impulsor Rítmico',     motor: 'Rítmico',  eje: 'D' },
+    { label: 'Impulsor Sereno',      motor: 'Sereno',   eje: 'D' },
+    { label: 'Conector Dinámico',    motor: 'Dinámico', eje: 'I' },
+    { label: 'Conector Rítmico',     motor: 'Rítmico',  eje: 'I' },
+    { label: 'Conector Sereno',      motor: 'Sereno',   eje: 'I' },
+    { label: 'Sostenedor Dinámico',  motor: 'Dinámico', eje: 'S' },
+    { label: 'Sostenedor Rítmico',   motor: 'Rítmico',  eje: 'S' },
+    { label: 'Sostenedor Sereno',    motor: 'Sereno',   eje: 'S' },
+    { label: 'Estratega Dinámico',   motor: 'Dinámico', eje: 'C' },
+    { label: 'Estratega Rítmico',    motor: 'Rítmico',  eje: 'C' },
+    { label: 'Estratega Observador', motor: 'Sereno',   eje: 'C' },
 ];
+
+// ─── Archetype descriptions ───────────────────────────────────────────────────
+const ARCHETYPE_DESCRIPTIONS: Record<string, string> = {
+    'Impulsor Dinámico':
+        'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
+    'Impulsor Rítmico':
+        'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
+    'Impulsor Sereno':
+        'Tiene la voluntad de un líder y la paciencia de un estratega. Procesa antes de actuar, pero cuando decide, lo hace con convicción absoluta. No se precipita, pero tampoco retrocede. Necesita tiempo para comprender el plan y luego libertad para ejecutarlo sin interrupciones.',
+    'Conector Dinámico':
+        'El equipo es su hábitat natural. Se activa con el contacto, el juego y la energía colectiva. Reacciona rápido y habla rápido. Su entusiasmo contagia al grupo, pero también puede dispersarse si no hay estructura que lo contenga. Necesita un entorno dinámico que no apague su llama.',
+    'Conector Rítmico':
+        'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
+    'Conector Sereno':
+        'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
+    'Sostenedor Dinámico':
+        'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
+    'Sostenedor Rítmico':
+        'La columna vertebral del equipo. No busca el protagonismo, pero sin él nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
+    'Sostenedor Sereno':
+        'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
+    'Estratega Dinámico':
+        'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
+    'Estratega Rítmico':
+        'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
+    'Estratega Observador':
+        'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. Para él, el deporte es un tablero que prefiere comprender antes de ejecutar.',
+};
 
 const EJE_COLOR: Record<string, string> = {
     D: '#ef4444',
@@ -41,6 +69,51 @@ const EJE_COLOR: Record<string, string> = {
     S: '#22c55e',
     C: '#6366f1',
 };
+
+// ─── Rotating profiles for Sistema animation ──────────────────────────────────
+const ROTATING_PROFILES = [
+    {
+        eje: 'D', ejeLabel: 'Impulsor',
+        behaviors: ['Domina', 'Decide', 'Compite'],
+        motor: 'Dinámico', motorBars: 3,
+        motorDesc: 'Responde en segundos. Necesita acción constante.',
+        archetype: 'Impulsor Dinámico',
+        archetypeDesc: 'Necesita reto constante y autonomía. Responde al feedback directo.',
+    },
+    {
+        eje: 'S', ejeLabel: 'Sostenedor',
+        behaviors: ['Estabiliza', 'Cuida', 'Persiste'],
+        motor: 'Sereno', motorBars: 1,
+        motorDesc: 'Procesa en profundidad antes de actuar.',
+        archetype: 'Sostenedor Sereno',
+        archetypeDesc: 'Necesita tiempo y seguridad. Evita los cambios abruptos sin aviso.',
+    },
+    {
+        eje: 'I', ejeLabel: 'Conector',
+        behaviors: ['Influye', 'Entusiasma', 'Conecta'],
+        motor: 'Rítmico', motorBars: 2,
+        motorDesc: 'Equilibra impulso y reflexión.',
+        archetype: 'Conector Rítmico',
+        archetypeDesc: 'Se motiva con el equipo. Necesita reconocimiento y variedad.',
+    },
+    {
+        eje: 'C', ejeLabel: 'Estratega',
+        behaviors: ['Analiza', 'Planifica', 'Precisa'],
+        motor: 'Dinámico', motorBars: 3,
+        motorDesc: 'Responde en segundos. Actúa con precisión.',
+        archetype: 'Estratega Dinámico',
+        archetypeDesc: 'Analiza rápido y necesita estructura clara. Odia la improvisación.',
+    },
+];
+
+// ─── Slot machine config: direction (-1 = from top, 1 = from bottom) + delay ──
+// Each row = one profile transition; each column = [Conducta, Motor, Sintonía]
+const SLOT_CONFIGS = [
+    [{ dir: -1, delay: 0,    dur: 0.30 }, { dir:  1, delay: 0.18, dur: 0.26 }, { dir: -1, delay: 0.07, dur: 0.32 }],
+    [{ dir:  1, delay: 0.12, dur: 0.28 }, { dir: -1, delay: 0,    dur: 0.34 }, { dir:  1, delay: 0.22, dur: 0.25 }],
+    [{ dir: -1, delay: 0.08, dur: 0.32 }, { dir:  1, delay: 0.04, dur: 0.28 }, { dir: -1, delay: 0.20, dur: 0.30 }],
+    [{ dir:  1, delay: 0,    dur: 0.26 }, { dir: -1, delay: 0.16, dur: 0.32 }, { dir:  1, delay: 0.06, dur: 0.28 }],
+];
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
@@ -60,6 +133,18 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 export const Landing: React.FC = () => {
     const navigate = useNavigate();
     const { lang, setLang, t } = useLang();
+
+    // Rotating profile index for El Sistema section
+    const [profileIdx, setProfileIdx] = useState(0);
+    useEffect(() => {
+        const id = setInterval(() => setProfileIdx(i => (i + 1) % ROTATING_PROFILES.length), 3000);
+        return () => clearInterval(id);
+    }, []);
+    const profile = ROTATING_PROFILES[profileIdx];
+    const slotConf = SLOT_CONFIGS[profileIdx % SLOT_CONFIGS.length];
+
+    // Selected archetype for description card
+    const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
 
     return (
         <div style={{ backgroundColor: '#ffffff', color: '#1D1D1F', fontFamily: 'Inter, sans-serif' }}
@@ -100,7 +185,7 @@ export const Landing: React.FC = () => {
             <section className="max-w-5xl mx-auto px-6 pt-32 pb-36">
                 <motion.div {...fadeUp(0)}>
                     <SectionLabel>
-                        Método Argo · Cartografía de Sintonía Deportiva
+                        {lang === 'es' ? 'Ciencia del Comportamiento' : 'Behavioral Science'}
                     </SectionLabel>
                 </motion.div>
 
@@ -117,8 +202,8 @@ export const Landing: React.FC = () => {
                     className="mb-8"
                 >
                     {lang === 'es'
-                        ? 'Cada niño tiene un lugar en la tripulación.'
-                        : 'Every child has a place in the crew.'}
+                        ? 'Inteligencia deportiva para que cada niño disfrute el deporte.'
+                        : 'Sports intelligence so every child can enjoy sport.'}
                 </motion.h1>
 
                 <motion.p
@@ -127,8 +212,8 @@ export const Landing: React.FC = () => {
                     className="mb-12"
                 >
                     {lang === 'es'
-                        ? 'Inspirado en la épica de los 50 Argonautas. Argo Method identifica la naturaleza de los niños para que el deporte sea disfrute, no fricción.'
-                        : 'Inspired by the epic of the 50 Argonauts. Argo Method identifies the nature of children so sport becomes joy, not friction.'}
+                        ? 'Basado en la metodología DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés deportivo y asegurar el disfrute genuino de los niños.'
+                        : 'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.'}
                 </motion.p>
 
                 <motion.div {...fadeUp(0.22)} className="flex items-center gap-5">
@@ -177,8 +262,8 @@ export const Landing: React.FC = () => {
                         </p>
                         <p style={{ fontWeight: 400, fontSize: '16px', lineHeight: 1.75, color: '#424245' }}>
                             {lang === 'es'
-                                ? 'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen niños incorrectos. Existen niños fuera de sintonía. Cuando un niño no disfruta del deporte, no es por falta de capacidad — es porque está ocupando un lugar en la tripulación que no le corresponde.'
-                                : 'We apply this ancient wisdom to sports behavioral science. There are no wrong children. There are children out of sync. When a child does not enjoy sport, it is not from lack of ability — it is because they are filling a role in the crew that does not match their nature.'}
+                                ? 'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen niños incorrectos. Existen niños fuera de sintonía. Cuando un niño no disfruta del deporte, no es por falta de capacidad, es porque está ocupando un lugar en la tripulación que no le corresponde.'
+                                : 'We apply this ancient wisdom to sports behavioral science. There are no wrong children. There are children out of sync. When a child does not enjoy sport, it is not from lack of ability, it is because they are filling a role in the crew that does not match their nature.'}
                         </p>
                     </motion.div>
                 </div>
@@ -188,104 +273,132 @@ export const Landing: React.FC = () => {
 
             {/* ── EL SISTEMA ── */}
             <section className="max-w-5xl mx-auto px-6 py-32">
-                <motion.div {...fadeUp(0)} className="mb-20">
+                <motion.div {...fadeUp(0)} className="mb-16">
                     <SectionLabel>
                         {lang === 'es' ? 'El sistema · Tres dimensiones' : 'The system · Three dimensions'}
                     </SectionLabel>
-                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em', maxWidth: '560px' }}>
-                        {lang === 'es'
-                            ? 'Conducta + Motor = Sintonía.'
-                            : 'Behavior + Engine = Synergy.'}
+                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
+                        {lang === 'es' ? 'Conducta + Motor = Sintonía.' : 'Behavior + Engine = Synergy.'}
                     </h2>
+
+                    {/* Inline definitions */}
+                    <div className="flex flex-wrap items-start gap-8 mt-8">
+                        <div style={{ maxWidth: '160px' }}>
+                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                                {lang === 'es' ? 'Conducta' : 'Behavior'}
+                            </p>
+                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
+                                {lang === 'es' ? 'Cómo actúa bajo presión y en equipo' : 'How they act under pressure and in a team'}
+                            </p>
+                        </div>
+                        <span style={{ fontWeight: 300, fontSize: '22px', color: '#D2D2D7', paddingTop: '2px' }}>+</span>
+                        <div style={{ maxWidth: '160px' }}>
+                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                                Motor
+                            </p>
+                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
+                                {lang === 'es' ? 'A qué ritmo procesa y toma decisiones' : 'At what pace they process and decide'}
+                            </p>
+                        </div>
+                        <span style={{ fontWeight: 300, fontSize: '22px', color: '#D2D2D7', paddingTop: '2px' }}>=</span>
+                        <div style={{ maxWidth: '180px' }}>
+                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
+                                {lang === 'es' ? 'Sintonía' : 'Synergy'}
+                            </p>
+                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
+                                {lang === 'es' ? 'El lugar exacto donde disfruta y rinde' : 'The exact place where they thrive'}
+                            </p>
+                        </div>
+                    </div>
                 </motion.div>
 
-                {/* Three pillars */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden' }}>
+                {/* Slot-machine rotating profile card */}
+                <div
+                    className="grid grid-cols-1 md:grid-cols-3 gap-px"
+                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden' }}
+                >
                     {/* Conducta */}
-                    <motion.div {...fadeUp(0)} style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white">
+                    <div style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             01 · {lang === 'es' ? 'Conducta' : 'Behavior'}
                         </p>
-                        <p style={{ fontWeight: 300, fontSize: '22px', letterSpacing: '-0.02em', lineHeight: 1.2 }} className="mb-8 text-argo-navy">
-                            {lang === 'es' ? 'Cómo actúa' : 'How they act'}
-                        </p>
-                        <div className="space-y-3">
-                            {[
-                                { eje: 'D', label: lang === 'es' ? 'Impulsor · Domina, decide, compite' : 'Driver · Dominates, decides, competes' },
-                                { eje: 'I', label: lang === 'es' ? 'Conector · Influye, entusiasma, comparte' : 'Connector · Influences, enthuses, shares' },
-                                { eje: 'S', label: lang === 'es' ? 'Sostenedor · Estabiliza, cuida, persiste' : 'Sustainer · Stabilizes, cares, persists' },
-                                { eje: 'C', label: lang === 'es' ? 'Estratega · Analiza, planifica, precisa' : 'Strategist · Analyzes, plans, refines' },
-                            ].map(({ eje, label }) => (
-                                <div key={eje} className="flex items-center gap-3">
-                                    <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[eje], flexShrink: 0 }} />
-                                    <span style={{ fontWeight: 400, fontSize: '12px', color: '#424245', lineHeight: 1.4 }}>{label}</span>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`c-${profileIdx}`}
+                                initial={{ opacity: 0, y: slotConf[0].dir * 24 }}
+                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[0].dur, delay: slotConf[0].delay, ease: [0.25, 0, 0, 1] } }}
+                                exit={{ opacity: 0, y: slotConf[0].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
+                            >
+                                <div className="flex items-center gap-2 mb-5">
+                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[profile.eje], flexShrink: 0 }} />
+                                    <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                                        {profile.ejeLabel}
+                                    </p>
                                 </div>
-                            ))}
-                        </div>
-                    </motion.div>
+                                <div className="space-y-2">
+                                    {profile.behaviors.map(b => (
+                                        <div key={b} className="flex items-center gap-2">
+                                            <div style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#D2D2D7', flexShrink: 0 }} />
+                                            <span style={{ fontWeight: 400, fontSize: '13px', color: '#424245' }}>{b}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
 
                     {/* Motor */}
-                    <motion.div {...fadeUp(0.08)} style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white">
+                    <div style={{ borderRight: '1px solid #D2D2D7' }} className="p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             02 · Motor
                         </p>
-                        <p style={{ fontWeight: 300, fontSize: '22px', letterSpacing: '-0.02em', lineHeight: 1.2 }} className="mb-8 text-argo-navy">
-                            {lang === 'es' ? 'A qué ritmo procesa' : 'At what rhythm they process'}
-                        </p>
-                        <div className="space-y-5">
-                            {[
-                                { label: lang === 'es' ? 'Rápido' : 'Fast', bars: 3, desc: lang === 'es' ? 'Responde en segundos, necesita acción' : 'Responds in seconds, needs action' },
-                                { label: lang === 'es' ? 'Medio' : 'Mid',   bars: 2, desc: lang === 'es' ? 'Equilibrio entre impulso y reflexión' : 'Balances impulse with reflection' },
-                                { label: lang === 'es' ? 'Lento' : 'Slow',  bars: 1, desc: lang === 'es' ? 'Procesa en profundidad antes de actuar' : 'Processes deeply before acting' },
-                            ].map(({ label, bars, desc }) => (
-                                <div key={label}>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        {[1, 2, 3].map(b => (
-                                            <div key={b} style={{
-                                                height: 3, width: 20, borderRadius: 2,
-                                                backgroundColor: b <= bars ? '#1D1D1F' : '#D2D2D7',
-                                            }} />
-                                        ))}
-                                        <span style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', marginLeft: 4 }}>{label}</span>
-                                    </div>
-                                    <p style={{ fontWeight: 400, fontSize: '11px', color: '#86868B' }}>{desc}</p>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`m-${profileIdx}`}
+                                initial={{ opacity: 0, y: slotConf[1].dir * 24 }}
+                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[1].dur, delay: slotConf[1].delay, ease: [0.25, 0, 0, 1] } }}
+                                exit={{ opacity: 0, y: slotConf[1].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
+                            >
+                                <div className="flex items-center gap-2 mb-5">
+                                    {[1, 2, 3].map(b => (
+                                        <div key={b} style={{
+                                            height: 4, width: 24, borderRadius: 2,
+                                            backgroundColor: b <= profile.motorBars ? '#1D1D1F' : '#D2D2D7',
+                                        }} />
+                                    ))}
+                                    <span style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginLeft: 6 }}>
+                                        {profile.motor}
+                                    </span>
                                 </div>
-                            ))}
-                        </div>
-                    </motion.div>
+                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
+                                    {profile.motorDesc}
+                                </p>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
 
                     {/* Sintonía */}
-                    <motion.div {...fadeUp(0.16)} className="p-10 bg-white">
+                    <div className="p-10 bg-white overflow-hidden">
                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
                             03 · {lang === 'es' ? 'Sintonía' : 'Synergy'}
                         </p>
-                        <p style={{ fontWeight: 300, fontSize: '22px', letterSpacing: '-0.02em', lineHeight: 1.2 }} className="mb-8 text-argo-navy">
-                            {lang === 'es' ? 'Su lugar en el equipo' : 'Their place in the team'}
-                        </p>
-                        <div style={{ padding: '16px', border: '1px solid #D2D2D7', borderRadius: '8px', marginBottom: '12px' }}>
-                            <p style={{ fontWeight: 600, fontSize: '11px', color: '#1D1D1F', marginBottom: 4 }}>Impulsor Dinámico</p>
-                            <p style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', lineHeight: 1.5 }}>
-                                {lang === 'es'
-                                    ? 'Necesita reto constante y autonomía. Responde al feedback directo.'
-                                    : 'Needs constant challenge and autonomy. Responds to direct feedback.'}
-                            </p>
-                        </div>
-                        <p style={{ fontWeight: 400, fontSize: '11px', color: '#86868B' }}>
-                            {lang === 'es'
-                                ? 'El informe entrega al adulto el lenguaje exacto para conectar con este perfil.'
-                                : 'The report gives the adult the exact language to connect with this profile.'}
-                        </p>
-                    </motion.div>
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`s-${profileIdx}`}
+                                initial={{ opacity: 0, y: slotConf[2].dir * 24 }}
+                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[2].dur, delay: slotConf[2].delay, ease: [0.25, 0, 0, 1] } }}
+                                exit={{ opacity: 0, y: slotConf[2].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
+                            >
+                                <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginBottom: '12px', lineHeight: 1.2 }}>
+                                    {profile.archetype}
+                                </p>
+                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
+                                    {profile.archetypeDesc}
+                                </p>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
                 </div>
-
-                <motion.p
-                    {...fadeUp(0.2)}
-                    style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', marginTop: '16px', textAlign: 'center' }}
-                >
-                    {lang === 'es'
-                        ? 'Conducta × Motor = 12 arquetipos únicos. Sin superposiciones.'
-                        : 'Behavior × Engine = 12 unique archetypes. No overlaps.'}
-                </motion.p>
             </section>
 
             <Divider />
@@ -296,37 +409,73 @@ export const Landing: React.FC = () => {
                     <SectionLabel>
                         {lang === 'es' ? 'La cartografía · 12 perfiles' : 'The map · 12 profiles'}
                     </SectionLabel>
-                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em', maxWidth: '560px' }}>
+                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '8px', maxWidth: '600px', lineHeight: 1.75 }}>
                         {lang === 'es'
-                            ? '12 perfiles. Cada niño en uno.'
-                            : '12 profiles. Every child fits one.'}
-                    </h2>
-                    <p style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', marginTop: '16px', maxWidth: '440px', lineHeight: 1.6 }}>
-                        {lang === 'es'
-                            ? 'No es un diagnóstico. Es una fotografía del presente — un punto de partida para sintonizar.'
-                            : 'Not a diagnosis. A photograph of the present — a starting point for tuning in.'}
+                            ? 'Cada deportista tiene un ritmo y una forma única de procesar el juego. A través de la ciencia del comportamiento, identificamos estas tendencias naturales para que los adultos puedan crear el entorno de sintonía que cada niño necesita para disfrutar y permanecer en el deporte.'
+                            : 'Every athlete has a unique rhythm and way of processing the game. Through behavioral science, we identify these natural tendencies so adults can create the attuned environment each child needs to enjoy and stay in sport.'}
                     </p>
                 </motion.div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px"
-                     style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden' }}>
-                    {ARCHETYPES.map(({ label, motor, eje }, i) => (
+                     style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', boxShadow: 'none' }}>
+                    {ARCHETYPES.map(({ label, motor, eje }, i) => {
+                        const isSelected = selectedArchetype === label;
+                        return (
+                            <motion.div
+                                key={label}
+                                {...fadeUp(i * 0.03)}
+                                onClick={() => setSelectedArchetype(isSelected ? null : label)}
+                                style={{
+                                    borderRight: '1px solid #D2D2D7',
+                                    borderBottom: '1px solid #D2D2D7',
+                                    cursor: 'pointer',
+                                    backgroundColor: isSelected ? EJE_COLOR[eje] : '#ffffff',
+                                    transition: 'background-color 0.2s ease',
+                                }}
+                                className="p-6"
+                            >
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : EJE_COLOR[eje], marginBottom: '10px' }} />
+                                <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
+                                    {label}
+                                </p>
+                                <p style={{ fontWeight: 400, fontSize: '10px', color: isSelected ? 'rgba(255,255,255,0.7)' : '#86868B', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                                    {motor}
+                                </p>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* Description card */}
+                <AnimatePresence mode="wait">
+                    {selectedArchetype && (
                         <motion.div
-                            key={label}
-                            {...fadeUp(i * 0.03)}
-                            style={{ borderRight: '1px solid #D2D2D7', borderBottom: '1px solid #D2D2D7' }}
-                            className="bg-white p-6 group hover:bg-argo-neutral transition-colors"
+                            key={selectedArchetype}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.35, ease: [0.25, 0, 0, 1] }}
+                            style={{
+                                marginTop: '20px',
+                                padding: '28px 32px',
+                                border: `1px solid ${EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje]}40`,
+                                borderLeft: `3px solid ${EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje]}`,
+                                borderRadius: '12px',
+                                backgroundColor: '#F5F5F7',
+                            }}
                         >
-                            <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[eje], marginBottom: '10px' }} />
-                            <p style={{ fontWeight: 500, fontSize: '12px', color: '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
-                                {label}
-                            </p>
-                            <p style={{ fontWeight: 400, fontSize: '10px', color: '#86868B', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                {motor}
+                            <div className="flex items-center gap-2 mb-3">
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje], flexShrink: 0 }} />
+                                <p style={{ fontWeight: 500, fontSize: '12px', color: '#1D1D1F', letterSpacing: '0.02em' }}>
+                                    {selectedArchetype}
+                                </p>
+                            </div>
+                            <p style={{ fontWeight: 400, fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
+                                {ARCHETYPE_DESCRIPTIONS[selectedArchetype]}
                             </p>
                         </motion.div>
-                    ))}
-                </div>
+                    )}
+                </AnimatePresence>
             </section>
 
             <Divider />
