@@ -212,12 +212,12 @@ export const QuestionScreen: React.FC<Props> = ({
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-argo-navy rounded-3xl px-6 py-7"
+                className="bg-white rounded-2xl px-6 py-7 border border-[#D2D2D7]"
             >
-                <p className="text-[10px] font-bold text-sky-300 uppercase tracking-[0.25em] mb-2">
+                <p className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-2">
                     {question.title}
                 </p>
-                <p className="text-xl font-bold text-white leading-snug">
+                <p className="text-xl font-medium text-[#1D1D1F] leading-snug" style={{ letterSpacing: '-0.01em' }}>
                     {intro}
                 </p>
             </motion.div>

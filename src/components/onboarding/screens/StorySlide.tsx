@@ -31,7 +31,7 @@ export const StorySlide: React.FC<Props> = ({ slide, nombreNino, deporte, onCont
 
             <div className="space-y-4">
                 {slide.title && (
-                    <h2 className="font-display text-2xl font-bold text-argo-navy">
+                    <h2 className="font-display text-2xl font-light text-[#1D1D1F]" style={{ letterSpacing: '-0.02em' }}>
                         {slide.title}
                     </h2>
                 )}
@@ -44,7 +44,7 @@ export const StorySlide: React.FC<Props> = ({ slide, nombreNino, deporte, onCont
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={onContinue}
-                className="flex items-center gap-2 bg-argo-navy text-white font-bold px-8 py-4 rounded-argo-sm uppercase tracking-widest text-xs shadow-lg"
+                className="flex items-center gap-2 bg-[#1D1D1F] text-white font-medium px-8 py-4 rounded-xl text-sm"
             >
                 {continueLabel || 'Continuar'} <ChevronRight size={16} />
             </motion.button>

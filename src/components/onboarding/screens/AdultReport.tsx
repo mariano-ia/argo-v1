@@ -99,17 +99,17 @@ export const AdultReport: React.FC<Props> = ({
             className="space-y-8 max-w-2xl mx-auto"
         >
             {/* Hero: archetype + email confirmation */}
-            <div className="bg-argo-navy rounded-3xl p-8 text-center space-y-5 shadow-xl shadow-argo-navy/20">
+            <div className="bg-white rounded-2xl p-8 text-center space-y-5 border border-[#D2D2D7]">
 
                 {/* Status icon */}
                 <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     transition={{ type: 'spring', delay: 0.2 }}
-                    className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center mx-auto"
+                    className="w-20 h-20 rounded-2xl bg-[#F5F5F7] border border-[#D2D2D7] flex items-center justify-center mx-auto"
                 >
                     {emailStatus === 'sending' && (
-                        <Loader2 size={38} className="text-white animate-spin" />
+                        <Loader2 size={38} className="text-[#424245] animate-spin" />
                     )}
                     {emailStatus === 'sent' && (
                         <motion.div
@@ -117,7 +117,7 @@ export const AdultReport: React.FC<Props> = ({
                             animate={{ scale: 1, rotate: 0 }}
                             transition={{ type: 'spring', stiffness: 300 }}
                         >
-                            <CheckCircle size={42} className="text-emerald-400" />
+                            <CheckCircle size={42} className="text-emerald-500" />
                         </motion.div>
                     )}
                     {(emailStatus === 'error' || emailStatus === 'idle') && (
@@ -127,38 +127,38 @@ export const AdultReport: React.FC<Props> = ({
 
                 {/* Archetype */}
                 <div>
-                    <div className="text-[10px] font-bold text-sky-300 uppercase tracking-[0.25em] mb-1">
+                    <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-1">
                         Arquetipo de {adultData.nombreNino}
                     </div>
-                    <h2 className="font-display text-3xl font-bold text-white leading-tight">
+                    <h2 className="font-display text-3xl font-light text-[#1D1D1F] leading-tight" style={{ letterSpacing: '-0.03em' }}>
                         {report.arquetipo.label}
                     </h2>
                     {report.perfil && (
-                        <p className="text-sky-100/60 text-sm mt-1 italic">{report.perfil}</p>
+                        <p className="text-[#86868B] text-sm mt-1 italic">{report.perfil}</p>
                     )}
                 </div>
 
                 {/* Email status */}
                 <div className="min-h-[24px]">
                     {emailStatus === 'sending' && (
-                        <p className="text-white/70 text-sm animate-pulse">
+                        <p className="text-[#86868B] text-sm animate-pulse">
                             Preparando el informe…
                         </p>
                     )}
                     {emailStatus === 'sent' && (
-                        <p className="text-emerald-300 font-semibold text-sm">
+                        <p className="text-emerald-600 font-medium text-sm">
                             Informe enviado a{' '}
-                            <span className="font-black text-white">{adultData.email}</span>
+                            <span className="font-semibold text-[#1D1D1F]">{adultData.email}</span>
                         </p>
                     )}
                     {emailStatus === 'error' && (
                         <div className="space-y-1.5">
-                            <div className="flex items-center justify-center gap-1.5 text-amber-300 text-sm font-semibold">
+                            <div className="flex items-center justify-center gap-1.5 text-amber-600 text-sm font-medium">
                                 <AlertCircle size={14} /> No pudimos enviar el email
                             </div>
                             <button
                                 onClick={() => { hasSentRef.current = false; setEmailStatus('idle'); doSend(); }}
-                                className="text-xs text-white/50 hover:text-white underline transition-colors"
+                                className="text-xs text-[#86868B] hover:text-[#1D1D1F] underline transition-colors"
                             >
                                 Reintentar envío
                             </button>
@@ -167,13 +167,13 @@ export const AdultReport: React.FC<Props> = ({
                 </div>
 
                 {/* AI badge — always visible */}
-                <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.15em]">
                     {aiLoading ? (
-                        <span className="text-white/40 animate-pulse flex items-center gap-1.5">
+                        <span className="text-[#86868B] animate-pulse flex items-center gap-1.5">
                             <Sparkles size={11} /> Personalizando con IA…
                         </span>
                     ) : (
-                        <span className="text-sky-300 flex items-center gap-1.5">
+                        <span className="text-[#424245] flex items-center gap-1.5">
                             <Sparkles size={11} /> Generado con inteligencia artificial
                         </span>
                     )}
@@ -191,7 +191,7 @@ export const AdultReport: React.FC<Props> = ({
 
             {/* Full report */}
             <div className="space-y-2">
-                <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em]">
                     Informe completo
                 </div>
                 <FullReport

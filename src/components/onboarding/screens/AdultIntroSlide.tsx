@@ -29,8 +29,8 @@ export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlide
                 {Array.from({ length: totalSlides }, (_, i) => (
                     <div
                         key={i}
-                        className={`h-1 rounded-full flex-1 transition-all duration-500 ${
-                            i <= slideIndex ? 'bg-argo-indigo' : 'bg-argo-border'
+                        className={`h-0.5 rounded-full flex-1 transition-all duration-500 ${
+                            i <= slideIndex ? 'bg-[#1D1D1F]' : 'bg-[#D2D2D7]'
                         }`}
                     />
                 ))}
@@ -43,19 +43,19 @@ export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlide
                     initial={{ scale: 0, rotate: -10 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ type: 'spring', delay: 0.15, stiffness: 300, damping: 20 }}
-                    className="w-20 h-20 rounded-2xl bg-argo-navy flex items-center justify-center shadow-lg shadow-argo-navy/20"
+                    className="w-20 h-20 rounded-2xl bg-[#F5F5F7] border border-[#D2D2D7] flex items-center justify-center"
                 >
                     <span className="text-4xl" role="img" aria-hidden>
-                        {STEP_ICONS[slideIndex] ?? <Anchor className="text-white" />}
+                        {STEP_ICONS[slideIndex] ?? <Anchor className="text-[#1D1D1F]" />}
                     </span>
                 </motion.div>
 
                 {/* Text */}
                 <div className="space-y-4">
-                    <div className="text-[10px] font-bold text-argo-indigo uppercase tracking-[0.25em]">
+                    <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em]">
                         {slideIndex + 1} de {totalSlides}
                     </div>
-                    <h2 className="font-display text-2xl font-bold text-argo-navy leading-tight">
+                    <h2 className="font-display text-2xl font-light text-[#1D1D1F] leading-tight" style={{ letterSpacing: '-0.02em' }}>
                         {slide.title}
                     </h2>
                     <p className="text-base text-argo-grey leading-relaxed">
@@ -69,7 +69,7 @@ export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlide
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onContinue}
-                className="w-full bg-argo-navy text-white font-bold py-5 rounded-argo-sm flex items-center justify-center gap-2 uppercase tracking-widest text-xs shadow-lg shadow-argo-navy/20"
+                className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm"
             >
                 {isLast ? 'Comenzar el registro' : 'Siguiente'}
                 <ChevronRight size={16} />

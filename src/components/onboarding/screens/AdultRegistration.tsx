@@ -65,10 +65,10 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
             className="space-y-8 max-w-lg mx-auto"
         >
             <div>
-                <div className="text-[10px] font-bold text-argo-indigo uppercase tracking-[0.2em] mb-1">
+                <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-1">
                     Registro
                 </div>
-                <h2 className="font-display text-2xl font-bold text-argo-navy">
+                <h2 className="font-display text-2xl font-light text-[#1D1D1F]" style={{ letterSpacing: '-0.02em' }}>
                     Tus datos y los del deportista
                 </h2>
                 <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
@@ -93,7 +93,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                             value={f.value}
                             onChange={e => f.setter(e.target.value)}
                             placeholder={f.placeholder}
-                            className="w-full border border-argo-border rounded-argo-sm px-4 py-3 text-sm text-argo-navy focus:outline-none focus:border-argo-indigo"
+                            className="w-full border border-[#D2D2D7] rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
                         />
                     </div>
                 ))}
@@ -121,10 +121,10 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                             <button
                                 key={d}
                                 onClick={() => setDeporte(d)}
-                                className={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-all ${
+                                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
                                     deporte === d
-                                        ? 'bg-argo-navy text-white border-argo-navy'
-                                        : 'bg-white border-argo-border text-argo-grey hover:border-argo-navy'
+                                        ? 'bg-[#1D1D1F] text-white border-[#1D1D1F]'
+                                        : 'bg-white border-[#D2D2D7] text-[#424245] hover:border-[#1D1D1F]'
                                 }`}
                             >
                                 {d}
@@ -137,7 +137,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                             value={deporteCustom}
                             onChange={e => setDeporteCustom(e.target.value)}
                             placeholder="Escribí el deporte..."
-                            className="w-full border border-argo-border rounded-argo-sm px-4 py-2.5 text-sm text-argo-navy focus:outline-none focus:border-argo-indigo"
+                            className="w-full border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
                         />
                     )}
                 </div>
@@ -152,14 +152,14 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                     <button
                         key={i}
                         onClick={() => toggleCheck(i)}
-                        className={`w-full flex items-start gap-3 p-4 rounded-argo-sm border text-left transition-all ${
+                        className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
                             checks[i]
-                                ? 'border-argo-indigo bg-argo-indigo/5'
-                                : 'border-argo-border bg-white hover:border-argo-indigo/40'
+                                ? 'border-[#1D1D1F] bg-[#F5F5F7]'
+                                : 'border-[#D2D2D7] bg-white hover:border-[#424245]'
                         }`}
                     >
                         <div className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
-                            checks[i] ? 'bg-argo-indigo border-argo-indigo' : 'border-argo-border'
+                            checks[i] ? 'bg-[#1D1D1F] border-[#1D1D1F]' : 'border-[#D2D2D7]'
                         }`}>
                             {checks[i] && (
                                 <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -177,7 +177,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSubmit}
                 disabled={!isValid}
-                className="w-full bg-argo-navy text-white font-bold py-4 rounded-argo-sm flex items-center justify-center gap-2 uppercase tracking-widest text-xs disabled:opacity-40 transition-all"
+                className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
             >
                 Continuar <ChevronRight size={16} />
             </motion.button>
