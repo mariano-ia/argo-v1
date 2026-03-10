@@ -28,8 +28,13 @@ export const Login: React.FC = () => {
             <div className="w-full max-w-sm">
                 {/* Logo */}
                 <div className="text-center mb-10">
-                    <div className="text-[10px] uppercase tracking-[0.25em] text-argo-grey font-semibold mb-1">
-                        Argo Method
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                        <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 100 }}>Argo</span><span style={{ fontWeight: 800 }}> Method</span>
+                        </span>
+                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                            beta
+                        </span>
                     </div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Dashboard</h1>
                 </div>

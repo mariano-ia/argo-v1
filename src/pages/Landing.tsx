@@ -156,9 +156,13 @@ export const Landing: React.FC = () => {
             <nav style={{ borderBottom: '1px solid #D2D2D7' }}
                  className="sticky top-0 z-50 bg-white/95 backdrop-blur-md">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
-                    <span style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '-0.01em' }}
-                          className="text-argo-navy">
-                        Argo Method
+                    <span className="flex items-center gap-1.5">
+                        <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 100 }}>Argo</span><span style={{ fontWeight: 800 }}> Method</span>
+                        </span>
+                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                            beta
+                        </span>
                     </span>
                     <div className="flex items-center gap-4">
                         <button
@@ -543,9 +547,14 @@ export const Landing: React.FC = () => {
             {/* ── FOOTER ── */}
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-10">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div style={{ fontWeight: 500, fontSize: '13px' }} className="text-argo-navy">
-                        Argo Method
-                        <span style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', marginLeft: '12px' }}>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 100 }}>Argo</span><span style={{ fontWeight: 800 }}> Method</span>
+                        </span>
+                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                            beta
+                        </span>
+                        <span style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', marginLeft: '4px' }}>
                             {lang === 'es' ? 'Cartografía de Sintonía Deportiva' : 'Sports Behavioral Mapping'}
                         </span>
                     </div>
