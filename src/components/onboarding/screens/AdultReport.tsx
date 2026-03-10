@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, RefreshCw, Sparkles, CheckCircle, AlertCircle } from 'lucide-react';
+import { Sparkles, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { ReportData } from '../../../lib/argosEngine';
 import { AISections } from '../../../lib/openaiService';
 import { sendReport } from '../../../lib/emailService';
@@ -53,10 +53,10 @@ export const AdultReport: React.FC<Props> = ({
     report,
     aiSections,
     aiLoading,
-    onRestart,
+    onRestart: _onRestart,
 }) => {
     const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
-    const [emailError, setEmailError] = useState('');
+    const hasSentRef = useRef(false);
 
     const mergedReport = aiSections
         ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
@@ -64,128 +64,143 @@ export const AdultReport: React.FC<Props> = ({
 
     const maduracionTemprana = adultData.edad < 7;
 
-    const handleSendEmail = async () => {
+    const doSend = useCallback(() => {
+        if (hasSentRef.current) return;
         setEmailStatus('sending');
-        setEmailError('');
-        try {
-            await sendReport({
-                toEmail:           adultData.email,
-                nombreAdulto:      adultData.nombreAdulto,
-                nombreNino:        adultData.nombreNino,
-                deporte:           adultData.deporte,
-                edad:              adultData.edad,
-                arquetipo:         report.arquetipo.label,
-                reportHtml:        buildReportHtml(report, aiSections),
-                maduracionTemprana,
-            });
-            setEmailStatus('sent');
-        } catch (err: unknown) {
-            const msg = err instanceof Error ? err.message : String(err);
-            setEmailError(msg);
-            setEmailStatus('error');
-        }
-    };
+        sendReport({
+            toEmail:           adultData.email,
+            nombreAdulto:      adultData.nombreAdulto,
+            nombreNino:        adultData.nombreNino,
+            deporte:           adultData.deporte,
+            edad:              adultData.edad,
+            arquetipo:         report.arquetipo.label,
+            reportHtml:        buildReportHtml(report, aiSections),
+            maduracionTemprana,
+        })
+            .then(() => {
+                hasSentRef.current = true;
+                setEmailStatus('sent');
+            })
+            .catch(() => setEmailStatus('error'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [adultData, report.arquetipo.label, aiSections, maduracionTemprana]);
+
+    // Auto-send once AI finishes (or immediately if AI already done/unavailable)
+    useEffect(() => {
+        if (aiLoading) return;
+        doSend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [aiLoading]);
 
     return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <div className="text-[10px] font-bold text-argo-indigo uppercase tracking-[0.2em] mb-0.5">
-                        Informe de Sintonía
-                    </div>
-                    <h2 className="font-display text-xl font-bold text-argo-navy">
-                        {adultData.nombreNino} · {report.arquetipo.label}
-                    </h2>
-                </div>
-                <button
-                    onClick={onRestart}
-                    className="flex items-center gap-1.5 text-xs font-bold text-argo-grey hover:text-argo-indigo uppercase tracking-widest transition-all"
+        <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-8 max-w-2xl mx-auto"
+        >
+            {/* Hero: archetype + email confirmation */}
+            <div className="bg-argo-navy rounded-3xl p-8 text-center space-y-5 shadow-xl shadow-argo-navy/20">
+
+                {/* Status icon */}
+                <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', delay: 0.2 }}
+                    className="w-20 h-20 rounded-2xl bg-white/10 flex items-center justify-center mx-auto"
                 >
-                    <RefreshCw size={14} /> Nueva sesión
-                </button>
+                    {emailStatus === 'sending' && (
+                        <Loader2 size={38} className="text-white animate-spin" />
+                    )}
+                    {emailStatus === 'sent' && (
+                        <motion.div
+                            initial={{ scale: 0, rotate: -20 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: 'spring', stiffness: 300 }}
+                        >
+                            <CheckCircle size={42} className="text-emerald-400" />
+                        </motion.div>
+                    )}
+                    {(emailStatus === 'error' || emailStatus === 'idle') && (
+                        <span className="text-4xl">⚓</span>
+                    )}
+                </motion.div>
+
+                {/* Archetype */}
+                <div>
+                    <div className="text-[10px] font-bold text-sky-300 uppercase tracking-[0.25em] mb-1">
+                        Arquetipo de {adultData.nombreNino}
+                    </div>
+                    <h2 className="font-display text-3xl font-bold text-white leading-tight">
+                        {report.arquetipo.label}
+                    </h2>
+                    {report.perfil && (
+                        <p className="text-sky-100/60 text-sm mt-1 italic">{report.perfil}</p>
+                    )}
+                </div>
+
+                {/* Email status */}
+                <div className="min-h-[24px]">
+                    {emailStatus === 'sending' && (
+                        <p className="text-white/70 text-sm animate-pulse">
+                            Preparando el informe…
+                        </p>
+                    )}
+                    {emailStatus === 'sent' && (
+                        <p className="text-emerald-300 font-semibold text-sm">
+                            Informe enviado a{' '}
+                            <span className="font-black text-white">{adultData.email}</span>
+                        </p>
+                    )}
+                    {emailStatus === 'error' && (
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-center gap-1.5 text-amber-300 text-sm font-semibold">
+                                <AlertCircle size={14} /> No pudimos enviar el email
+                            </div>
+                            <button
+                                onClick={() => { hasSentRef.current = false; setEmailStatus('idle'); doSend(); }}
+                                className="text-xs text-white/50 hover:text-white underline transition-colors"
+                            >
+                                Reintentar envío
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* AI badge — always visible */}
+                <div className="flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+                    {aiLoading ? (
+                        <span className="text-white/40 animate-pulse flex items-center gap-1.5">
+                            <Sparkles size={11} /> Personalizando con IA…
+                        </span>
+                    ) : (
+                        <span className="text-sky-300 flex items-center gap-1.5">
+                            <Sparkles size={11} /> Generado con inteligencia artificial
+                        </span>
+                    )}
+                </div>
             </div>
 
-            {/* AI status */}
-            {aiLoading && (
-                <div className="flex items-center gap-2 text-[10px] font-bold text-argo-indigo uppercase tracking-widest animate-pulse">
-                    <Sparkles size={12} /> Personalizando el informe con IA...
-                </div>
-            )}
-            {!aiLoading && aiSections && (
-                <div className="flex items-center gap-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
-                    <Sparkles size={12} /> Informe personalizado con IA · {adultData.deporte} · {adultData.edad} años
-                </div>
-            )}
-
-            {/* Maduración temprana banner */}
+            {/* Maduración temprana */}
             {maduracionTemprana && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-argo-md text-sm text-amber-800">
                     <strong className="block mb-1">Nota: Maduración Temprana</strong>
-                    Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos.
-                    Se recomienda revisitar este perfil en <strong>6 meses</strong> para observar la evolución de las tendencias.
+                    Los perfiles en la infancia temprana (menores de 7 años) son altamente plásticos.
+                    Se recomienda revisitar este perfil en <strong>6 meses</strong> para observar la evolución.
                 </div>
             )}
 
-            {/* Email section */}
-            <div className="p-5 bg-argo-neutral border border-argo-border rounded-argo-lg space-y-4">
-                <div className="space-y-1">
-                    <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
-                        Enviar informe por email
-                    </div>
-                    <p className="text-sm text-argo-grey">
-                        Se enviará a <strong className="text-argo-navy">{adultData.email}</strong>
-                    </p>
-                </div>
-
-                {emailStatus === 'idle' && (
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={handleSendEmail}
-                        disabled={aiLoading}
-                        className="flex items-center gap-2 bg-argo-indigo text-white font-bold px-6 py-3 rounded-argo-sm text-xs uppercase tracking-widest disabled:opacity-50 transition-all"
-                    >
-                        <Send size={14} />
-                        {aiLoading ? 'Esperando IA...' : 'Enviar informe'}
-                    </motion.button>
-                )}
-
-                {emailStatus === 'sending' && (
-                    <div className="flex items-center gap-2 text-sm text-argo-indigo animate-pulse font-semibold">
-                        <RefreshCw size={14} className="animate-spin" /> Enviando...
-                    </div>
-                )}
-
-                {emailStatus === 'sent' && (
-                    <div className="flex items-center gap-2 text-sm text-green-600 font-semibold">
-                        <CheckCircle size={16} /> ¡Informe enviado a {adultData.email}!
-                    </div>
-                )}
-
-                {emailStatus === 'error' && (
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-sm text-red-600 font-semibold">
-                            <AlertCircle size={16} /> Error al enviar
-                        </div>
-                        <p className="text-xs text-red-500 font-mono break-all">{emailError}</p>
-                        <button
-                            onClick={handleSendEmail}
-                            className="text-xs font-bold text-argo-indigo underline"
-                        >
-                            Reintentar
-                        </button>
-                    </div>
-                )}
-            </div>
-
             {/* Full report */}
-            <FullReport
-                report={mergedReport}
-                aiActive={!!aiSections}
-                aiLoading={aiLoading}
-                deporte={adultData.deporte}
-            />
-        </div>
+            <div className="space-y-2">
+                <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                    Informe completo
+                </div>
+                <FullReport
+                    report={mergedReport}
+                    aiActive={!!aiSections}
+                    aiLoading={aiLoading}
+                    deporte={adultData.deporte}
+                />
+            </div>
+        </motion.div>
     );
 };

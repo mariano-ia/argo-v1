@@ -16,21 +16,22 @@ export default {
                     muted: '#94a3b8',
                 },
                 argo: {
-                    navy: '#1A1C2E',
-                    indigo: '#5C62FF',
-                    grey: '#717691',
-                    neutral: '#FDFBFF',
-                    border: '#E2E4EB'
+                    navy:      '#1D1D1F',
+                    secondary: '#424245',
+                    indigo:    '#0071E3',
+                    grey:      '#86868B',
+                    neutral:   '#F5F5F7',
+                    border:    '#D2D2D7',
                 }
             },
             fontFamily: {
-                sans: ['Inter', 'sans-serif'],
-                display: ['Outfit', 'sans-serif'],
+                sans:    ['Inter', 'sans-serif'],
+                display: ['Inter', 'sans-serif'],
             },
             borderRadius: {
-                'argo-sm': '4px',
-                'argo-md': '8px',
-                'argo-lg': '12px',
+                'argo-sm': '12px',
+                'argo-md': '18px',
+                'argo-lg': '24px',
             },
             animation: {
                 'scan': 'scan 4s linear infinite',

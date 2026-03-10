@@ -18,6 +18,26 @@ export interface StorySlideData {
     body: string;
 }
 
+// ─── Adult Intro Slides (shown before registration) ───────────────────────────
+
+export const ADULT_INTRO_SLIDES: StorySlideData[] = [
+    {
+        id: 'adult_intro_1',
+        title: 'Bienvenido a Argo',
+        body: 'Argo es una herramienta de autoconocimiento deportivo para chicos y chicas de 5 a 18 años. A través de una historia interactiva, identificamos cómo se motiva el deportista, cómo aprende y cómo reacciona bajo presión.',
+    },
+    {
+        id: 'adult_intro_2',
+        title: '12 decisiones. Una aventura.',
+        body: 'El deportista navega una historia ambientada en el mundo del Argo —la nave legendaria— y toma 12 decisiones que, sin saberlo, revelan su perfil comportamental. No hay respuestas correctas ni incorrectas. Solo elecciones auténticas.',
+    },
+    {
+        id: 'adult_intro_3',
+        title: 'El Informe de Sintonía',
+        body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo del deportista, su motor de motivación, claves de comunicación y sugerencias concretas para el entrenamiento. Todo generado con inteligencia artificial.',
+    },
+];
+
 // ─── Story Slides ─────────────────────────────────────────────────────────────
 
 export const STORY_SLIDES: Record<string, StorySlideData> = {

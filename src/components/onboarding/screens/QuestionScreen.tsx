@@ -5,41 +5,161 @@ import { QuestionAnswer } from '../../../lib/profileResolver';
 
 type Axis = 'D' | 'I' | 'S' | 'C';
 
-const AXIS_STYLE: Record<Axis, { selectedBg: string; selectedBorder: string; selectedText: string; dot: string }> = {
-    D: { selectedBg: 'bg-red-50',    selectedBorder: 'border-red-400',    selectedText: 'text-red-700',    dot: 'bg-red-400' },
-    I: { selectedBg: 'bg-yellow-50', selectedBorder: 'border-yellow-400', selectedText: 'text-yellow-700', dot: 'bg-yellow-400' },
-    S: { selectedBg: 'bg-green-50',  selectedBorder: 'border-green-400',  selectedText: 'text-green-700',  dot: 'bg-green-400' },
-    C: { selectedBg: 'bg-blue-50',   selectedBorder: 'border-blue-400',   selectedText: 'text-blue-700',   dot: 'bg-blue-400' },
+// Option styles by position (A/B/C/D) — independent of axis so kids don't get cues
+const OPTION_STYLES = [
+    {
+        letter: 'A',
+        idle:     'border-sky-200   bg-sky-50   text-argo-navy',
+        selected: 'border-sky-400   bg-sky-500   text-white',
+        dot:      'bg-sky-500 text-white',
+        ring:     'ring-sky-300',
+    },
+    {
+        letter: 'B',
+        idle:     'border-amber-200  bg-amber-50  text-argo-navy',
+        selected: 'border-amber-400  bg-amber-500  text-white',
+        dot:      'bg-amber-500 text-white',
+        ring:     'ring-amber-300',
+    },
+    {
+        letter: 'C',
+        idle:     'border-violet-200 bg-violet-50 text-argo-navy',
+        selected: 'border-violet-400 bg-violet-500 text-white',
+        dot:      'bg-violet-500 text-white',
+        ring:     'ring-violet-300',
+    },
+    {
+        letter: 'D',
+        idle:     'border-emerald-200 bg-emerald-50 text-argo-navy',
+        selected: 'border-emerald-400 bg-emerald-500 text-white',
+        dot:      'bg-emerald-500 text-white',
+        ring:     'ring-emerald-300',
+    },
+] as const;
+
+// ─── Ship Progress Bar ─────────────────────────────────────────────────────────
+
+const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, total }) => {
+    const pct = total > 1 ? (current / (total - 1)) * 100 : 0;
+
+    return (
+        <div className="space-y-2">
+            <div className="relative h-8 flex items-center">
+                {/* Ocean track */}
+                <div className="absolute inset-x-0 h-2 rounded-full bg-sky-100 overflow-hidden">
+                    <motion.div
+                        className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${pct}%` }}
+                        transition={{ type: 'spring', stiffness: 100, damping: 18 }}
+                    />
+                </div>
+
+                {/* Waypoints */}
+                {Array.from({ length: total }, (_, i) => {
+                    const pos = total > 1 ? (i / (total - 1)) * 100 : 0;
+                    const done = i < current;
+                    const active = i === current;
+                    return (
+                        <div
+                            key={i}
+                            className="absolute top-1/2 -translate-y-1/2"
+                            style={{ left: `${pos}%`, transform: `translate(-50%, -50%)` }}
+                        >
+                            <div className={`
+                                rounded-full border-2 transition-all duration-300
+                                ${done    ? 'w-2.5 h-2.5 bg-blue-500 border-blue-500'
+                                : active  ? 'w-3.5 h-3.5 bg-white border-blue-400 shadow-md shadow-blue-200'
+                                :           'w-2 h-2 bg-sky-100 border-sky-200'}
+                            `} />
+                        </div>
+                    );
+                })}
+
+                {/* Ship emoji that moves */}
+                <motion.div
+                    className="absolute top-1/2 pointer-events-none"
+                    style={{ translateY: '-50%' }}
+                    animate={{ left: `${pct}%` }}
+                    transition={{ type: 'spring', stiffness: 100, damping: 18 }}
+                >
+                    <span className="text-xl -translate-x-1/2 block select-none" style={{ transform: 'translateX(-50%)' }}>
+                        ⛵
+                    </span>
+                </motion.div>
+            </div>
+
+            <p className="text-center text-[11px] font-bold text-sky-600 uppercase tracking-widest">
+                Decisión {current + 1} de {total}
+            </p>
+        </div>
+    );
 };
 
-const DotProgress: React.FC<{ current: number; total: number }> = ({ current, total }) => (
-    <div className="space-y-2">
-        <div className="flex gap-1.5 justify-center flex-wrap">
-            {Array.from({ length: total }, (_, i) => (
-                <motion.div
-                    key={i}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: i * 0.02 }}
-                    className={`rounded-full transition-all duration-300 ${
-                        i < current
-                            ? 'w-2 h-2 bg-argo-indigo'
-                            : i === current
-                            ? 'w-3 h-3 bg-argo-indigo/50 ring-2 ring-argo-indigo/30'
-                            : 'w-2 h-2 bg-argo-border'
-                    }`}
-                />
-            ))}
+// ─── Option Button ─────────────────────────────────────────────────────────────
+
+interface OptionProps {
+    style: typeof OPTION_STYLES[number];
+    label: string;
+    index: number;
+    isChosen: boolean;
+    isOther: boolean;
+    onSelect: () => void;
+}
+
+const OptionButton: React.FC<OptionProps> = ({ style, label, index, isChosen, isOther, onSelect }) => (
+    <motion.button
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: isOther ? 0.35 : 1, y: 0 }}
+        transition={{ delay: index * 0.07, type: 'spring', stiffness: 360, damping: 28 }}
+        onClick={onSelect}
+        disabled={isChosen || isOther}
+        whileTap={!isChosen && !isOther ? { scale: 0.97 } : {}}
+        className={`
+            w-full text-left px-4 py-4 rounded-2xl border-2
+            flex items-center gap-4 transition-all duration-200 cursor-pointer
+            min-h-[72px]
+            ${isChosen
+                ? `${style.selected} shadow-lg ring-4 ${style.ring}`
+                : `${style.idle} hover:shadow-md hover:scale-[1.01]`
+            }
+        `}
+    >
+        {/* Letter badge */}
+        <div className={`
+            w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center
+            text-sm font-black transition-all duration-300
+            ${isChosen ? 'bg-white/25 text-white' : `${style.dot} opacity-80`}
+        `}>
+            <AnimatePresence mode="wait">
+                {isChosen ? (
+                    <motion.svg
+                        key="check"
+                        initial={{ scale: 0, rotate: -30 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        exit={{ scale: 0 }}
+                        className="w-5 h-5 text-white"
+                        fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" strokeWidth={3}
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </motion.svg>
+                ) : (
+                    <motion.span key="letter" className="text-white font-black text-sm">
+                        {style.letter}
+                    </motion.span>
+                )}
+            </AnimatePresence>
         </div>
-        <p className="text-center text-[10px] font-bold text-argo-grey/60 uppercase tracking-widest">
-            {questionIndexToLabel(current)} de {total}
-        </p>
-    </div>
+
+        {/* Label */}
+        <span className={`flex-1 text-base font-medium leading-snug ${isChosen ? 'text-white' : 'text-argo-navy'}`}>
+            {label}
+        </span>
+    </motion.button>
 );
 
-function questionIndexToLabel(i: number): string {
-    return `Decisión ${i + 1}`;
-}
+// ─── Main Component ────────────────────────────────────────────────────────────
 
 interface Props {
     question: Question;
@@ -70,7 +190,7 @@ export const QuestionScreen: React.FC<Props> = ({
         const responseTimeMs = Date.now() - startTime.current;
         setTimeout(() => {
             onAnswer({ axis: question.options[optionIndex].axis as Axis, responseTimeMs });
-        }, 700);
+        }, 650);
     };
 
     const intro = question.intro.replace(/\{\{NOMBRE_NIÑO\}\}/g, nombreNino);
@@ -82,77 +202,39 @@ export const QuestionScreen: React.FC<Props> = ({
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -40 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="flex flex-col gap-6 max-w-lg mx-auto w-full"
+            className="flex flex-col gap-5 max-w-lg mx-auto w-full"
         >
-            {/* Progress */}
-            <DotProgress current={questionIndex} total={totalQuestions} />
+            {/* Ship progress */}
+            <ShipProgress current={questionIndex} total={totalQuestions} />
 
             {/* Question card */}
-            <div className="bg-argo-navy rounded-2xl px-6 py-7 space-y-2 shadow-lg shadow-argo-navy/20">
-                <p className="text-[10px] font-bold text-argo-indigo/80 uppercase tracking-[0.2em]">
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="bg-argo-navy rounded-3xl px-6 py-7"
+            >
+                <p className="text-[10px] font-bold text-sky-300 uppercase tracking-[0.25em] mb-2">
                     {question.title}
                 </p>
                 <p className="text-xl font-bold text-white leading-snug">
                     {intro}
                 </p>
-            </div>
+            </motion.div>
 
-            {/* Options — staggered entry */}
+            {/* Options */}
             <div className="space-y-3">
-                {question.options.map((opt, i) => {
-                    const axis = opt.axis as Axis;
-                    const style = AXIS_STYLE[axis];
-                    const isChosen = chosen === i;
-                    const isOther = chosen !== null && !isChosen;
-
-                    return (
-                        <motion.button
-                            key={`${question.number}-${i}`}
-                            initial={{ opacity: 0, y: 16 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.08, type: 'spring', stiffness: 380, damping: 26 }}
-                            onClick={() => handleSelect(i)}
-                            disabled={chosen !== null}
-                            whileTap={chosen === null ? { scale: 0.97 } : {}}
-                            className={`
-                                w-full text-left px-5 py-5 rounded-2xl border-2
-                                text-base font-medium leading-snug
-                                transition-all duration-250 cursor-pointer
-                                min-h-[72px] flex items-center gap-4
-                                ${isChosen
-                                    ? `${style.selectedBg} ${style.selectedBorder} ${style.selectedText} shadow-md`
-                                    : isOther
-                                    ? 'border-argo-border bg-white/60 text-argo-grey/40'
-                                    : 'border-argo-border bg-white text-argo-navy hover:border-argo-indigo/50 hover:shadow-sm'
-                                }
-                            `}
-                        >
-                            {/* Radio dot */}
-                            <div className={`
-                                w-6 h-6 rounded-full border-2 flex-shrink-0
-                                flex items-center justify-center transition-all duration-300
-                                ${isChosen ? `${style.dot} border-transparent` : 'border-argo-border'}
-                            `}>
-                                <AnimatePresence>
-                                    {isChosen && (
-                                        <motion.svg
-                                            initial={{ scale: 0, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            exit={{ scale: 0 }}
-                                            className="w-3 h-3 text-white"
-                                            fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor" strokeWidth={3}
-                                        >
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                        </motion.svg>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-
-                            <span className="flex-1">{opt.label}</span>
-                        </motion.button>
-                    );
-                })}
+                {question.options.map((opt, i) => (
+                    <OptionButton
+                        key={`${question.number}-${i}`}
+                        style={OPTION_STYLES[i % OPTION_STYLES.length]}
+                        label={opt.label}
+                        index={i}
+                        isChosen={chosen === i}
+                        isOther={chosen !== null && chosen !== i}
+                        onSelect={() => handleSelect(i)}
+                    />
+                ))}
             </div>
         </motion.div>
     );

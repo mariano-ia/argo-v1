@@ -66,19 +66,22 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
         >
             <div>
                 <div className="text-[10px] font-bold text-argo-indigo uppercase tracking-[0.2em] mb-1">
-                    Paso 1 · El Adulto
+                    Registro
                 </div>
-                <h2 className="font-display text-2xl font-bold text-argo-navy">Acuerdo de Sintonía</h2>
-                <p className="text-sm text-argo-grey mt-1">
-                    Completá estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
+                <h2 className="font-display text-2xl font-bold text-argo-navy">
+                    Tus datos y los del deportista
+                </h2>
+                <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
+                    Estos datos nos permiten personalizar el informe y enviártelo al email que indiques.
+                    Completá todo antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
                 </p>
             </div>
 
             {/* Form fields */}
             <div className="space-y-4">
                 {[
-                    { label: 'Tu nombre (adulto)', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Laura García', type: 'text' },
-                    { label: 'Tu email', value: email, setter: setEmail, placeholder: 'correo@ejemplo.com', type: 'email' },
+                    { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Laura García', type: 'text' },
+                    { label: 'Tu email — recibirás el informe aquí', value: email, setter: setEmail, placeholder: 'correo@ejemplo.com', type: 'email' },
                     { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Mateo', type: 'text' },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">
@@ -143,7 +146,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
             {/* Checkboxes */}
             <div className="space-y-3">
                 <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
-                    Compromisos filosóficos
+                    Acuerdo filosófico
                 </div>
                 {CHECKS.map((textFn, i) => (
                     <button

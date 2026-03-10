@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ChevronRight, Anchor } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { StorySlideData } from '../../../lib/onboardingData';
 
 interface Props {
@@ -25,8 +25,8 @@ export const StorySlide: React.FC<Props> = ({ slide, nombreNino, deporte, onCont
             exit={{ opacity: 0, y: -20 }}
             className="flex flex-col items-center text-center space-y-8 max-w-md mx-auto py-6"
         >
-            <div className="w-16 h-16 rounded-full bg-argo-navy/10 flex items-center justify-center">
-                <Anchor size={28} className="text-argo-navy" />
+            <div className="w-10 h-10 rounded-full bg-argo-navy/8 flex items-center justify-center">
+                <div className="w-3 h-3 rounded-full bg-argo-navy/30" />
             </div>
 
             <div className="space-y-4">
