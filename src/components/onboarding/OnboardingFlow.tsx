@@ -166,23 +166,23 @@ const SCREENS: ScreenDef[] = [
     // Phase 2: La Partida
     { type: 'question', questionIndex: 0 },
     { type: 'question', questionIndex: 1 },
-    { type: 'story', slideId: 'slide_1' },
+    { type: 'story', slideId: 'slide_1', useOceanBg: true },
     // Phase 3: Navegación
     { type: 'question', questionIndex: 2 },
     { type: 'question', questionIndex: 3 },
     // Phase 4: La Tormenta
-    { type: 'story', slideId: 'slide_2' },
+    { type: 'story', slideId: 'slide_2', useOceanBg: true },
     { type: 'question', questionIndex: 4 },
     { type: 'question', questionIndex: 5 },
     { type: 'question', questionIndex: 6 },
     // Phase 5: Después de la tormenta — mini-juego de esquiva
     { type: 'minigame1' },
-    { type: 'story', slideId: 'slide_3' },
+    { type: 'story', slideId: 'slide_3', useOceanBg: true },
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
     { type: 'question', questionIndex: 9 },
     // Phase 6: Destino
-    { type: 'story', slideId: 'slide_4' },
+    { type: 'story', slideId: 'slide_4', useOceanBg: true },
     { type: 'question', questionIndex: 10 },
     { type: 'question', questionIndex: 11 },
     // Closure
@@ -279,7 +279,7 @@ export const OnboardingFlow: React.FC = () => {
         <div className="max-w-2xl mx-auto py-8 px-4 min-h-[80vh]">
             {/* Ocean background — persists across question + ocean story screens */}
             <AnimatePresence>
-                {(screen.type === 'question' || (screen.type === 'story' && screen.useOceanBg)) && (
+                {(screen.type === 'question' || (screen.type === 'story' && screen.useOceanBg) || screen.type === 'child-completion') && (
                     <motion.div
                         key="ocean-bg"
                         initial={{ opacity: 0 }}

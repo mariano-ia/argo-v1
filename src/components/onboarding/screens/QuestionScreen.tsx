@@ -9,33 +9,44 @@ type Axis = 'D' | 'I' | 'S' | 'C';
 const OPTION_STYLES = [
     {
         letter: 'A',
-        idle:     'border-sky-200   bg-sky-50   text-argo-navy',
+        idle:     'border-sky-200/70   bg-sky-50/55   text-argo-navy',
         selected: 'border-sky-400   bg-sky-500   text-white',
         dot:      'bg-sky-500 text-white',
         ring:     'ring-sky-300',
     },
     {
         letter: 'B',
-        idle:     'border-amber-200  bg-amber-50  text-argo-navy',
+        idle:     'border-amber-200/70  bg-amber-50/55  text-argo-navy',
         selected: 'border-amber-400  bg-amber-500  text-white',
         dot:      'bg-amber-500 text-white',
         ring:     'ring-amber-300',
     },
     {
         letter: 'C',
-        idle:     'border-violet-200 bg-violet-50 text-argo-navy',
+        idle:     'border-violet-200/70 bg-violet-50/55 text-argo-navy',
         selected: 'border-violet-400 bg-violet-500 text-white',
         dot:      'bg-violet-500 text-white',
         ring:     'ring-violet-300',
     },
     {
         letter: 'D',
-        idle:     'border-emerald-200 bg-emerald-50 text-argo-navy',
+        idle:     'border-emerald-200/70 bg-emerald-50/55 text-argo-navy',
         selected: 'border-emerald-400 bg-emerald-500 text-white',
         dot:      'bg-emerald-500 text-white',
         ring:     'ring-emerald-300',
     },
 ] as const;
+
+// ─── SVG Boat (replaces ⛵ emoji) ───────────────────────────────────────────────
+
+const ProgressBoat: React.FC = () => (
+    <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
+        <path d="M11 1 L18 11 L11 11 Z" fill="#1D1D1F" opacity="0.85" />
+        <path d="M11 4 L5 10 L11 10 Z" fill="#1D1D1F" opacity="0.60" />
+        <line x1="11" y1="1" x2="11" y2="13" stroke="#1D1D1F" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M2 12 Q11 17 20 12" stroke="#1D1D1F" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    </svg>
+);
 
 // ─── Ship Progress Bar ─────────────────────────────────────────────────────────
 
@@ -45,10 +56,10 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
     return (
         <div className="space-y-2">
             <div className="relative h-8 flex items-center">
-                {/* Ocean track */}
-                <div className="absolute inset-x-0 h-2 rounded-full bg-white/40 overflow-hidden">
+                {/* Track */}
+                <div className="absolute inset-x-0 h-1.5 rounded-full bg-white/30 overflow-hidden">
                     <motion.div
-                        className="h-full bg-gradient-to-r from-sky-400 to-blue-500 rounded-full"
+                        className="h-full bg-white/70 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ type: 'spring', stiffness: 100, damping: 18 }}
@@ -68,24 +79,24 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
                         >
                             <div className={`
                                 rounded-full border-2 transition-all duration-300
-                                ${done    ? 'w-2.5 h-2.5 bg-blue-500 border-blue-500'
-                                : active  ? 'w-3.5 h-3.5 bg-white border-blue-400 shadow-md shadow-blue-200'
-                                :           'w-2 h-2 bg-sky-100 border-sky-200'}
+                                ${done    ? 'w-2.5 h-2.5 bg-white/80 border-white/80'
+                                : active  ? 'w-3.5 h-3.5 bg-white border-white/60 shadow-md shadow-black/10'
+                                :           'w-2 h-2 bg-white/25 border-white/30'}
                             `} />
                         </div>
                     );
                 })}
 
-                {/* Ship emoji that moves */}
+                {/* SVG boat that moves */}
                 <motion.div
                     className="absolute top-1/2 pointer-events-none"
                     style={{ translateY: '-50%' }}
                     animate={{ left: `${pct}%` }}
                     transition={{ type: 'spring', stiffness: 100, damping: 18 }}
                 >
-                    <span className="text-xl -translate-x-1/2 block select-none" style={{ transform: 'translateX(-50%)' }}>
-                        ⛵
-                    </span>
+                    <div className="-translate-x-1/2 block select-none" style={{ transform: 'translateX(-50%)' }}>
+                        <ProgressBoat />
+                    </div>
                 </motion.div>
             </div>
 
@@ -118,7 +129,7 @@ const OptionButton: React.FC<OptionProps> = ({ style, label, index, isChosen, is
         className={`
             w-full text-left px-4 py-4 rounded-2xl border-2
             flex items-center gap-4 transition-all duration-200 cursor-pointer
-            min-h-[72px]
+            min-h-[72px] backdrop-blur-sm
             ${isChosen
                 ? `${style.selected} shadow-lg ring-4 ${style.ring}`
                 : `${style.idle} hover:shadow-md hover:scale-[1.01]`
@@ -207,17 +218,14 @@ export const QuestionScreen: React.FC<Props> = ({
             {/* Ship progress */}
             <ShipProgress current={questionIndex} total={totalQuestions} />
 
-            {/* Question card */}
+            {/* Question card — frosted glass */}
             <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 }}
-                className="bg-white/92 backdrop-blur-md rounded-2xl px-6 py-7"
-                style={{ border: '1px solid rgba(255,255,255,0.65)' }}
+                className="bg-white/25 backdrop-blur-sm rounded-2xl px-6 py-7"
+                style={{ border: '1px solid rgba(255,255,255,0.45)' }}
             >
-                <p className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-2">
-                    {question.title}
-                </p>
                 <p className="text-[#1D1D1F] leading-snug" style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em' }}>
                     {intro}
                 </p>

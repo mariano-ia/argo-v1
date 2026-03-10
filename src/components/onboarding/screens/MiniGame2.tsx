@@ -7,13 +7,33 @@ interface Props {
 
 const DURATION_MS = 15000;
 
-// Generates positions for star-of-sea icons along a sine wave
 const STARS = Array.from({ length: 6 }, (_, i) => ({
     id: i,
-    x: 10 + i * 15,   // % across the screen
-    y: 50 + Math.sin(i * 1.2) * 25, // % vertical (sine wave)
+    x: 10 + i * 15,
+    y: 50 + Math.sin(i * 1.2) * 25,
     delay: i * 0.4,
 }));
+
+// ─── SVG Boat ─────────────────────────────────────────────────────────────────
+
+const MiniBoatSVG: React.FC = () => (
+    <svg width="38" height="32" viewBox="0 0 38 32" fill="none">
+        <path d="M19 2 L32 22 L19 22 Z" fill="white" opacity="0.95" />
+        <path d="M19 7 L8 20 L19 20 Z" fill="white" opacity="0.75" />
+        <line x1="19" y1="1" x2="19" y2="24" stroke="#C8A870" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M4 22 Q19 30 34 22" stroke="#A07830" strokeWidth="2" fill="#8B6520" fillOpacity="0.75" strokeLinecap="round" />
+    </svg>
+);
+
+// ─── Star sparkle SVG ─────────────────────────────────────────────────────────
+
+const SparkSVG: React.FC = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M7 1 L8.2 5.2 L13 7 L8.2 8.8 L7 13 L5.8 8.8 L1 7 L5.8 5.2 Z" fill="#F59E0B" opacity="0.88" />
+    </svg>
+);
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export const MiniGame2: React.FC<Props> = ({ onComplete }) => {
     const [elapsed, setElapsed] = useState(0);
@@ -72,24 +92,24 @@ export const MiniGame2: React.FC<Props> = ({ onComplete }) => {
                     </motion.div>
                 ))}
 
-                {/* Stars of the sea */}
+                {/* Sparkles (replaces ⭐) */}
                 {STARS.map(star => (
                     <motion.div
                         key={star.id}
-                        className="absolute text-lg"
+                        className="absolute"
                         style={{ left: `${star.x}%`, top: `${star.y}%` }}
                         initial={{ opacity: 0, scale: 0 }}
                         animate={{ opacity: [0, 1, 0], scale: [0, 1.2, 0] }}
                         transition={{ delay: star.delay + elapsed / 1000 * 0.1, duration: 1.5, repeat: Infinity, repeatDelay: 3 }}
                     >
-                        ⭐
+                        <SparkSVG />
                     </motion.div>
                 ))}
 
-                {/* Ship */}
+                {/* Boat (replaces ⛵) */}
                 <motion.div
-                    className="absolute text-3xl"
-                    style={{ top: '35%' }}
+                    className="absolute"
+                    style={{ top: '28%' }}
                     animate={{
                         x: ['8%', '82%'],
                         y: [0, -8, 0, -5, 0],
@@ -99,7 +119,7 @@ export const MiniGame2: React.FC<Props> = ({ onComplete }) => {
                         y: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' },
                     }}
                 >
-                    ⛵
+                    <MiniBoatSVG />
                 </motion.div>
             </div>
 
@@ -118,7 +138,7 @@ export const MiniGame2: React.FC<Props> = ({ onComplete }) => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="text-sm font-semibold text-green-600"
                 >
-                    El mar vuelve a estar en calma. ¡Buen trabajo, navegante! ⚓
+                    El mar vuelve a estar en calma. ¡Buen trabajo, navegante!
                 </motion.p>
             )}
         </motion.div>

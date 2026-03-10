@@ -121,7 +121,14 @@ export const AdultReport: React.FC<Props> = ({
                         </motion.div>
                     )}
                     {(emailStatus === 'error' || emailStatus === 'idle') && (
-                        <span className="text-4xl">⚓</span>
+                        <svg width="42" height="42" viewBox="0 0 24 24" fill="none"
+                            stroke="#424245" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="5" r="2" />
+                            <line x1="12" y1="7" x2="12" y2="20" />
+                            <path d="M5 12 C5 17 19 17 19 12" />
+                            <line x1="5" y1="12" x2="9" y2="12" />
+                            <line x1="15" y1="12" x2="19" y2="12" />
+                        </svg>
                     )}
                 </motion.div>
 
