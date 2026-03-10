@@ -192,7 +192,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
             {/* Boat */}
             <motion.div
                 className="absolute pointer-events-none"
-                style={{ left: '12%', top: '51%' }}
+                style={{ left: '12%', top: 'calc(57% - 44px)' }}
                 animate={{
                     y:      airborne ? -130 : [0, -8, 0, -5, 0],
                     rotate: airborne ? -18  : [0, 3, 0, -3, 0],
@@ -213,7 +213,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                     <motion.div
                         key={obs.id}
                         className="absolute pointer-events-none"
-                        style={{ top: '53%', left: 0 }}
+                        style={{ top: 'calc(57% - 34px)', left: 0 }}
                         initial={{ x: 800 }}
                         animate={{ x: -120 }}
                         transition={{ duration: obs.duration, ease: 'linear' }}

@@ -24,19 +24,18 @@ export const StorySlide: React.FC<Props> = ({
         return (
             <motion.div
                 key={slide.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                className="relative w-full min-h-[78vh] flex flex-col justify-end"
+                initial={{ opacity: 0, x: 40 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -40 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                className="flex flex-col gap-5 max-w-lg mx-auto w-full"
             >
-                {/* Floating content card — landing design system */}
                 <motion.div
-                    initial={{ opacity: 0, y: 24 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2, duration: 0.5, ease: [0.25, 0, 0, 1] }}
-                    className="bg-white/92 backdrop-blur-md rounded-2xl p-7 space-y-4"
-                    style={{ border: '1px solid rgba(255,255,255,0.65)' }}
+                    transition={{ delay: 0.05 }}
+                    className="bg-white/25 backdrop-blur-sm rounded-2xl px-6 py-7 space-y-4"
+                    style={{ border: '1px solid rgba(255,255,255,0.45)' }}
                 >
                     {slide.title && (
                         <h2
@@ -46,7 +45,7 @@ export const StorySlide: React.FC<Props> = ({
                             {slide.title}
                         </h2>
                     )}
-                    <p style={{ fontWeight: 400, fontSize: '15px', color: '#424245', lineHeight: 1.7 }}>
+                    <p style={{ fontWeight: 400, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.7, opacity: 0.85 }}>
                         {body}
                     </p>
                     <motion.button

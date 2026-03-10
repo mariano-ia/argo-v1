@@ -181,7 +181,7 @@ export const AdultReport: React.FC<Props> = ({
                         </span>
                     ) : (
                         <span className="text-[#424245] flex items-center gap-1.5">
-                            <Sparkles size={11} /> Generado con inteligencia artificial
+                            <Sparkles size={11} /> Generado por ArgoEngine
                         </span>
                     )}
                 </div>

@@ -37,29 +37,18 @@ const OPTION_STYLES = [
     },
 ] as const;
 
-// ─── SVG Boat (replaces ⛵ emoji) ───────────────────────────────────────────────
-
-const ProgressBoat: React.FC = () => (
-    <svg width="22" height="18" viewBox="0 0 22 18" fill="none">
-        <path d="M11 1 L18 11 L11 11 Z" fill="#1D1D1F" opacity="0.85" />
-        <path d="M11 4 L5 10 L11 10 Z" fill="#1D1D1F" opacity="0.60" />
-        <line x1="11" y1="1" x2="11" y2="13" stroke="#1D1D1F" strokeWidth="1.2" strokeLinecap="round" />
-        <path d="M2 12 Q11 17 20 12" stroke="#1D1D1F" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    </svg>
-);
-
-// ─── Ship Progress Bar ─────────────────────────────────────────────────────────
+// ─── Progress Bar ──────────────────────────────────────────────────────────────
 
 const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, total }) => {
     const pct = total > 1 ? (current / (total - 1)) * 100 : 0;
 
     return (
         <div className="space-y-2">
-            <div className="relative h-8 flex items-center">
+            <div className="relative h-5 flex items-center">
                 {/* Track */}
-                <div className="absolute inset-x-0 h-1.5 rounded-full bg-white/30 overflow-hidden">
+                <div className="absolute inset-x-0 h-1 rounded-full bg-white/25 overflow-hidden">
                     <motion.div
-                        className="h-full bg-white/70 rounded-full"
+                        className="h-full bg-white/65 rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${pct}%` }}
                         transition={{ type: 'spring', stiffness: 100, damping: 18 }}
@@ -74,30 +63,25 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
                     return (
                         <div
                             key={i}
-                            className="absolute top-1/2 -translate-y-1/2"
-                            style={{ left: `${pos}%`, transform: `translate(-50%, -50%)` }}
+                            className="absolute top-1/2"
+                            style={{ left: `${pos}%`, transform: 'translate(-50%, -50%)' }}
                         >
-                            <div className={`
-                                rounded-full border-2 transition-all duration-300
-                                ${done    ? 'w-2.5 h-2.5 bg-white/80 border-white/80'
-                                : active  ? 'w-3.5 h-3.5 bg-white border-white/60 shadow-md shadow-black/10'
-                                :           'w-2 h-2 bg-white/25 border-white/30'}
-                            `} />
+                            <motion.div
+                                animate={{
+                                    width:  active ? 14 : done ? 10 : 8,
+                                    height: active ? 14 : done ? 10 : 8,
+                                    backgroundColor: active
+                                        ? 'rgba(255,255,255,1)'
+                                        : done
+                                        ? 'rgba(255,255,255,0.75)'
+                                        : 'rgba(255,255,255,0.2)',
+                                }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                                className="rounded-full"
+                            />
                         </div>
                     );
                 })}
-
-                {/* SVG boat that moves */}
-                <motion.div
-                    className="absolute top-1/2 pointer-events-none"
-                    style={{ translateY: '-50%' }}
-                    animate={{ left: `${pct}%` }}
-                    transition={{ type: 'spring', stiffness: 100, damping: 18 }}
-                >
-                    <div className="-translate-x-1/2 block select-none" style={{ transform: 'translateX(-50%)' }}>
-                        <ProgressBoat />
-                    </div>
-                </motion.div>
             </div>
 
             <p className="text-center text-[11px] font-medium text-[#1D1D1F]/55 uppercase tracking-widest">
