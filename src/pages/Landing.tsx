@@ -245,9 +245,8 @@ export const Landing: React.FC = () => {
 
             </section>
 
-            <Divider />
-
             {/* ── EL MITO ── */}
+            <div style={{ backgroundColor: '#E3E3FF' }}>
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
                     <motion.div {...fadeUp(0)}>
@@ -256,8 +255,8 @@ export const Landing: React.FC = () => {
                         </SectionLabel>
                         <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
                             {lang === 'es'
-                                ? '50 especialistas. Una sola misión.'
-                                : '50 specialists. One single mission.'}
+                                ? <>50 especialistas.<br />Una sola misión.</>
+                                : <>50 specialists.<br />One single mission.</>}
                         </h2>
                     </motion.div>
 
@@ -275,6 +274,7 @@ export const Landing: React.FC = () => {
                     </motion.div>
                 </div>
             </section>
+            </div>
 
             <Divider />
 
@@ -545,7 +545,7 @@ export const Landing: React.FC = () => {
             </section>
 
             {/* ── FOOTER ── */}
-            <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-10">
+            <footer style={{ borderTop: '1px solid #D2D2D7', backgroundColor: '#E3E3FF' }} className="py-10">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
@@ -561,6 +561,10 @@ export const Landing: React.FC = () => {
                     <div style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', letterSpacing: '0.06em' }}
                          className="flex items-center gap-6 uppercase">
                         <span>v{APP_VERSION}</span>
+                        <a href="https://www.yacare.io" target="_blank" rel="noopener noreferrer"
+                           className="hover:text-argo-navy transition-colors" style={{ textDecoration: 'none' }}>
+                            Yacaré Lab
+                        </a>
                         <span>© 2025 Argo.</span>
                         <button
                             onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
