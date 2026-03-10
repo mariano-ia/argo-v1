@@ -2,6 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search, Download, Trash2 } from 'lucide-react';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type RowStatus = 'completed' | 'registered';
+
+interface UnifiedRow {
+    id: string;
+    created_at: string;
+    email: string;
+    status: RowStatus;
+    // completed-only fields
+    adult_name?: string;
+    child_name?: string;
+    child_age?: number;
+    sport?: string;
+    eje?: string;
+    motor?: string;
+    archetype_label?: string;
+    ai_cost_usd?: number;
+}
+
+// Raw Supabase shapes
 interface SessionRow {
     id: string;
     created_at: string;
@@ -16,6 +37,13 @@ interface SessionRow {
     ai_cost_usd: number;
 }
 
+interface LeadRow {
+    email: string;
+    last_seen: string;
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 const EJE_COLOR: Record<string, string> = {
     D: 'bg-red-100 text-red-700',
     I: 'bg-amber-100 text-amber-700',
@@ -23,28 +51,68 @@ const EJE_COLOR: Record<string, string> = {
     C: 'bg-blue-100 text-blue-700',
 };
 
+function mergeRows(sessions: SessionRow[], leads: LeadRow[]): UnifiedRow[] {
+    const sessionEmails = new Set(sessions.map(s => s.adult_email?.toLowerCase()));
+
+    const completedRows: UnifiedRow[] = sessions.map(s => ({
+        id: s.id,
+        created_at: s.created_at,
+        email: s.adult_email,
+        status: 'completed',
+        adult_name: s.adult_name,
+        child_name: s.child_name,
+        child_age: s.child_age,
+        sport: s.sport,
+        eje: s.eje,
+        motor: s.motor,
+        archetype_label: s.archetype_label,
+        ai_cost_usd: s.ai_cost_usd,
+    }));
+
+    const registeredRows: UnifiedRow[] = leads
+        .filter(l => !sessionEmails.has(l.email?.toLowerCase()))
+        .map(l => ({
+            id: `lead::${l.email}`,
+            created_at: l.last_seen,
+            email: l.email,
+            status: 'registered',
+        }));
+
+    return [...completedRows, ...registeredRows]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export const Sessions: React.FC = () => {
-    const [rows, setRows]       = useState<SessionRow[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [search, setSearch]   = useState('');
-    const [page, setPage]       = useState(0);
+    const [rows, setRows]             = useState<UnifiedRow[]>([]);
+    const [loading, setLoading]       = useState(true);
+    const [search, setSearch]         = useState('');
+    const [page, setPage]             = useState(0);
+    const [confirmingId, setConfirmingId] = useState<string | null>(null);
     const PAGE_SIZE = 20;
 
     useEffect(() => {
-        const fetch = async () => {
+        const load = async () => {
             setLoading(true);
-            const { data } = await supabase
-                .from('sessions')
-                .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,archetype_label,ai_cost_usd')
-                .order('created_at', { ascending: false });
-            setRows(data ?? []);
+            const [{ data: sessions }, { data: leads }] = await Promise.all([
+                supabase
+                    .from('sessions')
+                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,archetype_label,ai_cost_usd')
+                    .order('created_at', { ascending: false }),
+                supabase
+                    .from('leads')
+                    .select('email,last_seen')
+                    .order('last_seen', { ascending: false }),
+            ]);
+            setRows(mergeRows(sessions ?? [], leads ?? []));
             setLoading(false);
         };
-        fetch();
+        load();
     }, []);
 
     const filtered = rows.filter(r =>
-        [r.adult_name, r.adult_email, r.child_name, r.archetype_label]
+        [r.email, r.adult_name, r.child_name, r.archetype_label]
             .some(v => v?.toLowerCase().includes(search.toLowerCase()))
     );
 
@@ -54,27 +122,38 @@ export const Sessions: React.FC = () => {
     const fmt = (iso: string) =>
         new Date(iso).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' });
 
-    const deleteRow = async (id: string) => {
-        setRows(prev => prev.filter(r => r.id !== id));
-        await supabase.from('sessions').delete().eq('id', id);
+    const deleteRow = async (row: UnifiedRow) => {
+        setConfirmingId(null);
+        let error: unknown = null;
+
+        if (row.status === 'completed') {
+            ({ error } = await supabase.from('sessions').delete().eq('id', row.id));
+        } else {
+            ({ error } = await supabase.from('leads').delete().eq('email', row.email));
+        }
+
+        if (!error) {
+            setRows(prev => prev.filter(r => r.id !== row.id));
+        }
     };
 
     const exportCSV = () => {
-        const headers = ['Fecha', 'Adulto', 'Email', 'Niño', 'Edad', 'Deporte', 'Arquetipo', 'Eje', 'Motor', 'Costo IA'];
+        const headers = ['Fecha', 'Email', 'Estado', 'Adulto', 'Niño', 'Edad', 'Deporte', 'Arquetipo', 'Eje', 'Motor', 'Costo IA'];
         const csvRows = [
             headers.join(','),
             ...filtered.map(r => [
                 fmt(r.created_at),
-                r.adult_name,
-                r.adult_email,
-                r.child_name,
-                r.child_age,
-                r.sport || '',
-                r.archetype_label,
-                r.eje,
-                r.motor,
-                r.ai_cost_usd > 0 ? r.ai_cost_usd.toFixed(4) : '0',
-            ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')),
+                r.email,
+                r.status === 'completed' ? 'Completó' : 'Solo se registró',
+                r.adult_name ?? '',
+                r.child_name ?? '',
+                r.child_age ?? '',
+                r.sport ?? '',
+                r.archetype_label ?? '',
+                r.eje ?? '',
+                r.motor ?? '',
+                r.ai_cost_usd != null && r.ai_cost_usd > 0 ? r.ai_cost_usd.toFixed(4) : '',
+            ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')),
         ];
         const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
@@ -85,12 +164,17 @@ export const Sessions: React.FC = () => {
         URL.revokeObjectURL(url);
     };
 
+    const completedCount   = rows.filter(r => r.status === 'completed').length;
+    const registeredCount  = rows.filter(r => r.status === 'registered').length;
+
     return (
         <div>
             <div className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Sesiones</h1>
-                    <p className="text-sm text-argo-grey mt-0.5">{rows.length} sesiones totales</p>
+                    <p className="text-sm text-argo-grey mt-0.5">
+                        {completedCount} completadas · {registeredCount} solo se registraron
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <div className="relative">
@@ -124,10 +208,10 @@ export const Sessions: React.FC = () => {
                                 <thead>
                                     <tr className="bg-argo-neutral border-b border-argo-border text-[10px] uppercase tracking-widest text-argo-grey">
                                         <th className="text-left px-5 py-3 font-semibold">Fecha</th>
-                                        <th className="text-left px-5 py-3 font-semibold">Adulto</th>
                                         <th className="text-left px-5 py-3 font-semibold">Email</th>
+                                        <th className="text-left px-5 py-3 font-semibold">Estado</th>
+                                        <th className="text-left px-5 py-3 font-semibold">Adulto</th>
                                         <th className="text-left px-5 py-3 font-semibold">Niño</th>
-                                        <th className="text-left px-5 py-3 font-semibold">Edad</th>
                                         <th className="text-left px-5 py-3 font-semibold">Deporte</th>
                                         <th className="text-left px-5 py-3 font-semibold">Arquetipo</th>
                                         <th className="text-left px-5 py-3 font-semibold">Eje</th>
@@ -151,29 +235,58 @@ export const Sessions: React.FC = () => {
                                             }`}
                                         >
                                             <td className="px-5 py-3 text-argo-grey whitespace-nowrap">{fmt(row.created_at)}</td>
-                                            <td className="px-5 py-3 font-semibold text-argo-navy whitespace-nowrap">{row.adult_name}</td>
-                                            <td className="px-5 py-3 text-argo-grey">{row.adult_email}</td>
-                                            <td className="px-5 py-3 font-semibold text-argo-navy">{row.child_name}</td>
-                                            <td className="px-5 py-3 text-argo-grey text-center">{row.child_age}</td>
-                                            <td className="px-5 py-3 text-argo-grey">{row.sport || '—'}</td>
-                                            <td className="px-5 py-3 text-argo-navy font-medium">{row.archetype_label}</td>
+                                            <td className="px-5 py-3 text-argo-grey">{row.email}</td>
                                             <td className="px-5 py-3">
-                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${EJE_COLOR[row.eje] ?? 'bg-gray-100 text-gray-600'}`}>
-                                                    {row.eje}
-                                                </span>
+                                                {row.status === 'completed' ? (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700">
+                                                        Completó
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500">
+                                                        Solo se registró
+                                                    </span>
+                                                )}
                                             </td>
-                                            <td className="px-5 py-3 text-argo-grey">{row.motor}</td>
+                                            <td className="px-5 py-3 font-semibold text-argo-navy whitespace-nowrap">{row.adult_name ?? '—'}</td>
+                                            <td className="px-5 py-3 font-semibold text-argo-navy">{row.child_name ?? '—'}</td>
+                                            <td className="px-5 py-3 text-argo-grey">{row.sport ?? '—'}</td>
+                                            <td className="px-5 py-3 text-argo-navy font-medium">{row.archetype_label ?? '—'}</td>
+                                            <td className="px-5 py-3">
+                                                {row.eje ? (
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${EJE_COLOR[row.eje] ?? 'bg-gray-100 text-gray-600'}`}>
+                                                        {row.eje}
+                                                    </span>
+                                                ) : '—'}
+                                            </td>
+                                            <td className="px-5 py-3 text-argo-grey">{row.motor ?? '—'}</td>
                                             <td className="px-5 py-3 text-right text-argo-grey font-mono text-xs">
-                                                {row.ai_cost_usd > 0 ? `$${row.ai_cost_usd.toFixed(4)}` : '—'}
+                                                {row.ai_cost_usd && row.ai_cost_usd > 0 ? `$${row.ai_cost_usd.toFixed(4)}` : '—'}
                                             </td>
-                                            <td className="px-5 py-3 text-right">
-                                                <button
-                                                    onClick={() => deleteRow(row.id)}
-                                                    className="text-argo-grey/40 hover:text-red-500 transition-colors p-1"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
+                                            <td className="px-5 py-3 text-right whitespace-nowrap">
+                                                {confirmingId === row.id ? (
+                                                    <span className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => deleteRow(row)}
+                                                            className="text-xs font-semibold text-red-500 hover:text-red-700 transition-colors"
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setConfirmingId(null)}
+                                                            className="text-xs text-argo-grey hover:text-argo-navy transition-colors"
+                                                        >
+                                                            Cancelar
+                                                        </button>
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setConfirmingId(row.id)}
+                                                        className="text-argo-grey/40 hover:text-red-500 transition-colors p-1"
+                                                        title="Eliminar"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}
@@ -182,7 +295,6 @@ export const Sessions: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex items-center justify-between mt-4">
                             <span className="text-xs text-argo-grey">

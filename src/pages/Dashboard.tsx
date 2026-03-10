@@ -3,12 +3,11 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, LogOut, Anchor, Menu, Mail,
+    Users, BarChart2, HelpCircle, LogOut, Anchor, Menu,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
     { to: '/dashboard/sessions',  label: 'Sesiones',  icon: Users },
-    { to: '/dashboard/leads',     label: 'Leads',     icon: Mail },
     { to: '/dashboard/metrics',   label: 'Métricas',  icon: BarChart2 },
     { to: '/dashboard/questions', label: 'Preguntas', icon: HelpCircle },
 ];

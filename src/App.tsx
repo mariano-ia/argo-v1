@@ -6,7 +6,6 @@ import { Landing }         from './pages/Landing';
 import { Login }           from './pages/Login';
 import { Dashboard }       from './pages/Dashboard';
 import { Sessions }        from './pages/dashboard/Sessions';
-import { Leads }           from './pages/dashboard/Leads';
 import { Metrics }         from './pages/dashboard/Metrics';
 import { QuestionsAdmin }  from './pages/dashboard/QuestionsAdmin';
 import { ProtectedRoute }  from './components/ProtectedRoute';
@@ -113,7 +112,6 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
                 <Route index element={<Sessions />} />
                 <Route path="sessions"  element={<Sessions />} />
-                <Route path="leads"     element={<Leads />} />
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
             </Route>
