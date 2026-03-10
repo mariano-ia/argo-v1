@@ -177,7 +177,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {lang === 'es' ? 'Descubrí su sintonía' : 'Discover their synergy'}
+                            {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
                         </button>
                     </div>
                 </div>
@@ -231,7 +231,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {lang === 'es' ? 'Descubrí su sintonía' : 'Discover their synergy'}
+                        {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -533,7 +533,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {lang === 'es' ? 'Comenzar la Odisea' : 'Begin the Odyssey'}
+                        {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>
