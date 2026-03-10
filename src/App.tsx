@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
+import type { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabase';
 import { Landing }         from './pages/Landing';
 import { Login }           from './pages/Login';
 import { Dashboard }       from './pages/Dashboard';
@@ -7,13 +10,94 @@ import { Metrics }         from './pages/dashboard/Metrics';
 import { QuestionsAdmin }  from './pages/dashboard/QuestionsAdmin';
 import { ProtectedRoute }  from './components/ProtectedRoute';
 import { OnboardingFlow }  from './components/onboarding/OnboardingFlow';
+import { UserAuthGate }    from './components/onboarding/UserAuthGate';
+
+const MAX_PLAYS = 3;
+
+// ─── Blocked screen ───────────────────────────────────────────────────────────
+
+const BlockedView: React.FC = () => (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
+         style={{ backgroundColor: '#F5F5F7', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ maxWidth: '360px' }}>
+            <div className="flex items-center justify-center gap-1.5 mb-8">
+                <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                    <span style={{ fontWeight: 100 }}>Argo</span><span style={{ fontWeight: 800 }}> Method</span>
+                </span>
+                <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                    beta
+                </span>
+            </div>
+            <h2 style={{ fontWeight: 300, fontSize: '24px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+                Ya completaste tus {MAX_PLAYS} experiencias
+            </h2>
+            <p style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.7 }}>
+                Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitás más sesiones, contactanos.
+            </p>
+        </div>
+    </div>
+);
+
+// ─── User app wrapper (auth + play limit) ─────────────────────────────────────
+
+const UserApp: React.FC = () => {
+    // undefined = still loading, null = not logged in, Session = logged in
+    const [session, setSession] = useState<Session | null | undefined>(undefined);
+    const [blocked, setBlocked] = useState(false);
+
+    const checkBlocked = (s: Session) => {
+        const count = (s.user.user_metadata?.play_count ?? 0) as number;
+        setBlocked(count >= MAX_PLAYS);
+    };
+
+    useEffect(() => {
+        // Initial session check
+        supabase.auth.getSession().then(({ data }) => {
+            const s = data.session ?? null;
+            setSession(s);
+            if (s) checkBlocked(s);
+        });
+
+        // Listen for auth state changes (Google OAuth redirect, sign in/out)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
+            setSession(s ?? null);
+            if (s) checkBlocked(s);
+        });
+
+        return () => subscription.unsubscribe();
+    }, []);
+
+    const onPlayComplete = async () => {
+        if (!session) return;
+        const current = (session.user.user_metadata?.play_count ?? 0) as number;
+        await supabase.auth.updateUser({ data: { play_count: current + 1 } });
+    };
+
+    // Still loading
+    if (session === undefined) return null;
+
+    // Not logged in → show auth gate
+    if (!session) return <UserAuthGate onAuthenticated={() => { /* onAuthStateChange handles update */ }} />;
+
+    // Play limit reached
+    if (blocked) return <BlockedView />;
+
+    return (
+        <OnboardingFlow
+            userEmail={session.user.email ?? ''}
+            onPlayComplete={onPlayComplete}
+        />
+    );
+};
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
     return (
         <Routes>
             {/* Public */}
-            <Route path="/"    element={<Landing />} />
-            <Route path="/app" element={<OnboardingFlow />} />
+            <Route path="/"      element={<Landing />} />
+            <Route path="/app"   element={<UserApp />} />
             <Route path="/login" element={<Login />} />
 
             {/* Protected dashboard */}

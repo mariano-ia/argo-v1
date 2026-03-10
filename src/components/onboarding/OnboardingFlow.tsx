@@ -192,15 +192,21 @@ const SCREENS: ScreenDef[] = [
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const OnboardingFlow: React.FC = () => {
+interface OnboardingProps {
+    userEmail?: string;
+    onPlayComplete?: () => void;
+}
+
+export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPlayComplete }) => {
     const { questions } = useQuestions();
     const [screenIndex, setScreenIndex] = useState(0);
     const [adultData, setAdultData]     = useState<AdultData | null>(null);
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [aiSections, setAiSections]   = useState<AISections | null>(null);
     const [aiLoading, setAiLoading]     = useState(false);
-    const reportRef  = useRef<ReturnType<typeof getReportData> | null>(null);
-    const profileRef = useRef<{ eje: string; motor: string } | null>(null);
+    const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
+    const profileRef       = useRef<{ eje: string; motor: string } | null>(null);
+    const playCountedRef   = useRef(false);
 
     const advance = () => setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
 
@@ -257,6 +263,12 @@ export const OnboardingFlow: React.FC = () => {
                 }
             })
             .finally(() => setAiLoading(false));
+
+        // Increment play count once per session
+        if (!playCountedRef.current) {
+            playCountedRef.current = true;
+            onPlayComplete?.();
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screenIndex]);
 
@@ -309,6 +321,7 @@ export const OnboardingFlow: React.FC = () => {
                 {screen.type === 'adult-registration' && (
                     <AdultRegistration
                         key="adult-reg"
+                        userEmail={userEmail}
                         onComplete={data => { setAdultData(data); advance(); }}
                     />
                 )}

@@ -239,7 +239,7 @@ export const Landing: React.FC = () => {
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
-                        {lang === 'es' ? '10 min · Gratis · Sin cuenta' : '10 min · Free · No account'}
+                        {lang === 'es' ? '10 minutos para comprender mejor a tu pequeño atleta' : '10 minutes to better understand your young athlete'}
                     </span>
                 </motion.div>
 

@@ -11,6 +11,7 @@ interface AdultData {
 }
 
 interface Props {
+    userEmail?: string;
     onComplete: (data: AdultData) => void;
 }
 
@@ -25,9 +26,8 @@ const CHECKS = [
     () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
 ];
 
-export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
+export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete }) => {
     const [nombreAdulto, setNombreAdulto] = useState('');
-    const [email, setEmail]               = useState('');
     const [nombreNino, setNombreNino]     = useState('');
     const [edad, setEdad]                 = useState(10);
     const [deporte, setDeporte]           = useState('');
@@ -38,7 +38,6 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
 
     const isValid =
         nombreAdulto.trim() &&
-        email.includes('@') &&
         nombreNino.trim() &&
         deporteFinal.trim() &&
         checks.every(Boolean);
@@ -51,7 +50,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
         if (!isValid) return;
         onComplete({
             nombreAdulto: nombreAdulto.trim(),
-            email: email.trim(),
+            email: userEmail,
             nombreNino: nombreNino.trim(),
             edad,
             deporte: deporteFinal.trim(),
@@ -72,8 +71,7 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
                     Tus datos y los del deportista
                 </h2>
                 <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
-                    Estos datos nos permiten personalizar el informe y enviártelo al email que indiques.
-                    Completá todo antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
+                    El informe llegará a <strong>{userEmail}</strong>. Completá estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
                 </p>
             </div>
 
@@ -81,7 +79,6 @@ export const AdultRegistration: React.FC<Props> = ({ onComplete }) => {
             <div className="space-y-4">
                 {[
                     { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Laura García', type: 'text' },
-                    { label: 'Tu email — recibirás el informe aquí', value: email, setter: setEmail, placeholder: 'correo@ejemplo.com', type: 'email' },
                     { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Mateo', type: 'text' },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">
