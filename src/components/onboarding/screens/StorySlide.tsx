@@ -34,28 +34,32 @@ export const StorySlide: React.FC<Props> = ({
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 }}
-                    className="bg-white/25 backdrop-blur-sm rounded-2xl px-6 py-7 space-y-4"
-                    style={{ border: '1px solid rgba(255,255,255,0.45)' }}
+                    className="bg-white/25 backdrop-blur-sm rounded-2xl px-6 py-7 flex flex-col"
+                    style={{ border: '1px solid rgba(255,255,255,0.45)', minHeight: '460px' }}
                 >
-                    {slide.title && (
-                        <h2
-                            className="text-[#1D1D1F] leading-tight"
-                            style={{ fontWeight: 300, fontSize: '22px', letterSpacing: '-0.02em' }}
+                    {/* Spacer pushes content to bottom */}
+                    <div className="flex-1" />
+                    <div className="space-y-4">
+                        {slide.title && (
+                            <h2
+                                className="text-[#1D1D1F] leading-tight"
+                                style={{ fontWeight: 300, fontSize: '22px', letterSpacing: '-0.02em' }}
+                            >
+                                {slide.title}
+                            </h2>
+                        )}
+                        <p style={{ fontWeight: 400, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.7, opacity: 0.85 }}>
+                            {body}
+                        </p>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={onContinue}
+                            className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm mt-1"
                         >
-                            {slide.title}
-                        </h2>
-                    )}
-                    <p style={{ fontWeight: 400, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.7, opacity: 0.85 }}>
-                        {body}
-                    </p>
-                    <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={onContinue}
-                        className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm mt-1"
-                    >
-                        {continueLabel || 'Continuar'} <ChevronRight size={16} />
-                    </motion.button>
+                            {continueLabel || 'Continuar'} <ChevronRight size={16} />
+                        </motion.button>
+                    </div>
                 </motion.div>
             </motion.div>
         );

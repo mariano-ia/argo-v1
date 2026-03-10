@@ -7,7 +7,7 @@ import { APP_VERSION } from '../lib/version';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 // #1D1D1F  text-argo-navy
-// #0071E3  text-argo-indigo  (CTA only)
+// #955FB5  (CTA only)
 // #86868B  text-argo-grey    (secondary)
 // #D2D2D7  border-argo-border
 // #F5F5F7  bg-argo-neutral
@@ -172,7 +172,7 @@ export const Landing: React.FC = () => {
                             onClick={() => navigate('/app')}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
-                                backgroundColor: '#0071E3', color: '#fff',
+                                backgroundColor: '#955FB5', color: '#fff',
                                 borderRadius: '8px', padding: '6px 16px',
                             }}
                             className="hover:opacity-90 transition-opacity"
@@ -223,7 +223,7 @@ export const Landing: React.FC = () => {
                         onClick={() => navigate('/app')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
-                            backgroundColor: '#0071E3', color: '#fff',
+                            backgroundColor: '#955FB5', color: '#fff',
                             fontWeight: 500, fontSize: '15px', letterSpacing: '-0.01em',
                             borderRadius: '8px', padding: '14px 28px',
                             border: 'none', cursor: 'pointer',
@@ -526,7 +526,7 @@ export const Landing: React.FC = () => {
                         onClick={() => navigate('/app')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '10px',
-                            backgroundColor: '#0071E3', color: '#fff',
+                            backgroundColor: '#955FB5', color: '#fff',
                             fontWeight: 500, fontSize: '16px', letterSpacing: '-0.01em',
                             borderRadius: '8px', padding: '16px 36px',
                             border: 'none', cursor: 'pointer',

@@ -43,8 +43,7 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
     const pct = total > 1 ? (current / (total - 1)) * 100 : 0;
 
     return (
-        <div className="space-y-2">
-            <div className="relative h-5 flex items-center">
+        <div className="relative h-5 flex items-center">
                 {/* Track */}
                 <div className="absolute inset-x-0 h-1 rounded-full bg-white/25 overflow-hidden">
                     <motion.div
@@ -83,11 +82,6 @@ const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, t
                     );
                 })}
             </div>
-
-            <p className="text-center text-[11px] font-medium text-[#1D1D1F]/55 uppercase tracking-widest">
-                Decisión {current + 1} de {total}
-            </p>
-        </div>
     );
 };
 
