@@ -6,6 +6,7 @@ import { Landing }         from './pages/Landing';
 import { Login }           from './pages/Login';
 import { Dashboard }       from './pages/Dashboard';
 import { Sessions }        from './pages/dashboard/Sessions';
+import { Leads }           from './pages/dashboard/Leads';
 import { Metrics }         from './pages/dashboard/Metrics';
 import { QuestionsAdmin }  from './pages/dashboard/QuestionsAdmin';
 import { ProtectedRoute }  from './components/ProtectedRoute';
@@ -50,18 +51,26 @@ const UserApp: React.FC = () => {
         setBlocked(count >= MAX_PLAYS);
     };
 
+    const upsertLead = async (s: Session) => {
+        if (!s.user.email) return;
+        await supabase.from('leads').upsert(
+            { user_id: s.user.id, email: s.user.email, last_seen: new Date().toISOString() },
+            { onConflict: 'user_id' },
+        );
+    };
+
     useEffect(() => {
         // Initial session check
         supabase.auth.getSession().then(({ data }) => {
             const s = data.session ?? null;
             setSession(s);
-            if (s) checkBlocked(s);
+            if (s) { checkBlocked(s); upsertLead(s); }
         });
 
         // Listen for auth state changes (Google OAuth redirect, sign in/out)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
             setSession(s ?? null);
-            if (s) checkBlocked(s);
+            if (s) { checkBlocked(s); upsertLead(s); }
         });
 
         return () => subscription.unsubscribe();
@@ -104,6 +113,7 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
                 <Route index element={<Sessions />} />
                 <Route path="sessions"  element={<Sessions />} />
+                <Route path="leads"     element={<Leads />} />
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
             </Route>
