@@ -217,8 +217,13 @@ interface LangContextValue {
 
 const LangContext = createContext<LangContextValue | null>(null);
 
+function getBrowserLang(): Lang {
+    const nav = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
+    return nav.startsWith('es') ? 'es' : 'en';
+}
+
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [lang, setLang] = useState<Lang>('es');
+    const [lang, setLang] = useState<Lang>(getBrowserLang);
     const t = translations[lang] as LangTranslations;
     return <LangContext.Provider value={{ lang, setLang, t }}>{children}</LangContext.Provider>;
 };

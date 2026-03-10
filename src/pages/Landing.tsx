@@ -21,47 +21,71 @@ const fadeUp = (delay = 0) => ({
 
 // ─── Twelve archetypes ───────────────────────────────────────────────────────
 const ARCHETYPES = [
-    { label: 'Impulsor Dinámico',    motor: 'Dinámico', eje: 'D' },
-    { label: 'Impulsor Rítmico',     motor: 'Rítmico',  eje: 'D' },
-    { label: 'Impulsor Sereno',      motor: 'Sereno',   eje: 'D' },
-    { label: 'Conector Dinámico',    motor: 'Dinámico', eje: 'I' },
-    { label: 'Conector Rítmico',     motor: 'Rítmico',  eje: 'I' },
-    { label: 'Conector Sereno',      motor: 'Sereno',   eje: 'I' },
-    { label: 'Sostenedor Dinámico',  motor: 'Dinámico', eje: 'S' },
-    { label: 'Sostenedor Rítmico',   motor: 'Rítmico',  eje: 'S' },
-    { label: 'Sostenedor Sereno',    motor: 'Sereno',   eje: 'S' },
-    { label: 'Estratega Dinámico',   motor: 'Dinámico', eje: 'C' },
-    { label: 'Estratega Rítmico',    motor: 'Rítmico',  eje: 'C' },
-    { label: 'Estratega Observador', motor: 'Sereno',   eje: 'C' },
+    { labelEs: 'Impulsor Dinámico',    labelEn: 'Dynamic Driver',        motorEs: 'Dinámico', motorEn: 'Fast',     eje: 'D' },
+    { labelEs: 'Impulsor Rítmico',     labelEn: 'Rhythmic Driver',       motorEs: 'Rítmico',  motorEn: 'Rhythmic', eje: 'D' },
+    { labelEs: 'Impulsor Sereno',      labelEn: 'Serene Driver',         motorEs: 'Sereno',   motorEn: 'Serene',   eje: 'D' },
+    { labelEs: 'Conector Dinámico',    labelEn: 'Dynamic Connector',     motorEs: 'Dinámico', motorEn: 'Fast',     eje: 'I' },
+    { labelEs: 'Conector Rítmico',     labelEn: 'Rhythmic Connector',    motorEs: 'Rítmico',  motorEn: 'Rhythmic', eje: 'I' },
+    { labelEs: 'Conector Sereno',      labelEn: 'Serene Connector',      motorEs: 'Sereno',   motorEn: 'Serene',   eje: 'I' },
+    { labelEs: 'Sostenedor Dinámico',  labelEn: 'Dynamic Sustainer',     motorEs: 'Dinámico', motorEn: 'Fast',     eje: 'S' },
+    { labelEs: 'Sostenedor Rítmico',   labelEn: 'Rhythmic Sustainer',    motorEs: 'Rítmico',  motorEn: 'Rhythmic', eje: 'S' },
+    { labelEs: 'Sostenedor Sereno',    labelEn: 'Serene Sustainer',      motorEs: 'Sereno',   motorEn: 'Serene',   eje: 'S' },
+    { labelEs: 'Estratega Dinámico',   labelEn: 'Dynamic Strategist',    motorEs: 'Dinámico', motorEn: 'Fast',     eje: 'C' },
+    { labelEs: 'Estratega Rítmico',    labelEn: 'Rhythmic Strategist',   motorEs: 'Rítmico',  motorEn: 'Rhythmic', eje: 'C' },
+    { labelEs: 'Estratega Observador', labelEn: 'Observant Strategist',  motorEs: 'Sereno',   motorEn: 'Serene',   eje: 'C' },
 ];
 
-// ─── Archetype descriptions ───────────────────────────────────────────────────
-const ARCHETYPE_DESCRIPTIONS: Record<string, string> = {
-    'Impulsor Dinámico':
-        'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
-    'Impulsor Rítmico':
-        'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
-    'Impulsor Sereno':
-        'Tiene la voluntad de un líder y la paciencia de un estratega. Procesa antes de actuar, pero cuando decide, lo hace con convicción absoluta. No se precipita, pero tampoco retrocede. Necesita tiempo para comprender el plan y luego libertad para ejecutarlo sin interrupciones.',
-    'Conector Dinámico':
-        'El equipo es su hábitat natural. Se activa con el contacto, el juego y la energía colectiva. Reacciona rápido y habla rápido. Su entusiasmo contagia al grupo, pero también puede dispersarse si no hay estructura que lo contenga. Necesita un entorno dinámico que no apague su llama.',
-    'Conector Rítmico':
-        'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
-    'Conector Sereno':
-        'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
-    'Sostenedor Dinámico':
-        'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
-    'Sostenedor Rítmico':
-        'La columna vertebral del equipo. No busca el protagonismo, pero sin él nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
-    'Sostenedor Sereno':
-        'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
-    'Estratega Dinámico':
-        'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
-    'Estratega Rítmico':
-        'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
-    'Estratega Observador':
-        'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. Para él, el deporte es un tablero que prefiere comprender antes de ejecutar.',
-};
+// ─── Archetype descriptions (ES + EN) ────────────────────────────────────────
+const ARCHETYPE_DESCRIPTIONS: { es: string; en: string }[] = [
+    {
+        es: 'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
+        en: 'Lives sport through action. Their energy does not wait for instructions — it needs constant movement to stay in the zone. Under pressure, they accelerate. When held back without reason, they lose their spark. Constant challenge and autonomy are their fuel.',
+    },
+    {
+        es: 'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
+        en: 'Combines a leader\'s determination with the ability to pace their energy at exactly the right moment. Not the first to leave, but never the last to arrive. Decides clearly and acts with purpose. Needs clear objectives and space to execute at their own rhythm.',
+    },
+    {
+        es: 'Tiene la voluntad de un líder y la paciencia de un estratega. Procesa antes de actuar, pero cuando decide, lo hace con convicción absoluta. No se precipita, pero tampoco retrocede. Necesita tiempo para comprender el plan y luego libertad para ejecutarlo sin interrupciones.',
+        en: 'Has a leader\'s will and a strategist\'s patience. Processes before acting, but when they decide, they do so with absolute conviction. Does not rush, but does not retreat. Needs time to understand the plan, then freedom to execute it without interruption.',
+    },
+    {
+        es: 'El equipo es su hábitat natural. Se activa con el contacto, el juego y la energía colectiva. Reacciona rápido y habla rápido. Su entusiasmo contagia al grupo, pero también puede dispersarse si no hay estructura que lo contenga. Necesita un entorno dinámico que no apague su llama.',
+        en: 'The team is their natural habitat. They activate through contact, play, and collective energy. They react fast and speak fast. Their enthusiasm is contagious, but they can also scatter if there is no structure to contain them. Needs a dynamic environment that does not dim their flame.',
+    },
+    {
+        es: 'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
+        en: 'Builds bridges with calm and conviction. Connects with everyone and knows when to speak and when to listen. Does not chase every stimulus — selects their moments to shine. Needs genuine recognition and a team where they feel they matter.',
+    },
+    {
+        es: 'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
+        en: 'Depth is not weakness — it is their silent superpower. Connects with others through listening and empathy, not noise. Observes before participating, but when they do, they leave a mark. Needs a trusting environment where the bond matters more than the result.',
+    },
+    {
+        es: 'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
+        en: 'Has the heart of the team and the feet of a sprinter. First to offer a hand and first to reach the ball. Stabilizes the group through action, not just support. Needs to feel their contribution is visible and that the team recognizes them as essential.',
+    },
+    {
+        es: 'La columna vertebral del equipo. No busca el protagonismo, pero sin él nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
+        en: 'The backbone of the team. Does not seek the spotlight, but without them nothing works. Executes with consistency, supports unconditionally, and keeps the rhythm when others falter. Needs a predictable environment and stable relationships to give their best.',
+    },
+    {
+        es: 'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
+        en: 'Calm in the eye of the storm. Processes every situation with patience and acts with a consistency few can sustain. Does not react — responds. Needs time and trust to adapt to changes, but once they do, they become the group\'s anchor.',
+    },
+    {
+        es: 'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
+        en: 'Analyzes in seconds what others take minutes to see. Combines processing speed with tactical precision — a rarity that turns every game into applied intelligence. Needs complex challenges and space to lead from analysis, without anyone interrupting their process.',
+    },
+    {
+        es: 'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
+        en: 'Thinks before speaking and speaks before acting. Their process is not slow — it is exact. Every decision is grounded in observation and judgment. Prefers quality over speed and precision over volume. Needs an environment that values analysis and does not pressure them to act before they are ready.',
+    },
+    {
+        es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. Para él, el deporte es un tablero que prefiere comprender antes de ejecutar.',
+        en: 'Their talent lies not in the speed of the run, but in the clarity of their gaze. Tends to process the environment deeply before acting, bringing calm and tactical order even under pressure. For them, sport is a board they prefer to understand before executing.',
+    },
+];
 
 const EJE_COLOR: Record<string, string> = {
     D: '#f97316',
@@ -73,36 +97,52 @@ const EJE_COLOR: Record<string, string> = {
 // ─── Rotating profiles for Sistema animation ──────────────────────────────────
 const ROTATING_PROFILES = [
     {
-        eje: 'D', ejeLabel: 'Impulsor',
-        behaviors: ['Domina', 'Decide', 'Compite'],
-        motor: 'Dinámico', motorBars: 3,
-        motorDesc: 'Responde en segundos. Necesita acción constante.',
-        archetype: 'Impulsor Dinámico',
-        archetypeDesc: 'Necesita reto constante y autonomía. Responde al feedback directo.',
+        eje: 'D',
+        ejeLabelEs: 'Impulsor',      ejeLabelEn: 'Driver',
+        behaviorsEs: ['Domina', 'Decide', 'Compite'],
+        behaviorsEn: ['Dominates', 'Decides', 'Competes'],
+        motorEs: 'Dinámico',         motorEn: 'Fast',        motorBars: 3,
+        motorDescEs: 'Responde en segundos. Necesita acción constante.',
+        motorDescEn: 'Responds in seconds. Needs constant action.',
+        archetypeEs: 'Impulsor Dinámico', archetypeEn: 'Dynamic Driver',
+        archetypeDescEs: 'Necesita reto constante y autonomía. Responde al feedback directo.',
+        archetypeDescEn: 'Needs constant challenge and autonomy. Responds to direct feedback.',
     },
     {
-        eje: 'S', ejeLabel: 'Sostenedor',
-        behaviors: ['Estabiliza', 'Cuida', 'Persiste'],
-        motor: 'Sereno', motorBars: 1,
-        motorDesc: 'Procesa en profundidad antes de actuar.',
-        archetype: 'Sostenedor Sereno',
-        archetypeDesc: 'Necesita tiempo y seguridad. Evita los cambios abruptos sin aviso.',
+        eje: 'S',
+        ejeLabelEs: 'Sostenedor',    ejeLabelEn: 'Sustainer',
+        behaviorsEs: ['Estabiliza', 'Cuida', 'Persiste'],
+        behaviorsEn: ['Stabilizes', 'Nurtures', 'Persists'],
+        motorEs: 'Sereno',           motorEn: 'Serene',      motorBars: 1,
+        motorDescEs: 'Procesa en profundidad antes de actuar.',
+        motorDescEn: 'Processes in depth before acting.',
+        archetypeEs: 'Sostenedor Sereno', archetypeEn: 'Serene Sustainer',
+        archetypeDescEs: 'Necesita tiempo y seguridad. Evita los cambios abruptos sin aviso.',
+        archetypeDescEn: 'Needs time and security. Avoids abrupt changes without warning.',
     },
     {
-        eje: 'I', ejeLabel: 'Conector',
-        behaviors: ['Influye', 'Entusiasma', 'Conecta'],
-        motor: 'Rítmico', motorBars: 2,
-        motorDesc: 'Equilibra impulso y reflexión.',
-        archetype: 'Conector Rítmico',
-        archetypeDesc: 'Se motiva con el equipo. Necesita reconocimiento y variedad.',
+        eje: 'I',
+        ejeLabelEs: 'Conector',      ejeLabelEn: 'Connector',
+        behaviorsEs: ['Influye', 'Entusiasma', 'Conecta'],
+        behaviorsEn: ['Influences', 'Enthuses', 'Connects'],
+        motorEs: 'Rítmico',          motorEn: 'Rhythmic',    motorBars: 2,
+        motorDescEs: 'Equilibra impulso y reflexión.',
+        motorDescEn: 'Balances impulse and reflection.',
+        archetypeEs: 'Conector Rítmico', archetypeEn: 'Rhythmic Connector',
+        archetypeDescEs: 'Se motiva con el equipo. Necesita reconocimiento y variedad.',
+        archetypeDescEn: 'Motivated by the team. Needs recognition and variety.',
     },
     {
-        eje: 'C', ejeLabel: 'Estratega',
-        behaviors: ['Analiza', 'Planifica', 'Precisa'],
-        motor: 'Dinámico', motorBars: 3,
-        motorDesc: 'Responde en segundos. Actúa con precisión.',
-        archetype: 'Estratega Dinámico',
-        archetypeDesc: 'Analiza rápido y necesita estructura clara. Odia la improvisación.',
+        eje: 'C',
+        ejeLabelEs: 'Estratega',     ejeLabelEn: 'Strategist',
+        behaviorsEs: ['Analiza', 'Planifica', 'Precisa'],
+        behaviorsEn: ['Analyzes', 'Plans', 'Executes'],
+        motorEs: 'Dinámico',         motorEn: 'Fast',        motorBars: 3,
+        motorDescEs: 'Responde en segundos. Actúa con precisión.',
+        motorDescEn: 'Responds in seconds. Acts with precision.',
+        archetypeEs: 'Estratega Dinámico', archetypeEn: 'Dynamic Strategist',
+        archetypeDescEs: 'Analiza rápido y necesita estructura clara. Odia la improvisación.',
+        archetypeDescEn: 'Analyzes quickly and needs clear structure. Hates improvisation.',
     },
 ];
 
@@ -145,8 +185,8 @@ export const Landing: React.FC = () => {
     const profile = ROTATING_PROFILES[profileIdx];
     const slotConf = slotConfRef.current;
 
-    // Selected archetype for description card
-    const [selectedArchetype, setSelectedArchetype] = useState<string | null>(null);
+    // Selected archetype for description card (index into ARCHETYPES)
+    const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
     return (
         <div style={{ backgroundColor: '#ffffff', color: '#1D1D1F', fontFamily: 'Inter, sans-serif' }}
@@ -339,11 +379,11 @@ export const Landing: React.FC = () => {
                                 <div className="flex items-center gap-2 mb-5">
                                     <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[profile.eje], flexShrink: 0 }} />
                                     <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                                        {profile.ejeLabel}
+                                        {lang === 'es' ? profile.ejeLabelEs : profile.ejeLabelEn}
                                     </p>
                                 </div>
                                 <div className="space-y-2">
-                                    {profile.behaviors.map(b => (
+                                    {(lang === 'es' ? profile.behaviorsEs : profile.behaviorsEn).map(b => (
                                         <div key={b} className="flex items-center gap-2">
                                             <div style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#D2D2D7', flexShrink: 0 }} />
                                             <span style={{ fontWeight: 400, fontSize: '13px', color: '#424245' }}>{b}</span>
@@ -374,11 +414,11 @@ export const Landing: React.FC = () => {
                                         }} />
                                     ))}
                                     <span style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginLeft: 6 }}>
-                                        {profile.motor}
+                                        {lang === 'es' ? profile.motorEs : profile.motorEn}
                                     </span>
                                 </div>
                                 <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
-                                    {profile.motorDesc}
+                                    {lang === 'es' ? profile.motorDescEs : profile.motorDescEn}
                                 </p>
                             </motion.div>
                         </AnimatePresence>
@@ -397,10 +437,10 @@ export const Landing: React.FC = () => {
                                 exit={{ opacity: 0, y: slotConf[2].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
                             >
                                 <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginBottom: '12px', lineHeight: 1.2 }}>
-                                    {profile.archetype}
+                                    {lang === 'es' ? profile.archetypeEs : profile.archetypeEn}
                                 </p>
                                 <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
-                                    {profile.archetypeDesc}
+                                    {lang === 'es' ? profile.archetypeDescEs : profile.archetypeDescEn}
                                 </p>
                             </motion.div>
                         </AnimatePresence>
@@ -425,21 +465,23 @@ export const Landing: React.FC = () => {
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px"
                      style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}>
-                    {ARCHETYPES.map(({ label, motor, eje }, i) => {
-                        const isSelected = selectedArchetype === label;
+                    {ARCHETYPES.map((arch, i) => {
+                        const isSelected = selectedIdx === i;
+                        const label = lang === 'es' ? arch.labelEs : arch.labelEn;
+                        const motor = lang === 'es' ? arch.motorEs : arch.motorEn;
                         return (
                             <motion.div
-                                key={label}
+                                key={i}
                                 {...fadeUp(i * 0.03)}
-                                onClick={() => setSelectedArchetype(isSelected ? null : label)}
+                                onClick={() => setSelectedIdx(isSelected ? null : i)}
                                 style={{
                                     cursor: 'pointer',
-                                    backgroundColor: isSelected ? EJE_COLOR[eje] : '#ffffff',
+                                    backgroundColor: isSelected ? EJE_COLOR[arch.eje] : '#ffffff',
                                     transition: 'background-color 0.2s ease',
                                 }}
                                 className="p-4 md:p-6"
                             >
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : EJE_COLOR[eje], marginBottom: '10px' }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : EJE_COLOR[arch.eje], marginBottom: '10px' }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
                                     {label}
                                 </p>
@@ -453,9 +495,9 @@ export const Landing: React.FC = () => {
 
                 {/* Description card */}
                 <AnimatePresence mode="wait">
-                    {selectedArchetype && (
+                    {selectedIdx !== null && (
                         <motion.div
-                            key={selectedArchetype}
+                            key={selectedIdx}
                             initial={{ opacity: 0, y: 12 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -8 }}
@@ -463,20 +505,20 @@ export const Landing: React.FC = () => {
                             style={{
                                 marginTop: '20px',
                                 padding: '28px 32px',
-                                border: `1px solid ${EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje]}40`,
-                                borderLeft: `3px solid ${EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje]}`,
+                                border: `1px solid ${EJE_COLOR[ARCHETYPES[selectedIdx].eje]}40`,
+                                borderLeft: `3px solid ${EJE_COLOR[ARCHETYPES[selectedIdx].eje]}`,
                                 borderRadius: '12px',
                                 backgroundColor: '#F5F5F7',
                             }}
                         >
                             <div className="flex items-center gap-2 mb-3">
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[ARCHETYPES.find(a => a.label === selectedArchetype)!.eje], flexShrink: 0 }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[ARCHETYPES[selectedIdx].eje], flexShrink: 0 }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: '#1D1D1F', letterSpacing: '0.02em' }}>
-                                    {selectedArchetype}
+                                    {lang === 'es' ? ARCHETYPES[selectedIdx].labelEs : ARCHETYPES[selectedIdx].labelEn}
                                 </p>
                             </div>
                             <p style={{ fontWeight: 400, fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                {ARCHETYPE_DESCRIPTIONS[selectedArchetype]}
+                                {ARCHETYPE_DESCRIPTIONS[selectedIdx][lang]}
                             </p>
                         </motion.div>
                     )}
