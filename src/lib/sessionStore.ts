@@ -7,6 +7,7 @@ interface SessionPayload {
     eje: string;
     motor: string;
     archetypeLabel: string;
+    ejeSecundario?: string;
     answers: QuestionAnswer[];
     aiUsage?: {
         tokensInput: number;
@@ -30,6 +31,7 @@ export async function saveSession(payload: SessionPayload): Promise<boolean> {
             eje:              payload.eje,
             motor:            payload.motor,
             archetype_label:  payload.archetypeLabel,
+            eje_secundario:   payload.ejeSecundario ?? null,
             answers:          payload.answers,
             ai_tokens_input:  payload.aiUsage?.tokensInput  ?? 0,
             ai_tokens_output: payload.aiUsage?.tokensOutput ?? 0,

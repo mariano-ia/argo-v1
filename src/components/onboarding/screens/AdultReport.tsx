@@ -32,66 +32,79 @@ function buildReportHtml(report: ReportData, aiSections: AISections | null): str
     // Convert plain text (possibly with \n\n paragraphs) to <p> tags
     const txt = (t: string) =>
         (t || '').split(/\n\n+/).filter(Boolean)
-            .map(p => `<p style="font-size:14px;color:#374151;line-height:1.75;margin:0 0 10px 0;">${p.trim()}</p>`)
+            .map(p => `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${p.trim()}</p>`)
             .join('');
 
     // Section wrapper
-    const section = (num: string, title: string, body: string) => `
+    const section = (title: string, body: string) => `
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-collapse:collapse;">
-  <tr><td style="padding:20px 24px;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;">
-    <p style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">${num} · ${title}</p>
+  <tr><td style="padding:20px 24px;background:#ffffff;border:1px solid #D2D2D7;border-radius:12px;">
+    <p style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">${title}</p>
     ${body}
   </td></tr>
 </table>`;
 
     // Pill tags
-    const pills = (items: string[], bg: string, color: string) =>
-        items.map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;">${p}</span>`).join('');
+    const pills = (items: string[], bg: string, color: string, dashed = false) =>
+        items.map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;${dashed ? 'border:1px dashed ' + color + ';' : ''}">${p}</span>`).join('');
 
     // Guía de Sintonía rows
     const guiaHtml = r.guia.map(row => `
-<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e5e7eb;border-radius:6px;margin-bottom:10px;border-collapse:collapse;">
-  <tr><td colspan="2" style="background:#f3f4f6;padding:8px 14px;border-bottom:1px solid #e5e7eb;">
-    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1c2e;">${row.situacion}</span>
+<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D2D2D7;border-radius:12px;margin-bottom:10px;border-collapse:collapse;">
+  <tr><td colspan="2" style="background:#F5F5F7;padding:8px 14px;border-bottom:1px solid #D2D2D7;">
+    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;">${row.situacion}</span>
   </td></tr>
   <tr>
-    <td width="50%" valign="top" style="padding:12px 14px;border-right:1px solid #e5e7eb;">
+    <td width="50%" valign="top" style="padding:12px 14px;border-right:1px solid #D2D2D7;">
       <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#16a34a;margin:0 0 6px 0;">Activadores</p>
       ${txt(row.activador)}
     </td>
     <td width="50%" valign="top" style="padding:12px 14px;">
-      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#dc2626;margin:0 0 6px 0;">A evitar</p>
+      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#d97706;margin:0 0 6px 0;">A evitar</p>
       ${txt(row.desmotivacion)}
     </td>
   </tr>
 </table>`).join('');
 
+    // Extra pills by tendency
+    const puenteExtraHtml = (r.palabrasPuenteExtra && r.palabrasPuenteExtra.length > 0)
+        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">Por su tendencia</p>
+           <p style="margin:0 0 14px 0;">${pills(r.palabrasPuenteExtra, '#dcfce7', '#16a34a', true)}</p>`
+        : '';
+    const ruidoExtraHtml = (r.palabrasRuidoExtra && r.palabrasRuidoExtra.length > 0)
+        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">Por su tendencia</p>
+           <p style="margin:0;">${pills(r.palabrasRuidoExtra, '#fef3c7', '#d97706', true)}</p>`
+        : '';
+
     const sections = [
-        section('0', 'El Contrato de Sintonía',
+        section('El Contrato de Sintonía',
             `<blockquote style="margin:0;padding-left:16px;border-left:3px solid #6366f1;">${txt(r.bienvenida)}</blockquote>`),
-        section('1', 'Su lugar en la Nave', txt(r.wow)),
-        section('2', 'El Ritmo del Motor', txt(r.motorDesc)),
-        section('3', 'El Combustible', txt(r.combustible)),
-        section('4', 'Vida en el Grupo', txt(r.grupoEspacio)),
-        section('5', 'Lenguaje de Intención', txt(r.corazon)),
-        section('6', 'Lenguaje del Capitán', `
+        section('Su lugar en la Nave', txt(r.wow)),
+        r.tendenciaParagraph ? section('La Brújula Secundaria', txt(r.tendenciaParagraph)) : '',
+        section('El Ritmo del Motor', txt(r.motorDesc)),
+        section('El Combustible', txt(r.combustible)),
+        section('Vida en el Grupo', txt(r.grupoEspacio)),
+        section('Lenguaje de Intención', txt(r.corazon)),
+        section('Lenguaje del Capitán', `
 <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#16a34a;margin:0 0 6px 0;">Palabras Puente</p>
-<p style="margin:0 0 14px 0;">${pills(r.palabrasPuente, '#dcfce7', '#15803d')}</p>
-<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#dc2626;margin:0 0 6px 0;">Palabras Ruido</p>
-<p style="margin:0;">${pills(r.palabrasRuido, '#fee2e2', '#b91c1c')}</p>`),
-        r.guia.length > 0 ? section('8', 'Guía de Sintonía', guiaHtml) : '',
-        section('9', 'Gestión del Desajuste', txt(r.reseteo)),
-        section('10', 'Ecos de la Nave', txt(r.ecos)),
-        section('11', 'Checklist del Día', `
+<p style="margin:0 0 4px 0;">${pills(r.palabrasPuente, '#dcfce7', '#15803d')}</p>
+${puenteExtraHtml}
+<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#d97706;margin:14px 0 6px 0;">Palabras Ruido</p>
+<p style="margin:0 0 4px 0;">${pills(r.palabrasRuido, '#fef3c7', '#b45309')}</p>
+${ruidoExtraHtml}`),
+        r.guia.length > 0 ? section('Guía de Sintonía', guiaHtml) : '',
+        section('Gestión del Desajuste', txt(r.reseteo)),
+        section('Ecos de la Nave', txt(r.ecos)),
+        section('Checklist del Día', `
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 6px;">
-  <tr><td style="border-left:4px solid #6366f1;padding:12px 16px;background:#f8f9fb;border-radius:0 6px 6px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1c2e;margin:0 0 6px 0;">Antes del entrenamiento</p>${txt(r.checklist.antes)}
+  <tr><td style="border-left:4px solid #6366f1;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Antes del entrenamiento</p>${txt(r.checklist.antes)}
   </td></tr>
-  <tr><td style="border-left:4px solid #1a1c2e;padding:12px 16px;background:#f8f9fb;border-radius:0 6px 6px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1c2e;margin:0 0 6px 0;">Durante el entrenamiento</p>${txt(r.checklist.durante)}
+  <tr><td style="border-left:4px solid #1D1D1F;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Durante el entrenamiento</p>${txt(r.checklist.durante)}
   </td></tr>
-  <tr><td style="border-left:4px solid #22c55e;padding:12px 16px;background:#f8f9fb;border-radius:0 6px 6px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1a1c2e;margin:0 0 6px 0;">Después del entrenamiento</p>${txt(r.checklist.despues)}
+  <tr><td style="border-left:4px solid #22c55e;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Después del entrenamiento</p>${txt(r.checklist.despues)}
   </td></tr>
 </table>`),
     ];
@@ -124,7 +137,9 @@ export const AdultReport: React.FC<Props> = ({
             nombreNino:        adultData.nombreNino,
             deporte:           adultData.deporte,
             edad:              adultData.edad,
-            arquetipo:         report.arquetipo.label,
+            arquetipo:         report.tendenciaLabel
+                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
+                : report.arquetipo.label,
             reportHtml:        buildReportHtml(report, aiSections),
             maduracionTemprana,
         })
@@ -191,6 +206,9 @@ export const AdultReport: React.FC<Props> = ({
                     <h2 className="font-display text-3xl font-light text-[#1D1D1F] leading-tight" style={{ letterSpacing: '-0.03em' }}>
                         {report.arquetipo.label}
                     </h2>
+                    {report.tendenciaLabel && (
+                        <p className="text-[#6366f1] text-sm mt-0.5 italic font-medium">{report.tendenciaLabel}</p>
+                    )}
                     {report.perfil && (
                         <p className="text-[#86868B] text-sm mt-1 italic">{report.perfil}</p>
                     )}

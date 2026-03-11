@@ -31,7 +31,7 @@ export const Login: React.FC = () => {
         setLoading(true);
         const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
         setLoading(false);
-        if (authError) setError('Credenciales incorrectas. Revisá tu email y contraseña.');
+        if (authError) setError('Credenciales incorrectas. Revisa tu email y contraseña.');
         // navigation handled by onAuthStateChange
     };
 
@@ -49,7 +49,7 @@ export const Login: React.FC = () => {
         if (authError) {
             setError(authError.message);
         } else {
-            setInfo('Revisá tu email — te enviamos un link para ingresar directamente.');
+            setInfo('Revisa tu email — te enviamos un link para ingresar directamente.');
         }
     };
 

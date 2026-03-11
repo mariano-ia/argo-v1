@@ -122,7 +122,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 4,
         title: 'La Encrucijada',
-        intro: 'Llegamos a un punto donde el mapa muestra dos caminos para llegar a la isla. ¿Cómo preferís decidir?',
+        intro: 'Llegamos a un punto donde el mapa muestra dos caminos para llegar a la isla. ¿Cómo prefieres decidir?',
         options: [
             { label: 'Escucho qué opinan los demás para que elijamos el camino que más nos entusiasme a todos.', axis: 'I' },
             { label: 'Analizo el mapa y el viento para ver qué ruta es la más lógica y clara para avanzar.', axis: 'C' },
@@ -144,7 +144,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 6,
         title: 'El Desajuste',
-        intro: 'El mar inclina el barco de golpe y te desequilibrás. En ese segundo... ¿qué te sale hacer?',
+        intro: 'El mar inclina el barco de golpe y te desequilibras. En ese segundo... ¿qué te sale hacer?',
         options: [
             { label: 'Grito un "¡Vamos equipo!" para que el ánimo no decaiga en la tormenta.', axis: 'I' },
             { label: 'Agarro con fuerza lo primero que tenga cerca para ayudar a enderezar el barco.', axis: 'D' },
@@ -155,7 +155,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 7,
         title: 'El Error del Nudo',
-        intro: 'Intentaste asegurar una vela con un nudo, pero se soltó. ¿Qué es lo primero que hacés?',
+        intro: 'Intentaste asegurar una vela con un nudo, pero se soltó. ¿Qué es lo primero que haces?',
         options: [
             { label: 'Respiro hondo y vuelvo a intentarlo con más paciencia y cuidado.', axis: 'S' },
             { label: 'Me detengo a ver qué parte del nudo falló para que no vuelva a pasar.', axis: 'C' },
@@ -166,7 +166,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 8,
         title: 'El Empuje',
-        intro: '¿Qué hacés vos para que el Argo no se detenga?',
+        intro: '¿Qué haces para que el Argo no se detenga?',
         options: [
             { label: 'Hago un gesto o digo algo divertido para que todos nos riamos y olvidemos el cansancio.', axis: 'I' },
             { label: 'Recuerdo a todos cuánto nos falta y qué pasos faltan para terminar la tarea.', axis: 'C' },
@@ -177,7 +177,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 9,
         title: 'La Espera',
-        intro: 'Ahora te toca descansar un momento mientras otros compañeros ajustan las velas. ¿Cómo vivís ese minuto?',
+        intro: 'Ahora te toca descansar un momento mientras otros compañeros ajustan las velas. ¿Cómo vives ese minuto?',
         options: [
             { label: 'Observo con atención cómo lo hacen ellos para aprender sus técnicas.', axis: 'C' },
             { label: 'Estoy atento para volver a entrar en acción en cuanto me den la señal.', axis: 'D' },
@@ -210,7 +210,7 @@ export const QUESTIONS: Question[] = [
     {
         number: 12,
         title: 'La Meta',
-        intro: '¡Llegamos! El barco toca la arena. Al bajar a la playa... ¿qué es lo primero que pensás?',
+        intro: '¡Llegamos! El barco toca la arena. Al bajar a la playa... ¿qué es lo primero que piensas?',
         options: [
             { label: '¡Qué increíble fue compartir esta aventura con este equipo!', axis: 'I' },
             { label: '¡Qué bien nos salió el plan de navegación y la llegada!', axis: 'C' },

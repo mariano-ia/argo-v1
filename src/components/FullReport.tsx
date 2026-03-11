@@ -18,7 +18,16 @@ function splitParagraphs(text: string): string[] {
     if (text.includes('\n\n')) {
         return text.split('\n\n').map(p => p.trim()).filter(Boolean);
     }
-    const sentences = text.match(/[^.!?]+[.!?]+/g) ?? [text];
+    const raw = text.match(/[^.!?]+[.!?]+/g) ?? [text];
+    // Merge short fragments (e.g. orphan '".') with previous sentence
+    const sentences: string[] = [];
+    for (const s of raw) {
+        if (s.trim().length < 10 && sentences.length > 0) {
+            sentences[sentences.length - 1] += s;
+        } else {
+            sentences.push(s);
+        }
+    }
     const paragraphs: string[] = [];
     for (let i = 0; i < sentences.length; i += 2) {
         paragraphs.push([sentences[i], sentences[i + 1]].filter(Boolean).join(' ').trim());
@@ -28,11 +37,8 @@ function splitParagraphs(text: string): string[] {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const SectionTitle: React.FC<{ number: string; title: string; light?: boolean }> = ({ number, title, light }) => (
-    <div className="flex items-center gap-3 mb-5">
-        <span className={`w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0 ${light ? 'bg-white/15 text-white/60' : 'bg-argo-neutral text-argo-grey'}`}>
-            {number}
-        </span>
+const SectionTitle: React.FC<{ title: string; light?: boolean }> = ({ title, light }) => (
+    <div className="mb-5">
         <h3 className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${light ? 'text-white/60' : 'text-argo-grey'}`}>
             {title}
         </h3>
@@ -143,6 +149,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
         nombre, arquetipo, perfil,
         bienvenida, wow, motorDesc, combustible, grupoEspacio, corazon,
         palabrasPuente, palabrasRuido, guia, reseteo, ecos, checklist,
+        tendenciaParagraph, palabrasPuenteExtra, palabrasRuidoExtra,
     } = report;
 
     const aiSections = ['wow', 'motorDesc', 'combustible', 'corazon', 'reseteo', 'ecos', 'checklist'];
@@ -195,7 +202,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 0. Bienvenida */}
             <Card>
-                <SectionTitle number="0" title="El Contrato de Sintonía" />
+                <SectionTitle title="El Contrato de Sintonía" />
                 <blockquote className="border-l-2 border-argo-indigo pl-5">
                     <TextBlock text={bienvenida} />
                 </blockquote>
@@ -203,18 +210,26 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 1. WOW */}
             <Card>
-                <SectionTitle number="1" title="Su lugar en la Nave" />
+                <SectionTitle title="Su lugar en la Nave" />
                 {isLoading('wow') ? <AISkeleton /> : <TextBlock text={wow} leadBold />}
             </Card>
+
+            {/* Brújula Secundaria */}
+            {tendenciaParagraph && (
+                <Card>
+                    <SectionTitle title="La Brújula Secundaria" />
+                    <TextBlock text={tendenciaParagraph} leadBold />
+                </Card>
+            )}
 
             {/* 2 + 3 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
-                    <SectionTitle number="2" title="El Ritmo del Motor" />
+                    <SectionTitle title="El Ritmo del Motor" />
                     {isLoading('motorDesc') ? <AISkeleton /> : <TextBlock text={motorDesc} />}
                 </Card>
                 <Card>
-                    <SectionTitle number="3" title="El Combustible" />
+                    <SectionTitle title="El Combustible" />
                     {isLoading('combustible') ? <AISkeleton /> : <TextBlock text={combustible} />}
                 </Card>
             </div>
@@ -222,18 +237,18 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 4 + 5 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
-                    <SectionTitle number="4" title="Vida en el Grupo" />
+                    <SectionTitle title="Vida en el Grupo" />
                     <TextBlock text={grupoEspacio} />
                 </Card>
                 <Card>
-                    <SectionTitle number="5" title="Lenguaje de Intención" />
+                    <SectionTitle title="Lenguaje de Intención" />
                     {isLoading('corazon') ? <AISkeleton /> : <TextBlock text={corazon} />}
                 </Card>
             </div>
 
             {/* 6. Palabras */}
             <Card>
-                <SectionTitle number="6" title="Lenguaje del Capitán" />
+                <SectionTitle title="Lenguaje del Capitán" />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div className="text-[10px] font-semibold text-green-600 uppercase tracking-widest mb-3 flex items-center gap-2">
@@ -247,19 +262,43 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                                 </span>
                             ))}
                         </div>
+                        {palabrasPuenteExtra && palabrasPuenteExtra.length > 0 && (
+                            <>
+                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">Por su tendencia</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {palabrasPuenteExtra.map((p, i) => (
+                                        <span key={i} className="px-3 py-1.5 bg-green-50 border border-dashed border-green-300 rounded-full text-xs font-medium text-green-600">
+                                            {p}
+                                        </span>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                     <div>
-                        <div className="text-[10px] font-semibold text-red-500 uppercase tracking-widest mb-3 flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                        <div className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                             Palabras Ruido
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {palabrasRuido.map((p, i) => (
-                                <span key={i} className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-full text-xs font-medium text-red-600">
+                                <span key={i} className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs font-medium text-amber-700">
                                     {p}
                                 </span>
                             ))}
                         </div>
+                        {palabrasRuidoExtra && palabrasRuidoExtra.length > 0 && (
+                            <>
+                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">Por su tendencia</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {palabrasRuidoExtra.map((p, i) => (
+                                        <span key={i} className="px-3 py-1.5 bg-amber-50 border border-dashed border-amber-300 rounded-full text-xs font-medium text-amber-600">
+                                            {p}
+                                        </span>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             </Card>
@@ -267,7 +306,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 8. Guía */}
             {guia.length > 0 && (
                 <Card>
-                    <SectionTitle number="8" title="Guía de Sintonía" />
+                    <SectionTitle title="Guía de Sintonía" />
                     <div className="space-y-4">
                         {guia.map((row, i) => (
                             <div key={i} className="border border-argo-border rounded-argo-md overflow-hidden">
@@ -285,8 +324,8 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                                         <TextBlock text={row.activador} />
                                     </div>
                                     <div className="p-5">
-                                        <div className="text-[9px] font-semibold text-red-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                                        <div className="text-[9px] font-semibold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                                             A evitar
                                         </div>
                                         <TextBlock text={row.desmotivacion} />
@@ -300,19 +339,19 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 9. Reseteo */}
             <Card>
-                <SectionTitle number="9" title="Gestión del Desajuste" />
+                <SectionTitle title="Gestión del Desajuste" />
                 {isLoading('reseteo') ? <AISkeleton /> : <TextBlock text={reseteo} leadBold />}
             </Card>
 
             {/* 10. Ecos */}
             <Card>
-                <SectionTitle number="10" title="Ecos de la Nave" />
+                <SectionTitle title="Ecos de la Nave" />
                 {isLoading('ecos') ? <AISkeleton /> : <TextBlock text={ecos} />}
             </Card>
 
             {/* 11. Checklist */}
             <Card>
-                <SectionTitle number="11" title="Checklist del Día" />
+                <SectionTitle title="Checklist del Día" />
                 <div className="space-y-3">
                     <ChecklistBlock
                         label="Antes del entrenamiento"

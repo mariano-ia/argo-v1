@@ -69,7 +69,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
             const msg = err.message.includes('Invalid login credentials')
                 ? 'Email o contraseña incorrectos.'
                 : err.message.includes('already registered')
-                ? 'Ya existe una cuenta con ese email. Iniciá sesión.'
+                ? 'Ya existe una cuenta con ese email. Inicia sesión.'
                 : err.message;
             setError(msg);
             return;
@@ -77,7 +77,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
 
         if (mode === 'signup' && !data.session) {
             // Email confirmation is enabled in Supabase — inform the user
-            setInfo('Te enviamos un email de verificación. Confirmá tu cuenta y volvé aquí.');
+            setInfo('Te enviamos un email de verificación. Confirma tu cuenta y vuelve aquí.');
             return;
         }
 
@@ -180,7 +180,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
 
                 {/* Mode toggle */}
                 <p className="text-center" style={{ fontSize: '12px', color: '#86868B' }}>
-                    {mode === 'login' ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?'}{' '}
+                    {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
                     <button onClick={switchMode} className="text-[#1D1D1F] font-medium underline">
                         {mode === 'login' ? 'Crear una' : 'Iniciar sesión'}
                     </button>

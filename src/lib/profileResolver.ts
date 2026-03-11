@@ -7,6 +7,17 @@ export interface QuestionAnswer {
     responseTimeMs: number;
 }
 
+export interface SessionContext {
+    priorEjes: string[];
+    priorMotors: string[];
+}
+
+export const TENDENCIA_LABELS: Record<Axis, string> = {
+    D: 'con chispa de acción',
+    I: 'con brújula social',
+    S: 'con raíz firme',
+    C: 'con ojo de detalle',
+};
 
 export type AnswerOption = 'IMP' | 'CON' | 'SOS' | 'EST';
 
@@ -16,6 +27,9 @@ export interface ProfileResult {
     motor: MotorInput;
     arquetipoLabel: string;
     arquetipoId: string;
+    ejeSecundario: Axis;
+    tendenciaLabel: string;
+    tiebreakerApplied: boolean;
 }
 
 export function resolveProfile(answers: AnswerOption[]): ProfileResult {
@@ -60,6 +74,7 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
     }
 
     const arch = ARQUETIPOS.find(a => a.eje === axis && a.motor === motor);
+    const secondAxis = scores[1].axis as Axis;
 
     return {
         counts,
@@ -67,6 +82,9 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
         motor,
         arquetipoLabel: arch ? arch.label : 'Desconocido',
         arquetipoId: arch ? arch.id : 'unknown',
+        ejeSecundario: secondAxis,
+        tendenciaLabel: TENDENCIA_LABELS[secondAxis],
+        tiebreakerApplied: false,
     };
 }
 
@@ -76,8 +94,14 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
  *   < 5 000 ms avg → Rápido
  *   > 12 000 ms avg → Lento
  *   otherwise → Medio (falls back to score-difference for tie-breaking)
+ *
+ * When sessionCtx is provided, applies tiebreaker logic to favor
+ * less-represented ejes/motors for better profile dispersion.
  */
-export function resolveFromAnswers(answers: QuestionAnswer[]): ProfileResult {
+export function resolveFromAnswers(
+    answers: QuestionAnswer[],
+    sessionCtx?: SessionContext,
+): ProfileResult {
     // — Eje from axis counts —
     const axisCounts: Record<Axis, number> = { D: 0, I: 0, S: 0, C: 0 };
     answers.forEach(a => { axisCounts[a.axis]++; });
@@ -86,11 +110,26 @@ export function resolveFromAnswers(answers: QuestionAnswer[]): ProfileResult {
         (a, b) => axisCounts[b] - axisCounts[a]
     );
 
-    const dominantAxis = sorted[0];
+    let dominantAxis = sorted[0];
     const topCount    = axisCounts[sorted[0]];
     const secondCount = axisCounts[sorted[1]];
     const diff        = topCount - secondCount;
     const total       = answers.length;
+    let tiebreakerApplied = false;
+
+    // — Eje tiebreaker: when near-tie, pick less represented in group —
+    if (sessionCtx && sessionCtx.priorEjes.length > 0 && diff <= 1) {
+        const candidates = sorted.filter(axis => axisCounts[axis] >= topCount - 1);
+        const ejeCounts = candidates.map(axis => ({
+            axis,
+            count: sessionCtx.priorEjes.filter(e => e === axis).length,
+        }));
+        ejeCounts.sort((a, b) => a.count - b.count);
+        if (ejeCounts[0].axis !== dominantAxis) {
+            dominantAxis = ejeCounts[0].axis;
+            tiebreakerApplied = true;
+        }
+    }
 
     // — Motor from average response time —
     const avgMs = total > 0
@@ -113,6 +152,22 @@ export function resolveFromAnswers(answers: QuestionAnswer[]): ProfileResult {
         }
     }
 
+    // — Motor tiebreaker: when too many "Medio", nudge based on avgMs —
+    if (sessionCtx && motor === 'Medio' && sessionCtx.priorMotors.length >= 3) {
+        const medioRatio = sessionCtx.priorMotors.filter(m => m === 'Medio').length
+            / sessionCtx.priorMotors.length;
+        if (medioRatio > 0.6) {
+            motor = avgMs < 8500 ? 'Rápido' : 'Lento';
+            tiebreakerApplied = true;
+        }
+    }
+
+    // — Secondary eje (sub-profile) —
+    // If tiebreaker changed the dominant, recalculate sorted order for secondary
+    const ejeSecundario = dominantAxis === sorted[0]
+        ? sorted[1]
+        : sorted[0]; // original top becomes secondary
+
     const arch = ARQUETIPOS.find(a => a.eje === dominantAxis && a.motor === motor);
 
     // Map Axis back to AnswerOption for counts compatibility
@@ -129,5 +184,8 @@ export function resolveFromAnswers(answers: QuestionAnswer[]): ProfileResult {
         motor,
         arquetipoLabel: arch ? arch.label : 'Desconocido',
         arquetipoId: arch ? arch.id : 'unknown',
+        ejeSecundario,
+        tendenciaLabel: TENDENCIA_LABELS[ejeSecundario],
+        tiebreakerApplied,
     };
 }

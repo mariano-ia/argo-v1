@@ -70,7 +70,7 @@ export const MiniGame2: React.FC<Props> = ({ onComplete }) => {
                     Navega entre las olas
                 </h2>
                 <p className="text-sm text-argo-grey">
-                    El mar vuelve a la calma. Observá el Argo cruzar el horizonte...
+                    El mar vuelve a la calma. Observa el Argo cruzar el horizonte...
                 </p>
             </div>
 

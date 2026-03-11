@@ -41,6 +41,11 @@ export interface ReportData {
     reseteo: string;
     ecos: string;
     checklist: Checklist;
+    ejeSecundario?: string;
+    tendenciaLabel?: string;
+    tendenciaParagraph?: string;
+    palabrasPuenteExtra?: string[];
+    palabrasRuidoExtra?: string[];
 }
 
 // Legacy: list of archetypes for the resolver

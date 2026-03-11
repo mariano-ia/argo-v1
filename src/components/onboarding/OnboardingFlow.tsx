@@ -2,8 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ADULT_INTRO_SLIDES, STORY_SLIDES } from '../../lib/onboardingData';
 import { useQuestions } from '../../lib/useQuestions';
-import { QuestionAnswer, resolveFromAnswers } from '../../lib/profileResolver';
+import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
+import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
+import { getTendenciaContent } from '../../lib/archetypeData';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import { saveSession } from '../../lib/sessionStore';
 import { AdultIntroSlide } from './screens/AdultIntroSlide';
@@ -205,7 +207,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
     const [aiSections, setAiSections]   = useState<AISections | null>(null);
     const [aiLoading, setAiLoading]     = useState(false);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
-    const profileRef       = useRef<{ eje: string; motor: string } | null>(null);
+    const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
 
     const advance = () => setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
@@ -221,48 +223,94 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
         if (screen.type !== 'child-completion') return;
         if (!adultData || answers.length < questions.length) return;
 
-        const profile = resolveFromAnswers(answers);
-        const report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
-        reportRef.current  = report;
-        profileRef.current = { eje: profile.eje, motor: profile.motor };
+        const run = async () => {
+            // Fetch recent sessions for tiebreaker dispersion
+            let sessionCtx: SessionContext | undefined;
+            try {
+                const { data } = await supabase
+                    .from('sessions')
+                    .select('eje,motor')
+                    .is('deleted_at', null)
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                if (data && data.length > 0) {
+                    sessionCtx = {
+                        priorEjes: data.map((s: { eje: string }) => s.eje),
+                        priorMotors: data.map((s: { motor: string }) => s.motor),
+                    };
+                }
+            } catch {
+                // If query fails, proceed without tiebreaker
+            }
 
-        setAiLoading(true);
-        const ctx: ReportContext = {
-            nombre:       adultData.nombreNino,
-            deporte:      adultData.deporte,
-            edad:         adultData.edad,
-            destinatario: 'padre',
-        };
-        generateAISections(report, ctx)
-            .then(({ sections, usage }: { sections: AISections; usage: AIUsage }) => {
-                setAiSections(sections);
-                // Save session silently (best-effort)
-                saveSession({
-                    adultData,
-                    eje:            profile.eje,
-                    motor:          profile.motor,
-                    archetypeLabel: report.arquetipo.label,
-                    answers,
-                    aiUsage: {
-                        tokensInput:  usage.inputTokens,
-                        tokensOutput: usage.outputTokens,
-                        costUsd:      usage.costUsd,
-                    },
-                });
-            })
-            .catch(() => {
-                // Graceful fallback — save session without AI usage
-                if (adultData && profileRef.current && reportRef.current) {
+            const profile = resolveFromAnswers(answers, sessionCtx);
+            const report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
+            // Attach sub-profile info to report
+            report.ejeSecundario  = profile.ejeSecundario;
+            report.tendenciaLabel = profile.tendenciaLabel;
+
+            // Attach tendencia content (paragraph + extra words)
+            const tendencia = getTendenciaContent(profile.eje, profile.ejeSecundario);
+            if (tendencia) {
+                const injectNombre = (t: string) => t.replace(/\{nombre\}/g, adultData.nombreNino);
+                report.tendenciaParagraph  = injectNombre(tendencia.parrafo);
+                report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
+                report.palabrasRuidoExtra  = tendencia.palabrasRuidoExtra;
+            }
+
+            reportRef.current  = report;
+            profileRef.current = {
+                eje: profile.eje,
+                motor: profile.motor,
+                ejeSecundario: profile.ejeSecundario,
+                tendenciaLabel: profile.tendenciaLabel,
+            };
+
+            if (profile.tiebreakerApplied) {
+                console.info('[profileResolver] Tiebreaker applied → eje:', profile.eje, 'motor:', profile.motor);
+            }
+
+            setAiLoading(true);
+            const ctx: ReportContext = {
+                nombre:       adultData.nombreNino,
+                deporte:      adultData.deporte,
+                edad:         adultData.edad,
+                destinatario: 'padre',
+            };
+
+            generateAISections(report, ctx)
+                .then(({ sections, usage }: { sections: AISections; usage: AIUsage }) => {
+                    setAiSections(sections);
                     saveSession({
                         adultData,
-                        eje:            profileRef.current.eje,
-                        motor:          profileRef.current.motor,
-                        archetypeLabel: reportRef.current.arquetipo.label,
+                        eje:            profile.eje,
+                        motor:          profile.motor,
+                        archetypeLabel: report.arquetipo.label,
+                        ejeSecundario:  profile.ejeSecundario,
                         answers,
+                        aiUsage: {
+                            tokensInput:  usage.inputTokens,
+                            tokensOutput: usage.outputTokens,
+                            costUsd:      usage.costUsd,
+                        },
                     });
-                }
-            })
-            .finally(() => setAiLoading(false));
+                })
+                .catch(() => {
+                    if (adultData && profileRef.current && reportRef.current) {
+                        saveSession({
+                            adultData,
+                            eje:            profileRef.current.eje,
+                            motor:          profileRef.current.motor,
+                            archetypeLabel: reportRef.current.arquetipo.label,
+                            ejeSecundario:  profileRef.current.ejeSecundario,
+                            answers,
+                        });
+                    }
+                })
+                .finally(() => setAiLoading(false));
+        };
+
+        run();
 
         // Increment play count once per session
         if (!playCountedRef.current) {

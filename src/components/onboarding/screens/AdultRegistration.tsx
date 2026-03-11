@@ -71,15 +71,15 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                     Tus datos y los del deportista
                 </h2>
                 <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
-                    El informe llegará a <strong>{userEmail}</strong>. Completá estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
+                    El informe llegará a <strong>{userEmail}</strong>. Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
                 </p>
             </div>
 
             {/* Form fields */}
             <div className="space-y-4">
                 {[
-                    { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Laura García', type: 'text' },
-                    { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Mateo', type: 'text' },
+                    { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Kate', type: 'text' },
+                    { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Kevin', type: 'text' },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">
                         <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">

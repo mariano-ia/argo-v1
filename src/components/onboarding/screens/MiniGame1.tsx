@@ -253,14 +253,14 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                         className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[#0A1628]/48 backdrop-blur-sm"
                     >
                         <h2 className="text-white text-3xl tracking-tight drop-shadow-md" style={{ fontWeight: 300, letterSpacing: '-0.02em' }}>
-                            Esquivá las olas
+                            Esquiva las olas
                         </h2>
                         <motion.div
                             className="w-16 h-16 rounded-full border-2 border-white/70"
                             animate={{ scale: [1, 1.25, 1], opacity: [0.8, 0.3, 0.8] }}
                             transition={{ duration: 1.1, repeat: Infinity }}
                         />
-                        <p className="text-white/80 text-sm font-medium tracking-wide">Tocá para empezar</p>
+                        <p className="text-white/80 text-sm font-medium tracking-wide">Toca para empezar</p>
                     </motion.div>
                 )}
             </AnimatePresence>
