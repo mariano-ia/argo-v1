@@ -13,6 +13,7 @@ import { OnboardingFlow }  from './components/onboarding/OnboardingFlow';
 import { UserAuthGate }    from './components/onboarding/UserAuthGate';
 
 const MAX_PLAYS = 3;
+const TEST_EMAILS = ['marianonoceti@gmail.com'];
 
 // ─── Blocked screen ───────────────────────────────────────────────────────────
 
@@ -32,7 +33,7 @@ const BlockedView: React.FC = () => (
                 Ya completaste tus {MAX_PLAYS} experiencias
             </h2>
             <p style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.7 }}>
-                Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitás más sesiones, contactanos.
+                Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitas más sesiones, contáctanos.
             </p>
         </div>
     </div>
@@ -46,6 +47,7 @@ const UserApp: React.FC = () => {
     const [blocked, setBlocked] = useState(false);
 
     const checkBlocked = (s: Session) => {
+        if (TEST_EMAILS.includes(s.user.email ?? '')) return;
         const count = (s.user.user_metadata?.play_count ?? 0) as number;
         setBlocked(count >= MAX_PLAYS);
     };
@@ -77,6 +79,7 @@ const UserApp: React.FC = () => {
 
     const onPlayComplete = async () => {
         if (!session) return;
+        if (TEST_EMAILS.includes(session.user.email ?? '')) return;
         const current = (session.user.user_metadata?.play_count ?? 0) as number;
         await supabase.auth.updateUser({ data: { play_count: current + 1 } });
     };

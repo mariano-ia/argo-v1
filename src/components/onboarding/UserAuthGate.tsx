@@ -29,6 +29,8 @@ const Logo: React.FC = () => (
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+const MAX_PLAYS = 3;
+
 interface Props {
     onAuthenticated: () => void;
 }
@@ -42,6 +44,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
     const [error, setError]       = useState('');
     const [info, setInfo]         = useState('');
     const [loading, setLoading]   = useState(false);
+    const [blocked, setBlocked]   = useState(false);
 
     const handleGoogle = async () => {
         setLoading(true);
@@ -81,6 +84,13 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
             return;
         }
 
+        // Check play limit immediately after auth
+        const count = (data.user?.user_metadata?.play_count ?? 0) as number;
+        if (count >= MAX_PLAYS) {
+            setBlocked(true);
+            return;
+        }
+
         onAuthenticated();
     };
 
@@ -103,88 +113,102 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
                     <Logo />
                 </div>
 
-                {/* Nautical notice */}
-                <div style={{ background: 'rgba(187,188,255,0.25)', border: '1px solid rgba(187,188,255,0.6)', borderRadius: '16px', padding: '16px 20px' }}>
-                    <p style={{ fontWeight: 300, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.65, letterSpacing: '-0.01em', margin: 0 }}>
-                        ¡Preparados para zarpar! Asegurate de estar con el niño o la niña. Su interacción es la base de la Metodología Argos.
+                {blocked ? (
+                    /* Blocked message — shown immediately after auth */
+                    <div style={{ background: '#fff', border: '1px solid #D2D2D7', borderRadius: '20px', padding: '32px 24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', textAlign: 'center' }}>
+                        <h2 style={{ fontWeight: 300, fontSize: '22px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+                            Ya completaste tus {MAX_PLAYS} experiencias
+                        </h2>
+                        <p style={{ fontWeight: 400, fontSize: '14px', color: '#86868B', lineHeight: 1.7, margin: 0 }}>
+                            Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitas más sesiones, contáctanos.
+                        </p>
+                    </div>
+                ) : (
+                    <>
+                    {/* Nautical notice */}
+                    <div style={{ background: 'rgba(187,188,255,0.25)', border: '1px solid rgba(187,188,255,0.6)', borderRadius: '16px', padding: '16px 20px' }}>
+                        <p style={{ fontWeight: 300, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.65, letterSpacing: '-0.01em', margin: 0 }}>
+                            ¡Preparados para zarpar! Asegúrate de estar con el niño o la niña. Su interacción es la base de la Metodología Argos.
+                        </p>
+                    </div>
+
+                    {/* Auth card */}
+                    <div style={{ background: '#fff', border: '1px solid #D2D2D7', borderRadius: '20px', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+                         className="space-y-4">
+
+                        {/* Google */}
+                        <button
+                            onClick={handleGoogle}
+                            disabled={loading}
+                            className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-medium text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors disabled:opacity-50"
+                            style={{ border: '1px solid #D2D2D7' }}
+                        >
+                            <GoogleIcon /> Continuar con Google
+                        </button>
+
+                        {/* Divider */}
+                        <div className="flex items-center gap-3">
+                            <div className="flex-1 h-px bg-[#D2D2D7]" />
+                            <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.08em' }}>O</span>
+                            <div className="flex-1 h-px bg-[#D2D2D7]" />
+                        </div>
+
+                        {/* Email + password */}
+                        <div className="space-y-3">
+                            <input
+                                type="email"
+                                placeholder="tu@email.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none transition-colors"
+                                style={{ border: '1px solid #D2D2D7' }}
+                            />
+                            <input
+                                type="password"
+                                placeholder="Contraseña (mínimo 6 caracteres)"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleEmail()}
+                                className="w-full rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none transition-colors"
+                                style={{ border: '1px solid #D2D2D7' }}
+                            />
+                        </div>
+
+                        {error && (
+                            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2"
+                               style={{ border: '1px solid #FCD34D' }}>
+                                {error}
+                            </p>
+                        )}
+                        {info && (
+                            <p className="text-xs text-[#424245] bg-[#F5F5F7] rounded-lg px-3 py-2"
+                               style={{ border: '1px solid #D2D2D7' }}>
+                                {info}
+                            </p>
+                        )}
+
+                        <motion.button
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleEmail}
+                            disabled={loading || !email || password.length < 6}
+                            className="w-full bg-[#1D1D1F] text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
+                        >
+                            {loading
+                                ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                : <>{mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'} <ChevronRight size={15} /></>
+                            }
+                        </motion.button>
+                    </div>
+
+                    {/* Mode toggle */}
+                    <p className="text-center" style={{ fontSize: '12px', color: '#86868B' }}>
+                        {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
+                        <button onClick={switchMode} className="text-[#1D1D1F] font-medium underline">
+                            {mode === 'login' ? 'Crear una' : 'Iniciar sesión'}
+                        </button>
                     </p>
-                </div>
-
-                {/* Auth card */}
-                <div style={{ background: '#fff', border: '1px solid #D2D2D7', borderRadius: '20px', padding: '24px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
-                     className="space-y-4">
-
-                    {/* Google */}
-                    <button
-                        onClick={handleGoogle}
-                        disabled={loading}
-                        className="w-full flex items-center justify-center gap-3 rounded-xl py-3 text-sm font-medium text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors disabled:opacity-50"
-                        style={{ border: '1px solid #D2D2D7' }}
-                    >
-                        <GoogleIcon /> Continuar con Google
-                    </button>
-
-                    {/* Divider */}
-                    <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-[#D2D2D7]" />
-                        <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.08em' }}>O</span>
-                        <div className="flex-1 h-px bg-[#D2D2D7]" />
-                    </div>
-
-                    {/* Email + password */}
-                    <div className="space-y-3">
-                        <input
-                            type="email"
-                            placeholder="tu@email.com"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="w-full rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none transition-colors"
-                            style={{ border: '1px solid #D2D2D7' }}
-                        />
-                        <input
-                            type="password"
-                            placeholder="Contraseña (mínimo 6 caracteres)"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            onKeyDown={e => e.key === 'Enter' && handleEmail()}
-                            className="w-full rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none transition-colors"
-                            style={{ border: '1px solid #D2D2D7' }}
-                        />
-                    </div>
-
-                    {error && (
-                        <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2"
-                           style={{ border: '1px solid #FECACA' }}>
-                            {error}
-                        </p>
-                    )}
-                    {info && (
-                        <p className="text-xs text-[#424245] bg-[#F5F5F7] rounded-lg px-3 py-2"
-                           style={{ border: '1px solid #D2D2D7' }}>
-                            {info}
-                        </p>
-                    )}
-
-                    <motion.button
-                        whileTap={{ scale: 0.98 }}
-                        onClick={handleEmail}
-                        disabled={loading || !email || password.length < 6}
-                        className="w-full bg-[#1D1D1F] text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
-                    >
-                        {loading
-                            ? <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                            : <>{mode === 'login' ? 'Iniciar sesión' : 'Crear cuenta'} <ChevronRight size={15} /></>
-                        }
-                    </motion.button>
-                </div>
-
-                {/* Mode toggle */}
-                <p className="text-center" style={{ fontSize: '12px', color: '#86868B' }}>
-                    {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
-                    <button onClick={switchMode} className="text-[#1D1D1F] font-medium underline">
-                        {mode === 'login' ? 'Crear una' : 'Iniciar sesión'}
-                    </button>
-                </p>
+                    </>
+                )}
             </motion.div>
         </div>
     );
