@@ -13,7 +13,7 @@ export const translations = {
         hero: {
             eyebrow: 'Método Argo · Perfilamiento Deportivo',
             headline: 'Tu atleta tiene un código.',
-            headlineAccent: 'Aprendé a leerlo.',
+            headlineAccent: 'Aprende a leerlo.',
             sub: 'Argo revela el perfil de comportamiento de cada deportista para que el adulto — entrenador o padre — sepa exactamente cómo comunicar, motivar y acompañar.',
             cta: 'Comenzar la Odisea',
             ctaSub: '10 minutos · Gratis · Sin registro previo',
@@ -47,12 +47,12 @@ export const translations = {
                 {
                     number: '01',
                     title: 'El adulto registra',
-                    body: 'Completás los datos del deportista: nombre, edad, deporte. Tres minutos.',
+                    body: 'Completas los datos del deportista: nombre, edad, deporte. Tres minutos.',
                 },
                 {
                     number: '02',
                     title: 'El niño juega',
-                    body: 'Le entregás el dispositivo. La Odisea del Argo es una aventura interactiva de 10 minutos que mide 12 dimensiones de comportamiento sin que el niño lo sepa.',
+                    body: 'Le entregas el dispositivo. La Odisea del Argo es una aventura interactiva de 10 minutos que mide 12 dimensiones de comportamiento sin que el niño lo sepa.',
                 },
                 {
                     number: '03',
@@ -78,23 +78,23 @@ export const translations = {
             cards: [
                 {
                     title: 'Entrenadores',
-                    body: 'Individualizá tu comunicación. Sabé qué tipo de feedback activa a cada atleta y cuál lo apaga.',
+                    body: 'Individualiza tu comunicación. Conoce qué tipo de feedback activa a cada atleta y cuál lo apaga.',
                     icon: '🏋️',
                 },
                 {
                     title: 'Padres y madres',
-                    body: 'Dejá de adivinar qué necesita tu hijo después de un partido. Argo te da el mapa.',
+                    body: 'Deja de adivinar qué necesita tu hijo después de un partido. Argo te da el mapa.',
                     icon: '👨‍👩‍👧',
                 },
                 {
                     title: 'Instituciones deportivas',
-                    body: 'Perfilá a toda tu base de jugadores. Asignación de roles, detección de talentos y retención.',
+                    body: 'Perfila a toda tu base de jugadores. Asignación de roles, detección de talentos y retención.',
                     icon: '🏟️',
                 },
             ],
         },
         finalCta: {
-            headline: 'Empezá hoy.',
+            headline: 'Empieza hoy.',
             sub: 'El informe llega a tu email. Sin apps, sin instalaciones.',
             cta: 'Probar Argo ahora',
         },

@@ -1,0 +1,16 @@
+{
+  "name": "Argo Method",
+  "short_name": "Argo",
+  "description": "Inteligencia deportiva basada en ciencia del comportamiento para niños y jóvenes deportistas.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F5F7",
+  "theme_color": "#1D1D1F",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
