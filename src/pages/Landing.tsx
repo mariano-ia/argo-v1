@@ -190,7 +190,7 @@ export const Landing: React.FC = () => {
 
     return (
         <div style={{ backgroundColor: '#ffffff', color: '#1D1D1F', fontFamily: 'Inter, sans-serif' }}
-             className="min-h-screen">
+             className="min-h-screen" role="main">
 
             {/* ── NAV ── */}
             <nav style={{ borderBottom: '1px solid #D2D2D7' }}
@@ -214,6 +214,7 @@ export const Landing: React.FC = () => {
                         </button>
                         <button
                             onClick={() => navigate('/app')}
+                            aria-label={lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
