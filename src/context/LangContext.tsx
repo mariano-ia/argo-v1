@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export type Lang = 'es' | 'en';
 
@@ -225,6 +225,12 @@ function getBrowserLang(): Lang {
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [lang, setLang] = useState<Lang>(getBrowserLang);
     const t = translations[lang] as LangTranslations;
+
+    // Keep <html lang> in sync with current language
+    useEffect(() => {
+        document.documentElement.lang = lang;
+    }, [lang]);
+
     return <LangContext.Provider value={{ lang, setLang, t }}>{children}</LangContext.Provider>;
 };
 

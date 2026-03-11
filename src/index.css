@@ -24,3 +24,10 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #86868B;
 }
+
+/* Accessibility: visible focus ring for keyboard users */
+:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    border-radius: 4px;
+}

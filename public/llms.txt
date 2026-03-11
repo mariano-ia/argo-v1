@@ -1,0 +1,55 @@
+# Argo Method
+
+> Inteligencia deportiva basada en ciencia del comportamiento para niños y jóvenes deportistas.
+
+## What is Argo Method?
+
+Argo Method is a sports behavioral profiling tool for children aged 5–18. It uses the DISC methodology (Dominance, Influence, Steadiness, Conscientiousness) combined with a Motor dimension (processing speed) to generate a personalized behavioral profile for each young athlete.
+
+The tool helps coaches, parents, and sports institutions understand how each child processes pressure, relates to their team, and makes decisions — so the adult can adapt their communication and create the right environment for the child to enjoy and stay in sport.
+
+## How it works
+
+1. An adult registers the child (name, age, sport) — 3 minutes
+2. The child plays "La Odisea del Argo" (The Argo Odyssey), a 10-minute gamified interactive experience that measures 12 behavioral dimensions
+3. The adult receives a personalized report via email with the child's archetype, engine type, bridge words, noise words, and a daily coaching checklist
+
+## The 12 Archetypes
+
+Argo identifies 12 base archetypes by combining 4 behavioral axes with 3 motor types:
+
+- **Impulsor (Driver)**: Dinámico, Rítmico, Sereno — leads through action, needs challenge and autonomy
+- **Conector (Connector)**: Dinámico, Rítmico, Sereno — thrives in social settings, needs recognition and variety
+- **Sostenedor (Sustainer)**: Dinámico, Rítmico, Sereno — stabilizes the group, needs predictability and trust
+- **Estratega (Strategist)**: Dinámico, Rítmico, Observador — analyzes before acting, needs structure and space
+
+Each archetype includes a secondary compass (brújula secundaria) creating 36 unique profile variants.
+
+## The Report includes
+
+1. El Contrato de Sintonía — personalized welcome
+2. Su lugar en la Nave — the child's role on the team
+3. La Brújula Secundaria — how the secondary axis nuances behavior
+4. El Ritmo del Motor — processing speed profile
+5. El Combustible — what fuels this child
+6. Vida en el Grupo — team dynamics
+7. Lenguaje de Intención — communication style
+8. Lenguaje del Capitán — bridge words (use these) and noise words (avoid these)
+9. Guía de Sintonía — situation-specific guidance
+10. Gestión del Desajuste — how to reset when things go wrong
+11. Ecos de la Nave — long-term behavioral echoes
+12. Checklist del Día — before, during, and after training
+
+## Scientific basis
+
+Argo is based on the DISC behavioral model, which identifies four primary behavioral styles. The Motor dimension adds processing speed (fast/rhythmic/serene). The tool does NOT classify abilities, predict futures, or replace sports psychologists. It is an observational attunement tool.
+
+## Key facts
+
+- Free to use (beta)
+- 10-minute experience
+- No app installation required
+- Report delivered via email
+- Available in Spanish and English
+- Built by Yacaré Lab
+- Website: https://argomethod.com
