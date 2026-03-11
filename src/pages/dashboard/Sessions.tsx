@@ -99,6 +99,7 @@ export const Sessions: React.FC = () => {
                 supabase
                     .from('sessions')
                     .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,archetype_label,ai_cost_usd')
+                    .is('deleted_at', null)
                     .order('created_at', { ascending: false }),
                 supabase
                     .from('leads')
@@ -127,7 +128,7 @@ export const Sessions: React.FC = () => {
         let error: unknown = null;
 
         if (row.status === 'completed') {
-            ({ error } = await supabase.from('sessions').delete().eq('id', row.id));
+            ({ error } = await supabase.from('sessions').update({ deleted_at: new Date().toISOString() }).eq('id', row.id));
         } else {
             ({ error } = await supabase.from('leads').delete().eq('email', row.email));
         }
