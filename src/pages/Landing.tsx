@@ -461,6 +461,11 @@ export const Landing: React.FC = () => {
                             ? 'Cada deportista tiene un ritmo y una forma única de procesar el juego. A través de la ciencia del comportamiento, identificamos estas tendencias naturales para que los adultos puedan crear el entorno de sintonía que cada niño necesita para disfrutar y permanecer en el deporte.'
                             : 'Every athlete has a unique rhythm and way of processing the game. Through behavioral science, we identify these natural tendencies so adults can create the attuned environment each child needs to enjoy and stay in sport.'}
                     </p>
+                    <p style={{ fontWeight: 400, fontSize: '14px', color: '#86868B', marginTop: '12px', maxWidth: '600px', lineHeight: 1.7 }}>
+                        {lang === 'es'
+                            ? 'Además del arquetipo dominante, cada informe incluye una brújula secundaria que matiza la conducta del niño. Por eso no hay dos informes iguales.'
+                            : 'Beyond the dominant archetype, each report includes a secondary compass that nuances the child\'s behavior. That\'s why no two reports are alike.'}
+                    </p>
                 </motion.div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px"

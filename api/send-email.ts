@@ -59,7 +59,7 @@ function buildHtml(params: {
     </div>
 
     <!-- Body -->
-    <div style="padding:32px 40px;">
+    <div style="padding:32px 40px;background:#F5F5F7;">
         ${maduracionBanner}
         <div style="font-size:14px;line-height:1.8;color:#424245;">
             ${params.reportHtml}

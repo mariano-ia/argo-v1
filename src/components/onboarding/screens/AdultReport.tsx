@@ -37,9 +37,9 @@ function buildReportHtml(report: ReportData, aiSections: AISections | null): str
 
     // Section wrapper
     const section = (title: string, body: string) => `
-<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-collapse:collapse;">
-  <tr><td style="padding:20px 24px;background:#ffffff;border:1px solid #D2D2D7;border-radius:12px;">
-    <p style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">${title}</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;border-collapse:collapse;">
+  <tr><td style="padding:24px 28px;background:#ffffff;border:1px solid #D2D2D7;border-radius:14px;">
+    <p style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;margin:0 0 16px 0;">${title}</p>
     ${body}
   </td></tr>
 </table>`;
