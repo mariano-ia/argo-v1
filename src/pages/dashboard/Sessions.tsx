@@ -125,16 +125,22 @@ export const Sessions: React.FC = () => {
 
     const deleteRow = async (row: UnifiedRow) => {
         setConfirmingId(null);
-        let error: unknown = null;
+        try {
+            const body = row.status === 'completed'
+                ? { type: 'session', id: row.id }
+                : { type: 'lead', email: row.email };
 
-        if (row.status === 'completed') {
-            ({ error } = await supabase.from('sessions').update({ deleted_at: new Date().toISOString() }).eq('id', row.id));
-        } else {
-            ({ error } = await supabase.from('leads').delete().eq('email', row.email));
-        }
+            const res = await fetch('/api/delete-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
 
-        if (!error) {
-            setRows(prev => prev.filter(r => r.id !== row.id));
+            if (res.ok) {
+                setRows(prev => prev.filter(r => r.id !== row.id));
+            }
+        } catch {
+            // Network error — row stays in list
         }
     };
 
