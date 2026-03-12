@@ -306,7 +306,7 @@ export const Landing: React.FC = () => {
                         : 'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.'}
                 </motion.p>
 
-                <motion.div {...fadeUp(0.22)} className="flex items-center gap-5">
+                <motion.div {...fadeUp(0.22)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
                         onClick={() => navigate('/app')}
                         style={{
