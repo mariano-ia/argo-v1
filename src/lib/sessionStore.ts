@@ -18,11 +18,16 @@ interface SessionPayload {
 
 /**
  * Saves a completed onboarding session to Supabase.
- * Never blocks the user flow. Retries once on failure.
+ * Includes authenticated user_id for RLS compliance.
+ * Retries once on failure. Returns { ok, error } for UI feedback.
  */
-export async function saveSession(payload: SessionPayload): Promise<boolean> {
+export async function saveSession(payload: SessionPayload): Promise<{ ok: boolean; error?: string }> {
     try {
+        // Get authenticated user for RLS
+        const { data: { user } } = await supabase.auth.getUser();
+
         const row = {
+            user_id:          user?.id ?? null,
             adult_name:       payload.adultData.nombreAdulto,
             adult_email:      payload.adultData.email,
             child_name:       payload.adultData.nombreNino,
@@ -39,19 +44,21 @@ export async function saveSession(payload: SessionPayload): Promise<boolean> {
         };
 
         const { error } = await supabase.from('sessions').insert(row);
-        if (!error) return true;
+        if (!error) return { ok: true };
 
-        console.error('[sessionStore] Insert failed, retrying in 1s:', error.message, error.details);
-        await new Promise(r => setTimeout(r, 1000));
+        console.error('[sessionStore] Insert failed, retrying in 2s:', error.message, error.details, error.hint);
+        await new Promise(r => setTimeout(r, 2000));
 
         const { error: retryError } = await supabase.from('sessions').insert(row);
         if (retryError) {
-            console.error('[sessionStore] Retry also failed:', retryError.message, retryError.details);
-            return false;
+            const msg = retryError.message || 'Unknown error';
+            console.error('[sessionStore] Retry also failed:', msg, retryError.details, retryError.hint);
+            return { ok: false, error: msg };
         }
-        return true;
+        return { ok: true };
     } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unexpected error';
         console.error('[sessionStore] Unexpected error:', err);
-        return false;
+        return { ok: false, error: msg };
     }
 }

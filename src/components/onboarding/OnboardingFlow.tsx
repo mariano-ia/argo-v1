@@ -206,6 +206,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [aiSections, setAiSections]   = useState<AISections | null>(null);
     const [aiLoading, setAiLoading]     = useState(false);
+    const [saveError, setSaveError]     = useState<string | null>(null);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
@@ -278,11 +279,12 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                 destinatario: 'padre',
             };
 
+            let saveResult: { ok: boolean; error?: string };
             try {
                 const { sections, usage }: { sections: AISections; usage: AIUsage } =
                     await generateAISections(report, ctx);
                 setAiSections(sections);
-                await saveSession({
+                saveResult = await saveSession({
                     adultData,
                     eje:            profile.eje,
                     motor:          profile.motor,
@@ -297,7 +299,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                 });
             } catch {
                 // AI failed — still save session without AI usage
-                await saveSession({
+                saveResult = await saveSession({
                     adultData,
                     eje:            profile.eje,
                     motor:          profile.motor,
@@ -307,6 +309,10 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                 });
             } finally {
                 setAiLoading(false);
+            }
+
+            if (!saveResult!.ok) {
+                setSaveError(saveResult!.error ?? 'Error desconocido al guardar la sesión');
             }
 
             // Increment play count after session is persisted
@@ -430,6 +436,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                         report={reportRef.current}
                         aiSections={aiSections}
                         aiLoading={aiLoading}
+                        saveError={saveError}
                         onRestart={handleRestart}
                     />
                 )}

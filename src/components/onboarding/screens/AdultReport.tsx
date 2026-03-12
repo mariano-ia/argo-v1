@@ -19,6 +19,7 @@ interface Props {
     report: ReportData;
     aiSections: AISections | null;
     aiLoading: boolean;
+    saveError?: string | null;
     onRestart: () => void;
 }
 
@@ -117,6 +118,7 @@ export const AdultReport: React.FC<Props> = ({
     report,
     aiSections,
     aiLoading,
+    saveError,
     onRestart: _onRestart,
 }) => {
     const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
@@ -164,6 +166,17 @@ export const AdultReport: React.FC<Props> = ({
             animate={{ opacity: 1, y: 0 }}
             className="space-y-8 max-w-2xl mx-auto"
         >
+            {/* Save error banner */}
+            {saveError && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-start gap-3">
+                    <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                    <div>
+                        <p className="text-sm font-semibold text-amber-800">No se pudo guardar la sesión</p>
+                        <p className="text-xs text-amber-600 mt-1">{saveError}</p>
+                    </div>
+                </div>
+            )}
+
             {/* Hero: archetype + email confirmation */}
             <div className="bg-white rounded-2xl p-8 text-center space-y-5 border border-[#D2D2D7]">
 
