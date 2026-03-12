@@ -278,45 +278,45 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                 destinatario: 'padre',
             };
 
-            generateAISections(report, ctx)
-                .then(({ sections, usage }: { sections: AISections; usage: AIUsage }) => {
-                    setAiSections(sections);
-                    saveSession({
-                        adultData,
-                        eje:            profile.eje,
-                        motor:          profile.motor,
-                        archetypeLabel: report.arquetipo.label,
-                        ejeSecundario:  profile.ejeSecundario,
-                        answers,
-                        aiUsage: {
-                            tokensInput:  usage.inputTokens,
-                            tokensOutput: usage.outputTokens,
-                            costUsd:      usage.costUsd,
-                        },
-                    });
-                })
-                .catch(() => {
-                    if (adultData && profileRef.current && reportRef.current) {
-                        saveSession({
-                            adultData,
-                            eje:            profileRef.current.eje,
-                            motor:          profileRef.current.motor,
-                            archetypeLabel: reportRef.current.arquetipo.label,
-                            ejeSecundario:  profileRef.current.ejeSecundario,
-                            answers,
-                        });
-                    }
-                })
-                .finally(() => setAiLoading(false));
+            try {
+                const { sections, usage }: { sections: AISections; usage: AIUsage } =
+                    await generateAISections(report, ctx);
+                setAiSections(sections);
+                await saveSession({
+                    adultData,
+                    eje:            profile.eje,
+                    motor:          profile.motor,
+                    archetypeLabel: report.arquetipo.label,
+                    ejeSecundario:  profile.ejeSecundario,
+                    answers,
+                    aiUsage: {
+                        tokensInput:  usage.inputTokens,
+                        tokensOutput: usage.outputTokens,
+                        costUsd:      usage.costUsd,
+                    },
+                });
+            } catch {
+                // AI failed — still save session without AI usage
+                await saveSession({
+                    adultData,
+                    eje:            profile.eje,
+                    motor:          profile.motor,
+                    archetypeLabel: report.arquetipo.label,
+                    ejeSecundario:  profile.ejeSecundario,
+                    answers,
+                });
+            } finally {
+                setAiLoading(false);
+            }
+
+            // Increment play count after session is persisted
+            if (!playCountedRef.current) {
+                playCountedRef.current = true;
+                await onPlayComplete?.();
+            }
         };
 
         run();
-
-        // Increment play count once per session
-        if (!playCountedRef.current) {
-            playCountedRef.current = true;
-            onPlayComplete?.();
-        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screenIndex]);
 

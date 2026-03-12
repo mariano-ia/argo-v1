@@ -61,14 +61,10 @@ const UserApp: React.FC = () => {
     };
 
     useEffect(() => {
-        // Initial session check
-        supabase.auth.getSession().then(({ data }) => {
-            const s = data.session ?? null;
-            setSession(s);
-            if (s) { checkBlocked(s); upsertLead(s); }
-        });
+        // Force sign out on mount — each play requires fresh login
+        supabase.auth.signOut().then(() => setSession(null));
 
-        // Listen for auth state changes (Google OAuth redirect, sign in/out)
+        // Listen for auth state changes (login after fresh sign-in)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
             setSession(s ?? null);
             if (s) { checkBlocked(s); upsertLead(s); }
