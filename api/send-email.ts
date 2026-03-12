@@ -35,7 +35,7 @@ function buildHtml(params: {
     <div style="background:#1D1D1F;padding:32px 40px;">
         <div style="margin-bottom:8px;">
             <span style="font-size:18px;letter-spacing:-0.02em;color:#ffffff;">
-                <span style="font-weight:100;">Argo</span><span style="font-weight:800;"> Method</span>
+                <span style="font-weight:800;">Argo</span><span style="font-weight:100;"> Method</span>
             </span>
             <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;margin-left:6px;">beta</span>
         </div>

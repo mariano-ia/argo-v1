@@ -23,7 +23,7 @@ const BlockedView: React.FC = () => (
         <div style={{ maxWidth: '360px' }}>
             <div className="flex items-center justify-center gap-1.5 mb-8">
                 <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                    <span style={{ fontWeight: 100 }}>Argo</span><span style={{ fontWeight: 800 }}> Method</span>
+                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                 </span>
                 <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
                     beta
@@ -61,10 +61,17 @@ const UserApp: React.FC = () => {
     };
 
     useEffect(() => {
-        // Force sign out on mount — each play requires fresh login
-        supabase.auth.signOut().then(() => setSession(null));
+        // Detect OAuth redirect (Google callback with tokens in URL)
+        const isOAuthCallback = window.location.hash.includes('access_token') ||
+                                window.location.search.includes('code=');
 
-        // Listen for auth state changes (login after fresh sign-in)
+        if (!isOAuthCallback) {
+            // Fresh visit — sign out so each play requires new login
+            supabase.auth.signOut();
+            setSession(null);
+        }
+
+        // Listen for auth state changes (OAuth redirect, sign in/out)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
             setSession(s ?? null);
             if (s) { checkBlocked(s); upsertLead(s); }
