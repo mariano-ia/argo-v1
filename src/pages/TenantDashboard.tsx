@@ -35,7 +35,7 @@ export const TenantDashboard: React.FC = () => {
     }, []);
 
     // Load tenant data once session is available
-    useEffect(() => {
+    const fetchTenant = React.useCallback(() => {
         if (!session) return;
         supabase
             .from('tenants')
@@ -46,6 +46,10 @@ export const TenantDashboard: React.FC = () => {
                 if (data) setTenant(data);
             });
     }, [session]);
+
+    useEffect(() => {
+        fetchTenant();
+    }, [fetchTenant]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -188,7 +192,7 @@ export const TenantDashboard: React.FC = () => {
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:p-8">
-                    <Outlet context={{ tenant }} />
+                    <Outlet context={{ tenant, refreshTenant: fetchTenant }} />
                 </main>
             </div>
         </div>

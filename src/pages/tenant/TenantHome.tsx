@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
-import { Copy, Check, Users } from 'lucide-react';
+import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 interface TenantData {
@@ -24,11 +24,35 @@ interface SessionRow {
     created_at: string;
 }
 
+const CREDIT_PACKS = [
+    { id: 'starter', credits: 10, priceUsd: 29, icon: Zap,      color: 'bg-sky-50 border-sky-200 text-sky-700',     btnColor: 'bg-sky-500 hover:bg-sky-600' },
+    { id: 'team',    credits: 30, priceUsd: 69, icon: Sparkles,  color: 'bg-violet-50 border-violet-200 text-violet-700', btnColor: 'bg-violet-500 hover:bg-violet-600' },
+    { id: 'club',    credits: 100, priceUsd: 179, icon: Crown,   color: 'bg-amber-50 border-amber-200 text-amber-700',  btnColor: 'bg-amber-500 hover:bg-amber-600' },
+];
+
 export const TenantHome: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant, refreshTenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
     const [copied, setCopied] = React.useState(false);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
+    const [buyingPack, setBuyingPack] = useState<string | null>(null);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'cancel'; text: string } | null>(null);
+
+    // Handle payment return
+    useEffect(() => {
+        const payment = searchParams.get('payment');
+        if (payment === 'success') {
+            setPaymentMsg({ type: 'success', text: 'Pago confirmado. Tus créditos fueron acreditados.' });
+            refreshTenant();
+            setSearchParams({}, { replace: true });
+            setTimeout(() => setPaymentMsg(null), 6000);
+        } else if (payment === 'cancel') {
+            setPaymentMsg({ type: 'cancel', text: 'Pago cancelado.' });
+            setSearchParams({}, { replace: true });
+            setTimeout(() => setPaymentMsg(null), 4000);
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
         if (!tenant) return;
@@ -54,6 +78,37 @@ export const TenantHome: React.FC = () => {
 
         fetchSessions();
     }, [tenant]);
+
+    const handleBuyPack = async (packId: string) => {
+        setBuyingPack(packId);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            const res = await fetch('/api/create-checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ pack_id: packId }),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.error || 'Error al crear la sesión de pago');
+            }
+
+            const { url } = await res.json();
+            window.location.href = url;
+        } catch (err) {
+            console.error('[TenantHome] Checkout error:', err);
+            setPaymentMsg({ type: 'cancel', text: 'No se pudo iniciar el pago. Intentá de nuevo.' });
+            setTimeout(() => setPaymentMsg(null), 4000);
+        } finally {
+            setBuyingPack(null);
+        }
+    };
 
     if (!tenant) {
         return (
@@ -83,6 +138,17 @@ export const TenantHome: React.FC = () => {
 
     return (
         <div className="max-w-2xl">
+            {/* Payment toast */}
+            {paymentMsg && (
+                <div className={`mb-6 px-4 py-3 rounded-xl text-sm font-medium ${
+                    paymentMsg.type === 'success'
+                        ? 'bg-green-50 text-green-700 border border-green-200'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                }`}>
+                    {paymentMsg.text}
+                </div>
+            )}
+
             <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">
                 Hola, {tenant.display_name}
             </h1>
@@ -132,6 +198,53 @@ export const TenantHome: React.FC = () => {
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
                     <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Plan</p>
                     <p className="text-2xl font-bold text-argo-navy capitalize">{tenant.plan}</p>
+                </div>
+            </div>
+
+            {/* Credit packs */}
+            <div className="mb-8">
+                <div className="flex items-center gap-2 mb-4">
+                    <CreditCard size={15} className="text-argo-grey" />
+                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                        Comprar créditos
+                    </h2>
+                </div>
+                {tenant.credits_remaining === 0 && (
+                    <p className="text-xs text-amber-600 mb-3">
+                        No tenés créditos disponibles. Comprá un pack para seguir invitando deportistas.
+                    </p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {CREDIT_PACKS.map((pack) => {
+                        const Icon = pack.icon;
+                        return (
+                            <div
+                                key={pack.id}
+                                className={`border rounded-2xl p-5 ${pack.color} transition-all hover:shadow-md`}
+                            >
+                                <div className="flex items-center gap-2 mb-3">
+                                    <Icon size={18} />
+                                    <span className="text-sm font-bold uppercase tracking-wide capitalize">{pack.id}</span>
+                                </div>
+                                <p className="text-3xl font-bold mb-1">{pack.credits}</p>
+                                <p className="text-xs opacity-70 mb-4">créditos</p>
+                                <button
+                                    onClick={() => handleBuyPack(pack.id)}
+                                    disabled={buyingPack !== null}
+                                    className={`w-full py-2 rounded-lg text-white text-sm font-semibold ${pack.btnColor} transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                                >
+                                    {buyingPack === pack.id ? (
+                                        <span className="flex items-center justify-center gap-2">
+                                            <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                                            Procesando...
+                                        </span>
+                                    ) : (
+                                        `US$ ${pack.priceUsd}`
+                                    )}
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
