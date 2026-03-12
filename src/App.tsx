@@ -9,6 +9,7 @@ import { TenantDashboard }   from './pages/TenantDashboard';
 import { TenantHome }        from './pages/tenant/TenantHome';
 import { TenantLink }        from './pages/tenant/TenantLink';
 import { TenantSettings }    from './pages/tenant/TenantSettings';
+import { TenantPlay }        from './pages/TenantPlay';
 import { Dashboard }          from './pages/Dashboard';
 import { Sessions }           from './pages/dashboard/Sessions';
 import { Metrics }            from './pages/dashboard/Metrics';
@@ -108,6 +109,7 @@ function App() {
             {/* Public */}
             <Route path="/"       element={<Landing />} />
             <Route path="/app"    element={<UserApp />} />
+            <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
 
             {/* Tenant dashboard */}

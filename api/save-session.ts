@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const {
             adult_name, adult_email, child_name, child_age, sport,
             eje, motor, archetype_label, eje_secundario,
-            answers,
+            answers, tenant_id,
             ai_tokens_input, ai_tokens_output, ai_cost_usd,
         } = req.body;
 
@@ -38,6 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             motor,
             archetype_label,
             eje_secundario:   eje_secundario ?? null,
+            tenant_id:        tenant_id ?? null,
             answers:          answers ?? [],
             ai_tokens_input:  ai_tokens_input ?? 0,
             ai_tokens_output: ai_tokens_output ?? 0,

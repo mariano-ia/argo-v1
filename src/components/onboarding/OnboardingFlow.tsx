@@ -197,9 +197,10 @@ const SCREENS: ScreenDef[] = [
 interface OnboardingProps {
     userEmail?: string;
     onPlayComplete?: () => void;
+    tenantId?: string;
 }
 
-export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPlayComplete }) => {
+export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPlayComplete, tenantId }) => {
     const { questions } = useQuestions();
     const [screenIndex, setScreenIndex] = useState(0);
     const [adultData, setAdultData]     = useState<AdultData | null>(null);
@@ -291,6 +292,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                     archetypeLabel: report.arquetipo.label,
                     ejeSecundario:  profile.ejeSecundario,
                     answers,
+                    tenantId,
                     aiUsage: {
                         tokensInput:  usage.inputTokens,
                         tokensOutput: usage.outputTokens,
@@ -306,6 +308,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                     archetypeLabel: report.arquetipo.label,
                     ejeSecundario:  profile.ejeSecundario,
                     answers,
+                    tenantId,
                 });
             } finally {
                 setAiLoading(false);
