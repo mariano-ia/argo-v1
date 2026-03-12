@@ -1,26 +1,68 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
+import type { Session } from '@supabase/supabase-js';
 import {
-    Users, BarChart2, HelpCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 
+interface TenantData {
+    id: string;
+    slug: string;
+    display_name: string;
+    plan: string;
+    credits_remaining: number;
+}
+
 const NAV_ITEMS = [
-    { to: '/admin/sessions',  label: 'Sesiones',  icon: Users },
-    { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
-    { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
+    { to: '/dashboard',       label: 'Inicio',   icon: Home,     end: true },
+    { to: '/dashboard/link',  label: 'Mi link',   icon: Link2,    end: false },
+    { to: '/dashboard/settings', label: 'Ajustes', icon: Settings, end: false },
 ];
 
-export const Dashboard: React.FC = () => {
+export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
+    const [session, setSession] = useState<Session | null | undefined>(undefined);
+    const [tenant, setTenant] = useState<TenantData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
+    useEffect(() => {
+        supabase.auth.getSession().then(({ data }) => setSession(data.session));
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+        return () => subscription.unsubscribe();
+    }, []);
+
+    // Load tenant data once session is available
+    useEffect(() => {
+        if (!session) return;
+        supabase
+            .from('tenants')
+            .select('id, slug, display_name, plan, credits_remaining')
+            .eq('auth_user_id', session.user.id)
+            .single()
+            .then(({ data }) => {
+                if (data) setTenant(data);
+            });
+    }, [session]);
+
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        navigate('/admin/login');
+        navigate('/');
     };
+
+    // Loading
+    if (session === undefined) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-argo-neutral">
+                <div className="w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+            </div>
+        );
+    }
+
+    // Not logged in
+    if (!session) return <Navigate to="/signup" replace />;
 
     const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
         <aside
@@ -28,24 +70,33 @@ export const Dashboard: React.FC = () => {
                 mobile ? 'w-56' : collapsed ? 'w-14' : 'w-56'
             }`}
         >
-            {/* Logo */}
+            {/* Logo + tenant name */}
             <div className={`h-14 flex items-center border-b border-argo-border ${collapsed && !mobile ? 'justify-center px-0' : 'gap-2 px-5'}`}>
                 <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                     <span style={{ fontWeight: 800 }}>A</span>{!collapsed || mobile ? <><span style={{ fontWeight: 800 }}>rgo</span><span style={{ fontWeight: 100 }}> Method</span></> : null}
                 </span>
-                {(!collapsed || mobile) && (
-                    <span className="text-[9px] text-argo-grey/50 font-semibold uppercase tracking-widest ml-auto">
-                        Dashboard
+                {(!collapsed || mobile) && tenant && (
+                    <span className="text-[9px] text-argo-grey/50 font-semibold uppercase tracking-widest ml-auto truncate max-w-[80px]">
+                        {tenant.display_name}
                     </span>
                 )}
             </div>
 
+            {/* Credits badge */}
+            {(!collapsed || mobile) && tenant && (
+                <div className="mx-3 mt-3 px-3 py-2 rounded-lg bg-[#F0F0FF] border border-[#BBBCFF]/30">
+                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold">Créditos</p>
+                    <p className="text-lg font-bold text-argo-navy">{tenant.credits_remaining}</p>
+                </div>
+            )}
+
             {/* Nav */}
             <nav className={`flex-1 py-4 space-y-0.5 ${collapsed && !mobile ? 'px-1.5' : 'px-3'}`}>
-                {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+                {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
                     <NavLink
                         key={to}
                         to={to}
+                        end={end}
                         onClick={() => setSidebarOpen(false)}
                         title={collapsed && !mobile ? label : undefined}
                         className={({ isActive }) =>
@@ -60,7 +111,6 @@ export const Dashboard: React.FC = () => {
                     >
                         <Icon size={15} />
                         {(!collapsed || mobile) && label}
-                        {/* Tooltip on hover when collapsed */}
                         {collapsed && !mobile && (
                             <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-argo-navy text-white text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                                 {label}
@@ -72,7 +122,6 @@ export const Dashboard: React.FC = () => {
 
             {/* Footer */}
             <div className={`pb-4 space-y-1 border-t border-argo-border pt-4 ${collapsed && !mobile ? 'px-1.5' : 'px-3'}`}>
-                {/* Collapse toggle (desktop only) */}
                 {!mobile && (
                     <button
                         onClick={() => setCollapsed(c => !c)}
@@ -139,7 +188,7 @@ export const Dashboard: React.FC = () => {
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:p-8">
-                    <Outlet />
+                    <Outlet context={{ tenant }} />
                 </main>
             </div>
         </div>

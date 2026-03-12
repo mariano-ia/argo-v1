@@ -3,7 +3,9 @@ import { Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 
-export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ADMIN_EMAILS = ['marianonoceti@gmail.com'];
+
+export const AdminRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [session, setSession] = useState<Session | null | undefined>(undefined);
 
     useEffect(() => {
@@ -21,6 +23,10 @@ export const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     if (!session) return <Navigate to="/admin/login" replace />;
+
+    if (!ADMIN_EMAILS.includes(session.user.email ?? '')) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     return <>{children}</>;
 };

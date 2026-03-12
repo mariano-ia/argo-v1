@@ -2,15 +2,20 @@ import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
-import { Landing }         from './pages/Landing';
-import { Login }           from './pages/Login';
-import { Dashboard }       from './pages/Dashboard';
-import { Sessions }        from './pages/dashboard/Sessions';
-import { Metrics }         from './pages/dashboard/Metrics';
-import { QuestionsAdmin }  from './pages/dashboard/QuestionsAdmin';
-import { ProtectedRoute }  from './components/ProtectedRoute';
-import { OnboardingFlow }  from './components/onboarding/OnboardingFlow';
-import { UserAuthGate }    from './components/onboarding/UserAuthGate';
+import { Landing }            from './pages/Landing';
+import { Login }              from './pages/Login';
+import { TenantSignup }      from './pages/TenantSignup';
+import { TenantDashboard }   from './pages/TenantDashboard';
+import { TenantHome }        from './pages/tenant/TenantHome';
+import { TenantLink }        from './pages/tenant/TenantLink';
+import { TenantSettings }    from './pages/tenant/TenantSettings';
+import { Dashboard }          from './pages/Dashboard';
+import { Sessions }           from './pages/dashboard/Sessions';
+import { Metrics }            from './pages/dashboard/Metrics';
+import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
+import { AdminRoute }         from './components/AdminRoute';
+import { OnboardingFlow }     from './components/onboarding/OnboardingFlow';
+import { UserAuthGate }       from './components/onboarding/UserAuthGate';
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -42,7 +47,6 @@ const BlockedView: React.FC = () => (
 // ─── User app wrapper (auth + play limit) ─────────────────────────────────────
 
 const UserApp: React.FC = () => {
-    // undefined = still loading, null = not logged in, Session = logged in
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [blocked, setBlocked] = useState(false);
 
@@ -61,17 +65,14 @@ const UserApp: React.FC = () => {
     };
 
     useEffect(() => {
-        // Detect OAuth redirect (Google callback with tokens in URL)
         const isOAuthCallback = window.location.hash.includes('access_token') ||
                                 window.location.search.includes('code=');
 
         if (!isOAuthCallback) {
-            // Fresh visit — sign out so each play requires new login
             supabase.auth.signOut();
             setSession(null);
         }
 
-        // Listen for auth state changes (OAuth redirect, sign in/out)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, s) => {
             setSession(s ?? null);
             if (s) { checkBlocked(s); upsertLead(s); }
@@ -87,13 +88,8 @@ const UserApp: React.FC = () => {
         await supabase.auth.updateUser({ data: { play_count: current + 1 } });
     };
 
-    // Still loading
     if (session === undefined) return null;
-
-    // Not logged in → show auth gate
-    if (!session) return <UserAuthGate onAuthenticated={() => { /* onAuthStateChange handles update */ }} />;
-
-    // Play limit reached
+    if (!session) return <UserAuthGate onAuthenticated={() => {}} />;
     if (blocked) return <BlockedView />;
 
     return (
@@ -110,13 +106,21 @@ function App() {
     return (
         <Routes>
             {/* Public */}
-            <Route path="/"      element={<Landing />} />
-            <Route path="/app"   element={<UserApp />} />
-            <Route path="/login" element={<Login />} />
+            <Route path="/"       element={<Landing />} />
+            <Route path="/app"    element={<UserApp />} />
+            <Route path="/signup" element={<TenantSignup />} />
 
-            {/* Protected dashboard */}
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
-                <Route index element={<Sessions />} />
+            {/* Tenant dashboard */}
+            <Route path="/dashboard" element={<TenantDashboard />}>
+                <Route index           element={<TenantHome />} />
+                <Route path="link"     element={<TenantLink />} />
+                <Route path="settings" element={<TenantSettings />} />
+            </Route>
+
+            {/* Admin (superadmin) */}
+            <Route path="/admin/login" element={<Login />} />
+            <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>}>
+                <Route index            element={<Sessions />} />
                 <Route path="sessions"  element={<Sessions />} />
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
