@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Copy, Check, ExternalLink } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 
 interface TenantData {
     id: string;
