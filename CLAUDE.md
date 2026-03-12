@@ -53,11 +53,18 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 - Session states: `started` → `completed` | `abandoned`
 - RLS or server-side logic: each tenant sees only their own sessions
 
+## Git workflow
+- **`main`** branch = production (`argomethod.com`). Do NOT push here unless the user explicitly says "mandalo a producción" or "push to main".
+- **`develop`** branch = testing/staging. All new work goes here by default. Vercel generates a preview URL for each push.
+- When unsure which branch to target, **always ask the user**.
+- Never merge `develop` into `main` without explicit user approval.
+
 ## Serverless endpoints (Vercel)
 All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to bypass RLS:
 - `POST /api/save-session` — insert completed session
 - `POST /api/delete-session` — soft-delete session or hard-delete lead
 - `POST /api/send-email` — send report email via Resend
+- `POST /api/create-tenant` — create tenant record on signup (idempotent)
 
 ## Key conventions
 - Option colors in questions are positional (A=sky, B=amber, C=violet, D=emerald) — never reveal DISC axis
