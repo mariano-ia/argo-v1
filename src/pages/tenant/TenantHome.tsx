@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Users } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface TenantData {
     id: string;
@@ -10,9 +11,49 @@ interface TenantData {
     credits_remaining: number;
 }
 
+interface SessionRow {
+    id: string;
+    child_name: string;
+    child_age: number;
+    adult_name: string;
+    adult_email: string;
+    sport: string | null;
+    archetype_label: string;
+    eje: string;
+    eje_secundario: string | null;
+    created_at: string;
+}
+
 export const TenantHome: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
     const [copied, setCopied] = React.useState(false);
+    const [sessions, setSessions] = useState<SessionRow[]>([]);
+    const [sessionsLoading, setSessionsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!tenant) return;
+
+        const fetchSessions = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            try {
+                const res = await fetch('/api/tenant-sessions', {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setSessions(data.sessions);
+                }
+            } catch {
+                // silently fail
+            } finally {
+                setSessionsLoading(false);
+            }
+        };
+
+        fetchSessions();
+    }, [tenant]);
 
     if (!tenant) {
         return (
@@ -28,6 +69,16 @@ export const TenantHome: React.FC = () => {
         await navigator.clipboard.writeText(playLink);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+    };
+
+    const formatDate = (iso: string) => {
+        const d = new Date(iso);
+        return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+    };
+
+    const formatTime = (iso: string) => {
+        const d = new Date(iso);
+        return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -67,20 +118,70 @@ export const TenantHome: React.FC = () => {
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
                     <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Créditos</p>
                     <p className="text-2xl font-bold text-argo-navy">{tenant.credits_remaining}</p>
                 </div>
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
                     <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Sesiones</p>
-                    <p className="text-2xl font-bold text-argo-navy">—</p>
-                    <p className="text-[10px] text-argo-grey/50 mt-0.5">Próximamente</p>
+                    <p className="text-2xl font-bold text-argo-navy">
+                        {sessionsLoading ? '…' : sessions.length}
+                    </p>
                 </div>
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
                     <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Plan</p>
                     <p className="text-2xl font-bold text-argo-navy capitalize">{tenant.plan}</p>
                 </div>
+            </div>
+
+            {/* Sessions list */}
+            <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
+                    <Users size={15} className="text-argo-grey" />
+                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                        Sesiones realizadas
+                    </h2>
+                </div>
+
+                {sessionsLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                    </div>
+                ) : sessions.length === 0 ? (
+                    <div className="py-12 text-center">
+                        <p className="text-sm text-argo-grey">Todavía no hay sesiones registradas.</p>
+                        <p className="text-xs text-argo-grey/50 mt-1">Compartí tu link para que empiecen a llegar.</p>
+                    </div>
+                ) : (
+                    <div className="divide-y divide-argo-border">
+                        {sessions.map((s) => (
+                            <div key={s.id} className="px-6 py-4 hover:bg-argo-neutral/50 transition-colors">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-semibold text-argo-navy truncate">
+                                            {s.child_name}
+                                            <span className="font-normal text-argo-grey ml-1.5">
+                                                {s.child_age} años{s.sport ? ` · ${s.sport}` : ''}
+                                            </span>
+                                        </p>
+                                        <p className="text-xs text-argo-grey mt-0.5 truncate">
+                                            Adulto: {s.adult_name} ({s.adult_email})
+                                        </p>
+                                    </div>
+                                    <div className="text-right flex-shrink-0">
+                                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                            {s.archetype_label}
+                                        </span>
+                                        <p className="text-[10px] text-argo-grey/60 mt-1">
+                                            {formatDate(s.created_at)} · {formatTime(s.created_at)}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );
