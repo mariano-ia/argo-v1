@@ -241,7 +241,7 @@ export const Landing: React.FC = () => {
                             beta
                         </span>
                     </span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
                             style={{ fontWeight: 400, fontSize: '11px', letterSpacing: '0.06em' }}
@@ -250,8 +250,15 @@ export const Landing: React.FC = () => {
                             {t.nav.lang}
                         </button>
                         <button
-                            onClick={() => navigate('/app')}
-                            aria-label={lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                            onClick={() => navigate('/signup')}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                        >
+                            {lang === 'es' ? 'Ingresar' : 'Log in'}
+                        </button>
+                        <button
+                            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                            aria-label={lang === 'es' ? 'Ver planes' : 'See plans'}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -259,7 +266,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                            {lang === 'es' ? 'Ver planes' : 'See plans'}
                         </button>
                     </div>
                 </div>
@@ -300,9 +307,9 @@ export const Landing: React.FC = () => {
                         : 'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.'}
                 </motion.p>
 
-                <motion.div {...fadeUp(0.22)} className="flex items-center gap-5">
+                <motion.div {...fadeUp(0.22)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -313,7 +320,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                        {lang === 'es' ? 'Empezar ahora' : 'Get started'}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -692,30 +699,30 @@ export const Landing: React.FC = () => {
                 </motion.div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Explorer */}
+                    {/* Starter */}
                     <motion.div
                         {...fadeUp(0.05)}
                         className="bg-white border border-argo-border rounded-2xl p-8 flex flex-col"
                     >
-                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Explorer</p>
+                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Starter</p>
                         <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            {lang === 'es' ? 'Gratis' : 'Free'}
+                            US$ 29
                         </p>
-                        <p className="text-sm text-argo-grey mt-1 mb-6">3 {lang === 'es' ? 'créditos' : 'credits'}</p>
+                        <p className="text-sm text-argo-grey mt-1 mb-6">10 {lang === 'es' ? 'créditos' : 'credits'}</p>
                         <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Link de invitación único' : 'Unique invitation link'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Panel con resultados' : 'Results dashboard'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Informe por email' : 'Email report'}</li>
                         </ul>
                         <button
-                            onClick={() => navigate('/signup?plan=explorer')}
+                            onClick={() => navigate('/signup?plan=starter')}
                             className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
                         >
-                            {lang === 'es' ? 'Empezar gratis' : 'Start for free'}
+                            {lang === 'es' ? 'Empezar' : 'Get started'}
                         </button>
                     </motion.div>
 
-                    {/* Coach */}
+                    {/* Team */}
                     <motion.div
                         {...fadeUp(0.1)}
                         className="bg-white border-2 border-[#955FB5] rounded-2xl p-8 flex flex-col relative"
@@ -723,22 +730,22 @@ export const Landing: React.FC = () => {
                         <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#955FB5] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                             {lang === 'es' ? 'Popular' : 'Popular'}
                         </span>
-                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Coach</p>
+                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Team</p>
                         <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            —
+                            US$ 69
                         </p>
-                        <p className="text-sm text-argo-grey mt-1 mb-6">25 {lang === 'es' ? 'créditos' : 'credits'}</p>
+                        <p className="text-sm text-argo-grey mt-1 mb-6">30 {lang === 'es' ? 'créditos' : 'credits'}</p>
                         <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Explorer' : 'Everything in Explorer'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Starter' : 'Everything in Starter'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Exportar CSV' : 'Export CSV'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Soporte prioritario' : 'Priority support'}</li>
                         </ul>
                         <button
-                            onClick={() => navigate('/signup?plan=coach')}
+                            onClick={() => navigate('/signup?plan=team')}
                             style={{ backgroundColor: '#955FB5' }}
                             className="w-full py-3 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-all"
                         >
-                            {lang === 'es' ? 'Elegir Coach' : 'Choose Coach'}
+                            {lang === 'es' ? 'Elegir Team' : 'Choose Team'}
                         </button>
                     </motion.div>
 
@@ -749,11 +756,11 @@ export const Landing: React.FC = () => {
                     >
                         <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Club</p>
                         <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            —
+                            US$ 179
                         </p>
                         <p className="text-sm text-argo-grey mt-1 mb-6">100 {lang === 'es' ? 'créditos' : 'credits'}</p>
                         <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Coach' : 'Everything in Coach'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Team' : 'Everything in Team'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Múltiples usuarios' : 'Multiple users'}</li>
                             <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Métricas avanzadas' : 'Advanced metrics'}</li>
                         </ul>
@@ -761,7 +768,7 @@ export const Landing: React.FC = () => {
                             onClick={() => navigate('/signup?plan=club')}
                             className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
                         >
-                            {lang === 'es' ? 'Contactar' : 'Contact us'}
+                            {lang === 'es' ? 'Elegir Club' : 'Choose Club'}
                         </button>
                     </motion.div>
                 </div>
