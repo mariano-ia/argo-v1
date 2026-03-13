@@ -14,6 +14,7 @@ import { Dashboard }          from './pages/Dashboard';
 import { Sessions }           from './pages/dashboard/Sessions';
 import { Metrics }            from './pages/dashboard/Metrics';
 import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
+import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlow }     from './components/onboarding/OnboardingFlow';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -126,6 +127,7 @@ function App() {
                 <Route path="sessions"  element={<Sessions />} />
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
+                <Route path="users"     element={<AdminUsers />} />
             </Route>
         </Routes>
     );
