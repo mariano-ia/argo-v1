@@ -302,7 +302,7 @@ export const Landing: React.FC = () => {
                     className="mb-12"
                 >
                     {lang === 'es'
-                        ? 'Basado en la metodología DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés deportivo y asegurar el disfrute genuino de los niños.'
+                        ? 'A través de una dinámica gamificada basada en DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés y asegurar el disfrute genuino de los niños.'
                         : 'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.'}
                 </motion.p>
 
