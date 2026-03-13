@@ -6,7 +6,7 @@ interface Props {
     total: number;
 }
 
-/** Displays "⚓ × N/12" with a +1 pop animation when count increases. */
+/** Displays "⚓ N/12" with a +1 pop animation when count increases. */
 export const AnchorCounter: React.FC<Props> = ({ count, total }) => {
     const prevCount = useRef(count);
     const [showPlus, setShowPlus] = useState(false);
@@ -14,7 +14,7 @@ export const AnchorCounter: React.FC<Props> = ({ count, total }) => {
     useEffect(() => {
         if (count > prevCount.current) {
             setShowPlus(true);
-            const t = setTimeout(() => setShowPlus(false), 700);
+            const t = setTimeout(() => setShowPlus(false), 800);
             prevCount.current = count;
             return () => clearTimeout(t);
         }
@@ -25,26 +25,32 @@ export const AnchorCounter: React.FC<Props> = ({ count, total }) => {
         <div className="flex items-center gap-1.5 relative">
             <motion.span
                 key={count}
-                initial={{ scale: 1.4, rotate: -10 }}
+                initial={{ scale: 1.5, rotate: -12 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 15 }}
-                className="text-lg"
+                transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                className="text-xl"
             >
                 ⚓
             </motion.span>
-            <span className="text-white/80 text-sm font-semibold tabular-nums">
+            <motion.span
+                key={`n-${count}`}
+                initial={{ scale: 1.3 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                className="font-quest font-bold text-white/90 text-sm tabular-nums"
+            >
                 {count}/{total}
-            </span>
+            </motion.span>
 
             {/* Floating +1 */}
             <AnimatePresence>
                 {showPlus && (
                     <motion.span
-                        initial={{ opacity: 1, y: 0, scale: 0.8 }}
-                        animate={{ opacity: 0, y: -24, scale: 1.2 }}
+                        initial={{ opacity: 1, y: 0, scale: 0.6 }}
+                        animate={{ opacity: 0, y: -28, scale: 1.4 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="absolute -top-1 left-6 text-yellow-300 font-bold text-sm pointer-events-none"
+                        transition={{ duration: 0.7, ease: 'easeOut' }}
+                        className="absolute -top-2 left-7 font-quest font-bold text-yellow-300 text-base pointer-events-none"
                     >
                         +1
                     </motion.span>

@@ -10,7 +10,7 @@ import { saveSession } from '../../lib/sessionStore';
 import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
-import { StorySlide } from './screens/StorySlide';
+import { StorySlideV2 } from './screens/StorySlideV2';
 import { MiniGame1 } from './screens/MiniGame1';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { MiniGame2 } from './screens/MiniGame2';
@@ -240,7 +240,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Determine whether to show scene backgrounds (child-facing screens)
     const showScene = screen.type === 'question'
         || screen.type === 'story'
-        || screen.type === 'child-completion';
+        || screen.type === 'child-completion'
+        || screen.type === 'minigame1';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
 
     return (
@@ -292,14 +293,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 )}
 
                 {screen.type === 'story' && (
-                    <StorySlide
+                    <StorySlideV2
                         key={screen.slideId}
                         slide={STORY_SLIDES_V2[screen.slideId]}
                         nombreNino={nombre}
                         deporte={deporte}
                         onContinue={advance}
                         continueLabel={screen.continueLabel}
-                        useOceanBg={true}
                     />
                 )}
 

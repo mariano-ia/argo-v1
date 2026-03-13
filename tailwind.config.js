@@ -25,8 +25,10 @@ export default {
                 }
             },
             fontFamily: {
-                sans:    ['Inter', 'sans-serif'],
-                display: ['Inter', 'sans-serif'],
+                sans:      ['Inter', 'sans-serif'],
+                display:   ['Inter', 'sans-serif'],
+                adventure: ['"Lilita One"', 'cursive'],
+                quest:     ['"Quicksand"', 'sans-serif'],
             },
             borderRadius: {
                 'argo-sm': '12px',

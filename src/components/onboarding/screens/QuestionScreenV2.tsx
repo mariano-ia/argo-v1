@@ -2,166 +2,118 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '../../../lib/onboardingData';
 import { QuestionAnswer } from '../../../lib/profileResolver';
-import { NauticalIcon, NauticalIconName } from '../illustrations/NauticalIcons';
 import { AnchorCounter } from '../AnchorCounter';
 
 type Axis = 'D' | 'I' | 'S' | 'C';
 
-// ─── Icon mapping per question/option ────────────────────────────────────────
+// ─── Emoji mapping per question/option ───────────────────────────────────────
 
-/** Maps [questionNumber][optionIndex] → icon name */
-const OPTION_ICONS: Record<number, NauticalIconName[]> = {
-    1:  ['compass', 'lightning', 'wave', 'flag'],
-    2:  ['spyglass', 'oar', 'map', 'flag'],
-    3:  ['spyglass', 'helm', 'parrot', 'lightning'],
-    4:  ['flag', 'map', 'compass', 'lighthouse'],
-    5:  ['rope', 'oar', 'compass', 'flag'],
-    6:  ['horn', 'rope', 'spyglass', 'anchor'],
-    7:  ['wave', 'spyglass', 'knot', 'flag'],
-    8:  ['star', 'map', 'oar', 'lightning'],
-    9:  ['spyglass', 'oar', 'wave', 'flag'],
-    10: ['star', 'compass', 'oar', 'anchor'],
-    11: ['spyglass', 'star', 'wave', 'lightning'],
-    12: ['flag', 'map', 'anchor', 'spyglass'],
+const OPTION_EMOJIS: Record<number, string[]> = {
+    1:  ['🔍', '💨', '😌', '👋'],
+    2:  ['🤔', '🏄', '👣', '🤝'],
+    3:  ['🎯', '⚙️', '💬', '⚡'],
+    4:  ['👂', '🗺️', '🧭', '🏠'],
+    5:  ['💪', '🏃', '🧠', '🔎'],
+    6:  ['📣', '🤲', '👀', '⚓'],
+    7:  ['😮‍💨', '🔬', '💪', '🙋'],
+    8:  ['😄', '📍', '🚣', '🔥'],
+    9:  ['👁️', '⚔️', '😴', '📢'],
+    10: ['🙌', '🎓', '🏃', '🤗'],
+    11: ['📈', '🎲', '🌊', '⏱️'],
+    12: ['🎉', '✅', '🛡️', '🔭'],
 };
 
-// ─── Option colors by position ───────────────────────────────────────────────
+// ─── Option colors — saturated game-style ────────────────────────────────────
 
-const OPTION_STYLES = [
-    {
-        letter: 'A',
-        idle:     'border-sky-200/70   bg-sky-50/55   text-argo-navy',
-        selected: 'border-sky-400   bg-sky-500   text-white',
-        dot:      'bg-sky-500 text-white',
-        ring:     'ring-sky-300',
-        iconIdle: '#0284c7',
-    },
-    {
-        letter: 'B',
-        idle:     'border-amber-200/70  bg-amber-50/55  text-argo-navy',
-        selected: 'border-amber-400  bg-amber-500  text-white',
-        dot:      'bg-amber-500 text-white',
-        ring:     'ring-amber-300',
-        iconIdle: '#d97706',
-    },
-    {
-        letter: 'C',
-        idle:     'border-violet-200/70 bg-violet-50/55 text-argo-navy',
-        selected: 'border-violet-400 bg-violet-500 text-white',
-        dot:      'bg-violet-500 text-white',
-        ring:     'ring-violet-300',
-        iconIdle: '#7c3aed',
-    },
-    {
-        letter: 'D',
-        idle:     'border-emerald-200/70 bg-emerald-50/55 text-argo-navy',
-        selected: 'border-emerald-400 bg-emerald-500 text-white',
-        dot:      'bg-emerald-500 text-white',
-        ring:     'ring-emerald-300',
-        iconIdle: '#059669',
-    },
+const CARD_COLORS = [
+    { bg: '#4EA8DE', shadow: '#3478A6' },
+    { bg: '#F4A261', shadow: '#C47D3F' },
+    { bg: '#9B72CF', shadow: '#7548A8' },
+    { bg: '#5EC08D', shadow: '#3D9966' },
 ] as const;
 
-// ─── Progress Bar ────────────────────────────────────────────────────────────
+// ─── Ship Progress Bar ──────────────────────────────────────────────────────
 
 const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, total }) => {
     const pct = total > 1 ? (current / (total - 1)) * 100 : 0;
 
     return (
-        <div className="relative h-5 flex items-center">
-            <div className="absolute inset-x-0 h-1 rounded-full bg-white/25 overflow-hidden">
+        <div className="relative h-6 flex items-center">
+            {/* Track */}
+            <div className="absolute inset-x-0 h-2 rounded-full bg-white/20 overflow-hidden">
                 <motion.div
-                    className="h-full bg-white/65 rounded-full"
+                    className="h-full rounded-full bg-white/60"
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={{ type: 'spring', stiffness: 100, damping: 18 }}
                 />
             </div>
-            {Array.from({ length: total }, (_, i) => {
-                const pos = total > 1 ? (i / (total - 1)) * 100 : 0;
-                const done = i < current;
-                const active = i === current;
-                return (
-                    <div key={i} className="absolute top-1/2" style={{ left: `${pos}%`, transform: 'translate(-50%, -50%)' }}>
-                        <motion.div
-                            animate={{
-                                width:  active ? 14 : done ? 10 : 8,
-                                height: active ? 14 : done ? 10 : 8,
-                                backgroundColor: active ? 'rgba(255,255,255,1)' : done ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.2)',
-                            }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                            className="rounded-full"
-                        />
-                    </div>
-                );
-            })}
+            {/* Sailing ship emoji */}
+            <motion.div
+                className="absolute top-1/2 z-10"
+                style={{ transform: 'translate(-50%, -50%)' }}
+                animate={{ left: `${pct}%` }}
+                transition={{ type: 'spring', stiffness: 100, damping: 18 }}
+            >
+                <span className="text-lg drop-shadow-md">⛵</span>
+            </motion.div>
         </div>
     );
 };
 
-// ─── Option Card (with icon) ─────────────────────────────────────────────────
+// ─── 3D Option Card ─────────────────────────────────────────────────────────
 
 interface OptionProps {
-    style: typeof OPTION_STYLES[number];
+    color: typeof CARD_COLORS[number];
+    emoji: string;
     label: string;
-    icon: NauticalIconName;
     index: number;
     isChosen: boolean;
     isOther: boolean;
     onSelect: () => void;
 }
 
-const OptionCard: React.FC<OptionProps> = ({ style, label, icon, index, isChosen, isOther, onSelect }) => (
+const OptionCard: React.FC<OptionProps> = ({ color, emoji, label, index, isChosen, isOther, onSelect }) => (
     <motion.button
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: isOther ? 0.35 : 1, y: 0 }}
-        transition={{ delay: index * 0.07, type: 'spring', stiffness: 360, damping: 28 }}
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: isOther ? 0.3 : 1, y: 0 }}
+        transition={{ delay: index * 0.06, type: 'spring', stiffness: 400, damping: 28 }}
         onClick={onSelect}
         disabled={isChosen || isOther}
-        whileTap={!isChosen && !isOther ? { scale: 0.97 } : {}}
-        className={`
-            w-full text-left px-4 py-4 rounded-2xl border-2
-            flex items-center gap-4 transition-all duration-200 cursor-pointer
-            min-h-[80px] backdrop-blur-sm
-            ${isChosen
-                ? `${style.selected} shadow-lg ring-4 ${style.ring}`
-                : `${style.idle} hover:shadow-md hover:scale-[1.01]`
-            }
-        `}
+        whileTap={!isChosen && !isOther ? { y: 3 } : {}}
+        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl cursor-pointer transition-transform min-h-[60px]"
+        style={{
+            background: isChosen ? color.bg : color.bg,
+            boxShadow: isChosen
+                ? `0 1px 0 ${color.shadow}`
+                : `0 4px 0 ${color.shadow}`,
+            transform: isChosen ? 'translateY(3px)' : 'translateY(0)',
+            opacity: isOther ? 0.3 : 1,
+        }}
     >
-        {/* Icon */}
-        <motion.div
-            animate={isChosen ? { scale: [1, 1.3, 1], rotate: [0, -8, 8, 0] } : {}}
-            transition={{ duration: 0.4 }}
-            className={`
-                w-11 h-11 rounded-xl flex-shrink-0 flex items-center justify-center
-                transition-all duration-300
-                ${isChosen ? 'bg-white/25' : 'bg-white/60'}
-            `}
-        >
-            <AnimatePresence mode="wait">
-                {isChosen ? (
-                    <motion.svg
-                        key="check"
-                        initial={{ scale: 0, rotate: -30 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        exit={{ scale: 0 }}
-                        className="w-5 h-5 text-white"
-                        fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" strokeWidth={3}
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </motion.svg>
-                ) : (
-                    <motion.div key="icon">
-                        <NauticalIcon name={icon} size={22} color={style.iconIdle} />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </motion.div>
+        {/* Emoji or checkmark */}
+        <AnimatePresence mode="wait">
+            {isChosen ? (
+                <motion.span
+                    key="check"
+                    initial={{ scale: 0, rotate: -30 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    className="text-2xl flex-shrink-0 w-8 text-center"
+                >
+                    ✓
+                </motion.span>
+            ) : (
+                <motion.span
+                    key="emoji"
+                    className="text-2xl flex-shrink-0 w-8 text-center"
+                >
+                    {emoji}
+                </motion.span>
+            )}
+        </AnimatePresence>
 
         {/* Label */}
-        <span className={`flex-1 text-base font-medium leading-snug ${isChosen ? 'text-white' : 'text-argo-navy'}`}>
+        <span className="flex-1 font-quest font-semibold text-lg text-white leading-snug text-left">
             {label}
         </span>
     </motion.button>
@@ -204,52 +156,60 @@ export const QuestionScreenV2: React.FC<Props> = ({
     };
 
     const intro = question.intro.replace(/\{\{NOMBRE_NIÑO\}\}/g, nombreNino);
-    const icons = OPTION_ICONS[question.number] ?? ['star', 'star', 'star', 'star'];
+    const emojis = OPTION_EMOJIS[question.number] ?? ['⭐', '⭐', '⭐', '⭐'];
 
     return (
         <motion.div
             key={question.number}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="flex flex-col gap-5 max-w-lg mx-auto w-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 flex flex-col justify-end"
+            style={{ zIndex: 2 }}
         >
-            {/* Header: progress bar + anchor counter */}
-            <div className="flex items-center gap-3">
-                <div className="flex-1">
-                    <ShipProgress current={questionIndex} total={totalQuestions} />
-                </div>
-                <AnchorCounter count={anchorsCollected} total={totalQuestions} />
-            </div>
-
-            {/* Question card */}
+            {/* ── Zone 1: Question title floating over the scene ── */}
             <motion.div
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="bg-white/25 backdrop-blur-sm rounded-2xl px-6 py-7"
-                style={{ border: '1px solid rgba(255,255,255,0.45)' }}
+                transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 25 }}
+                className="absolute top-[28%] left-0 right-0 px-6 text-center"
             >
-                <p className="text-[#1D1D1F] leading-snug" style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em' }}>
+                <h2 className="font-adventure text-2xl md:text-3xl text-white text-adventure leading-tight">
                     {intro}
-                </p>
+                </h2>
             </motion.div>
 
-            {/* Option cards with icons */}
-            <div className="space-y-3">
-                {question.options.map((opt, i) => (
-                    <OptionCard
-                        key={`${question.number}-${i}`}
-                        style={OPTION_STYLES[i % OPTION_STYLES.length]}
-                        label={opt.label}
-                        icon={icons[i]}
-                        index={i}
-                        isChosen={chosen === i}
-                        isOther={chosen !== null && chosen !== i}
-                        onSelect={() => handleSelect(i)}
-                    />
-                ))}
+            {/* ── Zone 2: Decisions panel (bottom 48%) ── */}
+            <div
+                className="relative px-4 pb-6 pt-8"
+                style={{
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)',
+                }}
+            >
+                {/* Progress bar + anchor counter */}
+                <div className="flex items-center gap-3 mb-4 max-w-lg mx-auto">
+                    <div className="flex-1">
+                        <ShipProgress current={questionIndex} total={totalQuestions} />
+                    </div>
+                    <AnchorCounter count={anchorsCollected} total={totalQuestions} />
+                </div>
+
+                {/* Option cards */}
+                <div className="space-y-2.5 max-w-lg mx-auto">
+                    {question.options.map((opt, i) => (
+                        <OptionCard
+                            key={`${question.number}-${i}`}
+                            color={CARD_COLORS[i % CARD_COLORS.length]}
+                            emoji={emojis[i]}
+                            label={opt.label}
+                            index={i}
+                            isChosen={chosen === i}
+                            isOther={chosen !== null && chosen !== i}
+                            onSelect={() => handleSelect(i)}
+                        />
+                    ))}
+                </div>
             </div>
         </motion.div>
     );
