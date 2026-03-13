@@ -74,51 +74,73 @@ const OBSTACLE_COMPONENTS: Record<ObstacleType, React.FC> = {
     vortex: VortexObs,
 };
 
-// ─── Cloud shapes (no emojis) ──────────────────────────────────────────────────
+// ─── Animated overlays (matching AnimatedScene.tsx style) ─────────────────────
 
-const CloudShapes: React.FC = () => (
+const WaterWaves: React.FC = () => (
+    <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden" style={{ height: '18%' }}>
+        {[0, 1, 2].map(i => (
+            <motion.div
+                key={i}
+                className="absolute w-[200%]"
+                style={{
+                    bottom: `${i * 12}px`,
+                    height: 20,
+                    background: `repeating-linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 25%, transparent 50%)`,
+                    backgroundSize: '200px 20px',
+                }}
+                animate={{ x: [0, i % 2 === 0 ? -200 : 200] }}
+                transition={{ duration: 3 + i * 0.8, repeat: Infinity, ease: 'linear' }}
+            />
+        ))}
+    </div>
+);
+
+const FlyingBirds: React.FC = () => (
     <>
-        <motion.div className="absolute rounded-full pointer-events-none"
-            style={{ top: '7%', left: '60%', width: 82, height: 24, background: 'rgba(255,255,255,0.52)', filter: 'blur(13px)' }}
-            animate={{ x: [0, 14, 0] }} transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }} />
-        <motion.div className="absolute rounded-full pointer-events-none"
-            style={{ top: '14%', left: '16%', width: 56, height: 18, background: 'rgba(255,255,255,0.38)', filter: 'blur(10px)' }}
-            animate={{ x: [0, -9, 0] }} transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }} />
-        <motion.div className="absolute rounded-full pointer-events-none"
-            style={{ top: '5%', left: '36%', width: 106, height: 30, background: 'rgba(255,255,255,0.43)', filter: 'blur(15px)' }}
-            animate={{ x: [0, 7, 0] }} transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }} />
+        {[...Array(3)].map((_, i) => {
+            const size = 10 + Math.random() * 6;
+            const top = 5 + Math.random() * 20;
+            const dur = 14 + Math.random() * 8;
+            const delay = i * 3 + Math.random() * 2;
+            return (
+                <motion.svg
+                    key={`bird-${i}`}
+                    className="absolute pointer-events-none"
+                    style={{ top: `${top}%` }}
+                    width={size} height={size * 0.5} viewBox="0 0 20 10"
+                    animate={{ x: ['-5vw', '105vw'], y: [0, -4, 2, -2, 0] }}
+                    transition={{
+                        x: { duration: dur, repeat: Infinity, ease: 'linear', delay },
+                        y: { duration: 2 + Math.random(), repeat: Infinity, ease: 'easeInOut', delay },
+                    }}
+                >
+                    <path d="M0 8 Q5 0 10 5 Q15 0 20 8" stroke="rgba(80,80,100,0.3)" strokeWidth="1.5" fill="none" />
+                </motion.svg>
+            );
+        })}
     </>
 );
 
-// ─── Wave layers ───────────────────────────────────────────────────────────────
-
-const GameWaves: React.FC = () => (
+const DriftingClouds: React.FC = () => (
     <>
-        <motion.div className="absolute left-0 w-[200%]" style={{ top: '57%', bottom: 0 }}
-            animate={{ x: ['0%', '-50%'] }} transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}>
-            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
-                <path d="M0,20 C175,8 350,32 525,20 C700,8 875,32 1050,20 C1225,8 1400,32 1400,20 L1400,300 L0,300 Z" fill="#6496B4" />
-            </svg>
-        </motion.div>
-        <motion.div className="absolute left-0 w-[200%]" style={{ top: '62%', bottom: 0 }}
-            animate={{ x: ['-50%', '0%'] }} transition={{ duration: 6.5, repeat: Infinity, ease: 'linear' }}>
-            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
-                <path d="M0,16 C116,6 233,26 350,16 C466,6 583,26 700,16 C816,6 933,26 1050,16 C1166,6 1283,26 1400,16 L1400,300 L0,300 Z" fill="#5282A6" />
-            </svg>
-        </motion.div>
-        <motion.div className="absolute left-0 w-[200%]" style={{ top: '67%', bottom: 0 }}
-            animate={{ x: ['0%', '-50%'] }} transition={{ duration: 4.5, repeat: Infinity, ease: 'linear' }}>
-            <svg viewBox="0 0 1400 300" preserveAspectRatio="none" className="w-full h-full">
-                <defs>
-                    <linearGradient id="gameFrontWave" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#86B6D2" stopOpacity="0.7" />
-                        <stop offset="12%" stopColor="#40709C" stopOpacity="1" />
-                        <stop offset="100%" stopColor="#2E5A7C" stopOpacity="1" />
-                    </linearGradient>
-                </defs>
-                <path d="M0,12 C70,4 140,20 210,12 C280,4 350,20 420,12 C490,4 560,20 630,12 C700,4 770,20 840,12 C910,4 980,20 1050,12 C1120,4 1190,20 1260,12 C1330,4 1400,18 1400,12 L1400,300 L0,300 Z" fill="url(#gameFrontWave)" />
-            </svg>
-        </motion.div>
+        {[...Array(3)].map((_, i) => {
+            const top = 3 + i * 7 + Math.random() * 4;
+            const w = 70 + Math.random() * 50;
+            const h = 18 + Math.random() * 12;
+            const dur = 25 + Math.random() * 15;
+            return (
+                <motion.div
+                    key={`cloud-${i}`}
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                        top: `${top}%`, width: w, height: h,
+                        background: 'rgba(255,255,255,0.2)', filter: 'blur(8px)',
+                    }}
+                    animate={{ x: ['-15vw', '115vw'] }}
+                    transition={{ duration: dur, repeat: Infinity, ease: 'linear', delay: i * 5 }}
+                />
+            );
+        })}
     </>
 );
 
@@ -182,12 +204,24 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
             onClick={handleTap}
             onTouchStart={e => { e.preventDefault(); handleTap(); }}
         >
-            {/* Ocean background */}
-            <div className="absolute inset-0"
-                style={{ background: 'linear-gradient(180deg, #A8CCE2 0%, #BED8EE 26%, #D4E8F6 40%, #E2C890 52%, #C89860 59%, #78AECA 61%, #5A8EAE 78%, #3E6E8E 100%)' }} />
+            {/* Scene background — uses the open-sea AI illustration */}
+            <img
+                src="/scenes/ocean-only.png"
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                draggable={false}
+            />
 
-            <CloudShapes />
-            <GameWaves />
+            {/* Animated overlays matching AnimatedScene style */}
+            <DriftingClouds />
+            <FlyingBirds />
+            <WaterWaves />
+
+            {/* Vignette */}
+            <div
+                className="absolute inset-0 pointer-events-none"
+                style={{ background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.2) 100%)' }}
+            />
 
             {/* Boat */}
             <motion.div
@@ -224,17 +258,18 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                 );
             })}
 
-            {/* Timer bar */}
+            {/* Timer bar — gradient matching progress bar style */}
             <AnimatePresence>
                 {started && !done && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute bottom-8 left-6 right-6 h-1 bg-white/25 rounded-full overflow-hidden"
+                        className="absolute bottom-8 left-6 right-6 h-1.5 bg-white/15 rounded-full overflow-hidden"
                     >
                         <motion.div
-                            className="h-full rounded-full bg-white/65 origin-left"
+                            className="h-full rounded-full origin-left"
+                            style={{ background: 'linear-gradient(90deg, #4EA8DE, #F4A261, #5EC08D)' }}
                             initial={{ scaleX: 1 }}
                             animate={{ scaleX: 0 }}
                             transition={{ duration: GAME_DURATION_MS / 1000, ease: 'linear' }}
@@ -250,17 +285,34 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0, transition: { duration: 0.25 } }}
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[#0A1628]/48 backdrop-blur-sm"
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-6"
                     >
-                        <h2 className="text-white text-3xl tracking-tight drop-shadow-md" style={{ fontWeight: 300, letterSpacing: '-0.02em' }}>
-                            Esquiva las olas
-                        </h2>
-                        <motion.div
-                            className="w-16 h-16 rounded-full border-2 border-white/70"
-                            animate={{ scale: [1, 1.25, 1], opacity: [0.8, 0.3, 0.8] }}
-                            transition={{ duration: 1.1, repeat: Infinity }}
-                        />
-                        <p className="text-white/80 text-sm font-medium tracking-wide">Toca para empezar</p>
+                        {/* Frosted card */}
+                        <div
+                            className="flex flex-col items-center gap-5 px-10 py-8 rounded-3xl"
+                            style={{
+                                background: 'rgba(15,23,42,0.55)',
+                                backdropFilter: 'blur(12px)',
+                                WebkitBackdropFilter: 'blur(12px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                            }}
+                        >
+                            <h2
+                                className="font-adventure text-4xl text-white leading-tight"
+                            >
+                                Esquiva las olas
+                            </h2>
+                            <p className="font-quest text-white/80 text-base text-center leading-snug max-w-[240px]">
+                                Toca la pantalla para saltar los obstaculos
+                            </p>
+                            <motion.div
+                                className="w-14 h-14 rounded-full border-2 border-white/60"
+                                animate={{ scale: [1, 1.25, 1], opacity: [0.7, 0.3, 0.7] }}
+                                transition={{ duration: 1.1, repeat: Infinity }}
+                            />
+                            <p className="font-quest font-medium text-white/70 text-sm tracking-wide">Toca para empezar</p>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -271,18 +323,31 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[#0A1628]/58 backdrop-blur-sm"
+                        className="absolute inset-0 flex flex-col items-center justify-center gap-5"
                     >
-                        <motion.div
-                            initial={{ scale: 0, rotate: -30 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{ type: 'spring', stiffness: 280, damping: 16 }}
+                        <div
+                            className="flex flex-col items-center gap-4 px-10 py-8 rounded-3xl"
+                            style={{
+                                background: 'rgba(15,23,42,0.55)',
+                                backdropFilter: 'blur(12px)',
+                                WebkitBackdropFilter: 'blur(12px)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                            }}
                         >
-                            <AnchorSVG size={56} color="white" />
-                        </motion.div>
-                        <span className="text-white text-2xl drop-shadow-md tracking-tight" style={{ fontWeight: 300, letterSpacing: '-0.01em' }}>
-                            ¡Buen trabajo, navegante!
-                        </span>
+                            <motion.div
+                                initial={{ scale: 0, rotate: -30 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ type: 'spring', stiffness: 280, damping: 16 }}
+                            >
+                                <AnchorSVG size={52} color="white" />
+                            </motion.div>
+                            <span
+                                className="font-adventure text-3xl text-white"
+                            >
+                                ¡Buen trabajo, navegante!
+                            </span>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

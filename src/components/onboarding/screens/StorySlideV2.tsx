@@ -16,9 +16,7 @@ interface Props {
 function useTypewriter(text: string, speed = 30): { displayed: string; done: boolean } {
     const [index, setIndex] = useState(0);
 
-    useEffect(() => {
-        setIndex(0);
-    }, [text]);
+    useEffect(() => { setIndex(0); }, [text]);
 
     useEffect(() => {
         if (index >= text.length) return;
@@ -29,7 +27,7 @@ function useTypewriter(text: string, speed = 30): { displayed: string; done: boo
     return { displayed: text.slice(0, index), done: index >= text.length };
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component (Stitch "Golden Fleece" pattern) ──────────────────────────────
 
 export const StorySlideV2: React.FC<Props> = ({
     slide, nombreNino, deporte, onContinue, continueLabel,
@@ -47,31 +45,47 @@ export const StorySlideV2: React.FC<Props> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 flex flex-col justify-end"
+            className="fixed inset-0 flex flex-col"
             style={{ zIndex: 2 }}
         >
-            {/* ── Content panel (bottom) ── */}
+            {/* Stitch gradient overlay — from transparent to dark at bottom */}
             <div
-                className="relative px-6 pb-8 pt-10"
-                style={{
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.4) 50%, transparent 100%)',
-                }}
-            >
-                <div className="max-w-lg mx-auto space-y-5">
-                    {/* Title */}
-                    {slide.title && (
-                        <motion.h2
-                            initial={{ opacity: 0, y: -12 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.1 }}
-                            className="font-adventure text-3xl text-white text-adventure leading-tight"
-                        >
-                            {slide.title}
-                        </motion.h2>
-                    )}
+                className="absolute inset-0 pointer-events-none"
+                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, transparent 40%, rgba(34,25,16,0.8) 100%)' }}
+            />
 
-                    {/* Body — typewriter */}
-                    <p className="font-quest font-medium text-lg text-white/90 leading-relaxed min-h-[4.5em]">
+            {/* Spacer — scene visible */}
+            <div className="flex-1" />
+
+            {/* Bottom content — Stitch pattern */}
+            <div className="relative px-6 pb-8 flex flex-col gap-5" style={{ zIndex: 2 }}>
+                {/* Title card — Stitch glass-card: orange 0.15, blur 16, orange border 0.2 */}
+                {slide.title && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.1 }}
+                        className="rounded-xl p-6 shadow-2xl"
+                        style={{
+                            background: 'rgba(244,140,37,0.15)',
+                            backdropFilter: 'blur(16px)',
+                            WebkitBackdropFilter: 'blur(16px)',
+                            border: '1px solid rgba(244,140,37,0.2)',
+                        }}
+                    >
+                        <h1
+                                className="font-adventure text-white text-3xl font-extrabold leading-tight tracking-normal"
+                            >
+                                {slide.title}
+                            </h1>
+                    </motion.div>
+                )}
+
+                {/* Body text — Stitch: white, lg, medium, leading-relaxed, italic feel */}
+                <div className="px-2">
+                    <p
+                        className="font-quest text-white text-lg font-medium leading-relaxed text-left min-h-[4em]"
+                    >
                         {displayed}
                         {!done && (
                             <motion.span
@@ -81,24 +95,27 @@ export const StorySlideV2: React.FC<Props> = ({
                             />
                         )}
                     </p>
-
-                    {/* Continue button — appears when typewriter finishes */}
-                    <motion.button
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={done ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
-                        transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                        onClick={onContinue}
-                        disabled={!done}
-                        whileTap={done ? { y: 3 } : {}}
-                        className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-quest font-bold text-base text-white cursor-pointer"
-                        style={{
-                            background: '#4EA8DE',
-                            boxShadow: '0 4px 0 #3478A6',
-                        }}
-                    >
-                        {continueLabel || 'Continuar'} <ChevronRight size={18} />
-                    </motion.button>
                 </div>
+
+                {/* Continue button — Stitch glass-card style button */}
+                <motion.button
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={done ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                    onClick={onContinue}
+                    disabled={!done}
+                    whileTap={done ? { scale: 0.95 } : {}}
+                    className="w-full flex items-center justify-center gap-3 h-14 rounded-xl font-quest text-white text-lg font-bold tracking-wide cursor-pointer"
+                    style={{
+                        background: 'rgba(244,140,37,0.15)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(244,140,37,0.2)',
+                    }}
+                >
+                    {continueLabel || 'Continuar'}
+                    <ChevronRight size={20} style={{ color: '#F48C25' }} />
+                </motion.button>
             </div>
         </motion.div>
     );

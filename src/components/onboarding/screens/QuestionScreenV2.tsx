@@ -2,122 +2,48 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '../../../lib/onboardingData';
 import { QuestionAnswer } from '../../../lib/profileResolver';
-import { AnchorCounter } from '../AnchorCounter';
 
 type Axis = 'D' | 'I' | 'S' | 'C';
 
-// ─── Emoji mapping per question/option ───────────────────────────────────────
+// ─── Phase labels ────────────────────────────────────────────────────────────
 
-const OPTION_EMOJIS: Record<number, string[]> = {
-    1:  ['🔍', '💨', '😌', '👋'],
-    2:  ['🤔', '🏄', '👣', '🤝'],
-    3:  ['🎯', '⚙️', '💬', '⚡'],
-    4:  ['👂', '🗺️', '🧭', '🏠'],
-    5:  ['💪', '🏃', '🧠', '🔎'],
-    6:  ['📣', '🤲', '👀', '⚓'],
-    7:  ['😮‍💨', '🔬', '💪', '🙋'],
-    8:  ['😄', '📍', '🚣', '🔥'],
-    9:  ['👁️', '⚔️', '😴', '📢'],
-    10: ['🙌', '🎓', '🏃', '🤗'],
-    11: ['📈', '🎲', '🌊', '⏱️'],
-    12: ['🎉', '✅', '🛡️', '🔭'],
+const PHASE_LABELS: Record<string, string> = {
+    port: 'El Puerto',
+    'open-sea': 'Mar Abierto',
+    storm: 'La Tormenta',
+    calm: 'La Calma',
+    island: 'La Isla',
 };
 
-// ─── Option colors — saturated game-style ────────────────────────────────────
-
-const CARD_COLORS = [
-    { bg: '#4EA8DE', shadow: '#3478A6' },
-    { bg: '#F4A261', shadow: '#C47D3F' },
-    { bg: '#9B72CF', shadow: '#7548A8' },
-    { bg: '#5EC08D', shadow: '#3D9966' },
-] as const;
-
-// ─── Ship Progress Bar ──────────────────────────────────────────────────────
-
-const ShipProgress: React.FC<{ current: number; total: number }> = ({ current, total }) => {
-    const pct = total > 1 ? (current / (total - 1)) * 100 : 0;
-
-    return (
-        <div className="relative h-6 flex items-center">
-            {/* Track */}
-            <div className="absolute inset-x-0 h-2 rounded-full bg-white/20 overflow-hidden">
-                <motion.div
-                    className="h-full rounded-full bg-white/60"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${pct}%` }}
-                    transition={{ type: 'spring', stiffness: 100, damping: 18 }}
-                />
-            </div>
-            {/* Sailing ship emoji */}
-            <motion.div
-                className="absolute top-1/2 z-10"
-                style={{ transform: 'translate(-50%, -50%)' }}
-                animate={{ left: `${pct}%` }}
-                transition={{ type: 'spring', stiffness: 100, damping: 18 }}
-            >
-                <span className="text-lg drop-shadow-md">⛵</span>
-            </motion.div>
-        </div>
-    );
-};
-
-// ─── 3D Option Card ─────────────────────────────────────────────────────────
-
-interface OptionProps {
-    color: typeof CARD_COLORS[number];
-    emoji: string;
-    label: string;
-    index: number;
-    isChosen: boolean;
-    isOther: boolean;
-    onSelect: () => void;
+function getPhase(qIndex: number): string {
+    if (qIndex <= 1) return 'port';
+    if (qIndex <= 3) return 'open-sea';
+    if (qIndex <= 6) return 'storm';
+    if (qIndex <= 9) return 'calm';
+    return 'island';
 }
 
-const OptionCard: React.FC<OptionProps> = ({ color, emoji, label, index, isChosen, isOther, onSelect }) => (
-    <motion.button
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: isOther ? 0.3 : 1, y: 0 }}
-        transition={{ delay: index * 0.06, type: 'spring', stiffness: 400, damping: 28 }}
-        onClick={onSelect}
-        disabled={isChosen || isOther}
-        whileTap={!isChosen && !isOther ? { y: 3 } : {}}
-        className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl cursor-pointer transition-transform min-h-[60px]"
-        style={{
-            background: isChosen ? color.bg : color.bg,
-            boxShadow: isChosen
-                ? `0 1px 0 ${color.shadow}`
-                : `0 4px 0 ${color.shadow}`,
-            transform: isChosen ? 'translateY(3px)' : 'translateY(0)',
-            opacity: isOther ? 0.3 : 1,
-        }}
-    >
-        {/* Emoji or checkmark */}
-        <AnimatePresence mode="wait">
-            {isChosen ? (
-                <motion.span
-                    key="check"
-                    initial={{ scale: 0, rotate: -30 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    className="text-2xl flex-shrink-0 w-8 text-center"
-                >
-                    ✓
-                </motion.span>
-            ) : (
-                <motion.span
-                    key="emoji"
-                    className="text-2xl flex-shrink-0 w-8 text-center"
-                >
-                    {emoji}
-                </motion.span>
-            )}
-        </AnimatePresence>
+// ─── Stitch badge colors (solid saturated, matching Stitch output) ───────────
 
-        {/* Label */}
-        <span className="flex-1 font-quest font-semibold text-lg text-white leading-snug text-left">
-            {label}
-        </span>
-    </motion.button>
-);
+const BADGE_BG = ['#3B82F6', '#F59E0B', '#8B5CF6', '#10B981']; // blue, amber, violet, emerald
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+// ─── Word-by-word typewriter ─────────────────────────────────────────────────
+
+function useWordTypewriter(text: string, speed = 55): { displayed: string; done: boolean } {
+    const words = text.split(' ');
+    const [count, setCount] = useState(0);
+
+    useEffect(() => { setCount(0); }, [text]);
+
+    useEffect(() => {
+        if (count >= words.length) return;
+        const t = setTimeout(() => setCount(c => c + 1), speed);
+        return () => clearTimeout(t);
+    }, [count, words.length, speed]);
+
+    return { displayed: words.slice(0, count).join(' '), done: count >= words.length };
+}
 
 // ─── Main Component ──────────────────────────────────────────────────────────
 
@@ -132,7 +58,6 @@ interface Props {
 
 export const QuestionScreenV2: React.FC<Props> = ({
     question,
-    questionIndex,
     totalQuestions,
     nombreNino,
     anchorsCollected,
@@ -149,6 +74,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
     const handleSelect = (optionIndex: number) => {
         if (chosen !== null) return;
         setChosen(optionIndex);
+
         const responseTimeMs = Date.now() - startTime.current;
         setTimeout(() => {
             onAnswer({ axis: question.options[optionIndex].axis as Axis, responseTimeMs });
@@ -156,7 +82,8 @@ export const QuestionScreenV2: React.FC<Props> = ({
     };
 
     const intro = question.intro.replace(/\{\{NOMBRE_NIÑO\}\}/g, nombreNino);
-    const emojis = OPTION_EMOJIS[question.number] ?? ['⭐', '⭐', '⭐', '⭐'];
+    const { displayed, done } = useWordTypewriter(intro, 55);
+    const phase = getPhase(anchorsCollected);
 
     return (
         <motion.div
@@ -165,52 +92,163 @@ export const QuestionScreenV2: React.FC<Props> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 flex flex-col justify-end"
+            className="fixed inset-0 flex flex-col"
             style={{ zIndex: 2 }}
         >
-            {/* ── Zone 1: Question title floating over the scene ── */}
-            <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 25 }}
-                className="absolute top-[28%] left-0 right-0 px-6 text-center"
-            >
-                <h2 className="font-adventure text-2xl md:text-3xl text-white text-adventure leading-tight">
-                    {intro}
-                </h2>
-            </motion.div>
-
-            {/* ── Zone 2: Decisions panel (bottom 48%) ── */}
+            {/* ── Background overlay gradient (Stitch pattern) ── */}
             <div
-                className="relative px-4 pb-6 pt-8"
-                style={{
-                    background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 60%, transparent 100%)',
-                }}
-            >
-                {/* Progress bar + anchor counter */}
-                <div className="flex items-center gap-3 mb-4 max-w-lg mx-auto">
-                    <div className="flex-1">
-                        <ShipProgress current={questionIndex} total={totalQuestions} />
-                    </div>
-                    <AnchorCounter count={anchorsCollected} total={totalQuestions} />
-                </div>
+                className="absolute inset-0 pointer-events-none"
+                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, rgba(16,25,34,0.2) 40%, rgba(16,25,34,0.9) 100%)' }}
+            />
 
-                {/* Option cards */}
-                <div className="space-y-2.5 max-w-lg mx-auto">
-                    {question.options.map((opt, i) => (
-                        <OptionCard
-                            key={`${question.number}-${i}`}
-                            color={CARD_COLORS[i % CARD_COLORS.length]}
-                            emoji={emojis[i]}
-                            label={opt.label}
-                            index={i}
-                            isChosen={chosen === i}
-                            isOther={chosen !== null && chosen !== i}
-                            onSelect={() => handleSelect(i)}
-                        />
-                    ))}
+            {/* ── Top Bar: chapter label + dot progress ── */}
+            <header
+                className="relative px-6 pt-10"
+                style={{ zIndex: 2 }}
+            >
+                {/* Chapter label */}
+                <h2 className="font-quest text-white text-base font-extrabold tracking-[0.35em] text-center uppercase mb-4">
+                    {PHASE_LABELS[phase] || ''}
+                </h2>
+
+                {/* Dot progress — one dot per question */}
+                <div className="flex items-center justify-center gap-2">
+                    {[...Array(totalQuestions)].map((_, i) => {
+                        const isCompleted = i < anchorsCollected;
+                        const isCurrent = i === anchorsCollected;
+                        return (
+                            <motion.div
+                                key={i}
+                                className="rounded-full"
+                                style={{
+                                    width: isCurrent ? 10 : 7,
+                                    height: isCurrent ? 10 : 7,
+                                    background: isCompleted
+                                        ? 'linear-gradient(135deg, #22D3EE, #34D399)'
+                                        : isCurrent
+                                            ? 'rgba(255,255,255,0.9)'
+                                            : 'rgba(255,255,255,0.2)',
+                                    boxShadow: isCurrent
+                                        ? '0 0 8px rgba(255,255,255,0.5)'
+                                        : isCompleted
+                                            ? '0 0 4px rgba(52,211,153,0.4)'
+                                            : 'none',
+                                }}
+                                animate={isCurrent ? { scale: [1, 1.3, 1] } : {}}
+                                transition={isCurrent ? { duration: 1.5, repeat: Infinity, ease: 'easeInOut' } : {}}
+                            />
+                        );
+                    })}
                 </div>
-            </div>
+            </header>
+
+            {/* ── Spacer — scene breathes ── */}
+            <div className="flex-1 relative" style={{ zIndex: 2 }} />
+
+            {/* ── Bottom: narrator + question card + options (Stitch pattern) ── */}
+            <main className="relative px-5 pb-8 flex flex-col gap-3" style={{ zIndex: 2 }}>
+                {/* Narrator pill — Stitch: primary bg, white text */}
+                <motion.div
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="flex justify-start"
+                >
+                    <div
+                        className="flex h-8 items-center gap-2 rounded-full px-4 shadow-lg"
+                        style={{
+                            background: 'rgba(17,115,212,0.9)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                        }}
+                    >
+                        <span className="text-white text-xs font-bold uppercase tracking-wider font-quest">
+                            {nombreNino}
+                        </span>
+                    </div>
+                </motion.div>
+
+                {/* Question card — Stitch glass-card: amber 0.15, blur 16, amber border 0.3 */}
+                <motion.div
+                    key={question.number}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 25 }}
+                    className="rounded-xl p-6 shadow-2xl"
+                    style={{
+                        background: 'rgba(251,191,36,0.15)',
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        border: '1px solid rgba(251,191,36,0.3)',
+                    }}
+                >
+                    <p
+                        className="font-quest text-white text-[18px] leading-relaxed font-medium"
+                    >
+                        {displayed}
+                        {!done && (
+                            <motion.span
+                                animate={{ opacity: [1, 0] }}
+                                transition={{ duration: 0.5, repeat: Infinity }}
+                                className="inline-block ml-1 w-0.5 h-4 bg-white/60 align-middle"
+                            />
+                        )}
+                    </p>
+                </motion.div>
+
+                {/* Option buttons — Stitch glass-button: white 0.08, blur 12, white border 0.15 */}
+                <div className="flex flex-col gap-3 mt-1">
+                    {question.options.map((opt, i) => {
+                        const isChosen = chosen === i;
+                        const isOther = chosen !== null && chosen !== i;
+
+                        return (
+                            <motion.button
+                                key={`${question.number}-${i}`}
+                                initial={{ opacity: 0, y: 16 }}
+                                animate={{ opacity: isOther ? 0.3 : 1, y: 0 }}
+                                transition={{ delay: i * 0.06, type: 'spring', stiffness: 400, damping: 28 }}
+                                onClick={() => handleSelect(i)}
+                                disabled={isChosen || isOther}
+                                whileTap={!isChosen && !isOther ? { scale: 0.95 } : {}}
+                                className="flex items-center p-3 rounded-lg text-left"
+                                style={{
+                                    background: isChosen ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)',
+                                    backdropFilter: 'blur(12px)',
+                                    WebkitBackdropFilter: 'blur(12px)',
+                                    border: isChosen
+                                        ? '1.5px solid rgba(255,255,255,0.35)'
+                                        : '1px solid rgba(255,255,255,0.15)',
+                                }}
+                            >
+                                {/* Solid color badge — Stitch: 40x40 rounded-lg, saturated bg */}
+                                <AnimatePresence mode="wait">
+                                    {isChosen ? (
+                                        <motion.div
+                                            key="check"
+                                            initial={{ scale: 0, rotate: -30 }}
+                                            animate={{ scale: 1, rotate: 0 }}
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white font-bold text-lg shadow-lg"
+                                            style={{ background: BADGE_BG[i] }}
+                                        >
+                                            ✓
+                                        </motion.div>
+                                    ) : (
+                                        <div
+                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white font-bold text-lg shadow-lg font-quest"
+                                            style={{ background: BADGE_BG[i] }}
+                                        >
+                                            {LETTERS[i]}
+                                        </div>
+                                    )}
+                                </AnimatePresence>
+                                <span className="ml-4 text-white font-medium font-quest text-[15px]">
+                                    {opt.label}
+                                </span>
+                            </motion.button>
+                        );
+                    })}
+                </div>
+            </main>
         </motion.div>
     );
 };

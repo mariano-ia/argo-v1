@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { OnboardingFlow } from '../components/onboarding/OnboardingFlow';
+import { OnboardingFlowV2 } from '../components/onboarding/OnboardingFlowV2';
 
 type Status = 'loading' | 'ready' | 'not_found' | 'no_credits' | 'error';
 
@@ -69,7 +69,7 @@ export const TenantPlay: React.FC = () => {
     }
 
     // Ready — launch the onboarding flow without user auth
-    return <OnboardingFlow tenantId={tenantId} />;
+    return <OnboardingFlowV2 tenantId={tenantId} />;
 };
 
 // ─── Status screen ───────────────────────────────────────────────────────────

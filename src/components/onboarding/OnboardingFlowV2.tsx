@@ -11,12 +11,12 @@ import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlideV2 } from './screens/StorySlideV2';
-import { MiniGame1 } from './screens/MiniGame1';
+import { MiniGame0 } from './screens/MiniGame0';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { MiniGame2 } from './screens/MiniGame2';
 import { ChildCompletion } from './screens/ChildCompletion';
 import { AdultReport } from './screens/AdultReport';
-import { SceneManager } from './scenes/SceneManager';
+import { AnimatedScene } from './scenes/AnimatedScene';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ type ScreenDef =
     | { type: 'adult-registration' }
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; continueLabel?: string }
-    | { type: 'minigame1' }
+    | { type: 'minigame0' }
     | { type: 'question'; questionIndex: number }
     | { type: 'minigame2' }
     | { type: 'child-completion' }
@@ -53,6 +53,8 @@ const SCREENS: ScreenDef[] = [
     { type: 'story', slideId: 'intro_b' },
     { type: 'story', slideId: 'intro_c' },
     { type: 'story', slideId: 'intro_0', continueLabel: '¡A bordo!' },
+    // Mini-game: recruit the crew
+    { type: 'minigame0' },
     // Phase: Puerto (Q1-Q2)
     { type: 'question', questionIndex: 0 },
     { type: 'question', questionIndex: 1 },
@@ -65,8 +67,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 4 },
     { type: 'question', questionIndex: 5 },
     { type: 'question', questionIndex: 6 },
-    // Mini-juego + Calma (Q8-Q10)
-    { type: 'minigame1' },
+    // Calma (Q8-Q10) + Mini-juego after
     { type: 'story', slideId: 'slide_3' },
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
@@ -80,14 +81,24 @@ const SCREENS: ScreenDef[] = [
     { type: 'adult-report' },
 ];
 
-/** Get the current question index from screen def, or infer from nearest question for story/minigame screens. */
+/** Get the question index that determines the scene phase.
+ *  Story slides look FORWARD to show the phase they introduce.
+ *  Questions and other screens look BACKWARD to the most recent question. */
 function getCurrentQuestionIndex(screenIndex: number): number {
-    // Walk backwards to find the nearest question index
+    const screen = SCREENS[screenIndex];
+    // Story slides introduce the NEXT phase — look forward
+    if (screen.type === 'story') {
+        for (let i = screenIndex + 1; i < SCREENS.length; i++) {
+            const s = SCREENS[i];
+            if (s.type === 'question') return s.questionIndex;
+        }
+    }
+    // Everything else — look backward
     for (let i = screenIndex; i >= 0; i--) {
         const s = SCREENS[i];
         if (s.type === 'question') return s.questionIndex;
     }
-    return 0; // default to port scene
+    return 0;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -110,7 +121,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
 
-    const advance = () => setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+    const advance = () => {
+        setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+    };
 
     const handleAnswer = (answer: QuestionAnswer) => {
         setAnswers(prev => [...prev, answer]);
@@ -241,7 +254,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const showScene = screen.type === 'question'
         || screen.type === 'story'
         || screen.type === 'child-completion'
-        || screen.type === 'minigame1';
+        || screen.type === 'minigame0';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
 
     return (
@@ -258,7 +271,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         className="fixed inset-0 overflow-hidden pointer-events-none"
                         style={{ zIndex: 0 }}
                     >
-                        <SceneManager questionIndex={sceneQuestionIndex} />
+                        <AnimatedScene questionIndex={sceneQuestionIndex} screenIndex={screenIndex} />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -303,8 +316,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     />
                 )}
 
-                {screen.type === 'minigame1' && (
-                    <MiniGame1 key="mg1" onComplete={advance} />
+                {screen.type === 'minigame0' && (
+                    <MiniGame0 key="mg0" onComplete={advance} />
                 )}
 
                 {screen.type === 'question' && (

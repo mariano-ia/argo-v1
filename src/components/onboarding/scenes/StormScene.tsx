@@ -1,72 +1,83 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-/** Scene 3: Tormenta — Q5-Q7. Dark sky, rough waves, lightning. */
+/** Scene 3: Tormenta — Q5-Q7. Dark sky, rough waves, rain, lightning flashes. */
 export const StormScene: React.FC = () => (
     <div className="absolute inset-0 overflow-hidden">
         {/* Sky gradient — stormy dark */}
         <div
             className="absolute inset-0"
             style={{
-                background: 'linear-gradient(180deg, #2C3E50 0%, #3D4F5F 20%, #4A5B6A 35%, #556B7A 48%, #4A6B7A 55%, #3A5A6A 65%, #2A4A5A 80%, #1A3A4A 100%)',
+                background: 'linear-gradient(180deg, #1A2A3A 0%, #2C3E50 15%, #3D4F5F 30%, #4A5B6A 45%, #4A6B7A 55%, #3A5A6A 65%, #2A4A5A 80%, #1A3A4A 100%)',
             }}
         />
 
-        {/* Lightning flash — intermittent */}
+        {/* Lightning flash — full screen white pulse */}
         <motion.div
             className="absolute inset-0 pointer-events-none"
-            style={{ background: 'rgba(255,255,255,0.08)' }}
-            animate={{ opacity: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0.6, 0, 0, 0, 0, 0, 0, 0, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            style={{ background: 'rgba(255,255,255,0.15)' }}
+            animate={{ opacity: [0, 0, 0, 0, 1, 0.3, 0, 0, 0, 0, 0, 0, 0, 0.7, 0.2, 0, 0, 0, 0, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
         />
 
-        {/* Lightning bolt SVG */}
-        <motion.svg
-            className="absolute pointer-events-none"
-            style={{ top: '8%', left: '68%', width: 24, height: 60 }}
-            viewBox="0 0 24 60"
-            animate={{ opacity: [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-        >
-            <path d="M14,0 L6,24 L12,24 L8,60 L18,30 L12,30 Z" fill="rgba(255,255,200,0.7)" />
-        </motion.svg>
+        {/* Second flash — offset timing for variety */}
+        <motion.div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: 'rgba(200,220,255,0.1)' }}
+            animate={{ opacity: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }}
+            transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
+        />
 
         {/* Storm clouds — heavier, darker */}
         <motion.div
             className="absolute rounded-full pointer-events-none"
-            style={{ top: '3%', left: '5%', width: 160, height: 50, background: 'rgba(40,50,60,0.7)', filter: 'blur(20px)' }}
-            animate={{ x: [0, 10, 0] }}
+            style={{ top: '0%', left: '-5%', width: '60%', height: 60, background: 'rgba(30,40,50,0.8)', filter: 'blur(25px)' }}
+            animate={{ x: [0, 15, 0] }}
             transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
             className="absolute rounded-full pointer-events-none"
-            style={{ top: '8%', left: '40%', width: 200, height: 55, background: 'rgba(50,60,70,0.6)', filter: 'blur(22px)' }}
-            animate={{ x: [0, -8, 0] }}
+            style={{ top: '5%', left: '30%', width: '70%', height: 65, background: 'rgba(40,50,60,0.7)', filter: 'blur(28px)' }}
+            animate={{ x: [0, -10, 0] }}
             transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.div
             className="absolute rounded-full pointer-events-none"
-            style={{ top: '1%', left: '65%', width: 140, height: 45, background: 'rgba(35,45,55,0.65)', filter: 'blur(18px)' }}
-            animate={{ x: [0, 6, 0] }}
+            style={{ top: '-2%', left: '55%', width: '50%', height: 50, background: 'rgba(25,35,45,0.75)', filter: 'blur(22px)' }}
+            animate={{ x: [0, 8, 0] }}
             transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
         />
 
-        {/* Rain streaks */}
-        {[...Array(12)].map((_, i) => (
-            <motion.div
-                key={i}
-                className="absolute pointer-events-none"
-                style={{
-                    top: '-5%',
-                    left: `${5 + i * 8}%`,
-                    width: 1,
-                    height: '110%',
-                    background: `linear-gradient(180deg, transparent 0%, rgba(180,200,220,${0.08 + (i % 3) * 0.04}) 50%, transparent 100%)`,
-                }}
-                animate={{ y: ['0%', '10%'] }}
-                transition={{ duration: 0.8 + (i % 4) * 0.2, repeat: Infinity, ease: 'linear', delay: i * 0.15 }}
-            />
-        ))}
+        {/* Rain — diagonal streaks, more organic */}
+        {[...Array(30)].map((_, i) => {
+            const left = (i / 30) * 120 - 10; // spread wider than viewport
+            const height = 20 + Math.random() * 30;
+            const opacity = 0.15 + Math.random() * 0.2;
+            const duration = 0.4 + Math.random() * 0.3;
+            const delay = Math.random() * 1.5;
+            return (
+                <motion.div
+                    key={i}
+                    className="absolute pointer-events-none"
+                    style={{
+                        left: `${left}%`,
+                        top: '-10%',
+                        width: 1.5,
+                        height: `${height}px`,
+                        background: `rgba(180,200,220,${opacity})`,
+                        borderRadius: '1px',
+                        transform: 'rotate(12deg)',
+                    }}
+                    animate={{ y: ['0vh', '110vh'] }}
+                    transition={{
+                        duration,
+                        repeat: Infinity,
+                        ease: 'linear',
+                        delay,
+                    }}
+                />
+            );
+        })}
 
         {/* Wave 1 — rough, higher amplitude */}
         <motion.div

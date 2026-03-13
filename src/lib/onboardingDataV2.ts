@@ -72,7 +72,7 @@ export const QUESTIONS_V2: Question[] = [
         title: 'El Nuevo Ritmo',
         intro: 'El capitán enseña una nueva forma de remar. ¿Cómo la aprendes?',
         options: [
-            { label: 'Primero entiendo el por qué', axis: 'C' },
+            { label: 'Primero entiendo cómo funciona', axis: 'C' },
             { label: 'Me lanzo a probar de una', axis: 'D' },
             { label: 'Que me muestren paso a paso', axis: 'S' },
             { label: 'La practicamos todos juntos', axis: 'I' },
@@ -97,7 +97,7 @@ export const QUESTIONS_V2: Question[] = [
             { label: 'Escucho qué opinan todos', axis: 'I' },
             { label: 'Analizo el mapa y el viento', axis: 'C' },
             { label: 'Elijo el más directo', axis: 'D' },
-            { label: 'Sigo el camino conocido', axis: 'S' },
+            { label: 'Me aseguro de que el camino sea seguro', axis: 'S' },
         ],
     },
     {
@@ -105,7 +105,7 @@ export const QUESTIONS_V2: Question[] = [
         title: 'El Momento del Caos',
         intro: '¡La tormenta nos atrapa! ¿Qué haces?',
         options: [
-            { label: 'Me agarro fuerte y sigo', axis: 'S' },
+            { label: 'Mantengo mi posición para que el barco no se mueva', axis: 'S' },
             { label: 'Me muevo rápido a ayudar', axis: 'D' },
             { label: 'Pienso qué es lo importante', axis: 'C' },
             { label: 'Busco a mis compañeros', axis: 'I' },
@@ -124,7 +124,7 @@ export const QUESTIONS_V2: Question[] = [
     },
     {
         number: 7,
-        title: 'El Error del Nudo',
+        title: 'El Nudo Rebelde',
         intro: 'Tu nudo se soltó. ¿Qué haces primero?',
         options: [
             { label: 'Respiro y lo intento de nuevo', axis: 'S' },

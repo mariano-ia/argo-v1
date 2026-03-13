@@ -16,8 +16,7 @@ import { Metrics }            from './pages/dashboard/Metrics';
 import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
 import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { AdminRoute }         from './components/AdminRoute';
-import { OnboardingFlow }     from './components/onboarding/OnboardingFlow';
-import { OdysseyV2Preview }  from './pages/OdysseyV2Preview';
+import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
 
 const MAX_PLAYS = 3;
@@ -96,7 +95,7 @@ const UserApp: React.FC = () => {
     if (blocked) return <BlockedView />;
 
     return (
-        <OnboardingFlow
+        <OnboardingFlowV2
             userEmail={session.user.email ?? ''}
             onPlayComplete={onPlayComplete}
         />
@@ -113,7 +112,6 @@ function App() {
             <Route path="/app"    element={<UserApp />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
-            <Route path="/v2"     element={<OdysseyV2Preview />} />
 
             {/* Tenant dashboard */}
             <Route path="/dashboard" element={<TenantDashboard />}>
