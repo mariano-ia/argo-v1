@@ -11,7 +11,6 @@ import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlideV2 } from './screens/StorySlideV2';
-import { MiniGame0 } from './screens/MiniGame0';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { MiniGame2 } from './screens/MiniGame2';
 import { ChildCompletion } from './screens/ChildCompletion';
@@ -35,7 +34,6 @@ type ScreenDef =
     | { type: 'adult-registration' }
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; continueLabel?: string }
-    | { type: 'minigame0' }
     | { type: 'question'; questionIndex: number }
     | { type: 'minigame2' }
     | { type: 'child-completion' }
@@ -53,8 +51,6 @@ const SCREENS: ScreenDef[] = [
     { type: 'story', slideId: 'intro_b' },
     { type: 'story', slideId: 'intro_c' },
     { type: 'story', slideId: 'intro_0', continueLabel: '¡A bordo!' },
-    // Mini-game: recruit the crew
-    { type: 'minigame0' },
     // Phase: Puerto (Q1-Q2)
     { type: 'question', questionIndex: 0 },
     { type: 'question', questionIndex: 1 },
@@ -72,6 +68,8 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
     { type: 'question', questionIndex: 9 },
+    // Mini-game: calm sailing
+    { type: 'minigame2' },
     // Phase: Isla (Q11-Q12)
     { type: 'story', slideId: 'slide_4' },
     { type: 'question', questionIndex: 10 },
@@ -253,8 +251,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Determine whether to show scene backgrounds (child-facing screens)
     const showScene = screen.type === 'question'
         || screen.type === 'story'
-        || screen.type === 'child-completion'
-        || screen.type === 'minigame0';
+        || screen.type === 'child-completion';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
 
     return (
@@ -314,10 +311,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         onContinue={advance}
                         continueLabel={screen.continueLabel}
                     />
-                )}
-
-                {screen.type === 'minigame0' && (
-                    <MiniGame0 key="mg0" onComplete={advance} />
                 )}
 
                 {screen.type === 'question' && (
