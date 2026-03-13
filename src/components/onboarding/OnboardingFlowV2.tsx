@@ -12,7 +12,7 @@ import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlide } from './screens/StorySlide';
 import { MiniGame1 } from './screens/MiniGame1';
-import { QuestionScreen } from './screens/QuestionScreen';
+import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { MiniGame2 } from './screens/MiniGame2';
 import { ChildCompletion } from './screens/ChildCompletion';
 import { AdultReport } from './screens/AdultReport';
@@ -308,12 +308,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 )}
 
                 {screen.type === 'question' && (
-                    <QuestionScreen
+                    <QuestionScreenV2
                         key={`q-${screen.questionIndex}`}
                         question={questions[screen.questionIndex]}
                         questionIndex={answers.length}
                         totalQuestions={questions.length}
                         nombreNino={nombre}
+                        anchorsCollected={answers.length}
                         onAnswer={handleAnswer}
                     />
                 )}
