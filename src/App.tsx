@@ -91,7 +91,23 @@ const UserApp: React.FC = () => {
     };
 
     if (session === undefined) return null;
-    if (!session) return <UserAuthGate onAuthenticated={() => {}} />;
+    if (!session) {
+        // DEV bypass — skip auth in local development
+        if (import.meta.env.DEV) {
+            return (
+                <div>
+                    <UserAuthGate onAuthenticated={() => {}} />
+                    <button
+                        onClick={() => setSession({ user: { email: 'dev@localhost', id: 'dev', user_metadata: {} } } as unknown as Session)}
+                        style={{ position: 'fixed', bottom: 16, right: 16, zIndex: 9999, background: '#955FB5', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: 0.85 }}
+                    >
+                        DEV: Skip login
+                    </button>
+                </div>
+            );
+        }
+        return <UserAuthGate onAuthenticated={() => {}} />;
+    }
     if (blocked) return <BlockedView />;
 
     return (

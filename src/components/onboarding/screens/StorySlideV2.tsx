@@ -51,7 +51,7 @@ export const StorySlideV2: React.FC<Props> = ({
             {/* Stitch gradient overlay — from transparent to dark at bottom */}
             <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, transparent 40%, rgba(34,25,16,0.8) 100%)' }}
+                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, rgba(34,25,16,0.4) 40%, rgba(34,25,16,0.6) 60%, rgba(34,25,16,0.9) 100%)' }}
             />
 
             {/* Spacer — scene visible */}
@@ -59,26 +59,16 @@ export const StorySlideV2: React.FC<Props> = ({
 
             {/* Bottom content — Stitch pattern */}
             <div className="relative px-6 pb-8 flex flex-col gap-5" style={{ zIndex: 2 }}>
-                {/* Title card — Stitch glass-card: orange 0.15, blur 16, orange border 0.2 */}
+                {/* Title — no background card */}
                 {slide.title && (
-                    <motion.div
+                    <motion.h1
                         initial={{ opacity: 0, y: -12 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.1 }}
-                        className="rounded-xl p-6 shadow-2xl"
-                        style={{
-                            background: 'rgba(244,140,37,0.15)',
-                            backdropFilter: 'blur(16px)',
-                            WebkitBackdropFilter: 'blur(16px)',
-                            border: '1px solid rgba(244,140,37,0.2)',
-                        }}
+                        className="font-adventure text-white text-3xl font-light leading-tight tracking-normal px-2"
                     >
-                        <h1
-                                className="font-adventure text-white text-3xl font-extrabold leading-tight tracking-normal"
-                            >
-                                {slide.title}
-                            </h1>
-                    </motion.div>
+                        {slide.title}
+                    </motion.h1>
                 )}
 
                 {/* Body text — Stitch: white, lg, medium, leading-relaxed, italic feel */}

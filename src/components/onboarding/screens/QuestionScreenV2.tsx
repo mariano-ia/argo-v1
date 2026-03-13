@@ -98,7 +98,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
             {/* ── Background overlay gradient (Stitch pattern) ── */}
             <div
                 className="absolute inset-0 pointer-events-none"
-                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, rgba(16,25,34,0.2) 40%, rgba(16,25,34,0.9) 100%)' }}
+                style={{ zIndex: 1, background: 'linear-gradient(to bottom, transparent 0%, rgba(16,25,34,0.4) 40%, rgba(16,25,34,0.6) 60%, rgba(16,25,34,0.9) 100%)' }}
             />
 
             {/* ── Top Bar: chapter label + dot progress ── */}
@@ -167,33 +167,23 @@ export const QuestionScreenV2: React.FC<Props> = ({
                     </div>
                 </motion.div>
 
-                {/* Question card — Stitch glass-card: amber 0.15, blur 16, amber border 0.3 */}
-                <motion.div
+                {/* Question text — no background card, matches story title style */}
+                <motion.p
                     key={question.number}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 25 }}
-                    className="rounded-xl p-6 shadow-2xl"
-                    style={{
-                        background: 'rgba(251,191,36,0.15)',
-                        backdropFilter: 'blur(16px)',
-                        WebkitBackdropFilter: 'blur(16px)',
-                        border: '1px solid rgba(251,191,36,0.3)',
-                    }}
+                    className="font-adventure text-white text-3xl font-light leading-tight tracking-normal px-2"
                 >
-                    <p
-                        className="font-quest text-white text-[18px] leading-relaxed font-medium"
-                    >
-                        {displayed}
-                        {!done && (
-                            <motion.span
-                                animate={{ opacity: [1, 0] }}
-                                transition={{ duration: 0.5, repeat: Infinity }}
-                                className="inline-block ml-1 w-0.5 h-4 bg-white/60 align-middle"
-                            />
-                        )}
-                    </p>
-                </motion.div>
+                    {displayed}
+                    {!done && (
+                        <motion.span
+                            animate={{ opacity: [1, 0] }}
+                            transition={{ duration: 0.5, repeat: Infinity }}
+                            className="inline-block ml-1 w-0.5 h-5 bg-white/70 align-middle"
+                        />
+                    )}
+                </motion.p>
 
                 {/* Option buttons — Stitch glass-button: white 0.08, blur 12, white border 0.15 */}
                 <div className="flex flex-col gap-3 mt-1">
