@@ -219,6 +219,7 @@ export const Sessions: React.FC = () => {
                                         <th className="text-left px-5 py-3 font-semibold">Estado</th>
                                         <th className="text-left px-5 py-3 font-semibold">Adulto</th>
                                         <th className="text-left px-5 py-3 font-semibold">Niño</th>
+                                        <th className="text-left px-5 py-3 font-semibold">Edad</th>
                                         <th className="text-left px-5 py-3 font-semibold">Deporte</th>
                                         <th className="text-left px-5 py-3 font-semibold">Arquetipo</th>
                                         <th className="text-left px-5 py-3 font-semibold">Eje</th>
@@ -230,7 +231,7 @@ export const Sessions: React.FC = () => {
                                 <tbody>
                                     {paginated.length === 0 ? (
                                         <tr>
-                                            <td colSpan={11} className="text-center py-12 text-argo-grey/50 text-sm">
+                                            <td colSpan={12} className="text-center py-12 text-argo-grey/50 text-sm">
                                                 {search ? 'Sin resultados para esa búsqueda.' : 'Todavía no hay sesiones registradas.'}
                                             </td>
                                         </tr>
@@ -256,6 +257,7 @@ export const Sessions: React.FC = () => {
                                             </td>
                                             <td className="px-5 py-3 font-semibold text-argo-navy whitespace-nowrap">{row.adult_name ?? '—'}</td>
                                             <td className="px-5 py-3 font-semibold text-argo-navy">{row.child_name ?? '—'}</td>
+                                            <td className="px-5 py-3 text-argo-grey">{row.child_age ?? '—'}</td>
                                             <td className="px-5 py-3 text-argo-grey">{row.sport ?? '—'}</td>
                                             <td className="px-5 py-3 text-argo-navy font-medium">{row.archetype_label ?? '—'}</td>
                                             <td className="px-5 py-3">

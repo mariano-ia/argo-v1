@@ -17,10 +17,10 @@ export const Login: React.FC = () => {
     // Redirect when session is established — handles magic link callback too
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
-            if (data.session) navigate('/dashboard');
+            if (data.session) navigate('/admin');
         });
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-            if (session) navigate('/dashboard');
+            if (session) navigate('/admin');
         });
         return () => subscription.unsubscribe();
     }, [navigate]);
@@ -43,7 +43,7 @@ export const Login: React.FC = () => {
         setLoading(true);
         const { error: authError } = await supabase.auth.signInWithOtp({
             email,
-            options: { emailRedirectTo: window.location.origin + '/login' },
+            options: { emailRedirectTo: window.location.origin + '/admin/login' },
         });
         setLoading(false);
         if (authError) {

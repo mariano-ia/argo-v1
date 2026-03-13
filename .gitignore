@@ -33,3 +33,4 @@ dist-ssr
 
 # Design system assets (PDFs, large binaries)
 design-system/assets/
+.vercel

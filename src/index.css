@@ -25,6 +25,11 @@ body {
     background: #86868B;
 }
 
+/* Adventure text shadow — legible on scene backgrounds */
+.text-adventure {
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+}
+
 /* Accessibility: visible focus ring for keyboard users */
 :focus-visible {
     outline: 2px solid #6366f1;

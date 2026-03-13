@@ -3,13 +3,14 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    Users, BarChart2, HelpCircle, ShieldCheck, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-    { to: '/dashboard/sessions',  label: 'Sesiones',  icon: Users },
-    { to: '/dashboard/metrics',   label: 'Métricas',  icon: BarChart2 },
-    { to: '/dashboard/questions', label: 'Preguntas', icon: HelpCircle },
+    { to: '/admin/sessions',  label: 'Sesiones',  icon: Users },
+    { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
+    { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
+    { to: '/admin/users',     label: 'Admins',    icon: ShieldCheck },
 ];
 
 export const Dashboard: React.FC = () => {
@@ -19,7 +20,7 @@ export const Dashboard: React.FC = () => {
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
-        navigate('/login');
+        navigate('/admin/login');
     };
 
     const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (

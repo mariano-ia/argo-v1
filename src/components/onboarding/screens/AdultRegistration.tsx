@@ -28,6 +28,7 @@ const CHECKS = [
 
 export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete }) => {
     const [nombreAdulto, setNombreAdulto] = useState('');
+    const [email, setEmail]               = useState(userEmail);
     const [nombreNino, setNombreNino]     = useState('');
     const [edad, setEdad]                 = useState(10);
     const [deporte, setDeporte]           = useState('');
@@ -35,9 +36,11 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
     const [checks, setChecks]             = useState([false, false, false]);
 
     const deporteFinal = deporte === 'Otro' ? deporteCustom : deporte;
+    const emailFinal = userEmail || email.trim();
 
     const isValid =
         nombreAdulto.trim() &&
+        emailFinal &&
         nombreNino.trim() &&
         deporteFinal.trim() &&
         checks.every(Boolean);
@@ -50,7 +53,7 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
         if (!isValid) return;
         onComplete({
             nombreAdulto: nombreAdulto.trim(),
-            email: userEmail,
+            email: emailFinal,
             nombreNino: nombreNino.trim(),
             edad,
             deporte: deporteFinal.trim(),
@@ -71,7 +74,10 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                     Tus datos y los del deportista
                 </h2>
                 <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
-                    El informe llegará a <strong>{userEmail}</strong>. Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.
+                    {userEmail
+                        ? <>El informe llegará a <strong>{userEmail}</strong>. Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.</>
+                        : <>Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.</>
+                    }
                 </p>
             </div>
 
@@ -79,6 +85,7 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
             <div className="space-y-4">
                 {[
                     { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Kate', type: 'text' },
+                    ...(!userEmail ? [{ label: 'Tu email', value: email, setter: setEmail, placeholder: 'ejemplo@mail.com', type: 'email' }] : []),
                     { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Kevin', type: 'text' },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">

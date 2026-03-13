@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Plus, Minus } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 
@@ -171,10 +171,7 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
     const [open, setOpen] = useState(false);
     return (
-        <div
-            className="py-5 px-5 -mx-5 rounded-xl transition-colors duration-300"
-            style={{ backgroundColor: open ? '#F5F5F7' : 'transparent' }}
-        >
+        <div className="py-5">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-start justify-between gap-4 text-left cursor-pointer"
@@ -182,13 +179,9 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
                 <span style={{ fontWeight: 500, fontSize: '16px', letterSpacing: '-0.01em', color: '#1D1D1F' }}>
                     {question}
                 </span>
-                <motion.span
-                    animate={{ rotate: open ? 45 : 0 }}
-                    transition={{ duration: 0.2, ease: [0.25, 0, 0, 1] }}
-                    className="text-[#86868B] mt-0.5 shrink-0"
-                >
-                    <Plus size={18} />
-                </motion.span>
+                {open
+                    ? <Minus size={18} className="text-[#86868B] mt-0.5 shrink-0" />
+                    : <Plus  size={18} className="text-[#86868B] mt-0.5 shrink-0" />}
             </button>
             <AnimatePresence initial={false}>
                 {open && (
@@ -209,6 +202,7 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
         </div>
     );
 };
+
 // ─── Landing ─────────────────────────────────────────────────────────────────
 
 export const Landing: React.FC = () => {
@@ -247,7 +241,7 @@ export const Landing: React.FC = () => {
                             beta
                         </span>
                     </span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
                         <button
                             onClick={() => setLang(lang === 'es' ? 'en' : 'es')}
                             style={{ fontWeight: 400, fontSize: '11px', letterSpacing: '0.06em' }}
@@ -256,8 +250,15 @@ export const Landing: React.FC = () => {
                             {t.nav.lang}
                         </button>
                         <button
-                            onClick={() => navigate('/app')}
-                            aria-label={lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                            onClick={() => navigate('/signup')}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                        >
+                            {lang === 'es' ? 'Ingresar' : 'Log in'}
+                        </button>
+                        <button
+                            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                            aria-label={lang === 'es' ? 'Ver planes' : 'See plans'}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -265,7 +266,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                            {lang === 'es' ? 'Ver planes' : 'See plans'}
                         </button>
                     </div>
                 </div>
@@ -308,7 +309,7 @@ export const Landing: React.FC = () => {
 
                 <motion.div {...fadeUp(0.22)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -319,7 +320,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                        {lang === 'es' ? 'Empezar ahora' : 'Get started'}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -679,6 +680,103 @@ export const Landing: React.FC = () => {
 
             <Divider />
 
+            {/* ── PRICING ── */}
+            <section id="pricing" className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
+                <motion.div {...fadeUp(0)} className="text-center mb-16">
+                    <SectionLabel>
+                        {lang === 'es' ? 'Planes · Elige tu tripulación' : 'Plans · Choose your crew'}
+                    </SectionLabel>
+                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
+                        {lang === 'es'
+                            ? 'Un plan para cada necesidad.'
+                            : 'A plan for every need.'}
+                    </h2>
+                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#86868B', marginTop: '12px' }}>
+                        {lang === 'es'
+                            ? 'Cada crédito es una experiencia completa: odisea + informe + email.'
+                            : 'Each credit is a complete experience: odyssey + report + email.'}
+                    </p>
+                </motion.div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Starter */}
+                    <motion.div
+                        {...fadeUp(0.05)}
+                        className="bg-white border border-argo-border rounded-2xl p-8 flex flex-col"
+                    >
+                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Starter</p>
+                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
+                            US$ 29
+                        </p>
+                        <p className="text-sm text-argo-grey mt-1 mb-6">10 {lang === 'es' ? 'créditos' : 'credits'}</p>
+                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Link de invitación único' : 'Unique invitation link'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Panel con resultados' : 'Results dashboard'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Informe por email' : 'Email report'}</li>
+                        </ul>
+                        <button
+                            onClick={() => navigate('/signup?plan=starter')}
+                            className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
+                        >
+                            {lang === 'es' ? 'Empezar' : 'Get started'}
+                        </button>
+                    </motion.div>
+
+                    {/* Team */}
+                    <motion.div
+                        {...fadeUp(0.1)}
+                        className="bg-white border-2 border-[#955FB5] rounded-2xl p-8 flex flex-col relative"
+                    >
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#955FB5] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                            {lang === 'es' ? 'Popular' : 'Popular'}
+                        </span>
+                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Team</p>
+                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
+                            US$ 69
+                        </p>
+                        <p className="text-sm text-argo-grey mt-1 mb-6">30 {lang === 'es' ? 'créditos' : 'credits'}</p>
+                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Starter' : 'Everything in Starter'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Exportar CSV' : 'Export CSV'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Soporte prioritario' : 'Priority support'}</li>
+                        </ul>
+                        <button
+                            onClick={() => navigate('/signup?plan=team')}
+                            style={{ backgroundColor: '#955FB5' }}
+                            className="w-full py-3 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-all"
+                        >
+                            {lang === 'es' ? 'Elegir Team' : 'Choose Team'}
+                        </button>
+                    </motion.div>
+
+                    {/* Club */}
+                    <motion.div
+                        {...fadeUp(0.15)}
+                        className="bg-white border border-argo-border rounded-2xl p-8 flex flex-col"
+                    >
+                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Club</p>
+                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
+                            US$ 179
+                        </p>
+                        <p className="text-sm text-argo-grey mt-1 mb-6">100 {lang === 'es' ? 'créditos' : 'credits'}</p>
+                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Todo lo de Team' : 'Everything in Team'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Múltiples usuarios' : 'Multiple users'}</li>
+                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {lang === 'es' ? 'Métricas avanzadas' : 'Advanced metrics'}</li>
+                        </ul>
+                        <button
+                            onClick={() => navigate('/signup?plan=club')}
+                            className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
+                        >
+                            {lang === 'es' ? 'Elegir Club' : 'Choose Club'}
+                        </button>
+                    </motion.div>
+                </div>
+            </section>
+
+            <Divider />
+
+
             {/* ── CTA FINAL ── */}
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32 text-center">
                 <motion.div {...fadeUp(0)}>
@@ -693,7 +791,7 @@ export const Landing: React.FC = () => {
                             : '10 minutes. A report to your inbox. No apps or installs.'}
                     </p>
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => navigate('/signup')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '10px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -704,7 +802,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {lang === 'es' ? 'Iniciar experiencia Argo' : 'Start the Argo experience'}
+                        {lang === 'es' ? 'Crear cuenta gratis' : 'Create free account'}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>

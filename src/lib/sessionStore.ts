@@ -8,6 +8,7 @@ interface SessionPayload {
     archetypeLabel: string;
     ejeSecundario?: string;
     answers: QuestionAnswer[];
+    tenantId?: string;
     aiUsage?: {
         tokensInput: number;
         tokensOutput: number;
@@ -32,6 +33,7 @@ export async function saveSession(payload: SessionPayload): Promise<{ ok: boolea
         motor:            payload.motor,
         archetype_label:  payload.archetypeLabel,
         eje_secundario:   payload.ejeSecundario ?? null,
+        tenant_id:        payload.tenantId ?? null,
         answers:          payload.answers,
         ai_tokens_input:  payload.aiUsage?.tokensInput  ?? 0,
         ai_tokens_output: payload.aiUsage?.tokensOutput ?? 0,
