@@ -12,7 +12,6 @@ import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
-import { MiniGame2 } from './screens/MiniGame2';
 import { ChildCompletion } from './screens/ChildCompletion';
 import { AdultReport } from './screens/AdultReport';
 import { AnimatedScene } from './scenes/AnimatedScene';
@@ -35,7 +34,6 @@ type ScreenDef =
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; continueLabel?: string }
     | { type: 'question'; questionIndex: number }
-    | { type: 'minigame2' }
     | { type: 'child-completion' }
     | { type: 'adult-report' };
 
@@ -68,8 +66,6 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
     { type: 'question', questionIndex: 9 },
-    // Mini-game: calm sailing
-    { type: 'minigame2' },
     // Phase: Isla (Q11-Q12)
     { type: 'story', slideId: 'slide_4' },
     { type: 'question', questionIndex: 10 },
@@ -323,10 +319,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         anchorsCollected={answers.length}
                         onAnswer={handleAnswer}
                     />
-                )}
-
-                {screen.type === 'minigame2' && (
-                    <MiniGame2 key="mg2" onComplete={advance} />
                 )}
 
                 {screen.type === 'child-completion' && (
