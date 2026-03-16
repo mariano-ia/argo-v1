@@ -301,8 +301,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
     const advance = () => {
         const nextIdx = screenIndex + 1;
-        startAudioIfNeeded(nextIdx);
-        startEffectIfNeeded(nextIdx);
+        try { startAudioIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startAudio error:', e); }
+        try { startEffectIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startEffect error:', e); }
         setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
     };
 
@@ -336,17 +336,26 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 // proceed without tiebreaker
             }
 
-            const profile = resolveFromAnswers(answers, sessionCtx);
-            const report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
-            report.ejeSecundario  = profile.ejeSecundario;
-            report.tendenciaLabel = profile.tendenciaLabel;
+            let profile: ReturnType<typeof resolveFromAnswers>;
+            let report: ReturnType<typeof getReportData>;
+            try {
+                profile = resolveFromAnswers(answers, sessionCtx);
+                report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
+                report.ejeSecundario  = profile.ejeSecundario;
+                report.tendenciaLabel = profile.tendenciaLabel;
 
-            const tendencia = getTendenciaContent(profile.eje, profile.ejeSecundario);
-            if (tendencia) {
-                const injectNombre = (t: string) => t.replace(/\{nombre\}/g, adultData.nombreNino);
-                report.tendenciaParagraph  = injectNombre(tendencia.parrafo);
-                report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
-                report.palabrasRuidoExtra  = tendencia.palabrasRuidoExtra;
+                const tendencia = getTendenciaContent(profile.eje, profile.ejeSecundario);
+                if (tendencia) {
+                    const injectNombre = (t: string) => t.replace(/\{nombre\}/g, adultData.nombreNino);
+                    report.tendenciaParagraph  = injectNombre(tendencia.parrafo);
+                    report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
+                    report.palabrasRuidoExtra  = tendencia.palabrasRuidoExtra;
+                }
+            } catch (err) {
+                console.error('[Argo] Profile resolution failed:', err);
+                setSaveError(`Profile error: ${err instanceof Error ? err.message : 'unknown'}`);
+                setAiLoading(false);
+                return;
             }
 
             reportRef.current  = report;
@@ -415,7 +424,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             }
         };
 
-        run();
+        run().catch(err => {
+            console.error('[Argo] Unexpected error in completion flow:', err);
+            setSaveError(`Unexpected error: ${err instanceof Error ? err.message : 'unknown'}`);
+            setAiLoading(false);
+        });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screenIndex]);
 
