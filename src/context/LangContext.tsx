@@ -107,7 +107,7 @@ export const translations = {
     en: {
         nav: {
             cta: 'Try Argo',
-            lang: 'ES',
+            lang: 'PT',
         },
         hero: {
             eyebrow: 'Argo Method · Sports Behavioral Profiling',
@@ -202,6 +202,105 @@ export const translations = {
             rights: 'All rights reserved.',
         },
     },
+
+    pt: {
+        nav: {
+            cta: 'Experimentar Argo',
+            lang: 'ES',
+        },
+        hero: {
+            eyebrow: 'Método Argo · Perfilamento Esportivo',
+            headline: 'Seu atleta tem um código.',
+            headlineAccent: 'Aprenda a lê-lo.',
+            sub: 'Argo revela o perfil comportamental de cada jovem atleta para que o treinador ou pai saiba exatamente como se comunicar, motivar e acompanhar.',
+            cta: 'Iniciar a Odisseia',
+            ctaSub: '10 minutos · Grátis · Sem cadastro prévio',
+        },
+        problem: {
+            eyebrow: 'O problema',
+            headline: '80% dos treinadores falam uma língua. 80% dos atletas ouvem outra.',
+            cards: [
+                {
+                    title: 'Burnout precoce',
+                    body: 'Crianças abandonam o esporte não por falta de talento, mas porque o ambiente não sintoniza com a forma como processam a pressão.',
+                },
+                {
+                    title: 'Comunicação quebrada',
+                    body: 'Um atleta tipo S precisa de tempo e segurança. Um atleta tipo D precisa de autonomia e desafio. Falar com eles da mesma forma desliga os dois.',
+                },
+                {
+                    title: 'Motivação mal direcionada',
+                    body: 'O que motiva uma criança pode desmotivar outra. Sem um mapa comportamental, o adulto navega às cegas.',
+                },
+            ],
+        },
+        insight: {
+            quote: 'Quem se adapta é o adulto, não a criança.',
+            body: 'A ciência do comportamento esportivo mostra que os perfis de resposta emocional se formam antes dos 12 anos e são altamente estáveis. Argo os detecta em 10 minutos de jogo e entrega ao adulto um manual de sintonia preciso.',
+        },
+        howItWorks: {
+            eyebrow: 'Como funciona',
+            headline: 'Três passos. Um relatório que muda tudo.',
+            steps: [
+                {
+                    number: '01',
+                    title: 'O adulto registra',
+                    body: 'Preencha os dados do atleta: nome, idade, esporte. Três minutos.',
+                },
+                {
+                    number: '02',
+                    title: 'A criança joga',
+                    body: 'Entregue o dispositivo. A Odisseia do Argo é uma aventura interativa de 10 minutos que mede 12 dimensões comportamentais sem que a criança perceba.',
+                },
+                {
+                    number: '03',
+                    title: 'O adulto recebe o relatório',
+                    body: 'Chega ao seu email um relatório personalizado com o arquétipo do atleta, seu motor de desempenho e a linguagem exata para se conectar com ele.',
+                },
+            ],
+        },
+        archetypes: {
+            eyebrow: 'Os 12 arquétipos',
+            headline: '12 perfis. Cada atleta em um.',
+            sub: 'Combinando eixo dominante e motor de ritmo, Argo mapeia 12 arquétipos únicos de comportamento esportivo.',
+            profiles: [
+                'Impulsionador Dinâmico', 'Impulsionador Decidido', 'Impulsionador Persistente',
+                'Conector Dinâmico', 'Conector Decidido', 'Conector Persistente',
+                'Sustentador Dinâmico', 'Sustentador Decidido', 'Sustentador Persistente',
+                'Estrategista Dinâmico', 'Estrategista Decidido', 'Estrategista Persistente',
+            ],
+        },
+        audience: {
+            eyebrow: 'Para quem',
+            headline: 'Projetado para os adultos ao redor do atleta.',
+            cards: [
+                {
+                    title: 'Treinadores',
+                    body: 'Individualize sua comunicação. Saiba qual tipo de feedback ativa cada atleta e qual o desliga.',
+                    icon: '🏋️',
+                },
+                {
+                    title: 'Pais e mães',
+                    body: 'Pare de adivinhar o que seu filho precisa depois de um jogo. Argo te dá o mapa.',
+                    icon: '👨‍👩‍👧',
+                },
+                {
+                    title: 'Instituições esportivas',
+                    body: 'Perfile toda sua base de jogadores. Atribuição de funções, detecção de talentos e retenção.',
+                    icon: '🏟️',
+                },
+            ],
+        },
+        finalCta: {
+            headline: 'Comece hoje.',
+            sub: 'O relatório chega ao seu email. Sem apps, sem instalações.',
+            cta: 'Experimentar Argo agora',
+        },
+        footer: {
+            tagline: 'Perfilamento esportivo baseado em comportamento.',
+            rights: 'Todos os direitos reservados.',
+        },
+    },
 } as const;
 
 type Translations = typeof translations;
@@ -226,9 +325,7 @@ function getBrowserLang(): Lang {
 
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [lang, setLang] = useState<Lang>(getBrowserLang);
-    // PT falls back to ES for landing-page translations (odyssey content has full PT in onboardingDataI18n)
-    const tLang = lang === 'pt' ? 'es' : lang;
-    const t = translations[tLang] as LangTranslations;
+    const t = translations[lang] as LangTranslations;
 
     // Keep <html lang> in sync with current language
     useEffect(() => {
