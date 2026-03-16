@@ -302,6 +302,7 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                     .from('sessions')
                     .select('eje,motor')
                     .is('deleted_at', null)
+                    .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false })
                     .limit(50);
                 if (data && data.length > 0) {

@@ -102,6 +102,7 @@ export const Sessions: React.FC = () => {
                     .from('sessions')
                     .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,archetype_label,ai_cost_usd')
                     .is('deleted_at', null)
+                    .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false }),
                 supabase
                     .from('leads')
