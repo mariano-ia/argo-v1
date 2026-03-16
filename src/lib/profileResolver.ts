@@ -117,8 +117,8 @@ export function resolveFromAnswers(
     const total       = answers.length;
     let tiebreakerApplied = false;
 
-    // — Eje tiebreaker: when near-tie, pick less represented in group —
-    if (sessionCtx && sessionCtx.priorEjes.length > 0 && diff <= 1) {
+    // — Eje tiebreaker: only on exact tie, pick less represented in group —
+    if (sessionCtx && sessionCtx.priorEjes.length > 0 && diff === 0) {
         const candidates = sorted.filter(axis => axisCounts[axis] >= topCount - 1);
         const ejeCounts = candidates.map(axis => ({
             axis,
