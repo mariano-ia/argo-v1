@@ -36,6 +36,7 @@ interface ReportContext {
     deporte: string;
     edad: number;
     destinatario: 'padre' | 'entrenador';
+    lang?: string;
 }
 
 interface AISections {
@@ -92,12 +93,24 @@ TONO Y FOCO:
 - Personaliza con el nombre del deportista y ejemplos concretos del deporte.
 `.trim();
 
+const LANG_LABELS: Record<string, string> = {
+    es: 'Spanish (Latin American, neutral — use "tú" conjugations, never voseo)',
+    en: 'English (American, natural and warm)',
+    pt: 'Portuguese (Brazilian, natural and warm)',
+};
+
 function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const destinatarioLabel = ctx.destinatario === 'padre'
         ? 'el padre/madre del deportista (tono cálido, doméstico, empático)'
         : 'el entrenador/coach (tono táctico, de cancha, práctico)';
 
-    return `Eres un redactor especialista del Método Argo, un sistema de perfilado conductual para deportistas infantiles basado en DISC.
+    const langCode = ctx.lang || 'es';
+    const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
+    const langInstruction = langCode !== 'es'
+        ? `\n\nCRITICAL LANGUAGE INSTRUCTION: Write ALL output text in ${langLabel}. The base content below is in Spanish — use it as conceptual reference ONLY. Your response MUST be entirely in ${langLabel}. Do NOT mix languages.`
+        : '';
+
+    return `Eres un redactor especialista del Método Argo, un sistema de perfilado conductual para deportistas infantiles basado en DISC.${langInstruction}
 
 ${WRITING_RULES}
 
@@ -166,6 +179,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const prompt = buildPrompt(report, context);
+        const langCode = context.lang || 'es';
+        const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -180,7 +195,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.',
+                        content: langCode !== 'es'
+                            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}.`
+                            : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.',
                     },
                     {
                         role: 'user',

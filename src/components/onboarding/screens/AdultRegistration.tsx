@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT } from '../../../lib/odysseyTranslations';
 
 interface AdultData {
     nombreAdulto: string;
@@ -15,18 +17,10 @@ interface Props {
     onComplete: (data: AdultData) => void;
 }
 
-const DEPORTES = [
-    'Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación',
-    'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro',
-];
-
-const CHECKS = [
-    (nombre: string) => `Entiendo que Argo Method es una "fotografía del presente" y no una etiqueta permanente para ${nombre || 'mi hijo/a'}.`,
-    (nombre: string) => `Acepto que el objetivo de este informe es priorizar el disfrute y el bienestar de ${nombre || 'mi hijo/a'} por sobre el rendimiento competitivo.`,
-    () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
-];
-
 export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
+
     const [nombreAdulto, setNombreAdulto] = useState('');
     const [email, setEmail]               = useState(userEmail);
     const [nombreNino, setNombreNino]     = useState('');
@@ -35,7 +29,8 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
     const [deporteCustom, setDeporteCustom] = useState('');
     const [checks, setChecks]             = useState([false, false, false]);
 
-    const deporteFinal = deporte === 'Otro' ? deporteCustom : deporte;
+    const lastSport = ot.sports[ot.sports.length - 1]; // "Otro" / "Other" / "Outro"
+    const deporteFinal = deporte === lastSport ? deporteCustom : deporte;
     const emailFinal = userEmail || email.trim();
 
     const isValid =
@@ -68,15 +63,15 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
         >
             <div>
                 <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-1">
-                    Registro
+                    {ot.registration}
                 </div>
                 <h2 className="font-display text-2xl font-light text-[#1D1D1F]" style={{ letterSpacing: '-0.02em' }}>
-                    Tus datos y los del deportista
+                    {ot.registrationSub}
                 </h2>
                 <p className="text-sm text-argo-grey mt-1.5 leading-relaxed">
                     {userEmail
-                        ? <>El informe llegará a <strong>{userEmail}</strong>. Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.</>
-                        : <>Completa estos datos antes de pasarle el dispositivo a {nombreNino || 'el/la deportista'}.</>
+                        ? <>{ot.reportWillBeSentTo(userEmail)} {ot.fillDataBefore(nombreNino)}</>
+                        : <>{ot.fillDataBefore(nombreNino)}</>
                     }
                 </p>
             </div>
@@ -84,9 +79,9 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
             {/* Form fields */}
             <div className="space-y-4">
                 {[
-                    { label: 'Tu nombre', value: nombreAdulto, setter: setNombreAdulto, placeholder: 'Ej: Kate', type: 'text' },
-                    ...(!userEmail ? [{ label: 'Tu email', value: email, setter: setEmail, placeholder: 'ejemplo@mail.com', type: 'email' }] : []),
-                    { label: 'Nombre del deportista', value: nombreNino, setter: setNombreNino, placeholder: 'Ej: Kevin', type: 'text' },
+                    { label: ot.yourName, value: nombreAdulto, setter: setNombreAdulto, placeholder: ot.yourNamePlaceholder, type: 'text' },
+                    ...(!userEmail ? [{ label: ot.yourEmail, value: email, setter: setEmail, placeholder: ot.yourEmailPlaceholder, type: 'email' }] : []),
+                    { label: ot.athleteName, value: nombreNino, setter: setNombreNino, placeholder: ot.athleteNamePlaceholder, type: 'text' },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">
                         <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
@@ -105,7 +100,7 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                 {/* Edad */}
                 <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
-                        Edad del deportista — {edad} años
+                        {ot.athleteAge(edad)}
                     </label>
                     <input
                         type="range" min={8} max={16} value={edad}
@@ -119,9 +114,9 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
 
                 {/* Deporte */}
                 <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">Deporte</label>
+                    <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">{ot.sport}</label>
                     <div className="flex flex-wrap gap-2">
-                        {DEPORTES.map(d => (
+                        {ot.sports.map(d => (
                             <button
                                 key={d}
                                 onClick={() => setDeporte(d)}
@@ -135,12 +130,12 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                             </button>
                         ))}
                     </div>
-                    {deporte === 'Otro' && (
+                    {deporte === lastSport && (
                         <input
                             type="text"
                             value={deporteCustom}
                             onChange={e => setDeporteCustom(e.target.value)}
-                            placeholder="Escribí el deporte..."
+                            placeholder={ot.sportOtherPlaceholder}
                             className="w-full border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
                         />
                     )}
@@ -150,9 +145,9 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
             {/* Checkboxes */}
             <div className="space-y-3">
                 <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
-                    Acuerdo filosófico
+                    {ot.philosophicalAgreement}
                 </div>
-                {CHECKS.map((textFn, i) => (
+                {ot.checks.map((textFn, i) => (
                     <button
                         key={i}
                         onClick={() => toggleCheck(i)}
@@ -183,7 +178,7 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                 disabled={!isValid}
                 className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
             >
-                Continuar <ChevronRight size={16} />
+                {ot.continue} <ChevronRight size={16} />
             </motion.button>
         </motion.div>
     );

@@ -5,6 +5,8 @@ import { ReportData } from '../../../lib/argosEngine';
 import { AISections } from '../../../lib/openaiService';
 import { sendReport } from '../../../lib/emailService';
 import { FullReport } from '../../FullReport';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT, OdysseyTranslations } from '../../../lib/odysseyTranslations';
 
 interface AdultData {
     nombreAdulto: string;
@@ -25,7 +27,7 @@ interface Props {
 
 type EmailStatus = 'idle' | 'sending' | 'sent' | 'error';
 
-function buildReportHtml(report: ReportData, aiSections: AISections | null): string {
+function buildReportHtml(report: ReportData, aiSections: AISections | null, et: OdysseyTranslations['emailSections']): string {
     const r = aiSections
         ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
         : report;
@@ -57,11 +59,11 @@ function buildReportHtml(report: ReportData, aiSections: AISections | null): str
   </td></tr>
   <tr>
     <td width="50%" valign="top" style="padding:12px 14px;border-right:1px solid #D2D2D7;">
-      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#16a34a;margin:0 0 6px 0;">Activadores</p>
+      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#16a34a;margin:0 0 6px 0;">${et.activators}</p>
       ${txt(row.activador)}
     </td>
     <td width="50%" valign="top" style="padding:12px 14px;">
-      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#d97706;margin:0 0 6px 0;">A evitar</p>
+      <p style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#d97706;margin:0 0 6px 0;">${et.toAvoid}</p>
       ${txt(row.desmotivacion)}
     </td>
   </tr>
@@ -69,43 +71,43 @@ function buildReportHtml(report: ReportData, aiSections: AISections | null): str
 
     // Extra pills by tendency
     const puenteExtraHtml = (r.palabrasPuenteExtra && r.palabrasPuenteExtra.length > 0)
-        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">Por su tendencia</p>
+        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">${et.byTendency}</p>
            <p style="margin:0 0 14px 0;">${pills(r.palabrasPuenteExtra, '#dcfce7', '#16a34a', true)}</p>`
         : '';
     const ruidoExtraHtml = (r.palabrasRuidoExtra && r.palabrasRuidoExtra.length > 0)
-        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">Por su tendencia</p>
+        ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">${et.byTendency}</p>
            <p style="margin:0;">${pills(r.palabrasRuidoExtra, '#fef3c7', '#d97706', true)}</p>`
         : '';
 
     const sections = [
-        section('El Contrato de Sintonía',
+        section(et.contract,
             `<blockquote style="margin:0;padding-left:16px;border-left:3px solid #6366f1;">${txt(r.bienvenida)}</blockquote>`),
-        section('Su lugar en la Nave', txt(r.wow)),
-        r.tendenciaParagraph ? section('La Brújula Secundaria', txt(r.tendenciaParagraph)) : '',
-        section('El Ritmo del Motor', txt(r.motorDesc)),
-        section('El Combustible', txt(r.combustible)),
-        section('Vida en el Grupo', txt(r.grupoEspacio)),
-        section('Lenguaje de Intención', txt(r.corazon)),
-        section('Lenguaje del Capitán', `
-<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#16a34a;margin:0 0 6px 0;">Palabras Puente</p>
+        section(et.placeInShip, txt(r.wow)),
+        r.tendenciaParagraph ? section(et.secondaryCompass, txt(r.tendenciaParagraph)) : '',
+        section(et.motorRhythm, txt(r.motorDesc)),
+        section(et.fuel, txt(r.combustible)),
+        section(et.groupLife, txt(r.grupoEspacio)),
+        section(et.intentionLanguage, txt(r.corazon)),
+        section(et.captainLanguage, `
+<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#16a34a;margin:0 0 6px 0;">${et.bridgeWords}</p>
 <p style="margin:0 0 4px 0;">${pills(r.palabrasPuente, '#dcfce7', '#15803d')}</p>
 ${puenteExtraHtml}
-<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#d97706;margin:14px 0 6px 0;">Palabras Ruido</p>
+<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#d97706;margin:14px 0 6px 0;">${et.noiseWords}</p>
 <p style="margin:0 0 4px 0;">${pills(r.palabrasRuido, '#fef3c7', '#b45309')}</p>
 ${ruidoExtraHtml}`),
-        r.guia.length > 0 ? section('Guía de Sintonía', guiaHtml) : '',
-        section('Gestión del Desajuste', txt(r.reseteo)),
-        section('Ecos de la Nave', txt(r.ecos)),
-        section('Checklist del Día', `
+        r.guia.length > 0 ? section(et.tuningGuide, guiaHtml) : '',
+        section(et.adjustmentManagement, txt(r.reseteo)),
+        section(et.shipEchoes, txt(r.ecos)),
+        section(et.dayChecklist, `
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 6px;">
   <tr><td style="border-left:4px solid #6366f1;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Antes del entrenamiento</p>${txt(r.checklist.antes)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.beforeTraining}</p>${txt(r.checklist.antes)}
   </td></tr>
   <tr><td style="border-left:4px solid #1D1D1F;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Durante el entrenamiento</p>${txt(r.checklist.durante)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.duringTraining}</p>${txt(r.checklist.durante)}
   </td></tr>
   <tr><td style="border-left:4px solid #22c55e;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">Después del entrenamiento</p>${txt(r.checklist.despues)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.afterTraining}</p>${txt(r.checklist.despues)}
   </td></tr>
 </table>`),
     ];
@@ -121,6 +123,8 @@ export const AdultReport: React.FC<Props> = ({
     saveError,
     onRestart: _onRestart,
 }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
     const [emailStatus, setEmailStatus] = useState<EmailStatus>('idle');
     const hasSentRef = useRef(false);
 
@@ -142,8 +146,16 @@ export const AdultReport: React.FC<Props> = ({
             arquetipo:         report.tendenciaLabel
                 ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
                 : report.arquetipo.label,
-            reportHtml:        buildReportHtml(report, aiSections),
+            reportHtml:        buildReportHtml(report, aiSections, ot.emailSections),
             maduracionTemprana,
+            lang,
+            emailSubject:      ot.emailSubject(adultData.nombreNino, report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label),
+            emailHeader:       ot.emailHeader,
+            emailPreparedFor:  ot.emailPreparedFor(adultData.nombreAdulto),
+            emailArchetypeOf:  ot.emailArchetypeOf(adultData.nombreNino),
+            emailFooter:       ot.emailFooter,
+            emailMaturationTitle: ot.emailMaturationTitle,
+            emailMaturationBody:  ot.emailMaturationBody,
         })
             .then(() => {
                 hasSentRef.current = true;
@@ -171,7 +183,7 @@ export const AdultReport: React.FC<Props> = ({
                 <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-4 flex items-start gap-3">
                     <AlertCircle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
                     <div>
-                        <p className="text-sm font-semibold text-amber-800">No se pudo guardar la sesión</p>
+                        <p className="text-sm font-semibold text-amber-800">{ot.saveErrorTitle}</p>
                         <p className="text-xs text-amber-600 mt-1">{saveError}</p>
                     </div>
                 </div>
@@ -214,7 +226,7 @@ export const AdultReport: React.FC<Props> = ({
                 {/* Archetype */}
                 <div>
                     <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em] mb-1">
-                        Arquetipo de {adultData.nombreNino}
+                        {ot.archetypeOf(adultData.nombreNino)}
                     </div>
                     <h2 className="font-display text-3xl font-light text-[#1D1D1F] leading-tight" style={{ letterSpacing: '-0.03em' }}>
                         {report.arquetipo.label}
@@ -231,25 +243,25 @@ export const AdultReport: React.FC<Props> = ({
                 <div className="min-h-[24px]">
                     {emailStatus === 'sending' && (
                         <p className="text-[#86868B] text-sm animate-pulse">
-                            Preparando el informe…
+                            {ot.preparingReport}
                         </p>
                     )}
                     {emailStatus === 'sent' && (
                         <p className="text-emerald-600 font-medium text-sm">
-                            Informe enviado a{' '}
+                            {ot.reportSentTo}{' '}
                             <span className="font-semibold text-[#1D1D1F]">{adultData.email}</span>
                         </p>
                     )}
                     {emailStatus === 'error' && (
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-center gap-1.5 text-amber-600 text-sm font-medium">
-                                <AlertCircle size={14} /> No pudimos enviar el email
+                                <AlertCircle size={14} /> {ot.emailError}
                             </div>
                             <button
                                 onClick={() => { hasSentRef.current = false; setEmailStatus('idle'); doSend(); }}
                                 className="text-xs text-[#86868B] hover:text-[#1D1D1F] underline transition-colors"
                             >
-                                Reintentar envío
+                                {ot.retryEmail}
                             </button>
                         </div>
                     )}
@@ -259,11 +271,11 @@ export const AdultReport: React.FC<Props> = ({
                 <div className="flex items-center justify-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.15em]">
                     {aiLoading ? (
                         <span className="text-[#86868B] animate-pulse flex items-center gap-1.5">
-                            <Sparkles size={11} /> Personalizando con IA…
+                            <Sparkles size={11} /> {ot.personalizingAI}
                         </span>
                     ) : (
                         <span className="text-[#424245] flex items-center gap-1.5">
-                            <Sparkles size={11} /> Generado por ArgoEngine
+                            <Sparkles size={11} /> {ot.generatedByArgo}
                         </span>
                     )}
                 </div>
@@ -272,16 +284,15 @@ export const AdultReport: React.FC<Props> = ({
             {/* Maduración temprana */}
             {maduracionTemprana && (
                 <div className="p-4 bg-amber-50 border border-amber-200 rounded-argo-md text-sm text-amber-800">
-                    <strong className="block mb-1">Nota: Maduración Temprana</strong>
-                    Los perfiles en la infancia temprana (menores de 7 años) son altamente plásticos.
-                    Se recomienda revisitar este perfil en <strong>6 meses</strong> para observar la evolución.
+                    <strong className="block mb-1">{ot.maturationTitle}</strong>
+                    {ot.maturationBody} {ot.maturationRevisit}
                 </div>
             )}
 
             {/* Full report */}
             <div className="space-y-2">
                 <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em]">
-                    Informe completo
+                    {ot.fullReport}
                 </div>
                 <FullReport
                     report={mergedReport}

@@ -10,22 +10,34 @@ function buildHtml(params: {
     arquetipo: string;
     reportHtml: string;
     maduracionTemprana: boolean;
+    lang?: string;
+    emailHeader?: string;
+    emailPreparedFor?: string;
+    emailArchetypeOf?: string;
+    emailFooter?: string;
+    emailMaturationTitle?: string;
+    emailMaturationBody?: string;
 }): string {
+    const langAttr = params.lang || 'es';
+    const header = params.emailHeader || 'Informe de Sintonía';
+    const preparedFor = params.emailPreparedFor || `Preparado para ${params.nombreAdulto}`;
+    const archetypeOf = params.emailArchetypeOf || `Arquetipo de ${params.nombreNino}`;
+    const footer = params.emailFooter || 'Argo Method · Este informe es una fotografía del presente, no una etiqueta permanente.';
+    const matTitle = params.emailMaturationTitle || 'Nota: Maduración Temprana';
+    const matBody = params.emailMaturationBody || 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.';
+
     const maduracionBanner = params.maduracionTemprana ? `
     <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:16px;margin-bottom:24px;">
-        <strong style="color:#92400e;">📌 Nota: Maduración Temprana</strong><br/>
-        <span style="color:#78350f;font-size:14px;">
-            Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos.
-            Se recomienda revisitar este perfil en <strong>6 meses</strong> para observar la evolución de las tendencias.
-        </span>
+        <strong style="color:#92400e;">📌 ${matTitle}</strong><br/>
+        <span style="color:#78350f;font-size:14px;">${matBody}</span>
     </div>` : '';
 
     return `<!DOCTYPE html>
-<html lang="es">
+<html lang="${langAttr}">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Informe de Sintonía Argo · ${params.nombreNino}</title>
+<title>${header} · ${params.nombreNino}</title>
 </head>
 <body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1D1D1F;">
 
@@ -40,21 +52,21 @@ function buildHtml(params: {
             <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;margin-left:6px;">beta</span>
         </div>
         <h1 style="margin:0;font-size:24px;font-weight:300;color:#ffffff;letter-spacing:-0.5px;">
-            Informe de Sintonía
+            ${header}
         </h1>
         <p style="margin:8px 0 0;font-size:14px;color:#86868B;">
-            Preparado para ${params.nombreAdulto}
+            ${preparedFor}
         </p>
     </div>
 
     <!-- Archetype badge -->
     <div style="background:#F5F5F7;border-bottom:1px solid #D2D2D7;padding:24px 40px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#86868B;margin-bottom:4px;">
-            Arquetipo de ${params.nombreNino}
+            ${archetypeOf}
         </div>
         <div style="font-size:24px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;">${params.arquetipo}</div>
         <div style="font-size:13px;color:#86868B;margin-top:4px;">
-            ${params.deporte} · ${params.edad} años
+            ${params.deporte} · ${params.edad}
         </div>
     </div>
 
@@ -69,7 +81,7 @@ function buildHtml(params: {
     <!-- Footer -->
     <div style="background:#F5F5F7;border-top:1px solid #D2D2D7;padding:20px 40px;text-align:center;">
         <p style="margin:0;font-size:11px;color:#86868B;letter-spacing:0.1em;text-transform:uppercase;">
-            Argo Method · Este informe es una fotografía del presente, no una etiqueta permanente.
+            ${footer}
         </p>
     </div>
 
@@ -99,6 +111,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         arquetipo,
         reportHtml,
         maduracionTemprana,
+        lang,
+        emailSubject,
+        emailHeader,
+        emailPreparedFor,
+        emailArchetypeOf,
+        emailFooter,
+        emailMaturationTitle,
+        emailMaturationBody,
     } = req.body as {
         toEmail: string;
         nombreAdulto: string;
@@ -108,13 +128,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         arquetipo: string;
         reportHtml: string;
         maduracionTemprana: boolean;
+        lang?: string;
+        emailSubject?: string;
+        emailHeader?: string;
+        emailPreparedFor?: string;
+        emailArchetypeOf?: string;
+        emailFooter?: string;
+        emailMaturationTitle?: string;
+        emailMaturationBody?: string;
     };
 
     if (!toEmail || !nombreNino) {
-        return res.status(400).json({ error: 'Faltan campos requeridos: toEmail, nombreNino' });
+        return res.status(400).json({ error: 'Missing required fields: toEmail, nombreNino' });
     }
 
-    const html = buildHtml({ nombreAdulto, nombreNino, deporte, edad, arquetipo, reportHtml, maduracionTemprana });
+    const html = buildHtml({
+        nombreAdulto, nombreNino, deporte, edad, arquetipo, reportHtml, maduracionTemprana,
+        lang, emailHeader, emailPreparedFor, emailArchetypeOf, emailFooter, emailMaturationTitle, emailMaturationBody,
+    });
+
+    const subject = emailSubject || `Informe de Sintonía Argo · ${nombreNino} · ${arquetipo}`;
 
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -125,7 +158,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         body: JSON.stringify({
             from: 'Argo Method <noreply@argomethod.com>',
             to: [toEmail],
-            subject: `Informe de Sintonía Argo · ${nombreNino} · ${arquetipo}`,
+            subject,
             html,
         }),
     });

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { StorySlideData } from '../../../lib/onboardingData';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT } from '../../../lib/odysseyTranslations';
 
 interface Props {
     slide: StorySlideData;
@@ -32,6 +34,8 @@ function useTypewriter(text: string, speed = 30): { displayed: string; done: boo
 export const StorySlideV2: React.FC<Props> = ({
     slide, nombreNino, deporte, onContinue, continueLabel,
 }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
     const body = slide.body
         .replace(/\{\{NOMBRE_NIÑO\}\}/g, nombreNino)
         .replace(/\{\{DEPORTE\}\}/g, deporte);
@@ -103,7 +107,7 @@ export const StorySlideV2: React.FC<Props> = ({
                         border: '1px solid rgba(244,140,37,0.2)',
                     }}
                 >
-                    {continueLabel || 'Continuar'}
+                    {continueLabel || ot.continueDefault}
                     <ChevronRight size={20} style={{ color: '#F48C25' }} />
                 </motion.button>
             </div>
