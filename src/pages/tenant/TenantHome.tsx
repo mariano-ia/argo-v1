@@ -162,7 +162,7 @@ export const TenantHome: React.FC = () => {
                     Tu link de invitación
                 </h2>
                 <p className="text-xs text-argo-grey mb-4">
-                    Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus niños.
+                    Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus deportistas.
                 </p>
 
                 <div className="flex items-center gap-2">

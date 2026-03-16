@@ -128,7 +128,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
                     {/* Nautical notice */}
                     <div style={{ background: 'rgba(187,188,255,0.25)', border: '1px solid rgba(187,188,255,0.6)', borderRadius: '16px', padding: '16px 20px' }}>
                         <p style={{ fontWeight: 300, fontSize: '15px', color: '#1D1D1F', lineHeight: 1.65, letterSpacing: '-0.01em', margin: 0 }}>
-                            ¡Preparados para zarpar! Asegúrate de estar con el niño o la niña. Su interacción es la base de la Metodología Argo.
+                            ¡Preparados para zarpar! Asegúrate de estar con tu deportista. Su interacción es la base de la Metodología Argo.
                         </p>
                     </div>
 

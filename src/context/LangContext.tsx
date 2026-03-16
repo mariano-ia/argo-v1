@@ -24,7 +24,7 @@ export const translations = {
             cards: [
                 {
                     title: 'Burnout temprano',
-                    body: 'Los niños abandonan el deporte no por falta de talento, sino porque el entorno no sintoniza con su forma de procesar la presión.',
+                    body: 'Los deportistas jóvenes abandonan el deporte no por falta de talento, sino porque el entorno no sintoniza con su forma de procesar la presión.',
                 },
                 {
                     title: 'Comunicación rota',
@@ -32,12 +32,12 @@ export const translations = {
                 },
                 {
                     title: 'Motivación mal dirigida',
-                    body: 'Lo que motiva a un niño puede desmotivar a otro. Sin un mapa de comportamiento, el adulto navega a ciegas.',
+                    body: 'Lo que motiva a un deportista puede desmotivar a otro. Sin un mapa de comportamiento, el adulto navega a ciegas.',
                 },
             ],
         },
         insight: {
-            quote: 'El que se adapta es el adulto, no el niño.',
+            quote: 'El que se adapta es el adulto, no el deportista.',
             body: 'La ciencia del comportamiento deportivo muestra que los perfiles de respuesta emocional se forman antes de los 12 años y son altamente estables. Argo los detecta en 10 minutos de juego y le devuelve al adulto un manual de sintonía preciso.',
         },
         howItWorks: {
@@ -51,13 +51,13 @@ export const translations = {
                 },
                 {
                     number: '02',
-                    title: 'El niño juega',
-                    body: 'Le entregas el dispositivo. La Odisea del Argo es una aventura interactiva de 10 minutos que mide 12 dimensiones de comportamiento sin que el niño lo sepa.',
+                    title: 'El deportista juega',
+                    body: 'Le entregas el dispositivo. La Odisea del Argo es una aventura interactiva de 10 minutos que mide 12 dimensiones de comportamiento sin que lo note.',
                 },
                 {
                     number: '03',
                     title: 'El adulto recibe el informe',
-                    body: 'Llega a tu email un informe personalizado con el arquetipo del deportista, su motor de rendimiento y el lenguaje exacto para conectar con él.',
+                    body: 'Llega a tu email un informe personalizado con el arquetipo del deportista, su motor de rendimiento y el lenguaje exacto para conectar mejor.',
                 },
             ],
         },

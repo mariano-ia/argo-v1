@@ -70,5 +70,5 @@ Recuerda que cada travesía tiene momentos para pensar y momentos para actuar. A
     // C + Lento
     estratega_observador: `Hoy hemos descubierto que en nuestra nave, {{NOMBRE}}, eres los ojos de la tripulación. Tienes un talento especial para observar todo con atención y descubrir cosas que nadie más ve. Tu manera de tomarte el tiempo para entender cada detalle hace que el equipo tome mejores decisiones.
 
-Recuerda que cada aventura tiene momentos de observación y momentos de acción. A veces te sentirás con ganas de mirar desde el puesto de vigía y otras de saltar al agua, ¡y eso está genial! Lo más importante es que sigas disfrutando de esa curiosidad tan valiosa que te hace único. ¡Nos vemos en la próxima misión!`,
+Recuerda que cada aventura tiene momentos de observación y momentos de acción. A veces te sentirás con ganas de mirar desde el puesto de vigía y otras de saltar al agua, ¡y eso está genial! Lo más importante es que sigas disfrutando de esa curiosidad tan valiosa que te hace tan especial. ¡Nos vemos en la próxima misión!`,
 };
