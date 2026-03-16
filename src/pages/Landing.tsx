@@ -212,7 +212,7 @@ const randomSlotConf = () => [0, 1, 2].map(() => ({
 }));
 
 // ─── Language cycling ─────────────────────────────────────────────────────────
-const NEXT_LANG: Record<Lang, Lang> = { es: 'en', en: 'pt', pt: 'es' };
+const OTHER_LANGS: Record<Lang, [Lang, Lang]> = { es: ['en', 'pt'], en: ['es', 'pt'], pt: ['es', 'en'] };
 
 // ─── Components ──────────────────────────────────────────────────────────────
 
@@ -268,7 +268,7 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
 
 export const Landing: React.FC = () => {
     const navigate = useNavigate();
-    const { lang, setLang, t } = useLang();
+    const { lang, setLang } = useLang();
 
     // Trilingual helper
     const L = (es: string, en: string, pt: string) =>
@@ -317,13 +317,16 @@ export const Landing: React.FC = () => {
                         </span>
                     </span>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setLang(NEXT_LANG[lang])}
-                            style={{ fontWeight: 400, fontSize: '11px', letterSpacing: '0.06em' }}
-                            className="text-argo-grey hover:text-argo-navy transition-colors uppercase"
-                        >
-                            {t.nav.lang}
-                        </button>
+                        {OTHER_LANGS[lang].map(l => (
+                            <button
+                                key={l}
+                                onClick={() => setLang(l)}
+                                style={{ fontWeight: 400, fontSize: '11px', letterSpacing: '0.06em' }}
+                                className="text-argo-grey hover:text-argo-navy transition-colors uppercase"
+                            >
+                                {l.toUpperCase()}
+                            </button>
+                        ))}
                         <button
                             onClick={() => navigate('/signup')}
                             style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
@@ -849,13 +852,16 @@ export const Landing: React.FC = () => {
                            className="hover:text-argo-navy transition-colors" style={{ textDecoration: 'none' }}>
                             Yacaré Lab
                         </a>
-                        <span>© 2025 Argo.</span>
-                        <button
-                            onClick={() => setLang(NEXT_LANG[lang])}
-                            className="hover:text-argo-navy transition-colors"
-                        >
-                            {t.nav.lang}
-                        </button>
+                        <span>© 2026 Argo.</span>
+                        {OTHER_LANGS[lang].map(l => (
+                            <button
+                                key={l}
+                                onClick={() => setLang(l)}
+                                className="hover:text-argo-navy transition-colors"
+                            >
+                                {l.toUpperCase()}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </footer>
