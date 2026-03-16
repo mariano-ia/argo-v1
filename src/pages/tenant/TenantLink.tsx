@@ -46,7 +46,7 @@ export const TenantLink: React.FC = () => {
         <div className="max-w-2xl">
             <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">Mi link</h1>
             <p className="text-sm text-argo-grey mb-8">
-                Comparte este link para que los adultos realicen la experiencia Argo con sus niños.
+                Comparte este link para que los adultos realicen la experiencia Argo con sus deportistas.
             </p>
 
             <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm">

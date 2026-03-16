@@ -73,7 +73,7 @@ const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
         pt: 'Tem o coração da equipe e os pés de um velocista. É o primeiro a estender a mão e também a chegar à bola. Estabiliza o grupo pela ação, não apenas pelo apoio. Precisa sentir que sua contribuição é visível e que a equipe o reconhece como parte essencial.',
     },
     {
-        es: 'La columna vertebral del equipo. No busca el protagonismo, pero sin él nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
+        es: 'La columna vertebral del equipo. No busca el protagonismo, pero sin esta figura nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
         en: 'The backbone of the team. Does not seek the spotlight, but without them nothing works. Executes with consistency, supports unconditionally, and keeps the rhythm when others falter. Needs a predictable environment and stable relationships to give their best.',
         pt: 'A coluna vertebral da equipe. Não busca o protagonismo, mas sem ele nada funciona. Executa com consistência, apoia sem condições e mantém o ritmo quando os outros falham. Precisa de um ambiente previsível e relações estáveis para dar o melhor de si.',
     },
@@ -93,7 +93,7 @@ const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
         pt: 'Pensa antes de falar e fala antes de agir. Seu processo não é lento — é exato. Cada decisão é sustentada em observação e critério. Prefere qualidade à velocidade e precisão ao volume. Precisa de um ambiente que valorize a análise e não o pressione a agir antes de estar pronto.',
     },
     {
-        es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. Para él, el deporte es un tablero que prefiere comprender antes de ejecutar.',
+        es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. El deporte es un tablero que prefiere comprender antes de ejecutar.',
         en: 'Their talent lies not in the speed of the run, but in the clarity of their gaze. Tends to process the environment deeply before acting, bringing calm and tactical order even under pressure. For them, sport is a board they prefer to understand before executing.',
         pt: 'Seu talento não está na velocidade da corrida, mas na clareza do seu olhar. Tende a processar o ambiente com profundidade antes de agir, trazendo calma e ordem tática mesmo em momentos de pressão. Para ele, o esporte é um tabuleiro que prefere compreender antes de executar.',
     },
@@ -173,14 +173,14 @@ const ROTATING_PROFILES = [
 // ─── FAQs per language ───────────────────────────────────────────────────────
 const FAQS: Record<Lang, { q: string; a: string }[]> = {
     es: [
-        { q: '¿Qué es Argo Method?', a: 'No hay niños incorrectos, hay niños que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona el niño en contextos deportivos.' },
-        { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al atleta: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el niño, es una herramienta para que el adulto pueda acompañarlo mejor.' },
-        { q: '¿El niño necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
-        { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 10 minutos. Son 12 decisiones rápidas presentadas como un juego con temática náutica. El niño las responde solo, en un ambiente tranquilo.' },
+        { q: '¿Qué es Argo Method?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
+        { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al atleta: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el menor, es una herramienta para que el adulto pueda acompañar mejor.' },
+        { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
+        { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 10 minutos. Son 12 decisiones rápidas presentadas como un juego con temática náutica. Se responden a solas, en un ambiente tranquilo.' },
         { q: '¿Hay respuestas correctas o incorrectas?', a: 'No. Cada respuesta refleja una tendencia conductual, no un acierto ni un error. No se miden capacidades ni se emiten diagnósticos. Todas las respuestas son válidas.' },
         { q: '¿Es un test psicológico?', a: 'No. Argo Method no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
         { q: '¿Cuánto cuesta?', a: 'La experiencia es gratuita durante esta etapa.' },
-        { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del niño, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' },
+        { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del menor, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' },
     ],
     en: [
         { q: 'What is Argo Method?', a: 'There are no incorrect children — only children who haven\'t yet found an adult who understands them. Argo Method is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 10-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
@@ -383,7 +383,7 @@ export const Landing: React.FC = () => {
                     className="mb-12"
                 >
                     {L(
-                        'A través de una dinámica gamificada basada en DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés y asegurar el disfrute genuino de los niños.',
+                        'A través de una dinámica gamificada basada en DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés y asegurar el disfrute genuino de cada deportista.',
                         'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.',
                         'Através de uma dinâmica gamificada baseada em DISC + Motor, alinhamos o ambiente com a natureza do atleta. Uma solução técnica para eliminar o estresse e garantir o prazer genuíno das crianças.',
                     )}
@@ -439,7 +439,7 @@ export const Landing: React.FC = () => {
                         </p>
                         <p style={{ fontWeight: 400, fontSize: '16px', lineHeight: 1.75, color: '#424245' }}>
                             {L(
-                                'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen niños incorrectos. Existen niños fuera de sintonía. Cuando un niño no disfruta del deporte, no es por falta de capacidad, es porque está ocupando un lugar en la tripulación que no le corresponde.',
+                                'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen deportistas jóvenes incorrectos. Existen deportistas fuera de sintonía. Cuando alguien no disfruta del deporte, no es por falta de capacidad, es porque está ocupando un lugar en la tripulación que no le corresponde.',
                                 'We apply this ancient wisdom to sports behavioral science. There are no wrong children. There are children out of sync. When a child does not enjoy sport, it is not from lack of ability, it is because they are filling a role in the crew that does not match their nature.',
                                 'Aplicamos essa sabedoria milenar à ciência do comportamento esportivo. Não existem crianças incorretas. Existem crianças fora de sintonia. Quando uma criança não aproveita o esporte, não é por falta de capacidade — é porque está ocupando um lugar na tripulação que não lhe corresponde.',
                             )}

@@ -157,13 +157,13 @@ const es: OdysseyTranslations = {
     sports: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro'],
     philosophicalAgreement: 'Acuerdo filosófico',
     checks: [
-        (name) => `Entiendo que Argo Method es una "fotografía del presente" y no una etiqueta permanente para ${name || 'mi hijo/a'}.`,
-        (name) => `Acepto que el objetivo de este informe es priorizar el disfrute y el bienestar de ${name || 'mi hijo/a'} por sobre el rendimiento competitivo.`,
+        (name) => `Entiendo que Argo Method es una "fotografía del presente" y no una etiqueta permanente para ${name || 'mi deportista'}.`,
+        (name) => `Acepto que el objetivo de este informe es priorizar el disfrute y el bienestar de ${name || 'mi deportista'} por sobre el rendimiento competitivo.`,
         () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
     ],
     continue: 'Continuar',
     reportWillBeSentTo: (email) => `El informe llegará a ${email}.`,
-    fillDataBefore: (name) => `Completa estos datos antes de pasarle el dispositivo a ${name || 'el/la deportista'}.`,
+    fillDataBefore: (name) => `Completa estos datos antes de pasarle el dispositivo a ${name || 'tu deportista'}.`,
 
     handoffLabel: 'El Traspaso',
     handoffTitle: (adult, child) => `${adult}, es el turno de ${child}`,
