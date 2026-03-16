@@ -18,6 +18,7 @@ import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
+import { ResultRevealPreview } from './pages/ResultRevealPreview';
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -128,6 +129,7 @@ function App() {
             <Route path="/app"    element={<UserApp />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
+            <Route path="/preview/result" element={<ResultRevealPreview />} />
 
             {/* Tenant dashboard */}
             <Route path="/dashboard" element={<TenantDashboard />}>

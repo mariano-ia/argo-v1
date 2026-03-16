@@ -2,7 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
-import { Search, Download, Trash2 } from 'lucide-react';
+import { Search, Download, Trash2, Send, Loader2 } from 'lucide-react';
+import { getReportData } from '../../lib/argosEngine';
+import { getTendenciaContent } from '../../lib/archetypeData';
+import { TENDENCIA_LABELS } from '../../lib/profileResolver';
+import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
+import { sendReport } from '../../lib/emailService';
+import { getOdysseyT } from '../../lib/odysseyTranslations';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +26,8 @@ interface UnifiedRow {
     sport?: string;
     eje?: string;
     motor?: string;
+    eje_secundario?: string | null;
+    lang?: string | null;
     archetype_label?: string;
     ai_cost_usd?: number;
 }
@@ -35,6 +43,8 @@ interface SessionRow {
     sport: string;
     eje: string;
     motor: string;
+    eje_secundario: string | null;
+    lang: string | null;
     archetype_label: string;
     ai_cost_usd: number;
 }
@@ -67,6 +77,8 @@ function mergeRows(sessions: SessionRow[], leads: LeadRow[]): UnifiedRow[] {
         sport: s.sport,
         eje: s.eje,
         motor: s.motor,
+        eje_secundario: s.eje_secundario,
+        lang: s.lang,
         archetype_label: s.archetype_label,
         ai_cost_usd: s.ai_cost_usd,
     }));
@@ -92,6 +104,8 @@ export const Sessions: React.FC = () => {
     const [search, setSearch]         = useState('');
     const [page, setPage]             = useState(0);
     const [confirmingId, setConfirmingId] = useState<string | null>(null);
+    const [resendingId, setResendingId] = useState<string | null>(null);
+    const [resendMsg, setResendMsg] = useState<{ ok: boolean } | null>(null);
     const PAGE_SIZE = 20;
 
     useEffect(() => {
@@ -100,7 +114,7 @@ export const Sessions: React.FC = () => {
             const [{ data: sessions }, { data: leads }] = await Promise.all([
                 supabase
                     .from('sessions')
-                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,archetype_label,ai_cost_usd')
+                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd')
                     .is('deleted_at', null)
                     .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false }),
@@ -147,6 +161,55 @@ export const Sessions: React.FC = () => {
         }
     };
 
+    const handleResend = async (row: UnifiedRow) => {
+        if (row.status !== 'completed' || !row.eje || !row.motor || !row.child_name) return;
+        setResendingId(row.id);
+        try {
+            const lang = row.lang || 'es';
+            const ot = getOdysseyT(lang as 'es' | 'en' | 'pt');
+            const report = getReportData(row.eje, row.motor, row.eje_secundario ?? '', row.child_name);
+            if (row.eje_secundario) {
+                const tendencia = getTendenciaContent(row.eje, row.eje_secundario);
+                if (tendencia) {
+                    report.tendenciaLabel = TENDENCIA_LABELS[row.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, row.child_name);
+                    report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
+                    report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;
+                }
+            }
+            const arquetipoFull = report.tendenciaLabel
+                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
+                : report.arquetipo.label;
+            const maduracionTemprana = (row.child_age ?? 10) < 10;
+
+            await sendReport({
+                toEmail:           row.email,
+                nombreAdulto:      row.adult_name ?? '',
+                nombreNino:        row.child_name,
+                deporte:           row.sport ?? '',
+                edad:              row.child_age ?? 0,
+                arquetipo:         arquetipoFull,
+                reportHtml:        buildReportHtml(report, null, ot.emailSections),
+                maduracionTemprana,
+                lang,
+                emailSubject:      ot.emailSubject(row.child_name, arquetipoFull),
+                emailHeader:       ot.emailHeader,
+                emailPreparedFor:  ot.emailPreparedFor(row.adult_name ?? ''),
+                emailArchetypeOf:  ot.emailArchetypeOf(row.child_name),
+                emailFooter:       ot.emailFooter,
+                emailMaturationTitle: ot.emailMaturationTitle,
+                emailMaturationBody:  ot.emailMaturationBody,
+            });
+            setResendMsg({ ok: true });
+        } catch (err) {
+            console.error('[Sessions] Resend error:', err);
+            setResendMsg({ ok: false });
+        } finally {
+            setResendingId(null);
+            setTimeout(() => setResendMsg(null), 3000);
+        }
+    };
+
     const exportCSV = () => {
         const headers = ['Fecha', 'Email', 'Estado', 'Adulto', 'Niño', 'Edad', 'Deporte', 'Arquetipo', 'Eje', 'Motor', 'Costo IA'];
         const csvRows = [
@@ -179,6 +242,15 @@ export const Sessions: React.FC = () => {
 
     return (
         <div>
+            {/* Resend snackbar — top-right */}
+            {resendMsg && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                    resendMsg.ok ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    {resendMsg.ok ? 'Informe enviado con éxito' : 'Error al enviar el informe'}
+                </div>
+            )}
+
             <motion.div {...fadeUp(0)} className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Sesiones</h1>
@@ -275,6 +347,20 @@ export const Sessions: React.FC = () => {
                                                 {row.ai_cost_usd && row.ai_cost_usd > 0 ? `$${row.ai_cost_usd.toFixed(4)}` : '—'}
                                             </td>
                                             <td className="px-5 py-3 text-right whitespace-nowrap">
+                                                <span className="flex items-center justify-end gap-1">
+                                                {row.status === 'completed' && (
+                                                    <button
+                                                        onClick={() => handleResend(row)}
+                                                        disabled={resendingId === row.id}
+                                                        title="Reenviar informe"
+                                                        className="text-argo-grey/40 hover:text-argo-indigo transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {resendingId === row.id
+                                                            ? <Loader2 size={14} className="animate-spin" />
+                                                            : <Send size={14} />
+                                                        }
+                                                    </button>
+                                                )}
                                                 {confirmingId === row.id ? (
                                                     <span className="flex items-center justify-end gap-2">
                                                         <button
@@ -299,6 +385,7 @@ export const Sessions: React.FC = () => {
                                                         <Trash2 size={14} />
                                                     </button>
                                                 )}
+                                                </span>
                                             </td>
                                         </tr>
                                     ))}

@@ -27,7 +27,7 @@ interface Props {
 
 type EmailStatus = 'idle' | 'sending' | 'sent' | 'error';
 
-function buildReportHtml(report: ReportData, aiSections: AISections | null, et: OdysseyTranslations['emailSections']): string {
+export function buildReportHtml(report: ReportData, aiSections: AISections | null, et: OdysseyTranslations['emailSections']): string {
     const r = aiSections
         ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
         : report;
