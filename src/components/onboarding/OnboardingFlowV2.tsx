@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
@@ -9,7 +9,11 @@ import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
-import { saveSession } from '../../lib/sessionStore';
+import {
+    startSession, updateSession, saveSession,
+    saveProgressToLocal, getRecoverableSession, clearRecoveryData,
+    RecoverableSession,
+} from '../../lib/sessionStore';
 import { LanguageSelect } from './screens/LanguageSelect';
 import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
@@ -128,6 +132,49 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
+
+    // ── Session persistence (Options 1, 2, 3) ──────────────────────────────
+    const sessionIdRef = useRef<string | null>(null);
+    const [recoveryData, setRecoveryData] = useState<RecoverableSession | null>(null);
+
+    // Option 2: Check for recoverable session on mount
+    useEffect(() => {
+        const recovered = getRecoverableSession();
+        if (recovered) setRecoveryData(recovered);
+    }, []);
+
+    // Option 2: Resume from recovery
+    const handleResume = useCallback((data: RecoverableSession) => {
+        // Validate screenIndex is within bounds
+        const safeScreenIndex = Math.min(Math.max(0, data.screenIndex), SCREENS.length - 1);
+        setAdultData(data.adultData);
+        setAnswers(data.answers);
+        setScreenIndex(safeScreenIndex);
+        if (data.sessionId) sessionIdRef.current = data.sessionId;
+        setRecoveryData(null);
+    }, []);
+
+    // Option 2: Dismiss recovery
+    const handleDismissRecovery = useCallback(() => {
+        clearRecoveryData();
+        setRecoveryData(null);
+    }, []);
+
+    // Option 3: Create "started" session when odyssey begins
+    const startingSessionRef = useRef(false);
+    useEffect(() => {
+        if (screenIndex !== ODYSSEY_START || !adultData || sessionIdRef.current || startingSessionRef.current) return;
+        startingSessionRef.current = true;
+        startSession({ adultData, tenantId, lang }).then(result => {
+            if (result.ok && result.id) {
+                sessionIdRef.current = result.id;
+                console.info('[session] Started session created:', result.id);
+            } else {
+                console.warn('[session] Failed to create started session:', result.error);
+            }
+        }).finally(() => { startingSessionRef.current = false; });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screenIndex]);
 
     // ── Audio (Web Audio API for iOS volume control) ───────────────────────
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -306,8 +353,21 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
     };
 
+    // Option 2: Save progress to localStorage on each answer
     const handleAnswer = (answer: QuestionAnswer) => {
-        setAnswers(prev => [...prev, answer]);
+        const nextAnswers = [...answers, answer];
+        setAnswers(nextAnswers);
+        if (adultData) {
+            saveProgressToLocal({
+                adultData,
+                answers: nextAnswers,
+                screenIndex: screenIndex + 1,
+                sessionId: sessionIdRef.current ?? undefined,
+                tenantId,
+                lang,
+                timestamp: Date.now(),
+            });
+        }
         advance();
     };
 
@@ -324,6 +384,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     .from('sessions')
                     .select('eje,motor')
                     .is('deleted_at', null)
+                    .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false })
                     .limit(50);
                 if (data && data.length > 0) {
@@ -370,6 +431,41 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.info('[profileResolver] Tiebreaker applied → eje:', profile.eje, 'motor:', profile.motor);
             }
 
+            // ── Option 1: Save profile data IMMEDIATELY (before AI) ─────────
+            const profileFields = {
+                eje:             profile.eje,
+                motor:           profile.motor,
+                archetype_label: report.arquetipo.label,
+                eje_secundario:  profile.ejeSecundario ?? null,
+                answers,
+            };
+
+            if (sessionIdRef.current) {
+                // Update the "started" session with real profile data
+                const earlyResult = await updateSession(sessionIdRef.current, profileFields);
+                if (!earlyResult.ok) {
+                    console.warn('[session] Early update failed:', earlyResult.error);
+                }
+            } else {
+                // No started session — save full session now as fallback
+                const fallback = await saveSession({
+                    adultData,
+                    eje:            profile.eje,
+                    motor:          profile.motor,
+                    archetypeLabel: report.arquetipo.label,
+                    ejeSecundario:  profile.ejeSecundario,
+                    answers, tenantId, lang,
+                });
+                if (!fallback.ok) {
+                    console.warn('[session] Fallback save failed:', fallback.error);
+                    setSaveError(fallback.error ?? 'Failed to save session');
+                }
+            }
+
+            // Option 2: Clear localStorage — profile is safely in DB now
+            clearRecoveryData();
+
+            // ── Generate AI sections ────────────────────────────────────────
             setAiLoading(true);
             const ctx: ReportContext = {
                 nombre:       adultData.nombreNino,
@@ -379,43 +475,24 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 lang,
             };
 
-            let saveResult: { ok: boolean; error?: string };
             try {
                 const { sections, usage }: { sections: AISections; usage: AIUsage } =
                     await generateAISections(report, ctx);
                 setAiSections(sections);
-                saveResult = await saveSession({
-                    adultData,
-                    eje:            profile.eje,
-                    motor:          profile.motor,
-                    archetypeLabel: report.arquetipo.label,
-                    ejeSecundario:  profile.ejeSecundario,
-                    answers,
-                    tenantId,
-                    lang,
-                    aiUsage: {
-                        tokensInput:  usage.inputTokens,
-                        tokensOutput: usage.outputTokens,
-                        costUsd:      usage.costUsd,
-                    },
-                });
-            } catch {
-                saveResult = await saveSession({
-                    adultData,
-                    eje:            profile.eje,
-                    motor:          profile.motor,
-                    archetypeLabel: report.arquetipo.label,
-                    ejeSecundario:  profile.ejeSecundario,
-                    answers,
-                    tenantId,
-                    lang,
-                });
+
+                // Option 1: Update session with AI usage data
+                if (sessionIdRef.current) {
+                    await updateSession(sessionIdRef.current, {
+                        ai_tokens_input:  usage.inputTokens,
+                        ai_tokens_output: usage.outputTokens,
+                        ai_cost_usd:      usage.costUsd,
+                    });
+                }
+            } catch (err) {
+                console.warn('[Argo] AI generation failed:', err);
+                // Session already saved with profile data — email will send with base report
             } finally {
                 setAiLoading(false);
-            }
-
-            if (!saveResult!.ok) {
-                setSaveError(saveResult!.error ?? 'Unknown error saving session');
             }
 
             if (!playCountedRef.current) {
@@ -438,6 +515,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         musicGainRef.current = null;
         effectGainRef.current = null;
         currentEffectSrc.current = null;
+        sessionIdRef.current = null;
+        clearRecoveryData();
         setScreenIndex(0);
         setAdultData(null);
         setAnswers([]);
@@ -458,6 +537,46 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         || screen.type === 'child-completion';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
     const showMuteBtn = screenIndex >= ODYSSEY_START && screenIndex <= ODYSSEY_END;
+
+    // ── Option 2: Recovery overlay ──────────────────────────────────────────
+    if (recoveryData) {
+        const L = (es: string, en: string, pt: string) =>
+            lang === 'es' ? es : lang === 'pt' ? pt : en;
+        return (
+            <div className="max-w-md mx-auto py-16 px-6 text-center space-y-6">
+                <div className="bg-white rounded-2xl p-8 border border-[#D2D2D7] space-y-5">
+                    <p className="text-lg font-semibold text-[#1D1D1F]">
+                        {L(
+                            `Encontramos una sesión sin terminar de ${recoveryData.adultData.nombreNino}`,
+                            `We found an unfinished session for ${recoveryData.adultData.nombreNino}`,
+                            `Encontramos uma sessão inacabada de ${recoveryData.adultData.nombreNino}`,
+                        )}
+                    </p>
+                    <p className="text-sm text-[#86868B]">
+                        {L(
+                            `${recoveryData.answers.length} de ${questions.length} preguntas respondidas`,
+                            `${recoveryData.answers.length} of ${questions.length} questions answered`,
+                            `${recoveryData.answers.length} de ${questions.length} perguntas respondidas`,
+                        )}
+                    </p>
+                    <div className="flex gap-3 justify-center pt-2">
+                        <button
+                            onClick={() => handleResume(recoveryData)}
+                            className="px-6 py-2.5 bg-[#1D1D1F] text-white rounded-xl text-sm font-medium hover:bg-[#333] transition-colors"
+                        >
+                            {L('Continuar', 'Resume', 'Continuar')}
+                        </button>
+                        <button
+                            onClick={handleDismissRecovery}
+                            className="px-6 py-2.5 bg-[#F5F5F7] text-[#1D1D1F] rounded-xl text-sm font-medium hover:bg-[#E8E8ED] transition-colors border border-[#D2D2D7]"
+                        >
+                            {L('Empezar de nuevo', 'Start over', 'Recomecar')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-2xl mx-auto py-8 px-4 min-h-[80vh]">

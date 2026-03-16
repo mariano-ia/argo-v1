@@ -100,6 +100,7 @@ export const Metrics: React.FC = () => {
             .from('sessions')
             .select('created_at,eje,motor,archetype_label,ai_cost_usd,ai_tokens_input,ai_tokens_output')
             .is('deleted_at', null)
+            .not('eje', 'eq', '_pending')
             .order('created_at', { ascending: true })
             .then(({ data }) => { setRows(data ?? []); setLoading(false); });
     }, []);

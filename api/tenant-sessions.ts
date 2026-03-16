@@ -45,6 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, eje_secundario, created_at')
             .eq('tenant_id', tenant.id)
             .is('deleted_at', null)
+            .not('eje', 'eq', '_pending')
             .order('created_at', { ascending: false })
             .limit(100);
 
