@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Plus } from 'lucide-react';
-import { useLang } from '../context/LangContext';
+import { useLang, Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
@@ -36,54 +36,66 @@ const ARCHETYPES = [
 ];
 
 // ─── Archetype descriptions (ES + EN) ────────────────────────────────────────
-const ARCHETYPE_DESCRIPTIONS: { es: string; en: string }[] = [
+const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     {
         es: 'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
         en: 'Lives sport through action. Their energy does not wait for instructions — it needs constant movement to stay in the zone. Under pressure, they accelerate. When held back without reason, they lose their spark. Constant challenge and autonomy are their fuel.',
+        pt: 'Vive o esporte pela ação. Sua energia não espera instruções — precisa de movimento constante para estar na zona. Sob pressão, acelera. Quando é freado sem razão, perde a centelha. O desafio permanente e a autonomia são seu combustível.',
     },
     {
         es: 'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
         en: 'Combines a leader\'s determination with the ability to pace their energy at exactly the right moment. Not the first to leave, but never the last to arrive. Decides clearly and acts with purpose. Needs clear objectives and space to execute at their own rhythm.',
+        pt: 'Combina a determinação de um líder com a capacidade de dosar energia no momento certo. Não é o primeiro a sair, mas também não é o último a chegar. Decide com clareza e age com propósito. Precisa de objetivos claros e espaço para executá-los no seu ritmo.',
     },
     {
         es: 'Tiene la voluntad de un líder y la paciencia de un estratega. Procesa antes de actuar, pero cuando decide, lo hace con convicción absoluta. No se precipita, pero tampoco retrocede. Necesita tiempo para comprender el plan y luego libertad para ejecutarlo sin interrupciones.',
         en: 'Has a leader\'s will and a strategist\'s patience. Processes before acting, but when they decide, they do so with absolute conviction. Does not rush, but does not retreat. Needs time to understand the plan, then freedom to execute it without interruption.',
+        pt: 'Tem a vontade de um líder e a paciência de um estrategista. Processa antes de agir, mas quando decide, faz com convicção absoluta. Não se precipita, mas também não recua. Precisa de tempo para compreender o plano e depois liberdade para executá-lo sem interrupções.',
     },
     {
         es: 'El equipo es su hábitat natural. Se activa con el contacto, el juego y la energía colectiva. Reacciona rápido y habla rápido. Su entusiasmo contagia al grupo, pero también puede dispersarse si no hay estructura que lo contenga. Necesita un entorno dinámico que no apague su llama.',
         en: 'The team is their natural habitat. They activate through contact, play, and collective energy. They react fast and speak fast. Their enthusiasm is contagious, but they can also scatter if there is no structure to contain them. Needs a dynamic environment that does not dim their flame.',
+        pt: 'A equipe é seu habitat natural. Ativa-se com o contato, o jogo e a energia coletiva. Reage rápido e fala rápido. Seu entusiasmo contagia o grupo, mas também pode se dispersar se não houver estrutura que o contenha. Precisa de um ambiente dinâmico que não apague sua chama.',
     },
     {
         es: 'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
         en: 'Builds bridges with calm and conviction. Connects with everyone and knows when to speak and when to listen. Does not chase every stimulus — selects their moments to shine. Needs genuine recognition and a team where they feel they matter.',
+        pt: 'Constrói pontes com calma e convicção. Relaciona-se com todos e sabe quando falar e quando ouvir. Não corre atrás de cada estímulo. Seleciona os momentos para brilhar. Precisa de espaços de reconhecimento genuíno e uma equipe onde sinta que importa.',
     },
     {
         es: 'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
         en: 'Depth is not weakness — it is their silent superpower. Connects with others through listening and empathy, not noise. Observes before participating, but when they do, they leave a mark. Needs a trusting environment where the bond matters more than the result.',
+        pt: 'A profundidade não é fraqueza — é seu superpoder silencioso. Conecta-se com os outros pela escuta e empatia, não pelo ruído. Observa antes de participar, mas quando o faz, deixa marca. Precisa de um ambiente de confiança onde o vínculo seja mais importante que o resultado.',
     },
     {
         es: 'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
         en: 'Has the heart of the team and the feet of a sprinter. First to offer a hand and first to reach the ball. Stabilizes the group through action, not just support. Needs to feel their contribution is visible and that the team recognizes them as essential.',
+        pt: 'Tem o coração da equipe e os pés de um velocista. É o primeiro a estender a mão e também a chegar à bola. Estabiliza o grupo pela ação, não apenas pelo apoio. Precisa sentir que sua contribuição é visível e que a equipe o reconhece como parte essencial.',
     },
     {
         es: 'La columna vertebral del equipo. No busca el protagonismo, pero sin él nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
         en: 'The backbone of the team. Does not seek the spotlight, but without them nothing works. Executes with consistency, supports unconditionally, and keeps the rhythm when others falter. Needs a predictable environment and stable relationships to give their best.',
+        pt: 'A coluna vertebral da equipe. Não busca o protagonismo, mas sem ele nada funciona. Executa com consistência, apoia sem condições e mantém o ritmo quando os outros falham. Precisa de um ambiente previsível e relações estáveis para dar o melhor de si.',
     },
     {
         es: 'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
         en: 'Calm in the eye of the storm. Processes every situation with patience and acts with a consistency few can sustain. Does not react — responds. Needs time and trust to adapt to changes, but once they do, they become the group\'s anchor.',
+        pt: 'A calma no meio da tempestade. Processa cada situação com paciência e age com uma consistência que poucos conseguem manter. Não reage — responde. Precisa de tempo e confiança para se adaptar às mudanças, mas uma vez que o faz, torna-se a âncora do grupo.',
     },
     {
         es: 'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
         en: 'Analyzes in seconds what others take minutes to see. Combines processing speed with tactical precision — a rarity that turns every game into applied intelligence. Needs complex challenges and space to lead from analysis, without anyone interrupting their process.',
+        pt: 'Analisa em segundos o que outros levam minutos para ver. Combina velocidade de processamento com precisão tática — uma raridade que transforma cada jogo em um exercício de inteligência aplicada. Precisa de desafios complexos e espaço para liderar pela análise, sem que ninguém interrompa seu processo.',
     },
     {
         es: 'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
         en: 'Thinks before speaking and speaks before acting. Their process is not slow — it is exact. Every decision is grounded in observation and judgment. Prefers quality over speed and precision over volume. Needs an environment that values analysis and does not pressure them to act before they are ready.',
+        pt: 'Pensa antes de falar e fala antes de agir. Seu processo não é lento — é exato. Cada decisão é sustentada em observação e critério. Prefere qualidade à velocidade e precisão ao volume. Precisa de um ambiente que valorize a análise e não o pressione a agir antes de estar pronto.',
     },
     {
         es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. Para él, el deporte es un tablero que prefiere comprender antes de ejecutar.',
         en: 'Their talent lies not in the speed of the run, but in the clarity of their gaze. Tends to process the environment deeply before acting, bringing calm and tactical order even under pressure. For them, sport is a board they prefer to understand before executing.',
+        pt: 'Seu talento não está na velocidade da corrida, mas na clareza do seu olhar. Tende a processar o ambiente com profundidade antes de agir, trazendo calma e ordem tática mesmo em momentos de pressão. Para ele, o esporte é um tabuleiro que prefere compreender antes de executar.',
     },
 ];
 
