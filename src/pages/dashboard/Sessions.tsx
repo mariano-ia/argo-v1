@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
+import { fadeUp } from '../../lib/animations';
 import { Search, Download, Trash2 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -176,7 +178,7 @@ export const Sessions: React.FC = () => {
 
     return (
         <div>
-            <div className="flex items-center justify-between mb-6">
+            <motion.div {...fadeUp(0)} className="flex items-center justify-between mb-6">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Sesiones</h1>
                     <p className="text-sm text-argo-grey mt-0.5">
@@ -201,7 +203,7 @@ export const Sessions: React.FC = () => {
                         <Download size={14} /> Exportar CSV
                     </button>
                 </div>
-            </div>
+            </motion.div>
 
             {loading ? (
                 <div className="flex items-center justify-center h-40">
@@ -209,7 +211,7 @@ export const Sessions: React.FC = () => {
                 </div>
             ) : (
                 <>
-                    <div className="bg-white border border-argo-border rounded-2xl overflow-hidden shadow-sm">
+                    <motion.div {...fadeUp(0.1)} className="bg-white border border-argo-border rounded-2xl overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
@@ -302,10 +304,10 @@ export const Sessions: React.FC = () => {
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between mt-4">
+                        <motion.div {...fadeUp(0.15)} className="flex items-center justify-between mt-4">
                             <span className="text-xs text-argo-grey">
                                 Página {page + 1} de {totalPages}
                             </span>
@@ -325,7 +327,7 @@ export const Sessions: React.FC = () => {
                                     Siguiente
                                 </button>
                             </div>
-                        </div>
+                        </motion.div>
                     )}
                 </>
             )}
