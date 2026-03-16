@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
@@ -128,7 +129,194 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
 
+    // ── Background music ──────────────────────────────────────────────────────
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const fadeRef  = useRef<number | null>(null);
+    const [muted, setMuted] = useState(false);
+    const mutedRef = useRef(false);
+
+    // ── Ambient effects (layered on top of background music) ────────────────
+    const effectRef        = useRef<HTMLAudioElement | null>(null);
+    const effectFadeRef    = useRef<number | null>(null);
+    const currentEffectSrc = useRef<string | null>(null);
+
+    const TARGET_VOL     = 0.18;
+    const FADE_IN_MS     = 5000;   // gentle fade in
+    const FADE_OUT_MS    = 3000;
+    const ODYSSEY_START  = 6;      // first story slide (intro_a)
+    const ODYSSEY_END    = 26;     // child-completion ("mission complete")
+    const LOOP_MARGIN    = 0.3;    // seconds before end to seamless-loop
+
+    // Ambient effect config
+    const EFFECT_VOL         = 0.25;
+    const EFFECT_FADE_IN_MS  = 2000;
+    const EFFECT_FADE_OUT_MS = 1500;
+
+    /** Which ambient effect file should play for a given screen index */
+    const getEffectSrc = (idx: number): string | null => {
+        if (idx >= 6 && idx <= 11)  return '/audio/effects_01.mp3'; // intro + puerto
+        if (idx >= 12 && idx <= 14) return '/audio/effects_02.mp3'; // mar abierto
+        if (idx >= 15 && idx <= 18) return '/audio/effects_03.mp3'; // tormenta
+        if (idx >= 19 && idx <= 26) return '/audio/effects_02.mp3'; // calma + isla + completion
+        return null;
+    };
+
+    const doFade = (audio: HTMLAudioElement, from: number, to: number, ms: number, then?: () => void) => {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        const STEP = 50;
+        const steps = ms / STEP;
+        const delta = (to - from) / steps;
+        let step = 0;
+        fadeRef.current = window.setInterval(() => {
+            step++;
+            audio.volume = Math.min(1, Math.max(0, from + delta * step));
+            if (step >= steps) {
+                clearInterval(fadeRef.current!);
+                fadeRef.current = null;
+                audio.volume = Math.min(1, Math.max(0, to));
+                then?.();
+            }
+        }, STEP);
+    };
+
+    const doEffectFade = (audio: HTMLAudioElement, from: number, to: number, ms: number, then?: () => void) => {
+        if (effectFadeRef.current) clearInterval(effectFadeRef.current);
+        const STEP = 50;
+        const steps = ms / STEP;
+        const delta = (to - from) / steps;
+        let step = 0;
+        effectFadeRef.current = window.setInterval(() => {
+            step++;
+            audio.volume = Math.min(1, Math.max(0, from + delta * step));
+            if (step >= steps) {
+                clearInterval(effectFadeRef.current!);
+                effectFadeRef.current = null;
+                audio.volume = Math.min(1, Math.max(0, to));
+                then?.();
+            }
+        }, STEP);
+    };
+
+    const startAudioIfNeeded = (nextIndex: number) => {
+        if (nextIndex === ODYSSEY_START) {
+            if (!audioRef.current) {
+                const a = new Audio('/audio/argo_background.mp3');
+                a.loop   = false; // we handle looping manually to avoid gap
+                a.volume = 0;
+                // Seamless loop: seek back before the track ends
+                a.addEventListener('timeupdate', () => {
+                    if (a.duration && a.currentTime > a.duration - LOOP_MARGIN) {
+                        a.currentTime = 0;
+                    }
+                });
+                // Safety fallback if timeupdate misses
+                a.addEventListener('ended', () => {
+                    a.currentTime = 0;
+                    a.play().catch(() => {});
+                });
+                audioRef.current = a;
+            }
+            const a = audioRef.current;
+            a.volume = 0;
+            a.play().then(() => {
+                if (!mutedRef.current) doFade(a, 0, TARGET_VOL, FADE_IN_MS);
+            }).catch(e => console.warn('[audio] autoplay blocked:', e));
+        }
+    };
+
+    /** Start / stop / crossfade ambient effects based on screen index */
+    const startEffectIfNeeded = (nextIdx: number) => {
+        const wantedSrc = getEffectSrc(nextIdx);
+        const activeSrc = currentEffectSrc.current;
+
+        if (wantedSrc === activeSrc) return; // same effect — nothing to do
+
+        // Fade out current effect (standalone interval — not tied to effectFadeRef
+        // so it can run simultaneously with the new effect's fade-in)
+        if (effectRef.current && activeSrc) {
+            const old = effectRef.current;
+            const fromVol = old.volume;
+            const STEP = 50;
+            const steps = EFFECT_FADE_OUT_MS / STEP;
+            const delta = -fromVol / steps;
+            let s = 0;
+            const id = window.setInterval(() => {
+                s++;
+                old.volume = Math.max(0, fromVol + delta * s);
+                if (s >= steps) { clearInterval(id); old.pause(); }
+            }, STEP);
+            effectRef.current = null;
+            currentEffectSrc.current = null;
+        }
+
+        // Start new effect
+        if (wantedSrc) {
+            const a = new Audio(wantedSrc);
+            a.loop = false;
+            a.volume = 0;
+            a.addEventListener('timeupdate', () => {
+                if (a.duration && a.currentTime > a.duration - LOOP_MARGIN) {
+                    a.currentTime = 0;
+                }
+            });
+            a.addEventListener('ended', () => {
+                a.currentTime = 0;
+                a.play().catch(() => {});
+            });
+            effectRef.current = a;
+            currentEffectSrc.current = wantedSrc;
+            a.play().then(() => {
+                if (!mutedRef.current) doEffectFade(a, 0, EFFECT_VOL, EFFECT_FADE_IN_MS);
+            }).catch(e => console.warn('[audio] effect autoplay blocked:', e));
+        }
+    };
+
+    // Fade out MUSIC when reaching child-completion; effects continue until adult-report
+    useEffect(() => {
+        if (screenIndex === ODYSSEY_END && audioRef.current) {
+            doFade(audioRef.current, audioRef.current.volume, 0, FADE_OUT_MS, () => {
+                audioRef.current?.pause();
+            });
+        }
+    }, [screenIndex]);
+
+    // Preload all audio files into browser cache during adult screens
+    useEffect(() => {
+        ['/audio/argo_background.mp3', '/audio/effects_01.mp3', '/audio/effects_02.mp3', '/audio/effects_03.mp3']
+            .forEach(src => { fetch(src).catch(() => {}); });
+    }, []);
+
+    // Cleanup audio on unmount
+    useEffect(() => {
+        return () => {
+            if (fadeRef.current) clearInterval(fadeRef.current);
+            if (effectFadeRef.current) clearInterval(effectFadeRef.current);
+            if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+            if (effectRef.current) { effectRef.current.pause(); effectRef.current = null; }
+        };
+    }, []);
+
+    const toggleMute = () => {
+        setMuted(prev => {
+            const next = !prev;
+            mutedRef.current = next;
+            // Cancel any running fades so they don't overwrite the volume
+            if (fadeRef.current) { clearInterval(fadeRef.current); fadeRef.current = null; }
+            if (effectFadeRef.current) { clearInterval(effectFadeRef.current); effectFadeRef.current = null; }
+            if (audioRef.current) {
+                audioRef.current.volume = next ? 0 : TARGET_VOL;
+            }
+            if (effectRef.current) {
+                effectRef.current.volume = next ? 0 : EFFECT_VOL;
+            }
+            return next;
+        });
+    };
+
     const advance = () => {
+        const nextIdx = screenIndex + 1;
+        startAudioIfNeeded(nextIdx);
+        startEffectIfNeeded(nextIdx);
         setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
     };
 
@@ -246,6 +434,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     }, [screenIndex]);
 
     const handleRestart = () => {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        if (effectFadeRef.current) clearInterval(effectFadeRef.current);
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        if (effectRef.current) { effectRef.current.pause(); effectRef.current = null; }
+        currentEffectSrc.current = null;
         setScreenIndex(0);
         setAdultData(null);
         setAnswers([]);
@@ -265,9 +458,28 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         || screen.type === 'story'
         || screen.type === 'child-completion';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
+    const showMuteBtn = screenIndex >= ODYSSEY_START && screenIndex <= ODYSSEY_END;
 
     return (
         <div className="max-w-2xl mx-auto py-8 px-4 min-h-[80vh]">
+            {/* Mute toggle — visible during odyssey */}
+            <AnimatePresence>
+                {showMuteBtn && (
+                    <motion.button
+                        key="mute-btn"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        onClick={toggleMute}
+                        className="fixed top-4 right-4 z-50 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white/70 hover:text-white hover:bg-white/30 transition-colors"
+                        aria-label={muted ? 'Unmute' : 'Mute'}
+                    >
+                        {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </motion.button>
+                )}
+            </AnimatePresence>
+
             {/* Dynamic scene background — changes per phase */}
             <AnimatePresence>
                 {showScene && (

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Volume2, VolumeX } from 'lucide-react';
 import { ADULT_INTRO_SLIDES, STORY_SLIDES } from '../../lib/onboardingData';
 import { useQuestions } from '../../lib/useQuestions';
 import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
@@ -12,9 +13,9 @@ import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlide } from './screens/StorySlide';
-import { MiniGame1 } from './screens/MiniGame1';
+
 import { QuestionScreen } from './screens/QuestionScreen';
-import { MiniGame2 } from './screens/MiniGame2';
+
 import { ChildCompletion } from './screens/ChildCompletion';
 import { AdultReport } from './screens/AdultReport';
 
@@ -147,9 +148,7 @@ type ScreenDef =
     | { type: 'adult-registration' }
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; continueLabel?: string; useOceanBg?: boolean }
-    | { type: 'minigame1' }
     | { type: 'question'; questionIndex: number }
-    | { type: 'minigame2' }
     | { type: 'child-completion' }
     | { type: 'adult-report' };
 
@@ -177,8 +176,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 4 },
     { type: 'question', questionIndex: 5 },
     { type: 'question', questionIndex: 6 },
-    // Phase 5: Después de la tormenta — mini-juego de esquiva
-    { type: 'minigame1' },
+    // Phase 5: Después de la tormenta
     { type: 'story', slideId: 'slide_3', useOceanBg: true },
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
@@ -212,7 +210,78 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
 
-    const advance = () => setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+    // ── Background music ──────────────────────────────────────────────────────
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const fadeRef  = useRef<number | null>(null);
+    const [muted, setMuted] = useState(false);
+    const mutedRef = useRef(false);
+
+    const TARGET_VOL    = 0.18;
+    const FADE_MS       = 2500;
+    const ODYSSEY_START = 5;   // first story slide (intro_a)
+    const ODYSSEY_END   = 25;  // child-completion
+
+    const fade = (audio: HTMLAudioElement, from: number, to: number, then?: () => void) => {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        const STEP = 50;
+        const steps = FADE_MS / STEP;
+        const delta = (to - from) / steps;
+        let step = 0;
+        fadeRef.current = window.setInterval(() => {
+            step++;
+            audio.volume = Math.min(1, Math.max(0, from + delta * step));
+            if (step >= steps) {
+                clearInterval(fadeRef.current!);
+                fadeRef.current = null;
+                audio.volume = Math.min(1, Math.max(0, to));
+                then?.();
+            }
+        }, STEP);
+    };
+
+    // Start audio from user-gesture context (click handler) to satisfy autoplay policy
+    const startAudioIfNeeded = (nextIndex: number) => {
+        if (nextIndex === ODYSSEY_START) {
+            if (!audioRef.current) {
+                const a = new Audio('/audio/argo_background.mp3');
+                a.loop   = true;
+                a.volume = 0;
+                audioRef.current = a;
+            }
+            const a = audioRef.current;
+            a.volume = 0;
+            // play() called synchronously inside click handler → browser allows it
+            a.play().then(() => {
+                if (!mutedRef.current) fade(a, 0, TARGET_VOL);
+            }).catch(e => console.warn('[audio] autoplay blocked:', e));
+        }
+    };
+
+    const advance = () => {
+        // Call startAudio synchronously in click-handler stack (before React batches the setState)
+        startAudioIfNeeded(screenIndex + 1);
+        setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+    };
+
+    // Fade out when reaching child-completion
+    useEffect(() => {
+        if (screenIndex === ODYSSEY_END && audioRef.current) {
+            fade(audioRef.current, audioRef.current.volume, 0, () => {
+                audioRef.current?.pause();
+            });
+        }
+    }, [screenIndex]);
+
+    const toggleMute = () => {
+        setMuted(prev => {
+            const next = !prev;
+            mutedRef.current = next;
+            if (audioRef.current) {
+                audioRef.current.volume = next ? 0 : TARGET_VOL;
+            }
+            return next;
+        });
+    };
 
     const handleAnswer = (answer: QuestionAnswer) => {
         setAnswers(prev => [...prev, answer]);
@@ -329,7 +398,17 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screenIndex]);
 
+    // Cleanup audio on unmount
+    useEffect(() => {
+        return () => {
+            if (fadeRef.current) clearInterval(fadeRef.current);
+            if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        };
+    }, []);
+
     const handleRestart = () => {
+        if (fadeRef.current) clearInterval(fadeRef.current);
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
         setScreenIndex(0);
         setAdultData(null);
         setAnswers([]);
@@ -344,8 +423,28 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
     const adulto  = adultData?.nombreAdulto ?? '';
     const deporte = adultData?.deporte     ?? '';
 
+    const showMuteBtn = screenIndex >= ODYSSEY_START && screenIndex < ODYSSEY_END;
+
     return (
         <div className="max-w-2xl mx-auto py-8 px-4 min-h-[80vh]">
+            {/* Mute toggle — visible during odyssey */}
+            <AnimatePresence>
+                {showMuteBtn && (
+                    <motion.button
+                        key="mute-btn"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        onClick={toggleMute}
+                        className="fixed top-4 right-4 z-50 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white/70 hover:text-white hover:bg-white/30 transition-colors"
+                        aria-label={muted ? 'Unmute' : 'Mute'}
+                    >
+                        {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+                    </motion.button>
+                )}
+            </AnimatePresence>
+
             {/* Ocean background — persists across question + ocean story screens */}
             <AnimatePresence>
                 {(screen.type === 'question' || (screen.type === 'story' && screen.useOceanBg) || screen.type === 'child-completion') && (
@@ -404,10 +503,6 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                     />
                 )}
 
-                {screen.type === 'minigame1' && (
-                    <MiniGame1 key="mg1" onComplete={advance} />
-                )}
-
                 {screen.type === 'question' && (
                     <QuestionScreen
                         key={`q-${screen.questionIndex}`}
@@ -417,10 +512,6 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                         nombreNino={nombre}
                         onAnswer={handleAnswer}
                     />
-                )}
-
-                {screen.type === 'minigame2' && (
-                    <MiniGame2 key="mg2" onComplete={advance} />
                 )}
 
                 {screen.type === 'child-completion' && (
