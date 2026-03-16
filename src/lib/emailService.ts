@@ -7,6 +7,14 @@ export interface EmailReportParams {
     arquetipo: string;
     reportHtml: string;
     maduracionTemprana: boolean;
+    lang?: string;
+    emailSubject?: string;
+    emailHeader?: string;
+    emailPreparedFor?: string;
+    emailArchetypeOf?: string;
+    emailFooter?: string;
+    emailMaturationTitle?: string;
+    emailMaturationBody?: string;
 }
 
 export async function sendReport(params: EmailReportParams): Promise<void> {

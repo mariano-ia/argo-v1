@@ -1,12 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ADULT_INTRO_SLIDES, STORY_SLIDES_V2, QUESTIONS_V2 } from '../../lib/onboardingDataV2';
+import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
+import { getOdysseyT } from '../../lib/odysseyTranslations';
+import { useLang } from '../../context/LangContext';
 import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import { saveSession } from '../../lib/sessionStore';
+import { LanguageSelect } from './screens/LanguageSelect';
 import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
@@ -26,18 +29,21 @@ export interface AdultData {
     deporte: string;
 }
 
-// ─── Screen sequence (same structure as v1) ──────────────────────────────────
+// ─── Screen sequence ─────────────────────────────────────────────────────────
 
 type ScreenDef =
+    | { type: 'language-select' }
     | { type: 'adult-intro'; slideIndex: number }
     | { type: 'adult-registration' }
     | { type: 'device-handoff' }
-    | { type: 'story'; slideId: string; continueLabel?: string }
+    | { type: 'story'; slideId: string; useContinueLabelFromT?: boolean }
     | { type: 'question'; questionIndex: number }
     | { type: 'child-completion' }
     | { type: 'adult-report' };
 
 const SCREENS: ScreenDef[] = [
+    // Language selection
+    { type: 'language-select' },
     // Adult onboarding (intro + registration)
     { type: 'adult-intro', slideIndex: 0 },
     { type: 'adult-intro', slideIndex: 1 },
@@ -48,7 +54,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'story', slideId: 'intro_a' },
     { type: 'story', slideId: 'intro_b' },
     { type: 'story', slideId: 'intro_c' },
-    { type: 'story', slideId: 'intro_0', continueLabel: '¡A bordo!' },
+    { type: 'story', slideId: 'intro_0', useContinueLabelFromT: true },
     // Phase: Puerto (Q1-Q2)
     { type: 'question', questionIndex: 0 },
     { type: 'question', questionIndex: 1 },
@@ -61,7 +67,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 4 },
     { type: 'question', questionIndex: 5 },
     { type: 'question', questionIndex: 6 },
-    // Calma (Q8-Q10) + Mini-juego after
+    // Calma (Q8-Q10)
     { type: 'story', slideId: 'slide_3' },
     { type: 'question', questionIndex: 7 },
     { type: 'question', questionIndex: 8 },
@@ -104,7 +110,14 @@ interface OnboardingV2Props {
 }
 
 export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId }) => {
-    const questions = QUESTIONS_V2;
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
+
+    // Language-aware data
+    const adultIntroSlides = getAdultIntroSlides(lang);
+    const storySlides = getStorySlides(lang);
+    const questions = getQuestions(lang);
+
     const [screenIndex, setScreenIndex] = useState(0);
     const [adultData, setAdultData]     = useState<AdultData | null>(null);
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
@@ -180,6 +193,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 deporte:      adultData.deporte,
                 edad:         adultData.edad,
                 destinatario: 'padre',
+                lang,
             };
 
             let saveResult: { ok: boolean; error?: string };
@@ -195,6 +209,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     ejeSecundario:  profile.ejeSecundario,
                     answers,
                     tenantId,
+                    lang,
                     aiUsage: {
                         tokensInput:  usage.inputTokens,
                         tokensOutput: usage.outputTokens,
@@ -210,13 +225,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     ejeSecundario:  profile.ejeSecundario,
                     answers,
                     tenantId,
+                    lang,
                 });
             } finally {
                 setAiLoading(false);
             }
 
             if (!saveResult!.ok) {
-                setSaveError(saveResult!.error ?? 'Error desconocido al guardar la sesión');
+                setSaveError(saveResult!.error ?? 'Unknown error saving session');
             }
 
             if (!playCountedRef.current) {
@@ -271,12 +287,19 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
             <div className="relative" style={{ zIndex: 1 }}>
             <AnimatePresence mode="wait">
+                {screen.type === 'language-select' && (
+                    <LanguageSelect
+                        key="lang-select"
+                        onContinue={advance}
+                    />
+                )}
+
                 {screen.type === 'adult-intro' && (
                     <AdultIntroSlide
                         key={`adult-intro-${screen.slideIndex}`}
-                        slide={ADULT_INTRO_SLIDES[screen.slideIndex]}
+                        slide={adultIntroSlides[screen.slideIndex]}
                         slideIndex={screen.slideIndex}
-                        totalSlides={ADULT_INTRO_SLIDES.length}
+                        totalSlides={adultIntroSlides.length}
                         onContinue={advance}
                     />
                 )}
@@ -301,11 +324,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 {screen.type === 'story' && (
                     <StorySlideV2
                         key={screen.slideId}
-                        slide={STORY_SLIDES_V2[screen.slideId]}
+                        slide={storySlides[screen.slideId]}
                         nombreNino={nombre}
                         deporte={deporte}
                         onContinue={advance}
-                        continueLabel={screen.continueLabel}
+                        continueLabel={screen.useContinueLabelFromT ? ot.aboard : undefined}
                     />
                 )}
 

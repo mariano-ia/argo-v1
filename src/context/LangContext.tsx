@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-export type Lang = 'es' | 'en';
+export type Lang = 'es' | 'en' | 'pt';
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 
@@ -219,12 +219,16 @@ const LangContext = createContext<LangContextValue | null>(null);
 
 function getBrowserLang(): Lang {
     const nav = (navigator.language || navigator.languages?.[0] || '').toLowerCase();
-    return nav.startsWith('es') ? 'es' : 'en';
+    if (nav.startsWith('es')) return 'es';
+    if (nav.startsWith('pt')) return 'pt';
+    return 'en';
 }
 
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [lang, setLang] = useState<Lang>(getBrowserLang);
-    const t = translations[lang] as LangTranslations;
+    // PT falls back to ES for landing-page translations (odyssey content has full PT in onboardingDataI18n)
+    const tLang = lang === 'pt' ? 'es' : lang;
+    const t = translations[tLang] as LangTranslations;
 
     // Keep <html lang> in sync with current language
     useEffect(() => {

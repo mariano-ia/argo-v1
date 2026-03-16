@@ -2,18 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Question } from '../../../lib/onboardingData';
 import { QuestionAnswer } from '../../../lib/profileResolver';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT } from '../../../lib/odysseyTranslations';
 
 type Axis = 'D' | 'I' | 'S' | 'C';
-
-// ─── Phase labels ────────────────────────────────────────────────────────────
-
-const PHASE_LABELS: Record<string, string> = {
-    port: 'El Puerto',
-    'open-sea': 'Mar Abierto',
-    storm: 'La Tormenta',
-    calm: 'La Calma',
-    island: 'La Isla',
-};
 
 function getPhase(qIndex: number): string {
     if (qIndex <= 1) return 'port';
@@ -63,6 +55,8 @@ export const QuestionScreenV2: React.FC<Props> = ({
     anchorsCollected,
     onAnswer,
 }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
     const startTime = useRef(Date.now());
     const [chosen, setChosen] = useState<number | null>(null);
 
@@ -83,7 +77,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
 
     const intro = question.intro.replace(/\{\{NOMBRE_NIÑO\}\}/g, nombreNino);
     const { displayed, done } = useWordTypewriter(intro, 55);
-    const phase = getPhase(anchorsCollected);
+    const phaseKey = getPhase(anchorsCollected);
 
     return (
         <motion.div
@@ -108,7 +102,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
             >
                 {/* Chapter label */}
                 <h2 className="font-quest text-white text-base font-extrabold tracking-[0.35em] text-center uppercase mb-4">
-                    {PHASE_LABELS[phase] || ''}
+                    {ot.phases[phaseKey] || ''}
                 </h2>
 
                 {/* Dot progress — one dot per question */}

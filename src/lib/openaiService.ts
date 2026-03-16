@@ -5,6 +5,7 @@ export interface ReportContext {
     deporte: string;
     edad: number;
     destinatario: 'padre' | 'entrenador';
+    lang?: string;
 }
 
 // Sections the AI rewrites (narrative)

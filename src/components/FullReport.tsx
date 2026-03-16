@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles } from 'lucide-react';
 import { ReportData } from '../lib/argosEngine';
+import { useLang } from '../context/LangContext';
+import { getOdysseyT } from '../lib/odysseyTranslations';
 
 interface FullReportProps {
     report: ReportData;
@@ -104,14 +106,8 @@ const ChecklistBlock: React.FC<{ label: string; text: string; color: string; isL
 // ─── DISC Telemetry ────────────────────────────────────────────────────────────
 
 const DISC_AXES = ['D', 'I', 'S', 'C'] as const;
-const DISC_LABELS: Record<string, string> = {
-    D: 'Dominio',
-    I: 'Influencia',
-    S: 'Estabilidad',
-    C: 'Conciencia',
-};
 
-const DiscTelemetry: React.FC<{ eje: string }> = ({ eje }) => (
+const DiscTelemetry: React.FC<{ eje: string; discLabels: Record<string, string>; dominantAxisLabel: string }> = ({ eje, discLabels, dominantAxisLabel }) => (
     <div className="flex items-end gap-3 pt-2">
         {DISC_AXES.map(axis => {
             const active = axis === eje;
@@ -135,8 +131,8 @@ const DiscTelemetry: React.FC<{ eje: string }> = ({ eje }) => (
         })}
         <div className="ml-2 flex flex-col justify-end pb-5">
             <span className="text-[10px] text-argo-grey/70 leading-snug">
-                Eje dominante<br />
-                <strong className="text-argo-navy text-[11px]">{DISC_LABELS[eje] ?? eje}</strong>
+                {dominantAxisLabel}<br />
+                <strong className="text-argo-navy text-[11px]">{discLabels[eje] ?? eje}</strong>
             </span>
         </div>
     </div>
@@ -145,6 +141,9 @@ const DiscTelemetry: React.FC<{ eje: string }> = ({ eje }) => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoading, deporte }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
+    const s = ot.reportSections;
     const {
         nombre, arquetipo, perfil,
         bienvenida, wow, motorDesc, combustible, grupoEspacio, corazon,
@@ -164,7 +163,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* Header */}
             <div className="border-b border-argo-border pb-6">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-argo-grey font-semibold mb-2">
-                    Informe de Sintonía Deportiva
+                    {ot.reportHeader}
                 </div>
                 <h1 className="font-display text-4xl font-bold text-argo-navy tracking-tight leading-tight">
                     {arquetipo.label}
@@ -174,12 +173,12 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                 )}
 
                 {/* DISC telemetry */}
-                <DiscTelemetry eje={arquetipo.eje} />
+                <DiscTelemetry eje={arquetipo.eje} discLabels={ot.discLabels} dominantAxisLabel={ot.dominantAxis} />
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mt-4">
                     <span className="px-3 py-1 bg-argo-neutral border border-argo-border rounded-full text-[10px] font-semibold text-argo-grey uppercase tracking-widest">
-                        Motor {arquetipo.motor}
+                        {ot.motorTag} {arquetipo.motor}
                     </span>
                     {nombre && nombre !== 'el deportista' && (
                         <span className="px-3 py-1 bg-blue-50 border border-argo-indigo/30 rounded-full text-[10px] font-semibold text-argo-indigo uppercase tracking-widest">
@@ -194,7 +193,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                     {(aiActive || aiLoading) && (
                         <span className="px-3 py-1 bg-argo-indigo text-white rounded-full text-[10px] font-semibold uppercase tracking-widest flex items-center gap-1">
                             <Sparkles size={10} />
-                            {aiLoading ? 'Generando...' : 'IA'}
+                            {aiLoading ? ot.generatingAI : ot.aiTag}
                         </span>
                     )}
                 </div>
@@ -202,7 +201,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 0. Bienvenida */}
             <Card>
-                <SectionTitle title="El Contrato de Sintonía" />
+                <SectionTitle title={s.contract} />
                 <blockquote className="border-l-2 border-argo-indigo pl-5">
                     <TextBlock text={bienvenida} />
                 </blockquote>
@@ -210,14 +209,14 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 1. WOW */}
             <Card>
-                <SectionTitle title="Su lugar en la Nave" />
+                <SectionTitle title={s.placeInShip} />
                 {isLoading('wow') ? <AISkeleton /> : <TextBlock text={wow} leadBold />}
             </Card>
 
             {/* Brújula Secundaria */}
             {tendenciaParagraph && (
                 <Card>
-                    <SectionTitle title="La Brújula Secundaria" />
+                    <SectionTitle title={s.secondaryCompass} />
                     <TextBlock text={tendenciaParagraph} leadBold />
                 </Card>
             )}
@@ -225,11 +224,11 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 2 + 3 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
-                    <SectionTitle title="El Ritmo del Motor" />
+                    <SectionTitle title={s.motorRhythm} />
                     {isLoading('motorDesc') ? <AISkeleton /> : <TextBlock text={motorDesc} />}
                 </Card>
                 <Card>
-                    <SectionTitle title="El Combustible" />
+                    <SectionTitle title={s.fuel} />
                     {isLoading('combustible') ? <AISkeleton /> : <TextBlock text={combustible} />}
                 </Card>
             </div>
@@ -237,23 +236,23 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 4 + 5 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
-                    <SectionTitle title="Vida en el Grupo" />
+                    <SectionTitle title={s.groupLife} />
                     <TextBlock text={grupoEspacio} />
                 </Card>
                 <Card>
-                    <SectionTitle title="Lenguaje de Intención" />
+                    <SectionTitle title={s.intentionLanguage} />
                     {isLoading('corazon') ? <AISkeleton /> : <TextBlock text={corazon} />}
                 </Card>
             </div>
 
             {/* 6. Palabras */}
             <Card>
-                <SectionTitle title="Lenguaje del Capitán" />
+                <SectionTitle title={s.captainLanguage} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div className="text-[10px] font-semibold text-green-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                            Palabras Puente
+                            {s.bridgeWords}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {palabrasPuente.map((p, i) => (
@@ -264,7 +263,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                         </div>
                         {palabrasPuenteExtra && palabrasPuenteExtra.length > 0 && (
                             <>
-                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">Por su tendencia</div>
+                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">{s.byTendency}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {palabrasPuenteExtra.map((p, i) => (
                                         <span key={i} className="px-3 py-1.5 bg-green-50 border border-dashed border-green-300 rounded-full text-xs font-medium text-green-600">
@@ -278,7 +277,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                     <div>
                         <div className="text-[10px] font-semibold text-amber-600 uppercase tracking-widest mb-3 flex items-center gap-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                            Palabras Ruido
+                            {s.noiseWords}
                         </div>
                         <div className="flex flex-wrap gap-2">
                             {palabrasRuido.map((p, i) => (
@@ -289,7 +288,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                         </div>
                         {palabrasRuidoExtra && palabrasRuidoExtra.length > 0 && (
                             <>
-                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">Por su tendencia</div>
+                                <div className="text-[9px] text-argo-grey uppercase tracking-widest mt-3 mb-1.5">{s.byTendency}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {palabrasRuidoExtra.map((p, i) => (
                                         <span key={i} className="px-3 py-1.5 bg-amber-50 border border-dashed border-amber-300 rounded-full text-xs font-medium text-amber-600">
@@ -306,7 +305,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
             {/* 8. Guía */}
             {guia.length > 0 && (
                 <Card>
-                    <SectionTitle title="Guía de Sintonía" />
+                    <SectionTitle title={s.tuningGuide} />
                     <div className="space-y-4">
                         {guia.map((row, i) => (
                             <div key={i} className="border border-argo-border rounded-argo-md overflow-hidden">
@@ -319,14 +318,14 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                                     <div className="p-5">
                                         <div className="text-[9px] font-semibold text-green-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                                            Activadores
+                                            {s.activators}
                                         </div>
                                         <TextBlock text={row.activador} />
                                     </div>
                                     <div className="p-5">
                                         <div className="text-[9px] font-semibold text-amber-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                            A evitar
+                                            {s.toAvoid}
                                         </div>
                                         <TextBlock text={row.desmotivacion} />
                                     </div>
@@ -339,41 +338,41 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
             {/* 9. Reseteo */}
             <Card>
-                <SectionTitle title="Gestión del Desajuste" />
+                <SectionTitle title={s.adjustmentManagement} />
                 {isLoading('reseteo') ? <AISkeleton /> : <TextBlock text={reseteo} leadBold />}
             </Card>
 
             {/* 10. Ecos */}
             <Card>
-                <SectionTitle title="Ecos de la Nave" />
+                <SectionTitle title={s.shipEchoes} />
                 {isLoading('ecos') ? <AISkeleton /> : <TextBlock text={ecos} />}
             </Card>
 
             {/* 11. Checklist */}
             <Card>
-                <SectionTitle title="Checklist del Día" />
+                <SectionTitle title={s.dayChecklist} />
                 <div className="space-y-3">
                     <ChecklistBlock
-                        label="Antes del entrenamiento"
+                        label={s.beforeTraining}
                         text={checklist.antes}
                         color="bg-argo-indigo"
                         isLoading={isLoading('checklist')}
                     />
                     <ChecklistBlock
-                        label="Durante el entrenamiento"
+                        label={s.duringTraining}
                         text={checklist.durante}
                         color="bg-argo-navy"
                         isLoading={isLoading('checklist')}
                     />
                     <ChecklistBlock
-                        label="Después del entrenamiento"
+                        label={s.afterTraining}
                         text={checklist.despues}
                         color="bg-green-500"
                         isLoading={isLoading('checklist')}
                     />
                 </div>
                 <p className="text-[10px] text-argo-grey/40 text-center mt-8 uppercase tracking-widest">
-                    Diseñado bajo los principios de seguridad emocional de Argo Method
+                    {ot.designedBy}
                 </p>
             </Card>
         </motion.div>

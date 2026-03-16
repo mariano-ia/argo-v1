@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { StorySlideData } from '../../../lib/onboardingData';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT } from '../../../lib/odysseyTranslations';
 
 interface Props {
     slide: StorySlideData;
@@ -11,6 +13,8 @@ interface Props {
 }
 
 export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlides, onContinue }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
     const isLast = slideIndex === totalSlides - 1;
 
     return (
@@ -37,7 +41,7 @@ export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlide
             {/* Content — left aligned */}
             <div className="flex flex-col gap-5">
                 <div className="text-[10px] font-medium text-[#86868B] uppercase tracking-[0.2em]">
-                    {slideIndex + 1} de {totalSlides}
+                    {slideIndex + 1} / {totalSlides}
                 </div>
                 <h2
                     className="font-display text-3xl font-light text-[#1D1D1F] leading-tight"
@@ -57,7 +61,7 @@ export const AdultIntroSlide: React.FC<Props> = ({ slide, slideIndex, totalSlide
                 onClick={onContinue}
                 className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm"
             >
-                {isLast ? 'Comenzar el registro' : 'Siguiente'}
+                {isLast ? ot.startRegistration : ot.next}
                 <ChevronRight size={16} />
             </motion.button>
         </motion.div>

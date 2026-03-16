@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import Lottie from 'lottie-react';
+import { useLang } from '../../../context/LangContext';
+import { getOdysseyT } from '../../../lib/odysseyTranslations';
 
 interface Props {
     nombreNino: string;
@@ -62,6 +64,9 @@ const LottieSuccess: React.FC = () => {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export const ChildCompletion: React.FC<Props> = ({ nombreNino, nombreAdulto, onContinue }) => {
+    const { lang } = useLang();
+    const ot = getOdysseyT(lang);
+
     return (
         <>
             <LottieConfetti />
@@ -106,7 +111,7 @@ export const ChildCompletion: React.FC<Props> = ({ nombreNino, nombreAdulto, onC
                         }}
                     >
                         <h1 className="font-adventure text-white text-3xl font-extrabold leading-tight tracking-normal text-center">
-                            Mision cumplida
+                            {ot.missionComplete}
                         </h1>
                     </motion.div>
 
@@ -118,10 +123,10 @@ export const ChildCompletion: React.FC<Props> = ({ nombreNino, nombreAdulto, onC
                         className="px-2 space-y-3"
                     >
                         <p className="font-quest text-white text-lg font-medium leading-relaxed text-center">
-                            El Argo ya sabe cómo te gusta más participar en la aventura hoy, {nombreNino}.
+                            {ot.completionBody(nombreNino)}
                         </p>
                         <p className="font-quest text-white/70 text-base leading-relaxed text-center">
-                            Por favor, devuelve el dispositivo a <span className="text-white font-bold">{nombreAdulto}</span>.
+                            {ot.returnDevice(nombreAdulto)}
                         </p>
                     </motion.div>
 
@@ -140,7 +145,7 @@ export const ChildCompletion: React.FC<Props> = ({ nombreNino, nombreAdulto, onC
                             border: '1px solid rgba(244,140,37,0.2)',
                         }}
                     >
-                        {nombreAdulto} ya tiene el dispositivo
+                        {ot.hasDevice(nombreAdulto)}
                         <ChevronRight size={20} style={{ color: '#F48C25' }} />
                     </motion.button>
                 </div>
