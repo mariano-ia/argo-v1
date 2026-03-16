@@ -129,30 +129,29 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
 
-    // ── Background music ──────────────────────────────────────────────────────
+    // ── Audio (Web Audio API for iOS volume control) ───────────────────────
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const fadeRef  = useRef<number | null>(null);
     const [muted, setMuted] = useState(false);
     const mutedRef = useRef(false);
 
-    // ── Ambient effects (layered on top of background music) ────────────────
     const effectRef        = useRef<HTMLAudioElement | null>(null);
-    const effectFadeRef    = useRef<number | null>(null);
     const currentEffectSrc = useRef<string | null>(null);
 
-    const TARGET_VOL     = 0.18;
-    const FADE_IN_MS     = 5000;   // gentle fade in
-    const FADE_OUT_MS    = 3000;
-    const ODYSSEY_START  = 6;      // first story slide (intro_a)
-    const ODYSSEY_END    = 26;     // child-completion ("mission complete")
-    const LOOP_MARGIN    = 0.3;    // seconds before end to seamless-loop
+    const audioCtxRef    = useRef<AudioContext | null>(null);
+    const musicGainRef   = useRef<GainNode | null>(null);
+    const effectGainRef  = useRef<GainNode | null>(null);
 
-    // Ambient effect config
+    const TARGET_VOL     = 0.18;
+    const FADE_IN_MS     = 5000;
+    const FADE_OUT_MS    = 3000;
+    const ODYSSEY_START  = 6;
+    const ODYSSEY_END    = 26;
+    const LOOP_MARGIN    = 0.3;
+
     const EFFECT_VOL         = 0.25;
     const EFFECT_FADE_IN_MS  = 2000;
     const EFFECT_FADE_OUT_MS = 1500;
 
-    /** Which ambient effect file should play for a given screen index */
     const getEffectSrc = (idx: number): string | null => {
         if (idx >= 6 && idx <= 11)  return '/audio/effects_01.mp3'; // intro + puerto
         if (idx >= 12 && idx <= 14) return '/audio/effects_02.mp3'; // mar abierto
@@ -161,120 +160,107 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         return null;
     };
 
-    const doFade = (audio: HTMLAudioElement, from: number, to: number, ms: number, then?: () => void) => {
-        if (fadeRef.current) clearInterval(fadeRef.current);
-        const STEP = 50;
-        const steps = ms / STEP;
-        const delta = (to - from) / steps;
-        let step = 0;
-        fadeRef.current = window.setInterval(() => {
-            step++;
-            audio.volume = Math.min(1, Math.max(0, from + delta * step));
-            if (step >= steps) {
-                clearInterval(fadeRef.current!);
-                fadeRef.current = null;
-                audio.volume = Math.min(1, Math.max(0, to));
-                then?.();
-            }
-        }, STEP);
+    /** Get or create shared AudioContext (call within user gesture on iOS) */
+    const ensureAudioCtx = () => {
+        if (!audioCtxRef.current) {
+            audioCtxRef.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+        }
+        if (audioCtxRef.current.state === 'suspended') {
+            audioCtxRef.current.resume();
+        }
+        return audioCtxRef.current;
     };
 
-    const doEffectFade = (audio: HTMLAudioElement, from: number, to: number, ms: number, then?: () => void) => {
-        if (effectFadeRef.current) clearInterval(effectFadeRef.current);
-        const STEP = 50;
-        const steps = ms / STEP;
-        const delta = (to - from) / steps;
-        let step = 0;
-        effectFadeRef.current = window.setInterval(() => {
-            step++;
-            audio.volume = Math.min(1, Math.max(0, from + delta * step));
-            if (step >= steps) {
-                clearInterval(effectFadeRef.current!);
-                effectFadeRef.current = null;
-                audio.volume = Math.min(1, Math.max(0, to));
-                then?.();
+    /** Route audio element through a GainNode (works on iOS unlike audio.volume) */
+    const connectWithGain = (audio: HTMLAudioElement, initialGain: number): GainNode => {
+        const ctx = ensureAudioCtx();
+        const source = ctx.createMediaElementSource(audio);
+        const gain = ctx.createGain();
+        gain.gain.value = initialGain;
+        source.connect(gain);
+        gain.connect(ctx.destination);
+        return gain;
+    };
+
+    /** Fade a GainNode using Web Audio scheduling (no setInterval needed) */
+    const doGainFade = (gain: GainNode, to: number, ms: number, then?: () => void) => {
+        const ctx = gain.context;
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(Math.max(0, to), ctx.currentTime + ms / 1000);
+        if (then) setTimeout(then, ms);
+    };
+
+    /** Seamless loop via requestAnimationFrame (more reliable than timeupdate on iOS) */
+    const setupSeamlessLoop = (audio: HTMLAudioElement) => {
+        const check = () => {
+            if (audio.duration && audio.currentTime > audio.duration - LOOP_MARGIN) {
+                audio.currentTime = 0;
             }
-        }, STEP);
+            if (!audio.paused) requestAnimationFrame(check);
+        };
+        audio.addEventListener('play', () => requestAnimationFrame(check));
+        audio.addEventListener('ended', () => {
+            audio.currentTime = 0;
+            audio.play().catch(() => {});
+        });
     };
 
     const startAudioIfNeeded = (nextIndex: number) => {
         if (nextIndex === ODYSSEY_START) {
+            ensureAudioCtx();
             if (!audioRef.current) {
                 const a = new Audio('/audio/argo_background.mp3');
-                a.loop   = false; // we handle looping manually to avoid gap
-                a.volume = 0;
-                // Seamless loop: seek back before the track ends
-                a.addEventListener('timeupdate', () => {
-                    if (a.duration && a.currentTime > a.duration - LOOP_MARGIN) {
-                        a.currentTime = 0;
-                    }
-                });
-                // Safety fallback if timeupdate misses
-                a.addEventListener('ended', () => {
-                    a.currentTime = 0;
-                    a.play().catch(() => {});
-                });
+                a.volume = 1; // volume controlled via GainNode, not audio.volume
+                a.loop = false;
+                setupSeamlessLoop(a);
+                musicGainRef.current = connectWithGain(a, 0);
                 audioRef.current = a;
             }
             const a = audioRef.current;
-            a.volume = 0;
+            const gain = musicGainRef.current!;
+            gain.gain.setValueAtTime(0, gain.context.currentTime);
             a.play().then(() => {
-                if (!mutedRef.current) doFade(a, 0, TARGET_VOL, FADE_IN_MS);
+                if (!mutedRef.current) doGainFade(gain, TARGET_VOL, FADE_IN_MS);
             }).catch(e => console.warn('[audio] autoplay blocked:', e));
         }
     };
 
-    /** Start / stop / crossfade ambient effects based on screen index */
     const startEffectIfNeeded = (nextIdx: number) => {
         const wantedSrc = getEffectSrc(nextIdx);
         const activeSrc = currentEffectSrc.current;
 
-        if (wantedSrc === activeSrc) return; // same effect — nothing to do
+        if (wantedSrc === activeSrc) return;
 
-        // Fade out current effect (standalone interval — not tied to effectFadeRef
-        // so it can run simultaneously with the new effect's fade-in)
-        if (effectRef.current && activeSrc) {
+        // Fade out current effect (each effect has its own GainNode — independent)
+        if (effectRef.current && activeSrc && effectGainRef.current) {
             const old = effectRef.current;
-            const fromVol = old.volume;
-            const STEP = 50;
-            const steps = EFFECT_FADE_OUT_MS / STEP;
-            const delta = -fromVol / steps;
-            let s = 0;
-            const id = window.setInterval(() => {
-                s++;
-                old.volume = Math.max(0, fromVol + delta * s);
-                if (s >= steps) { clearInterval(id); old.pause(); }
-            }, STEP);
+            const oldGain = effectGainRef.current;
+            doGainFade(oldGain, 0, EFFECT_FADE_OUT_MS, () => { old.pause(); });
             effectRef.current = null;
+            effectGainRef.current = null;
             currentEffectSrc.current = null;
         }
 
-        // Start new effect
         if (wantedSrc) {
             const a = new Audio(wantedSrc);
+            a.volume = 1;
             a.loop = false;
-            a.volume = 0;
-            a.addEventListener('timeupdate', () => {
-                if (a.duration && a.currentTime > a.duration - LOOP_MARGIN) {
-                    a.currentTime = 0;
-                }
-            });
-            a.addEventListener('ended', () => {
-                a.currentTime = 0;
-                a.play().catch(() => {});
-            });
+            setupSeamlessLoop(a);
+            const gain = connectWithGain(a, 0);
             effectRef.current = a;
+            effectGainRef.current = gain;
             currentEffectSrc.current = wantedSrc;
             a.play().then(() => {
-                if (!mutedRef.current) doEffectFade(a, 0, EFFECT_VOL, EFFECT_FADE_IN_MS);
+                if (!mutedRef.current) doGainFade(gain, EFFECT_VOL, EFFECT_FADE_IN_MS);
             }).catch(e => console.warn('[audio] effect autoplay blocked:', e));
         }
     };
 
     // Fade out MUSIC when reaching child-completion; effects continue until adult-report
     useEffect(() => {
-        if (screenIndex === ODYSSEY_END && audioRef.current) {
-            doFade(audioRef.current, audioRef.current.volume, 0, FADE_OUT_MS, () => {
+        if (screenIndex === ODYSSEY_END && audioRef.current && musicGainRef.current) {
+            doGainFade(musicGainRef.current, 0, FADE_OUT_MS, () => {
                 audioRef.current?.pause();
             });
         }
@@ -289,10 +275,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Cleanup audio on unmount
     useEffect(() => {
         return () => {
-            if (fadeRef.current) clearInterval(fadeRef.current);
-            if (effectFadeRef.current) clearInterval(effectFadeRef.current);
             if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
             if (effectRef.current) { effectRef.current.pause(); effectRef.current = null; }
+            if (audioCtxRef.current) { audioCtxRef.current.close(); audioCtxRef.current = null; }
         };
     }, []);
 
@@ -300,14 +285,15 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         setMuted(prev => {
             const next = !prev;
             mutedRef.current = next;
-            // Cancel any running fades so they don't overwrite the volume
-            if (fadeRef.current) { clearInterval(fadeRef.current); fadeRef.current = null; }
-            if (effectFadeRef.current) { clearInterval(effectFadeRef.current); effectFadeRef.current = null; }
-            if (audioRef.current) {
-                audioRef.current.volume = next ? 0 : TARGET_VOL;
+            if (musicGainRef.current) {
+                const g = musicGainRef.current;
+                g.gain.cancelScheduledValues(g.context.currentTime);
+                g.gain.setValueAtTime(next ? 0 : TARGET_VOL, g.context.currentTime);
             }
-            if (effectRef.current) {
-                effectRef.current.volume = next ? 0 : EFFECT_VOL;
+            if (effectGainRef.current) {
+                const g = effectGainRef.current;
+                g.gain.cancelScheduledValues(g.context.currentTime);
+                g.gain.setValueAtTime(next ? 0 : EFFECT_VOL, g.context.currentTime);
             }
             return next;
         });
@@ -434,10 +420,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     }, [screenIndex]);
 
     const handleRestart = () => {
-        if (fadeRef.current) clearInterval(fadeRef.current);
-        if (effectFadeRef.current) clearInterval(effectFadeRef.current);
         if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
         if (effectRef.current) { effectRef.current.pause(); effectRef.current = null; }
+        musicGainRef.current = null;
+        effectGainRef.current = null;
         currentEffectSrc.current = null;
         setScreenIndex(0);
         setAdultData(null);
