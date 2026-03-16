@@ -20,8 +20,10 @@ import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
-import { ChildCompletion } from './screens/ChildCompletion';
-import { AdultReport } from './screens/AdultReport';
+import { ChildResultReveal } from './screens/ChildResultReveal';
+import { buildReportHtml } from './screens/AdultReport';
+import { sendReport } from '../../lib/emailService';
+import { CHILD_REVEAL_TEXTS } from '../../lib/childRevealTexts';
 import { AnimatedScene } from './scenes/AnimatedScene';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -43,8 +45,8 @@ type ScreenDef =
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; useContinueLabelFromT?: boolean }
     | { type: 'question'; questionIndex: number }
-    | { type: 'child-completion' }
-    | { type: 'adult-report' };
+    | { type: 'child-result' }
+;
 
 const SCREENS: ScreenDef[] = [
     // Language selection
@@ -82,8 +84,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'question', questionIndex: 10 },
     { type: 'question', questionIndex: 11 },
     // Closure
-    { type: 'child-completion' },
-    { type: 'adult-report' },
+    { type: 'child-result' },      // resolves profile + shows archetype result to child (final screen)
 ];
 
 /** Get the question index that determines the scene phase.
@@ -126,9 +127,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const [screenIndex, setScreenIndex] = useState(0);
     const [adultData, setAdultData]     = useState<AdultData | null>(null);
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
-    const [aiSections, setAiSections]   = useState<AISections | null>(null);
-    const [aiLoading, setAiLoading]     = useState(false);
-    const [saveError, setSaveError]     = useState<string | null>(null);
+    const [, setAiSections]   = useState<AISections | null>(null);
+    const [, setAiLoading]     = useState(false);
+    const [, setSaveError]     = useState<string | null>(null);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
@@ -304,7 +305,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         }
     };
 
-    // Fade out MUSIC when reaching child-completion; effects continue until adult-report
+    // Fade out MUSIC when reaching child-result (final screen)
     useEffect(() => {
         if (screenIndex === ODYSSEY_END && audioRef.current && musicGainRef.current) {
             doGainFade(musicGainRef.current, 0, FADE_OUT_MS, () => {
@@ -374,7 +375,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // When child completes → resolve profile + generate AI sections
     useEffect(() => {
         const screen = SCREENS[screenIndex];
-        if (screen.type !== 'child-completion') return;
+        if (screen.type !== 'child-result') return;
         if (!adultData || answers.length < questions.length) return;
 
         const run = async () => {
@@ -475,9 +476,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 lang,
             };
 
+            let finalSections: AISections | null = null;
             try {
                 const { sections, usage }: { sections: AISections; usage: AIUsage } =
                     await generateAISections(report, ctx);
+                finalSections = sections;
                 setAiSections(sections);
 
                 // Option 1: Update session with AI usage data
@@ -495,6 +498,35 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 setAiLoading(false);
             }
 
+            // ── Send report email ────────────────────────────────────────────
+            const maduracionTemprana = adultData.edad < 10;
+            const arquetipoFull = report.tendenciaLabel
+                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
+                : report.arquetipo.label;
+            try {
+                await sendReport({
+                    toEmail:           adultData.email,
+                    nombreAdulto:      adultData.nombreAdulto,
+                    nombreNino:        adultData.nombreNino,
+                    deporte:           adultData.deporte,
+                    edad:              adultData.edad,
+                    arquetipo:         arquetipoFull,
+                    reportHtml:        buildReportHtml(report, finalSections, ot.emailSections),
+                    maduracionTemprana,
+                    lang,
+                    emailSubject:      ot.emailSubject(adultData.nombreNino, arquetipoFull),
+                    emailHeader:       ot.emailHeader,
+                    emailPreparedFor:  ot.emailPreparedFor(adultData.nombreAdulto),
+                    emailArchetypeOf:  ot.emailArchetypeOf(adultData.nombreNino),
+                    emailFooter:       ot.emailFooter,
+                    emailMaturationTitle: ot.emailMaturationTitle,
+                    emailMaturationBody:  ot.emailMaturationBody,
+                });
+                console.log('[Argo] Report email sent to', adultData.email);
+            } catch (err) {
+                console.warn('[Argo] Email send failed:', err);
+            }
+
             if (!playCountedRef.current) {
                 playCountedRef.current = true;
                 await onPlayComplete?.();
@@ -509,23 +541,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [screenIndex]);
 
-    const handleRestart = () => {
-        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
-        if (effectRef.current) { effectRef.current.pause(); effectRef.current = null; }
-        musicGainRef.current = null;
-        effectGainRef.current = null;
-        currentEffectSrc.current = null;
-        sessionIdRef.current = null;
-        clearRecoveryData();
-        setScreenIndex(0);
-        setAdultData(null);
-        setAnswers([]);
-        setAiSections(null);
-        setAiLoading(false);
-        reportRef.current  = null;
-        profileRef.current = null;
-    };
-
     const screen  = SCREENS[screenIndex];
     const nombre  = adultData?.nombreNino  ?? '';
     const adulto  = adultData?.nombreAdulto ?? '';
@@ -534,7 +549,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Determine whether to show scene backgrounds (child-facing screens)
     const showScene = screen.type === 'question'
         || screen.type === 'story'
-        || screen.type === 'child-completion';
+        || screen.type === 'child-result';
     const sceneQuestionIndex = getCurrentQuestionIndex(screenIndex);
     const showMuteBtn = screenIndex >= ODYSSEY_START && screenIndex <= ODYSSEY_END;
 
@@ -674,26 +689,16 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     />
                 )}
 
-                {screen.type === 'child-completion' && (
-                    <ChildCompletion
-                        key="child-done"
+                {screen.type === 'child-result' && reportRef.current && adultData && (
+                    <ChildResultReveal
+                        key="child-result"
                         nombreNino={nombre}
-                        nombreAdulto={adulto}
-                        onContinue={advance}
+                        arquetipoLabel={reportRef.current.arquetipo.label}
+                        adultEmail={adultData.email}
+                        resultText={CHILD_REVEAL_TEXTS[reportRef.current.arquetipo.id] ?? CHILD_REVEAL_TEXTS['impulsor_decidido']}
                     />
                 )}
 
-                {screen.type === 'adult-report' && adultData && reportRef.current && (
-                    <AdultReport
-                        key="adult-report"
-                        adultData={adultData}
-                        report={reportRef.current}
-                        aiSections={aiSections}
-                        aiLoading={aiLoading}
-                        saveError={saveError}
-                        onRestart={handleRestart}
-                    />
-                )}
             </AnimatePresence>
             </div>
         </div>
