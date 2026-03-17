@@ -138,11 +138,12 @@ export const FeedbackForm: React.FC = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-white rounded-3xl shadow-lg p-10 max-w-md w-full text-center"
                 >
-                    <div className="mb-6">
+                    <div className="mb-6 flex items-center justify-center gap-1.5">
                         <span className="font-display text-2xl tracking-tight">
                             <span className="font-extrabold">Argo</span>
                             <span className="font-extralight"> Method</span>
                         </span>
+                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                     </div>
                     <h1 className="font-quest text-2xl font-bold text-gray-900 mb-2">
                         Gracias por tu opinión
@@ -167,11 +168,12 @@ export const FeedbackForm: React.FC = () => {
             >
                 {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-1.5 mb-1">
                         <span className="font-display text-lg tracking-tight">
                             <span className="font-extrabold">Argo</span>
                             <span className="font-extralight"> Method</span>
                         </span>
+                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                     </div>
                     <h1 className="font-quest text-xl font-bold text-gray-900 mt-4">
                         Tu opinión nos ayuda a mejorar
