@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getFeedbackT } from '../lib/feedbackTranslations';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -13,23 +14,9 @@ interface ChipOption<T extends string> {
     label: string;
 }
 
-const CLARITY_OPTIONS: ChipOption<Clarity>[] = [
-    { value: 'muy_claro', label: 'Muy claro' },
-    { value: 'algo_claro', label: 'Algo claro' },
-    { value: 'confuso', label: 'Confuso' },
-];
-
-const HELPFULNESS_OPTIONS: ChipOption<Helpfulness>[] = [
-    { value: 'mucho', label: 'Mucho' },
-    { value: 'algo', label: 'Algo' },
-    { value: 'poco', label: 'Poco' },
-];
-
-const IDENTIFICATION_OPTIONS: ChipOption<Identification>[] = [
-    { value: 'identificado', label: 'Identificado' },
-    { value: 'mas_o_menos', label: 'Más o menos' },
-    { value: 'nada', label: 'Nada' },
-];
+const CLARITY_VALUES: Clarity[] = ['muy_claro', 'algo_claro', 'confuso'];
+const HELPFULNESS_VALUES: Helpfulness[] = ['mucho', 'algo', 'poco'];
+const IDENTIFICATION_VALUES: Identification[] = ['identificado', 'mas_o_menos', 'nada'];
 
 // ─── Chip selector component ─────────────────────────────────────────────────
 
@@ -71,6 +58,13 @@ function ChipGroup<T extends string>({
 export const FeedbackForm: React.FC = () => {
     const { sessionId } = useParams<{ sessionId: string }>();
     const [searchParams] = useSearchParams();
+
+    const lang = searchParams.get('lang') || 'es';
+    const t = getFeedbackT(lang);
+
+    const clarityOptions: ChipOption<Clarity>[] = CLARITY_VALUES.map((v, i) => ({ value: v, label: t.clarityOptions[i] }));
+    const helpfulnessOptions: ChipOption<Helpfulness>[] = HELPFULNESS_VALUES.map((v, i) => ({ value: v, label: t.helpfulnessOptions[i] }));
+    const identificationOptions: ChipOption<Identification>[] = IDENTIFICATION_VALUES.map((v, i) => ({ value: v, label: t.identificationOptions[i] }));
 
     const [clarity, setClarity] = useState<Clarity | null>(null);
     const [helpfulness, setHelpfulness] = useState<Helpfulness | null>(null);
@@ -146,10 +140,10 @@ export const FeedbackForm: React.FC = () => {
                         <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                     </div>
                     <h1 className="font-quest text-2xl font-bold text-gray-900 mb-2">
-                        Gracias por tu opinión
+                        {t.thankTitle}
                     </h1>
                     <p className="font-quest text-gray-500 text-sm leading-relaxed">
-                        Tu feedback nos ayuda a mejorar la experiencia para cada deportista.
+                        {t.thankBody}
                     </p>
                 </motion.div>
             </div>
@@ -176,47 +170,47 @@ export const FeedbackForm: React.FC = () => {
                         <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                     </div>
                     <h1 className="font-quest text-xl font-bold text-gray-900 mt-4">
-                        Tu opinión nos ayuda a mejorar
+                        {t.pageTitle}
                     </h1>
                     <p className="font-quest text-sm text-gray-400 mt-1">
-                        Son solo 4 preguntas &middot; 30 segundos
+                        {t.pageSubtitle}
                     </p>
                 </div>
 
                 {/* Q1 — Clarity */}
                 <div className="mb-7">
                     <label className="font-quest text-sm font-semibold text-gray-800 block mb-3">
-                        1. ¿Qué tan claro te resultó el informe?
+                        {t.q1}
                     </label>
-                    <ChipGroup options={CLARITY_OPTIONS} selected={clarity} onChange={setClarity} />
+                    <ChipGroup options={clarityOptions} selected={clarity} onChange={setClarity} />
                 </div>
 
                 {/* Q2 — Helpfulness */}
                 <div className="mb-7">
                     <label className="font-quest text-sm font-semibold text-gray-800 block mb-3">
-                        2. ¿Sentís que te ayuda a comprender mejor al deportista?
+                        {t.q2}
                     </label>
-                    <ChipGroup options={HELPFULNESS_OPTIONS} selected={helpfulness} onChange={setHelpfulness} />
+                    <ChipGroup options={helpfulnessOptions} selected={helpfulness} onChange={setHelpfulness} />
                 </div>
 
                 {/* Q3 — Identification */}
                 <div className="mb-7">
                     <label className="font-quest text-sm font-semibold text-gray-800 block mb-3">
-                        3. ¿Qué tan identificado te sentiste con el resultado?
+                        {t.q3}
                     </label>
-                    <ChipGroup options={IDENTIFICATION_OPTIONS} selected={identification} onChange={setIdentification} />
+                    <ChipGroup options={identificationOptions} selected={identification} onChange={setIdentification} />
                 </div>
 
                 {/* Q4 — Open comment */}
                 <div className="mb-8">
                     <label className="font-quest text-sm font-semibold text-gray-800 block mb-3">
-                        4. ¿Qué cambiarías o mejorarías?
-                        <span className="font-normal text-gray-400 ml-1">(opcional)</span>
+                        {t.q4}
+                        <span className="font-normal text-gray-400 ml-1">{t.optional}</span>
                     </label>
                     <textarea
                         value={openComment}
                         onChange={e => setOpenComment(e.target.value)}
-                        placeholder="Tu sugerencia..."
+                        placeholder={t.placeholder}
                         rows={3}
                         className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-quest text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
                         maxLength={1000}
@@ -248,7 +242,7 @@ export const FeedbackForm: React.FC = () => {
                         }`}
                     style={canSubmit ? { backgroundColor: '#955fb5', boxShadow: '0 4px 6px -1px rgba(149,95,181,0.3)' } : undefined}
                 >
-                    {submitting ? 'Enviando...' : 'Enviar opinión'}
+                    {submitting ? t.submitting : t.submit}
                 </button>
             </motion.form>
         </div>

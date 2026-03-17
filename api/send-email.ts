@@ -29,25 +29,31 @@ function buildHtml(params: {
 
     // ── Feedback CTA block ──────────────────────────────────────────────────
     const baseUrl = 'https://argomethod.com';
+    const ctaText: Record<string, { title: string; question: string; chips: [string, string, string]; subtitle: string }> = {
+        es: { title: 'Tu opinión nos ayuda a mejorar', question: '¿Qué tan claro te resultó el informe?', chips: ['Muy claro', 'Algo claro', 'Confuso'], subtitle: 'Son solo 4 preguntas · 30 segundos' },
+        en: { title: 'Your feedback helps us improve', question: 'How clear was the report?', chips: ['Very clear', 'Somewhat clear', 'Confusing'], subtitle: 'Just 4 questions · 30 seconds' },
+        pt: { title: 'Sua opinião nos ajuda a melhorar', question: 'Quão claro foi o relatório?', chips: ['Muito claro', 'Um pouco claro', 'Confuso'], subtitle: 'São apenas 4 perguntas · 30 segundos' },
+    };
+    const cta = ctaText[langAttr] || ctaText.es;
     const feedbackCta = params.sessionId ? `
     <div style="background:#FFFFFF;border-top:3px solid #955fb5;padding:32px 40px;text-align:center;">
         <div style="font-size:18px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
-            Tu opinión nos ayuda a mejorar
+            ${cta.title}
         </div>
         <div style="font-size:14px;color:#86868B;margin-bottom:20px;">
-            ¿Qué tan claro te resultó el informe?
+            ${cta.question}
         </div>
         <div style="margin-bottom:16px;">
             <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Muy claro</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro&lang=${langAttr}" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[0]}</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro" style="display:inline-block;background:#e5e7eb;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Algo claro</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro&lang=${langAttr}" style="display:inline-block;background:#e5e7eb;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[1]}</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Confuso</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso&lang=${langAttr}" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[2]}</a>
             <!--[if mso]></td></tr></table><![endif]-->
         </div>
         <div style="font-size:12px;color:#86868B;">
-            Son solo 4 preguntas · 30 segundos
+            ${cta.subtitle}
         </div>
     </div>` : '';
 
