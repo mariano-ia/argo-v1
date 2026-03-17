@@ -30,7 +30,7 @@ function buildHtml(params: {
     // ── Feedback CTA block ──────────────────────────────────────────────────
     const baseUrl = 'https://argomethod.com';
     const feedbackCta = params.sessionId ? `
-    <div style="background:#FFFFFF;border-top:3px solid #f97316;padding:32px 40px;text-align:center;">
+    <div style="background:#FFFFFF;border-top:3px solid #955fb5;padding:32px 40px;text-align:center;">
         <div style="font-size:18px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
             Tu opinión nos ayuda a mejorar
         </div>
@@ -39,9 +39,9 @@ function buildHtml(params: {
         </div>
         <div style="margin-bottom:16px;">
             <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro" style="display:inline-block;background:#f97316;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Muy claro</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Muy claro</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro" style="display:inline-block;background:#fed7aa;color:#9a3412;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Algo claro</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro" style="display:inline-block;background:#e5e7eb;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Algo claro</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
             <a href="${baseUrl}/review/${params.sessionId}?q1=confuso" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Confuso</a>
             <!--[if mso]></td></tr></table><![endif]-->
