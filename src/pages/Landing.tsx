@@ -264,6 +264,15 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
     );
 };
 
+// ─── DISC axes data ──────────────────────────────────────────────────────────
+
+const DISC_AXES = [
+    { letter: 'D', eje: 'D', nameEs: 'Impulsor', nameEn: 'Driver', namePt: 'Impulsionador', descEs: 'Orientado a la acción y los resultados. Decide rápido, compite, lidera.', descEn: 'Action and results oriented. Decides fast, competes, leads.', descPt: 'Orientado à ação e aos resultados. Decide rápido, compete, lidera.' },
+    { letter: 'I', eje: 'I', nameEs: 'Conector', nameEn: 'Connector', namePt: 'Conector', descEs: 'Orientado a las personas y la energía. Entusiasma, conecta, motiva.', descEn: 'People and energy oriented. Enthuses, connects, motivates.', descPt: 'Orientado às pessoas e à energia. Entusiasma, conecta, motiva.' },
+    { letter: 'S', eje: 'S', nameEs: 'Sostenedor', nameEn: 'Sustainer', namePt: 'Sustentador', descEs: 'Orientado a la estabilidad y el equipo. Persiste, cuida, sostiene.', descEn: 'Stability and team oriented. Persists, nurtures, sustains.', descPt: 'Orientado à estabilidade e à equipe. Persiste, cuida, sustenta.' },
+    { letter: 'C', eje: 'C', nameEs: 'Estratega', nameEn: 'Strategist', namePt: 'Estrategista', descEs: 'Orientado al análisis y la precisión. Planifica, evalúa, optimiza.', descEn: 'Analysis and precision oriented. Plans, evaluates, optimizes.', descPt: 'Orientado à análise e à precisão. Planeja, avalia, otimiza.' },
+];
+
 // ─── Landing ─────────────────────────────────────────────────────────────────
 
 export const Landing: React.FC = () => {
@@ -328,15 +337,7 @@ export const Landing: React.FC = () => {
                             </button>
                         ))}
                         <button
-                            onClick={() => navigate('/signup')}
-                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
-                            className="text-argo-grey hover:text-argo-navy transition-colors"
-                        >
-                            {L('Ingresar', 'Log in', 'Entrar')}
-                        </button>
-                        <button
-                            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-                            aria-label={L('Ver planes', 'See plans', 'Ver planos')}
+                            onClick={() => navigate('/app')}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -344,7 +345,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {L('Ver planes', 'See plans', 'Ver planos')}
+                            {L('Iniciar experiencia', 'Start experience', 'Iniciar experiência')}
                         </button>
                     </div>
                 </div>
@@ -391,7 +392,7 @@ export const Landing: React.FC = () => {
 
                 <motion.div {...fadeUp(0.22)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
-                        onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                        onClick={() => navigate('/app')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -402,7 +403,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Empezar ahora', 'Get started', 'Começar agora')}
+                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -583,6 +584,70 @@ export const Landing: React.FC = () => {
 
             <Divider />
 
+            {/* ── DISC ── */}
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
+                <motion.div {...fadeUp(0)} className="mb-12">
+                    <SectionLabel>
+                        {L('El marco · Cuatro ejes de conducta', 'The framework · Four behavioral axes', 'O modelo · Quatro eixos de conduta')}
+                    </SectionLabel>
+                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
+                        {L('¿Qué es DISC?', 'What is DISC?', 'O que é DISC?')}
+                    </h2>
+                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '12px', maxWidth: '640px', lineHeight: 1.75 }}>
+                        {L(
+                            'DISC es un modelo de comportamiento utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales observables (no personalidades, no diagnósticos) que nos ayudan a entender cómo una persona actúa, se comunica y toma decisiones.',
+                            'DISC is a behavioral model used worldwide for over 30 years. It describes four observable behavioral patterns (not personalities, not diagnoses) that help us understand how a person acts, communicates, and makes decisions.',
+                            'DISC é um modelo comportamental utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais observáveis (não personalidades, não diagnósticos) que nos ajudam a entender como uma pessoa age, se comunica e toma decisões.',
+                        )}
+                    </p>
+                </motion.div>
+
+                {/* 4-axis grid */}
+                <div
+                    className="grid grid-cols-2 md:grid-cols-4 gap-px"
+                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}
+                >
+                    {DISC_AXES.map((axis, i) => {
+                        const name = pk(axis, 'name');
+                        const desc = pk(axis, 'desc');
+                        return (
+                            <motion.div
+                                key={axis.letter}
+                                {...fadeUp(i * 0.06)}
+                                className="bg-white p-6 md:p-8 flex flex-col"
+                            >
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[axis.eje], flexShrink: 0 }} />
+                                    <p style={{ fontWeight: 500, fontSize: '14px', color: '#1D1D1F', letterSpacing: '-0.01em' }}>
+                                        {name}
+                                    </p>
+                                </div>
+                                <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-3">
+                                    {axis.letter}
+                                </p>
+                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#424245', lineHeight: 1.55 }}>
+                                    {desc}
+                                </p>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* Closing differentiation */}
+                <motion.p
+                    {...fadeUp(0.3)}
+                    style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.75, maxWidth: '640px', marginTop: '28px' }}
+                >
+                    {L(
+                        'Argo Method toma este marco y lo adapta al universo del deporte juvenil: lenguaje para niños, gamificación, contexto deportivo y una capa adicional, el Motor, que mide el ritmo de procesamiento. El resultado no es una etiqueta sino una brújula para que el adulto entienda cómo sintonizar con cada deportista.',
+                        'Argo Method takes this framework and adapts it to the world of youth sports: child-friendly language, gamification, a sports context, and an additional layer, the Engine, that measures processing pace. The result is not a label but a compass so the adult can attune to each athlete.',
+                        'Argo Method pega esse modelo e o adapta ao universo do esporte juvenil: linguagem para crianças, gamificação, contexto esportivo e uma camada adicional, o Motor, que mede o ritmo de processamento. O resultado não é um rótulo, mas uma bússola para que o adulto entenda como sintonizar com cada atleta.',
+                    )}
+                </motion.p>
+            </section>
+
+            <Divider />
+
             {/* ── ARQUETIPOS ── */}
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <motion.div {...fadeUp(0)} className="mb-16">
@@ -704,102 +769,6 @@ export const Landing: React.FC = () => {
 
             <Divider />
 
-            {/* ── PRICING ── */}
-            <section id="pricing" className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
-                <motion.div {...fadeUp(0)} className="text-center mb-16">
-                    <SectionLabel>
-                        {L('Planes · Elige tu tripulación', 'Plans · Choose your crew', 'Planos · Escolha sua tripulação')}
-                    </SectionLabel>
-                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('Un plan para cada necesidad.', 'A plan for every need.', 'Um plano para cada necessidade.')}
-                    </h2>
-                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#86868B', marginTop: '12px' }}>
-                        {L(
-                            'Cada crédito es una experiencia completa: odisea + informe + email.',
-                            'Each credit is a complete experience: odyssey + report + email.',
-                            'Cada crédito é uma experiência completa: odisseia + relatório + email.',
-                        )}
-                    </p>
-                </motion.div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Starter */}
-                    <motion.div
-                        {...fadeUp(0.05)}
-                        className="bg-white border border-argo-border rounded-2xl p-8 flex flex-col"
-                    >
-                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Starter</p>
-                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            US$ 29
-                        </p>
-                        <p className="text-sm text-argo-grey mt-1 mb-6">10 {L('créditos', 'credits', 'créditos')}</p>
-                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Link de invitación único', 'Unique invitation link', 'Link de convite exclusivo')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Panel con resultados', 'Results dashboard', 'Painel com resultados')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Informe por email', 'Email report', 'Relatório por email')}</li>
-                        </ul>
-                        <button
-                            onClick={() => navigate('/signup?plan=starter')}
-                            className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
-                        >
-                            {L('Empezar', 'Get started', 'Começar')}
-                        </button>
-                    </motion.div>
-
-                    {/* Team */}
-                    <motion.div
-                        {...fadeUp(0.1)}
-                        className="bg-white border-2 border-[#955FB5] rounded-2xl p-8 flex flex-col relative"
-                    >
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#955FB5] text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                            Popular
-                        </span>
-                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Team</p>
-                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            US$ 69
-                        </p>
-                        <p className="text-sm text-argo-grey mt-1 mb-6">30 {L('créditos', 'credits', 'créditos')}</p>
-                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Todo lo de Starter', 'Everything in Starter', 'Tudo do Starter')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Exportar CSV', 'Export CSV', 'Exportar CSV')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Soporte prioritario', 'Priority support', 'Suporte prioritário')}</li>
-                        </ul>
-                        <button
-                            onClick={() => navigate('/signup?plan=team')}
-                            style={{ backgroundColor: '#955FB5' }}
-                            className="w-full py-3 rounded-lg text-sm font-semibold text-white hover:opacity-90 transition-all"
-                        >
-                            {L('Elegir Team', 'Choose Team', 'Escolher Team')}
-                        </button>
-                    </motion.div>
-
-                    {/* Club */}
-                    <motion.div
-                        {...fadeUp(0.15)}
-                        className="bg-white border border-argo-border rounded-2xl p-8 flex flex-col"
-                    >
-                        <p className="text-[10px] font-semibold text-argo-grey uppercase tracking-widest mb-2">Club</p>
-                        <p style={{ fontWeight: 300, fontSize: '36px', letterSpacing: '-0.03em', color: '#1D1D1F' }}>
-                            US$ 179
-                        </p>
-                        <p className="text-sm text-argo-grey mt-1 mb-6">100 {L('créditos', 'credits', 'créditos')}</p>
-                        <ul className="space-y-3 text-sm text-[#424245] flex-1 mb-8">
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Todo lo de Team', 'Everything in Team', 'Tudo do Team')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Múltiples usuarios', 'Multiple users', 'Múltiplos usuários')}</li>
-                            <li className="flex items-start gap-2"><span className="text-green-500 mt-0.5">&#10003;</span> {L('Métricas avanzadas', 'Advanced metrics', 'Métricas avançadas')}</li>
-                        </ul>
-                        <button
-                            onClick={() => navigate('/signup?plan=club')}
-                            className="w-full py-3 rounded-lg text-sm font-semibold border border-argo-border hover:bg-argo-neutral transition-all"
-                        >
-                            {L('Elegir Club', 'Choose Club', 'Escolher Club')}
-                        </button>
-                    </motion.div>
-                </div>
-            </section>
-
-            <Divider />
-
             {/* ── CTA FINAL ── */}
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32 text-center">
                 <motion.div {...fadeUp(0)}>
@@ -814,7 +783,7 @@ export const Landing: React.FC = () => {
                         )}
                     </p>
                     <button
-                        onClick={() => navigate('/signup')}
+                        onClick={() => navigate('/app')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '10px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -825,7 +794,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Crear cuenta gratis', 'Create free account', 'Criar conta grátis')}
+                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>
