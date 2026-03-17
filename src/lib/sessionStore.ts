@@ -94,7 +94,7 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
         return { ok: true, id: mockId };
     }
 
-    return fetchWithRetry('/api/start-session', body);
+    return fetchWithRetry('/api/session', { action: 'start', ...body });
 }
 
 // ─── Update session (Options 1 & 3) ─────────────────────────────────────────
@@ -112,7 +112,7 @@ export async function updateSession(
         return { ok: true };
     }
 
-    return fetchWithRetry('/api/update-session', { id, ...fields });
+    return fetchWithRetry('/api/session', { action: 'update', id, ...fields });
 }
 
 // ─── Save session (legacy fallback) ─────────────────────────────────────────
@@ -145,7 +145,7 @@ export async function saveSession(payload: SessionPayload): Promise<{ ok: boolea
         return { ok: true };
     }
 
-    return fetchWithRetry('/api/save-session', body);
+    return fetchWithRetry('/api/session', { action: 'save', ...body });
 }
 
 // ─── localStorage recovery (Option 2) ───────────────────────────────────────
