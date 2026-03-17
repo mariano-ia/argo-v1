@@ -15,6 +15,8 @@ import { Sessions }           from './pages/dashboard/Sessions';
 import { Metrics }            from './pages/dashboard/Metrics';
 import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
 import { AdminUsers }         from './pages/dashboard/AdminUsers';
+import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
+import { FeedbackForm }       from './pages/FeedbackForm';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -130,6 +132,7 @@ function App() {
             <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />
+            <Route path="/review/:sessionId" element={<FeedbackForm />} />
 
             {/* Tenant dashboard */}
             <Route path="/dashboard" element={<TenantDashboard />}>
@@ -144,6 +147,7 @@ function App() {
                 <Route index            element={<Sessions />} />
                 <Route path="sessions"  element={<Sessions />} />
                 <Route path="metrics"   element={<Metrics />} />
+                <Route path="feedback"  element={<AdminFeedback />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
                 <Route path="users"     element={<AdminUsers />} />
             </Route>

@@ -165,6 +165,7 @@ export const TenantHome: React.FC = () => {
                 arquetipo:         arquetipoFull,
                 reportHtml:        buildReportHtml(report, null, ot.emailSections),
                 maduracionTemprana,
+                sessionId:         s.id,
                 lang,
                 emailSubject:      ot.emailSubject(s.child_name, arquetipoFull),
                 emailHeader:       ot.emailHeader,

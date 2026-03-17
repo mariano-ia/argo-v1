@@ -10,6 +10,7 @@ function buildHtml(params: {
     arquetipo: string;
     reportHtml: string;
     maduracionTemprana: boolean;
+    sessionId?: string;
     lang?: string;
     emailHeader?: string;
     emailPreparedFor?: string;
@@ -25,6 +26,30 @@ function buildHtml(params: {
     const footer = params.emailFooter || 'Argo Method · Este informe es una fotografía del presente, no una etiqueta permanente.';
     const matTitle = params.emailMaturationTitle || 'Nota: Maduración Temprana';
     const matBody = params.emailMaturationBody || 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.';
+
+    // ── Feedback CTA block ──────────────────────────────────────────────────
+    const baseUrl = 'https://argomethod.com';
+    const feedbackCta = params.sessionId ? `
+    <div style="background:#FFFFFF;border-top:3px solid #f97316;padding:32px 40px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
+            Tu opinión nos ayuda a mejorar
+        </div>
+        <div style="font-size:14px;color:#86868B;margin-bottom:20px;">
+            ¿Qué tan claro te resultó el informe?
+        </div>
+        <div style="margin-bottom:16px;">
+            <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 6px;"><![endif]-->
+            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro" style="display:inline-block;background:#f97316;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Muy claro</a>
+            <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
+            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro" style="display:inline-block;background:#fed7aa;color:#9a3412;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Algo claro</a>
+            <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
+            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">Confuso</a>
+            <!--[if mso]></td></tr></table><![endif]-->
+        </div>
+        <div style="font-size:12px;color:#86868B;">
+            Son solo 4 preguntas · 30 segundos
+        </div>
+    </div>` : '';
 
     const maduracionBanner = params.maduracionTemprana ? `
     <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:16px;margin-bottom:24px;">
@@ -78,6 +103,9 @@ function buildHtml(params: {
         </div>
     </div>
 
+    <!-- Feedback CTA -->
+    ${feedbackCta}
+
     <!-- Footer -->
     <div style="background:#F5F5F7;border-top:1px solid #D2D2D7;padding:20px 40px;text-align:center;">
         <p style="margin:0;font-size:11px;color:#86868B;letter-spacing:0.1em;text-transform:uppercase;">
@@ -111,6 +139,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         arquetipo,
         reportHtml,
         maduracionTemprana,
+        sessionId,
         lang,
         emailSubject,
         emailHeader,
@@ -128,6 +157,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         arquetipo: string;
         reportHtml: string;
         maduracionTemprana: boolean;
+        sessionId?: string;
         lang?: string;
         emailSubject?: string;
         emailHeader?: string;
@@ -144,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const html = buildHtml({
         nombreAdulto, nombreNino, deporte, edad, arquetipo, reportHtml, maduracionTemprana,
-        lang, emailHeader, emailPreparedFor, emailArchetypeOf, emailFooter, emailMaturationTitle, emailMaturationBody,
+        sessionId, lang, emailHeader, emailPreparedFor, emailArchetypeOf, emailFooter, emailMaturationTitle, emailMaturationBody,
     });
 
     const subject = emailSubject || `Informe de Sintonía Argo · ${nombreNino} · ${arquetipo}`;
