@@ -126,55 +126,6 @@ export const TenantHome: React.FC = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const handleResend = async (s: SessionRow) => {
-        setResendingId(s.id);
-        try {
-            const lang = s.lang || 'es';
-            const ot = getOdysseyT(lang as 'es' | 'en' | 'pt');
-            const report = getReportData(s.eje, s.motor, s.eje_secundario ?? '', s.child_name);
-            if (s.eje_secundario) {
-                const tendencia = getTendenciaContent(s.eje, s.eje_secundario);
-                if (tendencia) {
-                    report.tendenciaLabel = TENDENCIA_LABELS[s.eje_secundario as keyof typeof TENDENCIA_LABELS];
-                    report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, s.child_name);
-                    report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
-                    report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;
-                }
-            }
-            const arquetipoFull = report.tendenciaLabel
-                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
-                : report.arquetipo.label;
-            const maduracionTemprana = s.child_age < 10;
-
-            await sendReport({
-                toEmail:           s.adult_email,
-                nombreAdulto:      s.adult_name,
-                nombreNino:        s.child_name,
-                deporte:           s.sport ?? '',
-                edad:              s.child_age,
-                arquetipo:         arquetipoFull,
-                reportHtml:        buildReportHtml(report, null, ot.emailSections),
-                maduracionTemprana,
-                sessionId:         s.id,
-                lang,
-                emailSubject:      ot.emailSubject(s.child_name, arquetipoFull),
-                emailHeader:       ot.emailHeader,
-                emailPreparedFor:  ot.emailPreparedFor(s.adult_name),
-                emailArchetypeOf:  ot.emailArchetypeOf(s.child_name),
-                emailFooter:       ot.emailFooter,
-                emailMaturationTitle: ot.emailMaturationTitle,
-                emailMaturationBody:  ot.emailMaturationBody,
-            });
-            setResendMsg({ id: s.id, ok: true });
-        } catch (err) {
-            console.error('[TenantHome] Resend error:', err);
-            setResendMsg({ id: s.id, ok: false });
-        } finally {
-            setResendingId(null);
-            setTimeout(() => setResendMsg(null), 3000);
-        }
-    };
-
     const formatDate = (iso: string) => {
         const d = new Date(iso);
         return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
