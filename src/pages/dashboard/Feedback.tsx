@@ -101,7 +101,7 @@ export const Feedback: React.FC = () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 if (!session) { setError('No autenticado'); setLoading(false); return; }
 
-                const res = await fetch('/api/admin-feedback', {
+                const res = await fetch('/api/feedback', {
                     headers: { Authorization: `Bearer ${session.access_token}` },
                 });
 

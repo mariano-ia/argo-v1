@@ -98,7 +98,7 @@ export const FeedbackForm: React.FC = () => {
         setError(null);
 
         try {
-            const res = await fetch('/api/save-feedback', {
+            const res = await fetch('/api/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
