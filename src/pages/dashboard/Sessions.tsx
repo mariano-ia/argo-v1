@@ -191,6 +191,7 @@ export const Sessions: React.FC = () => {
                 arquetipo:         arquetipoFull,
                 reportHtml:        buildReportHtml(report, null, ot.emailSections),
                 maduracionTemprana,
+                sessionId:         row.id,
                 lang,
                 emailSubject:      ot.emailSubject(row.child_name, arquetipoFull),
                 emailHeader:       ot.emailHeader,

@@ -7,6 +7,7 @@ export interface EmailReportParams {
     arquetipo: string;
     reportHtml: string;
     maduracionTemprana: boolean;
+    sessionId?: string;
     lang?: string;
     emailSubject?: string;
     emailHeader?: string;
