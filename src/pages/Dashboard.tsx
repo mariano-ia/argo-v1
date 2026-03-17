@@ -36,9 +36,7 @@ export const Dashboard: React.FC = () => {
                     <span style={{ fontWeight: 800 }}>A</span>{!collapsed || mobile ? <><span style={{ fontWeight: 800 }}>rgo</span><span style={{ fontWeight: 100 }}> Method</span></> : null}
                 </span>
                 {(!collapsed || mobile) && (
-                    <span className="text-[9px] text-argo-grey/50 font-semibold uppercase tracking-widest ml-auto">
-                        Dashboard
-                    </span>
+                    <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                 )}
             </div>
 
@@ -138,6 +136,7 @@ export const Dashboard: React.FC = () => {
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                     </span>
+                    <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:p-8">
