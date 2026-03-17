@@ -53,9 +53,10 @@ function ChipGroup<T extends string>({
                         onClick={() => onChange(opt.value)}
                         className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer
                             ${active
-                                ? 'bg-orange-500 text-white shadow-md shadow-orange-200 scale-105'
+                                ? 'text-white shadow-md scale-105'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }`}
+                        style={active ? { backgroundColor: '#955fb5', boxShadow: '0 4px 6px -1px rgba(149,95,181,0.3)' } : undefined}
                     >
                         {opt.label}
                     </button>
@@ -131,13 +132,18 @@ export const FeedbackForm: React.FC = () => {
     // ── Thank you screen ─────────────────────────────────────────────────────
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-gray-50 flex items-center justify-center p-6">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     className="bg-white rounded-3xl shadow-lg p-10 max-w-md w-full text-center"
                 >
-                    <div className="text-5xl mb-4">&#9997;</div>
+                    <div className="mb-6">
+                        <span className="font-display text-2xl tracking-tight">
+                            <span className="font-extrabold">Argo</span>
+                            <span className="font-extralight"> Method</span>
+                        </span>
+                    </div>
                     <h1 className="font-quest text-2xl font-bold text-gray-900 mb-2">
                         Gracias por tu opinión
                     </h1>
@@ -151,7 +157,7 @@ export const FeedbackForm: React.FC = () => {
 
     // ── Form ─────────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-gray-50 flex items-center justify-center p-4">
             <motion.form
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -210,7 +216,7 @@ export const FeedbackForm: React.FC = () => {
                         onChange={e => setOpenComment(e.target.value)}
                         placeholder="Tu sugerencia..."
                         rows={3}
-                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-quest text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none"
+                        className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm font-quest text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-none"
                         maxLength={1000}
                     />
                 </div>
@@ -235,9 +241,10 @@ export const FeedbackForm: React.FC = () => {
                     disabled={!canSubmit}
                     className={`w-full py-3.5 rounded-2xl font-quest font-semibold text-sm transition-all duration-200
                         ${canSubmit
-                            ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-md shadow-orange-200 cursor-pointer'
+                            ? 'text-white shadow-md cursor-pointer'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                         }`}
+                    style={canSubmit ? { backgroundColor: '#955fb5', boxShadow: '0 4px 6px -1px rgba(149,95,181,0.3)' } : undefined}
                 >
                     {submitting ? 'Enviando...' : 'Enviar opinión'}
                 </button>

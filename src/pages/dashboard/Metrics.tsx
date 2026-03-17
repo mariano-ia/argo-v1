@@ -180,7 +180,7 @@ export const Metrics: React.FC = () => {
                     {archetypeData.length === 0 ? <EmptyState /> : (
                         <div className="h-[220px] overflow-y-auto">
                             <ResponsiveContainer width="100%" height={Math.max(220, archetypeData.length * 28)}>
-                                <BarChart data={archetypeData} layout="vertical" margin={{ top: 0, right: 20, left: 90, bottom: 0 }}>
+                                <BarChart data={archetypeData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" horizontal={false} />
                                     <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: '#86868B' }} axisLine={false} tickLine={false} />
                                     <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#1D1D1F' }} width={90} axisLine={false} tickLine={false} />
@@ -270,7 +270,7 @@ export const Metrics: React.FC = () => {
                 <ChartCard title="Distribución por motor" delay={0.25}>
                     {motorData.length === 0 ? <EmptyState /> : (
                         <ResponsiveContainer width="100%" height={220}>
-                            <BarChart data={motorData} layout="vertical" margin={{ top: 0, right: 20, left: 60, bottom: 0 }}>
+                            <BarChart data={motorData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
                                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 9, fill: '#86868B' }} axisLine={false} tickLine={false} />
                                 <YAxis type="category" dataKey="motor" tick={{ fontSize: 11, fill: '#1D1D1F', fontWeight: 500 }} width={60} axisLine={false} tickLine={false} />
                                 <Tooltip contentStyle={TOOLTIP_STYLE} />

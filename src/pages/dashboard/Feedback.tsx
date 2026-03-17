@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
 import {
-    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell,
+    BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell, LabelList,
 } from 'recharts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -50,7 +50,7 @@ const IDENTIFICATION_LABELS: Record<string, string> = {
     nada: 'Nada',
 };
 
-const BAR_COLORS = ['#f97316', '#fdba74', '#d4d4d8'];
+const BAR_COLORS = ['#955fb5', '#c4a6d8', '#e5e7eb'];
 
 const TOOLTIP_STYLE = {
     fontSize: 12,
@@ -79,11 +79,13 @@ const ChartCard: React.FC<{ title: string; children: React.ReactNode; delay?: nu
 function buildChartData(
     totals: Record<string, number>,
     labels: Record<string, string>,
+    total: number,
 ) {
-    return Object.entries(labels).map(([key, label]) => ({
-        name: label,
-        count: totals[key] ?? 0,
-    }));
+    return Object.entries(labels).map(([key, label]) => {
+        const count = totals[key] ?? 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return { name: label, count, pct, label: `${pct}%` };
+    });
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -138,11 +140,9 @@ export const Feedback: React.FC = () => {
         );
     }
 
-    const clarityData = totals ? buildChartData(totals.clarity, CLARITY_LABELS) : [];
-    const helpfulnessData = totals ? buildChartData(totals.helpfulness, HELPFULNESS_LABELS) : [];
-    const identificationData = totals ? buildChartData(totals.identification, IDENTIFICATION_LABELS) : [];
-
-    const comments = rows.filter(r => r.open_comment);
+    const clarityData = totals ? buildChartData(totals.clarity, CLARITY_LABELS, total) : [];
+    const helpfulnessData = totals ? buildChartData(totals.helpfulness, HELPFULNESS_LABELS, total) : [];
+    const identificationData = totals ? buildChartData(totals.identification, IDENTIFICATION_LABELS, total) : [];
 
     return (
         <div className="space-y-8">
@@ -159,15 +159,16 @@ export const Feedback: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <ChartCard title="Claridad del informe" delay={0.1}>
                         <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={clarityData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                            <BarChart data={clarityData} margin={{ top: 16, right: 4, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#1D1D1F' }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#86868B' }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [`${value}`, 'Votos']} />
                                 <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={36}>
                                     {clarityData.map((_, i) => (
                                         <Cell key={i} fill={BAR_COLORS[i]} />
                                     ))}
+                                    <LabelList dataKey="label" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#955fb5' }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -175,15 +176,16 @@ export const Feedback: React.FC = () => {
 
                     <ChartCard title="Utilidad percibida" delay={0.15}>
                         <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={helpfulnessData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                            <BarChart data={helpfulnessData} margin={{ top: 16, right: 4, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#1D1D1F' }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#86868B' }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [`${value}`, 'Votos']} />
                                 <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={36}>
                                     {helpfulnessData.map((_, i) => (
                                         <Cell key={i} fill={BAR_COLORS[i]} />
                                     ))}
+                                    <LabelList dataKey="label" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#955fb5' }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -191,15 +193,16 @@ export const Feedback: React.FC = () => {
 
                     <ChartCard title="Identificación con el resultado" delay={0.2}>
                         <ResponsiveContainer width="100%" height={180}>
-                            <BarChart data={identificationData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                            <BarChart data={identificationData} margin={{ top: 16, right: 4, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" vertical={false} />
                                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#1D1D1F' }} axisLine={false} tickLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 9, fill: '#86868B' }} axisLine={false} tickLine={false} />
-                                <Tooltip contentStyle={TOOLTIP_STYLE} />
+                                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value: number) => [`${value}`, 'Votos']} />
                                 <Bar dataKey="count" radius={[6, 6, 0, 0]} barSize={36}>
                                     {identificationData.map((_, i) => (
                                         <Cell key={i} fill={BAR_COLORS[i]} />
                                     ))}
+                                    <LabelList dataKey="label" position="top" style={{ fontSize: 11, fontWeight: 600, fill: '#955fb5' }} />
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
@@ -207,36 +210,40 @@ export const Feedback: React.FC = () => {
                 </div>
             )}
 
-            {/* Comments table */}
-            {comments.length > 0 && (
+            {/* Full responses table */}
+            {rows.length > 0 && (
                 <motion.div {...fadeUp(0.25)} className="bg-white border border-argo-border rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-argo-border">
                         <div className="text-[10px] uppercase tracking-widest text-argo-grey font-semibold">
-                            Comentarios abiertos ({comments.length})
+                            Respuestas ({rows.length})
                         </div>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="border-b border-argo-border text-left">
-                                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Fecha</th>
-                                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Adulto</th>
-                                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Deportista</th>
-                                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Arquetipo</th>
-                                    <th className="px-6 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Comentario</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Fecha</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Adulto</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Deportista</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Claridad</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Utilidad</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Identificación</th>
+                                    <th className="px-4 py-3 text-[10px] uppercase tracking-widest text-argo-grey font-semibold">Comentario</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {comments.map(row => (
+                                {rows.map(row => (
                                     <tr key={row.id} className="border-b border-argo-border last:border-0 hover:bg-argo-neutral/50 transition-colors">
-                                        <td className="px-6 py-3 text-argo-grey whitespace-nowrap">
+                                        <td className="px-4 py-3 text-argo-grey whitespace-nowrap">
                                             {new Date(row.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' })}
                                         </td>
-                                        <td className="px-6 py-3 text-argo-navy font-medium">{row.sessions?.adult_name ?? '—'}</td>
-                                        <td className="px-6 py-3 text-argo-navy">{row.sessions?.child_name ?? '—'}</td>
-                                        <td className="px-6 py-3 text-argo-grey">{row.sessions?.archetype_label ?? '—'}</td>
-                                        <td className="px-6 py-3 text-argo-navy max-w-md">
-                                            <span className="line-clamp-2">{row.open_comment}</span>
+                                        <td className="px-4 py-3 text-argo-navy font-medium">{row.sessions?.adult_name ?? '—'}</td>
+                                        <td className="px-4 py-3 text-argo-navy">{row.sessions?.child_name ?? '—'}</td>
+                                        <td className="px-4 py-3 text-argo-navy">{CLARITY_LABELS[row.clarity] ?? row.clarity}</td>
+                                        <td className="px-4 py-3 text-argo-navy">{HELPFULNESS_LABELS[row.helpfulness] ?? row.helpfulness}</td>
+                                        <td className="px-4 py-3 text-argo-navy">{IDENTIFICATION_LABELS[row.identification] ?? row.identification}</td>
+                                        <td className="px-4 py-3 text-argo-grey max-w-xs">
+                                            <span className="line-clamp-2">{row.open_comment || '—'}</span>
                                         </td>
                                     </tr>
                                 ))}
