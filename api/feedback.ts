@@ -83,8 +83,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: admin } = await sb
                 .from('admin_users')
                 .select('id')
-                .eq('user_id', user.id)
-                .single();
+                .eq('email', user.email)
+                .maybeSingle();
 
             if (!admin) {
                 return res.status(403).json({ error: 'Not an admin' });
