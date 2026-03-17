@@ -271,6 +271,15 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
     );
 };
 
+// ─── DISC axes data ──────────────────────────────────────────────────────────
+
+const DISC_AXES = [
+    { letter: 'D', eje: 'D', nameEs: 'Impulsor', nameEn: 'Driver', namePt: 'Impulsionador', descEs: 'Orientado a la acción y los resultados. Decide rápido, compite, lidera.', descEn: 'Action and results oriented. Decides fast, competes, leads.', descPt: 'Orientado à ação e aos resultados. Decide rápido, compete, lidera.' },
+    { letter: 'I', eje: 'I', nameEs: 'Conector', nameEn: 'Connector', namePt: 'Conector', descEs: 'Orientado a las personas y la energía. Entusiasma, conecta, motiva.', descEn: 'People and energy oriented. Enthuses, connects, motivates.', descPt: 'Orientado às pessoas e à energia. Entusiasma, conecta, motiva.' },
+    { letter: 'S', eje: 'S', nameEs: 'Sostenedor', nameEn: 'Sustainer', namePt: 'Sustentador', descEs: 'Orientado a la estabilidad y el equipo. Persiste, cuida, sostiene.', descEn: 'Stability and team oriented. Persists, nurtures, sustains.', descPt: 'Orientado à estabilidade e à equipe. Persiste, cuida, sustenta.' },
+    { letter: 'C', eje: 'C', nameEs: 'Estratega', nameEn: 'Strategist', namePt: 'Estrategista', descEs: 'Orientado al análisis y la precisión. Planifica, evalúa, optimiza.', descEn: 'Analysis and precision oriented. Plans, evaluates, optimizes.', descPt: 'Orientado à análise e à precisão. Planeja, avalia, otimiza.' },
+];
+
 // ─── Landing ─────────────────────────────────────────────────────────────────
 
 export const Landing: React.FC = () => {
@@ -579,6 +588,70 @@ export const Landing: React.FC = () => {
                         </AnimatePresence>
                     </div>
                 </div>
+            </section>
+
+            <Divider />
+
+            {/* ── DISC ── */}
+            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
+                <motion.div {...fadeUp(0)} className="mb-12">
+                    <SectionLabel>
+                        {L('El marco · Cuatro ejes de conducta', 'The framework · Four behavioral axes', 'O modelo · Quatro eixos de conduta')}
+                    </SectionLabel>
+                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
+                        {L('¿Qué es DISC?', 'What is DISC?', 'O que é DISC?')}
+                    </h2>
+                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '12px', maxWidth: '640px', lineHeight: 1.75 }}>
+                        {L(
+                            'DISC es un modelo de comportamiento utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales observables (no personalidades, no diagnósticos) que nos ayudan a entender cómo una persona actúa, se comunica y toma decisiones.',
+                            'DISC is a behavioral model used worldwide for over 30 years. It describes four observable behavioral patterns (not personalities, not diagnoses) that help us understand how a person acts, communicates, and makes decisions.',
+                            'DISC é um modelo comportamental utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais observáveis (não personalidades, não diagnósticos) que nos ajudam a entender como uma pessoa age, se comunica e toma decisões.',
+                        )}
+                    </p>
+                </motion.div>
+
+                {/* 4-axis grid */}
+                <div
+                    className="grid grid-cols-2 md:grid-cols-4 gap-px"
+                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}
+                >
+                    {DISC_AXES.map((axis, i) => {
+                        const name = pk(axis, 'name');
+                        const desc = pk(axis, 'desc');
+                        return (
+                            <motion.div
+                                key={axis.letter}
+                                {...fadeUp(i * 0.06)}
+                                className="bg-white p-6 md:p-8 flex flex-col"
+                            >
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[axis.eje], flexShrink: 0 }} />
+                                    <p style={{ fontWeight: 500, fontSize: '14px', color: '#1D1D1F', letterSpacing: '-0.01em' }}>
+                                        {name}
+                                    </p>
+                                </div>
+                                <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-3">
+                                    {axis.letter}
+                                </p>
+                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#424245', lineHeight: 1.55 }}>
+                                    {desc}
+                                </p>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* Closing differentiation */}
+                <motion.p
+                    {...fadeUp(0.3)}
+                    style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.75, maxWidth: '640px', marginTop: '28px' }}
+                >
+                    {L(
+                        'Argo Method toma este marco y lo adapta al universo del deporte juvenil: lenguaje para niños, gamificación, contexto deportivo y una capa adicional, el Motor, que mide el ritmo de procesamiento. El resultado no es una etiqueta sino una brújula para que el adulto entienda cómo sintonizar con cada deportista.',
+                        'Argo Method takes this framework and adapts it to the world of youth sports: child-friendly language, gamification, a sports context, and an additional layer, the Engine, that measures processing pace. The result is not a label but a compass so the adult can attune to each athlete.',
+                        'Argo Method pega esse modelo e o adapta ao universo do esporte juvenil: linguagem para crianças, gamificação, contexto esportivo e uma camada adicional, o Motor, que mede o ritmo de processamento. O resultado não é um rótulo, mas uma bússola para que o adulto entenda como sintonizar com cada atleta.',
+                    )}
+                </motion.p>
             </section>
 
             <Divider />
