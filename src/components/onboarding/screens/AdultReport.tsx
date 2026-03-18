@@ -30,9 +30,18 @@ type EmailStatus = 'idle' | 'sending' | 'sent' | 'error';
 export function buildReportHtml(report: ReportData, aiSections: AISections | null, ot: OdysseyTranslations): string {
     const et = ot.emailSections;
 
-    // Merge AI sections over base report
+    // Merge AI sections over base report (with null-safety — AI JSON may have missing fields)
     const r = aiSections
-        ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
+        ? {
+            ...report,
+            wow: aiSections.wow ?? report.wow,
+            motorDesc: aiSections.motorDesc ?? report.motorDesc,
+            combustible: aiSections.combustible ?? report.combustible,
+            corazon: aiSections.corazon ?? report.corazon,
+            reseteo: aiSections.reseteo ?? report.reseteo,
+            ecos: aiSections.ecos ?? report.ecos,
+            checklist: aiSections.checklist ?? report.checklist,
+        }
         : report;
 
     // ── Helpers ──────────────────────────────────────────────────────────────
@@ -44,8 +53,8 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
             .join('');
 
     /** Pill / chip tags */
-    const pills = (items: string[], bg: string, color: string, dashed = false) =>
-        items.map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;${dashed ? 'border:1px dashed ' + color + ';' : ''}">${p}</span>`).join('');
+    const pills = (items: string[] | undefined, bg: string, color: string, dashed = false) =>
+        (items || []).map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;${dashed ? 'border:1px dashed ' + color + ';' : ''}">${p}</span>`).join('');
 
     /** Styled callout box */
     const calloutBox = (label: string, text: string, variant: 'purple' | 'amber' | 'red' = 'purple') => {
@@ -65,7 +74,8 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     };
 
     /** Extract callout text after a marker */
-    const extractCallout = (text: string, marker: string): { body: string; callout: string } => {
+    const extractCallout = (text: string | undefined, marker: string): { body: string; callout: string } => {
+        if (!text) return { body: '', callout: '' };
         const idx = text.indexOf(marker);
         if (idx === -1) return { body: text, callout: '' };
         return {
@@ -75,7 +85,8 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     };
 
     /** Strip a callout marker and everything after it */
-    const stripMarker = (text: string, marker: string): string => {
+    const stripMarker = (text: string | undefined, marker: string): string => {
+        if (!text) return '';
         const idx = text.indexOf(marker);
         return idx === -1 ? text : text.substring(0, idx).trim();
     };
@@ -131,7 +142,6 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
     // Motor display
     const motor = report.arquetipo.motor;
-    const motorEmojis: Record<string, string> = { 'Rápido': '⚡', 'Medio': '🎵', 'Lento': '🌊' };
 
     // ── Brújula card (executive summary) ────────────────────────────────────
 
@@ -156,8 +166,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     const motorGaugeChips = (['Rápido', 'Medio', 'Lento'] as string[]).map(m => {
         const isActive = m === motor;
         const display = ot.motorDisplayNames[m] || m;
-        const emoji = motorEmojis[m] || '';
-        return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;${isActive ? 'background:#955FB5;color:#fff;font-weight:600;' : 'background:#E5E5EA;color:#86868B;'}font-size:12px;margin-right:6px;">${emoji} ${display}</span>`;
+        return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;${isActive ? 'background:#955FB5;color:#fff;font-weight:600;' : 'background:#E5E5EA;color:#86868B;'}font-size:12px;margin-right:6px;">${display}</span>`;
     }).join('');
 
     const confidenceBlocks = Array.from({ length: 5 }, (_, i) => {
@@ -178,7 +187,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
       <tr>
         <td style="padding-right:8px;"><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C8C8F0;font-size:11px;font-weight:600;color:#1D1D1F;">${report.arquetipo.eje} · ${axisNames[report.arquetipo.eje] || report.arquetipo.eje}</span></td>
-        <td><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C8C8F0;font-size:11px;font-weight:600;color:#1D1D1F;">${motorEmojis[motor] || ''} ${ot.motorDisplayNames[motor] || motor}</span></td>
+        <td><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C8C8F0;font-size:11px;font-weight:600;color:#1D1D1F;">${ot.motorDisplayNames[motor] || motor}</span></td>
       </tr>
     </table>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
@@ -194,7 +203,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
     // ── Guía de Sintonía rows ───────────────────────────────────────────────
 
-    const guiaHtml = r.guia.map(row => `
+    const guiaHtml = (r.guia || []).map(row => `
 <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D2D2D7;border-radius:12px;margin-bottom:10px;border-collapse:collapse;">
   <tr><td colspan="2" style="background:#F5F5F7;padding:8px 14px;border-bottom:1px solid #D2D2D7;">
     <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;">${row.situacion}</span>
@@ -240,16 +249,17 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
     // ── Day Checklist ───────────────────────────────────────────────────────
 
+    const ck = r.checklist || { antes: '', durante: '', despues: '' };
     const checklistBody = `
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 6px;">
   <tr><td style="border-left:4px solid #6366f1;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.beforeTraining}</p>${txt(r.checklist.antes)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.beforeTraining}</p>${txt(ck.antes)}
   </td></tr>
   <tr><td style="border-left:4px solid #1D1D1F;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.duringTraining}</p>${txt(r.checklist.durante)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.duringTraining}</p>${txt(ck.durante)}
   </td></tr>
   <tr><td style="border-left:4px solid #22c55e;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
-    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.afterTraining}</p>${txt(r.checklist.despues)}
+    <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.afterTraining}</p>${txt(ck.despues)}
   </td></tr>
 </table>`;
 
@@ -278,7 +288,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
         section(et.captainLanguage, palabrasBody),
 
-        r.guia.length > 0 ? section(et.tuningGuide, guiaHtml) : '',
+        (r.guia || []).length > 0 ? section(et.tuningGuide, guiaHtml) : '',
 
         section(et.adjustmentManagement,
             txt(reseteoBody) + calloutBox(et.calloutAcompanamiento, reseteoOriginal.callout, 'purple')),
