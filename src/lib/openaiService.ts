@@ -8,7 +8,7 @@ export interface ReportContext {
     lang?: string;
 }
 
-// Sections the AI rewrites (narrative)
+// Sections the AI rewrites (narrative) — always present
 export interface AISections {
     wow: string;
     motorDesc: string;
@@ -17,6 +17,17 @@ export interface AISections {
     reseteo: string;
     ecos: string;
     checklist: { antes: string; durante: string; despues: string };
+    // Additional translated fields (present when lang !== 'es')
+    label?: string;
+    bienvenida?: string;
+    grupoEspacio?: string;
+    guia?: { situacion: string; activador: string; desmotivacion: string }[];
+    palabrasPuente?: string[];
+    palabrasRuido?: string[];
+    tendenciaParagraph?: string;
+    tendenciaLabel?: string;
+    palabrasPuenteExtra?: string[];
+    palabrasRuidoExtra?: string[];
 }
 
 export interface AIUsage {

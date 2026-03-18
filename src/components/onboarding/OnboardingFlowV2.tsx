@@ -508,9 +508,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
             // ── Send report email ────────────────────────────────────────────
             const maduracionTemprana = adultData.edad < 10;
-            const arquetipoFull = report.tendenciaLabel
-                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
-                : report.arquetipo.label;
+            // Use AI-translated labels for non-es languages
+            const translatedLabel = finalSections?.label ?? report.arquetipo.label;
+            const translatedTendencia = finalSections?.tendenciaLabel ?? report.tendenciaLabel;
+            const arquetipoFull = translatedTendencia
+                ? `${translatedLabel}, ${translatedTendencia}`
+                : translatedLabel;
 
             // Build report HTML with fallback — if the rich template crashes,
             // send a plain-text version so the email ALWAYS goes out.

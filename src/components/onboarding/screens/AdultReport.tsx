@@ -31,6 +31,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     const et = ot.emailSections;
 
     // Merge AI sections over base report (with null-safety — AI JSON may have missing fields)
+    // For non-es languages, the AI also returns translated versions of static sections
     const r = aiSections
         ? {
             ...report,
@@ -41,15 +42,32 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
             reseteo: aiSections.reseteo ?? report.reseteo,
             ecos: aiSections.ecos ?? report.ecos,
             checklist: aiSections.checklist ?? report.checklist,
+            // Non-es translated fields (fall back to Spanish originals if AI didn't provide them)
+            bienvenida: aiSections.bienvenida ?? report.bienvenida,
+            grupoEspacio: aiSections.grupoEspacio ?? report.grupoEspacio,
+            guia: aiSections.guia ?? report.guia,
+            palabrasPuente: aiSections.palabrasPuente ?? report.palabrasPuente,
+            palabrasRuido: aiSections.palabrasRuido ?? report.palabrasRuido,
+            tendenciaParagraph: aiSections.tendenciaParagraph ?? report.tendenciaParagraph,
+            tendenciaLabel: aiSections.tendenciaLabel ?? report.tendenciaLabel,
+            palabrasPuenteExtra: aiSections.palabrasPuenteExtra ?? report.palabrasPuenteExtra,
+            palabrasRuidoExtra: aiSections.palabrasRuidoExtra ?? report.palabrasRuidoExtra,
         }
         : report;
 
+    // Use translated label if available
+    const archetypeLabel = aiSections?.label ?? report.arquetipo.label;
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
-    /** Convert plain text to <p> tags */
+    /** Convert plain text to <p> tags — handles \n\n as paragraphs, \n as <br>, **bold** */
     const txt = (t: string) =>
         (t || '').split(/\n\n+/).filter(Boolean)
-            .map(p => `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${p.trim()}</p>`)
+            .map(p => {
+                let html = p.trim().replace(/\n/g, '<br/>');
+                html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                return `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${html}</p>`;
+            })
             .join('');
 
     /** Pill / chip tags */
@@ -103,28 +121,43 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
   </td></tr>
 </table>`;
 
-    // ── Extract callouts from ORIGINAL (pre-AI) text ────────────────────────
+    // ── Extract callouts ─────────────────────────────────────────────────────
+    // Callout markers are embedded in the Spanish archetype text.
+    // For Spanish: extract callout from text, show in a styled box.
+    // For non-es: the AI translates the full text — callout markers won't exist,
+    // so we show the full body without separating callouts.
+    const hasSpanishMarkers = (r.bienvenida || '').includes('Nota fundamental:') ||
+                              (r.bienvenida || '').includes('Nota de seguridad:');
 
-    // Bienvenida: "Nota fundamental:" or "Nota de seguridad:" (not AI-rewritten)
     let bienvenidaCalloutLabel = et.calloutNotaFundamental;
-    let bienvenidaParsed = extractCallout(r.bienvenida, 'Nota fundamental:');
-    if (!bienvenidaParsed.callout) {
+    let bienvenidaParsed = hasSpanishMarkers
+        ? extractCallout(r.bienvenida, 'Nota fundamental:')
+        : { body: r.bienvenida, callout: '' };
+    if (hasSpanishMarkers && !bienvenidaParsed.callout) {
         bienvenidaCalloutLabel = et.calloutNotaSeguridad;
         bienvenidaParsed = extractCallout(r.bienvenida, 'Nota de seguridad:');
     }
 
-    // AI-rewritten sections: extract callout from ORIGINAL, strip marker from AI body
+    // For AI sections: extract from ORIGINAL Spanish text only if markers present
     const motorOriginal = extractCallout(report.motorDesc, 'Invitación de sintonía:');
-    const motorBody = stripMarker(r.motorDesc, 'Invitación de sintonía:');
+    const motorBody = hasSpanishMarkers
+        ? stripMarker(r.motorDesc, 'Invitación de sintonía:')
+        : (r.motorDesc || '');
 
     const combustibleOriginal = extractCallout(report.combustible, 'Feedback de sintonía:');
-    const combustibleBody = stripMarker(r.combustible, 'Feedback de sintonía:');
+    const combustibleBody = hasSpanishMarkers
+        ? stripMarker(r.combustible, 'Feedback de sintonía:')
+        : (r.combustible || '');
 
     const corazonOriginal = extractCallout(report.corazon, 'El termómetro emocional:');
-    const corazonBody = stripMarker(r.corazon, 'El termómetro emocional:');
+    const corazonBody = hasSpanishMarkers
+        ? stripMarker(r.corazon, 'El termómetro emocional:')
+        : (r.corazon || '');
 
     const reseteoOriginal = extractCallout(report.reseteo, 'Acompañamiento sugerido:');
-    const reseteoBody = stripMarker(r.reseteo, 'Acompañamiento sugerido:');
+    const reseteoBody = hasSpanishMarkers
+        ? stripMarker(r.reseteo, 'Acompañamiento sugerido:')
+        : (r.reseteo || '');
 
     // ── Axis data ───────────────────────────────────────────────────────────
 
@@ -174,15 +207,15 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
         return `<td width="48" style="padding-right:${i < 4 ? '3' : '0'}px;"><div style="height:6px;border-radius:3px;background:${color};"></div></td>`;
     }).join('');
 
-    const tendenciaTag = report.tendenciaLabel
-        ? `<p style="font-size:14px;color:#6366f1;font-style:italic;margin:0 0 16px 0;">${report.tendenciaLabel}</p>`
+    const tendenciaTag = r.tendenciaLabel
+        ? `<p style="font-size:14px;color:#6366f1;font-style:italic;margin:0 0 16px 0;">${r.tendenciaLabel}</p>`
         : '';
 
     const brujulaHtml = `
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#E3E3FF;border:1px solid #C8C8F0;border-radius:14px;margin-bottom:16px;">
   <tr><td style="padding:20px 18px;">
     <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6366f1;margin:0 0 6px 0;">${ot.compassLabel.toUpperCase()}</p>
-    <p style="font-size:26px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;margin:0 0 4px 0;">${report.arquetipo.label}</p>
+    <p style="font-size:26px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;margin:0 0 4px 0;">${archetypeLabel}</p>
     ${tendenciaTag}
     <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
       <tr>
@@ -265,33 +298,36 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
     // ── Build sections ──────────────────────────────────────────────────────
 
+    // Only render callout boxes when we have Spanish text with extractable markers
+    const showCallouts = hasSpanishMarkers;
+
     const sections = [
         brujulaHtml,
 
         section(et.contract,
-            txt(bienvenidaParsed.body) + calloutBox(bienvenidaCalloutLabel, bienvenidaParsed.callout, 'amber')),
+            txt(bienvenidaParsed.body) + (showCallouts ? calloutBox(bienvenidaCalloutLabel, bienvenidaParsed.callout, 'amber') : '')),
 
         section(et.placeInShip, txt(r.wow)),
 
         r.tendenciaParagraph ? section(et.secondaryCompass, txt(r.tendenciaParagraph)) : '',
 
         section(et.motorRhythm,
-            txt(motorBody) + calloutBox(et.calloutInvitacion, motorOriginal.callout, 'purple')),
+            txt(motorBody) + (showCallouts ? calloutBox(et.calloutInvitacion, motorOriginal.callout, 'purple') : '')),
 
         section(et.fuel,
-            txt(combustibleBody) + calloutBox(et.calloutFeedback, combustibleOriginal.callout, 'purple')),
+            txt(combustibleBody) + (showCallouts ? calloutBox(et.calloutFeedback, combustibleOriginal.callout, 'purple') : '')),
 
         section(et.groupLife, txt(r.grupoEspacio)),
 
         section(et.intentionLanguage,
-            txt(corazonBody) + calloutBox(et.calloutTermometro, corazonOriginal.callout, 'red')),
+            txt(corazonBody) + (showCallouts ? calloutBox(et.calloutTermometro, corazonOriginal.callout, 'red') : '')),
 
         section(et.captainLanguage, palabrasBody),
 
         (r.guia || []).length > 0 ? section(et.tuningGuide, guiaHtml) : '',
 
         section(et.adjustmentManagement,
-            txt(reseteoBody) + calloutBox(et.calloutAcompanamiento, reseteoOriginal.callout, 'purple')),
+            txt(reseteoBody) + (showCallouts ? calloutBox(et.calloutAcompanamiento, reseteoOriginal.callout, 'purple') : '')),
 
         section(et.shipEchoes, txt(r.ecos)),
 

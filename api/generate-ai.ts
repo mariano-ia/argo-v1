@@ -15,20 +15,33 @@ interface Checklist {
     despues: string;
 }
 
+interface GuiaRow {
+    situacion: string;
+    activador: string;
+    desmotivacion: string;
+}
+
 interface ReportData {
     nombre: string;
     arquetipo: Archetype;
     perfil: string;
+    bienvenida: string;
     wow: string;
     motorDesc: string;
     combustible: string;
+    grupoEspacio: string;
     corazon: string;
     reseteo: string;
     ecos: string;
     checklist: Checklist;
+    palabrasPuente: string[];
+    palabrasRuido: string[];
+    guia: GuiaRow[];
     ejeSecundario?: string;
     tendenciaLabel?: string;
     tendenciaParagraph?: string;
+    palabrasPuenteExtra?: string[];
+    palabrasRuidoExtra?: string[];
 }
 
 interface ReportContext {
@@ -47,6 +60,17 @@ interface AISections {
     reseteo: string;
     ecos: string;
     checklist: { antes: string; durante: string; despues: string };
+    // Additional translated fields (present when lang !== 'es')
+    label?: string;
+    bienvenida?: string;
+    grupoEspacio?: string;
+    guia?: GuiaRow[];
+    palabrasPuente?: string[];
+    palabrasRuido?: string[];
+    tendenciaParagraph?: string;
+    tendenciaLabel?: string;
+    palabrasPuenteExtra?: string[];
+    palabrasRuidoExtra?: string[];
 }
 
 interface AIUsage {
@@ -86,7 +110,7 @@ VOCABULARIO POSITIVO por eje:
 - C (Cumplimiento) → "Energía Estratega", atención al detalle, calidad, excelencia
 
 TONO Y FOCO:
-- Profesional pero cálido. No clínico, no infantil. Español latinoamericano neutro.
+- Profesional pero cálido. No clínico, no infantil.
 - Foco en bienestar y disfrute deportivo, no en rendimiento ni éxito.
 - Los "Evitar" son condiciones de entorno a cuidar, no errores del niño.
 - El informe debe ser una "Invitación al Disfrute", no un "Manual del Niño".
@@ -106,9 +130,66 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
 
     const langCode = ctx.lang || 'es';
     const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
-    const langInstruction = langCode !== 'es'
-        ? `\n\nCRITICAL LANGUAGE INSTRUCTION: Write ALL output text in ${langLabel}. The base content below is in Spanish — use it as conceptual reference ONLY. Your response MUST be entirely in ${langLabel}. Do NOT mix languages.`
+    const isNonEs = langCode !== 'es';
+
+    const langInstruction = isNonEs
+        ? `\n\nCRITICAL LANGUAGE INSTRUCTION: Write ALL output text in ${langLabel}. The base content below is in Spanish — use it as conceptual reference ONLY. Your response MUST be entirely in ${langLabel}. Do NOT mix languages. Every single string value in the JSON must be in ${langLabel}.`
         : '';
+
+    // Build the additional content block for non-es languages
+    const guiaText = (base.guia || []).map((row, i) =>
+        `  Row ${i + 1}: situacion="${row.situacion}" | activador="${row.activador}" | desmotivacion="${row.desmotivacion}"`
+    ).join('\n');
+
+    const additionalContent = isNonEs ? `
+ADDITIONAL CONTENT TO TRANSLATE (translate these from Spanish into ${langLabel}):
+- Archetype label: ${base.arquetipo.label}
+- Bienvenida (welcome/contract): ${base.bienvenida}
+- Grupo y Espacio (group life): ${base.grupoEspacio}
+- Guía de Sintonía (tuning guide rows):
+${guiaText}
+- Palabras Puente (bridge words): ${(base.palabrasPuente || []).join(', ')}
+- Palabras Ruido (noise words): ${(base.palabrasRuido || []).join(', ')}${
+    base.tendenciaLabel ? `\n- Tendencia label: ${base.tendenciaLabel}` : ''}${
+    base.tendenciaParagraph ? `\n- Tendencia paragraph: ${base.tendenciaParagraph}` : ''}${
+    base.palabrasPuenteExtra?.length ? `\n- Extra bridge words: ${base.palabrasPuenteExtra.join(', ')}` : ''}${
+    base.palabrasRuidoExtra?.length ? `\n- Extra noise words: ${base.palabrasRuidoExtra.join(', ')}` : ''}
+` : '';
+
+    // Build the JSON schema — expanded for non-es
+    const jsonSchema = isNonEs
+        ? `{
+  "wow": "rewritten text",
+  "motorDesc": "rewritten text",
+  "combustible": "rewritten text",
+  "corazon": "rewritten text",
+  "reseteo": "rewritten text",
+  "ecos": "rewritten text",
+  "checklist": { "antes": "text", "durante": "text", "despues": "text" },
+  "label": "translated archetype name",
+  "bienvenida": "translated welcome/contract text",
+  "grupoEspacio": "translated group life text",
+  "guia": [{"situacion":"...","activador":"...","desmotivacion":"..."}, ...],
+  "palabrasPuente": ["word1", "word2", ...],
+  "palabrasRuido": ["phrase1", "phrase2", ...]${
+      base.tendenciaLabel ? `,\n  "tendenciaLabel": "translated tendency label"` : ''}${
+      base.tendenciaParagraph ? `,\n  "tendenciaParagraph": "translated tendency paragraph"` : ''}${
+      base.palabrasPuenteExtra?.length ? `,\n  "palabrasPuenteExtra": ["word1", ...]` : ''}${
+      base.palabrasRuidoExtra?.length ? `,\n  "palabrasRuidoExtra": ["phrase1", ...]` : ''}
+}`
+        : `{
+  "wow": "texto sección 1",
+  "motorDesc": "texto sección 2",
+  "combustible": "texto sección 3",
+  "corazon": "texto sección 5",
+  "reseteo": "texto sección 9",
+  "ecos": "texto sección 10",
+  "checklist": {
+    "antes": "texto antes",
+    "durante": "texto durante",
+    "despues": "texto después"
+  }
+}`;
 
     return `Eres un redactor especialista del Método Argo, un sistema de perfilado conductual para deportistas infantiles basado en DISC.${langInstruction}
 
@@ -133,24 +214,13 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 - Checklist Antes: ${base.checklist.antes}
 - Checklist Durante: ${base.checklist.durante}
 - Checklist Después: ${base.checklist.despues}
-
-TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.
+${additionalContent}
+TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.${
+    isNonEs ? ` ALSO translate all additional content listed above into ${langLabel}. The "bienvenida" and "grupoEspacio" texts should be adapted (not just translated literally) to sound natural. The "guia" rows must keep the same array structure. The "palabrasPuente" and "palabrasRuido" must remain as short phrases/words.` : ''}
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
 Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones):
-{
-  "wow": "texto sección 1",
-  "motorDesc": "texto sección 2",
-  "combustible": "texto sección 3",
-  "corazon": "texto sección 5",
-  "reseteo": "texto sección 9",
-  "ecos": "texto sección 10",
-  "checklist": {
-    "antes": "texto antes",
-    "durante": "texto durante",
-    "despues": "texto después"
-  }
-}`;
+${jsonSchema}`;
 }
 
 // ─── Pricing ─────────────────────────────────────────────────────────────────
@@ -181,6 +251,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const prompt = buildPrompt(report, context);
         const langCode = context.lang || 'es';
         const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
+        const isNonEs = langCode !== 'es';
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -191,12 +262,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             body: JSON.stringify({
                 model: 'gpt-4o',
                 temperature: 0.7,
-                max_tokens: 2500,
+                max_tokens: isNonEs ? 4500 : 2500,
                 messages: [
                     {
                         role: 'system',
                         content: langCode !== 'es'
-                            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}.`
+                            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
                             : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.',
                     },
                     {
