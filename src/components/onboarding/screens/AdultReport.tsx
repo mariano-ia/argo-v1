@@ -94,7 +94,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     /** Section card wrapper with dot icon */
     const section = (title: string, body: string) => `
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-collapse:collapse;">
-  <tr><td style="padding:24px 28px;background:#ffffff;border:1px solid #D2D2D7;border-radius:14px;">
+  <tr><td style="padding:20px 18px;background:#ffffff;border:1px solid #D2D2D7;border-radius:14px;">
     <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">
       <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#86868B;vertical-align:middle;margin-right:8px;"></span>
       ${title.toUpperCase()}
@@ -180,7 +180,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
 
     const brujulaHtml = `
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#E3E3FF;border:1px solid #C8C8F0;border-radius:14px;margin-bottom:16px;">
-  <tr><td style="padding:24px 28px;">
+  <tr><td style="padding:20px 18px;">
     <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6366f1;margin:0 0 6px 0;">${ot.compassLabel.toUpperCase()}</p>
     <p style="font-size:26px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;margin:0 0 4px 0;">${report.arquetipo.label}</p>
     ${tendenciaTag}
