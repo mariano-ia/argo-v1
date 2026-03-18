@@ -420,6 +420,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 return;
             }
 
+            // Attach axis counts for visual bars
+            report.axisCounts = {
+                D: profile.counts.IMP,
+                I: profile.counts.CON,
+                S: profile.counts.SOS,
+                C: profile.counts.EST,
+            };
+
             reportRef.current  = report;
             profileRef.current = {
                 eje: profile.eje,
@@ -511,7 +519,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     deporte:           adultData.deporte,
                     edad:              adultData.edad,
                     arquetipo:         arquetipoFull,
-                    reportHtml:        buildReportHtml(report, finalSections, ot.emailSections),
+                    reportHtml:        buildReportHtml(report, finalSections, ot),
                     maduracionTemprana,
                     sessionId:         sessionIdRef.current ?? undefined,
                     lang,

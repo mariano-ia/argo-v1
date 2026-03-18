@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
     { to: '/admin/feedback',  label: 'Feedback',  icon: MessageCircle },
     { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
     { to: '/admin/users',     label: 'Admins',    icon: ShieldCheck },
+    { to: '/admin/blog',      label: 'Blog',      icon: FileText },
 ];
 
 export const Dashboard: React.FC = () => {

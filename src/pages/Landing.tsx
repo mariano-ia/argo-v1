@@ -326,6 +326,13 @@ export const Landing: React.FC = () => {
                         </span>
                     </span>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/blog')}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                        >
+                            Blog
+                        </button>
                         {OTHER_LANGS[lang].map(l => (
                             <button
                                 key={l}

@@ -46,6 +46,8 @@ export interface ReportData {
     tendenciaParagraph?: string;
     palabrasPuenteExtra?: string[];
     palabrasRuidoExtra?: string[];
+    axisCounts?: Record<string, number>;
+    sessionId?: string;
 }
 
 // Legacy: list of archetypes for the resolver

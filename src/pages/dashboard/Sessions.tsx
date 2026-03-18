@@ -189,7 +189,7 @@ export const Sessions: React.FC = () => {
                 deporte:           row.sport ?? '',
                 edad:              row.child_age ?? 0,
                 arquetipo:         arquetipoFull,
-                reportHtml:        buildReportHtml(report, null, ot.emailSections),
+                reportHtml:        buildReportHtml(report, null, ot),
                 maduracionTemprana,
                 sessionId:         row.id,
                 lang,

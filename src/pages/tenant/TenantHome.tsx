@@ -163,7 +163,7 @@ export const TenantHome: React.FC = () => {
                 deporte:           s.sport ?? '',
                 edad:              s.child_age,
                 arquetipo:         arquetipoFull,
-                reportHtml:        buildReportHtml(report, null, ot.emailSections),
+                reportHtml:        buildReportHtml(report, null, ot),
                 maduracionTemprana,
                 sessionId:         s.id,
                 lang,

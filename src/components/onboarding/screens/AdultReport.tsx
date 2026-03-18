@@ -27,31 +27,173 @@ interface Props {
 
 type EmailStatus = 'idle' | 'sending' | 'sent' | 'error';
 
-export function buildReportHtml(report: ReportData, aiSections: AISections | null, et: OdysseyTranslations['emailSections']): string {
+export function buildReportHtml(report: ReportData, aiSections: AISections | null, ot: OdysseyTranslations): string {
+    const et = ot.emailSections;
+
+    // Merge AI sections over base report
     const r = aiSections
         ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
         : report;
 
-    // Convert plain text (possibly with \n\n paragraphs) to <p> tags
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /** Convert plain text to <p> tags */
     const txt = (t: string) =>
         (t || '').split(/\n\n+/).filter(Boolean)
             .map(p => `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${p.trim()}</p>`)
             .join('');
 
-    // Section wrapper
+    /** Pill / chip tags */
+    const pills = (items: string[], bg: string, color: string, dashed = false) =>
+        items.map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;${dashed ? 'border:1px dashed ' + color + ';' : ''}">${p}</span>`).join('');
+
+    /** Styled callout box */
+    const calloutBox = (label: string, text: string, variant: 'purple' | 'amber' | 'red' = 'purple') => {
+        if (!text) return '';
+        const styles = {
+            purple: { border: '#955FB5', bg: '#FAFAFF', color: '#955FB5' },
+            amber:  { border: '#d97706', bg: '#FFFBF0', color: '#d97706' },
+            red:    { border: '#dc2626', bg: '#FFF5F5', color: '#dc2626' },
+        };
+        const s = styles[variant];
+        return `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:14px;">
+  <tr><td style="border-left:3px solid ${s.border};padding:12px 16px;background:${s.bg};border-radius:0 12px 12px 0;">
+    <p style="font-size:9px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:${s.color};margin:0 0 6px 0;">${label.toUpperCase()}</p>
+    ${txt(text)}
+  </td></tr>
+</table>`;
+    };
+
+    /** Extract callout text after a marker */
+    const extractCallout = (text: string, marker: string): { body: string; callout: string } => {
+        const idx = text.indexOf(marker);
+        if (idx === -1) return { body: text, callout: '' };
+        return {
+            body: text.substring(0, idx).trim(),
+            callout: text.substring(idx + marker.length).trim(),
+        };
+    };
+
+    /** Strip a callout marker and everything after it */
+    const stripMarker = (text: string, marker: string): string => {
+        const idx = text.indexOf(marker);
+        return idx === -1 ? text : text.substring(0, idx).trim();
+    };
+
+    /** Section card wrapper with dot icon */
     const section = (title: string, body: string) => `
-<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;border-collapse:collapse;">
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;border-collapse:collapse;">
   <tr><td style="padding:24px 28px;background:#ffffff;border:1px solid #D2D2D7;border-radius:14px;">
-    <p style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;margin:0 0 16px 0;">${title}</p>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#86868B;vertical-align:middle;margin-right:8px;"></span>
+      ${title.toUpperCase()}
+    </p>
     ${body}
   </td></tr>
 </table>`;
 
-    // Pill tags
-    const pills = (items: string[], bg: string, color: string, dashed = false) =>
-        items.map(p => `<span style="display:inline-block;padding:4px 12px;border-radius:999px;background:${bg};color:${color};font-size:12px;font-weight:500;margin:3px 3px 3px 0;${dashed ? 'border:1px dashed ' + color + ';' : ''}">${p}</span>`).join('');
+    // ── Extract callouts from ORIGINAL (pre-AI) text ────────────────────────
 
-    // Guía de Sintonía rows
+    // Bienvenida: "Nota fundamental:" or "Nota de seguridad:" (not AI-rewritten)
+    let bienvenidaCalloutLabel = et.calloutNotaFundamental;
+    let bienvenidaParsed = extractCallout(r.bienvenida, 'Nota fundamental:');
+    if (!bienvenidaParsed.callout) {
+        bienvenidaCalloutLabel = et.calloutNotaSeguridad;
+        bienvenidaParsed = extractCallout(r.bienvenida, 'Nota de seguridad:');
+    }
+
+    // AI-rewritten sections: extract callout from ORIGINAL, strip marker from AI body
+    const motorOriginal = extractCallout(report.motorDesc, 'Invitación de sintonía:');
+    const motorBody = stripMarker(r.motorDesc, 'Invitación de sintonía:');
+
+    const combustibleOriginal = extractCallout(report.combustible, 'Feedback de sintonía:');
+    const combustibleBody = stripMarker(r.combustible, 'Feedback de sintonía:');
+
+    const corazonOriginal = extractCallout(report.corazon, 'El termómetro emocional:');
+    const corazonBody = stripMarker(r.corazon, 'El termómetro emocional:');
+
+    const reseteoOriginal = extractCallout(report.reseteo, 'Acompañamiento sugerido:');
+    const reseteoBody = stripMarker(r.reseteo, 'Acompañamiento sugerido:');
+
+    // ── Axis data ───────────────────────────────────────────────────────────
+
+    const axisNames = ot.axisNames;
+    const axisCounts = report.axisCounts || { D: 3, I: 3, S: 3, C: 3 };
+    const total = Object.values(axisCounts).reduce((s, v) => s + v, 0) || 1;
+    const EJE_COLORS: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
+    const axisOrder = ['D', 'I', 'S', 'C'];
+
+    // Confidence level from axis dominance
+    const sortedCounts = axisOrder.map(a => axisCounts[a] || 0).sort((a, b) => b - a);
+    const diff = sortedCounts[0] - (sortedCounts[1] || 0);
+    const confidenceLevel = diff <= 0 ? 1 : diff <= 1 ? 2 : diff <= 2 ? 3 : diff <= 4 ? 4 : 5;
+    const confidenceText = ot.confidenceLevels[confidenceLevel - 1] || '';
+
+    // Motor display
+    const motor = report.arquetipo.motor;
+    const motorEmojis: Record<string, string> = { 'Rápido': '⚡', 'Medio': '🎵', 'Lento': '🌊' };
+
+    // ── Brújula card (executive summary) ────────────────────────────────────
+
+    const axisBarRows = axisOrder.map(axis => {
+        const count = axisCounts[axis] || 0;
+        const pct = Math.round((count / total) * 100);
+        const name = axisNames[axis] || axis;
+        const color = EJE_COLORS[axis];
+        const isDominant = axis === report.arquetipo.eje;
+        return `<tr style="height:28px;">
+        <td width="12" valign="middle"><div style="width:8px;height:8px;border-radius:50%;background:${color};"></div></td>
+        <td width="80" valign="middle" style="font-size:12px;font-weight:${isDominant ? '700' : '500'};color:#1D1D1F;padding-left:8px;">${name}</td>
+        <td valign="middle" style="padding:0 8px;">
+          <div style="height:6px;background:#e5e5ea;border-radius:3px;overflow:hidden;">
+            <div style="width:${pct}%;height:6px;background:${color};border-radius:3px;"></div>
+          </div>
+        </td>
+        <td width="36" valign="middle" style="text-align:right;font-size:11px;font-weight:600;color:#86868B;">${pct}%</td>
+      </tr>`;
+    }).join('');
+
+    const motorGaugeChips = (['Rápido', 'Medio', 'Lento'] as string[]).map(m => {
+        const isActive = m === motor;
+        const display = ot.motorDisplayNames[m] || m;
+        const emoji = motorEmojis[m] || '';
+        return `<span style="display:inline-block;padding:4px 12px;border-radius:999px;${isActive ? 'background:#955FB5;color:#fff;font-weight:600;' : 'background:#E5E5EA;color:#86868B;'}font-size:12px;margin-right:6px;">${emoji} ${display}</span>`;
+    }).join('');
+
+    const confidenceBlocks = Array.from({ length: 5 }, (_, i) => {
+        const color = i < confidenceLevel ? '#22c55e' : '#e5e5ea';
+        return `<td width="48" style="padding-right:${i < 4 ? '3' : '0'}px;"><div style="height:6px;border-radius:3px;background:${color};"></div></td>`;
+    }).join('');
+
+    const tendenciaTag = report.tendenciaLabel
+        ? `<p style="font-size:14px;color:#6366f1;font-style:italic;margin:0 0 16px 0;">${report.tendenciaLabel}</p>`
+        : '';
+
+    const brujulaHtml = `
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#E3E3FF;border:1px solid #C8C8F0;border-radius:14px;margin-bottom:16px;">
+  <tr><td style="padding:24px 28px;">
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6366f1;margin:0 0 6px 0;">${ot.compassLabel.toUpperCase()}</p>
+    <p style="font-size:26px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;margin:0 0 4px 0;">${report.arquetipo.label}</p>
+    ${tendenciaTag}
+    <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
+      <tr>
+        <td style="padding-right:8px;"><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C8C8F0;font-size:11px;font-weight:600;color:#1D1D1F;">${report.arquetipo.eje} · ${axisNames[report.arquetipo.eje] || report.arquetipo.eje}</span></td>
+        <td><span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid #C8C8F0;font-size:11px;font-weight:600;color:#1D1D1F;">${motorEmojis[motor] || ''} ${ot.motorDisplayNames[motor] || motor}</span></td>
+      </tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
+      ${axisBarRows}
+    </table>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#86868B;margin:14px 0 8px 0;">${ot.motorGaugeLabel.toUpperCase()}</p>
+    <div style="margin-bottom:4px;">${motorGaugeChips}</div>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#86868B;margin:14px 0 8px 0;">${ot.confidenceLabel.toUpperCase()}</p>
+    <table cellpadding="0" cellspacing="0"><tr>${confidenceBlocks}</tr></table>
+    <p style="font-size:11px;color:#86868B;margin:4px 0 0 0;">${confidenceText}</p>
+  </td></tr>
+</table>`;
+
+    // ── Guía de Sintonía rows ───────────────────────────────────────────────
+
     const guiaHtml = r.guia.map(row => `
 <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D2D2D7;border-radius:12px;margin-bottom:10px;border-collapse:collapse;">
   <tr><td colspan="2" style="background:#F5F5F7;padding:8px 14px;border-bottom:1px solid #D2D2D7;">
@@ -69,36 +211,36 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
   </tr>
 </table>`).join('');
 
-    // Extra pills by tendency
+    // ── Palabras — two-column chip layout ───────────────────────────────────
+
     const puenteExtraHtml = (r.palabrasPuenteExtra && r.palabrasPuenteExtra.length > 0)
         ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">${et.byTendency}</p>
-           <p style="margin:0 0 14px 0;">${pills(r.palabrasPuenteExtra, '#dcfce7', '#16a34a', true)}</p>`
+           <div>${pills(r.palabrasPuenteExtra, '#dcfce7', '#16a34a', true)}</div>`
         : '';
     const ruidoExtraHtml = (r.palabrasRuidoExtra && r.palabrasRuidoExtra.length > 0)
         ? `<p style="font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#86868B;margin:10px 0 4px 0;">${et.byTendency}</p>
-           <p style="margin:0;">${pills(r.palabrasRuidoExtra, '#fef3c7', '#d97706', true)}</p>`
+           <div>${pills(r.palabrasRuidoExtra, '#fef3c7', '#d97706', true)}</div>`
         : '';
 
-    const sections = [
-        section(et.contract,
-            `<blockquote style="margin:0;padding-left:16px;border-left:3px solid #6366f1;">${txt(r.bienvenida)}</blockquote>`),
-        section(et.placeInShip, txt(r.wow)),
-        r.tendenciaParagraph ? section(et.secondaryCompass, txt(r.tendenciaParagraph)) : '',
-        section(et.motorRhythm, txt(r.motorDesc)),
-        section(et.fuel, txt(r.combustible)),
-        section(et.groupLife, txt(r.grupoEspacio)),
-        section(et.intentionLanguage, txt(r.corazon)),
-        section(et.captainLanguage, `
-<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#16a34a;margin:0 0 6px 0;">${et.bridgeWords}</p>
-<p style="margin:0 0 4px 0;">${pills(r.palabrasPuente, '#dcfce7', '#15803d')}</p>
-${puenteExtraHtml}
-<p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#d97706;margin:14px 0 6px 0;">${et.noiseWords}</p>
-<p style="margin:0 0 4px 0;">${pills(r.palabrasRuido, '#fef3c7', '#b45309')}</p>
-${ruidoExtraHtml}`),
-        r.guia.length > 0 ? section(et.tuningGuide, guiaHtml) : '',
-        section(et.adjustmentManagement, txt(r.reseteo)),
-        section(et.shipEchoes, txt(r.ecos)),
-        section(et.dayChecklist, `
+    const palabrasBody = `
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="50%" valign="top" style="padding-right:10px;">
+      <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#16a34a;margin:0 0 8px 0;">${et.bridgeWords}</p>
+      <div>${pills(r.palabrasPuente, '#dcfce7', '#15803d')}</div>
+      ${puenteExtraHtml}
+    </td>
+    <td width="50%" valign="top" style="padding-left:10px;">
+      <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.15em;color:#d97706;margin:0 0 8px 0;">${et.noiseWords}</p>
+      <div>${pills(r.palabrasRuido, '#fef3c7', '#b45309')}</div>
+      ${ruidoExtraHtml}
+    </td>
+  </tr>
+</table>`;
+
+    // ── Day Checklist ───────────────────────────────────────────────────────
+
+    const checklistBody = `
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;border-spacing:0 6px;">
   <tr><td style="border-left:4px solid #6366f1;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
     <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.beforeTraining}</p>${txt(r.checklist.antes)}
@@ -109,10 +251,44 @@ ${ruidoExtraHtml}`),
   <tr><td style="border-left:4px solid #22c55e;padding:12px 16px;background:#F5F5F7;border-radius:0 12px 12px 0;">
     <p style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#1D1D1F;margin:0 0 6px 0;">${et.afterTraining}</p>${txt(r.checklist.despues)}
   </td></tr>
-</table>`),
+</table>`;
+
+    // ── Build sections ──────────────────────────────────────────────────────
+
+    const sections = [
+        brujulaHtml,
+
+        section(et.contract,
+            txt(bienvenidaParsed.body) + calloutBox(bienvenidaCalloutLabel, bienvenidaParsed.callout, 'amber')),
+
+        section(et.placeInShip, txt(r.wow)),
+
+        r.tendenciaParagraph ? section(et.secondaryCompass, txt(r.tendenciaParagraph)) : '',
+
+        section(et.motorRhythm,
+            txt(motorBody) + calloutBox(et.calloutInvitacion, motorOriginal.callout, 'purple')),
+
+        section(et.fuel,
+            txt(combustibleBody) + calloutBox(et.calloutFeedback, combustibleOriginal.callout, 'purple')),
+
+        section(et.groupLife, txt(r.grupoEspacio)),
+
+        section(et.intentionLanguage,
+            txt(corazonBody) + calloutBox(et.calloutTermometro, corazonOriginal.callout, 'red')),
+
+        section(et.captainLanguage, palabrasBody),
+
+        r.guia.length > 0 ? section(et.tuningGuide, guiaHtml) : '',
+
+        section(et.adjustmentManagement,
+            txt(reseteoBody) + calloutBox(et.calloutAcompanamiento, reseteoOriginal.callout, 'purple')),
+
+        section(et.shipEchoes, txt(r.ecos)),
+
+        section(et.dayChecklist, checklistBody),
     ];
 
-    return sections.join('\n');
+    return sections.filter(Boolean).join('\n');
 }
 
 export const AdultReport: React.FC<Props> = ({
@@ -146,7 +322,7 @@ export const AdultReport: React.FC<Props> = ({
             arquetipo:         report.tendenciaLabel
                 ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
                 : report.arquetipo.label,
-            reportHtml:        buildReportHtml(report, aiSections, ot.emailSections),
+            reportHtml:        buildReportHtml(report, aiSections, ot),
             maduracionTemprana,
             lang,
             emailSubject:      ot.emailSubject(adultData.nombreNino, report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label),

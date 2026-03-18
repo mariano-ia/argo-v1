@@ -76,6 +76,20 @@ export interface OdysseyTranslations {
     dominantAxis: string;
     discLabels: Record<string, string>;
 
+    // Brújula (executive summary)
+    compassLabel: string;
+    axisNames: Record<string, string>;
+    motorGaugeLabel: string;
+    motorDisplayNames: Record<string, string>;
+    confidenceLabel: string;
+    confidenceLevels: string[];
+
+    // Review CTA
+    reviewTitle: string;
+    reviewQuestion: string;
+    reviewChips: [string, string, string];
+    reviewSub: string;
+
     // FullReport section titles
     reportSections: {
         contract: string;
@@ -131,6 +145,13 @@ export interface OdysseyTranslations {
         beforeTraining: string;
         duringTraining: string;
         afterTraining: string;
+        // Callout labels
+        calloutNotaFundamental: string;
+        calloutNotaSeguridad: string;
+        calloutInvitacion: string;
+        calloutFeedback: string;
+        calloutTermometro: string;
+        calloutAcompanamiento: string;
     };
 }
 
@@ -208,6 +229,18 @@ const es: OdysseyTranslations = {
     dominantAxis: 'Eje dominante',
     discLabels: { D: 'Dominio', I: 'Influencia', S: 'Estabilidad', C: 'Conciencia' },
 
+    compassLabel: 'Brújula de sintonía',
+    axisNames: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' },
+    motorGaugeLabel: 'Ritmo de procesamiento',
+    motorDisplayNames: { 'Rápido': 'Dinámico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+    confidenceLabel: 'Definición del perfil',
+    confidenceLevels: ['Emergente', 'En formación', 'Moderado', 'Definido', 'Muy definido'],
+
+    reviewTitle: 'Tu opinión nos ayuda a mejorar',
+    reviewQuestion: '¿Qué tan claro te resultó el informe?',
+    reviewChips: ['Muy claro', 'Algo claro', 'Confuso'],
+    reviewSub: 'Solo 4 preguntas · 30 segundos',
+
     reportSections: {
         contract: 'El Contrato de Sintonía',
         placeInShip: 'Su lugar en la Nave',
@@ -216,7 +249,7 @@ const es: OdysseyTranslations = {
         fuel: 'El Combustible',
         groupLife: 'Vida en el Grupo',
         intentionLanguage: 'Lenguaje de Intención',
-        captainLanguage: 'Lenguaje del Capitán',
+        captainLanguage: 'Cómo hablarle',
         bridgeWords: 'Palabras Puente',
         noiseWords: 'Palabras Ruido',
         byTendency: 'Por su tendencia',
@@ -247,7 +280,7 @@ const es: OdysseyTranslations = {
         fuel: 'El Combustible',
         groupLife: 'Vida en el Grupo',
         intentionLanguage: 'Lenguaje de Intención',
-        captainLanguage: 'Lenguaje del Capitán',
+        captainLanguage: 'Cómo hablarle',
         bridgeWords: 'Palabras Puente',
         noiseWords: 'Palabras Ruido',
         byTendency: 'Por su tendencia',
@@ -260,6 +293,12 @@ const es: OdysseyTranslations = {
         beforeTraining: 'Antes del entrenamiento',
         duringTraining: 'Durante el entrenamiento',
         afterTraining: 'Después del entrenamiento',
+        calloutNotaFundamental: 'Nota fundamental',
+        calloutNotaSeguridad: 'Nota de seguridad',
+        calloutInvitacion: 'Invitación de sintonía',
+        calloutFeedback: 'Feedback de sintonía',
+        calloutTermometro: 'Termómetro emocional',
+        calloutAcompanamiento: 'Acompañamiento sugerido',
     },
 };
 
@@ -337,6 +376,18 @@ const en: OdysseyTranslations = {
     dominantAxis: 'Dominant axis',
     discLabels: { D: 'Dominance', I: 'Influence', S: 'Steadiness', C: 'Conscientiousness' },
 
+    compassLabel: 'Tuning compass',
+    axisNames: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' },
+    motorGaugeLabel: 'Processing pace',
+    motorDisplayNames: { 'Rápido': 'Dynamic', 'Medio': 'Rhythmic', 'Lento': 'Serene' },
+    confidenceLabel: 'Profile definition',
+    confidenceLevels: ['Emerging', 'Forming', 'Moderate', 'Defined', 'Highly defined'],
+
+    reviewTitle: 'Your feedback helps us improve',
+    reviewQuestion: 'How clear was the report?',
+    reviewChips: ['Very clear', 'Somewhat clear', 'Confusing'],
+    reviewSub: 'Just 4 questions · 30 seconds',
+
     reportSections: {
         contract: 'The Tuning Contract',
         placeInShip: 'Their Place on the Ship',
@@ -345,7 +396,7 @@ const en: OdysseyTranslations = {
         fuel: 'The Fuel',
         groupLife: 'Life in the Group',
         intentionLanguage: 'Language of Intention',
-        captainLanguage: 'Captain\'s Language',
+        captainLanguage: 'How to talk to them',
         bridgeWords: 'Bridge Words',
         noiseWords: 'Noise Words',
         byTendency: 'By their tendency',
@@ -376,7 +427,7 @@ const en: OdysseyTranslations = {
         fuel: 'The Fuel',
         groupLife: 'Life in the Group',
         intentionLanguage: 'Language of Intention',
-        captainLanguage: 'Captain\'s Language',
+        captainLanguage: 'How to talk to them',
         bridgeWords: 'Bridge Words',
         noiseWords: 'Noise Words',
         byTendency: 'By their tendency',
@@ -389,6 +440,12 @@ const en: OdysseyTranslations = {
         beforeTraining: 'Before training',
         duringTraining: 'During training',
         afterTraining: 'After training',
+        calloutNotaFundamental: 'Key note',
+        calloutNotaSeguridad: 'Safety note',
+        calloutInvitacion: 'Tuning invitation',
+        calloutFeedback: 'Tuning feedback',
+        calloutTermometro: 'Emotional thermometer',
+        calloutAcompanamiento: 'Suggested support',
     },
 };
 
@@ -466,6 +523,18 @@ const pt: OdysseyTranslations = {
     dominantAxis: 'Eixo dominante',
     discLabels: { D: 'Domínio', I: 'Influência', S: 'Estabilidade', C: 'Consciência' },
 
+    compassLabel: 'Bússola de sintonia',
+    axisNames: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
+    motorGaugeLabel: 'Ritmo de processamento',
+    motorDisplayNames: { 'Rápido': 'Dinâmico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+    confidenceLabel: 'Definição do perfil',
+    confidenceLevels: ['Emergente', 'Em formação', 'Moderado', 'Definido', 'Muito definido'],
+
+    reviewTitle: 'Sua opinião nos ajuda a melhorar',
+    reviewQuestion: 'O relatório ficou claro para você?',
+    reviewChips: ['Muito claro', 'Razoavelmente claro', 'Confuso'],
+    reviewSub: 'Apenas 4 perguntas · 30 segundos',
+
     reportSections: {
         contract: 'O Contrato de Sintonia',
         placeInShip: 'Seu Lugar no Navio',
@@ -474,7 +543,7 @@ const pt: OdysseyTranslations = {
         fuel: 'O Combustível',
         groupLife: 'Vida no Grupo',
         intentionLanguage: 'Linguagem de Intenção',
-        captainLanguage: 'Linguagem do Capitão',
+        captainLanguage: 'Como falar com ele/ela',
         bridgeWords: 'Palavras Ponte',
         noiseWords: 'Palavras Ruído',
         byTendency: 'Por sua tendência',
@@ -505,7 +574,7 @@ const pt: OdysseyTranslations = {
         fuel: 'O Combustível',
         groupLife: 'Vida no Grupo',
         intentionLanguage: 'Linguagem de Intenção',
-        captainLanguage: 'Linguagem do Capitão',
+        captainLanguage: 'Como falar com ele/ela',
         bridgeWords: 'Palavras Ponte',
         noiseWords: 'Palavras Ruído',
         byTendency: 'Por sua tendência',
@@ -518,6 +587,12 @@ const pt: OdysseyTranslations = {
         beforeTraining: 'Antes do treino',
         duringTraining: 'Durante o treino',
         afterTraining: 'Depois do treino',
+        calloutNotaFundamental: 'Nota fundamental',
+        calloutNotaSeguridad: 'Nota de segurança',
+        calloutInvitacion: 'Convite de sintonia',
+        calloutFeedback: 'Feedback de sintonia',
+        calloutTermometro: 'Termômetro emocional',
+        calloutAcompanamiento: 'Acompanhamento sugerido',
     },
 };
 
