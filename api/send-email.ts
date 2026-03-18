@@ -36,7 +36,7 @@ function buildHtml(params: {
     };
     const cta = ctaText[langAttr] || ctaText.es;
     const feedbackCta = params.sessionId ? `
-    <div style="background:#E3E3FF;border:2px solid #955fb5;border-radius:16px;padding:32px 28px;margin:0 40px 24px 40px;text-align:center;">
+    <div style="background:#E3E3FF;border:2px solid #955fb5;border-radius:16px;padding:28px 20px;margin:0 16px 24px 16px;text-align:center;">
         <div style="width:48px;height:48px;border-radius:50%;background:#955fb5;margin:0 auto 16px auto;line-height:48px;text-align:center;">
             <span style="font-size:22px;color:#ffffff;">?</span>
         </div>
@@ -78,7 +78,7 @@ function buildHtml(params: {
 <div style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(29,29,31,0.06);">
 
     <!-- Header -->
-    <div style="background:#1D1D1F;padding:32px 40px;">
+    <div style="background:#1D1D1F;padding:28px 24px;">
         <div style="margin-bottom:8px;">
             <span style="font-size:18px;letter-spacing:-0.02em;color:#ffffff;">
                 <span style="font-weight:800;">Argo</span><span style="font-weight:100;"> Method</span>
@@ -94,7 +94,7 @@ function buildHtml(params: {
     </div>
 
     <!-- Archetype badge -->
-    <div style="background:#F5F5F7;border-bottom:1px solid #D2D2D7;padding:24px 40px;">
+    <div style="background:#F5F5F7;border-bottom:1px solid #D2D2D7;padding:20px 24px;">
         <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#86868B;margin-bottom:4px;">
             ${archetypeOf}
         </div>
@@ -105,7 +105,7 @@ function buildHtml(params: {
     </div>
 
     <!-- Body -->
-    <div style="padding:32px 40px;background:#F5F5F7;">
+    <div style="padding:24px 16px;background:#F5F5F7;">
         ${maduracionBanner}
         <div style="font-size:14px;line-height:1.8;color:#424245;">
             ${params.reportHtml}
@@ -116,7 +116,7 @@ function buildHtml(params: {
     ${feedbackCta}
 
     <!-- Footer -->
-    <div style="background:#F5F5F7;border-top:1px solid #D2D2D7;padding:20px 40px;text-align:center;">
+    <div style="background:#F5F5F7;border-top:1px solid #D2D2D7;padding:16px 24px;text-align:center;">
         <p style="margin:0;font-size:11px;color:#86868B;letter-spacing:0.1em;text-transform:uppercase;">
             ${footer}
         </p>
