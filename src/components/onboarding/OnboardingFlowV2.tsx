@@ -511,6 +511,23 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             const arquetipoFull = report.tendenciaLabel
                 ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
                 : report.arquetipo.label;
+
+            // Build report HTML with fallback — if the rich template crashes,
+            // send a plain-text version so the email ALWAYS goes out.
+            let reportHtml: string;
+            try {
+                reportHtml = buildReportHtml(report, finalSections, ot);
+            } catch (htmlErr) {
+                console.error('[Argo] buildReportHtml crashed — using fallback:', htmlErr);
+                const r = finalSections
+                    ? { ...report, wow: finalSections.wow, motorDesc: finalSections.motorDesc, combustible: finalSections.combustible, corazon: finalSections.corazon, reseteo: finalSections.reseteo, ecos: finalSections.ecos }
+                    : report;
+                reportHtml = [r.bienvenida, r.wow, r.motorDesc, r.combustible, r.grupoEspacio, r.corazon, r.reseteo, r.ecos]
+                    .filter(Boolean)
+                    .map(s => `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 14px 0;">${s}</p>`)
+                    .join('');
+            }
+
             try {
                 await sendReport({
                     toEmail:           adultData.email,
@@ -519,7 +536,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     deporte:           adultData.deporte,
                     edad:              adultData.edad,
                     arquetipo:         arquetipoFull,
-                    reportHtml:        buildReportHtml(report, finalSections, ot),
+                    reportHtml,
                     maduracionTemprana,
                     sessionId:         sessionIdRef.current ?? undefined,
                     lang,
@@ -533,7 +550,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 });
                 console.log('[Argo] Report email sent to', adultData.email);
             } catch (err) {
-                console.warn('[Argo] Email send failed:', err);
+                console.error('[Argo] Email send failed:', err);
             }
 
             if (!playCountedRef.current) {

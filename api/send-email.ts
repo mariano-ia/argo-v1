@@ -38,7 +38,7 @@ function buildHtml(params: {
     const feedbackCta = params.sessionId ? `
     <div style="background:#E3E3FF;border:2px solid #955fb5;border-radius:16px;padding:32px 28px;margin:0 40px 24px 40px;text-align:center;">
         <div style="width:48px;height:48px;border-radius:50%;background:#955fb5;margin:0 auto 16px auto;line-height:48px;text-align:center;">
-            <span style="font-size:22px;color:#ffffff;">&#9201;</span>
+            <span style="font-size:22px;color:#ffffff;">?</span>
         </div>
         <div style="font-size:17px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
             ${cta.title}
@@ -62,7 +62,7 @@ function buildHtml(params: {
 
     const maduracionBanner = params.maduracionTemprana ? `
     <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:16px;margin-bottom:24px;">
-        <strong style="color:#92400e;">📌 ${matTitle}</strong><br/>
+        <strong style="color:#92400e;">${matTitle}</strong><br/>
         <span style="color:#78350f;font-size:14px;">${matBody}</span>
     </div>` : '';
 
