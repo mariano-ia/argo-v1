@@ -209,12 +209,12 @@ export const translations = {
             lang: 'ES',
         },
         hero: {
-            eyebrow: 'Método Argo · Perfilamento Esportivo',
+            eyebrow: 'Método Argo · Perfilamento Esportivo Comportamental',
             headline: 'Seu atleta tem um código.',
             headlineAccent: 'Aprenda a lê-lo.',
-            sub: 'Argo revela o perfil comportamental de cada jovem atleta para que o treinador ou pai saiba exatamente como se comunicar, motivar e acompanhar.',
+            sub: 'Argo revela o perfil comportamental de cada jovem atleta para que o treinador ou pai saiba exatamente como comunicar, motivar e acompanhar.',
             cta: 'Iniciar a Odisseia',
-            ctaSub: '10 minutos · Grátis · Sem cadastro prévio',
+            ctaSub: '10 minutos · Gratuito · Sem cadastro prévio',
         },
         problem: {
             eyebrow: 'O problema',
@@ -226,7 +226,7 @@ export const translations = {
                 },
                 {
                     title: 'Comunicação quebrada',
-                    body: 'Um atleta tipo S precisa de tempo e segurança. Um atleta tipo D precisa de autonomia e desafio. Falar com eles da mesma forma desliga os dois.',
+                    body: 'Um atleta tipo S precisa de tempo e segurança. Um atleta tipo D precisa de autonomia e desafio. Falar com os dois da mesma forma desliga ambos.',
                 },
                 {
                     title: 'Motivação mal direcionada',
@@ -255,7 +255,7 @@ export const translations = {
                 {
                     number: '03',
                     title: 'O adulto recebe o relatório',
-                    body: 'Chega ao seu email um relatório personalizado com o arquétipo do atleta, seu motor de desempenho e a linguagem exata para se conectar com ele.',
+                    body: 'Um relatório personalizado chega ao seu email com o arquétipo do atleta, seu motor de rendimento e a linguagem exata para se conectar.',
                 },
             ],
         },
@@ -272,11 +272,11 @@ export const translations = {
         },
         audience: {
             eyebrow: 'Para quem',
-            headline: 'Projetado para os adultos ao redor do atleta.',
+            headline: 'Projetado para os adultos que cercam o atleta.',
             cards: [
                 {
                     title: 'Treinadores',
-                    body: 'Individualize sua comunicação. Saiba qual tipo de feedback ativa cada atleta e qual o desliga.',
+                    body: 'Individualize sua comunicação. Saiba qual feedback ativa cada atleta e qual o desliga.',
                     icon: '🏋️',
                 },
                 {

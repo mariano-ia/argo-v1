@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Plus } from 'lucide-react';
+import { ArrowRight, Plus, Minus } from 'lucide-react';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 
@@ -232,10 +232,7 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
     const [open, setOpen] = useState(false);
     return (
-        <div
-            className="py-5 px-5 -mx-5 rounded-xl transition-colors duration-300"
-            style={{ backgroundColor: open ? '#F5F5F7' : 'transparent' }}
-        >
+        <div className="py-5">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-start justify-between gap-4 text-left cursor-pointer"
@@ -243,13 +240,9 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
                 <span style={{ fontWeight: 500, fontSize: '16px', letterSpacing: '-0.01em', color: '#1D1D1F' }}>
                     {question}
                 </span>
-                <motion.span
-                    animate={{ rotate: open ? 45 : 0 }}
-                    transition={{ duration: 0.2, ease: [0.25, 0, 0, 1] }}
-                    className="text-[#86868B] mt-0.5 shrink-0"
-                >
-                    <Plus size={18} />
-                </motion.span>
+                {open
+                    ? <Minus size={18} className="text-[#86868B] mt-0.5 shrink-0" />
+                    : <Plus  size={18} className="text-[#86868B] mt-0.5 shrink-0" />}
             </button>
             <AnimatePresence initial={false}>
                 {open && (
@@ -332,7 +325,14 @@ export const Landing: React.FC = () => {
                             beta
                         </span>
                     </span>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/blog')}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                        >
+                            Blog
+                        </button>
                         {OTHER_LANGS[lang].map(l => (
                             <button
                                 key={l}
@@ -345,7 +345,6 @@ export const Landing: React.FC = () => {
                         ))}
                         <button
                             onClick={() => navigate('/app')}
-                            aria-label={L('Iniciar experiencia Argo', 'Start the Argo experience', 'Iniciar experiência Argo')}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -353,7 +352,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {L('Iniciar experiencia Argo', 'Start the Argo experience', 'Iniciar experiência Argo')}
+                            {L('Iniciar experiencia', 'Start experience', 'Iniciar experiência')}
                         </button>
                     </div>
                 </div>
@@ -411,7 +410,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar experiencia Argo', 'Start the Argo experience', 'Iniciar experiência Argo')}
+                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -802,7 +801,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar experiencia Argo', 'Start the Argo experience', 'Iniciar experiência Argo')}
+                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>

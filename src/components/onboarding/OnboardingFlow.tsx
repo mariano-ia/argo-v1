@@ -330,6 +330,14 @@ export const OnboardingFlow: React.FC<OnboardingProps> = ({ userEmail = '', onPl
                 report.palabrasRuidoExtra  = tendencia.palabrasRuidoExtra;
             }
 
+            // Attach axis counts for visual bars
+            report.axisCounts = {
+                D: profile.counts.IMP,
+                I: profile.counts.CON,
+                S: profile.counts.SOS,
+                C: profile.counts.EST,
+            };
+
             reportRef.current  = report;
             profileRef.current = {
                 eje: profile.eje,

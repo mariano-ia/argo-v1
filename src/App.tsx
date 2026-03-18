@@ -21,6 +21,10 @@ import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
 import { ResultRevealPreview } from './pages/ResultRevealPreview';
+import { BlogIndex }           from './pages/BlogIndex';
+import { BlogPost }            from './pages/BlogPost';
+import { BlogAdmin }           from './pages/dashboard/BlogAdmin';
+import { BlogEditor }          from './pages/dashboard/BlogEditor';
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -133,6 +137,8 @@ function App() {
             <Route path="/signup" element={<TenantSignup />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
+            <Route path="/blog"       element={<BlogIndex />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
 
             {/* Tenant dashboard */}
             <Route path="/dashboard" element={<TenantDashboard />}>
@@ -150,6 +156,9 @@ function App() {
                 <Route path="feedback"  element={<AdminFeedback />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
                 <Route path="users"     element={<AdminUsers />} />
+                <Route path="blog"          element={<BlogAdmin />} />
+                <Route path="blog/new"      element={<BlogEditor />} />
+                <Route path="blog/edit/:id" element={<BlogEditor />} />
             </Route>
         </Routes>
     );

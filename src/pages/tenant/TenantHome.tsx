@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown } from 'lucide-react';
+import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { getReportData } from '../../lib/argosEngine';
+import { getTendenciaContent } from '../../lib/archetypeData';
+import { TENDENCIA_LABELS } from '../../lib/profileResolver';
+import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
+import { sendReport } from '../../lib/emailService';
+import { getOdysseyT } from '../../lib/odysseyTranslations';
 
 interface TenantData {
     id: string;
@@ -20,7 +26,9 @@ interface SessionRow {
     sport: string | null;
     archetype_label: string;
     eje: string;
+    motor: string;
     eje_secundario: string | null;
+    lang: string | null;
     created_at: string;
 }
 
@@ -36,6 +44,8 @@ export const TenantHome: React.FC = () => {
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
     const [buyingPack, setBuyingPack] = useState<string | null>(null);
+    const [resendingId, setResendingId] = useState<string | null>(null);
+    const [resendMsg, setResendMsg] = useState<{ id: string; ok: boolean } | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'cancel'; text: string } | null>(null);
 
@@ -126,6 +136,55 @@ export const TenantHome: React.FC = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleResend = async (s: SessionRow) => {
+        setResendingId(s.id);
+        try {
+            const lang = s.lang || 'es';
+            const ot = getOdysseyT(lang as 'es' | 'en' | 'pt');
+            const report = getReportData(s.eje, s.motor, s.eje_secundario ?? '', s.child_name);
+            if (s.eje_secundario) {
+                const tendencia = getTendenciaContent(s.eje, s.eje_secundario);
+                if (tendencia) {
+                    report.tendenciaLabel = TENDENCIA_LABELS[s.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, s.child_name);
+                    report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
+                    report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;
+                }
+            }
+            const arquetipoFull = report.tendenciaLabel
+                ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
+                : report.arquetipo.label;
+            const maduracionTemprana = s.child_age < 10;
+
+            await sendReport({
+                toEmail:           s.adult_email,
+                nombreAdulto:      s.adult_name,
+                nombreNino:        s.child_name,
+                deporte:           s.sport ?? '',
+                edad:              s.child_age,
+                arquetipo:         arquetipoFull,
+                reportHtml:        buildReportHtml(report, null, ot),
+                maduracionTemprana,
+                sessionId:         s.id,
+                lang,
+                emailSubject:      ot.emailSubject(s.child_name, arquetipoFull),
+                emailHeader:       ot.emailHeader,
+                emailPreparedFor:  ot.emailPreparedFor(s.adult_name),
+                emailArchetypeOf:  ot.emailArchetypeOf(s.child_name),
+                emailFooter:       ot.emailFooter,
+                emailMaturationTitle: ot.emailMaturationTitle,
+                emailMaturationBody:  ot.emailMaturationBody,
+            });
+            setResendMsg({ id: s.id, ok: true });
+        } catch (err) {
+            console.error('[TenantHome] Resend error:', err);
+            setResendMsg({ id: s.id, ok: false });
+        } finally {
+            setResendingId(null);
+            setTimeout(() => setResendMsg(null), 3000);
+        }
+    };
+
     const formatDate = (iso: string) => {
         const d = new Date(iso);
         return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -138,6 +197,17 @@ export const TenantHome: React.FC = () => {
 
     return (
         <div className="max-w-2xl">
+            {/* Resend snackbar — top-right */}
+            {resendMsg && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg transition-all ${
+                    resendMsg.ok
+                        ? 'bg-green-600 text-white'
+                        : 'bg-red-600 text-white'
+                }`}>
+                    {resendMsg.ok ? 'Informe enviado con éxito' : 'Error al enviar el informe'}
+                </div>
+            )}
+
             {/* Payment toast */}
             {paymentMsg && (
                 <div className={`mb-6 px-4 py-3 rounded-xl text-sm font-medium ${
@@ -282,13 +352,26 @@ export const TenantHome: React.FC = () => {
                                             Adulto: {s.adult_name} ({s.adult_email})
                                         </p>
                                     </div>
-                                    <div className="text-right flex-shrink-0">
-                                        <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
-                                            {s.archetype_label}
-                                        </span>
-                                        <p className="text-[10px] text-argo-grey/60 mt-1">
-                                            {formatDate(s.created_at)} · {formatTime(s.created_at)}
-                                        </p>
+                                    <div className="flex items-start gap-3 flex-shrink-0">
+                                        <button
+                                            onClick={() => handleResend(s)}
+                                            disabled={resendingId === s.id}
+                                            title="Reenviar informe"
+                                            className="mt-0.5 p-1.5 rounded-lg text-argo-grey hover:text-argo-indigo hover:bg-argo-neutral transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {resendingId === s.id
+                                                ? <Loader2 size={14} className="animate-spin" />
+                                                : <Send size={14} />
+                                            }
+                                        </button>
+                                        <div className="text-right">
+                                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                                {s.archetype_label}
+                                            </span>
+                                            <p className="text-[10px] text-argo-grey/60 mt-1">
+                                                {formatDate(s.created_at)} · {formatTime(s.created_at)}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

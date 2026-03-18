@@ -36,20 +36,23 @@ function buildHtml(params: {
     };
     const cta = ctaText[langAttr] || ctaText.es;
     const feedbackCta = params.sessionId ? `
-    <div style="background:#FFFFFF;border-top:3px solid #955fb5;padding:32px 40px;text-align:center;">
-        <div style="font-size:18px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
+    <div style="background:#E3E3FF;border:2px solid #955fb5;border-radius:16px;padding:32px 28px;margin:0 40px 24px 40px;text-align:center;">
+        <div style="width:48px;height:48px;border-radius:50%;background:#955fb5;margin:0 auto 16px auto;line-height:48px;text-align:center;">
+            <span style="font-size:22px;color:#ffffff;">&#9201;</span>
+        </div>
+        <div style="font-size:17px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
             ${cta.title}
         </div>
-        <div style="font-size:14px;color:#86868B;margin-bottom:20px;">
+        <div style="font-size:13px;color:#6366f1;margin-bottom:20px;">
             ${cta.question}
         </div>
         <div style="margin-bottom:16px;">
             <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro&lang=${langAttr}" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[0]}</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro&lang=${langAttr}" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;box-shadow:0 2px 8px rgba(149,95,181,0.3);">${cta.chips[0]}</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro&lang=${langAttr}" style="display:inline-block;background:#e5e7eb;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[1]}</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro&lang=${langAttr}" style="display:inline-block;background:#ffffff;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;border:1px solid #D2D2D7;">${cta.chips[1]}</a>
             <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso&lang=${langAttr}" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[2]}</a>
+            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso&lang=${langAttr}" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[2]}</a>
             <!--[if mso]></td></tr></table><![endif]-->
         </div>
         <div style="font-size:12px;color:#86868B;">
