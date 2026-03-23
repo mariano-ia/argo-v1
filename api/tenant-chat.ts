@@ -226,14 +226,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let extraContext = '';
         const msgLower = trimmedMsg.toLowerCase();
 
-        // Check if user mentions a player by name → inject full profile
-        const mentionedPlayer = (sessions ?? []).find(s =>
-            msgLower.includes(s.child_name.toLowerCase().split(' ')[0])
+        // Check if user mentions a player by name → inject full profile or warn
+        const playerNames = (sessions ?? []).map(s => ({
+            firstName: s.child_name.toLowerCase().split(' ')[0],
+            fullName: s.child_name.toLowerCase(),
+            session: s,
+        }));
+
+        // Extract potential names from message (words starting with uppercase in original message)
+        const potentialNames = trimmedMsg.match(/[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/g) ?? [];
+
+        const mentionedPlayer = playerNames.find(p =>
+            potentialNames.some(n => n.toLowerCase() === p.firstName || p.fullName.includes(n.toLowerCase()))
         );
+
         if (mentionedPlayer) {
-            const mp = mentionedPlayer;
+            const mp = mentionedPlayer.session;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
             extraContext += `\n\nDATOS DETALLADOS DEL JUGADOR MENCIONADO:\nNombre: ${mp.child_name}\nEdad: ${mp.child_age}\nDeporte: ${mp.sport}\nArquetipo: ${mp.archetype_label}\nEje dominante: ${mp.eje}\nMotor: ${mp.motor}\nBrújula secundaria: ${mp.eje_secundario ?? 'N/A'} (${tend})\n`;
+        } else if (potentialNames.length > 0) {
+            // User mentioned a name but it doesn't match any registered player
+            const knownNames = (sessions ?? []).map(s => s.child_name).join(', ');
+            extraContext += `\n\nNOTA IMPORTANTE: El usuario mencionó un nombre que NO coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Si te preguntan por alguien que no está en tu lista, responde que no tienes ese jugador registrado y muestra la lista de jugadores disponibles.\nJugadores registrados: ${knownNames || 'ninguno'}`;
         }
 
         // Check for situation keywords → inject relevant guidance
@@ -286,9 +300,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const aiData = await aiRes.json();
-        const assistantContent = aiData.choices?.[0]?.message?.content ?? '';
+        let assistantContent = aiData.choices?.[0]?.message?.content ?? '';
         const tokensIn = aiData.usage?.prompt_tokens ?? 0;
         const tokensOut = aiData.usage?.completion_tokens ?? 0;
+
+        // ── Post-processing: scan for prohibited words ────────────────────
+        const PROHIBITED_WORDS = [
+            'déficit', 'deficit', 'trastorno', 'disorder', 'transtorno',
+            'diagnóstico', 'diagnosis', 'diagnóstica', 'diagnostic',
+            'agresivo', 'aggressive', 'agressivo',
+        ];
+        const contentLower = assistantContent.toLowerCase();
+        const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
+
+        if (foundProhibited.length > 0) {
+            // Retry once with stronger guardrail
+            console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
+            const retryMessages = [
+                ...messages,
+                { role: 'assistant', content: assistantContent },
+                { role: 'user', content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
+            ];
+            const retryRes = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: 'gpt-4o-mini', messages: retryMessages, temperature: 0.3, max_tokens: 800 }),
+            });
+            if (retryRes.ok) {
+                const retryData = await retryRes.json();
+                const retryContent = retryData.choices?.[0]?.message?.content;
+                if (retryContent) assistantContent = retryContent;
+            }
+        }
 
         // ── Save messages to DB ───────────────────────────────────────────
         await sb.from('chat_messages').insert([

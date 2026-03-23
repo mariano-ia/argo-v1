@@ -322,8 +322,8 @@ export const TenantChat: React.FC = () => {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Input */}
-                <div className="flex-shrink-0 border-t border-argo-border bg-white px-1 py-3">
+                {/* Input + disclaimer */}
+                <div className="flex-shrink-0 border-t border-argo-border bg-white px-1 py-3 space-y-1.5">
                     <div className="flex items-end gap-2">
                         <textarea
                             ref={inputRef}
@@ -344,6 +344,9 @@ export const TenantChat: React.FC = () => {
                             {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
                         </button>
                     </div>
+                    <p className="text-[10px] text-argo-grey/50 text-center px-2">
+                        Argo Engine puede cometer errores. Las respuestas son orientativas y están basadas en el modelo DISC. No reemplazan el criterio profesional.
+                    </p>
                 </div>
             </div>
         );
