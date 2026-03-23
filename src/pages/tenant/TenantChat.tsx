@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Send, Plus, Loader2, MessageCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { SkeletonList, SkeletonThreadRow } from '../../components/ui/Skeleton';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -66,7 +68,9 @@ const SUGGESTED_PROMPTS = {
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantChat: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
 
     // Thread list
     const [threads, setThreads] = useState<Thread[]>([]);
@@ -87,9 +91,7 @@ export const TenantChat: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
-    // TODO: detect tenant language from config. For now, default to 'es'.
-    const lang = 'es';
-    const prompts = SUGGESTED_PROMPTS[lang] ?? SUGGESTED_PROMPTS.es;
+    const prompts = SUGGESTED_PROMPTS[lang as keyof typeof SUGGESTED_PROMPTS] ?? SUGGESTED_PROMPTS.es;
 
     /* ── Scroll to bottom ──────────────────────────────────────────────────── */
 
@@ -203,14 +205,14 @@ export const TenantChat: React.FC = () => {
                 setMessages(prev => [...prev, {
                     role: 'assistant',
                     content: errData.error === 'AI service error'
-                        ? 'Hubo un problema con el servicio de IA. Intenta de nuevo en unos segundos.'
-                        : 'Ocurrió un error. Intenta de nuevo.',
+                        ? dt.chat.errorIA
+                        : dt.chat.errorGenerico,
                 }]);
             }
         } catch {
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: 'Error de conexión. Verifica tu internet e intenta de nuevo.',
+                content: dt.chat.errorConexion,
             }]);
         } finally {
             setSending(false);
@@ -253,13 +255,13 @@ export const TenantChat: React.FC = () => {
                     >
                         <ArrowLeft size={18} className="text-argo-grey" />
                     </button>
-                    <h1 className="text-lg font-bold text-argo-navy flex-1">Chat DISC</h1>
+                    <h1 className="text-lg font-bold text-argo-navy flex-1">{dt.chat.titulo}</h1>
                     <button
                         onClick={startNewThread}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border hover:border-argo-navy/30 text-argo-grey transition-colors"
                     >
                         <Plus size={14} />
-                        Nueva
+                        {dt.common.nueva}
                     </button>
                 </div>
 
@@ -274,9 +276,9 @@ export const TenantChat: React.FC = () => {
                                 <MessageCircle size={24} className="text-argo-indigo" />
                             </div>
                             <div className="text-center">
-                                <h2 className="text-lg font-bold text-argo-navy">Consulta sobre DISC</h2>
+                                <h2 className="text-lg font-bold text-argo-navy">{dt.chat.consultaDISC}</h2>
                                 <p className="text-sm text-argo-grey mt-1">
-                                    Pregunta lo que necesites sobre tus jugadores, el equipo, o situaciones de entrenamiento.
+                                    {dt.chat.consultaDesc}
                                 </p>
                             </div>
                             <div className="space-y-2 w-full max-w-sm">
@@ -335,7 +337,7 @@ export const TenantChat: React.FC = () => {
                             value={input}
                             onChange={e => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
-                            placeholder="Escribe tu consulta..."
+                            placeholder={dt.chat.escribePlaceholder}
                             rows={1}
                             className="flex-1 resize-none rounded-xl border border-argo-border px-4 py-2.5 text-sm outline-none focus:border-argo-navy transition-colors max-h-32"
                             style={{ minHeight: '42px' }}
@@ -350,7 +352,7 @@ export const TenantChat: React.FC = () => {
                         </button>
                     </div>
                     <p className="text-[10px] text-argo-grey/50 text-center px-2">
-                        Argo Engine puede cometer errores. Las respuestas son orientativas y están basadas en el modelo DISC. No reemplazan el criterio profesional.
+                        {dt.chat.disclaimer}
                     </p>
                 </div>
             </motion.div>
@@ -368,9 +370,9 @@ export const TenantChat: React.FC = () => {
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-argo-navy">Chat DISC</h1>
+                    <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.chat.titulo}</h1>
                     <p className="text-sm text-argo-grey mt-1">
-                        Tu asistente personal de perfilamiento DISC. Pregunta sobre tus jugadores, situaciones o dinámica de equipo.
+                        {dt.chat.subtitulo}
                     </p>
                 </div>
                 <button
@@ -378,7 +380,7 @@ export const TenantChat: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
                 >
                     <Plus size={15} />
-                    Nueva consulta
+                    {dt.chat.nuevaConsulta}
                 </button>
             </div>
 
@@ -387,7 +389,7 @@ export const TenantChat: React.FC = () => {
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <MessageCircle size={15} className="text-argo-grey" />
                     <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                        Conversaciones
+                        {dt.chat.conversaciones}
                     </h2>
                 </div>
 
@@ -398,8 +400,8 @@ export const TenantChat: React.FC = () => {
                         <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
                             <MessageCircle size={20} className="text-argo-indigo" />
                         </div>
-                        <p className="text-sm text-argo-grey">Todavía no tienes conversaciones.</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">Inicia una nueva consulta sobre tus jugadores.</p>
+                        <p className="text-sm text-argo-grey">{dt.chat.sinConversaciones}</p>
+                        <p className="text-xs text-argo-grey/50 mt-1">{dt.chat.sinConversacionesDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">

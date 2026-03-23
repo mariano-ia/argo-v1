@@ -10,6 +10,8 @@ import {
 } from '../../lib/situationalGuide';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonList, SkeletonSessionRow } from '../../components/ui/Skeleton';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -35,6 +37,8 @@ interface SessionRow {
 
 export const TenantGuide: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
 
     // State
     const [selectedSituation, setSelectedSituation] = useState<Situation | null>(null);
@@ -113,7 +117,7 @@ export const TenantGuide: React.FC = () => {
                     className="flex items-center gap-2 text-sm text-argo-grey hover:text-argo-navy transition-colors"
                 >
                     <ArrowLeft size={16} />
-                    {selectedSituation.category === 'Grupal' ? 'Volver a situaciones' : 'Cambiar jugador'}
+                    {selectedSituation.category === 'Grupal' ? dt.guide.volverSituaciones : dt.guide.cambiarJugador}
                 </button>
 
                 {/* Situation header */}
@@ -141,18 +145,18 @@ export const TenantGuide: React.FC = () => {
 
                 {/* What you see */}
                 <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-2">
-                    <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Lo que ves</h3>
+                    <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.loQueVes}</h3>
                     <p className="text-sm text-argo-grey leading-relaxed">{selectedSituation.whatYouSee}</p>
                 </div>
 
                 {/* What's happening */}
                 <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-2">
-                    <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Lo que está pasando</h3>
+                    <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.loQuePasa}</h3>
                     <p className="text-sm text-argo-grey leading-relaxed">{selectedSituation.whatsHappening}</p>
                     {card && (
                         <div className="mt-3 pt-3 border-t border-argo-border">
                             <p className="text-xs font-semibold text-argo-indigo uppercase tracking-widest mb-1.5">
-                                {selectedPlayer ? `Con este perfil (${AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})` : 'Para el grupo'}
+                                {selectedPlayer ? dt.guide.conEstePerfil(AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje) : dt.guide.paraElGrupo}
                             </p>
                             <p className="text-sm text-argo-navy leading-relaxed">{card.whatsHappeningForProfile}</p>
                         </div>
@@ -162,7 +166,7 @@ export const TenantGuide: React.FC = () => {
                 {/* How to accompany */}
                 {card && (
                     <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-3">
-                        <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Cómo acompañar</h3>
+                        <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.comoAcompanar}</h3>
                         <div className="space-y-3">
                             {card.howToAccompany.map((text, i) => (
                                 <div key={i} className="flex items-start gap-3">
@@ -179,7 +183,7 @@ export const TenantGuide: React.FC = () => {
                 {/* If not responding */}
                 {card && (
                     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 space-y-2">
-                        <h3 className="text-xs font-bold text-amber-800 uppercase tracking-widest">Si no responde al primer intento</h3>
+                        <h3 className="text-xs font-bold text-amber-800 uppercase tracking-widest">{dt.guide.siNoResponde}</h3>
                         <p className="text-sm text-amber-900 leading-relaxed">{card.ifNotResponding}</p>
                     </div>
                 )}
@@ -202,7 +206,7 @@ export const TenantGuide: React.FC = () => {
                     className="flex items-center gap-2 text-sm text-argo-grey hover:text-argo-navy transition-colors"
                 >
                     <ArrowLeft size={16} />
-                    Volver a situaciones
+                    {dt.guide.volverSituaciones}
                 </button>
 
                 <div>
@@ -211,20 +215,20 @@ export const TenantGuide: React.FC = () => {
                         <h1 className="text-xl font-bold text-argo-navy">{selectedSituation.title}</h1>
                     </div>
                     <p className="text-sm text-argo-grey mt-2">
-                        Selecciona el jugador involucrado para ver recomendaciones personalizadas según su perfil.
+                        {dt.guide.seleccionaJugador}
                     </p>
                 </div>
 
                 <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-argo-border">
-                        <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">Tus jugadores</h2>
+                        <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">{dt.guide.tusJugadores}</h2>
                     </div>
 
                     {!sessionsLoaded ? (
                         <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                     ) : sessions.length === 0 ? (
                         <div className="py-12 text-center">
-                            <p className="text-sm text-argo-grey">Todavía no tienes jugadores registrados.</p>
+                            <p className="text-sm text-argo-grey">{dt.guide.sinJugadores}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-argo-border">
@@ -245,7 +249,7 @@ export const TenantGuide: React.FC = () => {
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-argo-navy truncate">{s.child_name}</p>
-                                                <p className="text-xs text-argo-grey">{s.child_age} años{s.sport ? ` · ${s.sport}` : ''}</p>
+                                                <p className="text-xs text-argo-grey">{s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
@@ -273,7 +277,7 @@ export const TenantGuide: React.FC = () => {
                     }}
                     className="text-sm text-argo-indigo hover:text-argo-navy transition-colors font-medium"
                 >
-                    Ver contexto general (sin seleccionar jugador)
+                    {dt.guide.verContextoGeneral}
                 </button>
             </motion.div>
         );
@@ -289,9 +293,9 @@ export const TenantGuide: React.FC = () => {
             className="max-w-2xl mx-auto space-y-6"
         >
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">Guía situacional</h1>
+                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.guide.titulo}</h1>
                 <p className="text-sm text-argo-grey mt-1">
-                    Selecciona una situación que estés viviendo con un jugador o con el grupo. Te damos herramientas concretas según su perfil.
+                    {dt.guide.subtitulo}
                 </p>
             </div>
 
@@ -302,7 +306,7 @@ export const TenantGuide: React.FC = () => {
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder="Buscar situación..."
+                        placeholder={dt.guide.buscarPlaceholder}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-argo-border text-sm outline-none focus:border-argo-navy transition-colors"
                     />
                 </div>
@@ -313,7 +317,7 @@ export const TenantGuide: React.FC = () => {
                             !categoryFilter ? 'bg-argo-navy text-white border-argo-navy' : 'border-argo-border text-argo-grey hover:border-argo-navy/30'
                         }`}
                     >
-                        Todas
+                        {dt.common.todas}
                     </button>
                     {categories.map(cat => {
                         const cc = CATEGORY_COLORS[cat] ?? { bg: '#f3f4f6', text: '#374151' };

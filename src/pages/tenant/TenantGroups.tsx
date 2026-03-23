@@ -7,6 +7,8 @@ import { useToast } from '../../components/ui/Toast';
 import { SkeletonList, SkeletonGroupRow, SkeletonSessionRow } from '../../components/ui/Skeleton';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
 import type { MemberProfile } from '../../lib/groupBalance';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -76,6 +78,8 @@ const EJE_COLORS: Record<string, string> = {
 
 export const TenantGroups: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const { toast } = useToast();
 
     // List state
@@ -146,13 +150,13 @@ export const TenantGroups: React.FC = () => {
             });
             const data = await res.json();
             if (!res.ok) {
-                setCreateError(data.error || 'Error al crear grupo');
+                setCreateError(data.error || dt.chat.errorGenerico);
                 return;
             }
             setNewName('');
             setShowCreate(false);
             fetchGroups();
-            toast('success', 'Grupo creado');
+            toast('success', dt.groups.grupoCreado);
         } finally {
             setCreating(false);
         }
@@ -212,7 +216,7 @@ export const TenantGroups: React.FC = () => {
         });
         setEditing(false);
         fetchDetail(selectedId);
-        toast('success', 'Grupo renombrado');
+        toast('success', dt.groups.grupoRenombrado);
     };
 
     /* ── Delete group ──────────────────────────────────────────────────────── */
@@ -227,7 +231,7 @@ export const TenantGroups: React.FC = () => {
             headers: authHeaders(token),
             body: JSON.stringify({ action: 'delete', id: selectedId }),
         });
-        toast('success', 'Grupo eliminado');
+        toast('success', dt.groups.grupoEliminado);
         closeDetail();
     };
 
@@ -252,9 +256,9 @@ export const TenantGroups: React.FC = () => {
         if (!res.ok && removedMember) {
             // Rollback on failure
             setMembers(prev => [...prev, removedMember]);
-            toast('error', 'No se pudo quitar al jugador');
+            toast('error', dt.groups.noSePudoQuitar);
         } else {
-            toast('success', 'Jugador quitado del grupo');
+            toast('success', dt.groups.jugadorQuitado);
         }
     };
 
@@ -300,7 +304,7 @@ export const TenantGroups: React.FC = () => {
         setAdding(false);
         setShowAddModal(false);
         fetchDetail(selectedId);
-        toast('success', `${selectedSessions.size} ${selectedSessions.size === 1 ? 'jugador agregado' : 'jugadores agregados'}`);
+        toast('success', dt.groups.jugadoresAgregados(selectedSessions.size));
     };
 
     // Sessions not already in the group
@@ -368,7 +372,7 @@ export const TenantGroups: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
                     >
                         <UserPlus size={15} />
-                        Agregar jugadores
+                        {dt.groups.agregarJugadores}
                     </button>
                 </div>
 
@@ -377,7 +381,7 @@ export const TenantGroups: React.FC = () => {
                     <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                         <Users size={15} className="text-argo-grey" />
                         <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                            Jugadores ({members.length})
+                            {dt.common.jugadores} ({members.length})
                         </h2>
                     </div>
 
@@ -385,8 +389,8 @@ export const TenantGroups: React.FC = () => {
                         <SkeletonList rows={3} RowComponent={SkeletonSessionRow} />
                     ) : members.length === 0 ? (
                         <div className="py-12 text-center">
-                            <p className="text-sm text-argo-grey">Este grupo no tiene jugadores todavía.</p>
-                            <p className="text-xs text-argo-grey/50 mt-1">Agrega jugadores desde tus sesiones completadas.</p>
+                            <p className="text-sm text-argo-grey">{dt.groups.sinMiembros}</p>
+                            <p className="text-xs text-argo-grey/50 mt-1">{dt.groups.sinMiembrosDesc}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-argo-border">
@@ -397,7 +401,7 @@ export const TenantGroups: React.FC = () => {
                                             <p className="text-sm font-semibold text-argo-navy truncate">
                                                 {m.child_name}
                                                 <span className="font-normal text-argo-grey ml-1.5">
-                                                    {m.child_age != null ? `${m.child_age} años` : ''}{m.sport ? ` · ${m.sport}` : ''}
+                                                    {m.child_age != null ? `${m.child_age} ${dt.common.anos}` : ''}{m.sport ? ` · ${m.sport}` : ''}
                                                 </span>
                                             </p>
                                         </div>
@@ -412,7 +416,7 @@ export const TenantGroups: React.FC = () => {
                                                 onClick={() => handleRemoveMember(m.session_id)}
                                                 disabled={removingId === m.session_id}
                                                 className="p-1.5 rounded-lg text-argo-grey hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
-                                                title="Quitar del grupo"
+                                                title={dt.groups.jugadorQuitado}
                                             >
                                                 {removingId === m.session_id
                                                     ? <Loader2 size={14} className="animate-spin" />
@@ -446,18 +450,18 @@ export const TenantGroups: React.FC = () => {
                 <div className="pt-4 border-t border-argo-border">
                     {confirmDelete ? (
                         <div className="flex items-center gap-3">
-                            <p className="text-sm text-red-600">Eliminar este grupo permanentemente?</p>
+                            <p className="text-sm text-red-600">{dt.groups.confirmarEliminar}</p>
                             <button
                                 onClick={handleDelete}
                                 className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600"
                             >
-                                Confirmar
+                                {dt.common.confirmar}
                             </button>
                             <button
                                 onClick={() => setConfirmDelete(false)}
                                 className="px-3 py-1.5 rounded-lg border border-argo-border text-xs font-medium hover:bg-argo-neutral"
                             >
-                                Cancelar
+                                {dt.common.cancelar}
                             </button>
                         </div>
                     ) : (
@@ -466,7 +470,7 @@ export const TenantGroups: React.FC = () => {
                             className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 transition-colors"
                         >
                             <Trash2 size={14} />
-                            Eliminar grupo
+                            {dt.groups.eliminarGrupo}
                         </button>
                     )}
                 </div>
@@ -479,7 +483,7 @@ export const TenantGroups: React.FC = () => {
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="px-6 py-4 border-b border-argo-border flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">Agregar jugadores</h3>
+                                <h3 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">{dt.groups.agregarJugadores}</h3>
                                 <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg hover:bg-argo-neutral">
                                     <X size={16} className="text-argo-grey" />
                                 </button>
@@ -492,11 +496,11 @@ export const TenantGroups: React.FC = () => {
                                     </div>
                                 ) : availableSessions.length === 0 ? (
                                     <div className="py-12 text-center px-6">
-                                        <p className="text-sm text-argo-grey">No hay jugadores disponibles para agregar.</p>
+                                        <p className="text-sm text-argo-grey">{dt.groups.sinJugadoresDisponibles}</p>
                                         <p className="text-xs text-argo-grey/50 mt-1">
                                             {allSessions.length === 0
-                                                ? 'Todavía no tienes sesiones completadas.'
-                                                : 'Todos tus jugadores ya están en este grupo.'}
+                                                ? dt.players.sinJugadores
+                                                : dt.groups.todosEnGrupo}
                                         </p>
                                     </div>
                                 ) : (
@@ -522,7 +526,7 @@ export const TenantGroups: React.FC = () => {
                                                     <p className="text-sm font-medium text-argo-navy truncate">
                                                         {s.child_name}
                                                         <span className="font-normal text-argo-grey ml-1.5">
-                                                            {s.child_age} años{s.sport ? ` · ${s.sport}` : ''}
+                                                            {s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}
                                                         </span>
                                                     </p>
                                                 </div>
@@ -547,7 +551,7 @@ export const TenantGroups: React.FC = () => {
                                         ) : (
                                             <>
                                                 <Plus size={15} />
-                                                Agregar {selectedSessions.size > 0 ? `(${selectedSessions.size})` : ''}
+                                                {dt.groups.agregarJugadores} {selectedSessions.size > 0 ? `(${selectedSessions.size})` : ''}
                                             </>
                                         )}
                                     </button>
@@ -571,9 +575,9 @@ export const TenantGroups: React.FC = () => {
         >
             {/* Header */}
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">Grupos</h1>
+                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.groups.titulo}</h1>
                 <p className="text-sm text-argo-grey mt-1">
-                    Organiza a tus deportistas en grupos para analizar el equilibrio del equipo.
+                    {dt.groups.subtitulo}
                 </p>
             </div>
 
@@ -585,7 +589,7 @@ export const TenantGroups: React.FC = () => {
                             value={newName}
                             onChange={e => { setNewName(e.target.value); setCreateError(''); }}
                             onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                            placeholder="Nombre del grupo (ej: Sub-15 Femenino)"
+                            placeholder={dt.groups.nombrePlaceholder}
                             className="flex-1 px-4 py-2.5 rounded-lg border border-argo-border text-sm outline-none focus:border-argo-navy transition-colors"
                             autoFocus
                         />
@@ -595,7 +599,7 @@ export const TenantGroups: React.FC = () => {
                             className="px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                            Crear
+                            {dt.common.crear}
                         </button>
                         <button
                             onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); }}
@@ -614,7 +618,7 @@ export const TenantGroups: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
                 >
                     <Plus size={15} />
-                    Crear grupo
+                    {dt.groups.crearGrupo}
                 </button>
             )}
 
@@ -623,7 +627,7 @@ export const TenantGroups: React.FC = () => {
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <Users size={15} className="text-argo-grey" />
                     <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                        Tus grupos
+                        {dt.groups.tusGrupos}
                     </h2>
                 </div>
 
@@ -634,8 +638,8 @@ export const TenantGroups: React.FC = () => {
                         <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
                             <Users size={20} className="text-argo-indigo" />
                         </div>
-                        <p className="text-sm text-argo-grey">No tienes grupos creados todavía.</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">Crea tu primer grupo para empezar a organizar a tus deportistas.</p>
+                        <p className="text-sm text-argo-grey">{dt.groups.sinGrupos}</p>
+                        <p className="text-xs text-argo-grey/50 mt-1">{dt.groups.sinGruposDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">
@@ -651,7 +655,7 @@ export const TenantGroups: React.FC = () => {
                                 </div>
                                 <div className="flex items-center gap-3 flex-shrink-0">
                                     <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
-                                        {g.member_count} {g.member_count === 1 ? 'jugador' : 'jugadores'}
+                                        {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}
                                     </span>
                                     <ChevronRight size={16} className="text-argo-grey/40" />
                                 </div>

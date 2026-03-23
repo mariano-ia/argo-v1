@@ -8,6 +8,8 @@ import { getTendenciaContent } from '../../lib/archetypeData';
 import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -62,7 +64,7 @@ const MOTOR_COLORS: Record<string, { bg: string; text: string }> = {
 
 /* ── Player Card ───────────────────────────────────────────────────────────── */
 
-const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
+const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT> }> = ({ session, dt }) => {
     const [expanded, setExpanded] = useState(false);
     const months = monthsSince(session.created_at);
     const needsReprofile = months >= 6;
@@ -108,7 +110,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                         <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="text-base font-bold text-argo-navy">{session.child_name}</h3>
                             <span className="text-sm text-argo-grey">
-                                {session.child_age} años{session.sport ? ` · ${session.sport}` : ''}
+                                {session.child_age} {dt.common.anos}{session.sport ? ` · ${session.sport}` : ''}
                             </span>
                         </div>
 
@@ -152,7 +154,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                             {needsReprofile && (
                                 <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                     <AlertCircle size={10} />
-                                    Re-perfilar
+                                    {dt.players.rePerfilar}
                                 </span>
                             )}
                             {expanded ? <ChevronUp size={16} className="text-argo-grey" /> : <ChevronDown size={16} className="text-argo-grey" />}
@@ -160,7 +162,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                         <div className="flex items-center gap-1 text-[10px] text-argo-grey/60">
                             <Clock size={10} />
                             {formatDate(session.created_at)}
-                            {months > 0 && <span>· hace {months} {months === 1 ? 'mes' : 'meses'}</span>}
+                            {months > 0 && <span>· {months} {dt.players.meses}</span>}
                         </div>
                     </div>
                 </div>
@@ -172,7 +174,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Key insight */}
                     {reportData && (
                         <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Lo esencial</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.loEsencial}</h4>
                             <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfil}</p>
                         </div>
                     )}
@@ -180,7 +182,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Bridge words (full) */}
                     {reportData && (
                         <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Palabras puente</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.palabrasPuente}</h4>
                             <div className="flex flex-wrap gap-1.5">
                                 {reportData.palabrasPuente.map((w, i) => (
                                     <span
@@ -207,7 +209,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Noise words */}
                     {reportData && (
                         <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Evitar en la comunicación</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.evitarComunicacion}</h4>
                             <div className="flex flex-wrap gap-1.5">
                                 {reportData.palabrasRuido.map((w, i) => (
                                     <span
@@ -233,7 +235,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {tendenciaContent && (
                         <div className="space-y-1.5">
                             <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">
-                                Brújula secundaria: {tendencia}
+                                {dt.players.brujulaSecundaria}: {tendencia}
                             </h4>
                             <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo}</p>
                         </div>
@@ -242,15 +244,15 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Coaching situations (guía) */}
                     {reportData && reportData.guia?.length > 0 && (
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Guía rápida</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.guiaRapida}</h4>
                             {reportData.guia.map((g, i) => (
                                 <div key={i} className="bg-argo-neutral/50 rounded-xl p-3 space-y-1">
                                     <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
                                     <p className="text-[11px] text-emerald-700">
-                                        <span className="font-semibold">Activar:</span> {g.activador}
+                                        <span className="font-semibold">{dt.players.activar}:</span> {g.activador}
                                     </p>
                                     <p className="text-[11px] text-red-600">
-                                        <span className="font-semibold">A considerar:</span> {g.desmotivacion}
+                                        <span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}
                                     </p>
                                 </div>
                             ))}
@@ -260,12 +262,12 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Checklist */}
                     {reportData?.checklist && (
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Checklist de entrenamiento</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.checklistEntrenamiento}</h4>
                             <div className="grid grid-cols-3 gap-2">
                                 {[
-                                    { label: 'Antes', text: reportData.checklist.antes },
-                                    { label: 'Durante', text: reportData.checklist.durante },
-                                    { label: 'Después', text: reportData.checklist.despues },
+                                    { label: dt.players.antes, text: reportData.checklist.antes },
+                                    { label: dt.players.durante, text: reportData.checklist.durante },
+                                    { label: dt.players.despues, text: reportData.checklist.despues },
                                 ].map(c => (
                                     <div key={c.label} className="bg-argo-neutral/50 rounded-xl p-3">
                                         <p className="text-[10px] font-bold text-argo-indigo uppercase">{c.label}</p>
@@ -282,12 +284,12 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                             <div className="flex items-center gap-2">
                                 <Clock size={14} className="text-argo-grey" />
                                 <span className="text-xs text-argo-grey">
-                                    Perfilado el {formatDate(session.created_at)} ({daysSince(session.created_at)} días)
+                                    {dt.players.perfiladoEl} {formatDate(session.created_at)} ({daysSince(session.created_at)} {dt.players.dias})
                                 </span>
                             </div>
                             {needsReprofile && (
                                 <span className="text-xs text-amber-700 font-medium">
-                                    Se recomienda re-perfilar
+                                    {dt.players.seRecomiendaRePerfilar}
                                 </span>
                             )}
                         </div>
@@ -302,8 +304,8 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                             />
                         </div>
                         <div className="flex justify-between mt-1">
-                            <span className="text-[9px] text-argo-grey/50">Perfilado</span>
-                            <span className="text-[9px] text-argo-grey/50">8 meses (re-perfilar)</span>
+                            <span className="text-[9px] text-argo-grey/50">{dt.players.perfiladoEl.split(' ')[0]}</span>
+                            <span className="text-[9px] text-argo-grey/50">8 {dt.players.meses} ({dt.players.rePerfilar.toLowerCase()})</span>
                         </div>
                     </div>
 
@@ -320,7 +322,9 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
 /* ── Main Component ────────────────────────────────────────────────────────── */
 
 export const TenantPlayers: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -381,9 +385,9 @@ export const TenantPlayers: React.FC = () => {
             className="max-w-2xl mx-auto space-y-6"
         >
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">Jugadores</h1>
+                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.players.titulo}</h1>
                 <p className="text-sm text-argo-grey mt-1">
-                    Todos los deportistas perfilados. Toca un jugador para ver su resumen de perfil.
+                    {dt.players.subtitulo}
                 </p>
             </div>
 
@@ -393,10 +397,10 @@ export const TenantPlayers: React.FC = () => {
                     <AlertCircle size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
                     <div>
                         <p className="text-sm font-medium text-amber-800">
-                            {reprofileCount} {reprofileCount === 1 ? 'jugador tiene' : 'jugadores tienen'} más de 6 meses desde su último perfil.
+                            {dt.players.rePerfilarAlerta(reprofileCount)}
                         </p>
                         <p className="text-xs text-amber-700 mt-0.5">
-                            Los perfiles de niños cambian con el tiempo. Un nuevo perfilamiento captura su evolución.
+                            {dt.players.rePerfilarAlertaDesc}
                         </p>
                     </div>
                 </div>
@@ -409,7 +413,7 @@ export const TenantPlayers: React.FC = () => {
                     <input
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder="Buscar por nombre, arquetipo o deporte..."
+                        placeholder={dt.players.buscarPlaceholder}
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-argo-border text-sm outline-none focus:border-argo-navy transition-colors"
                     />
                 </div>
@@ -443,7 +447,7 @@ export const TenantPlayers: React.FC = () => {
                         }`}
                     >
                         <AlertCircle size={12} />
-                        Re-perfilar ({reprofileCount})
+                        {dt.players.rePerfilar} ({reprofileCount})
                     </button>
                 </div>
             </div>
@@ -460,15 +464,15 @@ export const TenantPlayers: React.FC = () => {
                     </div>
                     <p className="text-sm text-argo-grey">
                         {sessions.length === 0
-                            ? 'Todavía no tienes jugadores perfilados.'
-                            : 'No se encontraron jugadores con esos filtros.'}
+                            ? dt.players.sinJugadores
+                            : dt.players.sinResultados}
                     </p>
                 </div>
             ) : (
                 <div className="space-y-3">
-                    <p className="text-xs text-argo-grey">{filtered.length} {filtered.length === 1 ? 'jugador' : 'jugadores'}</p>
+                    <p className="text-xs text-argo-grey">{filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                     {filtered.map(s => (
-                        <PlayerCard key={s.id} session={s} />
+                        <PlayerCard key={s.id} session={s} dt={dt} />
                     ))}
                 </div>
             )}

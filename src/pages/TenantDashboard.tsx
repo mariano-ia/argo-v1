@@ -3,6 +3,8 @@ import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import { ToastProvider } from '../components/ui/Toast';
+import { useLang } from '../context/LangContext';
+import { getDashboardT } from '../lib/dashboardTranslations';
 import type { Session } from '@supabase/supabase-js';
 import {
     Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Users, BookOpen, UserCircle, MessageCircle,
@@ -16,18 +18,22 @@ interface TenantData {
     credits_remaining: number;
 }
 
-const NAV_ITEMS = [
-    { to: '/dashboard',          label: 'Inicio',  icon: Home,     end: true },
-    { to: '/dashboard/players',  label: 'Jugadores', icon: UserCircle, end: false },
-    { to: '/dashboard/groups',   label: 'Grupos',    icon: Users,      end: false },
-    { to: '/dashboard/guide',    label: 'Guía',      icon: BookOpen,     end: false },
-    { to: '/dashboard/chat',     label: 'Chat',      icon: MessageCircle, end: false },
-    { to: '/dashboard/link',     label: 'Mi link',   icon: Link2,         end: false },
-    { to: '/dashboard/settings', label: 'Ajustes', icon: Settings, end: false },
-];
+const OTHER_LANGS: Record<string, [string, string]> = { es: ['en', 'pt'], en: ['es', 'pt'], pt: ['es', 'en'] };
 
 export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
+    const { lang, setLang } = useLang();
+    const dt = getDashboardT(lang);
+
+    const NAV_ITEMS = [
+        { to: '/dashboard',          label: dt.nav.inicio,    icon: Home,          end: true },
+        { to: '/dashboard/players',  label: dt.nav.jugadores, icon: UserCircle,    end: false },
+        { to: '/dashboard/groups',   label: dt.nav.grupos,    icon: Users,         end: false },
+        { to: '/dashboard/guide',    label: dt.nav.guia,      icon: BookOpen,      end: false },
+        { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle, end: false },
+        { to: '/dashboard/link',     label: dt.nav.miLink,    icon: Link2,         end: false },
+        { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,      end: false },
+    ];
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [tenant, setTenant] = useState<TenantData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -158,19 +164,34 @@ export const TenantDashboard: React.FC = () => {
                 )}
                 <button
                     onClick={handleLogout}
-                    title={collapsed && !mobile ? 'Salir' : undefined}
+                    title={collapsed && !mobile ? dt.nav.cerrarSesion : undefined}
                     className={`group relative flex items-center gap-3 py-2 rounded-lg text-sm font-semibold text-argo-grey hover:text-red-500 hover:bg-red-50 transition-all w-full ${
                         collapsed && !mobile ? 'justify-center px-0' : 'px-3'
                     }`}
                 >
                     <LogOut size={15} />
-                    {(!collapsed || mobile) && 'Salir'}
+                    {(!collapsed || mobile) && dt.nav.cerrarSesion}
                     {collapsed && !mobile && (
                         <span className="absolute left-full ml-2 px-2 py-1 rounded-md bg-argo-navy text-white text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                            Salir
+                            {dt.nav.cerrarSesion}
                         </span>
                     )}
                 </button>
+                {/* Language selector */}
+                {(!collapsed || mobile) && (
+                    <div className="flex items-center gap-2 px-3 pt-2">
+                        {(OTHER_LANGS[lang] ?? ['en', 'pt']).map(l => (
+                            <button
+                                key={l}
+                                onClick={() => setLang(l as 'es' | 'en' | 'pt')}
+                                className="text-[11px] font-medium text-argo-grey hover:text-argo-navy transition-colors uppercase tracking-wide"
+                            >
+                                {l}
+                            </button>
+                        ))}
+                        <span className="text-[11px] font-bold text-argo-navy uppercase tracking-wide">{lang}</span>
+                    </div>
+                )}
                 {(!collapsed || mobile) && (
                     <p className="text-[9px] text-argo-grey/40 uppercase tracking-widest px-3 pt-1">
                         v{APP_VERSION}
@@ -212,7 +233,7 @@ export const TenantDashboard: React.FC = () => {
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:p-8">
-                    <Outlet context={{ tenant, refreshTenant: fetchTenant }} />
+                    <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang }} />
                 </main>
             </div>
         </div>
