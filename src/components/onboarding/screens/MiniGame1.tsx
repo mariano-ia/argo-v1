@@ -1,15 +1,39 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getMiniGameTexts } from '../../games/islas/translations';
 
-interface Props {
-    onComplete: () => void;
+/* ──────────────────────────── Metrics ──────────────────────────── */
+
+export interface RhythmMetrics {
+    /** ms between each obstacle spawn and the next tap (closest tap after spawn) */
+    reactionTimes: number[];
+    /** average reaction time */
+    avgReaction: number;
+    /** total taps during game */
+    totalTaps: number;
+    /** taps that happened with no obstacle nearby (impulsive/nervous taps) */
+    extraTaps: number;
+    /** avg cadence: ms between consecutive taps */
+    avgCadence: number;
+    /** trend: avg reaction first half vs second half (negative = getting faster) */
+    trend: number;
+    /** total game duration ms */
+    totalTimeMs: number;
 }
 
-// ─── Config ────────────────────────────────────────────────────────────────────
+/* ──────────────────────────── Config ──────────────────────────── */
+
+interface Props {
+    onComplete: (metrics: RhythmMetrics) => void;
+    lang?: string;
+}
 
 const GAME_DURATION_MS  = 13000;
 const SPAWN_FIRST_MS    = 1200;
 const SPAWN_INTERVAL_MS = 1900;
+
+// Window (ms) after obstacle spawn in which a tap counts as "reaction to that obstacle"
+const REACTION_WINDOW_MS = 2000;
 
 type ObstacleType = 'rock' | 'wave' | 'vortex';
 const OBSTACLE_TYPES: ObstacleType[] = ['rock', 'wave', 'vortex'];
@@ -32,16 +56,6 @@ const GameBoatSVG: React.FC = () => (
     </svg>
 );
 
-const AnchorSVG: React.FC<{ size?: number; color?: string }> = ({ size = 52, color = 'white' }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-        stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="5" r="2" />
-        <line x1="12" y1="7" x2="12" y2="20" />
-        <path d="M5 12 C5 17 19 17 19 12" />
-        <line x1="5" y1="12" x2="9" y2="12" />
-        <line x1="15" y1="12" x2="19" y2="12" />
-    </svg>
-);
 
 const RockObs: React.FC = () => (
     <svg width="38" height="30" viewBox="0 0 38 30" fill="none">
@@ -74,7 +88,7 @@ const OBSTACLE_COMPONENTS: Record<ObstacleType, React.FC> = {
     vortex: VortexObs,
 };
 
-// ─── Animated overlays (matching AnimatedScene.tsx style) ─────────────────────
+// ─── Animated overlays ─────────────────────────────────────────────
 
 const WaterWaves: React.FC = () => (
     <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden" style={{ height: '18%' }}>
@@ -146,7 +160,8 @@ const DriftingClouds: React.FC = () => (
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
+export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
+    const t = getMiniGameTexts(lang);
     const [started,   setStarted]   = useState(false);
     const [airborne,  setAirborne]  = useState(false);
     const [obstacles, setObstacles] = useState<ObstacleItem[]>([]);
@@ -157,6 +172,13 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
     const airborneRef  = useRef(false);
     useEffect(() => { airborneRef.current = airborne; }, [airborne]);
 
+    // ─── Metrics tracking refs ──────────────────────────────────
+    const gameStartRef = useRef(0);
+    const tapTimestampsRef = useRef<number[]>([]);
+    const obstacleSpawnTimesRef = useRef<number[]>([]);
+    const reactedObstaclesRef = useRef<Set<number>>(new Set());
+    const reactionTimesRef = useRef<number[]>([]);
+
     const jump = useCallback(() => {
         if (done || airborneRef.current) return;
         setAirborne(true);
@@ -166,7 +188,27 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
 
     const handleTap = useCallback(() => {
         if (done) return;
-        if (!started) { setStarted(true); return; }
+        if (!started) {
+            setStarted(true);
+            gameStartRef.current = Date.now();
+            return;
+        }
+
+        const now = Date.now();
+        tapTimestampsRef.current.push(now);
+
+        // Match this tap to the most recent unmatched obstacle within reaction window
+        const spawns = obstacleSpawnTimesRef.current;
+        for (let i = spawns.length - 1; i >= 0; i--) {
+            if (reactedObstaclesRef.current.has(i)) continue;
+            const elapsed = now - spawns[i];
+            if (elapsed >= 0 && elapsed <= REACTION_WINDOW_MS) {
+                reactedObstaclesRef.current.add(i);
+                reactionTimesRef.current.push(elapsed);
+                break;
+            }
+        }
+
         jump();
     }, [started, done, jump]);
 
@@ -175,7 +217,48 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
         if (!started) return;
         const t = setTimeout(() => {
             setDone(true);
-            setTimeout(onComplete, 2200);
+
+            // Calculate metrics
+            const taps = tapTimestampsRef.current;
+            const reactions = reactionTimesRef.current;
+            const totalTime = Date.now() - gameStartRef.current;
+
+            const avgReaction = reactions.length > 0
+                ? Math.round(reactions.reduce((s, v) => s + v, 0) / reactions.length)
+                : 0;
+
+            // Cadence: time between consecutive taps
+            const cadences: number[] = [];
+            for (let i = 1; i < taps.length; i++) {
+                cadences.push(taps[i] - taps[i - 1]);
+            }
+            const avgCadence = cadences.length > 0
+                ? Math.round(cadences.reduce((s, v) => s + v, 0) / cadences.length)
+                : 0;
+
+            // Trend: first half vs second half reaction times
+            const half = Math.floor(reactions.length / 2);
+            let trend = 0;
+            if (half > 0) {
+                const avgFirst = reactions.slice(0, half).reduce((s, v) => s + v, 0) / half;
+                const avgSecond = reactions.slice(half).reduce((s, v) => s + v, 0) / (reactions.length - half);
+                trend = Math.round(avgSecond - avgFirst);
+            }
+
+            const extraTaps = taps.length - reactions.length;
+
+            const metrics: RhythmMetrics = {
+                reactionTimes: reactions,
+                avgReaction,
+                totalTaps: taps.length,
+                extraTaps: Math.max(0, extraTaps),
+                avgCadence,
+                trend,
+                totalTimeMs: totalTime,
+            };
+
+            console.log('[MiniGame1] Rhythm Metrics:', metrics);
+            setTimeout(() => onComplete(metrics), 2200);
         }, GAME_DURATION_MS);
         return () => clearTimeout(t);
     }, [started, onComplete]);
@@ -183,12 +266,14 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
     // Obstacle spawner
     useEffect(() => {
         if (!started || done) return;
-        const spawn = () =>
+        const spawn = () => {
+            obstacleSpawnTimesRef.current.push(Date.now());
             setObstacles(prev => [...prev, {
                 id:       nextIdRef.current++,
                 type:     OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)],
                 duration: OBSTACLE_SPEEDS[Math.floor(Math.random() * OBSTACLE_SPEEDS.length)],
             }]);
+        };
         const first    = setTimeout(spawn, SPAWN_FIRST_MS);
         const interval = setInterval(spawn, SPAWN_INTERVAL_MS);
         return () => { clearTimeout(first); clearInterval(interval); };
@@ -204,7 +289,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
             onClick={handleTap}
             onTouchStart={e => { e.preventDefault(); handleTap(); }}
         >
-            {/* Scene background — uses the open-sea AI illustration */}
+            {/* Scene background */}
             <img
                 src="/scenes/ocean-only.png"
                 alt=""
@@ -212,7 +297,6 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                 draggable={false}
             />
 
-            {/* Animated overlays matching AnimatedScene style */}
             <DriftingClouds />
             <FlyingBirds />
             <WaterWaves />
@@ -258,7 +342,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                 );
             })}
 
-            {/* Timer bar — gradient matching progress bar style */}
+            {/* Timer bar */}
             <AnimatePresence>
                 {started && !done && (
                     <motion.div
@@ -287,7 +371,6 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                         exit={{ opacity: 0, transition: { duration: 0.25 } }}
                         className="absolute inset-0 flex flex-col items-center justify-center gap-6"
                     >
-                        {/* Frosted card */}
                         <div
                             className="flex flex-col items-center gap-5 px-10 py-8 rounded-3xl"
                             style={{
@@ -298,56 +381,81 @@ export const MiniGame1: React.FC<Props> = ({ onComplete }) => {
                                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                             }}
                         >
-                            <h2
-                                className="font-adventure text-4xl text-white leading-tight"
+                            {/* Boat on wave — animated */}
+                            <motion.div
+                                className="relative"
+                                animate={{ y: [0, -6, 0], rotate: [0, 4, -4, 0] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
                             >
-                                Esquiva las olas
+                                {/* Wave under the boat */}
+                                <svg width="80" height="16" viewBox="0 0 80 16" fill="none" className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+                                    <path d="M0,8 Q10,2 20,8 Q30,14 40,8 Q50,2 60,8 Q70,14 80,8" stroke="rgba(6,182,212,0.4)" strokeWidth="2" fill="none" strokeLinecap="round" />
+                                </svg>
+                                <GameBoatSVG />
+                            </motion.div>
+
+                            <h2 className="font-adventure text-2xl text-white leading-tight text-center">
+                                {t.dodgeTitle}
                             </h2>
-                            <p className="font-quest text-white/80 text-base text-center leading-snug max-w-[240px]">
-                                Toca la pantalla para saltar los obstaculos
+                            <p className="font-quest text-white/75 text-sm text-center leading-relaxed max-w-[240px]">
+                                {t.dodgeBody}
                             </p>
                             <motion.div
-                                className="w-14 h-14 rounded-full border-2 border-white/60"
-                                animate={{ scale: [1, 1.25, 1], opacity: [0.7, 0.3, 0.7] }}
-                                transition={{ duration: 1.1, repeat: Infinity }}
-                            />
-                            <p className="font-quest font-medium text-white/70 text-sm tracking-wide">Toca para empezar</p>
+                                className="w-11 h-11 rounded-full border-2 border-white/40 flex items-center justify-center"
+                                animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.25, 0.5] }}
+                                transition={{ duration: 1.2, repeat: Infinity }}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="white" strokeWidth="2" strokeLinecap="round">
+                                    <circle cx="12" cy="12" r="1.5" />
+                                </svg>
+                            </motion.div>
+                            <p className="font-quest font-medium text-white/45 text-[11px] tracking-wide">{t.tapToStart}</p>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {/* Completion overlay */}
+            {/* Completion overlay — matches Islas style */}
             <AnimatePresence>
                 {done && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="absolute inset-0 flex flex-col items-center justify-center gap-5"
+                        transition={{ delay: 0.3 }}
+                        className="absolute inset-0 flex items-center justify-center"
                     >
-                        <div
-                            className="flex flex-col items-center gap-4 px-10 py-8 rounded-3xl"
+                        <motion.div
+                            className="flex flex-col items-center gap-3 px-8 py-6 rounded-3xl"
                             style={{
-                                background: 'rgba(15,23,42,0.55)',
-                                backdropFilter: 'blur(12px)',
-                                WebkitBackdropFilter: 'blur(12px)',
+                                background: 'rgba(15,23,42,0.6)',
+                                backdropFilter: 'blur(14px)',
+                                WebkitBackdropFilter: 'blur(14px)',
                                 border: '1px solid rgba(255,255,255,0.1)',
                                 boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
                             }}
+                            initial={{ scale: 0.85, y: 15 }}
+                            animate={{ scale: 1, y: 0 }}
+                            transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.4 }}
                         >
                             <motion.div
-                                initial={{ scale: 0, rotate: -30 }}
-                                animate={{ scale: 1, rotate: 0 }}
-                                transition={{ type: 'spring', stiffness: 280, damping: 16 }}
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.5 }}
                             >
-                                <AnchorSVG size={52} color="white" />
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+                                    stroke="rgba(245,158,11,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                    <polyline points="22 4 12 14.01 9 11.01" />
+                                </svg>
                             </motion.div>
-                            <span
-                                className="font-adventure text-3xl text-white"
-                            >
-                                ¡Buen trabajo, navegante!
+                            <span className="font-adventure text-xl text-white text-center">
+                                {t.dodgeCompletion}
                             </span>
-                        </div>
+                            <span className="font-quest text-white/50 text-xs">
+                                {t.continueAdventure}
+                            </span>
+                        </motion.div>
                     </motion.div>
                 )}
             </AnimatePresence>

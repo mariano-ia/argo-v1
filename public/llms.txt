@@ -4,14 +4,14 @@
 
 ## What is Argo Method?
 
-Argo Method is a sports behavioral profiling tool for children aged 5–18. It uses the DISC methodology (Dominance, Influence, Steadiness, Conscientiousness) combined with a Motor dimension (processing speed) to generate a personalized behavioral profile for each young athlete.
+Argo Method is a sports behavioral profiling tool for children aged 8–16. It uses the DISC methodology (Dominance, Influence, Steadiness, Conscientiousness) combined with a Motor dimension (processing speed) to generate a personalized behavioral profile for each young athlete.
 
 The tool helps coaches, parents, and sports institutions understand how each child processes pressure, relates to their team, and makes decisions — so the adult can adapt their communication and create the right environment for the child to enjoy and stay in sport.
 
 ## How it works
 
 1. An adult registers the child (name, age, sport) — 3 minutes
-2. The child plays "La Odisea del Argo" (The Argo Odyssey), a 10-minute gamified interactive experience that measures 12 behavioral dimensions
+2. The child plays "La Odisea del Argo" (The Argo Odyssey), a 12-minute gamified interactive experience that measures 12 behavioral dimensions
 3. The adult receives a personalized report via email with the child's archetype, engine type, bridge words, noise words, and a daily coaching checklist
 
 ## The 12 Archetypes
@@ -47,7 +47,7 @@ Argo is based on the DISC behavioral model, which identifies four primary behavi
 ## Key facts
 
 - Free to use (beta)
-- 10-minute experience
+- 12-minute experience
 - No app installation required
 - Report delivered via email
 - Available in Spanish and English

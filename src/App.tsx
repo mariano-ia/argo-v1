@@ -25,6 +25,9 @@ import { BlogIndex }           from './pages/BlogIndex';
 import { BlogPost }            from './pages/BlogPost';
 import { BlogAdmin }           from './pages/dashboard/BlogAdmin';
 import { BlogEditor }          from './pages/dashboard/BlogEditor';
+import { TestIslas }           from './pages/TestIslas';
+import { TestEsquivar }       from './pages/TestEsquivar';
+import { TestTormenta }       from './pages/TestTormenta';
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -139,6 +142,9 @@ function App() {
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/test/islas" element={<TestIslas />} />
+            <Route path="/test/esquivar" element={<TestEsquivar />} />
+            <Route path="/test/tormenta" element={<TestTormenta />} />
 
             {/* Tenant dashboard */}
             <Route path="/dashboard" element={<TenantDashboard />}>

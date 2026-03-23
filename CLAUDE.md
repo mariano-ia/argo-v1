@@ -1,7 +1,7 @@
 # Argo Method — Project Context
 
 ## What is Argo
-Behavioral profiling tool for young athletes (5-18 years) based on the DISC model.
+Behavioral profiling tool for young athletes (8-16 years) based on the DISC model.
 A gamified "odyssey" with nautical theme generates a personalized report for the responsible adult (coach, parent, institution).
 
 ## Stack

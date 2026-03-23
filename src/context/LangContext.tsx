@@ -16,7 +16,7 @@ export const translations = {
             headlineAccent: 'Aprende a leerlo.',
             sub: 'Argo revela el perfil de comportamiento de cada deportista para que el adulto — entrenador o padre — sepa exactamente cómo comunicar, motivar y acompañar.',
             cta: 'Comenzar la Odisea',
-            ctaSub: '10 minutos · Gratis · Sin registro previo',
+            ctaSub: '12 minutos · Gratis · Sin registro previo',
         },
         problem: {
             eyebrow: 'El problema',
@@ -38,7 +38,7 @@ export const translations = {
         },
         insight: {
             quote: 'El que se adapta es el adulto, no el deportista.',
-            body: 'La ciencia del comportamiento deportivo muestra que los perfiles de respuesta emocional se forman antes de los 12 años y son altamente estables. Argo los detecta en 10 minutos de juego y le devuelve al adulto un manual de sintonía preciso.',
+            body: 'La ciencia del comportamiento deportivo muestra que los perfiles de respuesta emocional se forman antes de los 12 años y son altamente estables. Argo los detecta en 12 minutos de juego y le devuelve al adulto un manual de sintonía preciso.',
         },
         howItWorks: {
             eyebrow: 'Cómo funciona',
@@ -52,7 +52,7 @@ export const translations = {
                 {
                     number: '02',
                     title: 'El deportista juega',
-                    body: 'Le entregas el dispositivo. La Odisea del Argo es una aventura interactiva de 10 minutos que mide 12 dimensiones de comportamiento sin que lo note.',
+                    body: 'Le entregas el dispositivo. La Odisea del Argo es una aventura interactiva de 12 minutos que mide 12 dimensiones de comportamiento sin que lo note.',
                 },
                 {
                     number: '03',
@@ -115,7 +115,7 @@ export const translations = {
             headlineAccent: 'Learn to read it.',
             sub: 'Argo reveals the behavioral profile of each young athlete so the coach or parent knows exactly how to communicate, motivate, and support them.',
             cta: 'Start the Odyssey',
-            ctaSub: '10 minutes · Free · No prior sign-up',
+            ctaSub: '12 minutes · Free · No prior sign-up',
         },
         problem: {
             eyebrow: 'The problem',
@@ -137,7 +137,7 @@ export const translations = {
         },
         insight: {
             quote: 'The adult adapts — not the child.',
-            body: 'Sports behavioral science shows emotional response profiles form before age 12 and are highly stable. Argo detects them in 10 minutes of play and gives the adult a precise communication manual.',
+            body: 'Sports behavioral science shows emotional response profiles form before age 12 and are highly stable. Argo detects them in 12 minutes of play and gives the adult a precise communication manual.',
         },
         howItWorks: {
             eyebrow: 'How it works',
@@ -151,7 +151,7 @@ export const translations = {
                 {
                     number: '02',
                     title: 'Child plays',
-                    body: 'Hand them the device. The Argo Odyssey is a 10-minute interactive adventure that measures 12 behavioral dimensions without the child knowing.',
+                    body: 'Hand them the device. The Argo Odyssey is a 12-minute interactive adventure that measures 12 behavioral dimensions without the child knowing.',
                 },
                 {
                     number: '03',
@@ -214,7 +214,7 @@ export const translations = {
             headlineAccent: 'Aprenda a lê-lo.',
             sub: 'Argo revela o perfil comportamental de cada jovem atleta para que o treinador ou pai saiba exatamente como comunicar, motivar e acompanhar.',
             cta: 'Iniciar a Odisseia',
-            ctaSub: '10 minutos · Gratuito · Sem cadastro prévio',
+            ctaSub: '12 minutos · Gratuito · Sem cadastro prévio',
         },
         problem: {
             eyebrow: 'O problema',
@@ -236,7 +236,7 @@ export const translations = {
         },
         insight: {
             quote: 'Quem se adapta é o adulto, não a criança.',
-            body: 'A ciência do comportamento esportivo mostra que os perfis de resposta emocional se formam antes dos 12 anos e são altamente estáveis. Argo os detecta em 10 minutos de jogo e entrega ao adulto um manual de sintonia preciso.',
+            body: 'A ciência do comportamento esportivo mostra que os perfis de resposta emocional se formam antes dos 12 anos e são altamente estáveis. Argo os detecta em 12 minutos de jogo e entrega ao adulto um manual de sintonia preciso.',
         },
         howItWorks: {
             eyebrow: 'Como funciona',
@@ -250,7 +250,7 @@ export const translations = {
                 {
                     number: '02',
                     title: 'A criança joga',
-                    body: 'Entregue o dispositivo. A Odisseia do Argo é uma aventura interativa de 10 minutos que mede 12 dimensões comportamentais sem que a criança perceba.',
+                    body: 'Entregue o dispositivo. A Odisseia do Argo é uma aventura interativa de 12 minutos que mede 12 dimensões comportamentais sem que a criança perceba.',
                 },
                 {
                     number: '03',
