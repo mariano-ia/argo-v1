@@ -132,7 +132,7 @@ export const CardEntity: React.FC<Props> = ({
             style={{
                 perspective: 900,
                 width: '100%',
-                aspectRatio: '2/3',
+                aspectRatio: '3/4',
             }}
             initial={state === 'hidden' ? { scale: 0, opacity: 0 } : undefined}
             animate={state !== 'hidden' ? { scale: 1, opacity: 1 } : { scale: 0, opacity: 0 }}
