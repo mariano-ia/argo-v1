@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Users, Plus, ChevronRight, ArrowLeft, X, Pencil, Check, Trash2, Loader2, UserPlus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../components/ui/Toast';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
 import type { MemberProfile } from '../../lib/groupBalance';
 
@@ -73,6 +74,7 @@ const EJE_COLORS: Record<string, string> = {
 
 export const TenantGroups: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { toast } = useToast();
 
     // List state
     const [groups, setGroups] = useState<GroupRow[]>([]);
@@ -148,6 +150,7 @@ export const TenantGroups: React.FC = () => {
             setNewName('');
             setShowCreate(false);
             fetchGroups();
+            toast('success', 'Grupo creado');
         } finally {
             setCreating(false);
         }
@@ -207,6 +210,7 @@ export const TenantGroups: React.FC = () => {
         });
         setEditing(false);
         fetchDetail(selectedId);
+        toast('success', 'Grupo renombrado');
     };
 
     /* ── Delete group ──────────────────────────────────────────────────────── */
@@ -221,6 +225,7 @@ export const TenantGroups: React.FC = () => {
             headers: authHeaders(token),
             body: JSON.stringify({ action: 'delete', id: selectedId }),
         });
+        toast('success', 'Grupo eliminado');
         closeDetail();
     };
 
@@ -239,6 +244,7 @@ export const TenantGroups: React.FC = () => {
         });
         setRemovingId(null);
         fetchDetail(selectedId);
+        toast('success', 'Jugador quitado del grupo');
     };
 
     /* ── Add members modal ─────────────────────────────────────────────────── */
@@ -283,6 +289,7 @@ export const TenantGroups: React.FC = () => {
         setAdding(false);
         setShowAddModal(false);
         fetchDetail(selectedId);
+        toast('success', `${selectedSessions.size} ${selectedSessions.size === 1 ? 'jugador agregado' : 'jugadores agregados'}`);
     };
 
     // Sessions not already in the group
@@ -607,6 +614,9 @@ export const TenantGroups: React.FC = () => {
                     </div>
                 ) : groups.length === 0 ? (
                     <div className="py-12 text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
+                            <Users size={20} className="text-argo-indigo" />
+                        </div>
                         <p className="text-sm text-argo-grey">No tienes grupos creados todavía.</p>
                         <p className="text-xs text-argo-grey/50 mt-1">Crea tu primer grupo para empezar a organizar a tus deportistas.</p>
                     </div>

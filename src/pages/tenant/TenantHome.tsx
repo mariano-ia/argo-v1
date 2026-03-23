@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2 } from 'lucide-react';
+import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2, Anchor } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
@@ -113,7 +113,7 @@ export const TenantHome: React.FC = () => {
             window.location.href = url;
         } catch (err) {
             console.error('[TenantHome] Checkout error:', err);
-            setPaymentMsg({ type: 'cancel', text: 'No se pudo iniciar el pago. Intentá de nuevo.' });
+            setPaymentMsg({ type: 'cancel', text: 'No se pudo iniciar el pago. Intenta de nuevo.' });
             setTimeout(() => setPaymentMsg(null), 4000);
         } finally {
             setBuyingPack(null);
@@ -281,7 +281,7 @@ export const TenantHome: React.FC = () => {
                 </div>
                 {tenant.credits_remaining === 0 && (
                     <p className="text-xs text-amber-600 mb-3">
-                        No tenés créditos disponibles. Comprá un pack para seguir invitando deportistas.
+                        No tienes créditos disponibles. Compra un pack para seguir invitando deportistas.
                     </p>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -333,8 +333,11 @@ export const TenantHome: React.FC = () => {
                     </div>
                 ) : sessions.length === 0 ? (
                     <div className="py-12 text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
+                            <Anchor size={20} className="text-argo-indigo" />
+                        </div>
                         <p className="text-sm text-argo-grey">Todavía no hay sesiones registradas.</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">Compartí tu link para que empiecen a llegar.</p>
+                        <p className="text-xs text-argo-grey/50 mt-1">Comparte tu link para que empiecen a llegar.</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">

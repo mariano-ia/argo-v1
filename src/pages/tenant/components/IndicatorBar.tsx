@@ -40,7 +40,7 @@ export const IndicatorBar: React.FC<Props> = ({
             {/* Expandable description */}
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[11px] text-argo-grey hover:text-argo-navy transition-colors flex items-center gap-1"
+                className="text-[11px] text-argo-grey hover:text-argo-navy transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 rounded-lg"
             >
                 <svg
                     className={`w-3 h-3 transition-transform ${expanded ? 'rotate-90' : ''}`}

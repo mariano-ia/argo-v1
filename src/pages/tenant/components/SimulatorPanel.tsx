@@ -39,7 +39,7 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                         <button
                             key={m.session_id}
                             onClick={() => setSelectedId(isSelected ? null : m.session_id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 ${
                                 isSelected
                                     ? 'border-argo-navy bg-argo-navy text-white'
                                     : 'border-argo-border hover:border-argo-navy/30 text-argo-navy'

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
@@ -205,7 +205,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                     {/* Noise words */}
                     {reportData && (
                         <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Palabras ruido</h4>
+                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">Evitar en la comunicación</h4>
                             <div className="flex flex-wrap gap-1.5">
                                 {reportData.palabrasRuido.map((w, i) => (
                                     <span
@@ -248,7 +248,7 @@ const PlayerCard: React.FC<{ session: SessionRow }> = ({ session }) => {
                                         <span className="font-semibold">Activar:</span> {g.activador}
                                     </p>
                                     <p className="text-[11px] text-red-600">
-                                        <span className="font-semibold">Cuidado:</span> {g.desmotivacion}
+                                        <span className="font-semibold">A considerar:</span> {g.desmotivacion}
                                     </p>
                                 </div>
                             ))}
@@ -448,6 +448,9 @@ export const TenantPlayers: React.FC = () => {
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12">
+                    <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
+                        <UserCircle size={20} className="text-argo-indigo" />
+                    </div>
                     <p className="text-sm text-argo-grey">
                         {sessions.length === 0
                             ? 'Todavía no tienes jugadores perfilados.'

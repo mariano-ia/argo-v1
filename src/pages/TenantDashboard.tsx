@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
+import { ToastProvider } from '../components/ui/Toast';
 import type { Session } from '@supabase/supabase-js';
 import {
     Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Users, BookOpen, UserCircle, MessageCircle,
@@ -180,6 +181,7 @@ export const TenantDashboard: React.FC = () => {
     );
 
     return (
+        <ToastProvider>
         <div className="flex h-screen bg-argo-neutral overflow-hidden">
             {/* Desktop sidebar */}
             <div className="hidden md:flex">
@@ -214,5 +216,6 @@ export const TenantDashboard: React.FC = () => {
                 </main>
             </div>
         </div>
+        </ToastProvider>
     );
 };

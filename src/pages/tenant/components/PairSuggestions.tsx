@@ -42,7 +42,7 @@ const PairCard: React.FC<{ pair: PairResult }> = ({ pair }) => {
 
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[11px] text-argo-indigo hover:text-argo-navy transition-colors font-medium"
+                className="text-[11px] text-argo-indigo hover:text-argo-navy transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 rounded-lg"
             >
                 {expanded ? 'Ocultar herramientas' : 'Ver herramientas para el adulto'}
             </button>
