@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Users, Plus, ChevronRight, ArrowLeft, X, Pencil, Check, Trash2, Loader2, UserPlus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { GroupBalancePanel } from './components/GroupBalancePanel';
+import type { MemberProfile } from '../../lib/groupBalance';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -402,6 +404,22 @@ export const TenantGroups: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {/* ── Group Balance Analysis ──────────────────────────────── */}
+                {!detailLoading && members.length >= 2 && (
+                    <GroupBalancePanel
+                        members={members.map(m => ({
+                            session_id: m.session_id,
+                            child_name: m.child_name,
+                            child_age: m.child_age,
+                            sport: m.sport,
+                            eje: m.eje as MemberProfile['eje'],
+                            motor: m.motor,
+                            eje_secundario: m.eje_secundario,
+                            archetype_label: m.archetype_label,
+                        }))}
+                    />
+                )}
 
                 {/* Delete group */}
                 <div className="pt-4 border-t border-argo-border">
