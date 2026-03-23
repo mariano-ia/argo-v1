@@ -25,6 +25,9 @@ import { buildReportHtml } from './screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
 import { CHILD_REVEAL_TEXTS } from '../../lib/childRevealTexts';
 import { AnimatedScene } from './scenes/AnimatedScene';
+import { IslasDesconocidas, IslandMetrics } from '../games/IslasDesconocidas';
+import { MiniGame1, RhythmMetrics } from './screens/MiniGame1';
+import { LaTormenta, AdaptationMetrics } from '../games/LaTormenta';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,46 +48,53 @@ type ScreenDef =
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; useContinueLabelFromT?: boolean }
     | { type: 'question'; questionIndex: number }
+    | { type: 'minigame'; gameId: 'minigame_a' | 'minigame_b' | 'minigame_c' }
     | { type: 'child-result' }
 ;
 
 const SCREENS: ScreenDef[] = [
     // Language selection
-    { type: 'language-select' },
+    { type: 'language-select' },                                    // 0
     // Adult onboarding (intro + registration)
-    { type: 'adult-intro', slideIndex: 0 },
-    { type: 'adult-intro', slideIndex: 1 },
-    { type: 'adult-intro', slideIndex: 2 },
-    { type: 'adult-registration' },
-    { type: 'device-handoff' },
+    { type: 'adult-intro', slideIndex: 0 },                        // 1
+    { type: 'adult-intro', slideIndex: 1 },                        // 2
+    { type: 'adult-intro', slideIndex: 2 },                        // 3
+    { type: 'adult-registration' },                                 // 4
+    { type: 'device-handoff' },                                     // 5
     // Child story intro
-    { type: 'story', slideId: 'intro_a' },
-    { type: 'story', slideId: 'intro_b' },
-    { type: 'story', slideId: 'intro_c' },
-    { type: 'story', slideId: 'intro_0', useContinueLabelFromT: true },
+    { type: 'story', slideId: 'intro_a' },                         // 6
+    { type: 'story', slideId: 'intro_b' },                         // 7
+    { type: 'story', slideId: 'intro_c' },                         // 8
+    { type: 'story', slideId: 'intro_0', useContinueLabelFromT: true }, // 9
+    // MiniGame A — "El cofre del Capitán" (measures impulse)
+    { type: 'minigame', gameId: 'minigame_a' },                    // 10
     // Phase: Puerto (Q1-Q2)
-    { type: 'question', questionIndex: 0 },
-    { type: 'question', questionIndex: 1 },
-    { type: 'story', slideId: 'slide_1' },
+    { type: 'question', questionIndex: 0 },                        // 11
+    { type: 'question', questionIndex: 1 },                        // 12
+    { type: 'story', slideId: 'slide_1' },                         // 13
+    // MiniGame B — "Mar abierto" (measures rhythm)
+    { type: 'minigame', gameId: 'minigame_b' },                    // 14
     // Phase: Mar Abierto (Q3-Q4)
-    { type: 'question', questionIndex: 2 },
-    { type: 'question', questionIndex: 3 },
+    { type: 'question', questionIndex: 2 },                        // 15
+    { type: 'question', questionIndex: 3 },                        // 16
     // Phase: Tormenta (Q5-Q7)
-    { type: 'story', slideId: 'slide_2' },
-    { type: 'question', questionIndex: 4 },
-    { type: 'question', questionIndex: 5 },
-    { type: 'question', questionIndex: 6 },
+    { type: 'story', slideId: 'slide_2' },                         // 17
+    { type: 'question', questionIndex: 4 },                        // 18
+    { type: 'question', questionIndex: 5 },                        // 19
+    { type: 'question', questionIndex: 6 },                        // 20
+    // MiniGame C — "La tormenta" (measures adaptation)
+    { type: 'minigame', gameId: 'minigame_c' },                    // 21
     // Calma (Q8-Q10)
-    { type: 'story', slideId: 'slide_3' },
-    { type: 'question', questionIndex: 7 },
-    { type: 'question', questionIndex: 8 },
-    { type: 'question', questionIndex: 9 },
+    { type: 'story', slideId: 'slide_3' },                         // 22
+    { type: 'question', questionIndex: 7 },                        // 23
+    { type: 'question', questionIndex: 8 },                        // 24
+    { type: 'question', questionIndex: 9 },                        // 25
     // Phase: Isla (Q11-Q12)
-    { type: 'story', slideId: 'slide_4' },
-    { type: 'question', questionIndex: 10 },
-    { type: 'question', questionIndex: 11 },
+    { type: 'story', slideId: 'slide_4' },                         // 26
+    { type: 'question', questionIndex: 10 },                       // 27
+    { type: 'question', questionIndex: 11 },                       // 28
     // Closure
-    { type: 'child-result' },      // resolves profile + shows archetype result to child (final screen)
+    { type: 'child-result' },                                       // 29
 ];
 
 /** Get the question index that determines the scene phase.
@@ -133,6 +143,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
+
+    // Mini-game metrics for motor calculation
+    const gameAMetricsRef  = useRef<IslandMetrics | null>(null);
+    const gameBMetricsRef  = useRef<RhythmMetrics | null>(null);
+    const gameCMetricsRef  = useRef<AdaptationMetrics | null>(null);
 
     // ── Session persistence (Options 1, 2, 3) ──────────────────────────────
     const sessionIdRef = useRef<string | null>(null);
@@ -193,7 +208,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const FADE_IN_MS     = 5000;
     const FADE_OUT_MS    = 3000;
     const ODYSSEY_START  = 6;
-    const ODYSSEY_END    = 26;
+    const ODYSSEY_END    = 29;
     const LOOP_MARGIN    = 0.3;
 
     const EFFECT_VOL         = 0.25;
@@ -201,10 +216,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const EFFECT_FADE_OUT_MS = 1500;
 
     const getEffectSrc = (idx: number): string | null => {
-        if (idx >= 6 && idx <= 11)  return '/audio/effects_01.mp3'; // intro + puerto
-        if (idx >= 12 && idx <= 14) return '/audio/effects_02.mp3'; // mar abierto
-        if (idx >= 15 && idx <= 18) return '/audio/effects_03.mp3'; // tormenta
-        if (idx >= 19 && idx <= 26) return '/audio/effects_02.mp3'; // calma + isla + completion
+        if (idx >= 6 && idx <= 12)  return '/audio/effects_01.mp3'; // intro + minigame_a + puerto
+        if (idx >= 13 && idx <= 16) return '/audio/effects_02.mp3'; // mar abierto + minigame_b
+        if (idx >= 17 && idx <= 21) return '/audio/effects_03.mp3'; // tormenta + minigame_c
+        if (idx >= 22 && idx <= 29) return '/audio/effects_02.mp3'; // calma + isla + completion
         return null;
     };
 
@@ -401,7 +416,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             let profile: ReturnType<typeof resolveFromAnswers>;
             let report: ReturnType<typeof getReportData>;
             try {
-                profile = resolveFromAnswers(answers, sessionCtx);
+                profile = resolveFromAnswers(answers, sessionCtx, {
+                    impulse: gameAMetricsRef.current,
+                    rhythm: gameBMetricsRef.current,
+                    adaptation: gameCMetricsRef.current,
+                });
                 report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
                 report.ejeSecundario  = profile.ejeSecundario;
                 report.tendenciaLabel = profile.tendenciaLabel;
@@ -703,6 +722,30 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         deporte={deporte}
                         onContinue={advance}
                         continueLabel={screen.useContinueLabelFromT ? ot.aboard : undefined}
+                    />
+                )}
+
+                {screen.type === 'minigame' && screen.gameId === 'minigame_a' && (
+                    <IslasDesconocidas
+                        key="minigame-a"
+                        lang={lang}
+                        onComplete={(m) => { gameAMetricsRef.current = m; advance(); }}
+                    />
+                )}
+
+                {screen.type === 'minigame' && screen.gameId === 'minigame_b' && (
+                    <MiniGame1
+                        key="minigame-b"
+                        lang={lang}
+                        onComplete={(m) => { gameBMetricsRef.current = m; advance(); }}
+                    />
+                )}
+
+                {screen.type === 'minigame' && screen.gameId === 'minigame_c' && (
+                    <LaTormenta
+                        key="minigame-c"
+                        lang={lang}
+                        onComplete={(m) => { gameCMetricsRef.current = m; advance(); }}
                     />
                 )}
 

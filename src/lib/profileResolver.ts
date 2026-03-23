@@ -1,6 +1,69 @@
 
 import { EjeInput, MotorInput, ARQUETIPOS } from './argosEngine';
 import { Axis } from './onboardingData';
+import type { IslandMetrics } from '../components/games/IslasDesconocidas';
+import type { RhythmMetrics } from '../components/onboarding/screens/MiniGame1';
+import type { AdaptationMetrics } from '../components/games/LaTormenta';
+
+/**
+ * Mini-game metrics for motor calculation.
+ * Motor = (Impulse × 0.30) + (Rhythm × 0.30) + (Adaptation × 0.40)
+ */
+export interface GameMetrics {
+    impulse?: IslandMetrics | null;    // Game A — card latency
+    rhythm?: RhythmMetrics | null;     // Game B — dodge reaction
+    adaptation?: AdaptationMetrics | null; // Game C — storm adaptation
+}
+
+/**
+ * Calculates motor from mini-game metrics.
+ * Each vector produces a 0-100 score, then weighted average → Rápido/Medio/Lento.
+ * Returns null if no game metrics are available (falls back to legacy).
+ */
+export function resolveMotorFromGames(games: GameMetrics): MotorInput | null {
+    const scores: { weight: number; score: number }[] = [];
+
+    // Vector 1: Impulse (card latency) — faster = higher score
+    if (games.impulse) {
+        const avg = games.impulse.avgLatency;
+        // <1000ms = very fast (100), >5000ms = very slow (0)
+        const score = Math.max(0, Math.min(100, (1 - (avg - 800) / 4200) * 100));
+        scores.push({ weight: 0.30, score });
+    }
+
+    // Vector 2: Rhythm (dodge reaction) — faster avg reaction = higher score
+    if (games.rhythm) {
+        const avg = games.rhythm.avgReaction;
+        // <300ms = very fast (100), >1500ms = very slow (0)
+        const reactionScore = Math.max(0, Math.min(100, (1 - (avg - 200) / 1300) * 100));
+        // Extra taps = impulsivity bonus (capped)
+        const impulsivityBonus = Math.min(15, games.rhythm.extraTaps * 5);
+        const score = Math.min(100, reactionScore + impulsivityBonus);
+        scores.push({ weight: 0.30, score });
+    }
+
+    // Vector 3: Adaptation — faster adaptation + fewer errors = higher score
+    if (games.adaptation) {
+        const avg = games.adaptation.avgAdaptation;
+        // <500ms = very fast (100), >4000ms = very slow (0)
+        const adaptScore = Math.max(0, Math.min(100, (1 - (avg - 300) / 3700) * 100));
+        // Penalize inertia errors
+        const errorPenalty = Math.min(30, games.adaptation.inertiaErrors * 10);
+        const score = Math.max(0, adaptScore - errorPenalty);
+        scores.push({ weight: 0.40, score });
+    }
+
+    if (scores.length === 0) return null;
+
+    // Normalize weights if some games are missing
+    const totalWeight = scores.reduce((s, v) => s + v.weight, 0);
+    const composite = scores.reduce((s, v) => s + (v.score * v.weight / totalWeight), 0);
+
+    // Map composite score to motor
+    if (composite >= 67) return 'Rápido';
+    if (composite <= 33) return 'Lento';
+    return 'Medio';
+}
 
 export interface QuestionAnswer {
     axis: Axis;
@@ -101,6 +164,7 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
 export function resolveFromAnswers(
     answers: QuestionAnswer[],
     sessionCtx?: SessionContext,
+    gameMetrics?: GameMetrics,
 ): ProfileResult {
     // — Eje from axis counts —
     const axisCounts: Record<Axis, number> = { D: 0, I: 0, S: 0, C: 0 };
@@ -131,34 +195,41 @@ export function resolveFromAnswers(
         }
     }
 
-    // — Motor from average response time —
-    const avgMs = total > 0
-        ? answers.reduce((sum, a) => sum + a.responseTimeMs, 0) / total
-        : 5000;
-
+    // — Motor: prefer game-based calculation, fallback to legacy response time —
     let motor: MotorInput;
-    if (avgMs < 5000) {
-        motor = 'Rápido';
-    } else if (avgMs > 12000) {
-        motor = 'Lento';
+    const gameMotor = gameMetrics ? resolveMotorFromGames(gameMetrics) : null;
+
+    if (gameMotor) {
+        motor = gameMotor;
+        console.log('[Motor] Resolved from mini-games:', motor);
     } else {
-        // Medium time range — use score-difference as tiebreaker
-        if (diff >= Math.ceil(total * 0.25)) {
+        // Legacy fallback: average response time
+        const avgMs = total > 0
+            ? answers.reduce((sum, a) => sum + a.responseTimeMs, 0) / total
+            : 5000;
+
+        if (avgMs < 5000) {
             motor = 'Rápido';
-        } else if (diff <= 1) {
+        } else if (avgMs > 12000) {
             motor = 'Lento';
         } else {
-            motor = 'Medio';
+            if (diff >= Math.ceil(total * 0.25)) {
+                motor = 'Rápido';
+            } else if (diff <= 1) {
+                motor = 'Lento';
+            } else {
+                motor = 'Medio';
+            }
         }
-    }
 
-    // — Motor tiebreaker: when too many "Medio", nudge based on avgMs —
-    if (sessionCtx && motor === 'Medio' && sessionCtx.priorMotors.length >= 3) {
-        const medioRatio = sessionCtx.priorMotors.filter(m => m === 'Medio').length
-            / sessionCtx.priorMotors.length;
-        if (medioRatio > 0.6) {
-            motor = avgMs < 8500 ? 'Rápido' : 'Lento';
-            tiebreakerApplied = true;
+        // Motor tiebreaker: when too many "Medio", nudge based on avgMs
+        if (sessionCtx && motor === 'Medio' && sessionCtx.priorMotors.length >= 3) {
+            const medioRatio = sessionCtx.priorMotors.filter(m => m === 'Medio').length
+                / sessionCtx.priorMotors.length;
+            if (medioRatio > 0.6) {
+                motor = avgMs < 8500 ? 'Rápido' : 'Lento';
+                tiebreakerApplied = true;
+            }
         }
     }
 
