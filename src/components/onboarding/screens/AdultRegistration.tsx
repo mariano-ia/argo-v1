@@ -27,7 +27,7 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
     const [edad, setEdad]                 = useState(10);
     const [deporte, setDeporte]           = useState('');
     const [deporteCustom, setDeporteCustom] = useState('');
-    const [checks, setChecks]             = useState([false, false, false]);
+    const [checks, setChecks]             = useState([false, false, false, false]);
 
     const lastSport = ot.sports[ot.sports.length - 1]; // "Otro" / "Other" / "Outro"
     const deporteFinal = deporte === lastSport ? deporteCustom : deporte;
