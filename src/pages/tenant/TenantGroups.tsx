@@ -136,7 +136,7 @@ export const TenantGroups: React.FC = () => {
             const res = await fetch('/api/tenant-groups', {
                 method: 'POST',
                 headers: authHeaders(token),
-                body: JSON.stringify({ name: newName.trim() }),
+                body: JSON.stringify({ action: 'create', name: newName.trim() }),
             });
             const data = await res.json();
             if (!res.ok) {
@@ -159,7 +159,7 @@ export const TenantGroups: React.FC = () => {
         if (!token) return;
 
         try {
-            const res = await fetch(`/api/tenant-group?id=${groupId}`, {
+            const res = await fetch(`/api/tenant-groups?id=${groupId}`, {
                 headers: authHeaders(token),
             });
             if (res.ok) {
@@ -198,10 +198,10 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
 
-        await fetch('/api/tenant-group', {
-            method: 'PATCH',
+        await fetch('/api/tenant-groups', {
+            method: 'POST',
             headers: authHeaders(token),
-            body: JSON.stringify({ id: selectedId, name: editName.trim() }),
+            body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim() }),
         });
         setEditing(false);
         fetchDetail(selectedId);
@@ -214,10 +214,10 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
 
-        await fetch('/api/tenant-group', {
-            method: 'DELETE',
+        await fetch('/api/tenant-groups', {
+            method: 'POST',
             headers: authHeaders(token),
-            body: JSON.stringify({ id: selectedId }),
+            body: JSON.stringify({ action: 'delete', id: selectedId }),
         });
         closeDetail();
     };
@@ -230,10 +230,10 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
 
-        await fetch('/api/tenant-group-members', {
-            method: 'DELETE',
+        await fetch('/api/tenant-groups', {
+            method: 'POST',
             headers: authHeaders(token),
-            body: JSON.stringify({ group_id: selectedId, session_ids: [sessionId] }),
+            body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }),
         });
         setRemovingId(null);
         fetchDetail(selectedId);
@@ -273,10 +273,10 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
 
-        await fetch('/api/tenant-group-members', {
+        await fetch('/api/tenant-groups', {
             method: 'POST',
             headers: authHeaders(token),
-            body: JSON.stringify({ group_id: selectedId, session_ids: Array.from(selectedSessions) }),
+            body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions) }),
         });
         setAdding(false);
         setShowAddModal(false);
