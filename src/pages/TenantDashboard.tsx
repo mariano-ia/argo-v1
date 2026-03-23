@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import type { Session } from '@supabase/supabase-js';
 import {
-    Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Users,
 } from 'lucide-react';
 
 interface TenantData {
@@ -16,8 +16,9 @@ interface TenantData {
 }
 
 const NAV_ITEMS = [
-    { to: '/dashboard',       label: 'Inicio',   icon: Home,     end: true },
-    { to: '/dashboard/link',  label: 'Mi link',   icon: Link2,    end: false },
+    { to: '/dashboard',          label: 'Inicio',  icon: Home,     end: true },
+    { to: '/dashboard/groups',   label: 'Grupos',  icon: Users,    end: false },
+    { to: '/dashboard/link',     label: 'Mi link', icon: Link2,    end: false },
     { to: '/dashboard/settings', label: 'Ajustes', icon: Settings, end: false },
 ];
 
@@ -28,15 +29,30 @@ export const TenantDashboard: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
+    // DEV bypass: skip auth, load fake tenant
+    const isDev = import.meta.env.DEV;
+    const [devBypass] = useState(() => isDev && new URLSearchParams(window.location.search).has('dev'));
+
     useEffect(() => {
+        if (devBypass) {
+            setSession({} as Session); // truthy placeholder
+            setTenant({
+                id: 'dev-tenant-000',
+                slug: 'dev',
+                display_name: 'Dev Tenant',
+                plan: 'trial',
+                credits_remaining: 99,
+            });
+            return;
+        }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
         return () => subscription.unsubscribe();
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Load tenant data once session is available
     const fetchTenant = React.useCallback(() => {
-        if (!session) return;
+        if (!session || devBypass) return;
         supabase
             .from('tenants')
             .select('id, slug, display_name, plan, credits_remaining')
@@ -45,7 +61,7 @@ export const TenantDashboard: React.FC = () => {
             .then(({ data }) => {
                 if (data) setTenant(data);
             });
-    }, [session]);
+    }, [session, devBypass]);
 
     useEffect(() => {
         fetchTenant();
