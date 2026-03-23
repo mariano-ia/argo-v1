@@ -10,6 +10,7 @@ import { TenantHome }        from './pages/tenant/TenantHome';
 import { TenantLink }        from './pages/tenant/TenantLink';
 import { TenantSettings }    from './pages/tenant/TenantSettings';
 import { TenantGroups }      from './pages/tenant/TenantGroups';
+import { TenantGuide }       from './pages/tenant/TenantGuide';
 import { TenantPlay }        from './pages/TenantPlay';
 import { Dashboard }          from './pages/Dashboard';
 import { Sessions }           from './pages/dashboard/Sessions';
@@ -151,6 +152,7 @@ function App() {
             <Route path="/dashboard" element={<TenantDashboard />}>
                 <Route index           element={<TenantHome />} />
                 <Route path="groups"   element={<TenantGroups />} />
+                <Route path="guide"    element={<TenantGuide />} />
                 <Route path="link"     element={<TenantLink />} />
                 <Route path="settings" element={<TenantSettings />} />
             </Route>
