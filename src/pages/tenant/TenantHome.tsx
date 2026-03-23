@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2, Anchor } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
@@ -8,6 +9,9 @@ import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
+import { SkeletonList, SkeletonSessionRow } from '../../components/ui/Skeleton';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 interface TenantData {
     id: string;
@@ -40,6 +44,8 @@ const CREDIT_PACKS = [
 
 export const TenantHome: React.FC = () => {
     const { tenant, refreshTenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const [copied, setCopied] = React.useState(false);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
@@ -53,12 +59,12 @@ export const TenantHome: React.FC = () => {
     useEffect(() => {
         const payment = searchParams.get('payment');
         if (payment === 'success') {
-            setPaymentMsg({ type: 'success', text: 'Pago confirmado. Tus créditos fueron acreditados.' });
+            setPaymentMsg({ type: 'success', text: dt.home.pagoConfirmado });
             refreshTenant();
             setSearchParams({}, { replace: true });
             setTimeout(() => setPaymentMsg(null), 6000);
         } else if (payment === 'cancel') {
-            setPaymentMsg({ type: 'cancel', text: 'Pago cancelado.' });
+            setPaymentMsg({ type: 'cancel', text: dt.home.pagoCancelado });
             setSearchParams({}, { replace: true });
             setTimeout(() => setPaymentMsg(null), 4000);
         }
@@ -106,14 +112,14 @@ export const TenantHome: React.FC = () => {
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Error al crear la sesión de pago');
+                throw new Error(err.error || 'Checkout error');
             }
 
             const { url } = await res.json();
             window.location.href = url;
         } catch (err) {
             console.error('[TenantHome] Checkout error:', err);
-            setPaymentMsg({ type: 'cancel', text: 'No se pudo iniciar el pago. Intentá de nuevo.' });
+            setPaymentMsg({ type: 'cancel', text: dt.home.errorPago });
             setTimeout(() => setPaymentMsg(null), 4000);
         } finally {
             setBuyingPack(null);
@@ -185,18 +191,25 @@ export const TenantHome: React.FC = () => {
         }
     };
 
+    const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
+
     const formatDate = (iso: string) => {
         const d = new Date(iso);
-        return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
     const formatTime = (iso: string) => {
         const d = new Date(iso);
-        return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
-        <div className="max-w-2xl">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl"
+        >
             {/* Resend snackbar — top-right */}
             {resendMsg && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg transition-all ${
@@ -204,7 +217,7 @@ export const TenantHome: React.FC = () => {
                         ? 'bg-green-600 text-white'
                         : 'bg-red-600 text-white'
                 }`}>
-                    {resendMsg.ok ? 'Informe enviado con éxito' : 'Error al enviar el informe'}
+                    {resendMsg.ok ? dt.home.informeEnviado : dt.home.errorEnvio}
                 </div>
             )}
 
@@ -220,19 +233,19 @@ export const TenantHome: React.FC = () => {
             )}
 
             <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">
-                Hola, {tenant.display_name}
+                {dt.home.bienvenida(tenant.display_name)}
             </h1>
             <p className="text-sm text-argo-grey mb-8">
-                Plan {tenant.plan} · {tenant.credits_remaining} crédito{tenant.credits_remaining !== 1 ? 's' : ''} disponible{tenant.credits_remaining !== 1 ? 's' : ''}
+                {dt.settings.plan} {tenant.plan} · {tenant.credits_remaining} {dt.home.creditosDisponibles}
             </p>
 
             {/* Play link card */}
             <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm mb-6">
                 <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest mb-3">
-                    Tu link de invitación
+                    {dt.homeExtra.tuLinkInvitacion}
                 </h2>
                 <p className="text-xs text-argo-grey mb-4">
-                    Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus deportistas.
+                    {dt.homeExtra.tuLinkInvitacionDesc}
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -244,29 +257,29 @@ export const TenantHome: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-neutral transition-all flex-shrink-0"
                     >
                         {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-                        {copied ? 'Copiado' : 'Copiar'}
+                        {copied ? dt.home.linkCopiado : dt.home.copiarLink}
                     </button>
                 </div>
 
                 <p className="text-[10px] text-argo-grey/50 mt-3">
-                    Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.
+                    {dt.homeExtra.creditoNota}
                 </p>
             </div>
 
             {/* Quick stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Créditos</p>
+                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.home.creditos}</p>
                     <p className="text-2xl font-bold text-argo-navy">{tenant.credits_remaining}</p>
                 </div>
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Sesiones</p>
+                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.home.sesionesRealizadas}</p>
                     <p className="text-2xl font-bold text-argo-navy">
                         {sessionsLoading ? '…' : sessions.length}
                     </p>
                 </div>
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Plan</p>
+                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.settings.plan}</p>
                     <p className="text-2xl font-bold text-argo-navy capitalize">{tenant.plan}</p>
                 </div>
             </div>
@@ -276,12 +289,12 @@ export const TenantHome: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                     <CreditCard size={15} className="text-argo-grey" />
                     <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                        Comprar créditos
+                        {dt.homeExtra.comprarCreditos}
                     </h2>
                 </div>
                 {tenant.credits_remaining === 0 && (
                     <p className="text-xs text-amber-600 mb-3">
-                        No tenés créditos disponibles. Comprá un pack para seguir invitando deportistas.
+                        {dt.home.sinCreditos}
                     </p>
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -297,7 +310,7 @@ export const TenantHome: React.FC = () => {
                                     <span className="text-sm font-bold uppercase tracking-wide capitalize">{pack.id}</span>
                                 </div>
                                 <p className="text-3xl font-bold mb-1">{pack.credits}</p>
-                                <p className="text-xs opacity-70 mb-4">créditos</p>
+                                <p className="text-xs opacity-70 mb-4">{dt.home.creditos}</p>
                                 <button
                                     onClick={() => handleBuyPack(pack.id)}
                                     disabled={buyingPack !== null}
@@ -306,7 +319,7 @@ export const TenantHome: React.FC = () => {
                                     {buyingPack === pack.id ? (
                                         <span className="flex items-center justify-center gap-2">
                                             <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                            Procesando...
+                                            {dt.homeExtra.procesando}
                                         </span>
                                     ) : (
                                         `US$ ${pack.priceUsd}`
@@ -323,18 +336,19 @@ export const TenantHome: React.FC = () => {
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <Users size={15} className="text-argo-grey" />
                     <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                        Sesiones realizadas
+                        {dt.home.sesionesRealizadas}
                     </h2>
                 </div>
 
                 {sessionsLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                    </div>
+                    <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                 ) : sessions.length === 0 ? (
                     <div className="py-12 text-center">
-                        <p className="text-sm text-argo-grey">Todavía no hay sesiones registradas.</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">Compartí tu link para que empiecen a llegar.</p>
+                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
+                            <Anchor size={20} className="text-argo-indigo" />
+                        </div>
+                        <p className="text-sm text-argo-grey">{dt.home.sinSesiones}</p>
+                        <p className="text-xs text-argo-grey/50 mt-1">{dt.home.sinSesionesDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">
@@ -345,18 +359,18 @@ export const TenantHome: React.FC = () => {
                                         <p className="text-sm font-semibold text-argo-navy truncate">
                                             {s.child_name}
                                             <span className="font-normal text-argo-grey ml-1.5">
-                                                {s.child_age} años{s.sport ? ` · ${s.sport}` : ''}
+                                                {s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}
                                             </span>
                                         </p>
                                         <p className="text-xs text-argo-grey mt-0.5 truncate">
-                                            Adulto: {s.adult_name} ({s.adult_email})
+                                            {dt.homeExtra.adulto}: {s.adult_name} ({s.adult_email})
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-3 flex-shrink-0">
                                         <button
                                             onClick={() => handleResend(s)}
                                             disabled={resendingId === s.id}
-                                            title="Reenviar informe"
+                                            title={dt.home.reenviarInforme}
                                             className="mt-0.5 p-1.5 rounded-lg text-argo-grey hover:text-argo-indigo hover:bg-argo-neutral transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {resendingId === s.id
@@ -379,6 +393,6 @@ export const TenantHome: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };

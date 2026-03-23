@@ -1,6 +1,8 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Copy, Check, Share2 } from 'lucide-react';
+import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
 
 interface TenantData {
     id: string;
@@ -12,6 +14,8 @@ interface TenantData {
 
 export const TenantLink: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const [copied, setCopied] = React.useState(false);
 
     if (!tenant) {
@@ -33,8 +37,8 @@ export const TenantLink: React.FC = () => {
     const shareLink = async () => {
         if (navigator.share) {
             await navigator.share({
-                title: 'Argo Method — Experiencia deportiva',
-                text: 'Realiza la experiencia Argo para descubrir el perfil deportivo de tu niño/a.',
+                title: 'Argo Method',
+                text: dt.link.descripcion,
                 url: playLink,
             });
         } else {
@@ -44,9 +48,9 @@ export const TenantLink: React.FC = () => {
 
     return (
         <div className="max-w-2xl">
-            <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">Mi link</h1>
+            <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">{dt.link.titulo}</h1>
             <p className="text-sm text-argo-grey mb-8">
-                Comparte este link para que los adultos realicen la experiencia Argo con sus deportistas.
+                {dt.link.descripcion}
             </p>
 
             <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm">
@@ -62,20 +66,20 @@ export const TenantLink: React.FC = () => {
                         className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold bg-argo-navy text-white rounded-lg hover:opacity-90 transition-all"
                     >
                         {copied ? <Check size={14} /> : <Copy size={14} />}
-                        {copied ? 'Copiado' : 'Copiar link'}
+                        {copied ? dt.link.copiado : dt.link.copiarLink}
                     </button>
                     <button
                         onClick={shareLink}
                         className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-neutral transition-all"
                     >
-                        <Share2 size={14} /> Compartir
+                        <Share2 size={14} /> {dt.link.compartir}
                     </button>
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-argo-border">
                     <p className="text-xs text-argo-grey">
-                        Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.
-                        Actualmente tienes <strong className="text-argo-navy">{tenant.credits_remaining}</strong> crédito{tenant.credits_remaining !== 1 ? 's' : ''}.
+                        {dt.link.creditoNota}
+                        {' '}{dt.link.creditoConteo(tenant.credits_remaining)}
                     </p>
                 </div>
             </div>
