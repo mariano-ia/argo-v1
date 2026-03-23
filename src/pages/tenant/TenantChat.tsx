@@ -75,6 +75,9 @@ export const TenantChat: React.FC = () => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [messagesLoading, setMessagesLoading] = useState(false);
 
+    // Chat mode
+    const [chatOpen, setChatOpen] = useState(false);
+
     // Input
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
@@ -118,6 +121,7 @@ export const TenantChat: React.FC = () => {
         setActiveThreadId(threadId);
         setMessages([]);
         setMessagesLoading(true);
+        setChatOpen(true);
         const token = await getToken();
         if (!token) return;
 
@@ -141,6 +145,15 @@ export const TenantChat: React.FC = () => {
         setActiveThreadId(null);
         setMessages([]);
         setInput('');
+        setChatOpen(true);
+    };
+
+    const goToList = () => {
+        setActiveThreadId(null);
+        setMessages([]);
+        setInput('');
+        setChatOpen(false);
+        fetchThreads();
     };
 
     /* ── Send message ──────────────────────────────────────────────────────── */
@@ -222,13 +235,13 @@ export const TenantChat: React.FC = () => {
 
     /* ── Chat view (thread selected or new) ────────────────────────────────── */
 
-    if (activeThreadId !== null || messages.length > 0) {
+    if (chatOpen) {
         return (
             <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-2xl mx-auto">
                 {/* Header */}
                 <div className="flex items-center gap-3 py-3 px-1 flex-shrink-0">
                     <button
-                        onClick={() => { startNewThread(); fetchThreads(); }}
+                        onClick={goToList}
                         className="p-2 rounded-lg hover:bg-argo-neutral transition-colors"
                     >
                         <ArrowLeft size={18} className="text-argo-grey" />
@@ -348,7 +361,7 @@ export const TenantChat: React.FC = () => {
                     </p>
                 </div>
                 <button
-                    onClick={() => setActiveThreadId(null)}
+                    onClick={startNewThread}
                     className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
                 >
                     <Plus size={15} />
