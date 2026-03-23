@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Send, Plus, Loader2, MessageCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { SkeletonList, SkeletonThreadRow } from '../../components/ui/Skeleton';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -237,7 +239,12 @@ export const TenantChat: React.FC = () => {
 
     if (chatOpen) {
         return (
-            <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-2xl mx-auto">
+            <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="flex flex-col h-[calc(100vh-3.5rem)] max-w-2xl mx-auto"
+            >
                 {/* Header */}
                 <div className="flex items-center gap-3 py-3 px-1 flex-shrink-0">
                     <button
@@ -259,9 +266,7 @@ export const TenantChat: React.FC = () => {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto px-1 space-y-4 pb-4">
                     {messagesLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                        </div>
+                        <SkeletonList rows={3} RowComponent={SkeletonThreadRow} />
                     ) : messages.length === 0 ? (
                         /* Empty new thread — show suggested prompts */
                         <div className="flex flex-col items-center justify-center py-12 space-y-6">
@@ -348,14 +353,19 @@ export const TenantChat: React.FC = () => {
                         Argo Engine puede cometer errores. Las respuestas son orientativas y están basadas en el modelo DISC. No reemplazan el criterio profesional.
                     </p>
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     /* ── Thread list view ──────────────────────────────────────────────────── */
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl mx-auto space-y-6"
+        >
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Chat DISC</h1>
@@ -382,9 +392,7 @@ export const TenantChat: React.FC = () => {
                 </div>
 
                 {threadsLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                    </div>
+                    <SkeletonList rows={4} RowComponent={SkeletonThreadRow} />
                 ) : threads.length === 0 ? (
                     <div className="py-12 text-center">
                         <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
@@ -415,6 +423,6 @@ export const TenantChat: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };

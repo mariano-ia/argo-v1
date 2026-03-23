@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Users, Plus, ChevronRight, ArrowLeft, X, Pencil, Check, Trash2, Loader2, UserPlus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
+import { SkeletonList, SkeletonGroupRow, SkeletonSessionRow } from '../../components/ui/Skeleton';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
 import type { MemberProfile } from '../../lib/groupBalance';
 
@@ -237,14 +239,23 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
 
-        await fetch('/api/tenant-groups', {
+        // Optimistic: remove from UI immediately
+        const removedMember = members.find(m => m.session_id === sessionId);
+        setMembers(prev => prev.filter(m => m.session_id !== sessionId));
+        setRemovingId(null);
+
+        const res = await fetch('/api/tenant-groups', {
             method: 'POST',
             headers: authHeaders(token),
             body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }),
         });
-        setRemovingId(null);
-        fetchDetail(selectedId);
-        toast('success', 'Jugador quitado del grupo');
+        if (!res.ok && removedMember) {
+            // Rollback on failure
+            setMembers(prev => [...prev, removedMember]);
+            toast('error', 'No se pudo quitar al jugador');
+        } else {
+            toast('success', 'Jugador quitado del grupo');
+        }
     };
 
     /* ── Add members modal ─────────────────────────────────────────────────── */
@@ -310,7 +321,12 @@ export const TenantGroups: React.FC = () => {
 
     if (selectedId) {
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="max-w-2xl mx-auto space-y-6"
+            >
                 {/* Back + title */}
                 <div className="flex items-center gap-3">
                     <button
@@ -366,9 +382,7 @@ export const TenantGroups: React.FC = () => {
                     </div>
 
                     {detailLoading ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                        </div>
+                        <SkeletonList rows={3} RowComponent={SkeletonSessionRow} />
                     ) : members.length === 0 ? (
                         <div className="py-12 text-center">
                             <p className="text-sm text-argo-grey">Este grupo no tiene jugadores todavía.</p>
@@ -542,14 +556,19 @@ export const TenantGroups: React.FC = () => {
                         </div>
                     </div>
                 )}
-            </div>
+            </motion.div>
         );
     }
 
     /* ── LIST VIEW ─────────────────────────────────────────────────────────── */
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl mx-auto space-y-6"
+        >
             {/* Header */}
             <div>
                 <h1 className="font-display text-2xl font-bold text-argo-navy">Grupos</h1>
@@ -609,9 +628,7 @@ export const TenantGroups: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                    </div>
+                    <SkeletonList rows={4} RowComponent={SkeletonGroupRow} />
                 ) : groups.length === 0 ? (
                     <div className="py-12 text-center">
                         <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
@@ -643,6 +660,6 @@ export const TenantGroups: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };

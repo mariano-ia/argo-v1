@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Copy, Check, Users, CreditCard, Sparkles, Zap, Crown, Send, Loader2, Anchor } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
@@ -8,6 +9,7 @@ import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
+import { SkeletonList, SkeletonSessionRow } from '../../components/ui/Skeleton';
 
 interface TenantData {
     id: string;
@@ -196,7 +198,12 @@ export const TenantHome: React.FC = () => {
     };
 
     return (
-        <div className="max-w-2xl">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl"
+        >
             {/* Resend snackbar — top-right */}
             {resendMsg && (
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg transition-all ${
@@ -328,9 +335,7 @@ export const TenantHome: React.FC = () => {
                 </div>
 
                 {sessionsLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                    </div>
+                    <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                 ) : sessions.length === 0 ? (
                     <div className="py-12 text-center">
                         <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
@@ -382,6 +387,6 @@ export const TenantHome: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };

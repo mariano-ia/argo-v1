@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { ArrowLeft, ChevronRight, Search } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
@@ -8,6 +9,7 @@ import {
     type Situation, type SituationCard,
 } from '../../lib/situationalGuide';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
+import { SkeletonList, SkeletonSessionRow } from '../../components/ui/Skeleton';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -100,7 +102,12 @@ export const TenantGuide: React.FC = () => {
         const catColor = CATEGORY_COLORS[selectedSituation.category] ?? { bg: '#f3f4f6', text: '#374151' };
 
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="max-w-2xl mx-auto space-y-6"
+            >
                 <button
                     onClick={() => { setSelectedPlayer(null); if (selectedSituation.category === 'Grupal') setSelectedSituation(null); else setSelectedSituation(selectedSituation); }}
                     className="flex items-center gap-2 text-sm text-argo-grey hover:text-argo-navy transition-colors"
@@ -176,7 +183,7 @@ export const TenantGuide: React.FC = () => {
                         <p className="text-sm text-amber-900 leading-relaxed">{card.ifNotResponding}</p>
                     </div>
                 )}
-            </div>
+            </motion.div>
         );
     }
 
@@ -184,7 +191,12 @@ export const TenantGuide: React.FC = () => {
 
     if (selectedSituation && selectedSituation.category !== 'Grupal') {
         return (
-            <div className="max-w-2xl mx-auto space-y-6">
+            <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                className="max-w-2xl mx-auto space-y-6"
+            >
                 <button
                     onClick={() => setSelectedSituation(null)}
                     className="flex items-center gap-2 text-sm text-argo-grey hover:text-argo-navy transition-colors"
@@ -209,9 +221,7 @@ export const TenantGuide: React.FC = () => {
                     </div>
 
                     {!sessionsLoaded ? (
-                        <div className="flex items-center justify-center py-12">
-                            <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
-                        </div>
+                        <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                     ) : sessions.length === 0 ? (
                         <div className="py-12 text-center">
                             <p className="text-sm text-argo-grey">Todavía no tienes jugadores registrados.</p>
@@ -265,14 +275,19 @@ export const TenantGuide: React.FC = () => {
                 >
                     Ver contexto general (sin seleccionar jugador)
                 </button>
-            </div>
+            </motion.div>
         );
     }
 
     /* ── Situation list view ────────────────────────────────────────────────── */
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl mx-auto space-y-6"
+        >
             <div>
                 <h1 className="font-display text-2xl font-bold text-argo-navy">Guía situacional</h1>
                 <p className="text-sm text-argo-grey mt-1">
@@ -359,6 +374,6 @@ export const TenantGuide: React.FC = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </motion.div>
     );
 };

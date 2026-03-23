@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
+import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -372,7 +374,12 @@ export const TenantPlayers: React.FC = () => {
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+            className="max-w-2xl mx-auto space-y-6"
+        >
             <div>
                 <h1 className="font-display text-2xl font-bold text-argo-navy">Jugadores</h1>
                 <p className="text-sm text-argo-grey mt-1">
@@ -443,8 +450,8 @@ export const TenantPlayers: React.FC = () => {
 
             {/* Players list */}
             {loading ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="space-y-3">
+                    {Array.from({ length: 4 }).map((_, i) => <SkeletonPlayerCard key={i} />)}
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12">
@@ -465,6 +472,6 @@ export const TenantPlayers: React.FC = () => {
                     ))}
                 </div>
             )}
-        </div>
+        </motion.div>
     );
 };

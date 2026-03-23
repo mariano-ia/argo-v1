@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
     label: string;
@@ -50,11 +51,20 @@ export const IndicatorBar: React.FC<Props> = ({
                 </svg>
                 {expanded ? 'Ocultar detalle' : 'Ver detalle'}
             </button>
-            {expanded && (
-                <p className="text-xs text-argo-grey leading-relaxed pl-4 border-l-2" style={{ borderColor: bgColor }}>
-                    {description}
-                </p>
-            )}
+            <AnimatePresence>
+                {expanded && (
+                    <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="text-xs text-argo-grey leading-relaxed pl-4 border-l-2 overflow-hidden"
+                        style={{ borderColor: bgColor }}
+                    >
+                        {description}
+                    </motion.p>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
