@@ -323,9 +323,22 @@ function getBrowserLang(): Lang {
     return 'en';
 }
 
+function getInitialLang(): Lang {
+    try {
+        const stored = localStorage.getItem('argo_lang');
+        if (stored === 'es' || stored === 'en' || stored === 'pt') return stored;
+    } catch { /* ignore */ }
+    return getBrowserLang();
+}
+
 export const LangProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [lang, setLang] = useState<Lang>(getBrowserLang);
+    const [lang, setLangState] = useState<Lang>(getInitialLang);
     const t = translations[lang] as LangTranslations;
+
+    const setLang = React.useCallback((l: Lang) => {
+        setLangState(l);
+        try { localStorage.setItem('argo_lang', l); } catch { /* ignore */ }
+    }, []);
 
     // Keep <html lang> in sync with current language
     useEffect(() => {
