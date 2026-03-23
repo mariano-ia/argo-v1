@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import type { Session } from '@supabase/supabase-js';
 import {
-    Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Users, BookOpen, UserCircle,
+    Home, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen, Users, BookOpen, UserCircle, MessageCircle,
 } from 'lucide-react';
 
 interface TenantData {
@@ -19,8 +19,9 @@ const NAV_ITEMS = [
     { to: '/dashboard',          label: 'Inicio',  icon: Home,     end: true },
     { to: '/dashboard/players',  label: 'Jugadores', icon: UserCircle, end: false },
     { to: '/dashboard/groups',   label: 'Grupos',    icon: Users,      end: false },
-    { to: '/dashboard/guide',    label: 'Guía',      icon: BookOpen,   end: false },
-    { to: '/dashboard/link',     label: 'Mi link', icon: Link2,    end: false },
+    { to: '/dashboard/guide',    label: 'Guía',      icon: BookOpen,     end: false },
+    { to: '/dashboard/chat',     label: 'Chat',      icon: MessageCircle, end: false },
+    { to: '/dashboard/link',     label: 'Mi link',   icon: Link2,         end: false },
     { to: '/dashboard/settings', label: 'Ajustes', icon: Settings, end: false },
 ];
 
