@@ -5,7 +5,6 @@ import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle } from '
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
-import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -38,8 +37,10 @@ interface SessionRow {
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
-const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+const formatDate = (iso: string, lang: string) => {
+    const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
+    return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 const daysSince = (iso: string) =>
     Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
@@ -50,11 +51,7 @@ const monthsSince = (iso: string) => {
     return (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
 };
 
-const MOTOR_LABELS: Record<string, string> = {
-    'Rápido': 'Dinámico',
-    'Medio': 'Rítmico',
-    'Lento': 'Sereno',
-};
+// MOTOR_LABELS removed — now using dt.profile.motorNames
 
 const MOTOR_COLORS: Record<string, { bg: string; text: string }> = {
     'Rápido': { bg: '#fef3c7', text: '#92400e' },
@@ -64,7 +61,7 @@ const MOTOR_COLORS: Record<string, { bg: string; text: string }> = {
 
 /* ── Player Card ───────────────────────────────────────────────────────────── */
 
-const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT> }> = ({ session, dt }) => {
+const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string }> = ({ session, dt, lang }) => {
     const [expanded, setExpanded] = useState(false);
     const months = monthsSince(session.created_at);
     const needsReprofile = months >= 6;
@@ -72,7 +69,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
     const axisCfg = AXIS_CONFIG[session.eje];
     const motorCfg = MOTOR_COLORS[session.motor] ?? { bg: '#f3f4f6', text: '#374151' };
     const tendencia = session.eje_secundario
-        ? TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS]
+        ? dt.profile.tendenciaLabels[session.eje_secundario] ?? null
         : null;
 
     // Get report data for bridge words and key info
@@ -128,7 +125,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                                 className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold"
                                 style={{ background: motorCfg.bg, color: motorCfg.text }}
                             >
-                                Motor {MOTOR_LABELS[session.motor] ?? session.motor}
+                                {dt.profile.motorNames[session.motor] ?? session.motor}
                             </span>
                         </div>
 
@@ -161,7 +158,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                         </div>
                         <div className="flex items-center gap-1 text-[10px] text-argo-grey/60">
                             <Clock size={10} />
-                            {formatDate(session.created_at)}
+                            {formatDate(session.created_at, lang)}
                             {months > 0 && <span>· {months} {dt.players.meses}</span>}
                         </div>
                     </div>
@@ -284,7 +281,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                             <div className="flex items-center gap-2">
                                 <Clock size={14} className="text-argo-grey" />
                                 <span className="text-xs text-argo-grey">
-                                    {dt.players.perfiladoEl} {formatDate(session.created_at)} ({daysSince(session.created_at)} {dt.players.dias})
+                                    {dt.players.perfiladoEl} {formatDate(session.created_at, lang)} ({daysSince(session.created_at)} {dt.players.dias})
                                 </span>
                             </div>
                             {needsReprofile && (
@@ -311,7 +308,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
 
                     {/* Adult info */}
                     <div className="text-xs text-argo-grey/60 pt-2 border-t border-argo-border">
-                        Adulto: {session.adult_name} ({session.adult_email})
+                        {dt.homeExtra.adulto}: {session.adult_name} ({session.adult_email})
                     </div>
                 </div>
             )}
@@ -433,7 +430,7 @@ export const TenantPlayers: React.FC = () => {
                             >
                                 <span className={`w-3 h-3 rounded ${isActive ? 'bg-white/30' : ''}`}
                                     style={!isActive ? { background: cfg?.color, opacity: 0.6 } : {}} />
-                                {cfg?.name}
+                                {dt.profile.axisNames[eje] ?? cfg?.name}
                             </button>
                         );
                     })}
@@ -472,7 +469,7 @@ export const TenantPlayers: React.FC = () => {
                 <div className="space-y-3">
                     <p className="text-xs text-argo-grey">{filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                     {filtered.map(s => (
-                        <PlayerCard key={s.id} session={s} dt={dt} />
+                        <PlayerCard key={s.id} session={s} dt={dt} lang={lang} />
                     ))}
                 </div>
             )}

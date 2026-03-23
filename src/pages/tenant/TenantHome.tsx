@@ -112,7 +112,7 @@ export const TenantHome: React.FC = () => {
 
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
-                throw new Error(err.error || 'Error al crear la sesión de pago');
+                throw new Error(err.error || 'Checkout error');
             }
 
             const { url } = await res.json();
@@ -191,14 +191,16 @@ export const TenantHome: React.FC = () => {
         }
     };
 
+    const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
+
     const formatDate = (iso: string) => {
         const d = new Date(iso);
-        return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+        return d.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
     };
 
     const formatTime = (iso: string) => {
         const d = new Date(iso);
-        return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+        return d.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
     };
 
     return (
@@ -234,16 +236,16 @@ export const TenantHome: React.FC = () => {
                 {dt.home.bienvenida(tenant.display_name)}
             </h1>
             <p className="text-sm text-argo-grey mb-8">
-                Plan {tenant.plan} · {tenant.credits_remaining} {dt.home.creditosDisponibles}
+                {dt.settings.plan} {tenant.plan} · {tenant.credits_remaining} {dt.home.creditosDisponibles}
             </p>
 
             {/* Play link card */}
             <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm mb-6">
                 <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest mb-3">
-                    Tu link de invitación
+                    {dt.homeExtra.tuLinkInvitacion}
                 </h2>
                 <p className="text-xs text-argo-grey mb-4">
-                    Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus deportistas.
+                    {dt.homeExtra.tuLinkInvitacionDesc}
                 </p>
 
                 <div className="flex items-center gap-2">
@@ -260,7 +262,7 @@ export const TenantHome: React.FC = () => {
                 </div>
 
                 <p className="text-[10px] text-argo-grey/50 mt-3">
-                    Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.
+                    {dt.homeExtra.creditoNota}
                 </p>
             </div>
 
@@ -277,7 +279,7 @@ export const TenantHome: React.FC = () => {
                     </p>
                 </div>
                 <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">Plan</p>
+                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.settings.plan}</p>
                     <p className="text-2xl font-bold text-argo-navy capitalize">{tenant.plan}</p>
                 </div>
             </div>
@@ -287,7 +289,7 @@ export const TenantHome: React.FC = () => {
                 <div className="flex items-center gap-2 mb-4">
                     <CreditCard size={15} className="text-argo-grey" />
                     <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
-                        Comprar créditos
+                        {dt.homeExtra.comprarCreditos}
                     </h2>
                 </div>
                 {tenant.credits_remaining === 0 && (
@@ -317,7 +319,7 @@ export const TenantHome: React.FC = () => {
                                     {buyingPack === pack.id ? (
                                         <span className="flex items-center justify-center gap-2">
                                             <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-                                            Procesando...
+                                            {dt.homeExtra.procesando}
                                         </span>
                                     ) : (
                                         `US$ ${pack.priceUsd}`
@@ -361,7 +363,7 @@ export const TenantHome: React.FC = () => {
                                             </span>
                                         </p>
                                         <p className="text-xs text-argo-grey mt-0.5 truncate">
-                                            Adulto: {s.adult_name} ({s.adult_email})
+                                            {dt.homeExtra.adulto}: {s.adult_name} ({s.adult_email})
                                         </p>
                                     </div>
                                     <div className="flex items-start gap-3 flex-shrink-0">

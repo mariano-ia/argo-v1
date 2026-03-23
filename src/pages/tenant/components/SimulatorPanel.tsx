@@ -3,6 +3,8 @@ import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 import type { MemberProfile } from '../../../lib/groupBalance';
 import { simulateRemoval } from '../../../lib/groupBalance';
 import { AXIS_CONFIG } from '../../../lib/groupBalanceRules';
+import { getDashboardT } from '../../../lib/dashboardTranslations';
+import { useLang } from '../../../context/LangContext';
 
 interface Props {
     members: MemberProfile[];
@@ -15,6 +17,8 @@ const DeltaBadge: React.FC<{ value: number; suffix?: string }> = ({ value, suffi
 };
 
 export const SimulatorPanel: React.FC<Props> = ({ members }) => {
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
     const delta = useMemo(() => {
@@ -26,9 +30,9 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
 
     return (
         <div className="space-y-3">
-            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Simulador</h3>
+            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.groupBalance.simulador}</h3>
             <p className="text-xs text-argo-grey">
-                Selecciona un jugador para ver cómo cambiaría el equilibrio del grupo si sale.
+                {dt.groupBalance.simuladorDesc}
             </p>
 
             <div className="flex flex-wrap gap-2">
@@ -61,16 +65,16 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
             {delta && selectedId && (
                 <div className="bg-argo-neutral/50 rounded-xl p-4 space-y-2">
                     <p className="text-xs font-semibold text-argo-navy">
-                        Si sale <span className="text-argo-indigo">{members.find(m => m.session_id === selectedId)?.child_name}</span>:
+                        {dt.groupBalance.siSale(members.find(m => m.session_id === selectedId)?.child_name ?? '')}
                     </p>
                     <div className="grid grid-cols-2 gap-2">
                         <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2">
-                            <span className="text-[11px] text-argo-grey">Diversidad</span>
+                            <span className="text-[11px] text-argo-grey">{dt.groupBalance.diversidad}</span>
                             <DeltaBadge value={delta.diversity} suffix=" pts" />
                         </div>
                         {(['D', 'I', 'S', 'C'] as const).map(axis => (
                             <div key={axis} className="flex items-center justify-between bg-white rounded-lg px-3 py-2">
-                                <span className="text-[11px] text-argo-grey">{AXIS_CONFIG[axis]?.name ?? axis}</span>
+                                <span className="text-[11px] text-argo-grey">{dt.profile.axisNames[axis] ?? AXIS_CONFIG[axis]?.name ?? axis}</span>
                                 <DeltaBadge value={delta.axisDelta[axis]} />
                             </div>
                         ))}

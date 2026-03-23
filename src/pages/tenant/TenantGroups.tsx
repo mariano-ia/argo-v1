@@ -62,9 +62,9 @@ const authHeaders = (token: string) => ({
     'Content-Type': 'application/json',
 });
 
-const formatDate = (iso: string) => {
-    const d = new Date(iso);
-    return d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+const formatDate = (iso: string, lang: string) => {
+    const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
+    return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
 const EJE_COLORS: Record<string, string> = {
@@ -416,7 +416,7 @@ export const TenantGroups: React.FC = () => {
                                                 onClick={() => handleRemoveMember(m.session_id)}
                                                 disabled={removingId === m.session_id}
                                                 className="p-1.5 rounded-lg text-argo-grey hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
-                                                title={dt.groups.jugadorQuitado}
+                                                title={dt.groupBalance.quitarDelGrupo}
                                             >
                                                 {removingId === m.session_id
                                                     ? <Loader2 size={14} className="animate-spin" />
@@ -651,7 +651,7 @@ export const TenantGroups: React.FC = () => {
                             >
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-argo-navy truncate">{g.name}</p>
-                                    <p className="text-xs text-argo-grey/60 mt-0.5">{formatDate(g.created_at)}</p>
+                                    <p className="text-xs text-argo-grey/60 mt-0.5">{formatDate(g.created_at, lang)}</p>
                                 </div>
                                 <div className="flex items-center gap-3 flex-shrink-0">
                                     <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">

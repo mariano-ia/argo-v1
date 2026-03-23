@@ -1,10 +1,15 @@
 import React from 'react';
 import type { AxisDistribution, MotorDistribution } from '../../../lib/groupBalance';
 import { AXIS_CONFIG } from '../../../lib/groupBalanceRules';
+import { getDashboardT } from '../../../lib/dashboardTranslations';
+import { useLang } from '../../../context/LangContext';
 
-/* ── DISC Distribution (horizontal bars) ───────────────────────────────────── */
+/* -- DISC Distribution (horizontal bars) ---------------------------------------- */
 
 export const AxisChart: React.FC<{ dist: AxisDistribution; memberCount: number }> = ({ dist, memberCount }) => {
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
+
     const axes = (['D', 'I', 'S', 'C'] as const).map(axis => ({
         axis,
         pct: dist[axis],
@@ -14,7 +19,7 @@ export const AxisChart: React.FC<{ dist: AxisDistribution; memberCount: number }
 
     return (
         <div className="space-y-3">
-            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Distribución DISC</h3>
+            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.groupBalance.distribucionDISC}</h3>
             <div className="space-y-2.5">
                 {axes.map(a => (
                     <div key={a.axis} className="space-y-1">
@@ -26,10 +31,10 @@ export const AxisChart: React.FC<{ dist: AxisDistribution; memberCount: number }
                                 >
                                     {a.axis}
                                 </span>
-                                <span className="text-xs font-medium text-argo-navy">{a.name}</span>
+                                <span className="text-xs font-medium text-argo-navy">{dt.profile.axisNames[a.axis] ?? a.name}</span>
                             </div>
                             <span className="text-xs text-argo-grey">
-                                {a.count} {a.count === 1 ? 'jugador' : 'jugadores'} · <span className="font-bold text-argo-navy">{a.pct}%</span>
+                                {a.count} {a.count === 1 ? dt.common.jugador : dt.common.jugadores} · <span className="font-bold text-argo-navy">{a.pct}%</span>
                             </span>
                         </div>
                         <div className="w-full h-3 rounded-full bg-argo-neutral overflow-hidden">
@@ -45,25 +50,29 @@ export const AxisChart: React.FC<{ dist: AxisDistribution; memberCount: number }
     );
 };
 
-/* ── Motor Distribution ────────────────────────────────────────────────────── */
+/* -- Motor Distribution --------------------------------------------------------- */
 
-const MOTOR_CONFIG = {
-    Rápido: { label: 'Dinámico', color: '#f59e0b' },
-    Medio:  { label: 'Rítmico',  color: '#6366f1' },
-    Lento:  { label: 'Sereno',   color: '#06b6d4' },
+const MOTOR_COLORS: Record<string, string> = {
+    Rápido: '#f59e0b',
+    Medio:  '#6366f1',
+    Lento:  '#06b6d4',
 };
 
 export const MotorChart: React.FC<{ dist: MotorDistribution; memberCount: number }> = ({ dist, memberCount }) => {
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
+
     const motors = (['Rápido', 'Medio', 'Lento'] as const).map(motor => ({
         motor,
         pct: dist[motor],
         count: Math.round((dist[motor] / 100) * memberCount),
-        ...MOTOR_CONFIG[motor],
+        label: dt.profile.motorNames[motor] ?? motor,
+        color: MOTOR_COLORS[motor] ?? '#999',
     }));
 
     return (
         <div className="space-y-3">
-            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">Distribución de motor</h3>
+            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.groupBalance.distribucionMotor}</h3>
             <div className="space-y-2.5">
                 {motors.map(m => (
                     <div key={m.motor} className="space-y-1">

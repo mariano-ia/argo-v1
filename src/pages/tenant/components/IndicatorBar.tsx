@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getDashboardT } from '../../../lib/dashboardTranslations';
+import { useLang } from '../../../context/LangContext';
 
 interface Props {
     label: string;
@@ -13,6 +15,8 @@ interface Props {
 export const IndicatorBar: React.FC<Props> = ({
     label, percentage, color, bgColor, levelLabel, description,
 }) => {
+    const { lang } = useLang();
+    const dt = getDashboardT(lang);
     const [expanded, setExpanded] = React.useState(false);
 
     return (
@@ -49,7 +53,7 @@ export const IndicatorBar: React.FC<Props> = ({
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
-                {expanded ? 'Ocultar detalle' : 'Ver detalle'}
+                {expanded ? dt.groupBalance.ocultarDetalle : dt.groupBalance.verDetalle}
             </button>
             <AnimatePresence>
                 {expanded && (

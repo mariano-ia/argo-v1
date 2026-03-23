@@ -145,14 +145,71 @@ interface DashboardTexts {
         errorGenerico: string;
     };
 
+    // Profile data translations (axis, motor, indicators, tendencia)
+    profile: {
+        axisNames: Record<string, string>;       // D, I, S, C → display name
+        motorNames: Record<string, string>;       // Rápido, Medio, Lento → display name
+        tendenciaLabels: Record<string, string>;  // D, I, S, C → secondary axis label
+        indicatorLabels: Record<string, string>;  // D, I, S, C → indicator section label
+    };
+
     // Link
     link: {
         titulo: string;
+        descripcion: string;
+        copiarLink: string;
+        copiado: string;
+        compartir: string;
+        creditoNota: string;
+        creditoConteo: (n: number) => string;
     };
 
     // Settings
     settings: {
         titulo: string;
+        descripcion: string;
+        cuenta: string;
+        nombre: string;
+        slug: string;
+        plan: string;
+        masOpciones: string;
+    };
+
+    // Home extra
+    homeExtra: {
+        tuLinkInvitacion: string;
+        tuLinkInvitacionDesc: string;
+        creditoNota: string;
+        comprarCreditos: string;
+        procesando: string;
+        adulto: string;
+    };
+
+    // Group balance
+    groupBalance: {
+        minJugadores: (n: number) => string;
+        minRecomendado: string;
+        precisionNota: (n: number) => string;
+        equipo: string;
+        fortalezas: string;
+        herramientasAdulto: string;
+        indicadoresGrupo: string;
+        diversidadDISC: string;
+        perfilMotorGrupo: string;
+        distribucionDISC: string;
+        distribucionMotor: string;
+        guiaDuplas: string;
+        mayorComplementariedad: string;
+        mayorAfinidad: string;
+        verHerramientas: string;
+        ocultarHerramientas: string;
+        simulador: string;
+        simuladorDesc: string;
+        siSale: (name: string) => string;
+        diversidad: string;
+        verDetalle: string;
+        ocultarDetalle: string;
+        quitarDelGrupo: string;
     };
 }
 
@@ -282,8 +339,63 @@ const es: DashboardTexts = {
         errorConexion: 'Error de conexión. Verifica tu internet e intenta de nuevo.',
         errorGenerico: 'Ocurrió un error. Intenta de nuevo.',
     },
-    link: { titulo: 'Mi link' },
-    settings: { titulo: 'Ajustes' },
+    profile: {
+        axisNames: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' },
+        motorNames: { 'Rápido': 'Dinámico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+        tendenciaLabels: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
+        indicatorLabels: { D: 'Energía de liderazgo', I: 'Capital social', S: 'Base de estabilidad', C: 'Atención al detalle' },
+    },
+    link: {
+        titulo: 'Mi link',
+        descripcion: 'Comparte este link para que los adultos realicen la experiencia Argo con sus deportistas.',
+        copiarLink: 'Copiar link',
+        copiado: 'Copiado',
+        compartir: 'Compartir',
+        creditoNota: 'Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.',
+        creditoConteo: (n) => `Actualmente tienes ${n} crédito${n !== 1 ? 's' : ''}.`,
+    },
+    settings: {
+        titulo: 'Ajustes',
+        descripcion: 'Configura tu cuenta y preferencias.',
+        cuenta: 'Cuenta',
+        nombre: 'Nombre',
+        slug: 'Slug',
+        plan: 'Plan',
+        masOpciones: 'Más opciones de configuración próximamente.',
+    },
+    homeExtra: {
+        tuLinkInvitacion: 'Tu link de invitación',
+        tuLinkInvitacionDesc: 'Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus deportistas.',
+        creditoNota: 'Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.',
+        comprarCreditos: 'Comprar créditos',
+        procesando: 'Procesando...',
+        adulto: 'Adulto',
+    },
+    groupBalance: {
+        minJugadores: (n) => `Agrega al menos ${n} jugadores para ver el análisis de equilibrio del grupo.`,
+        minRecomendado: 'Para mayor precisión, se recomienda un mínimo de 4 jugadores.',
+        precisionNota: (n) => `El grupo tiene ${n} jugadores. Para mayor precisión en el análisis, se recomienda un mínimo de 4.`,
+        equipo: 'Equipo',
+        fortalezas: 'Fortalezas',
+        herramientasAdulto: 'Herramientas para el adulto',
+        indicadoresGrupo: 'Indicadores del grupo',
+        diversidadDISC: 'Diversidad DISC',
+        perfilMotorGrupo: 'Perfil de motor del grupo',
+        distribucionDISC: 'Distribución DISC',
+        distribucionMotor: 'Distribución de motor',
+        guiaDuplas: 'Guía de duplas',
+        mayorComplementariedad: 'Mayor complementariedad',
+        mayorAfinidad: 'Mayor afinidad natural',
+        verHerramientas: 'Ver herramientas para el adulto',
+        ocultarHerramientas: 'Ocultar herramientas',
+        simulador: 'Simulador',
+        simuladorDesc: 'Selecciona un jugador para ver cómo cambiaría el equilibrio del grupo si sale.',
+        siSale: (name) => `Si sale ${name}:`,
+        diversidad: 'Diversidad',
+        verDetalle: 'Ver detalle',
+        ocultarDetalle: 'Ocultar detalle',
+        quitarDelGrupo: 'Quitar del grupo',
+    },
 };
 
 const en: DashboardTexts = {
@@ -412,8 +524,63 @@ const en: DashboardTexts = {
         errorConexion: 'Connection error. Check your internet and try again.',
         errorGenerico: 'An error occurred. Try again.',
     },
-    link: { titulo: 'My link' },
-    settings: { titulo: 'Settings' },
+    profile: {
+        axisNames: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' },
+        motorNames: { 'Rápido': 'Dynamic', 'Medio': 'Rhythmic', 'Lento': 'Serene' },
+        tendenciaLabels: { D: 'with a spark of action', I: 'with a social compass', S: 'with firm roots', C: 'with an eye for detail' },
+        indicatorLabels: { D: 'Leadership energy', I: 'Social capital', S: 'Stability base', C: 'Attention to detail' },
+    },
+    link: {
+        titulo: 'My link',
+        descripcion: 'Share this link so adults can take the Argo experience with their athletes.',
+        copiarLink: 'Copy link',
+        copiado: 'Copied',
+        compartir: 'Share',
+        creditoNota: 'Each time someone starts the experience from this link, 1 credit will be deducted from your account.',
+        creditoConteo: (n) => `You currently have ${n} credit${n !== 1 ? 's' : ''}.`,
+    },
+    settings: {
+        titulo: 'Settings',
+        descripcion: 'Configure your account and preferences.',
+        cuenta: 'Account',
+        nombre: 'Name',
+        slug: 'Slug',
+        plan: 'Plan',
+        masOpciones: 'More settings coming soon.',
+    },
+    homeExtra: {
+        tuLinkInvitacion: 'Your invitation link',
+        tuLinkInvitacionDesc: 'Share this link with adults you want to invite to the Argo experience with their athletes.',
+        creditoNota: 'Each time someone starts the experience from this link, 1 credit will be deducted from your account.',
+        comprarCreditos: 'Buy credits',
+        procesando: 'Processing...',
+        adulto: 'Adult',
+    },
+    groupBalance: {
+        minJugadores: (n) => `Add at least ${n} players to see the group balance analysis.`,
+        minRecomendado: 'For better accuracy, a minimum of 4 players is recommended.',
+        precisionNota: (n) => `The group has ${n} players. For better accuracy, a minimum of 4 is recommended.`,
+        equipo: 'Team',
+        fortalezas: 'Strengths',
+        herramientasAdulto: 'Tools for the adult',
+        indicadoresGrupo: 'Group indicators',
+        diversidadDISC: 'DISC Diversity',
+        perfilMotorGrupo: 'Group motor profile',
+        distribucionDISC: 'DISC Distribution',
+        distribucionMotor: 'Motor distribution',
+        guiaDuplas: 'Pair guide',
+        mayorComplementariedad: 'Highest complementarity',
+        mayorAfinidad: 'Highest natural affinity',
+        verHerramientas: 'View tools for the adult',
+        ocultarHerramientas: 'Hide tools',
+        simulador: 'Simulator',
+        simuladorDesc: 'Select a player to see how the group balance would change if they leave.',
+        siSale: (name) => `If ${name} leaves:`,
+        diversidad: 'Diversity',
+        verDetalle: 'View details',
+        ocultarDetalle: 'Hide details',
+        quitarDelGrupo: 'Remove from group',
+    },
 };
 
 const pt: DashboardTexts = {
@@ -542,8 +709,63 @@ const pt: DashboardTexts = {
         errorConexion: 'Erro de conexão. Verifique sua internet e tente novamente.',
         errorGenerico: 'Ocorreu um erro. Tente novamente.',
     },
-    link: { titulo: 'Meu link' },
-    settings: { titulo: 'Configurações' },
+    profile: {
+        axisNames: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
+        motorNames: { 'Rápido': 'Dinâmico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+        tendenciaLabels: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
+        indicatorLabels: { D: 'Energia de liderança', I: 'Capital social', S: 'Base de estabilidade', C: 'Atenção ao detalhe' },
+    },
+    link: {
+        titulo: 'Meu link',
+        descripcion: 'Compartilhe este link para que os adultos realizem a experiência Argo com seus atletas.',
+        copiarLink: 'Copiar link',
+        copiado: 'Copiado',
+        compartir: 'Compartilhar',
+        creditoNota: 'Cada vez que alguém iniciar a experiência por este link, 1 crédito será descontado da sua conta.',
+        creditoConteo: (n) => `Atualmente você tem ${n} crédito${n !== 1 ? 's' : ''}.`,
+    },
+    settings: {
+        titulo: 'Configurações',
+        descripcion: 'Configure sua conta e preferências.',
+        cuenta: 'Conta',
+        nombre: 'Nome',
+        slug: 'Slug',
+        plan: 'Plano',
+        masOpciones: 'Mais opções de configuração em breve.',
+    },
+    homeExtra: {
+        tuLinkInvitacion: 'Seu link de convite',
+        tuLinkInvitacionDesc: 'Compartilhe este link com os adultos que deseja convidar para a experiência Argo com seus atletas.',
+        creditoNota: 'Cada vez que alguém iniciar a experiência por este link, 1 crédito será descontado da sua conta.',
+        comprarCreditos: 'Comprar créditos',
+        procesando: 'Processando...',
+        adulto: 'Adulto',
+    },
+    groupBalance: {
+        minJugadores: (n) => `Adicione pelo menos ${n} jogadores para ver a análise de equilíbrio do grupo.`,
+        minRecomendado: 'Para maior precisão, recomenda-se um mínimo de 4 jogadores.',
+        precisionNota: (n) => `O grupo tem ${n} jogadores. Para maior precisão na análise, recomenda-se um mínimo de 4.`,
+        equipo: 'Equipe',
+        fortalezas: 'Pontos fortes',
+        herramientasAdulto: 'Ferramentas para o adulto',
+        indicadoresGrupo: 'Indicadores do grupo',
+        diversidadDISC: 'Diversidade DISC',
+        perfilMotorGrupo: 'Perfil de motor do grupo',
+        distribucionDISC: 'Distribuição DISC',
+        distribucionMotor: 'Distribuição de motor',
+        guiaDuplas: 'Guia de duplas',
+        mayorComplementariedad: 'Maior complementaridade',
+        mayorAfinidad: 'Maior afinidade natural',
+        verHerramientas: 'Ver ferramentas para o adulto',
+        ocultarHerramientas: 'Ocultar ferramentas',
+        simulador: 'Simulador',
+        simuladorDesc: 'Selecione um jogador para ver como o equilíbrio do grupo mudaria se ele sair.',
+        siSale: (name) => `Se ${name} sair:`,
+        diversidad: 'Diversidade',
+        verDetalle: 'Ver detalhes',
+        ocultarDetalle: 'Ocultar detalhes',
+        quitarDelGrupo: 'Remover do grupo',
+    },
 };
 
 const ALL: Record<Lang, DashboardTexts> = { es, en, pt };
