@@ -209,7 +209,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const FADE_OUT_MS    = 3000;
     const ODYSSEY_START  = 6;
     const ODYSSEY_END    = 29;
-    const LOOP_MARGIN    = 0.3;
+
 
     const EFFECT_VOL         = 0.25;
     const EFFECT_FADE_IN_MS  = 2000;
@@ -254,15 +254,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         if (then) setTimeout(then, ms);
     };
 
-    /** Seamless loop via requestAnimationFrame (more reliable than timeupdate on iOS) */
+    /** Enable seamless loop — use native loop (avoids rAF glitches during heavy interaction) */
     const setupSeamlessLoop = (audio: HTMLAudioElement) => {
-        const check = () => {
-            if (audio.duration && audio.currentTime > audio.duration - LOOP_MARGIN) {
-                audio.currentTime = 0;
-            }
-            if (!audio.paused) requestAnimationFrame(check);
-        };
-        audio.addEventListener('play', () => requestAnimationFrame(check));
+        audio.loop = true;
+        // Fallback: if 'ended' fires despite loop=true (some older iOS), restart manually
         audio.addEventListener('ended', () => {
             audio.currentTime = 0;
             audio.play().catch(() => {});
@@ -275,7 +270,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             if (!audioRef.current) {
                 const a = new Audio('/audio/argo_background.mp3');
                 a.volume = 1; // volume controlled via GainNode, not audio.volume
-                a.loop = false;
                 setupSeamlessLoop(a);
                 musicGainRef.current = connectWithGain(a, 0);
                 audioRef.current = a;
@@ -308,7 +302,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         if (wantedSrc) {
             const a = new Audio(wantedSrc);
             a.volume = 1;
-            a.loop = false;
             setupSeamlessLoop(a);
             const gain = connectWithGain(a, 0);
             effectRef.current = a;

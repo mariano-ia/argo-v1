@@ -240,7 +240,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                     className="absolute inset-0 flex items-center justify-center px-6 sm:px-10"
                     style={{ zIndex: Z.islands }}
                 >
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4 w-full max-w-xs">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full max-w-[280px] max-h-[82vh]">
                         {cards.map((card) => (
                             <CardEntity
                                 key={`card-${card.id}`}
