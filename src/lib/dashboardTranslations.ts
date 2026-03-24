@@ -56,6 +56,8 @@ interface DashboardTexts {
         pagoConfirmado: string;
         pagoCancelado: string;
         errorPago: string;
+        descripcionInicio: string;
+        verTodas: string;
     };
 
     // Players
@@ -291,6 +293,8 @@ const es: DashboardTexts = {
         pagoConfirmado: 'Pago confirmado. Tus créditos fueron acreditados.',
         pagoCancelado: 'Pago cancelado.',
         errorPago: 'No se pudo iniciar el pago. Intenta de nuevo.',
+        descripcionInicio: 'Vista general de tu cuenta',
+        verTodas: 'Ver todas',
     },
     players: {
         titulo: 'Jugadores',
@@ -504,6 +508,8 @@ const en: DashboardTexts = {
         pagoConfirmado: 'Payment confirmed. Your credits have been added.',
         pagoCancelado: 'Payment cancelled.',
         errorPago: 'Could not start payment. Try again.',
+        descripcionInicio: 'Overview of your account',
+        verTodas: 'View all',
     },
     players: {
         titulo: 'Players',
@@ -717,6 +723,8 @@ const pt: DashboardTexts = {
         pagoConfirmado: 'Pagamento confirmado. Seus créditos foram adicionados.',
         pagoCancelado: 'Pagamento cancelado.',
         errorPago: 'Não foi possível iniciar o pagamento. Tente novamente.',
+        descripcionInicio: 'Visao geral da sua conta',
+        verTodas: 'Ver todas',
     },
     players: {
         titulo: 'Jogadores',
