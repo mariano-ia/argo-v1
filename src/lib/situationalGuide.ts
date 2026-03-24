@@ -1,5 +1,5 @@
 /**
- * Situational Guide — 15 situations × 4 DISC profiles = 57 cards.
+ * Situational Guide. 15 situations × 4 DISC profiles = 57 cards.
  * Zero AI tokens. All content pre-written and curated.
  *
  * Reviewed by psychologist. Principles:
@@ -22,7 +22,7 @@ export interface Situation {
 export interface SituationCard {
     situationId: string;
     eje: 'D' | 'I' | 'S' | 'C' | 'group'; // 'group' for situation 15
-    whatYouSeeForProfile?: string;       // Eje-specific "what you see" — falls back to generic if empty
+    whatYouSeeForProfile?: string;       // Eje-specific "what you see". falls back to generic if empty
     whatsHappeningForProfile: string;
     howToAccompany: string[];
     ifNotResponding: string;
@@ -36,7 +36,7 @@ export const SITUATIONS: Situation[] = [
         title: 'No quiere arrancar',
         whatYouSee: 'El jugador llega al entrenamiento y no quiere participar. Está apático, se queja, se sienta al costado o dice "hoy no tengo ganas".',
         whatsHappening: 'No es falta de compromiso. El niño todavía está en el "modo" de lo que estaba haciendo antes (el colegio, la casa, una pelea con un amigo). Necesita un momento para hacer el cambio de chip hacia el deporte.',
-        profilePerspectives: 'Si el jugador tiene perfil {{Impulsor}}, puede que no vea un desafío que lo motive a arrancar — necesita sentir que lo que viene vale la pena. Si es {{Conector}}, probablemente le falte la conexión social: si su amigo no vino o el clima del grupo está raro, le cuesta engancharse. Un perfil {{Sosten}} puede necesitar más tiempo para hacer la transición, sobre todo si algo de la rutina cambió. Y si es {{Estratega}}, tal vez esté procesando algo que pasó antes y necesita cerrar esa idea antes de poder enfocarse en otra cosa.',
+        profilePerspectives: 'Si el jugador tiene perfil {{Impulsor}}, puede que no vea un desafío que lo motive a arrancar. necesita sentir que lo que viene vale la pena. Si es {{Conector}}, probablemente le falte la conexión social: si su amigo no vino o el clima del grupo está raro, le cuesta engancharse. Un perfil {{Sosten}} puede necesitar más tiempo para hacer la transición, sobre todo si algo de la rutina cambió. Y si es {{Estratega}}, tal vez esté procesando algo que pasó antes y necesita cerrar esa idea antes de poder enfocarse en otra cosa.',
         category: 'Motivación',
         icon: '',
     },
@@ -54,7 +54,7 @@ export const SITUATIONS: Situation[] = [
         title: 'No hace lo que le pido',
         whatYouSee: 'Das una instrucción y el jugador hace otra cosa, se demora mucho en arrancar, o parece que no escuchó.',
         whatsHappening: 'No te está ignorando. Cada niño procesa las instrucciones a su propio ritmo. Algunos actúan antes de terminar de escuchar, otros necesitan más tiempo para entender la lógica de lo que les pediste. Es una diferencia de velocidad de procesamiento, no de actitud.',
-        profilePerspectives: 'El {{Impulsor}} puede que ya haya salido a ejecutar antes de que termines de hablar — su motor lo empuja a la acción antes que a la escucha. El {{Conector}} tal vez estaba hablando con un compañero y se perdió la instrucción. Un {{Sosten}} puede que haya escuchado perfecto pero necesite un momento más para sentirse seguro antes de arrancar. Y el {{Estratega}} probablemente esté analizando si la instrucción tiene sentido antes de moverse — no es resistencia, es su forma de procesar.',
+        profilePerspectives: 'El {{Impulsor}} puede que ya haya salido a ejecutar antes de que termines de hablar. su motor lo empuja a la acción antes que a la escucha. El {{Conector}} tal vez estaba hablando con un compañero y se perdió la instrucción. Un {{Sosten}} puede que haya escuchado perfecto pero necesite un momento más para sentirse seguro antes de arrancar. Y el {{Estratega}} probablemente esté analizando si la instrucción tiene sentido antes de moverse. no es resistencia, es su forma de procesar.',
         category: 'Comunicación',
         icon: '',
     },
@@ -63,7 +63,7 @@ export const SITUATIONS: Situation[] = [
         title: 'Está raro antes de un partido',
         whatYouSee: 'El jugador está más callado o más inquieto de lo normal antes de competir. Puede estar nervioso, ir al baño muchas veces, o al revés, estar hiperactivo y no parar de moverse.',
         whatsHappening: 'Siente que las expectativas son altas (las propias o las de afuera) y su cuerpo reacciona ante la incertidumbre de lo que va a pasar. Cada perfil lo muestra distinto: unos se cierran, otros se aceleran.',
-        profilePerspectives: 'El {{Impulsor}} puede ponerse hiperactivo, hablar mucho y moverse sin parar — es su forma de canalizar la adrenalina. El {{Conector}} tiende a buscar a alguien cerca y hablar de cualquier cosa para sentirse acompañado. Un {{Sosten}} puede quedarse muy callado y necesitar que le confirmes que todo va a estar bien. Y el {{Estratega}} probablemente esté repasando mentalmente cada jugada posible — su silencio no es nervios, es preparación.',
+        profilePerspectives: 'El {{Impulsor}} puede ponerse hiperactivo, hablar mucho y moverse sin parar. es su forma de canalizar la adrenalina. El {{Conector}} tiende a buscar a alguien cerca y hablar de cualquier cosa para sentirse acompañado. Un {{Sosten}} puede quedarse muy callado y necesitar que le confirmes que todo va a estar bien. Y el {{Estratega}} probablemente esté repasando mentalmente cada jugada posible. su silencio no es nervios, es preparación.',
         category: 'Presión',
         icon: '',
     },
@@ -71,8 +71,8 @@ export const SITUATIONS: Situation[] = [
         id: 'mira-desde-afuera',
         title: 'Se queda mirando desde afuera',
         whatYouSee: 'El jugador no se suma al grupo. Se queda en el borde de la cancha observando, especialmente cuando es un ejercicio nuevo o un grupo que no conoce bien.',
-        whatsHappening: 'Está haciendo un "escaneo" del terreno. Necesita entender cómo funciona la dinámica antes de meterse. No es timidez ni cobardía — es su forma de prepararse para participar con seguridad.',
-        profilePerspectives: 'Si es {{Impulsor}}, probablemente no esté mirando desde afuera por miedo sino porque todavía no encontró el momento para entrar con protagonismo. El {{Conector}} puede estar esperando que alguien lo invite o lo incluya — necesita la señal social. Un {{Sosten}} está evaluando si el entorno es predecible y seguro antes de exponerse. Y el {{Estratega}} está literalmente estudiando la dinámica: quién hace qué, cómo funciona el ejercicio, cuáles son las reglas implícitas.',
+        whatsHappening: 'Está haciendo un "escaneo" del terreno. Necesita entender cómo funciona la dinámica antes de meterse. No es timidez ni cobardía. es su forma de prepararse para participar con seguridad.',
+        profilePerspectives: 'Si es {{Impulsor}}, probablemente no esté mirando desde afuera por miedo sino porque todavía no encontró el momento para entrar con protagonismo. El {{Conector}} puede estar esperando que alguien lo invite o lo incluya. necesita la señal social. Un {{Sosten}} está evaluando si el entorno es predecible y seguro antes de exponerse. Y el {{Estratega}} está literalmente estudiando la dinámica: quién hace qué, cómo funciona el ejercicio, cuáles son las reglas implícitas.',
         category: 'Social',
         icon: '',
     },
@@ -80,8 +80,8 @@ export const SITUATIONS: Situation[] = [
         id: 'llora-o-se-enoja',
         title: 'Llora o se enoja en pleno entrenamiento',
         whatYouSee: 'El jugador se quiebra emocionalmente durante una actividad. Puede ser llanto, enojo, o ambos. A veces es después de una corrección, a veces parece "de la nada".',
-        whatsHappening: 'Se le juntó todo: el cansancio, el ruido, las correcciones, la exigencia del ejercicio. Su sistema se saturó y la emoción se desbordó. No es un capricho — es que en ese momento la demanda superó lo que podía procesar.',
-        profilePerspectives: 'El {{Impulsor}} tiende a desbordarse con enojo — grita, patea algo, se queja en voz alta. Es su forma de soltar la presión rápido. El {{Conector}} puede llorar si siente que lo corrigieron frente al grupo o si alguien lo excluyó. Un {{Sosten}} probablemente venga acumulando hace rato y el quiebre sea la gota que rebalsó el vaso — su desborde suele sorprender porque antes no mostraba señales. El {{Estratega}} puede enojarse consigo mismo en silencio y necesitar un momento a solas para reordenarse.',
+        whatsHappening: 'Se le juntó todo: el cansancio, el ruido, las correcciones, la exigencia del ejercicio. Su sistema se saturó y la emoción se desbordó. No es un capricho. es que en ese momento la demanda superó lo que podía procesar.',
+        profilePerspectives: 'El {{Impulsor}} tiende a desbordarse con enojo. grita, patea algo, se queja en voz alta. Es su forma de soltar la presión rápido. El {{Conector}} puede llorar si siente que lo corrigieron frente al grupo o si alguien lo excluyó. Un {{Sosten}} probablemente venga acumulando hace rato y el quiebre sea la gota que rebalsó el vaso. su desborde suele sorprender porque antes no mostraba señales. El {{Estratega}} puede enojarse consigo mismo en silencio y necesitar un momento a solas para reordenarse.',
         category: 'Emocional',
         icon: '',
     },
@@ -89,8 +89,8 @@ export const SITUATIONS: Situation[] = [
         id: 'roce-con-companero',
         title: 'Tiene un roce con un compañero',
         whatYouSee: 'Dos jugadores chocan durante un ejercicio. Puede ser una discusión, una queja, o simplemente que no logran trabajar juntos.',
-        whatsHappening: 'Cada niño tiene un estilo natural de encarar las cosas. Cuando dos estilos muy distintos se encuentran sin mediación, se genera fricción. No es que uno tenga razón y el otro no — son ritmos y enfoques diferentes.',
-        profilePerspectives: 'Si hay un {{Impulsor}} en el roce, es probable que quiera imponer su idea o su ritmo — no por malo, sino porque su naturaleza es liderar. El {{Conector}} puede tomárselo personal y sentirse rechazado por el compañero. Un {{Sosten}} probablemente intente evitar el conflicto hasta que ya no pueda más, y ahí reaccione de golpe. Y el {{Estratega}} puede frustrarse si siente que el otro no está siguiendo la lógica correcta del ejercicio.',
+        whatsHappening: 'Cada niño tiene un estilo natural de encarar las cosas. Cuando dos estilos muy distintos se encuentran sin mediación, se genera fricción. No es que uno tenga razón y el otro no. son ritmos y enfoques diferentes.',
+        profilePerspectives: 'Si hay un {{Impulsor}} en el roce, es probable que quiera imponer su idea o su ritmo. no por malo, sino porque su naturaleza es liderar. El {{Conector}} puede tomárselo personal y sentirse rechazado por el compañero. Un {{Sosten}} probablemente intente evitar el conflicto hasta que ya no pueda más, y ahí reaccione de golpe. Y el {{Estratega}} puede frustrarse si siente que el otro no está siguiendo la lógica correcta del ejercicio.',
         category: 'Social',
         icon: '',
     },
@@ -99,7 +99,7 @@ export const SITUATIONS: Situation[] = [
         title: 'Se castiga a sí mismo cuando falla',
         whatYouSee: 'Después de un error, el jugador se golpea la cabeza, se insulta, dice "soy un desastre" o se enoja consigo mismo de forma exagerada.',
         whatsHappening: 'Mide su valor personal en función de la perfección del movimiento. Cada error lo siente como una prueba de que "no sirve". La autoexigencia se le fue de las manos y entró en un circuito de castigo que no lo deja seguir jugando bien.',
-        profilePerspectives: 'El {{Impulsor}} se castiga porque necesita sentirse capaz y el error amenaza esa imagen — su reacción suele ser rápida, intensa y visible. El {{Conector}} puede castigarse pensando en lo que los demás piensan de él después del error. Un {{Sosten}} tiende a castigarse en silencio, rumiando internamente. Y el {{Estratega}} puede ser el más duro consigo mismo porque ya había calculado qué hacer y siente que "debería haberlo hecho bien".',
+        profilePerspectives: 'El {{Impulsor}} se castiga porque necesita sentirse capaz y el error amenaza esa imagen. su reacción suele ser rápida, intensa y visible. El {{Conector}} puede castigarse pensando en lo que los demás piensan de él después del error. Un {{Sosten}} tiende a castigarse en silencio, rumiando internamente. Y el {{Estratega}} puede ser el más duro consigo mismo porque ya había calculado qué hacer y siente que "debería haberlo hecho bien".',
         category: 'Emocional',
         icon: '',
     },
@@ -108,7 +108,7 @@ export const SITUATIONS: Situation[] = [
         title: 'Se distrae todo el tiempo',
         whatYouSee: 'El jugador mira para otro lado, habla con el de al lado, juega con algo que no tiene nada que ver, o simplemente no está "presente" en el ejercicio.',
         whatsHappening: 'El entrenamiento no está sintonizando con su ritmo. Puede ser que el ejercicio sea demasiado lento para su motor (se aburre) o demasiado caótico para su estilo (se desconecta). La distracción es una señal de que algo del formato no le está llegando.',
-        profilePerspectives: 'El {{Impulsor}} se distrae cuando el ejercicio es demasiado lento o repetitivo — necesita más intensidad o competencia para mantenerse enganchado. El {{Conector}} puede distraerse socializando porque para él hablar con el compañero ES estar presente — su atención funciona diferente. Un {{Sosten}} se desconecta cuando hay demasiado caos, ruido o cambios — necesita previsibilidad para enfocarse. Y el {{Estratega}} puede parecer distraído cuando en realidad está pensando en otra cosa: una jugada anterior, un patrón que detectó, algo que le llamó la atención.',
+        profilePerspectives: 'El {{Impulsor}} se distrae cuando el ejercicio es demasiado lento o repetitivo. necesita más intensidad o competencia para mantenerse enganchado. El {{Conector}} puede distraerse socializando porque para él hablar con el compañero ES estar presente. su atención funciona diferente. Un {{Sosten}} se desconecta cuando hay demasiado caos, ruido o cambios. necesita previsibilidad para enfocarse. Y el {{Estratega}} puede parecer distraído cuando en realidad está pensando en otra cosa: una jugada anterior, un patrón que detectó, algo que le llamó la atención.',
         category: 'Concentración',
         icon: '',
     },
@@ -116,8 +116,8 @@ export const SITUATIONS: Situation[] = [
         id: 'quiere-dejar',
         title: 'Dice que quiere dejar el deporte',
         whatYouSee: 'El jugador dice que no quiere venir más, que no le gusta, o simplemente deja de aparecer.',
-        whatsHappening: 'El esfuerzo emocional que le cuesta adaptarse al entorno deportivo se volvió más grande que lo que disfruta. No es que no le guste el deporte — es que algo del contexto lo está agotando más de lo que lo llena. El objetivo no es convencerlo de quedarse a toda costa, sino ajustar el entorno para ver si el disfrute puede volver.',
-        profilePerspectives: 'Un {{Impulsor}} puede querer dejar si siente que no tiene espacio para liderar o que el nivel de desafío no lo motiva. El {{Conector}} tiende a irse cuando siente que no pertenece al grupo o que la dinámica social lo deja afuera. Un {{Sosten}} puede querer dejar si los cambios constantes o la presión lo agotan — necesita estabilidad para disfrutar. Y el {{Estratega}} puede desconectarse si siente que nadie valora su forma de ver el juego o si la actividad le parece demasiado caótica.',
+        whatsHappening: 'El esfuerzo emocional que le cuesta adaptarse al entorno deportivo se volvió más grande que lo que disfruta. No es que no le guste el deporte. es que algo del contexto lo está agotando más de lo que lo llena. El objetivo no es convencerlo de quedarse a toda costa, sino ajustar el entorno para ver si el disfrute puede volver.',
+        profilePerspectives: 'Un {{Impulsor}} puede querer dejar si siente que no tiene espacio para liderar o que el nivel de desafío no lo motiva. El {{Conector}} tiende a irse cuando siente que no pertenece al grupo o que la dinámica social lo deja afuera. Un {{Sosten}} puede querer dejar si los cambios constantes o la presión lo agotan. necesita estabilidad para disfrutar. Y el {{Estratega}} puede desconectarse si siente que nadie valora su forma de ver el juego o si la actividad le parece demasiado caótica.',
         category: 'Motivación',
         icon: '',
     },
@@ -126,7 +126,7 @@ export const SITUATIONS: Situation[] = [
         title: 'Llega un jugador nuevo al grupo',
         whatYouSee: 'Se incorpora un jugador que no conoce a nadie. El grupo reacciona: algunos lo reciben bien, otros lo ignoran, otros se sienten incómodos con el cambio.',
         whatsHappening: 'La llegada de alguien nuevo altera el equilibrio que el grupo ya tenía. Los jugadores que valoran la estabilidad sienten que se rompió algo. Los que son más sociales probablemente lo reciban rápido. Cada perfil vive el cambio distinto.',
-        profilePerspectives: 'El {{Impulsor}} probablemente lo reciba bien si ve que el nuevo puede ser un aliado o un rival interesante — lo mide rápido. El {{Conector}} puede ser el primero en acercarse y hacerlo sentir bienvenido — es su naturaleza integradora. Un {{Sosten}} puede sentirse incómodo con el cambio en la dinámica del grupo y necesitar tiempo para adaptarse. Y el {{Estratega}} va a observar al nuevo desde lejos antes de interactuar — no es rechazo, es su forma de entender quién es.',
+        profilePerspectives: 'El {{Impulsor}} probablemente lo reciba bien si ve que el nuevo puede ser un aliado o un rival interesante. lo mide rápido. El {{Conector}} puede ser el primero en acercarse y hacerlo sentir bienvenido. es su naturaleza integradora. Un {{Sosten}} puede sentirse incómodo con el cambio en la dinámica del grupo y necesitar tiempo para adaptarse. Y el {{Estratega}} va a observar al nuevo desde lejos antes de interactuar. no es rechazo, es su forma de entender quién es.',
         category: 'Social',
         icon: '',
     },
@@ -134,8 +134,8 @@ export const SITUATIONS: Situation[] = [
         id: 'se-congela',
         title: 'Se congela en el partido',
         whatYouSee: 'Un jugador que en el entrenamiento rinde bien, en el partido parece otro: no corre, no pide la pelota, no reacciona. Como si se hubiera "apagado".',
-        whatsHappening: 'La presión del partido activó un mecanismo de protección. Frente a la mirada del público o la importancia del momento, su cuerpo elige "no hacer nada" para evitar equivocarse. No es que no quiera — es que se bloqueó.',
-        profilePerspectives: 'El {{Impulsor}} se congela cuando siente que hay demasiado en juego y no puede permitirse fallar — la presión le frena el motor en vez de acelerarlo. El {{Conector}} puede bloquearse si siente que la mirada del público o de sus padres lo está evaluando. Un {{Sosten}} tiende a congelarse cuando la situación se siente impredecible o caótica — necesita un ancla de seguridad. Y el {{Estratega}} puede paralizarse por exceso de análisis: ve demasiadas opciones y no logra elegir una a tiempo.',
+        whatsHappening: 'La presión del partido activó un mecanismo de protección. Frente a la mirada del público o la importancia del momento, su cuerpo elige "no hacer nada" para evitar equivocarse. No es que no quiera. es que se bloqueó.',
+        profilePerspectives: 'El {{Impulsor}} se congela cuando siente que hay demasiado en juego y no puede permitirse fallar. la presión le frena el motor en vez de acelerarlo. El {{Conector}} puede bloquearse si siente que la mirada del público o de sus padres lo está evaluando. Un {{Sosten}} tiende a congelarse cuando la situación se siente impredecible o caótica. necesita un ancla de seguridad. Y el {{Estratega}} puede paralizarse por exceso de análisis: ve demasiadas opciones y no logra elegir una a tiempo.',
         category: 'Presión',
         icon: '',
     },
@@ -144,7 +144,7 @@ export const SITUATIONS: Situation[] = [
         title: 'No quiere ser el centro de atención',
         whatYouSee: 'Cuando toca liderar una actividad, hablar frente al grupo, o hacer una demostración solo, el jugador se niega, se esconde o se pone muy incómodo.',
         whatsHappening: 'Su forma natural de participar es desde un lugar más reservado. Obligarlo a ser el centro de atención es como pedirle a un zurdo que escriba con la derecha: puede hacerlo, pero lo pasa mal. Hay formas de liderazgo que no requieren estar en el centro.',
-        profilePerspectives: 'Un {{Impulsor}} en realidad suele querer estar al centro, así que si se resiste puede ser por otra cosa: inseguridad puntual o cansancio. El {{Conector}} puede querer participar pero le da vergüenza hacerlo solo — funciona mejor en compañía. Un {{Sosten}} genuinamente prefiere el segundo plano y se siente expuesto cuando lo ponen al frente — puede liderar desde el apoyo, no desde el escenario. Y el {{Estratega}} puede sentir que hablar frente a todos lo obliga a improvisar, algo que le genera incomodidad — dale un momento para prepararse y responde diferente.',
+        profilePerspectives: 'Un {{Impulsor}} en realidad suele querer estar al centro, así que si se resiste puede ser por otra cosa: inseguridad puntual o cansancio. El {{Conector}} puede querer participar pero le da vergüenza hacerlo solo. funciona mejor en compañía. Un {{Sosten}} genuinamente prefiere el segundo plano y se siente expuesto cuando lo ponen al frente. puede liderar desde el apoyo, no desde el escenario. Y el {{Estratega}} puede sentir que hablar frente a todos lo obliga a improvisar, algo que le genera incomodidad. dale un momento para prepararse y responde diferente.',
         category: 'Social',
         icon: '',
     },
@@ -153,7 +153,7 @@ export const SITUATIONS: Situation[] = [
         title: 'Cambió de un día para el otro',
         whatYouSee: 'Un jugador que siempre fue de una manera de repente está distinto: callado, agresivo, o desconectado. Y no vuelve a su estado normal.',
         whatsHappening: 'Algo fuera de la cancha lo está afectando: puede ser la escuela, la casa, una situación familiar, un problema con amigos. El cambio de comportamiento sostenido es una señal de que algo externo está drenando su energía emocional.',
-        profilePerspectives: 'Un {{Impulsor}} que de repente está apagado es una señal clara de que algo pasa — su naturaleza es estar activo, y la ausencia de esa energía es significativa. El {{Conector}} puede volverse callado o aislarse del grupo cuando algo externo lo afecta. Un {{Sosten}} puede mostrar irritabilidad o resistencia donde antes había calma — el cambio suele ser sutil pero persistente. Y un {{Estratega}} que se desconecta puede estar procesando algo internamente que lo absorbe por completo.',
+        profilePerspectives: 'Un {{Impulsor}} que de repente está apagado es una señal clara de que algo pasa. su naturaleza es estar activo, y la ausencia de esa energía es significativa. El {{Conector}} puede volverse callado o aislarse del grupo cuando algo externo lo afecta. Un {{Sosten}} puede mostrar irritabilidad o resistencia donde antes había calma. el cambio suele ser sutil pero persistente. Y un {{Estratega}} que se desconecta puede estar procesando algo internamente que lo absorbe por completo.',
         category: 'Observación',
         icon: '',
     },
@@ -264,7 +264,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-hace-lo-que-pido',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor escuchó la instrucción, pero ya decidió cómo hacerla a su manera. No es desobediencia — es que su motor rápido lo lanza a la acción antes de que termines de hablar, y confía en su instinto.',
+        whatsHappeningForProfile: 'El Impulsor escuchó la instrucción, pero ya decidió cómo hacerla a su manera. No es desobediencia. es que su motor rápido lo lanza a la acción antes de que termines de hablar, y confía en su instinto.',
         howToAccompany: [
             'Dile la instrucción corta y directa, en una frase. "Pase al pivote, tiro al arco." Menos palabras, más acción.',
             'Si hizo algo diferente pero funcionó, reconocelo: "Buena decisión. Ahora probemos también de esta otra forma".',
@@ -274,7 +274,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-hace-lo-que-pido',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector probablemente estaba hablando con alguien cuando diste la instrucción, o se enganchó con la dinámica social y perdió el foco. No es falta de respeto — es que su atención va primero a las personas y después a la tarea.',
+        whatsHappeningForProfile: 'El Conector probablemente estaba hablando con alguien cuando diste la instrucción, o se enganchó con la dinámica social y perdió el foco. No es falta de respeto. es que su atención va primero a las personas y después a la tarea.',
         howToAccompany: [
             'Asegurate de tener su atención antes de dar la instrucción: contacto visual, nombre, y después la consigna.',
             'Dale la instrucción en clave social: "Vos y tu compañero van a hacer esto juntos" funciona mejor que una orden individual.',
@@ -284,7 +284,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-hace-lo-que-pido',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén escuchó todo, pero si la instrucción fue compleja o nueva, su motor de procesamiento necesita más tiempo para cerrar la lógica antes de arrancar. No es lentitud — es que quiere hacerlo bien.',
+        whatsHappeningForProfile: 'El Sostén escuchó todo, pero si la instrucción fue compleja o nueva, su motor de procesamiento necesita más tiempo para cerrar la lógica antes de arrancar. No es lentitud. es que quiere hacerlo bien.',
         howToAccompany: [
             'Dile la instrucción paso a paso: "Primero hacemos esto... bien, ahora esto otro". No todo junto.',
             'Dale unos segundos después de la consigna antes de esperar que arranque. Ese silencio es su tiempo de procesamiento.',
@@ -372,7 +372,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'mira-desde-afuera',
         eje: 'S',
-        whatsHappeningForProfile: 'Es el comportamiento más natural del Sostén ante lo nuevo. Está haciendo su lectura de seguridad: quién está, cómo se mueven, cuáles son las reglas. No está perdiendo el tiempo — se está preparando.',
+        whatsHappeningForProfile: 'Es el comportamiento más natural del Sostén ante lo nuevo. Está haciendo su lectura de seguridad: quién está, cómo se mueven, cuáles son las reglas. No está perdiendo el tiempo. se está preparando.',
         howToAccompany: [
             'No lo apures. Dale el tiempo de observación que necesita. Un "Cuando estés listo, sumáte" sin presión es lo que más funciona.',
             'Si podés, ponelo a hacer la misma actividad pero al costado, en paralelo, sin exposición grupal.',
@@ -385,7 +385,7 @@ export const SITUATION_CARDS: SituationCard[] = [
         whatsHappeningForProfile: 'El Estratega está analizando las reglas del juego desde afuera. Quiere entender la lógica del ejercicio antes de ejecutarlo. No entra hasta que tiene claro el "cómo".',
         howToAccompany: [
             'Explicale el ejercicio brevemente mientras observa: "Mirá, la idea es que hagas esto cuando pasa aquello". Con la lógica clara, entra.',
-            'Preguntale: "¿Querés que te lo explique?" — eso le da permiso para hacer las preguntas que tiene en la cabeza.',
+            'Preguntale: "¿Querés que te lo explique?". eso le da permiso para hacer las preguntas que tiene en la cabeza.',
         ],
         ifNotResponding: 'Dile: "Hacelo una vez de prueba, no cuenta". El Estratega se anima cuando sabe que el primer intento es sin evaluación.',
     },
@@ -409,7 +409,7 @@ export const SITUATION_CARDS: SituationCard[] = [
         whatsHappeningForProfile: 'El Conector se quiebra cuando siente que la corrección rompió el vínculo. "¿Me está retando porque no le caigo bien?" El desborde es emocional y social a la vez.',
         howToAccompany: [
             'Primero repará el vínculo: "No estoy enojado, quiero ayudarte a mejorar". Eso baja la amenaza emocional.',
-            'Después de calmarse, conectá desde el afecto: una palmada, un "¿estamos bien?" — para él es fundamental saber que la relación no se rompió.',
+            'Después de calmarse, conectá desde el afecto: una palmada, un "¿estamos bien?". para él es fundamental saber que la relación no se rompió.',
         ],
         ifNotResponding: 'Pedile a un compañero de confianza que lo acompañe un momento. El Conector se regula mejor con un par que con una figura de autoridad.',
     },
@@ -460,12 +460,12 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'roce-con-companero',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén evita el conflicto. Si tuvo un roce, probablemente está incomodísimo y quiere que todo vuelva a la normalidad lo antes posible. No va a confrontar — se va a cerrar.',
+        whatsHappeningForProfile: 'El Sostén evita el conflicto. Si tuvo un roce, probablemente está incomodísimo y quiere que todo vuelva a la normalidad lo antes posible. No va a confrontar. se va a cerrar.',
         howToAccompany: [
             'No lo obligues a "hablar las cosas" frente al grupo. Acercate en privado: "Vi que hubo algo ahí, ¿estás bien?".',
             'Ayudalo a volver a su zona de confort: la misma actividad, los mismos compañeros de siempre, rutina normal.',
         ],
-        ifNotResponding: 'Dejá que el tiempo haga su trabajo. El Sostén no necesita "resolver" el conflicto verbalmente — necesita sentir que todo volvió a la normalidad.',
+        ifNotResponding: 'Dejá que el tiempo haga su trabajo. El Sostén no necesita "resolver" el conflicto verbalmente. necesita sentir que todo volvió a la normalidad.',
     },
     {
         situationId: 'roce-con-companero',
@@ -592,7 +592,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén quiere dejar cuando algo cambió demasiado: nuevo entrenador, nuevos compañeros, un cambio de horario o de sede. No es que no le guste el deporte — es que el contexto ya no se siente como "su lugar".',
+        whatsHappeningForProfile: 'El Sostén quiere dejar cuando algo cambió demasiado: nuevo entrenador, nuevos compañeros, un cambio de horario o de sede. No es que no le guste el deporte. es que el contexto ya no se siente como "su lugar".',
         howToAccompany: [
             'Identificá qué cambió: "¿Hay algo que antes te gustaba y ahora no?". El Sostén puede señalar exactamente el punto de quiebre.',
             'Si podés, restaurá algo del contexto anterior: el mismo horario, el mismo grupo, las mismas rutinas.',
@@ -761,7 +761,7 @@ export const SITUATION_CARDS: SituationCard[] = [
         whatsHappeningForProfile: 'Un Conector que se cierra es una señal fuerte. Su naturaleza es social, así que si está callado o aislado, algo le está doliendo en el plano vincular: una pelea con amigos, un cambio en la familia, o bullying.',
         howToAccompany: [
             'Acercate desde el vínculo: "Te conozco y sé que algo te pasa. No hace falta que me cuentes, pero quiero que sepas que estoy acá".',
-            'Dale espacio para reconectarse a su ritmo. No lo fuerces a "estar contento" — eso invalida lo que siente.',
+            'Dale espacio para reconectarse a su ritmo. No lo fuerces a "estar contento". eso invalida lo que siente.',
         ],
         ifNotResponding: 'Contactá al adulto responsable. El cambio sostenido en un Conector suele estar vinculado a una situación relacional que requiere atención fuera de la cancha.',
     },
@@ -773,7 +773,7 @@ export const SITUATION_CARDS: SituationCard[] = [
             'Mantenele la rutina lo más estable posible. En medio de lo que sea que esté pasando afuera, el entrenamiento puede ser su refugio de normalidad.',
             'Acercate sin drama: "¿Cómo estás hoy?" de forma natural, como parte de la rutina. Si quiere hablar, va a hablar.',
         ],
-        ifNotResponding: 'Contactá al adulto responsable con delicadeza: "Noté que viene diferente estas últimas semanas, ¿está todo bien en casa?". El Sostén rara vez pide ayuda — hay que ir a buscarla.',
+        ifNotResponding: 'Contactá al adulto responsable con delicadeza: "Noté que viene diferente estas últimas semanas, ¿está todo bien en casa?". El Sostén rara vez pide ayuda. hay que ir a buscarla.',
     },
     {
         situationId: 'cambio-repentino',

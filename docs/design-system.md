@@ -280,11 +280,12 @@ Replace "Distribucion DISC" → "Distribucion de estilos"
 
 1. **No emojis.** Ever.
 2. **No red.** The axis system uses orange, amber, green, violet. No red anywhere.
-3. **Color with restraint.** 90% of the UI is neutral. Color appears only in: axis dots, the violet accent, and indicator fills.
-4. **Always digest.** Technical information is accompanied by a plain-language version for coaches.
-5. **Argo names, not DISC letters.** The user sees "Impulsor", never "D".
-6. **All text through i18n.** No hardcoded strings in any language.
-7. **Mobile-first.** Design for mobile, enhance for desktop.
+3. **No dashes (—, –, -) in copy.** Use periods, commas, parentheses, or restructure the sentence instead.
+4. **Color with restraint.** 90% of the UI is neutral. Color appears only in: axis dots, the violet accent, and indicator fills.
+5. **Always digest.** Technical information is accompanied by a plain-language version for coaches.
+6. **Argo names, not DISC letters.** The user sees "Impulsor", never "D".
+7. **All text through i18n.** No hardcoded strings in any language.
+8. **Mobile-first.** Design for mobile, enhance for desktop.
 
 ---
 

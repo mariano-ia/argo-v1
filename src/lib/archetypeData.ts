@@ -1,4 +1,4 @@
-// Argo Method — Archetype editorial content
+// Argo Method. Archetype editorial content
 // Reviewed: probabilistic language, accompaniment framing, strength-based descriptors
 
 export type EjeType = 'D' | 'I' | 'S' | 'C';
@@ -412,7 +412,7 @@ export const TENDENCIA_CONTENT: Record<string, TendenciaContent> = {
 
   // ── S primario ──────────────────────────────────────────────────────────────
   S_D: {
-    parrafo: `Aunque {nombre} tiende a preferir la estabilidad, lleva dentro una reserva de iniciativa que puede sorprender. Es probable que en los momentos donde la situación exige acción inmediata — cuando un compañero necesita ayuda o cuando el equipo está en riesgo — su impulso dormido se active con una fuerza inesperada. Esta combinación sugiere un perfil de "reserva de emergencia": su acción tiende a ser puntual pero contundente. Después de ese estallido, es probable que vuelva a su ritmo calmo, casi como si nada hubiera pasado.`,
+    parrafo: `Aunque {nombre} tiende a preferir la estabilidad, lleva dentro una reserva de iniciativa que puede sorprender. Es probable que en los momentos donde la situación exige acción inmediata. cuando un compañero necesita ayuda o cuando el equipo está en riesgo. su impulso dormido se active con una fuerza inesperada. Esta combinación sugiere un perfil de "reserva de emergencia": su acción tiende a ser puntual pero contundente. Después de ese estallido, es probable que vuelva a su ritmo calmo, casi como si nada hubiera pasado.`,
     palabrasPuenteExtra: ["Momento clave", "Reaccionar", "Tu fuerza"],
     palabrasRuidoExtra: ["Nunca tomes la iniciativa", "Quédate siempre atrás", "No intervengas"],
   },
@@ -434,7 +434,7 @@ export const TENDENCIA_CONTENT: Record<string, TendenciaContent> = {
     palabrasRuidoExtra: ["Solo piensa, no hagas", "Espera indefinidamente", "Tu plan no importa"],
   },
   C_I: {
-    parrafo: `Aunque {nombre} tiende a procesar la información de forma interna, lleva dentro una necesidad de compartir sus hallazgos con el grupo. Es probable que cuando descubre algo — un patrón en el rival, una mejora técnica — quiera contárselo a sus compañeros. Esta combinación sugiere un perfil de "traductor táctico": alguien que observa con profundidad y luego traduce su análisis a un lenguaje que el equipo puede usar. Si se le da un espacio para compartir lo que ve (un mini rol de asistente táctico, por ejemplo), su motivación tiende a multiplicarse.`,
+    parrafo: `Aunque {nombre} tiende a procesar la información de forma interna, lleva dentro una necesidad de compartir sus hallazgos con el grupo. Es probable que cuando descubre algo. un patrón en el rival, una mejora técnica. quiera contárselo a sus compañeros. Esta combinación sugiere un perfil de "traductor táctico": alguien que observa con profundidad y luego traduce su análisis a un lenguaje que el equipo puede usar. Si se le da un espacio para compartir lo que ve (un mini rol de asistente táctico, por ejemplo), su motivación tiende a multiplicarse.`,
     palabrasPuenteExtra: ["Compartir", "Explicar", "Enseñar"],
     palabrasRuidoExtra: ["Guárdatelo", "Nadie quiere saber eso", "No expliques"],
   },

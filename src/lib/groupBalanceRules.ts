@@ -1,5 +1,5 @@
 /**
- * Group Balance Rules — All texts for group analysis.
+ * Group Balance Rules. All texts for group analysis.
  * Deterministic, zero AI. Based on docs/reglas-equilibrio-grupal.md
  *
  * Principles:
@@ -83,7 +83,7 @@ export const GROUP_PROFILE_TEXTS: Record<GroupType, GroupProfileText> = {
         tools: [
             'Alterna el estilo de los ejercicios: competitivos, colaborativos, técnicos, creativos. La diversidad del grupo responde bien a la variedad.',
             'Ten en cuenta que la comunicación grupal requiere más matices: lo que motiva a uno puede no resonar con otro. Observa las reacciones individuales.',
-            'Usa la diversidad como recurso explícito: "vamos a necesitar que algunos lideren, otros sostengan y otros observen — cada uno tiene su rol".',
+            'Usa la diversidad como recurso explícito: "vamos a necesitar que algunos lideren, otros sostengan y otros observen. cada uno tiene su rol".',
         ],
     },
 };
