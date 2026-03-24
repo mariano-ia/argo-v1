@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
@@ -46,7 +46,7 @@ const monthsSince = (iso: string) => {
     return (now.getFullYear() - d.getFullYear()) * 12 + now.getMonth() - d.getMonth();
 };
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
@@ -104,6 +104,29 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
             setResendOk(true);
         } catch { setResendOk(false); }
         finally { setResending(false); setTimeout(() => setResendOk(null), 3000); }
+    };
+
+    const handleDownload = () => {
+        const sLang = session.lang || 'es';
+        const ot = getOdysseyT(sLang as 'es' | 'en' | 'pt');
+        const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
+        if (session.eje_secundario) {
+            const t = getTendenciaContent(session.eje, session.eje_secundario);
+            if (t) {
+                report.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                report.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
+                report.palabrasPuenteExtra = t.palabrasPuenteExtra;
+                report.palabrasRuidoExtra = t.palabrasRuidoExtra;
+            }
+        }
+        const html = buildReportHtml(report, null, ot);
+        const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Informe - ${session.child_name}</title></head><body>${html}</body></html>`], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
     };
 
     return (
@@ -257,7 +280,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                 </div>
                             </div>
 
-                            {/* Bottom bar: timeline + resend + adult info */}
+                            {/* Bottom bar */}
                             <div className="mt-5 pt-4 border-t border-argo-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                 <div className="flex items-center gap-4 text-xs text-argo-grey">
                                     <span className="flex items-center gap-1">
@@ -265,16 +288,27 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                         {formatDate(session.created_at, lang)}
                                         {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
                                     </span>
-                                    <span className="text-argo-light">{session.adult_name} ({session.adult_email})</span>
+                                    <span className="text-argo-light">
+                                        <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsavel' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
+                                    </span>
                                 </div>
-                                <button
-                                    onClick={(e) => { e.stopPropagation(); handleResend(); }}
-                                    disabled={resending}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50 flex-shrink-0"
-                                >
-                                    {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                    {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
-                                </button>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
+                                    >
+                                        <Download size={12} />
+                                        {lang === 'en' ? 'Download report' : lang === 'pt' ? 'Baixar informe' : 'Descargar informe'}
+                                    </button>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); handleResend(); }}
+                                        disabled={resending}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
+                                    >
+                                        {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                        {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>
@@ -296,6 +330,7 @@ export const TenantPlayers: React.FC = () => {
     const [ejeFilter, setEjeFilter] = useState<string | null>(null);
     const [showReprofileOnly, setShowReprofileOnly] = useState(false);
     const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
 
     const fetchSessions = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -320,11 +355,11 @@ export const TenantPlayers: React.FC = () => {
         });
     }, [sessions, search, ejeFilter, showReprofileOnly]);
 
-    // Reset page when filters change
-    useEffect(() => { setPage(0); }, [search, ejeFilter, showReprofileOnly]);
+    // Reset page when filters or page size change
+    useEffect(() => { setPage(0); }, [search, ejeFilter, showReprofileOnly, pageSize]);
 
-    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-    const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    const totalPages = Math.ceil(filtered.length / pageSize);
+    const paginated = filtered.slice(page * pageSize, (page + 1) * pageSize);
     const reprofileCount = sessions.filter(s => monthsSince(s.created_at) >= 6).length;
 
     if (!tenant) {
@@ -417,12 +452,38 @@ export const TenantPlayers: React.FC = () => {
                 </div>
             ) : (
                 <>
-                    {/* Count + pagination info */}
+                    {/* Count + page size selector */}
                     <div className="flex items-center justify-between">
                         <p className="text-xs text-argo-grey">
                             {filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}
                             {totalPages > 1 && <span className="text-argo-light"> · {lang === 'en' ? 'page' : lang === 'pt' ? 'pagina' : 'pagina'} {page + 1}/{totalPages}</span>}
                         </p>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] text-argo-light">{lang === 'en' ? 'Show' : lang === 'pt' ? 'Mostrar' : 'Mostrar'}</span>
+                            {PAGE_SIZE_OPTIONS.map(size => (
+                                <button
+                                    key={size}
+                                    onClick={() => setPageSize(size)}
+                                    className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                                        pageSize === size
+                                            ? 'bg-argo-navy text-white'
+                                            : 'text-argo-grey hover:bg-argo-bg'
+                                    }`}
+                                >
+                                    {size}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setPageSize(filtered.length)}
+                                className={`px-2 py-0.5 rounded text-[11px] font-medium transition-all ${
+                                    pageSize >= filtered.length
+                                        ? 'bg-argo-navy text-white'
+                                        : 'text-argo-grey hover:bg-argo-bg'
+                                }`}
+                            >
+                                {lang === 'en' ? 'All' : lang === 'pt' ? 'Todos' : 'Todos'}
+                            </button>
+                        </div>
                     </div>
 
                     {/* List card */}
