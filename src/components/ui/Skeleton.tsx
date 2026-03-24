@@ -25,7 +25,7 @@ export const SkeletonSessionRow: React.FC = () => (
 /* ── Player card skeleton (expanded look) ──────────────────────────────────── */
 
 export const SkeletonPlayerCard: React.FC = () => (
-    <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-5 space-y-3">
+    <div className="bg-white rounded-[14px] shadow-argo p-5 space-y-3">
         <div className="flex items-start gap-3">
             <Bone className="w-10 h-10 rounded-xl flex-shrink-0" />
             <div className="flex-1 space-y-2">
@@ -60,7 +60,7 @@ export const SkeletonGroupRow: React.FC = () => (
 /* ── Situation card skeleton ───────────────────────────────────────────────── */
 
 export const SkeletonSituationCard: React.FC = () => (
-    <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-5">
+    <div className="bg-white rounded-[14px] shadow-argo p-5">
         <div className="flex items-start gap-3">
             <Bone className="w-8 h-8 rounded-lg flex-shrink-0" />
             <div className="flex-1 space-y-2">
@@ -103,7 +103,7 @@ export const SkeletonList: React.FC<{
 /* ── Stats card skeleton ───────────────────────────────────────────────────── */
 
 export const SkeletonStatsCard: React.FC = () => (
-    <div className="bg-white border border-argo-border rounded-2xl p-4 space-y-2">
+    <div className="bg-white rounded-[14px] shadow-argo p-4 space-y-2">
         <Bone className="h-2.5 w-16" />
         <Bone className="h-6 w-12" />
     </div>

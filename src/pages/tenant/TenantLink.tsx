@@ -21,7 +21,7 @@ export const TenantLink: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center h-40">
-                <div className="w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-6 h-6 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -47,15 +47,15 @@ export const TenantLink: React.FC = () => {
     };
 
     return (
-        <div className="max-w-2xl">
-            <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">{dt.link.titulo}</h1>
-            <p className="text-sm text-argo-grey mb-8">
+        <div>
+            <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight mb-1">{dt.link.titulo}</h1>
+            <p className="text-sm text-argo-secondary mb-8">
                 {dt.link.descripcion}
             </p>
 
-            <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm">
+            <div className="bg-white rounded-[14px] p-6 shadow-argo">
                 <div className="flex items-center gap-2 mb-4">
-                    <div className="flex-1 bg-argo-neutral border border-argo-border rounded-lg px-4 py-3 text-sm text-argo-navy font-mono truncate">
+                    <div className="flex-1 bg-argo-bg border border-argo-border rounded-lg px-4 py-3 text-sm text-argo-navy font-mono truncate">
                         {playLink}
                     </div>
                 </div>
@@ -70,7 +70,7 @@ export const TenantLink: React.FC = () => {
                     </button>
                     <button
                         onClick={shareLink}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-neutral transition-all"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-bg transition-all"
                     >
                         <Share2 size={14} /> {dt.link.compartir}
                     </button>

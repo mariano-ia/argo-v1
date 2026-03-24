@@ -20,13 +20,13 @@ export const CollapsibleSection: React.FC<Props> = ({
         <div className="border-b border-argo-border last:border-b-0">
             <button
                 onClick={() => setOpen(prev => !prev)}
-                className="w-full flex items-center justify-between py-4 text-left focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 rounded-xl transition-colors hover:bg-argo-neutral/40 px-1 -mx-1"
+                className="w-full flex items-center justify-between py-4 text-left focus:outline-none focus:ring-2 focus:ring-argo-violet-500/30 rounded-xl transition-colors hover:bg-argo-bg/40 px-1 -mx-1"
                 aria-expanded={open}
             >
                 <div className="flex items-center gap-2.5">
                     <span className="text-sm font-bold text-argo-navy">{title}</span>
                     {badge && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-argo-indigo/10 text-argo-indigo">
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-argo-violet-50 text-argo-violet-500">
                             {badge}
                         </span>
                     )}

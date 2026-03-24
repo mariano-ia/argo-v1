@@ -26,7 +26,7 @@ const PlayerDot: React.FC<{
     return (
         <div
             title={name}
-            className={`${sizeClass} rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 ring-2 ring-white shadow-sm`}
+            className={`${sizeClass} rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 ring-2 ring-white shadow-argo`}
             style={{ backgroundColor: color }}
         >
             {initials}
@@ -116,7 +116,7 @@ export const AxisChart: React.FC<{
                                 {a.pct}%
                             </span>
                         </div>
-                        <div className="w-full h-3 rounded-full bg-argo-neutral overflow-hidden">
+                        <div className="w-full h-3 rounded-full bg-argo-bg overflow-hidden">
                             <motion.div
                                 className="h-full rounded-full"
                                 style={{ background: a.color, opacity: 0.85 }}
@@ -218,7 +218,7 @@ export const MotorChart: React.FC<{
                                 {m.pct}%
                             </span>
                         </div>
-                        <div className="w-full h-3 rounded-full bg-argo-neutral overflow-hidden">
+                        <div className="w-full h-3 rounded-full bg-argo-bg overflow-hidden">
                             <motion.div
                                 className="h-full rounded-full"
                                 style={{ background: m.color, opacity: 0.85 }}
