@@ -321,7 +321,6 @@ export const TenantHome: React.FC = () => {
                                     <Tooltip
                                         contentStyle={{ background: '#1D1D1F', border: 'none', borderRadius: 8, fontSize: 12, color: 'white', padding: '6px 10px' }}
                                         labelStyle={{ color: '#AEAEB2', fontSize: 10 }}
-                                        formatter={(value: number) => [value, lang === 'en' ? 'sessions' : lang === 'pt' ? 'sessoes' : 'sesiones']}
                                     />
                                     <Area
                                         type="monotone"
