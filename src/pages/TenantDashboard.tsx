@@ -86,7 +86,7 @@ export const TenantDashboard: React.FC = () => {
     const initials = tenant?.display_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() ?? '';
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
-    const NavItem = ({ to, label, icon: Icon, end }: { to: string; label: string; icon: React.FC<{ size?: number }>; end: boolean }) => (
+    const NavItem = ({ to, label, icon: Icon, end }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean }) => (
         <NavLink
             to={to}
             end={end}
