@@ -1,5 +1,5 @@
 /**
- * Pair Compatibility Guide — All pairs are valid.
+ * Pair Compatibility Guide. All pairs are valid.
  * Each combination has strengths and tools for the adult.
  * No scores, no rankings, no "bad" pairs.
  */

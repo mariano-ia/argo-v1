@@ -39,7 +39,7 @@ const MICRO_DESC: Record<string, string> = {
     'C-Lento': 'Observa antes de intervenir',
 };
 
-/* ── Activity digest — 5 cases ───────────────────────────────────────────── */
+/* ── Activity digest. 5 cases ───────────────────────────────────────────── */
 function getActivityDigest(sessions: SessionRow[], lang: string): string {
     if (sessions.length === 0) {
         return lang === 'en' ? 'Share your link to start getting sessions.' :
@@ -81,7 +81,7 @@ function getActivityDigest(sessions: SessionRow[], lang: string): string {
            `Actividad estable. Alrededor de ${avg} sesiones por semana en promedio.`;
 }
 
-/* ── Distribution digest — short, motivational, home-specific ────────────── */
+/* ── Distribution digest. short, motivational, home-specific ────────────── */
 const HOME_DISTRIBUTION_DIGEST: Record<string, Record<string, string>> = {
     Competitivo: {
         es: 'Tus deportistas se encienden con los desafios. La competencia sana y los retos claros son un gran canal para mantener su motivacion.',

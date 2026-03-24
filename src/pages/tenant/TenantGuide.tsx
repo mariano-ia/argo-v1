@@ -264,47 +264,74 @@ export const TenantGuide: React.FC = () => {
                                     <h2 className="text-lg font-bold text-argo-navy">{selectedSituation.title}</h2>
                                 </div>
 
-                                {/* What you see + what's happening */}
-                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
-                                    <div>
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                            {dt.guide.loQueVes}
-                                            {activeCard?.whatYouSeeForProfile && selectedPlayer && (
-                                                <span className="ml-2 normal-case tracking-normal font-medium text-argo-violet-500">
-                                                    · {selectedPlayer.child_name} ({AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})
-                                                </span>
-                                            )}
+                                {/* Profile perspectives by axis */}
+                                {selectedSituation.profilePerspectives && (
+                                    <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">
+                                            {lang === 'en' ? 'How each profile experiences this situation' : lang === 'pt' ? 'Como cada perfil vivencia esta situacao' : 'Como vive cada perfil esta situacion'}
                                         </p>
-                                        <p className="text-[13px] text-argo-secondary leading-relaxed">
-                                            {activeCard?.whatYouSeeForProfile ?? selectedSituation.whatYouSee}
-                                        </p>
-                                    </div>
-                                    <div className="border-t border-argo-border pt-4">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                            {dt.guide.loQuePasa}
-                                            {activeCard?.whatsHappeningForProfile && selectedPlayer && (
-                                                <span className="ml-2 normal-case tracking-normal font-medium text-argo-violet-500">
-                                                    · {selectedPlayer.child_name} ({AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})
-                                                </span>
-                                            )}
-                                        </p>
-                                        <p className="text-[13px] text-argo-secondary leading-relaxed">
-                                            {activeCard?.whatsHappeningForProfile ?? selectedSituation.whatsHappening}
-                                        </p>
-                                    </div>
+                                        {selectedSituation.profilePerspectives
+                                            .split(/Si (?:el jugador tiene perfil |es |el perfil es |hay un )|Un /)
+                                            .filter(Boolean)
+                                            .length > 1
+                                            ? /* Split by axis markers and render as separate paragraphs */
+                                              (() => {
+                                                  const text = selectedSituation.profilePerspectives!;
+                                                  const markers = ['{{Impulsor}}', '{{Conector}}', '{{Sosten}}', '{{Estratega}}'];
+                                                  const parts: { marker: string; text: string }[] = [];
+                                                  let remaining = text;
 
-                                    {/* Profile perspectives */}
-                                    {selectedSituation.profilePerspectives && (
-                                        <div className="border-t border-argo-border pt-4">
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                                {lang === 'en' ? 'How each profile experiences it' : lang === 'pt' ? 'Como cada perfil vivencia isso' : 'Como lo vive cada perfil'}
-                                            </p>
-                                            <p className="text-[13px] text-argo-secondary leading-[1.8]">
-                                                {renderPerspectives(selectedSituation.profilePerspectives)}
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                                                  markers.forEach(marker => {
+                                                      const idx = remaining.indexOf(marker);
+                                                      if (idx !== -1) {
+                                                          // Find the start of this sentence (look back for ". " or start)
+                                                          let sentenceStart = remaining.lastIndexOf('. ', idx);
+                                                          if (sentenceStart === -1) sentenceStart = 0;
+                                                          else sentenceStart += 2;
+
+                                                          // Find the end (next marker or end)
+                                                          let sentenceEnd = remaining.length;
+                                                          markers.forEach(m => {
+                                                              if (m !== marker) {
+                                                                  const mIdx = remaining.indexOf(m, idx + marker.length);
+                                                                  if (mIdx !== -1) {
+                                                                      const prevPeriod = remaining.lastIndexOf('. ', mIdx);
+                                                                      if (prevPeriod > idx && prevPeriod < sentenceEnd) {
+                                                                          sentenceEnd = prevPeriod + 1;
+                                                                      }
+                                                                  }
+                                                              }
+                                                          });
+
+                                                          parts.push({ marker, text: remaining.slice(sentenceStart, sentenceEnd).trim() });
+                                                      }
+                                                  });
+
+                                                  // Fallback: if splitting failed, render as one block
+                                                  if (parts.length === 0) {
+                                                      return (
+                                                          <p className="text-[13px] text-argo-secondary leading-[1.8]">
+                                                              {renderPerspectives(text)}
+                                                          </p>
+                                                      );
+                                                  }
+
+                                                  return (
+                                                      <div className="space-y-3">
+                                                          {parts.map((p, i) => (
+                                                              <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_DOT[['D','I','S','C'][i]] + '40' }}>
+                                                                  <p className="text-[13px] text-argo-secondary leading-[1.75]">
+                                                                      {renderPerspectives(p.text)}
+                                                                  </p>
+                                                              </div>
+                                                          ))}
+                                                      </div>
+                                                  );
+                                              })()
+                                            : <p className="text-[13px] text-argo-secondary leading-[1.8]">{renderPerspectives(selectedSituation.profilePerspectives)}</p>
+                                        }
+                                    </div>
+                                )}
 
                                 {/* Player selector with search, filters, pagination */}
                                 {selectedSituation.category !== 'Grupal' && (() => {

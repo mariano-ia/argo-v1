@@ -1,5 +1,5 @@
 /**
- * Dashboard i18n — All UI strings for the tenant dashboard.
+ * Dashboard i18n. All UI strings for the tenant dashboard.
  * Covers: nav, pages, actions, empty states, toasts.
  */
 
