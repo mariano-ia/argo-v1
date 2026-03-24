@@ -9,6 +9,7 @@ import { GroupBalancePanel } from './components/GroupBalancePanel';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -574,11 +575,14 @@ export const TenantGroups: React.FC = () => {
             className="space-y-6"
         >
             {/* Header */}
-            <div>
-                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
-                <p className="text-[13px] text-argo-grey mt-1">
-                    {dt.groups.subtitulo}
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
+                    <p className="text-[13px] text-argo-grey mt-1">
+                        {dt.groups.subtitulo}
+                    </p>
+                </div>
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
             </div>
 
             {/* Create group */}

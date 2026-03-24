@@ -12,6 +12,7 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonList, SkeletonSessionRow } from '../../components/ui/Skeleton';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -292,11 +293,14 @@ export const TenantGuide: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
         >
-            <div>
-                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.guide.titulo}</h1>
-                <p className="text-[13px] text-argo-grey mt-1">
-                    {dt.guide.subtitulo}
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.guide.titulo}</h1>
+                    <p className="text-[13px] text-argo-grey mt-1">
+                        {dt.guide.subtitulo}
+                    </p>
+                </div>
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
             </div>
 
             {/* Search + category filters */}

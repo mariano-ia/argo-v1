@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Coins, Activity, Users, Layers, Copy, ChevronRight } from 'lucide-react';
+import { Coins, Activity, Users, Layers, ChevronRight } from 'lucide-react';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -132,7 +133,6 @@ export const TenantHome: React.FC = () => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const navigate = useNavigate();
-    const [copied, setCopied] = React.useState(false);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
     const [groupCount, setGroupCount] = useState<number | null>(null);
@@ -186,8 +186,6 @@ export const TenantHome: React.FC = () => {
         return <div className="flex items-center justify-center h-40"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
     }
 
-    const playLink = `${window.location.origin}/play/${tenant.slug}`;
-    const copyLink = async () => { await navigator.clipboard.writeText(playLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
     const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short' });
     const uniquePlayers = new Set(sessions.map(s => s.child_name)).size;
     const now = new Date();
@@ -214,20 +212,7 @@ export const TenantHome: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(tenant.display_name)}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
-                <div className="flex-shrink-0">
-                    <p className="text-[10px] text-argo-light font-medium mb-1.5 text-right hidden sm:block">
-                        {lang === 'en' ? 'Share this link so athletes can play' : lang === 'pt' ? 'Compartilhe este link para que os atletas joguem' : 'Comparte este link para que los deportistas jueguen'}
-                    </p>
-                    <div className="flex items-center gap-2">
-                        <div className="font-mono text-[11px] text-argo-grey bg-argo-bg border border-argo-border rounded-lg px-3 py-2 truncate max-w-[220px]">
-                            {playLink}
-                        </div>
-                        <button onClick={copyLink} className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-argo-violet-500 text-white text-[11px] font-semibold hover:bg-argo-violet-400 transition-colors flex-shrink-0">
-                            {copied ? <Check size={12} /> : <Copy size={12} />}
-                            {copied ? (lang === 'en' ? 'Copied' : 'Copiado') : (lang === 'en' ? 'Copy' : 'Copiar')}
-                        </button>
-                    </div>
-                </div>
+                <LinkWidget slug={tenant.slug} lang={lang} />
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}
