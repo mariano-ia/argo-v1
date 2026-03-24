@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { APP_VERSION } from '../lib/version';
 import { ToastProvider } from '../components/ui/Toast';
 import { useLang } from '../context/LangContext';
 import { getDashboardT } from '../lib/dashboardTranslations';
@@ -134,34 +133,18 @@ export const TenantDashboard: React.FC = () => {
 
                 {/* Nav — Principal */}
                 <nav className={`flex-1 space-y-0.5 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
-                    {!isCollapsed && (
-                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.12em] px-3 mb-1.5">
-                            {lang === 'en' ? 'Main' : lang === 'pt' ? 'Principal' : 'Principal'}
-                        </p>
-                    )}
                     {NAV_MAIN.map(item => <NavItem key={item.to} {...item} />)}
 
-                    {!isCollapsed && (
-                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.12em] px-3 mt-6 mb-1.5">
-                            {lang === 'en' ? 'Settings' : lang === 'pt' ? 'Configuracao' : 'Configuracion'}
-                        </p>
-                    )}
-                    {isCollapsed && <div className="h-px bg-argo-border mx-1 my-3 opacity-50" />}
+                    {/* Separator */}
+                    <div className={`${isCollapsed ? 'mx-1 my-4' : 'mx-3 my-5'}`}>
+                        <div className="h-px bg-argo-border opacity-60" />
+                    </div>
+
                     {NAV_CONFIG.map(item => <NavItem key={item.to} {...item} />)}
                 </nav>
 
                 {/* Bottom section */}
                 <div className={`pb-5 space-y-3 ${isCollapsed ? 'px-1.5' : 'px-4'}`}>
-                    {/* Credits */}
-                    {!isCollapsed && tenant && (
-                        <div className="px-4 py-3 rounded-xl bg-argo-bg">
-                            <p className="text-[24px] font-bold text-argo-navy leading-none">{tenant.credits_remaining}</p>
-                            <p className="text-[11px] text-argo-grey mt-1">
-                                {lang === 'en' ? 'credits available' : lang === 'pt' ? 'creditos disponiveis' : 'creditos disponibles'}
-                            </p>
-                        </div>
-                    )}
-
                     {/* User + logout */}
                     {!isCollapsed && tenant && (
                         <div className="flex items-center gap-2.5 px-3 py-2">
@@ -204,10 +187,6 @@ export const TenantDashboard: React.FC = () => {
                             ))}
                             <span className="text-[11px] font-bold text-argo-navy uppercase tracking-wide">{lang}</span>
                         </div>
-                    )}
-
-                    {!isCollapsed && (
-                        <p className="text-[9px] text-argo-light/40 uppercase tracking-widest px-3">v{APP_VERSION}</p>
                     )}
                 </div>
             </aside>
