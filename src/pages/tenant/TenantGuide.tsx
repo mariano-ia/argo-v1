@@ -21,6 +21,41 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 
 const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
 
+/** Renders profilePerspectives text with styled axis name markers */
+function renderPerspectives(text: string): React.ReactNode {
+    const MARKER_MAP: Record<string, { label: string; color: string }> = {
+        '{{Impulsor}}':  { label: 'Impulsor',  color: '#f97316' },
+        '{{Conector}}':  { label: 'Conector',  color: '#f59e0b' },
+        '{{Sosten}}':    { label: 'Sosten',    color: '#22c55e' },
+        '{{Estratega}}': { label: 'Estratega', color: '#6366f1' },
+    };
+    const regex = /\{\{(Impulsor|Conector|Sosten|Estratega)\}\}/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+    let key = 0;
+
+    while ((match = regex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            parts.push(text.slice(lastIndex, match.index));
+        }
+        const marker = MARKER_MAP[match[0]];
+        if (marker) {
+            parts.push(
+                <span key={key++} className="inline-flex items-center gap-1 font-semibold" style={{ color: marker.color }}>
+                    <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: marker.color }} />
+                    {marker.label}
+                </span>
+            );
+        }
+        lastIndex = regex.lastIndex;
+    }
+    if (lastIndex < text.length) {
+        parts.push(text.slice(lastIndex));
+    }
+    return parts;
+}
+
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantGuide: React.FC = () => {
@@ -257,6 +292,18 @@ export const TenantGuide: React.FC = () => {
                                             {activeCard?.whatsHappeningForProfile ?? selectedSituation.whatsHappening}
                                         </p>
                                     </div>
+
+                                    {/* Profile perspectives */}
+                                    {selectedSituation.profilePerspectives && (
+                                        <div className="border-t border-argo-border pt-4">
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                {lang === 'en' ? 'How each profile experiences it' : lang === 'pt' ? 'Como cada perfil vivencia isso' : 'Como lo vive cada perfil'}
+                                            </p>
+                                            <p className="text-[13px] text-argo-secondary leading-[1.8]">
+                                                {renderPerspectives(selectedSituation.profilePerspectives)}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Player selector with search, filters, pagination */}
