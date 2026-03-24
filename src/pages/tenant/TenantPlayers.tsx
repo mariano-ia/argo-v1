@@ -8,6 +8,7 @@ import { getTendenciaContent } from '../../lib/archetypeData';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
 import { getDashboardT } from '../../lib/dashboardTranslations';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -381,11 +382,14 @@ export const TenantPlayers: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="space-y-6"
         >
-            <div>
-                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
-                <p className="text-[13px] text-argo-grey mt-1">
-                    {dt.players.subtitulo}
-                </p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                <div>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
+                    <p className="text-[13px] text-argo-grey mt-1">
+                        {dt.players.subtitulo}
+                    </p>
+                </div>
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
             </div>
 
             {/* Re-profile alert */}

@@ -7,7 +7,7 @@ import { getDashboardT } from '../lib/dashboardTranslations';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
-    Users, Compass, MessageCircle, Layers, Copy, Check,
+    Users, Compass, MessageCircle, Layers,
 } from 'lucide-react';
 
 interface TenantData {
@@ -41,7 +41,6 @@ export const TenantDashboard: React.FC = () => {
     const [tenant, setTenant] = useState<TenantData | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
-    const [linkCopied, setLinkCopied] = useState(false);
 
     // DEV bypass
     const isDev = import.meta.env.DEV;
@@ -223,31 +222,6 @@ export const TenantDashboard: React.FC = () => {
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
                     </span>
                 </div>
-
-                {/* Persistent link bar */}
-                {tenant && (
-                    <div className="flex items-center justify-between gap-3 px-6 md:px-12 py-2.5 bg-white border-b border-argo-border">
-                        <p className="text-[11px] text-argo-light hidden sm:block">
-                            {lang === 'en' ? 'Share this link so athletes can play' : lang === 'pt' ? 'Compartilhe para que os atletas joguem' : 'Comparte para que los deportistas jueguen'}
-                        </p>
-                        <div className="flex items-center gap-2 ml-auto">
-                            <span className="font-mono text-[11px] text-argo-grey truncate max-w-[200px] sm:max-w-[280px]">
-                                {window.location.origin}/play/{tenant.slug}
-                            </span>
-                            <button
-                                onClick={() => {
-                                    navigator.clipboard.writeText(`${window.location.origin}/play/${tenant.slug}`);
-                                    setLinkCopied(true);
-                                    setTimeout(() => setLinkCopied(false), 2000);
-                                }}
-                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-md bg-argo-violet-500 text-white text-[10px] font-semibold hover:bg-argo-violet-400 transition-colors flex-shrink-0"
-                            >
-                                {linkCopied ? <Check size={10} /> : <Copy size={10} />}
-                                {linkCopied ? (lang === 'en' ? 'Copied' : 'Copiado') : (lang === 'en' ? 'Copy' : 'Copiar')}
-                            </button>
-                        </div>
-                    </div>
-                )}
 
                 <main className="flex-1 overflow-y-auto p-6 md:px-12 md:py-10">
                     <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang }} />
