@@ -20,41 +20,54 @@ export const IndicatorBar: React.FC<Props> = ({
     const [expanded, setExpanded] = React.useState(false);
 
     return (
-        <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-argo-navy">{label}</span>
+        <div
+            className="rounded-xl p-4 space-y-2 transition-colors"
+            style={{ backgroundColor: bgColor }}
+        >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+                <span className="text-sm font-bold text-argo-navy">{label}</span>
                 <div className="flex items-center gap-2">
                     <span
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                        style={{ background: bgColor, color }}
+                        className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
+                        style={{ background: color + '22', color }}
                     >
                         {levelLabel}
                     </span>
-                    <span className="text-xs font-bold text-argo-navy">{percentage}%</span>
+                    <span className="text-xs font-bold" style={{ color }}>{percentage}%</span>
                 </div>
             </div>
 
             {/* Bar */}
-            <div className="w-full h-2 rounded-full bg-argo-neutral overflow-hidden">
-                <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{ width: `${Math.min(100, percentage)}%`, background: color }}
+            <div className="w-full h-3 rounded-full bg-white/60 overflow-hidden">
+                <motion.div
+                    className="h-full rounded-full"
+                    style={{ background: color }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, percentage)}%` }}
+                    transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
                 />
             </div>
 
-            {/* Expandable description */}
+            {/* Expand button */}
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[11px] text-argo-grey hover:text-argo-navy transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 rounded-lg"
+                className="text-[11px] font-medium flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-offset-1 rounded-lg transition-opacity hover:opacity-70"
+                style={{ color }}
             >
-                <svg
-                    className={`w-3 h-3 transition-transform ${expanded ? 'rotate-90' : ''}`}
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                <motion.svg
+                    animate={{ rotate: expanded ? 90 : 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-3 h-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
                 >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-                {expanded ? dt.groupBalance.ocultarDetalle : dt.groupBalance.verDetalle}
+                </motion.svg>
+                {expanded ? dt.groupBalance.ocultar : dt.groupBalance.queSignifica}
             </button>
+
             <AnimatePresence>
                 {expanded && (
                     <motion.p
@@ -62,8 +75,8 @@ export const IndicatorBar: React.FC<Props> = ({
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xs text-argo-grey leading-relaxed pl-4 border-l-2 overflow-hidden"
-                        style={{ borderColor: bgColor }}
+                        className="text-xs text-argo-navy/70 leading-relaxed pl-3 border-l-2 overflow-hidden"
+                        style={{ borderColor: color + '55' }}
                     >
                         {description}
                     </motion.p>

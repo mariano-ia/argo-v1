@@ -210,6 +210,38 @@ interface DashboardTexts {
         verDetalle: string;
         ocultarDetalle: string;
         quitarDelGrupo: string;
+        // Collapsible sections
+        secFortalezas: string;
+        secHerramientas: string;
+        secDistribucion: string;
+        secIndicadores: string;
+        secMotor: string;
+        secDuplas: string;
+        secSimulador: string;
+        jugadoresEnGrupo: (n: number) => string;
+        // Pair suggestions
+        estilosComplementan: string;
+        estilosComplementanDesc: string;
+        estilosAfines: string;
+        estilosAfinesDesc: string;
+        verSugerencia: string;
+        ocultarSugerencia: string;
+        // Simulator
+        simTitulo: string;
+        simDesc: string;
+        simSiSeMueve: (name: string) => string;
+        simDiversidadSube: string;
+        simDiversidadSubeMucho: string;
+        simDiversidadBaja: string;
+        simDiversidadBajaMucho: string;
+        simDiversidadIgual: string;
+        simSinCambio: (axis: string) => string;
+        simGanaPresencia: (axis: string) => string;
+        simPierdePresencia: (axis: string) => string;
+        simDistribucionNoCambia: string;
+        // Indicator
+        queSignifica: string;
+        ocultar: string;
     };
 }
 
@@ -395,6 +427,34 @@ const es: DashboardTexts = {
         verDetalle: 'Ver detalle',
         ocultarDetalle: 'Ocultar detalle',
         quitarDelGrupo: 'Quitar del grupo',
+        secFortalezas: 'Fortalezas del grupo',
+        secHerramientas: 'Herramientas para el adulto',
+        secDistribucion: 'Distribución detallada',
+        secIndicadores: 'Indicadores',
+        secMotor: 'Motor del grupo',
+        secDuplas: 'Duplas para explorar',
+        secSimulador: '¿Qué pasa si...?',
+        jugadoresEnGrupo: (n) => `${n} ${n === 1 ? 'jugador' : 'jugadores'} en este grupo`,
+        estilosComplementan: 'Estilos que se complementan',
+        estilosComplementanDesc: 'Jugadores con perfiles distintos que se potencian juntos.',
+        estilosAfines: 'Estilos afines',
+        estilosAfinesDesc: 'Jugadores con un estilo similar que comparten energía natural.',
+        verSugerencia: 'Ver sugerencia para el adulto',
+        ocultarSugerencia: 'Ocultar sugerencia',
+        simTitulo: '¿Qué pasa si...?',
+        simDesc: 'Selecciona un jugador para ver cómo cambia el equilibrio del grupo si se mueve a otro equipo.',
+        simSiSeMueve: (name) => `Si ${name} se mueve a otro grupo...`,
+        simDiversidadSube: 'La diversidad mejora un poco',
+        simDiversidadSubeMucho: 'La diversidad sube bastante',
+        simDiversidadBaja: 'La diversidad baja un poco',
+        simDiversidadBajaMucho: 'La diversidad baja bastante',
+        simDiversidadIgual: 'El equilibrio se mantiene igual',
+        simSinCambio: (axis) => `${axis} sin cambio`,
+        simGanaPresencia: (axis) => `${axis} gana presencia`,
+        simPierdePresencia: (axis) => `${axis} pierde un poco de peso`,
+        simDistribucionNoCambia: 'La distribución de estilos no cambia.',
+        queSignifica: '¿Qué significa esto?',
+        ocultar: 'Ocultar',
     },
 };
 
@@ -580,6 +640,34 @@ const en: DashboardTexts = {
         verDetalle: 'View details',
         ocultarDetalle: 'Hide details',
         quitarDelGrupo: 'Remove from group',
+        secFortalezas: 'Group strengths',
+        secHerramientas: 'Tools for the adult',
+        secDistribucion: 'Detailed distribution',
+        secIndicadores: 'Indicators',
+        secMotor: 'Group motor',
+        secDuplas: 'Pairs to explore',
+        secSimulador: 'What if...?',
+        jugadoresEnGrupo: (n) => `${n} ${n === 1 ? 'player' : 'players'} in this group`,
+        estilosComplementan: 'Complementary styles',
+        estilosComplementanDesc: 'Players with different profiles that bring out the best in each other.',
+        estilosAfines: 'Similar styles',
+        estilosAfinesDesc: 'Players with a similar style who share natural energy.',
+        verSugerencia: 'View suggestion for the adult',
+        ocultarSugerencia: 'Hide suggestion',
+        simTitulo: 'What if...?',
+        simDesc: 'Select a player to see how the group balance changes if they move to another team.',
+        simSiSeMueve: (name) => `If ${name} moves to another group...`,
+        simDiversidadSube: 'Diversity improves a little',
+        simDiversidadSubeMucho: 'Diversity improves significantly',
+        simDiversidadBaja: 'Diversity decreases a little',
+        simDiversidadBajaMucho: 'Diversity decreases significantly',
+        simDiversidadIgual: 'The balance stays the same',
+        simSinCambio: (axis) => `${axis} unchanged`,
+        simGanaPresencia: (axis) => `${axis} gains presence`,
+        simPierdePresencia: (axis) => `${axis} loses some weight`,
+        simDistribucionNoCambia: 'The style distribution does not change.',
+        queSignifica: 'What does this mean?',
+        ocultar: 'Hide',
     },
 };
 
@@ -765,6 +853,34 @@ const pt: DashboardTexts = {
         verDetalle: 'Ver detalhes',
         ocultarDetalle: 'Ocultar detalhes',
         quitarDelGrupo: 'Remover do grupo',
+        secFortalezas: 'Pontos fortes do grupo',
+        secHerramientas: 'Ferramentas para o adulto',
+        secDistribucion: 'Distribuição detalhada',
+        secIndicadores: 'Indicadores',
+        secMotor: 'Motor do grupo',
+        secDuplas: 'Duplas para explorar',
+        secSimulador: 'E se...?',
+        jugadoresEnGrupo: (n) => `${n} ${n === 1 ? 'jogador' : 'jogadores'} neste grupo`,
+        estilosComplementan: 'Estilos complementares',
+        estilosComplementanDesc: 'Jogadores com perfis diferentes que se potencializam juntos.',
+        estilosAfines: 'Estilos afins',
+        estilosAfinesDesc: 'Jogadores com estilo similar que compartilham energia natural.',
+        verSugerencia: 'Ver sugestão para o adulto',
+        ocultarSugerencia: 'Ocultar sugestão',
+        simTitulo: 'E se...?',
+        simDesc: 'Selecione um jogador para ver como o equilíbrio do grupo muda se ele for para outro time.',
+        simSiSeMueve: (name) => `Se ${name} mudar para outro grupo...`,
+        simDiversidadSube: 'A diversidade melhora um pouco',
+        simDiversidadSubeMucho: 'A diversidade melhora bastante',
+        simDiversidadBaja: 'A diversidade diminui um pouco',
+        simDiversidadBajaMucho: 'A diversidade diminui bastante',
+        simDiversidadIgual: 'O equilíbrio permanece igual',
+        simSinCambio: (axis) => `${axis} sem mudança`,
+        simGanaPresencia: (axis) => `${axis} ganha presença`,
+        simPierdePresencia: (axis) => `${axis} perde um pouco de peso`,
+        simDistribucionNoCambia: 'A distribuição de estilos não muda.',
+        queSignifica: 'O que isso significa?',
+        ocultar: 'Ocultar',
     },
 };
 
