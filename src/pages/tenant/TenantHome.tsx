@@ -174,19 +174,9 @@ export const TenantHome: React.FC = () => {
         fetchData();
     }, [tenant]);
 
-    if (!tenant) {
-        return <div className="flex items-center justify-center h-40"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
-    }
-
-    const playLink = `${window.location.origin}/play/${tenant.slug}`;
-    const copyLink = async () => { await navigator.clipboard.writeText(playLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+    // All hooks MUST be above any early return
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
-    const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short' });
-    const uniquePlayers = new Set(sessions.map(s => s.child_name)).size;
-    const now = new Date();
-    const thisMonthCount = sessions.filter(s => { const d = new Date(s.created_at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
 
-    // Chart data: sessions per week, last 8 weeks
     const chartData = useMemo(() => {
         const nowMs = Date.now();
         const buckets: { week: string; sessions: number }[] = [];
@@ -199,6 +189,17 @@ export const TenantHome: React.FC = () => {
         }
         return buckets;
     }, [sessions, locale]);
+
+    if (!tenant) {
+        return <div className="flex items-center justify-center h-40"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
+    }
+
+    const playLink = `${window.location.origin}/play/${tenant.slug}`;
+    const copyLink = async () => { await navigator.clipboard.writeText(playLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
+    const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short' });
+    const uniquePlayers = new Set(sessions.map(s => s.child_name)).size;
+    const now = new Date();
+    const thisMonthCount = sessions.filter(s => { const d = new Date(s.created_at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
 
     // Distribution
     const axisCounts: Record<string, number> = { D: 0, I: 0, S: 0, C: 0 };
