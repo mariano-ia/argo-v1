@@ -1,10 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Users, Plus, ChevronRight, ArrowLeft, X, Pencil, Check, Trash2, Loader2, UserPlus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
-import { SkeletonList, SkeletonGroupRow, SkeletonSessionRow } from '../../components/ui/Skeleton';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -12,283 +11,145 @@ import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
-
-interface TenantData {
-    id: string;
-    slug: string;
-    display_name: string;
-    plan: string;
-    credits_remaining: number;
-}
-
-interface GroupRow {
-    id: string;
-    name: string;
-    created_at: string;
-    member_count: number;
-}
-
-interface MemberRow {
-    id: string;
-    session_id: string;
-    added_at: string;
-    child_name: string;
-    child_age: number | null;
-    sport: string;
-    archetype_label: string;
-    eje: string;
-    motor: string;
-    eje_secundario: string;
-}
-
-interface SessionRow {
-    id: string;
-    child_name: string;
-    child_age: number;
-    sport: string | null;
-    archetype_label: string;
-    eje: string;
-    motor: string;
-}
+interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface GroupRow { id: string; name: string; created_at: string; member_count: number; }
+interface MemberRow { id: string; session_id: string; added_at: string; child_name: string; child_age: number | null; sport: string; archetype_label: string; eje: string; motor: string; eje_secundario: string; }
+interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; motor: string; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
-
-const getToken = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-};
-
-const authHeaders = (token: string) => ({
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json',
-});
-
-const formatDate = (iso: string, lang: string) => {
-    const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
-    return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
-const EJE_COLORS: Record<string, string> = {
-    D: 'bg-axis-impulsor-bg text-orange-700 border-orange-200',
-    I: 'bg-axis-conector-bg text-amber-700 border-amber-200',
-    S: 'bg-axis-sosten-bg text-emerald-700 border-emerald-200',
-    C: 'bg-axis-estratega-bg text-indigo-700 border-indigo-200',
-};
+const getToken = async () => { const { data: { session } } = await supabase.auth.getSession(); return session?.access_token ?? null; };
+const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
-
 export const TenantGroups: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const { toast } = useToast();
 
-    // List state
+    // List
     const [groups, setGroups] = useState<GroupRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
     const [newName, setNewName] = useState('');
     const [creating, setCreating] = useState(false);
-    const [createError, setCreateError] = useState('');
 
-    // Detail state
+    // Detail
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [detailGroup, setDetailGroup] = useState<{ id: string; name: string } | null>(null);
     const [members, setMembers] = useState<MemberRow[]>([]);
     const [detailLoading, setDetailLoading] = useState(false);
 
-    // Rename state
+    // Rename
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState('');
 
-    // Add members modal
-    const [showAddModal, setShowAddModal] = useState(false);
+    // Add members
+    const [showAddPanel, setShowAddPanel] = useState(false);
     const [allSessions, setAllSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(false);
     const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
     const [adding, setAdding] = useState(false);
+    const [addSearch, setAddSearch] = useState('');
 
     // Delete
     const [confirmDelete, setConfirmDelete] = useState(false);
 
-    // Removing member
-    const [removingId, setRemovingId] = useState<string | null>(null);
+    // Menu
+    const [showMenu, setShowMenu] = useState(false);
 
     /* ── Fetch groups ──────────────────────────────────────────────────────── */
-
     const fetchGroups = useCallback(async () => {
         const token = await getToken();
         if (!token) return;
         try {
             const res = await fetch('/api/tenant-groups', { headers: authHeaders(token) });
-            if (res.ok) {
-                const data = await res.json();
-                setGroups(data.groups);
-            }
-        } finally {
-            setLoading(false);
-        }
+            if (res.ok) { const data = await res.json(); setGroups(data.groups); }
+        } finally { setLoading(false); }
     }, []);
 
-    useEffect(() => {
-        if (tenant) fetchGroups();
-    }, [tenant, fetchGroups]);
+    useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
     /* ── Create group ──────────────────────────────────────────────────────── */
-
     const handleCreate = async () => {
         if (!newName.trim()) return;
         setCreating(true);
-        setCreateError('');
         const token = await getToken();
         if (!token) return;
-
         try {
-            const res = await fetch('/api/tenant-groups', {
-                method: 'POST',
-                headers: authHeaders(token),
-                body: JSON.stringify({ action: 'create', name: newName.trim() }),
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                setCreateError(data.error || dt.chat.errorGenerico);
-                return;
-            }
-            setNewName('');
-            setShowCreate(false);
-            fetchGroups();
-            toast('success', dt.groups.grupoCreado);
-        } finally {
-            setCreating(false);
-        }
+            const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim() }) });
+            if (res.ok) { setNewName(''); setShowCreate(false); fetchGroups(); toast('success', dt.groups.grupoCreado); }
+        } finally { setCreating(false); }
     };
 
-    /* ── Fetch group detail ────────────────────────────────────────────────── */
-
+    /* ── Fetch detail ──────────────────────────────────────────────────────── */
     const fetchDetail = useCallback(async (groupId: string) => {
         setDetailLoading(true);
         const token = await getToken();
         if (!token) return;
-
         try {
-            const res = await fetch(`/api/tenant-groups?id=${groupId}`, {
-                headers: authHeaders(token),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setDetailGroup(data.group);
-                setMembers(data.members);
-            }
-        } finally {
-            setDetailLoading(false);
-        }
+            const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
+            if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); }
+        } finally { setDetailLoading(false); }
     }, []);
 
-    const openDetail = (groupId: string) => {
-        setSelectedId(groupId);
+    const selectGroup = (id: string) => {
+        setSelectedId(id);
         setEditing(false);
         setConfirmDelete(false);
-        fetchDetail(groupId);
-    };
-
-    const closeDetail = () => {
-        setSelectedId(null);
-        setDetailGroup(null);
-        setMembers([]);
-        fetchGroups();
+        setShowAddPanel(false);
+        setShowMenu(false);
+        fetchDetail(id);
     };
 
     /* ── Rename ────────────────────────────────────────────────────────────── */
-
-    const startEditing = () => {
-        setEditName(detailGroup?.name ?? '');
-        setEditing(true);
-    };
-
     const handleRename = async () => {
         if (!editName.trim() || !selectedId) return;
         const token = await getToken();
         if (!token) return;
-
-        await fetch('/api/tenant-groups', {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim() }),
-        });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim() }) });
         setEditing(false);
         fetchDetail(selectedId);
+        fetchGroups();
         toast('success', dt.groups.grupoRenombrado);
     };
 
-    /* ── Delete group ──────────────────────────────────────────────────────── */
-
+    /* ── Delete ─────────────────────────────────────────────────────────────── */
     const handleDelete = async () => {
         if (!selectedId) return;
         const token = await getToken();
         if (!token) return;
-
-        await fetch('/api/tenant-groups', {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify({ action: 'delete', id: selectedId }),
-        });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId }) });
         toast('success', dt.groups.grupoEliminado);
-        closeDetail();
+        setSelectedId(null); setDetailGroup(null); setMembers([]);
+        fetchGroups();
     };
 
     /* ── Remove member ─────────────────────────────────────────────────────── */
-
     const handleRemoveMember = async (sessionId: string) => {
         if (!selectedId) return;
-        setRemovingId(sessionId);
+        const removed = members.find(m => m.session_id === sessionId);
+        setMembers(prev => prev.filter(m => m.session_id !== sessionId));
         const token = await getToken();
         if (!token) return;
-
-        // Optimistic: remove from UI immediately
-        const removedMember = members.find(m => m.session_id === sessionId);
-        setMembers(prev => prev.filter(m => m.session_id !== sessionId));
-        setRemovingId(null);
-
-        const res = await fetch('/api/tenant-groups', {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }),
-        });
-        if (!res.ok && removedMember) {
-            // Rollback on failure
-            setMembers(prev => [...prev, removedMember]);
-            toast('error', dt.groups.noSePudoQuitar);
-        } else {
-            toast('success', dt.groups.jugadorQuitado);
-        }
+        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }) });
+        if (!res.ok && removed) { setMembers(prev => [...prev, removed]); toast('error', dt.groups.noSePudoQuitar); }
+        else { toast('success', dt.groups.jugadorQuitado); fetchGroups(); }
     };
 
-    /* ── Add members modal ─────────────────────────────────────────────────── */
-
-    const openAddModal = async () => {
-        setShowAddModal(true);
+    /* ── Add members ───────────────────────────────────────────────────────── */
+    const openAddPanel = async () => {
+        setShowAddPanel(true);
         setSelectedSessions(new Set());
+        setAddSearch('');
         setSessionsLoading(true);
         const token = await getToken();
         if (!token) return;
-
         try {
             const res = await fetch('/api/tenant-sessions', { headers: authHeaders(token) });
-            if (res.ok) {
-                const data = await res.json();
-                setAllSessions(data.sessions);
-            }
-        } finally {
-            setSessionsLoading(false);
-        }
-    };
-
-    const toggleSession = (id: string) => {
-        setSelectedSessions(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) next.delete(id); else next.add(id);
-            return next;
-        });
+            if (res.ok) { const data = await res.json(); setAllSessions(data.sessions); }
+        } finally { setSessionsLoading(false); }
     };
 
     const handleAddMembers = async () => {
@@ -296,377 +157,276 @@ export const TenantGroups: React.FC = () => {
         setAdding(true);
         const token = await getToken();
         if (!token) return;
-
-        await fetch('/api/tenant-groups', {
-            method: 'POST',
-            headers: authHeaders(token),
-            body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions) }),
-        });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions) }) });
         setAdding(false);
-        setShowAddModal(false);
+        setShowAddPanel(false);
         fetchDetail(selectedId);
+        fetchGroups();
         toast('success', dt.groups.jugadoresAgregados(selectedSessions.size));
     };
 
-    // Sessions not already in the group
     const memberSessionIds = new Set(members.map(m => m.session_id));
     const availableSessions = allSessions.filter(s => !memberSessionIds.has(s.id));
+    const filteredAvailable = addSearch
+        ? availableSessions.filter(s => s.child_name.toLowerCase().includes(addSearch.toLowerCase()))
+        : availableSessions;
 
-    /* ── Loading guard ─────────────────────────────────────────────────────── */
-
+    /* ── Loading ───────────────────────────────────────────────────────────── */
     if (!tenant) {
-        return (
-            <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
-            </div>
-        );
+        return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
     }
-
-    /* ── DETAIL VIEW ───────────────────────────────────────────────────────── */
-
-    if (selectedId) {
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25 }}
-                className="space-y-6"
-            >
-                {/* Back + title */}
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={closeDetail}
-                        className="p-2 rounded-lg hover:bg-argo-bg transition-colors"
-                    >
-                        <ArrowLeft size={18} className="text-argo-grey" />
-                    </button>
-                    {editing ? (
-                        <div className="flex items-center gap-2 flex-1">
-                            <input
-                                value={editName}
-                                onChange={e => setEditName(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleRename()}
-                                className="flex-1 text-xl font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
-                                autoFocus
-                            />
-                            <button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600">
-                                <Check size={16} />
-                            </button>
-                            <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400">
-                                <X size={16} />
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-2 flex-1">
-                            <h1 className="text-xl font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h1>
-                            <button onClick={startEditing} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-grey">
-                                <Pencil size={14} />
-                            </button>
-                        </div>
-                    )}
-                </div>
-
-                {/* Add members button */}
-                <div className="flex justify-end">
-                    <button
-                        onClick={openAddModal}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
-                    >
-                        <UserPlus size={15} />
-                        {dt.groups.agregarJugadores}
-                    </button>
-                </div>
-
-                {/* Members list */}
-                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
-                    <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
-                        <Users size={15} className="text-argo-grey" />
-                        <h2 className="text-[15px] font-semibold text-argo-navy">
-                            {dt.common.jugadores} ({members.length})
-                        </h2>
-                    </div>
-
-                    {detailLoading ? (
-                        <SkeletonList rows={3} RowComponent={SkeletonSessionRow} />
-                    ) : members.length === 0 ? (
-                        <div className="py-12 text-center">
-                            <p className="text-sm text-argo-secondary">{dt.groups.sinMiembros}</p>
-                            <p className="text-xs text-argo-light mt-1">{dt.groups.sinMiembrosDesc}</p>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-argo-border">
-                            {members.map(m => (
-                                <div key={m.id} className="px-6 py-4 hover:bg-argo-bg/50 transition-colors">
-                                    <div className="flex items-center justify-between gap-4">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm font-semibold text-argo-navy truncate">
-                                                {m.child_name}
-                                                <span className="font-normal text-argo-grey ml-1.5">
-                                                    {m.child_age != null ? `${m.child_age} ${dt.common.anos}` : ''}{m.sport ? ` · ${m.sport}` : ''}
-                                                </span>
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${EJE_COLORS[m.eje] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
-                                                {m.eje}
-                                            </span>
-                                            <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
-                                                {m.archetype_label}
-                                            </span>
-                                            <button
-                                                onClick={() => handleRemoveMember(m.session_id)}
-                                                disabled={removingId === m.session_id}
-                                                className="p-1.5 rounded-lg text-argo-grey hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
-                                                title={dt.groupBalance.quitarDelGrupo}
-                                            >
-                                                {removingId === m.session_id
-                                                    ? <Loader2 size={14} className="animate-spin" />
-                                                    : <X size={14} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* ── Group Balance Analysis ──────────────────────────────── */}
-                {!detailLoading && members.length >= 2 && (
-                    <GroupBalancePanel
-                        members={members.map(m => ({
-                            session_id: m.session_id,
-                            child_name: m.child_name,
-                            child_age: m.child_age,
-                            sport: m.sport,
-                            eje: m.eje as MemberProfile['eje'],
-                            motor: m.motor,
-                            eje_secundario: m.eje_secundario,
-                            archetype_label: m.archetype_label,
-                        }))}
-                    />
-                )}
-
-                {/* Delete group */}
-                <div className="pt-4 border-t border-argo-border">
-                    {confirmDelete ? (
-                        <div className="flex items-center gap-3">
-                            <p className="text-sm text-red-600">{dt.groups.confirmarEliminar}</p>
-                            <button
-                                onClick={handleDelete}
-                                className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600"
-                            >
-                                {dt.common.confirmar}
-                            </button>
-                            <button
-                                onClick={() => setConfirmDelete(false)}
-                                className="px-3 py-1.5 rounded-lg border border-argo-border text-xs font-medium hover:bg-argo-bg"
-                            >
-                                {dt.common.cancelar}
-                            </button>
-                        </div>
-                    ) : (
-                        <button
-                            onClick={() => setConfirmDelete(true)}
-                            className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 transition-colors"
-                        >
-                            <Trash2 size={14} />
-                            {dt.groups.eliminarGrupo}
-                        </button>
-                    )}
-                </div>
-
-                {/* ── Add Members Modal ─────────────────────────────────────────── */}
-                {showAddModal && (
-                    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowAddModal(false)}>
-                        <div
-                            className="bg-white w-full sm:max-w-md sm:rounded-[14px] rounded-t-[14px] max-h-[80vh] flex flex-col shadow-xl"
-                            onClick={e => e.stopPropagation()}
-                        >
-                            <div className="px-6 py-4 border-b border-argo-border flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">{dt.groups.agregarJugadores}</h3>
-                                <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg hover:bg-argo-bg">
-                                    <X size={16} className="text-argo-grey" />
-                                </button>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto">
-                                {sessionsLoading ? (
-                                    <div className="flex items-center justify-center py-12">
-                                        <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
-                                    </div>
-                                ) : availableSessions.length === 0 ? (
-                                    <div className="py-12 text-center px-6">
-                                        <p className="text-sm text-argo-grey">{dt.groups.sinJugadoresDisponibles}</p>
-                                        <p className="text-xs text-argo-grey/50 mt-1">
-                                            {allSessions.length === 0
-                                                ? dt.players.sinJugadores
-                                                : dt.groups.todosEnGrupo}
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="divide-y divide-argo-border">
-                                        {availableSessions.map(s => (
-                                            <button
-                                                key={s.id}
-                                                onClick={() => toggleSession(s.id)}
-                                                className={`w-full px-6 py-3.5 flex items-center gap-3 text-left transition-colors ${
-                                                    selectedSessions.has(s.id) ? 'bg-argo-violet-50' : 'hover:bg-argo-bg/50'
-                                                }`}
-                                            >
-                                                <div className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
-                                                    selectedSessions.has(s.id) ? 'bg-argo-navy border-argo-navy' : 'border-argo-border'
-                                                }`}>
-                                                    {selectedSessions.has(s.id) && (
-                                                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                                        </svg>
-                                                    )}
-                                                </div>
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="text-sm font-medium text-argo-navy truncate">
-                                                        {s.child_name}
-                                                        <span className="font-normal text-argo-grey ml-1.5">
-                                                            {s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}
-                                                        </span>
-                                                    </p>
-                                                </div>
-                                                <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1 flex-shrink-0">
-                                                    {s.archetype_label}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {availableSessions.length > 0 && (
-                                <div className="px-6 py-4 border-t border-argo-border">
-                                    <button
-                                        onClick={handleAddMembers}
-                                        disabled={selectedSessions.size === 0 || adding}
-                                        className="w-full py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                    >
-                                        {adding ? (
-                                            <Loader2 size={15} className="animate-spin" />
-                                        ) : (
-                                            <>
-                                                <Plus size={15} />
-                                                {dt.groups.agregarJugadores} {selectedSessions.size > 0 ? `(${selectedSessions.size})` : ''}
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-            </motion.div>
-        );
-    }
-
-    /* ── LIST VIEW ─────────────────────────────────────────────────────────── */
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
-                    <p className="text-[13px] text-argo-grey mt-1">
-                        {dt.groups.subtitulo}
-                    </p>
+                    <p className="text-[13px] text-argo-grey mt-1">{dt.groups.subtitulo}</p>
                 </div>
                 {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
             </div>
 
-            {/* Create group */}
-            {showCreate ? (
-                <div className="bg-white rounded-[14px] shadow-argo p-5">
-                    <div className="flex items-center gap-3">
-                        <input
-                            value={newName}
-                            onChange={e => { setNewName(e.target.value); setCreateError(''); }}
-                            onKeyDown={e => e.key === 'Enter' && handleCreate()}
-                            placeholder={dt.groups.nombrePlaceholder}
-                            className="flex-1 px-4 py-2.5 rounded-lg border border-argo-border text-sm outline-none focus:border-argo-navy transition-colors"
-                            autoFocus
-                        />
-                        <button
-                            onClick={handleCreate}
-                            disabled={creating || !newName.trim()}
-                            className="px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
-                        >
-                            {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-                            {dt.common.crear}
-                        </button>
-                        <button
-                            onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); }}
-                            className="p-2.5 rounded-lg hover:bg-argo-bg text-argo-grey"
-                        >
-                            <X size={16} />
-                        </button>
-                    </div>
-                    {createError && (
-                        <p className="text-xs text-red-500 mt-2">{createError}</p>
-                    )}
-                </div>
-            ) : (
-                <button
-                    onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-argo-navy text-white text-sm font-medium hover:bg-argo-navy/90 transition-colors"
-                >
-                    <Plus size={15} />
-                    {dt.groups.crearGrupo}
-                </button>
-            )}
+            {/* Two-panel layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-            {/* Groups list */}
-            <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
-                <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
-                    <Users size={15} className="text-argo-grey" />
-                    <h2 className="text-[15px] font-semibold text-argo-navy">
-                        {dt.groups.tusGrupos}
-                    </h2>
-                </div>
-
-                {loading ? (
-                    <SkeletonList rows={4} RowComponent={SkeletonGroupRow} />
-                ) : groups.length === 0 ? (
-                    <div className="py-12 text-center">
-                        <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
-                            <Users size={20} className="text-argo-violet-500" />
-                        </div>
-                        <p className="text-sm text-argo-secondary">{dt.groups.sinGrupos}</p>
-                        <p className="text-xs text-argo-light mt-1">{dt.groups.sinGruposDesc}</p>
-                    </div>
-                ) : (
-                    <div className="divide-y divide-argo-border">
-                        {groups.map(g => (
-                            <button
-                                key={g.id}
-                                onClick={() => openDetail(g.id)}
-                                className="w-full px-6 py-4 flex items-center justify-between gap-4 hover:bg-argo-bg/50 transition-colors text-left"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-sm font-semibold text-argo-navy truncate">{g.name}</p>
-                                    <p className="text-xs text-argo-light mt-0.5">{formatDate(g.created_at, lang)}</p>
-                                </div>
-                                <div className="flex items-center gap-3 flex-shrink-0">
-                                    <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
-                                        {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}
-                                    </span>
-                                    <ChevronRight size={16} className="text-argo-grey/40" />
-                                </div>
+                {/* ═══ LEFT PANEL ═══ */}
+                <div className="space-y-3">
+                    {/* Create button / inline form */}
+                    {showCreate ? (
+                        <div className="flex items-center gap-2">
+                            <input
+                                value={newName}
+                                onChange={e => setNewName(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleCreate()}
+                                placeholder={dt.groups.nombrePlaceholder}
+                                className="flex-1 px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
+                                autoFocus
+                            />
+                            <button onClick={handleCreate} disabled={creating || !newName.trim()} className="px-3.5 py-2.5 rounded-lg bg-argo-navy text-white text-[12px] font-semibold hover:bg-argo-navy/90 disabled:opacity-40 transition-colors">
+                                {creating ? <Loader2 size={14} className="animate-spin" /> : dt.common.crear}
                             </button>
-                        ))}
+                            <button onClick={() => { setShowCreate(false); setNewName(''); }} className="p-2 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
+                                <X size={14} />
+                            </button>
+                        </div>
+                    ) : (
+                        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
+                            <Plus size={16} strokeWidth={1.5} />
+                            {dt.groups.crearGrupo}
+                        </button>
+                    )}
+
+                    {/* Groups list */}
+                    <div className="bg-white rounded-[14px] shadow-argo overflow-y-auto" style={{ maxHeight: 'calc(100vh - 18rem)' }}>
+                        {loading ? (
+                            <div className="p-4 space-y-3">
+                                {[1,2,3].map(i => <div key={i} className="h-14 bg-argo-bg rounded-lg animate-pulse" />)}
+                            </div>
+                        ) : groups.length === 0 ? (
+                            <div className="py-12 text-center">
+                                <Layers size={24} className="text-argo-border mx-auto mb-3" />
+                                <p className="text-sm text-argo-light">{dt.groups.sinGrupos}</p>
+                                <p className="text-xs text-argo-light mt-1">{dt.groups.sinGruposDesc}</p>
+                            </div>
+                        ) : (
+                            groups.map(g => {
+                                const isActive = selectedId === g.id;
+                                return (
+                                    <button
+                                        key={g.id}
+                                        onClick={() => selectGroup(g.id)}
+                                        className={`w-full text-left px-5 py-4 border-b border-argo-border last:border-b-0 transition-all ${
+                                            isActive ? 'bg-argo-violet-50' : 'hover:bg-argo-bg/50'
+                                        }`}
+                                    >
+                                        <p className={`text-[13px] font-semibold ${isActive ? 'text-argo-violet-500' : 'text-argo-navy'}`}>
+                                            {g.name}
+                                        </p>
+                                        <p className="text-[11px] text-argo-light mt-0.5">
+                                            {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}
+                                        </p>
+                                    </button>
+                                );
+                            })
+                        )}
                     </div>
-                )}
+                </div>
+
+                {/* ═══ RIGHT PANEL ═══ */}
+                <div className="min-w-0 lg:sticky lg:top-6">
+                    <AnimatePresence mode="wait">
+                        {!selectedId ? (
+                            <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center h-[300px]">
+                                <div className="text-center max-w-sm">
+                                    <Layers size={28} className="text-argo-border mx-auto mb-4" />
+                                    <p className="text-[15px] font-semibold text-argo-navy mb-2">
+                                        {lang === 'en' ? 'Select a formation' : lang === 'pt' ? 'Selecione uma formacao' : 'Selecciona una formacion'}
+                                    </p>
+                                    <p className="text-xs text-argo-light leading-relaxed">
+                                        {lang === 'en' ? 'Choose a formation from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma formacao da lista para ver seus membros, analise de equilibrio e ferramentas.' : 'Elige una formacion de la lista para ver sus miembros, analisis de equilibrio y herramientas.'}
+                                    </p>
+                                </div>
+                            </motion.div>
+                        ) : (
+                            <motion.div
+                                key={selectedId}
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="space-y-4"
+                            >
+                                {/* Group header */}
+                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
+                                    <div className="flex items-center justify-between">
+                                        {editing ? (
+                                            <div className="flex items-center gap-2 flex-1">
+                                                <input
+                                                    value={editName}
+                                                    onChange={e => setEditName(e.target.value)}
+                                                    onKeyDown={e => e.key === 'Enter' && handleRename()}
+                                                    className="flex-1 text-lg font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
+                                                    autoFocus
+                                                />
+                                                <button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button>
+                                                <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <div>
+                                                    <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
+                                                    <p className="text-[11px] text-argo-light mt-0.5">{members.length} {members.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
+                                                </div>
+                                                <div className="relative">
+                                                    <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
+                                                        <MoreHorizontal size={16} />
+                                                    </button>
+                                                    {showMenu && (
+                                                        <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-argo-hover border border-argo-border py-1 w-40">
+                                                            <button onClick={() => { setEditName(detailGroup?.name ?? ''); setEditing(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
+                                                                <Pencil size={12} /> {lang === 'en' ? 'Rename' : lang === 'pt' ? 'Renomear' : 'Renombrar'}
+                                                            </button>
+                                                            <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
+                                                                <Trash2 size={12} /> {lang === 'en' ? 'Delete' : lang === 'pt' ? 'Excluir' : 'Eliminar'}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* Delete confirmation */}
+                                    {confirmDelete && (
+                                        <div className="mt-3 pt-3 border-t border-argo-border flex items-center gap-3">
+                                            <p className="text-xs text-red-600 flex-1">{dt.groups.confirmarEliminar}</p>
+                                            <button onClick={handleDelete} className="px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium">{dt.common.confirmar}</button>
+                                            <button onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 rounded-lg border border-argo-border text-xs">{dt.common.cancelar}</button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Members as chips */}
+                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">{dt.common.jugadores}</p>
+                                        <button onClick={openAddPanel} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
+                                            <Plus size={12} /> {dt.groups.agregarJugadores}
+                                        </button>
+                                    </div>
+
+                                    {detailLoading ? (
+                                        <div className="flex gap-2 flex-wrap">{[1,2,3].map(i => <div key={i} className="h-8 w-28 bg-argo-bg rounded-lg animate-pulse" />)}</div>
+                                    ) : members.length === 0 ? (
+                                        <p className="text-xs text-argo-light">{dt.groups.sinMiembros}</p>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {members.map(m => {
+                                                const dot = AXIS_DOT[m.eje] ?? '#6366f1';
+                                                return (
+                                                    <div key={m.id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
+                                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
+                                                        {m.child_name}
+                                                        <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                            <X size={10} />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Inline add panel */}
+                                    <AnimatePresence>
+                                        {showAddPanel && (
+                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                                                <div className="mt-4 pt-4 border-t border-argo-border space-y-3">
+                                                    <div className="relative">
+                                                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-argo-light" />
+                                                        <input value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Buscar...'} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-argo-border text-[11px] outline-none focus:border-argo-violet-200" />
+                                                    </div>
+
+                                                    {sessionsLoading ? (
+                                                        <div className="flex gap-2">{[1,2,3].map(i => <div key={i} className="h-8 w-24 bg-argo-bg rounded-lg animate-pulse" />)}</div>
+                                                    ) : filteredAvailable.length === 0 ? (
+                                                        <p className="text-[11px] text-argo-light">{allSessions.length === 0 ? dt.players?.sinJugadores ?? 'No players' : dt.groups.todosEnGrupo}</p>
+                                                    ) : (
+                                                        <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto">
+                                                            {filteredAvailable.map(s => {
+                                                                const dot = AXIS_DOT[s.eje] ?? '#6366f1';
+                                                                const isSelected = selectedSessions.has(s.id);
+                                                                return (
+                                                                    <button
+                                                                        key={s.id}
+                                                                        onClick={() => { const next = new Set(selectedSessions); if (next.has(s.id)) next.delete(s.id); else next.add(s.id); setSelectedSessions(next); }}
+                                                                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                                                                            isSelected ? 'border-argo-navy bg-argo-navy text-white' : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
+                                                                        }`}
+                                                                    >
+                                                                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: isSelected ? 'rgba(255,255,255,0.5)' : dot }} />
+                                                                        {s.child_name}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={handleAddMembers}
+                                                            disabled={selectedSessions.size === 0 || adding}
+                                                            className="px-3.5 py-2 rounded-lg bg-argo-navy text-white text-[11px] font-semibold hover:bg-argo-navy/90 disabled:opacity-40 transition-colors"
+                                                        >
+                                                            {adding ? <Loader2 size={12} className="animate-spin" /> : `${dt.groups.agregarJugadores} (${selectedSessions.size})`}
+                                                        </button>
+                                                        <button onClick={() => setShowAddPanel(false)} className="text-[11px] text-argo-light hover:text-argo-grey transition-colors">{dt.common.cancelar}</button>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+
+                                {/* Balance panel */}
+                                {!detailLoading && members.length >= 2 && (
+                                    <GroupBalancePanel
+                                        members={members.map(m => ({
+                                            session_id: m.session_id,
+                                            child_name: m.child_name,
+                                            child_age: m.child_age,
+                                            sport: m.sport,
+                                            eje: m.eje as MemberProfile['eje'],
+                                            motor: m.motor,
+                                            eje_secundario: m.eje_secundario,
+                                            archetype_label: m.archetype_label,
+                                        }))}
+                                    />
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </div>
         </motion.div>
     );
