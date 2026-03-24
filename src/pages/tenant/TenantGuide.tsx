@@ -32,16 +32,45 @@ export const TenantGuide: React.FC = () => {
     const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoaded, setSessionsLoaded] = useState(false);
+    const [groups, setGroups] = useState<{ id: string; name: string; session_ids: string[] }[]>([]);
     const [search, setSearch] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+
+    // Player selector state
+    const [playerSearch, setPlayerSearch] = useState('');
+    const [playerEjeFilter, setPlayerEjeFilter] = useState<string | null>(null);
+    const [playerGroupFilter, setPlayerGroupFilter] = useState<string | null>(null);
+    const [playerShowAll, setPlayerShowAll] = useState(false);
 
     const fetchSessions = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
+        const headers = { Authorization: `Bearer ${session.access_token}` };
         try {
-            const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const res = await fetch('/api/tenant-sessions', { headers });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
         } finally { setSessionsLoaded(true); }
+        // Fetch groups with members
+        try {
+            const res = await fetch('/api/tenant-groups', { headers });
+            if (res.ok) {
+                const data = await res.json();
+                // For each group, fetch members
+                const groupsWithMembers = await Promise.all(
+                    (data.groups ?? []).map(async (g: { id: string; name: string }) => {
+                        try {
+                            const mRes = await fetch(`/api/tenant-groups?id=${g.id}`, { headers });
+                            if (mRes.ok) {
+                                const mData = await mRes.json();
+                                return { id: g.id, name: g.name, session_ids: (mData.members ?? []).map((m: { session_id: string }) => m.session_id) };
+                            }
+                        } catch { /* ignore */ }
+                        return { id: g.id, name: g.name, session_ids: [] };
+                    })
+                );
+                setGroups(groupsWithMembers);
+            }
+        } catch { /* ignore */ }
     }, []);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
@@ -95,26 +124,33 @@ export const TenantGuide: React.FC = () => {
                         className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
                     />
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap gap-2">
                     <button
                         onClick={() => setCategoryFilter(null)}
-                        className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                            !categoryFilter ? 'bg-argo-navy text-white' : 'text-argo-grey hover:bg-argo-bg'
+                        className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all ${
+                            !categoryFilter ? 'bg-argo-navy text-white border-argo-navy' : 'border-argo-border text-argo-grey hover:border-argo-violet-200'
                         }`}
                     >
                         {dt.common.todas}
                     </button>
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => setCategoryFilter(categoryFilter === cat ? null : cat)}
-                            className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition-all ${
-                                categoryFilter === cat ? 'bg-argo-navy text-white' : 'text-argo-grey hover:bg-argo-bg'
-                            }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                    {categories.map(cat => {
+                        const cc = CATEGORY_COLORS[cat] ?? { bg: '#f3f4f6', text: '#374151' };
+                        const isActive = categoryFilter === cat;
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setCategoryFilter(isActive ? null : cat)}
+                                className={`px-3 py-1.5 rounded-full text-[11px] font-medium border transition-all ${
+                                    isActive
+                                        ? 'border-transparent text-white'
+                                        : 'border-argo-border text-argo-grey hover:border-argo-violet-200'
+                                }`}
+                                style={isActive ? { background: cc.text, borderColor: cc.text } : {}}
+                            >
+                                {cat}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -205,44 +241,123 @@ export const TenantGuide: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Player selector (inline chips) */}
-                                {selectedSituation.category !== 'Grupal' && (
-                                    <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-3">
-                                            {lang === 'en' ? 'Personalize for a player' : lang === 'pt' ? 'Personalizar para um jogador' : 'Personalizar para un jugador'}
-                                        </p>
-                                        {!sessionsLoaded ? (
-                                            <div className="flex gap-2">
-                                                {[1,2,3].map(i => <div key={i} className="h-8 w-24 bg-argo-bg rounded-lg animate-pulse" />)}
-                                            </div>
-                                        ) : sessions.length === 0 ? (
-                                            <p className="text-xs text-argo-light">
-                                                {lang === 'en' ? 'No athletes profiled yet. Share your link to get started.' : lang === 'pt' ? 'Nenhum atleta perfilado ainda. Compartilhe seu link para comecar.' : 'Todavia no hay deportistas perfilados. Comparte tu link para comenzar.'}
+                                {/* Player selector with search, filters, pagination */}
+                                {selectedSituation.category !== 'Grupal' && (() => {
+                                    const VISIBLE_COUNT = 10;
+                                    const groupSessionIds = playerGroupFilter
+                                        ? new Set(groups.find(g => g.id === playerGroupFilter)?.session_ids ?? [])
+                                        : null;
+
+                                    const filteredPlayers = sessions.filter(s => {
+                                        if (playerSearch && !s.child_name.toLowerCase().includes(playerSearch.toLowerCase())) return false;
+                                        if (playerEjeFilter && s.eje !== playerEjeFilter) return false;
+                                        if (groupSessionIds && !groupSessionIds.has(s.id)) return false;
+                                        return true;
+                                    });
+
+                                    const visiblePlayers = playerShowAll ? filteredPlayers : filteredPlayers.slice(0, VISIBLE_COUNT);
+                                    const hasMore = filteredPlayers.length > VISIBLE_COUNT && !playerShowAll;
+
+                                    return (
+                                        <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-3">
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">
+                                                {lang === 'en' ? 'Personalize for a player' : lang === 'pt' ? 'Personalizar para um jogador' : 'Personalizar para un jugador'}
                                             </p>
-                                        ) : (
-                                            <div className="flex flex-wrap gap-2">
-                                                {sessions.map(s => {
-                                                    const dot = AXIS_DOT[s.eje] ?? '#6366f1';
-                                                    const isSelected = selectedPlayerId === s.id;
-                                                    return (
+
+                                            {!sessionsLoaded ? (
+                                                <div className="flex gap-2">
+                                                    {[1,2,3].map(i => <div key={i} className="h-8 w-24 bg-argo-bg rounded-lg animate-pulse" />)}
+                                                </div>
+                                            ) : sessions.length === 0 ? (
+                                                <p className="text-xs text-argo-light">
+                                                    {lang === 'en' ? 'No athletes profiled yet. Share your link to get started.' : lang === 'pt' ? 'Nenhum atleta perfilado ainda. Compartilhe seu link para comecar.' : 'Todavia no hay deportistas perfilados. Comparte tu link para comenzar.'}
+                                                </p>
+                                            ) : (
+                                                <>
+                                                    {/* Filters row */}
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <div className="relative flex-1 min-w-[140px]">
+                                                            <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-argo-light" />
+                                                            <input
+                                                                value={playerSearch}
+                                                                onChange={e => { setPlayerSearch(e.target.value); setPlayerShowAll(false); }}
+                                                                placeholder={lang === 'en' ? 'Search...' : lang === 'pt' ? 'Buscar...' : 'Buscar...'}
+                                                                className="w-full pl-7 pr-2 py-1.5 rounded-md border border-argo-border text-[11px] outline-none focus:border-argo-violet-200 transition-colors"
+                                                            />
+                                                        </div>
+
+                                                        {/* Group dropdown */}
+                                                        {groups.length > 0 && (
+                                                            <select
+                                                                value={playerGroupFilter ?? ''}
+                                                                onChange={e => { setPlayerGroupFilter(e.target.value || null); setPlayerShowAll(false); }}
+                                                                className="px-2 py-1.5 rounded-md border border-argo-border text-[11px] text-argo-secondary outline-none focus:border-argo-violet-200 transition-colors bg-white"
+                                                            >
+                                                                <option value="">{lang === 'en' ? 'All formations' : lang === 'pt' ? 'Todas as formacoes' : 'Todas las formaciones'}</option>
+                                                                {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                                                            </select>
+                                                        )}
+
+                                                        {/* Eje filter chips */}
+                                                        {(['D', 'I', 'S', 'C'] as const).map(eje => {
+                                                            const dot = AXIS_DOT[eje];
+                                                            const isActive = playerEjeFilter === eje;
+                                                            return (
+                                                                <button
+                                                                    key={eje}
+                                                                    onClick={() => { setPlayerEjeFilter(isActive ? null : eje); setPlayerShowAll(false); }}
+                                                                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-medium transition-all ${
+                                                                        isActive ? 'bg-argo-navy text-white' : 'text-argo-grey hover:bg-argo-bg'
+                                                                    }`}
+                                                                >
+                                                                    <span className="w-1.5 h-1.5 rounded-full" style={{ background: isActive ? 'rgba(255,255,255,0.5)' : dot }} />
+                                                                    {AXIS_CONFIG[eje]?.name ?? eje}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Player chips */}
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {visiblePlayers.map(s => {
+                                                            const dot = AXIS_DOT[s.eje] ?? '#6366f1';
+                                                            const isSelected = selectedPlayerId === s.id;
+                                                            return (
+                                                                <button
+                                                                    key={s.id}
+                                                                    onClick={() => setSelectedPlayerId(isSelected ? null : s.id)}
+                                                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all ${
+                                                                        isSelected
+                                                                            ? 'border-argo-navy bg-argo-navy text-white'
+                                                                            : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
+                                                                    }`}
+                                                                >
+                                                                    <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: isSelected ? 'rgba(255,255,255,0.5)' : dot }} />
+                                                                    {s.child_name}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {/* Show more / count */}
+                                                    {hasMore && (
                                                         <button
-                                                            key={s.id}
-                                                            onClick={() => setSelectedPlayerId(isSelected ? null : s.id)}
-                                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all ${
-                                                                isSelected
-                                                                    ? 'border-argo-navy bg-argo-navy text-white'
-                                                                    : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
-                                                            }`}
+                                                            onClick={() => setPlayerShowAll(true)}
+                                                            className="text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity"
                                                         >
-                                                            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: isSelected ? 'rgba(255,255,255,0.5)' : dot }} />
-                                                            {s.child_name}
+                                                            {lang === 'en' ? `Show all (${filteredPlayers.length})` : lang === 'pt' ? `Mostrar todos (${filteredPlayers.length})` : `Ver todos (${filteredPlayers.length})`}
                                                         </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+                                                    )}
+                                                    {filteredPlayers.length === 0 && (
+                                                        <p className="text-[11px] text-argo-light">
+                                                            {lang === 'en' ? 'No players match the filters.' : lang === 'pt' ? 'Nenhum jogador corresponde aos filtros.' : 'Ningun jugador coincide con los filtros.'}
+                                                        </p>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* Personalized card (if player selected or grupal) */}
                                 <AnimatePresence>
