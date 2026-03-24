@@ -42,8 +42,7 @@ function renderPerspectives(text: string): React.ReactNode {
         const marker = MARKER_MAP[match[0]];
         if (marker) {
             parts.push(
-                <span key={key++} className="inline-flex items-center gap-1 font-semibold" style={{ color: marker.color }}>
-                    <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: marker.color }} />
+                <span key={key++} className="font-semibold text-argo-navy">
                     {marker.label}
                 </span>
             );
@@ -189,13 +188,14 @@ export const TenantGuide: React.FC = () => {
                 </div>
             </div>
 
-            {/* Two-panel layout — equal halves */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start" style={{ minHeight: 'calc(100vh - 18rem)' }}>
+            {/* Two-panel layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-                {/* ═══ LEFT PANEL — Situations list ═══ */}
-                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
+                {/* ═══ LEFT PANEL — Situations list (scrollable) ═══ */}
+                <div className="bg-white rounded-[14px] shadow-argo overflow-y-auto" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
                     {filtered.map(situation => {
                         const isActive = selectedSituation?.id === situation.id;
+                        const cc = CATEGORY_COLORS[situation.category] ?? { bg: '#f3f4f6', text: '#374151' };
                         return (
                             <button
                                 key={situation.id}
@@ -204,10 +204,15 @@ export const TenantGuide: React.FC = () => {
                                     isActive ? 'bg-argo-violet-50' : 'hover:bg-argo-bg/50'
                                 }`}
                             >
-                                <p className={`text-[13px] font-semibold ${isActive ? 'text-argo-violet-500' : 'text-argo-navy'}`}>
-                                    {situation.title}
-                                </p>
-                                <p className="text-[11px] text-argo-light mt-0.5 line-clamp-2 leading-relaxed">{situation.whatYouSee}</p>
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <p className={`text-[13px] font-semibold ${isActive ? 'text-argo-violet-500' : 'text-argo-navy'}`}>
+                                        {situation.title}
+                                    </p>
+                                    <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold flex-shrink-0" style={{ background: cc.bg, color: cc.text }}>
+                                        {situation.category}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] text-argo-light line-clamp-2 leading-relaxed">{situation.whatYouSee}</p>
                             </button>
                         );
                     })}
@@ -219,8 +224,8 @@ export const TenantGuide: React.FC = () => {
                     )}
                 </div>
 
-                {/* ═══ RIGHT PANEL — Detail ═══ */}
-                <div className="min-w-0">
+                {/* ═══ RIGHT PANEL — Detail (sticky) ═══ */}
+                <div className="min-w-0 lg:sticky lg:top-6">
                     <AnimatePresence mode="wait">
                         {!selectedSituation ? (
                             /* Empty state */
