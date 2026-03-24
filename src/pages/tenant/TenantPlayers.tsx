@@ -234,7 +234,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                             <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">
                                 {dt.players.brujulaSecundaria}: {tendencia}
                             </h4>
-                            <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo}</p>
+                            <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name)}</p>
                         </div>
                     )}
 
