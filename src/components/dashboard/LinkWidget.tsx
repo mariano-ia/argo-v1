@@ -1,15 +1,37 @@
 import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, Info } from 'lucide-react';
 
 interface Props {
     slug: string;
     lang: string;
 }
 
+const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string }> = {
+    es: {
+        label: 'Invita deportistas a jugar con tu link',
+        tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a tu dashboard.',
+        copy: 'Copiar link',
+        copied: 'Copiado',
+    },
+    en: {
+        label: 'Invite athletes to play with your link',
+        tooltip: 'When you share this link, athletes can complete the experience and their profiles are linked to your dashboard.',
+        copy: 'Copy link',
+        copied: 'Copied',
+    },
+    pt: {
+        label: 'Convide atletas a jogar com seu link',
+        tooltip: 'Ao compartilhar este link, os atletas podem completar a experiencia e seus perfis ficam associados ao seu dashboard.',
+        copy: 'Copiar link',
+        copied: 'Copiado',
+    },
+};
+
 export const LinkWidget: React.FC<Props> = ({ slug, lang }) => {
     const [copied, setCopied] = useState(false);
+    const [showTooltip, setShowTooltip] = useState(false);
     const fullUrl = `${window.location.origin}/play/${slug}`;
-    const displayUrl = `argomethod.com/play/${slug}`;
+    const t = TEXTS[lang] ?? TEXTS.es;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(fullUrl);
@@ -18,18 +40,29 @@ export const LinkWidget: React.FC<Props> = ({ slug, lang }) => {
     };
 
     return (
-        <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="font-mono text-[11px] text-argo-grey hidden sm:inline">
-                {displayUrl}
-            </span>
+        <div className="flex-shrink-0 text-right">
+            <div className="flex items-center gap-1.5 justify-end mb-2 relative">
+                <p className="text-[11px] text-argo-grey leading-relaxed">{t.label}</p>
+                <button
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    onClick={() => setShowTooltip(v => !v)}
+                    className="w-[18px] h-[18px] rounded-full bg-argo-bg border border-argo-border flex items-center justify-center text-argo-grey hover:bg-argo-violet-50 hover:border-argo-violet-200 hover:text-argo-violet-500 transition-all flex-shrink-0"
+                >
+                    <Info size={11} />
+                </button>
+                {showTooltip && (
+                    <div className="absolute top-full right-0 mt-1.5 z-50 w-[260px] px-3 py-2.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed text-left shadow-lg">
+                        {t.tooltip}
+                    </div>
+                )}
+            </div>
             <button
                 onClick={handleCopy}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-argo-violet-500 text-white text-[11px] font-semibold hover:bg-argo-violet-400 transition-colors flex-shrink-0"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-argo-violet-500 text-white text-[11px] font-semibold hover:bg-argo-violet-400 transition-colors"
             >
                 {copied ? <Check size={11} /> : <Copy size={11} />}
-                {copied
-                    ? (lang === 'en' ? 'Copied' : 'Copiado')
-                    : (lang === 'en' ? 'Copy link' : lang === 'pt' ? 'Copiar link' : 'Copiar link')}
+                {copied ? t.copied : t.copy}
             </button>
         </div>
     );

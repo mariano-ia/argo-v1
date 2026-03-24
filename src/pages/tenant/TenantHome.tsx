@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Coins, Activity, Users, Layers, ChevronRight } from 'lucide-react';
+import { Coins, Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { supabase } from '../../lib/supabase';
@@ -285,53 +285,58 @@ export const TenantHome: React.FC = () => {
                     </p>
                 </div>
 
-                {/* Distribution */}
-                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
+                {/* Mini chat widget */}
+                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 flex flex-col">
                     <h2 className="text-[15px] font-semibold text-argo-navy mb-1">
-                        {lang === 'en' ? 'Profile distribution' : lang === 'pt' ? 'Distribuicao de perfis' : 'Distribucion de perfiles'}
+                        {lang === 'en' ? 'Argo Consultant' : 'Consultor Argo'}
                     </h2>
-                    <p className="text-[11px] text-argo-light mb-4">
-                        {lang === 'en' ? 'Your athletes by behavioral axis' : lang === 'pt' ? 'Seus atletas por eixo comportamental' : 'Tus deportistas por eje de conducta'}
+                    <p className="text-[11px] text-argo-light mb-3">
+                        {lang === 'en' ? 'Ask anything about your athletes' : lang === 'pt' ? 'Pergunte qualquer coisa sobre seus atletas' : 'Consulta lo que necesites sobre tus deportistas'}
                     </p>
 
-                    {sessionsLoading ? (
-                        <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="h-4 bg-argo-bg rounded animate-pulse" />)}</div>
-                    ) : (
-                        <div className="space-y-3.5">
-                            {(['D', 'I', 'S', 'C'] as const).map((axis, i) => {
-                                const count = axisCounts[axis];
-                                const pct = Math.round((count / totalForDist) * 100);
-                                const cfg = AXIS_CONFIG[axis];
-                                const name = dt.profile?.axisNames?.[axis] ?? AXIS_NAMES_ES[axis];
-                                return (
-                                    <div key={axis} className="flex items-center gap-3">
-                                        <span className="text-xs font-medium text-argo-secondary w-20">{name}</span>
-                                        <div className="flex-1 h-[5px] rounded-sm bg-argo-border overflow-hidden">
-                                            <motion.div
-                                                className="h-full rounded-sm"
-                                                style={{ background: cfg.color, opacity: 0.7 }}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${pct}%` }}
-                                                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 + i * 0.08 }}
-                                            />
-                                        </div>
-                                        <span className="text-[11px] font-semibold text-argo-grey w-8 text-right">{pct}%</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
+                    {/* Example prompts */}
+                    <div className="space-y-1.5 mb-4">
+                        {(lang === 'en'
+                            ? ['How do I motivate a player who doesn\'t want to train?', 'Explain the profiles of Mateo and Allegra']
+                            : lang === 'pt'
+                                ? ['Como motivo um jogador que nao quer treinar?', 'Me explique o perfil de Mateo e Allegra']
+                                : ['¿Como motivo a un jugador que no quiere entrenar?', 'Explicame el perfil de Mateo y Allegra']
+                        ).map((p, i) => (
+                            <div key={i} className="px-3 py-2 rounded-lg border border-argo-border text-[11px] text-argo-light cursor-default">
+                                {p}
+                            </div>
+                        ))}
+                    </div>
 
-                    {!sessionsLoading && sessions.length >= 3 && (
-                        <p className="text-xs text-argo-secondary leading-relaxed mt-5 pl-3 border-l-2 border-argo-violet-100">
-                            {getDistributionDigest(sessions, lang)}
-                        </p>
-                    )}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const input = (e.target as HTMLFormElement).elements.namedItem('chatInput') as HTMLInputElement;
+                            const q = input.value.trim();
+                            if (q) navigate(`/dashboard/chat?q=${encodeURIComponent(q)}`);
+                        }}
+                        className="mt-auto"
+                    >
+                        <div className="flex items-center gap-2">
+                            <input
+                                name="chatInput"
+                                type="text"
+                                placeholder={lang === 'en' ? 'Write your question...' : lang === 'pt' ? 'Escreva sua pergunta...' : 'Escribe tu consulta...'}
+                                className="flex-1 rounded-lg border border-argo-border bg-argo-bg px-3.5 py-2.5 text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
+                            />
+                            <button
+                                type="submit"
+                                className="p-2.5 rounded-lg bg-argo-navy text-white hover:bg-argo-navy/90 transition-colors flex-shrink-0"
+                            >
+                                <Send size={14} />
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            {/* ═══ ROW 4: Last 3 sessions + Quick actions ═══ */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-start">
+            {/* ═══ ROW 4: Last 3 sessions + Distribution ═══ */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 items-stretch">
                 <div className="bg-white rounded-[14px] shadow-argo">
                     <div className="flex items-center justify-between px-6 pt-5 pb-0">
                         <h2 className="text-[15px] font-semibold text-argo-navy">
@@ -383,29 +388,47 @@ export const TenantHome: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col gap-5">
-                    <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
-                        <p className="text-[13px] font-semibold text-argo-navy mb-3">
-                            {lang === 'en' ? 'Quick actions' : lang === 'pt' ? 'Acoes rapidas' : 'Acciones rapidas'}
-                        </p>
-                        <div className="flex flex-col gap-2">
-                            {[
-                                { path: '/dashboard/groups', label: lang === 'en' ? 'Create new group' : lang === 'pt' ? 'Criar novo grupo' : 'Crear grupo nuevo' },
-                                { path: '/dashboard/guide', label: lang === 'en' ? 'Check the guide' : lang === 'pt' ? 'Consultar o guia' : 'Consultar la guia' },
-                                { path: '/dashboard/chat', label: lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Perguntar ao assistente' : 'Consultar al asistente' },
-                            ].map(a => (
-                                <button key={a.path} onClick={() => navigate(a.path)} className="flex items-center justify-between text-xs font-medium text-argo-secondary border border-argo-border rounded-lg px-4 py-2.5 hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all">
-                                    {a.label}<ChevronRight size={12} className="text-argo-light" />
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                {/* Distribution */}
+                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 flex flex-col">
+                    <h2 className="text-[15px] font-semibold text-argo-navy mb-1">
+                        {lang === 'en' ? 'Profile distribution' : lang === 'pt' ? 'Distribuicao de perfis' : 'Distribucion de perfiles'}
+                    </h2>
+                    <p className="text-[11px] text-argo-light mb-4">
+                        {lang === 'en' ? 'Your athletes by behavioral axis' : lang === 'pt' ? 'Seus atletas por eixo comportamental' : 'Tus deportistas por eje de conducta'}
+                    </p>
 
-                    {tenant.credits_remaining <= 5 && (
-                        <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
-                            <p className="text-xs text-argo-grey">{dt.home.sinCreditos}</p>
-                            <button className="mt-2 text-xs font-semibold text-argo-violet-500 hover:opacity-70 transition-opacity">{dt.homeExtra.comprarCreditos}</button>
+                    {sessionsLoading ? (
+                        <div className="space-y-3">{[1,2,3,4].map(i => <div key={i} className="h-4 bg-argo-bg rounded animate-pulse" />)}</div>
+                    ) : (
+                        <div className="space-y-3.5">
+                            {(['D', 'I', 'S', 'C'] as const).map((axis, i) => {
+                                const count = axisCounts[axis];
+                                const pct = Math.round((count / totalForDist) * 100);
+                                const cfg = AXIS_CONFIG[axis];
+                                const name = dt.profile?.axisNames?.[axis] ?? AXIS_NAMES_ES[axis];
+                                return (
+                                    <div key={axis} className="flex items-center gap-3">
+                                        <span className="text-xs font-medium text-argo-secondary w-20">{name}</span>
+                                        <div className="flex-1 h-[5px] rounded-sm bg-argo-border overflow-hidden">
+                                            <motion.div
+                                                className="h-full rounded-sm"
+                                                style={{ background: cfg.color, opacity: 0.7 }}
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${pct}%` }}
+                                                transition={{ duration: 0.7, ease: 'easeOut', delay: 0.15 + i * 0.08 }}
+                                            />
+                                        </div>
+                                        <span className="text-[11px] font-semibold text-argo-grey w-8 text-right">{pct}%</span>
+                                    </div>
+                                );
+                            })}
                         </div>
+                    )}
+
+                    {!sessionsLoading && sessions.length >= 3 && (
+                        <p className="text-xs text-argo-secondary leading-relaxed mt-auto pt-5 pl-3 border-l-2 border-argo-violet-100">
+                            {getDistributionDigest(sessions, lang)}
+                        </p>
                     )}
                 </div>
             </div>

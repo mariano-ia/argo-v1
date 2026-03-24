@@ -2,6 +2,7 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 interface TenantData {
     id: string;
@@ -26,8 +27,13 @@ export const TenantSettings: React.FC = () => {
 
     return (
         <div>
-            <h1 className="text-[26px] font-bold text-argo-navy tracking-tight mb-1">{dt.settings.titulo}</h1>
-            <p className="text-sm text-argo-secondary mb-8">{dt.settings.descripcion}</p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.settings.titulo}</h1>
+                    <p className="text-[13px] text-argo-grey mt-1">{dt.settings.descripcion}</p>
+                </div>
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
+            </div>
 
             <div className="bg-white rounded-[14px] p-6 shadow-argo space-y-6">
                 {/* Account info */}
