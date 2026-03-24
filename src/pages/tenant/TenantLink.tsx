@@ -48,7 +48,7 @@ export const TenantLink: React.FC = () => {
 
     return (
         <div>
-            <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight mb-1">{dt.link.titulo}</h1>
+            <h1 className="text-[26px] font-bold text-argo-navy tracking-tight mb-1">{dt.link.titulo}</h1>
             <p className="text-sm text-argo-secondary mb-8">
                 {dt.link.descripcion}
             </p>

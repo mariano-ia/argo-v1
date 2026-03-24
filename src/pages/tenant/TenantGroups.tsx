@@ -575,8 +575,8 @@ export const TenantGroups: React.FC = () => {
         >
             {/* Header */}
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
-                <p className="text-sm text-argo-secondary mt-1">
+                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
+                <p className="text-[13px] text-argo-grey mt-1">
                     {dt.groups.subtitulo}
                 </p>
             </div>
