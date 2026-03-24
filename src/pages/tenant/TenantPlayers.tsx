@@ -10,6 +10,7 @@ import { buildReportHtml } from '../../components/onboarding/screens/AdultReport
 import { sendReport } from '../../lib/emailService';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
+import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
@@ -108,7 +109,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
     const handleDownload = () => {
         const sLang = session.lang || 'es';
-        const ot = getOdysseyT(sLang as 'es' | 'en' | 'pt');
+        const locale = sLang === 'pt' ? 'pt-BR' : sLang === 'en' ? 'en-US' : 'es-AR';
         const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
         if (session.eje_secundario) {
             const t = getTendenciaContent(session.eje, session.eje_secundario);
@@ -119,8 +120,16 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 report.palabrasRuidoExtra = t.palabrasRuidoExtra;
             }
         }
-        const html = buildReportHtml(report, null, ot);
-        const blob = new Blob([`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Informe - ${session.child_name}</title></head><body>${html}</body></html>`], { type: 'text/html' });
+        const html = buildDownloadableReportHtml({
+            report,
+            childName: session.child_name,
+            childAge: session.child_age,
+            sport: session.sport ?? '',
+            adultName: session.adult_name,
+            date: new Date(session.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' }),
+            lang: sLang,
+        });
+        const blob = new Blob([html], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -298,7 +307,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
                                     >
                                         <Download size={12} />
-                                        {lang === 'en' ? 'Download report' : lang === 'pt' ? 'Baixar informe' : 'Descargar informe'}
+                                        {lang === 'en' ? 'Download full report' : lang === 'pt' ? 'Baixar informe completo' : 'Descargar informe completo'}
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleResend(); }}
