@@ -232,7 +232,7 @@ export const TenantChat: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -245,13 +245,13 @@ export const TenantChat: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex flex-col h-[calc(100vh-3.5rem)] max-w-2xl mx-auto"
+                className="flex flex-col h-[calc(100vh-3.5rem)]"
             >
                 {/* Header */}
                 <div className="flex items-center gap-3 py-3 px-1 flex-shrink-0">
                     <button
                         onClick={goToList}
-                        className="p-2 rounded-lg hover:bg-argo-neutral transition-colors"
+                        className="p-2 rounded-lg hover:bg-argo-bg transition-colors"
                     >
                         <ArrowLeft size={18} className="text-argo-grey" />
                     </button>
@@ -272,8 +272,8 @@ export const TenantChat: React.FC = () => {
                     ) : messages.length === 0 ? (
                         /* Empty new thread — show suggested prompts */
                         <div className="flex flex-col items-center justify-center py-12 space-y-6">
-                            <div className="w-14 h-14 rounded-2xl bg-argo-indigo/10 flex items-center justify-center">
-                                <MessageCircle size={24} className="text-argo-indigo" />
+                            <div className="w-14 h-14 rounded-[14px] bg-argo-violet-50 flex items-center justify-center">
+                                <MessageCircle size={24} className="text-argo-violet-500" />
                             </div>
                             <div className="text-center">
                                 <h2 className="text-lg font-bold text-argo-navy">{dt.chat.consultaDISC}</h2>
@@ -287,7 +287,7 @@ export const TenantChat: React.FC = () => {
                                         key={i}
                                         onClick={() => sendMessage(p)}
                                         disabled={sending}
-                                        className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-left text-argo-navy hover:bg-argo-neutral/50 hover:border-argo-navy/20 transition-all disabled:opacity-50"
+                                        className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-left text-argo-navy hover:bg-argo-bg/50 hover:border-argo-navy/20 transition-all disabled:opacity-50"
                                     >
                                         {p}
                                     </button>
@@ -304,7 +304,7 @@ export const TenantChat: React.FC = () => {
                                     className={`max-w-[85%] rounded-2xl px-4 py-3 ${
                                         msg.role === 'user'
                                             ? 'bg-argo-navy text-white rounded-br-md'
-                                            : 'bg-white border border-argo-border text-argo-navy rounded-bl-md shadow-sm'
+                                            : 'bg-white text-argo-navy rounded-bl-md shadow-argo'
                                     }`}
                                 >
                                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
@@ -316,7 +316,7 @@ export const TenantChat: React.FC = () => {
                     {/* Typing indicator */}
                     {sending && (
                         <div className="flex justify-start">
-                            <div className="bg-white border border-argo-border rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
+                            <div className="bg-white rounded-2xl rounded-bl-md px-4 py-3 shadow-argo">
                                 <div className="flex items-center gap-1.5">
                                     <div className="w-2 h-2 rounded-full bg-argo-grey/40 animate-bounce" style={{ animationDelay: '0ms' }} />
                                     <div className="w-2 h-2 rounded-full bg-argo-grey/40 animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -366,12 +366,12 @@ export const TenantChat: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="max-w-2xl mx-auto space-y-6"
+            className="space-y-6"
         >
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.chat.titulo}</h1>
-                    <p className="text-sm text-argo-grey mt-1">
+                    <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.chat.titulo}</h1>
+                    <p className="text-sm text-argo-secondary mt-1">
                         {dt.chat.subtitulo}
                     </p>
                 </div>
@@ -385,10 +385,10 @@ export const TenantChat: React.FC = () => {
             </div>
 
             {/* Thread list */}
-            <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <MessageCircle size={15} className="text-argo-grey" />
-                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                    <h2 className="text-[15px] font-semibold text-argo-navy">
                         {dt.chat.conversaciones}
                     </h2>
                 </div>
@@ -397,11 +397,11 @@ export const TenantChat: React.FC = () => {
                     <SkeletonList rows={4} RowComponent={SkeletonThreadRow} />
                 ) : threads.length === 0 ? (
                     <div className="py-12 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
-                            <MessageCircle size={20} className="text-argo-indigo" />
+                        <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
+                            <MessageCircle size={20} className="text-argo-violet-500" />
                         </div>
-                        <p className="text-sm text-argo-grey">{dt.chat.sinConversaciones}</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">{dt.chat.sinConversacionesDesc}</p>
+                        <p className="text-sm text-argo-secondary">{dt.chat.sinConversaciones}</p>
+                        <p className="text-xs text-argo-light mt-1">{dt.chat.sinConversacionesDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">
@@ -409,14 +409,14 @@ export const TenantChat: React.FC = () => {
                             <button
                                 key={t.thread_id}
                                 onClick={() => openThread(t.thread_id)}
-                                className="w-full px-6 py-4 flex items-center gap-4 hover:bg-argo-neutral/50 transition-colors text-left"
+                                className="w-full px-6 py-4 flex items-center gap-4 hover:bg-argo-bg/50 transition-colors text-left"
                             >
-                                <div className="w-9 h-9 rounded-xl bg-argo-indigo/10 flex items-center justify-center flex-shrink-0">
-                                    <MessageCircle size={16} className="text-argo-indigo" />
+                                <div className="w-9 h-9 rounded-xl bg-argo-violet-50 flex items-center justify-center flex-shrink-0">
+                                    <MessageCircle size={16} className="text-argo-violet-500" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm text-argo-navy truncate">{t.content}</p>
-                                    <p className="text-[10px] text-argo-grey/60 mt-0.5">
+                                    <p className="text-[10px] font-semibold text-argo-light mt-0.5">
                                         {formatDate(t.created_at)} · {formatTime(t.created_at)}
                                     </p>
                                 </div>

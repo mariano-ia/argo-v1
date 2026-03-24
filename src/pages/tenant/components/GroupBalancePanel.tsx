@@ -83,7 +83,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
 
     if (members.length < 2) {
         return (
-            <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 text-center space-y-1">
+            <div className="bg-white rounded-[14px] shadow-argo p-6 text-center space-y-1">
                 <p className="text-sm text-argo-grey">
                     {dt.groupBalance.minJugadores(2)}
                 </p>
@@ -131,7 +131,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.35 }}
-                className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-4"
+                className="bg-white rounded-[14px] shadow-argo p-6 space-y-4"
             >
                 {/* Group type badges */}
                 <div className="flex items-center gap-2 flex-wrap">
@@ -162,7 +162,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
             </motion.div>
 
             {/* ── Collapsible sections ────────────────────────────────── */}
-            <div className="bg-white border border-argo-border rounded-2xl shadow-sm px-6 py-2">
+            <div className="bg-white rounded-[14px] shadow-argo px-6 py-2">
 
                 {/* Fortalezas */}
                 {!compositeText && groupTypes.length > 0 && GROUP_PROFILE_TEXTS[groupTypes[0]]?.strengths && (
@@ -170,7 +170,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                         <ul className="space-y-2">
                             {GROUP_PROFILE_TEXTS[groupTypes[0]].strengths.map((s, i) => (
                                 <li key={i} className="flex items-start gap-2.5 text-sm text-argo-grey leading-relaxed">
-                                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-argo-indigo flex-shrink-0" />
+                                    <span className="mt-2 w-1.5 h-1.5 rounded-full bg-argo-violet-500 flex-shrink-0" />
                                     {s}
                                 </li>
                             ))}
@@ -185,7 +185,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                             {primaryText.tools.map((t, i) => (
                                 <p
                                     key={i}
-                                    className="text-sm text-argo-grey leading-relaxed pl-3 border-l-2 border-argo-indigo/25"
+                                    className="text-sm text-argo-secondary leading-relaxed pl-3 border-l-2 border-argo-violet-500/25"
                                 >
                                     {t}
                                 </p>
@@ -214,8 +214,8 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                         <IndicatorBar
                             label={dt.groupBalance.diversidadDISC}
                             percentage={diversity}
-                            color="#6366f1"
-                            bgColor="#eef2ff"
+                            color="#7c5cfc"
+                            bgColor="#f0ecff"
                             levelLabel={DIVERSITY_TEXTS[diversityLevel].label}
                             description={DIVERSITY_TEXTS[diversityLevel].description}
                         />
@@ -247,7 +247,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                         <p className="text-sm text-argo-navy leading-relaxed">
                             {MOTOR_TEXTS[motorType].identity}
                         </p>
-                        <p className="text-xs text-argo-grey leading-relaxed pl-3 border-l-2 border-argo-indigo/20">
+                        <p className="text-xs text-argo-secondary leading-relaxed pl-3 border-l-2 border-argo-violet-500/20">
                             {MOTOR_TEXTS[motorType].tools}
                         </p>
                     </div>

@@ -60,10 +60,10 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                         <button
                             key={m.session_id}
                             onClick={() => setSelectedId(isSelected ? null : m.session_id)}
-                            className={`flex items-center gap-2 pl-0 pr-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 overflow-hidden ${
+                            className={`flex items-center gap-2 pl-0 pr-3 py-1.5 rounded-xl text-sm font-medium border-2 transition-all focus:outline-none focus:ring-2 focus:ring-argo-violet-500/30 overflow-hidden ${
                                 isSelected
                                     ? 'border-argo-navy bg-argo-navy text-white shadow-md'
-                                    : 'border-argo-border bg-white hover:border-argo-navy/30 text-argo-navy hover:shadow-sm'
+                                    : 'border-argo-border bg-white hover:border-argo-navy/30 text-argo-navy hover:shadow-argo'
                             }`}
                         >
                             {/* Axis color left strip */}
@@ -92,14 +92,14 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 4 }}
                         transition={{ duration: 0.25, ease: 'easeOut' }}
-                        className="bg-argo-neutral/60 rounded-2xl p-4 space-y-3 border border-argo-border"
+                        className="bg-argo-bg/60 rounded-[14px] p-4 space-y-3 border border-argo-border"
                     >
                         <p className="text-xs font-bold text-argo-navy">
                             {dt.groupBalance.simSiSeMueve(selectedMember.child_name)}
                         </p>
 
                         {/* Diversity */}
-                        <div className="bg-white rounded-xl px-4 py-3 shadow-sm flex items-start gap-3">
+                        <div className="bg-white rounded-xl px-4 py-3 shadow-argo flex items-start gap-3">
                             <svg className="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke={diversityLabel(delta.diversity, dt).color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
                                 {delta.diversity === 0
                                     ? <path d="M5 12h14" />
@@ -131,7 +131,7 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                                     return (
                                         <div
                                             key={axis}
-                                            className="bg-white rounded-xl px-3 py-2.5 shadow-sm flex items-center gap-2"
+                                            className="bg-white rounded-xl px-3 py-2.5 shadow-argo flex items-center gap-2"
                                         >
                                             <span
                                                 className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white flex-shrink-0"

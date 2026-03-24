@@ -94,7 +94,7 @@ export const TenantGuide: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -110,7 +110,7 @@ export const TenantGuide: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="max-w-2xl mx-auto space-y-6"
+                className="space-y-6"
             >
                 <button
                     onClick={() => { setSelectedPlayer(null); if (selectedSituation.category === 'Grupal') setSelectedSituation(null); else setSelectedSituation(selectedSituation); }}
@@ -121,7 +121,7 @@ export const TenantGuide: React.FC = () => {
                 </button>
 
                 {/* Situation header */}
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-3">
+                <div className="bg-white rounded-[14px] shadow-argo p-6 space-y-3">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-2xl">{selectedSituation.icon}</span>
                         <h1 className="text-xl font-bold text-argo-navy">{selectedSituation.title}</h1>
@@ -144,18 +144,18 @@ export const TenantGuide: React.FC = () => {
                 </div>
 
                 {/* What you see */}
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-2">
+                <div className="bg-white rounded-[14px] shadow-argo p-6 space-y-2">
                     <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.loQueVes}</h3>
-                    <p className="text-sm text-argo-grey leading-relaxed">{selectedSituation.whatYouSee}</p>
+                    <p className="text-sm text-argo-secondary leading-relaxed">{selectedSituation.whatYouSee}</p>
                 </div>
 
                 {/* What's happening */}
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-2">
+                <div className="bg-white rounded-[14px] shadow-argo p-6 space-y-2">
                     <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.loQuePasa}</h3>
-                    <p className="text-sm text-argo-grey leading-relaxed">{selectedSituation.whatsHappening}</p>
+                    <p className="text-sm text-argo-secondary leading-relaxed">{selectedSituation.whatsHappening}</p>
                     {card && (
                         <div className="mt-3 pt-3 border-t border-argo-border">
-                            <p className="text-xs font-semibold text-argo-indigo uppercase tracking-widest mb-1.5">
+                            <p className="text-xs font-semibold text-argo-violet-500 uppercase tracking-widest mb-1.5">
                                 {selectedPlayer ? dt.guide.conEstePerfil(AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje) : dt.guide.paraElGrupo}
                             </p>
                             <p className="text-sm text-argo-navy leading-relaxed">{card.whatsHappeningForProfile}</p>
@@ -165,15 +165,15 @@ export const TenantGuide: React.FC = () => {
 
                 {/* How to accompany */}
                 {card && (
-                    <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-6 space-y-3">
+                    <div className="bg-white rounded-[14px] shadow-argo p-6 space-y-3">
                         <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest">{dt.guide.comoAcompanar}</h3>
                         <div className="space-y-3">
                             {card.howToAccompany.map((text, i) => (
                                 <div key={i} className="flex items-start gap-3">
-                                    <span className="mt-0.5 w-6 h-6 rounded-full bg-argo-indigo/10 text-argo-indigo text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                    <span className="mt-0.5 w-6 h-6 rounded-full bg-argo-violet-50 text-argo-violet-500 text-xs font-bold flex items-center justify-center flex-shrink-0">
                                         {i + 1}
                                     </span>
-                                    <p className="text-sm text-argo-grey leading-relaxed">{text}</p>
+                                    <p className="text-sm text-argo-secondary leading-relaxed">{text}</p>
                                 </div>
                             ))}
                         </div>
@@ -182,7 +182,7 @@ export const TenantGuide: React.FC = () => {
 
                 {/* If not responding */}
                 {card && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 space-y-2">
+                    <div className="bg-amber-50 border border-amber-200 rounded-[14px] p-6 space-y-2">
                         <h3 className="text-xs font-bold text-amber-800 uppercase tracking-widest">{dt.guide.siNoResponde}</h3>
                         <p className="text-sm text-amber-900 leading-relaxed">{card.ifNotResponding}</p>
                     </div>
@@ -199,7 +199,7 @@ export const TenantGuide: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="max-w-2xl mx-auto space-y-6"
+                className="space-y-6"
             >
                 <button
                     onClick={() => setSelectedSituation(null)}
@@ -219,16 +219,16 @@ export const TenantGuide: React.FC = () => {
                     </p>
                 </div>
 
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                     <div className="px-6 py-4 border-b border-argo-border">
-                        <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">{dt.guide.tusJugadores}</h2>
+                        <h2 className="text-[15px] font-semibold text-argo-navy">{dt.guide.tusJugadores}</h2>
                     </div>
 
                     {!sessionsLoaded ? (
                         <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                     ) : sessions.length === 0 ? (
                         <div className="py-12 text-center">
-                            <p className="text-sm text-argo-grey">{dt.guide.sinJugadores}</p>
+                            <p className="text-sm text-argo-secondary">{dt.guide.sinJugadores}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-argo-border">
@@ -238,7 +238,7 @@ export const TenantGuide: React.FC = () => {
                                     <button
                                         key={s.id}
                                         onClick={() => setSelectedPlayer(s)}
-                                        className="w-full px-6 py-4 flex items-center justify-between gap-4 hover:bg-argo-neutral/50 transition-colors text-left"
+                                        className="w-full px-6 py-4 flex items-center justify-between gap-4 hover:bg-argo-bg/50 transition-colors text-left"
                                     >
                                         <div className="flex items-center gap-3 min-w-0">
                                             <span
@@ -249,11 +249,11 @@ export const TenantGuide: React.FC = () => {
                                             </span>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-semibold text-argo-navy truncate">{s.child_name}</p>
-                                                <p className="text-xs text-argo-grey">{s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}</p>
+                                                <p className="text-xs text-argo-secondary">{s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0">
-                                            <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                            <span className="border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
                                                 {s.archetype_label}
                                             </span>
                                             <ChevronRight size={16} className="text-argo-grey/40" />
@@ -275,7 +275,7 @@ export const TenantGuide: React.FC = () => {
                             setSelectedPlayer({ id: '', child_name: 'Vista general', child_age: 0, sport: '', archetype_label: '', eje: 'D', motor: '' });
                         }
                     }}
-                    className="text-sm text-argo-indigo hover:text-argo-navy transition-colors font-medium"
+                    className="text-sm text-argo-violet-500 hover:text-argo-navy transition-colors font-medium"
                 >
                     {dt.guide.verContextoGeneral}
                 </button>
@@ -290,11 +290,11 @@ export const TenantGuide: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="max-w-2xl mx-auto space-y-6"
+            className="space-y-6"
         >
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.guide.titulo}</h1>
-                <p className="text-sm text-argo-grey mt-1">
+                <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.guide.titulo}</h1>
+                <p className="text-sm text-argo-secondary mt-1">
                     {dt.guide.subtitulo}
                 </p>
             </div>
@@ -348,7 +348,7 @@ export const TenantGuide: React.FC = () => {
                                 setSelectedSituation(situation);
                                 setSelectedPlayer(null);
                             }}
-                            className="w-full bg-white border border-argo-border rounded-2xl shadow-sm p-5 text-left hover:border-argo-navy/20 transition-all group"
+                            className="w-full bg-white rounded-[14px] shadow-argo p-5 text-left hover:shadow-argo-hover transition-all group"
                         >
                             <div className="flex items-start gap-3">
                                 <span className="text-xl mt-0.5">{situation.icon}</span>

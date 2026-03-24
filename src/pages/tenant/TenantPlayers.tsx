@@ -87,11 +87,11 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
     }, [session.eje, session.eje_secundario]);
 
     return (
-        <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
             {/* ── Level 1: Quick scan ──────────────────────────────────────── */}
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="w-full p-5 text-left hover:bg-argo-neutral/30 transition-colors"
+                className="w-full p-5 text-left hover:bg-argo-bg/30 transition-colors"
             >
                 <div className="flex items-start gap-3">
                     {/* Axis badge */}
@@ -113,7 +113,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
 
                         {/* Archetype + tendencia */}
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                            <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
                                 {session.archetype_label}
                             </span>
                             {tendencia && (
@@ -243,7 +243,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                         <div className="space-y-2">
                             <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.guiaRapida}</h4>
                             {reportData.guia.map((g, i) => (
-                                <div key={i} className="bg-argo-neutral/50 rounded-xl p-3 space-y-1">
+                                <div key={i} className="bg-argo-bg/50 rounded-xl p-3 space-y-1">
                                     <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
                                     <p className="text-[11px] text-emerald-700">
                                         <span className="font-semibold">{dt.players.activar}:</span> {g.activador}
@@ -266,8 +266,8 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                                     { label: dt.players.durante, text: reportData.checklist.durante },
                                     { label: dt.players.despues, text: reportData.checklist.despues },
                                 ].map(c => (
-                                    <div key={c.label} className="bg-argo-neutral/50 rounded-xl p-3">
-                                        <p className="text-[10px] font-bold text-argo-indigo uppercase">{c.label}</p>
+                                    <div key={c.label} className="bg-argo-bg/50 rounded-xl p-3">
+                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
                                         <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
                                     </div>
                                 ))}
@@ -291,7 +291,7 @@ const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashb
                             )}
                         </div>
                         {/* Timeline bar */}
-                        <div className="mt-2 w-full h-1.5 rounded-full bg-argo-neutral overflow-hidden">
+                        <div className="mt-2 w-full h-1.5 rounded-full bg-argo-bg overflow-hidden">
                             <div
                                 className="h-full rounded-full transition-all"
                                 style={{
@@ -369,7 +369,7 @@ export const TenantPlayers: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -379,11 +379,11 @@ export const TenantPlayers: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="max-w-2xl mx-auto space-y-6"
+            className="space-y-6"
         >
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.players.titulo}</h1>
-                <p className="text-sm text-argo-grey mt-1">
+                <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
+                <p className="text-sm text-argo-secondary mt-1">
                     {dt.players.subtitulo}
                 </p>
             </div>
@@ -456,10 +456,10 @@ export const TenantPlayers: React.FC = () => {
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12">
-                    <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
-                        <UserCircle size={20} className="text-argo-indigo" />
+                    <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
+                        <UserCircle size={20} className="text-argo-violet-500" />
                     </div>
-                    <p className="text-sm text-argo-grey">
+                    <p className="text-sm text-argo-secondary">
                         {sessions.length === 0
                             ? dt.players.sinJugadores
                             : dt.players.sinResultados}

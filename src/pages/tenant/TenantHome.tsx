@@ -129,7 +129,7 @@ export const TenantHome: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center h-40">
-                <div className="w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-6 h-6 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -208,7 +208,6 @@ export const TenantHome: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="max-w-2xl"
         >
             {/* Resend snackbar — top-right */}
             {resendMsg && (
@@ -235,13 +234,13 @@ export const TenantHome: React.FC = () => {
             <h1 className="font-display text-2xl font-bold text-argo-navy mb-1">
                 {dt.home.bienvenida(tenant.display_name)}
             </h1>
-            <p className="text-sm text-argo-grey mb-8">
+            <p className="text-sm text-argo-secondary mb-8">
                 {dt.settings.plan} {tenant.plan} · {tenant.credits_remaining} {dt.home.creditosDisponibles}
             </p>
 
             {/* Play link card */}
-            <div className="bg-white border border-argo-border rounded-2xl p-6 shadow-sm mb-6">
-                <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest mb-3">
+            <div className="bg-white rounded-[14px] p-6 shadow-argo mb-6">
+                <h2 className="text-[15px] font-semibold text-argo-navy mb-3">
                     {dt.homeExtra.tuLinkInvitacion}
                 </h2>
                 <p className="text-xs text-argo-grey mb-4">
@@ -249,38 +248,38 @@ export const TenantHome: React.FC = () => {
                 </p>
 
                 <div className="flex items-center gap-2">
-                    <div className="flex-1 bg-argo-neutral border border-argo-border rounded-lg px-4 py-2.5 text-sm text-argo-navy font-mono truncate">
+                    <div className="flex-1 bg-argo-bg border border-argo-border rounded-lg px-4 py-2.5 text-sm text-argo-navy font-mono truncate">
                         {playLink}
                     </div>
                     <button
                         onClick={copyLink}
-                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-neutral transition-all flex-shrink-0"
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border border-argo-border rounded-lg hover:bg-argo-bg transition-all flex-shrink-0"
                     >
                         {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                         {copied ? dt.home.linkCopiado : dt.home.copiarLink}
                     </button>
                 </div>
 
-                <p className="text-[10px] text-argo-grey/50 mt-3">
+                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mt-3">
                     {dt.homeExtra.creditoNota}
                 </p>
             </div>
 
             {/* Quick stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.home.creditos}</p>
-                    <p className="text-2xl font-bold text-argo-navy">{tenant.credits_remaining}</p>
+                <div className="bg-white rounded-[14px] p-5 shadow-argo">
+                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1">{dt.home.creditos}</p>
+                    <p className="text-[32px] font-bold text-argo-navy tracking-tight">{tenant.credits_remaining}</p>
                 </div>
-                <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.home.sesionesRealizadas}</p>
-                    <p className="text-2xl font-bold text-argo-navy">
+                <div className="bg-white rounded-[14px] p-5 shadow-argo">
+                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1">{dt.home.sesionesRealizadas}</p>
+                    <p className="text-[32px] font-bold text-argo-navy tracking-tight">
                         {sessionsLoading ? '…' : sessions.length}
                     </p>
                 </div>
-                <div className="bg-white border border-argo-border rounded-2xl p-5 shadow-sm">
-                    <p className="text-[10px] text-argo-grey uppercase tracking-widest font-semibold mb-1">{dt.settings.plan}</p>
-                    <p className="text-2xl font-bold text-argo-navy capitalize">{tenant.plan}</p>
+                <div className="bg-white rounded-[14px] p-5 shadow-argo">
+                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1">{dt.settings.plan}</p>
+                    <p className="text-[32px] font-bold text-argo-navy tracking-tight capitalize">{tenant.plan}</p>
                 </div>
             </div>
 
@@ -288,7 +287,7 @@ export const TenantHome: React.FC = () => {
             <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                     <CreditCard size={15} className="text-argo-grey" />
-                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                    <h2 className="text-[15px] font-semibold text-argo-navy">
                         {dt.homeExtra.comprarCreditos}
                     </h2>
                 </div>
@@ -303,7 +302,7 @@ export const TenantHome: React.FC = () => {
                         return (
                             <div
                                 key={pack.id}
-                                className={`border rounded-2xl p-5 ${pack.color} transition-all hover:shadow-md`}
+                                className={`border rounded-[14px] p-5 ${pack.color} transition-all hover:shadow-argo-hover`}
                             >
                                 <div className="flex items-center gap-2 mb-3">
                                     <Icon size={18} />
@@ -332,10 +331,10 @@ export const TenantHome: React.FC = () => {
             </div>
 
             {/* Sessions list */}
-            <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <Users size={15} className="text-argo-grey" />
-                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                    <h2 className="text-[15px] font-semibold text-argo-navy">
                         {dt.home.sesionesRealizadas}
                     </h2>
                 </div>
@@ -344,16 +343,16 @@ export const TenantHome: React.FC = () => {
                     <SkeletonList rows={5} RowComponent={SkeletonSessionRow} />
                 ) : sessions.length === 0 ? (
                     <div className="py-12 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
-                            <Anchor size={20} className="text-argo-indigo" />
+                        <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
+                            <Anchor size={20} className="text-argo-violet-500" />
                         </div>
-                        <p className="text-sm text-argo-grey">{dt.home.sinSesiones}</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">{dt.home.sinSesionesDesc}</p>
+                        <p className="text-sm text-argo-secondary">{dt.home.sinSesiones}</p>
+                        <p className="text-xs text-argo-light mt-1">{dt.home.sinSesionesDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">
                         {sessions.map((s) => (
-                            <div key={s.id} className="px-6 py-4 hover:bg-argo-neutral/50 transition-colors">
+                            <div key={s.id} className="px-6 py-4 hover:bg-argo-bg/50 transition-colors">
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-sm font-semibold text-argo-navy truncate">
@@ -362,7 +361,7 @@ export const TenantHome: React.FC = () => {
                                                 {s.child_age} {dt.common.anos}{s.sport ? ` · ${s.sport}` : ''}
                                             </span>
                                         </p>
-                                        <p className="text-xs text-argo-grey mt-0.5 truncate">
+                                        <p className="text-xs text-argo-secondary mt-0.5 truncate">
                                             {dt.homeExtra.adulto}: {s.adult_name} ({s.adult_email})
                                         </p>
                                     </div>
@@ -371,7 +370,7 @@ export const TenantHome: React.FC = () => {
                                             onClick={() => handleResend(s)}
                                             disabled={resendingId === s.id}
                                             title={dt.home.reenviarInforme}
-                                            className="mt-0.5 p-1.5 rounded-lg text-argo-grey hover:text-argo-indigo hover:bg-argo-neutral transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="mt-0.5 p-1.5 rounded-lg text-argo-grey hover:text-argo-violet-500 hover:bg-argo-bg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {resendingId === s.id
                                                 ? <Loader2 size={14} className="animate-spin" />
@@ -379,10 +378,10 @@ export const TenantHome: React.FC = () => {
                                             }
                                         </button>
                                         <div className="text-right">
-                                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                            <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
                                                 {s.archetype_label}
                                             </span>
-                                            <p className="text-[10px] text-argo-grey/60 mt-1">
+                                            <p className="text-[10px] font-semibold text-argo-light mt-1">
                                                 {formatDate(s.created_at)} · {formatTime(s.created_at)}
                                             </p>
                                         </div>

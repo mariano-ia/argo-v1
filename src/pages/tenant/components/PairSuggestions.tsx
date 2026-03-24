@@ -43,7 +43,7 @@ const PairCard: React.FC<{ pair: PairResult }> = ({ pair }) => {
 
     return (
         <div
-            className="rounded-xl border border-argo-border bg-white shadow-sm overflow-hidden transition-all hover:shadow-md"
+            className="rounded-[14px] bg-white shadow-argo overflow-hidden transition-all hover:shadow-argo-hover"
         >
             {/* Top accent strip */}
             <div className="h-1" style={{ background: `linear-gradient(to right, ${c1?.color ?? '#666'}, ${c2?.color ?? '#999'})` }} />

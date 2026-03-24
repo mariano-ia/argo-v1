@@ -68,10 +68,10 @@ const formatDate = (iso: string, lang: string) => {
 };
 
 const EJE_COLORS: Record<string, string> = {
-    D: 'bg-red-50 text-red-700 border-red-200',
-    I: 'bg-amber-50 text-amber-700 border-amber-200',
-    S: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    C: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    D: 'bg-axis-impulsor-bg text-orange-700 border-orange-200',
+    I: 'bg-axis-conector-bg text-amber-700 border-amber-200',
+    S: 'bg-axis-sosten-bg text-emerald-700 border-emerald-200',
+    C: 'bg-axis-estratega-bg text-indigo-700 border-indigo-200',
 };
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
@@ -316,7 +316,7 @@ export const TenantGroups: React.FC = () => {
     if (!tenant) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
             </div>
         );
     }
@@ -329,13 +329,13 @@ export const TenantGroups: React.FC = () => {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25 }}
-                className="max-w-2xl mx-auto space-y-6"
+                className="space-y-6"
             >
                 {/* Back + title */}
                 <div className="flex items-center gap-3">
                     <button
                         onClick={closeDetail}
-                        className="p-2 rounded-lg hover:bg-argo-neutral transition-colors"
+                        className="p-2 rounded-lg hover:bg-argo-bg transition-colors"
                     >
                         <ArrowLeft size={18} className="text-argo-grey" />
                     </button>
@@ -345,7 +345,7 @@ export const TenantGroups: React.FC = () => {
                                 value={editName}
                                 onChange={e => setEditName(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleRename()}
-                                className="flex-1 text-xl font-bold text-argo-navy border-b-2 border-argo-indigo bg-transparent outline-none"
+                                className="flex-1 text-xl font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
                                 autoFocus
                             />
                             <button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-emerald-50 text-emerald-600">
@@ -358,7 +358,7 @@ export const TenantGroups: React.FC = () => {
                     ) : (
                         <div className="flex items-center gap-2 flex-1">
                             <h1 className="text-xl font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h1>
-                            <button onClick={startEditing} className="p-1.5 rounded-lg hover:bg-argo-neutral text-argo-grey">
+                            <button onClick={startEditing} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-grey">
                                 <Pencil size={14} />
                             </button>
                         </div>
@@ -377,10 +377,10 @@ export const TenantGroups: React.FC = () => {
                 </div>
 
                 {/* Members list */}
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                     <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                         <Users size={15} className="text-argo-grey" />
-                        <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                        <h2 className="text-[15px] font-semibold text-argo-navy">
                             {dt.common.jugadores} ({members.length})
                         </h2>
                     </div>
@@ -389,13 +389,13 @@ export const TenantGroups: React.FC = () => {
                         <SkeletonList rows={3} RowComponent={SkeletonSessionRow} />
                     ) : members.length === 0 ? (
                         <div className="py-12 text-center">
-                            <p className="text-sm text-argo-grey">{dt.groups.sinMiembros}</p>
-                            <p className="text-xs text-argo-grey/50 mt-1">{dt.groups.sinMiembrosDesc}</p>
+                            <p className="text-sm text-argo-secondary">{dt.groups.sinMiembros}</p>
+                            <p className="text-xs text-argo-light mt-1">{dt.groups.sinMiembrosDesc}</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-argo-border">
                             {members.map(m => (
-                                <div key={m.id} className="px-6 py-4 hover:bg-argo-neutral/50 transition-colors">
+                                <div key={m.id} className="px-6 py-4 hover:bg-argo-bg/50 transition-colors">
                                     <div className="flex items-center justify-between gap-4">
                                         <div className="min-w-0 flex-1">
                                             <p className="text-sm font-semibold text-argo-navy truncate">
@@ -409,7 +409,7 @@ export const TenantGroups: React.FC = () => {
                                             <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${EJE_COLORS[m.eje] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                                                 {m.eje}
                                             </span>
-                                            <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                            <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
                                                 {m.archetype_label}
                                             </span>
                                             <button
@@ -459,7 +459,7 @@ export const TenantGroups: React.FC = () => {
                             </button>
                             <button
                                 onClick={() => setConfirmDelete(false)}
-                                className="px-3 py-1.5 rounded-lg border border-argo-border text-xs font-medium hover:bg-argo-neutral"
+                                className="px-3 py-1.5 rounded-lg border border-argo-border text-xs font-medium hover:bg-argo-bg"
                             >
                                 {dt.common.cancelar}
                             </button>
@@ -479,12 +479,12 @@ export const TenantGroups: React.FC = () => {
                 {showAddModal && (
                     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40" onClick={() => setShowAddModal(false)}>
                         <div
-                            className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[80vh] flex flex-col shadow-xl"
+                            className="bg-white w-full sm:max-w-md sm:rounded-[14px] rounded-t-[14px] max-h-[80vh] flex flex-col shadow-xl"
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="px-6 py-4 border-b border-argo-border flex items-center justify-between">
                                 <h3 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">{dt.groups.agregarJugadores}</h3>
-                                <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg hover:bg-argo-neutral">
+                                <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg hover:bg-argo-bg">
                                     <X size={16} className="text-argo-grey" />
                                 </button>
                             </div>
@@ -492,7 +492,7 @@ export const TenantGroups: React.FC = () => {
                             <div className="flex-1 overflow-y-auto">
                                 {sessionsLoading ? (
                                     <div className="flex items-center justify-center py-12">
-                                        <div className="w-5 h-5 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+                                        <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
                                     </div>
                                 ) : availableSessions.length === 0 ? (
                                     <div className="py-12 text-center px-6">
@@ -510,7 +510,7 @@ export const TenantGroups: React.FC = () => {
                                                 key={s.id}
                                                 onClick={() => toggleSession(s.id)}
                                                 className={`w-full px-6 py-3.5 flex items-center gap-3 text-left transition-colors ${
-                                                    selectedSessions.has(s.id) ? 'bg-indigo-50' : 'hover:bg-argo-neutral/50'
+                                                    selectedSessions.has(s.id) ? 'bg-argo-violet-50' : 'hover:bg-argo-bg/50'
                                                 }`}
                                             >
                                                 <div className={`w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
@@ -530,7 +530,7 @@ export const TenantGroups: React.FC = () => {
                                                         </span>
                                                     </p>
                                                 </div>
-                                                <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1] flex-shrink-0">
+                                                <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1 flex-shrink-0">
                                                     {s.archetype_label}
                                                 </span>
                                             </button>
@@ -571,19 +571,19 @@ export const TenantGroups: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="max-w-2xl mx-auto space-y-6"
+            className="space-y-6"
         >
             {/* Header */}
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy">{dt.groups.titulo}</h1>
-                <p className="text-sm text-argo-grey mt-1">
+                <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
+                <p className="text-sm text-argo-secondary mt-1">
                     {dt.groups.subtitulo}
                 </p>
             </div>
 
             {/* Create group */}
             {showCreate ? (
-                <div className="bg-white border border-argo-border rounded-2xl shadow-sm p-5">
+                <div className="bg-white rounded-[14px] shadow-argo p-5">
                     <div className="flex items-center gap-3">
                         <input
                             value={newName}
@@ -603,7 +603,7 @@ export const TenantGroups: React.FC = () => {
                         </button>
                         <button
                             onClick={() => { setShowCreate(false); setNewName(''); setCreateError(''); }}
-                            className="p-2.5 rounded-lg hover:bg-argo-neutral text-argo-grey"
+                            className="p-2.5 rounded-lg hover:bg-argo-bg text-argo-grey"
                         >
                             <X size={16} />
                         </button>
@@ -623,10 +623,10 @@ export const TenantGroups: React.FC = () => {
             )}
 
             {/* Groups list */}
-            <div className="bg-white border border-argo-border rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                 <div className="px-6 py-4 border-b border-argo-border flex items-center gap-2">
                     <Users size={15} className="text-argo-grey" />
-                    <h2 className="text-sm font-semibold text-argo-navy uppercase tracking-widest">
+                    <h2 className="text-[15px] font-semibold text-argo-navy">
                         {dt.groups.tusGrupos}
                     </h2>
                 </div>
@@ -635,11 +635,11 @@ export const TenantGroups: React.FC = () => {
                     <SkeletonList rows={4} RowComponent={SkeletonGroupRow} />
                 ) : groups.length === 0 ? (
                     <div className="py-12 text-center">
-                        <div className="w-12 h-12 rounded-2xl bg-argo-indigo/10 flex items-center justify-center mx-auto mb-3">
-                            <Users size={20} className="text-argo-indigo" />
+                        <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
+                            <Users size={20} className="text-argo-violet-500" />
                         </div>
-                        <p className="text-sm text-argo-grey">{dt.groups.sinGrupos}</p>
-                        <p className="text-xs text-argo-grey/50 mt-1">{dt.groups.sinGruposDesc}</p>
+                        <p className="text-sm text-argo-secondary">{dt.groups.sinGrupos}</p>
+                        <p className="text-xs text-argo-light mt-1">{dt.groups.sinGruposDesc}</p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">
@@ -647,14 +647,14 @@ export const TenantGroups: React.FC = () => {
                             <button
                                 key={g.id}
                                 onClick={() => openDetail(g.id)}
-                                className="w-full px-6 py-4 flex items-center justify-between gap-4 hover:bg-argo-neutral/50 transition-colors text-left"
+                                className="w-full px-6 py-4 flex items-center justify-between gap-4 hover:bg-argo-bg/50 transition-colors text-left"
                             >
                                 <div className="min-w-0 flex-1">
                                     <p className="text-sm font-semibold text-argo-navy truncate">{g.name}</p>
-                                    <p className="text-xs text-argo-grey/60 mt-0.5">{formatDate(g.created_at, lang)}</p>
+                                    <p className="text-xs text-argo-light mt-0.5">{formatDate(g.created_at, lang)}</p>
                                 </div>
                                 <div className="flex items-center gap-3 flex-shrink-0">
-                                    <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#F0F0FF] text-[#6366f1]">
+                                    <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
                                         {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}
                                     </span>
                                     <ChevronRight size={16} className="text-argo-grey/40" />
