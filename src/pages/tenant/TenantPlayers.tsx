@@ -382,8 +382,8 @@ export const TenantPlayers: React.FC = () => {
             className="space-y-6"
         >
             <div>
-                <h1 className="font-display text-2xl font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
-                <p className="text-sm text-argo-secondary mt-1">
+                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
+                <p className="text-[13px] text-argo-grey mt-1">
                     {dt.players.subtitulo}
                 </p>
             </div>
