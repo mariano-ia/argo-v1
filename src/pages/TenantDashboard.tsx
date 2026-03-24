@@ -123,13 +123,25 @@ export const TenantDashboard: React.FC = () => {
             <aside className={`flex flex-col h-full bg-white border-r border-argo-border flex-shrink-0 transition-all duration-200 ${
                 mobile ? 'w-[220px]' : isCollapsed ? 'w-14' : 'w-[220px]'
             }`}>
-                {/* Logo */}
-                <div className={`flex items-center ${isCollapsed ? 'justify-center h-14 px-0' : 'gap-1 px-6 pt-7 pb-8'}`}>
-                    <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>A</span>
-                        {!isCollapsed && <><span style={{ fontWeight: 800 }}>rgo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span></>}
-                    </span>
-                </div>
+                {/* Logo + collapse toggle */}
+                {isCollapsed ? (
+                    <div className="flex items-center justify-center pt-5 pb-4">
+                        <button onClick={() => setCollapsed(false)} className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg">
+                            <PanelLeftOpen size={16} />
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-between px-6 pt-7 pb-8">
+                        <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        </span>
+                        {!mobile && (
+                            <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
+                                <PanelLeftClose size={16} />
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* Nav — Principal */}
                 <nav className={`flex-1 space-y-0.5 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
@@ -161,19 +173,6 @@ export const TenantDashboard: React.FC = () => {
                     {isCollapsed && (
                         <button onClick={handleLogout} title={dt.nav.cerrarSesion} className="flex items-center justify-center py-2 w-full text-argo-light hover:text-argo-grey transition-colors">
                             <LogOut size={15} />
-                        </button>
-                    )}
-
-                    {/* Collapse toggle */}
-                    {!mobile && (
-                        <button
-                            onClick={() => setCollapsed(c => !c)}
-                            className={`flex items-center gap-2.5 py-2 rounded-[10px] text-[13px] font-medium text-argo-light hover:text-argo-grey transition-all w-full ${
-                                isCollapsed ? 'justify-center px-0' : 'px-3'
-                            }`}
-                        >
-                            {isCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-                            {!isCollapsed && (lang === 'en' ? 'Collapse' : lang === 'pt' ? 'Minimizar' : 'Minimizar')}
                         </button>
                     )}
 
