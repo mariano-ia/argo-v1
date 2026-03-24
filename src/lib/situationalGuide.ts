@@ -21,6 +21,7 @@ export interface Situation {
 export interface SituationCard {
     situationId: string;
     eje: 'D' | 'I' | 'S' | 'C' | 'group'; // 'group' for situation 15
+    whatYouSeeForProfile?: string;       // Eje-specific "what you see" — falls back to generic if empty
     whatsHappeningForProfile: string;
     howToAccompany: string[];
     ifNotResponding: string;

@@ -232,12 +232,30 @@ export const TenantGuide: React.FC = () => {
                                 {/* What you see + what's happening */}
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
                                     <div>
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.guide.loQueVes}</p>
-                                        <p className="text-[13px] text-argo-secondary leading-relaxed">{selectedSituation.whatYouSee}</p>
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                            {dt.guide.loQueVes}
+                                            {activeCard?.whatYouSeeForProfile && selectedPlayer && (
+                                                <span className="ml-2 normal-case tracking-normal font-medium text-argo-violet-500">
+                                                    · {selectedPlayer.child_name} ({AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})
+                                                </span>
+                                            )}
+                                        </p>
+                                        <p className="text-[13px] text-argo-secondary leading-relaxed">
+                                            {activeCard?.whatYouSeeForProfile ?? selectedSituation.whatYouSee}
+                                        </p>
                                     </div>
                                     <div className="border-t border-argo-border pt-4">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.guide.loQuePasa}</p>
-                                        <p className="text-[13px] text-argo-secondary leading-relaxed">{selectedSituation.whatsHappening}</p>
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                            {dt.guide.loQuePasa}
+                                            {activeCard?.whatsHappeningForProfile && selectedPlayer && (
+                                                <span className="ml-2 normal-case tracking-normal font-medium text-argo-violet-500">
+                                                    · {selectedPlayer.child_name} ({AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})
+                                                </span>
+                                            )}
+                                        </p>
+                                        <p className="text-[13px] text-argo-secondary leading-relaxed">
+                                            {activeCard?.whatsHappeningForProfile ?? selectedSituation.whatsHappening}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -369,18 +387,6 @@ export const TenantGuide: React.FC = () => {
                                             transition={{ duration: 0.2 }}
                                             className="space-y-4"
                                         >
-                                            {/* What's happening for this profile */}
-                                            {activeCard.whatsHappeningForProfile && (
-                                                <div className="bg-argo-bg rounded-[14px] px-6 py-5 border-l-2 border-argo-violet-200">
-                                                    <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em] mb-1.5">
-                                                        {selectedPlayer
-                                                            ? `${selectedPlayer.child_name} (${AXIS_CONFIG[selectedPlayer.eje]?.name ?? selectedPlayer.eje})`
-                                                            : dt.guide.paraElGrupo}
-                                                    </p>
-                                                    <p className="text-[13px] text-argo-secondary leading-relaxed">{activeCard.whatsHappeningForProfile}</p>
-                                                </div>
-                                            )}
-
                                             {/* How to accompany */}
                                             <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                                 <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-3">{dt.guide.comoAcompanar}</p>
