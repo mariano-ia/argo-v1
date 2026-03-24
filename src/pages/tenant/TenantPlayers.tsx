@@ -1,318 +1,285 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
+import { TENDENCIA_LABELS } from '../../lib/profileResolver';
+import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
+import { sendReport } from '../../lib/emailService';
+import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
-import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface TenantData {
-    id: string;
-    slug: string;
-    display_name: string;
-    plan: string;
-    credits_remaining: number;
-}
-
-interface SessionRow {
-    id: string;
-    child_name: string;
-    child_age: number;
-    adult_name: string;
-    adult_email: string;
-    sport: string | null;
-    archetype_label: string;
-    eje: string;
-    motor: string;
-    eje_secundario: string | null;
-    lang: string | null;
-    created_at: string;
-}
+interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
+
+const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
+const AXIS_CHIP: Record<string, { border: string; text: string }> = {
+    D: { border: 'rgba(249,115,22,0.35)', text: 'rgba(249,115,22,0.75)' },
+    I: { border: 'rgba(245,158,11,0.35)', text: 'rgba(180,120,14,0.75)' },
+    S: { border: 'rgba(34,197,94,0.35)',  text: 'rgba(22,101,52,0.75)' },
+    C: { border: 'rgba(99,102,241,0.35)', text: 'rgba(99,102,241,0.75)' },
+};
+
+const MOTOR_CHIP: Record<string, { bg: string; text: string }> = {
+    'Rápido': { bg: '#fffbeb', text: '#b45309' },
+    'Medio':  { bg: '#eef2ff', text: '#4338ca' },
+    'Lento':  { bg: '#ecfeff', text: '#0e7490' },
+};
 
 const formatDate = (iso: string, lang: string) => {
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
     return new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
 };
 
-const daysSince = (iso: string) =>
-    Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24));
-
 const monthsSince = (iso: string) => {
     const d = new Date(iso);
     const now = new Date();
-    return (now.getFullYear() - d.getFullYear()) * 12 + (now.getMonth() - d.getMonth());
+    return (now.getFullYear() - d.getFullYear()) * 12 + now.getMonth() - d.getMonth();
 };
 
-// MOTOR_LABELS removed — now using dt.profile.motorNames
+const PAGE_SIZE = 20;
 
-const MOTOR_COLORS: Record<string, { bg: string; text: string }> = {
-    'Rápido': { bg: '#fef3c7', text: '#92400e' },
-    'Medio':  { bg: '#e0e7ff', text: '#3730a3' },
-    'Lento':  { bg: '#cffafe', text: '#155e75' },
-};
+/* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-/* ── Player Card ───────────────────────────────────────────────────────────── */
-
-const PlayerCard: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string }> = ({ session, dt, lang }) => {
+const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string }> = ({ session, dt, lang }) => {
     const [expanded, setExpanded] = useState(false);
-    const months = monthsSince(session.created_at);
-    const needsReprofile = months >= 6;
+    const [resending, setResending] = useState(false);
+    const [resendOk, setResendOk] = useState<boolean | null>(null);
 
     const axisCfg = AXIS_CONFIG[session.eje];
-    const motorCfg = MOTOR_COLORS[session.motor] ?? { bg: '#f3f4f6', text: '#374151' };
-    const tendencia = session.eje_secundario
-        ? dt.profile.tendenciaLabels[session.eje_secundario] ?? null
-        : null;
+    const dot = AXIS_DOT[session.eje] ?? '#6366f1';
+    const chip = AXIS_CHIP[session.eje] ?? AXIS_CHIP.C;
+    const motorCfg = MOTOR_CHIP[session.motor] ?? MOTOR_CHIP['Medio'];
+    const needsReprofile = monthsSince(session.created_at) >= 6;
+    const months = monthsSince(session.created_at);
 
-    // Get report data for bridge words and key info
     const reportData = useMemo(() => {
-        try {
-            return getReportData(session.eje as any, session.motor as any, '', session.child_name);
-        } catch { return null; }
+        try { return getReportData(session.eje as any, session.motor as any, '', session.child_name); }
+        catch { return null; }
     }, [session.eje, session.motor, session.child_name]);
 
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
-        try {
-            return getTendenciaContent(session.eje as any, session.eje_secundario as any);
-        } catch { return null; }
+        return getTendenciaContent(session.eje, session.eje_secundario);
     }, [session.eje, session.eje_secundario]);
 
+    const tendencia = session.eje_secundario
+        ? (dt.profile?.tendenciaLabels?.[session.eje_secundario] ?? '')
+        : '';
+
+    const handleResend = async () => {
+        setResending(true);
+        try {
+            const sLang = session.lang || 'es';
+            const ot = getOdysseyT(sLang as 'es' | 'en' | 'pt');
+            const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
+            if (session.eje_secundario) {
+                const t = getTendenciaContent(session.eje, session.eje_secundario);
+                if (t) {
+                    report.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    report.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
+                    report.palabrasPuenteExtra = t.palabrasPuenteExtra;
+                    report.palabrasRuidoExtra = t.palabrasRuidoExtra;
+                }
+            }
+            const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
+            await sendReport({
+                toEmail: session.adult_email, nombreAdulto: session.adult_name, nombreNino: session.child_name,
+                deporte: session.sport ?? '', edad: session.child_age, arquetipo: arquetipoFull,
+                reportHtml: buildReportHtml(report, null, ot), maduracionTemprana: session.child_age < 10,
+                sessionId: session.id, lang: sLang,
+                emailSubject: ot.emailSubject(session.child_name, arquetipoFull), emailHeader: ot.emailHeader,
+                emailPreparedFor: ot.emailPreparedFor(session.adult_name), emailArchetypeOf: ot.emailArchetypeOf(session.child_name),
+                emailFooter: ot.emailFooter, emailMaturationTitle: ot.emailMaturationTitle, emailMaturationBody: ot.emailMaturationBody,
+            });
+            setResendOk(true);
+        } catch { setResendOk(false); }
+        finally { setResending(false); setTimeout(() => setResendOk(null), 3000); }
+    };
+
     return (
-        <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
-            {/* ── Level 1: Quick scan ──────────────────────────────────────── */}
+        <div className="border-b border-argo-border last:border-b-0">
+            {/* ── Row (collapsed) ─────────────────────────────────────── */}
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="w-full p-5 text-left hover:bg-argo-bg/30 transition-colors"
+                className="w-full flex items-center gap-3.5 py-4 px-6 text-left hover:bg-argo-bg/30 transition-colors"
             >
-                <div className="flex items-start gap-3">
-                    {/* Axis badge */}
-                    <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold text-white flex-shrink-0 mt-0.5"
-                        style={{ background: axisCfg?.color ?? '#666' }}
-                    >
-                        {session.eje}
-                    </div>
+                {/* Axis dot */}
+                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
 
-                    <div className="min-w-0 flex-1">
-                        {/* Name + age + sport */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-base font-bold text-argo-navy">{session.child_name}</h3>
-                            <span className="text-sm text-argo-grey">
-                                {session.child_age} {dt.common.anos}{session.sport ? ` · ${session.sport}` : ''}
-                            </span>
-                        </div>
-
-                        {/* Archetype + tendencia */}
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                            <span className="inline-block border border-argo-violet-500/35 text-argo-violet-500/75 bg-transparent rounded-full text-[11px] font-medium px-3 py-1">
-                                {session.archetype_label}
-                            </span>
-                            {tendencia && (
-                                <span className="text-xs text-argo-grey italic">
-                                    {tendencia}
-                                </span>
-                            )}
-                            <span
-                                className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold"
-                                style={{ background: motorCfg.bg, color: motorCfg.text }}
-                            >
-                                {dt.profile.motorNames[session.motor] ?? session.motor}
-                            </span>
-                        </div>
-
-                        {/* Bridge words preview (top 3) */}
-                        {reportData && (
-                            <div className="flex flex-wrap gap-1.5 mt-2">
-                                {reportData.palabrasPuente.slice(0, 3).map((w, i) => (
-                                    <span
-                                        key={i}
-                                        className="px-2 py-0.5 rounded text-[10px] font-medium"
-                                        style={{ background: axisCfg?.bgColor ?? '#f3f4f6', color: axisCfg?.color ?? '#374151' }}
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right side: date + reprofile indicator + expand */}
-                    <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <div className="flex items-center gap-1.5">
-                            {needsReprofile && (
-                                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                    <AlertCircle size={10} />
-                                    {dt.players.rePerfilar}
-                                </span>
-                            )}
-                            {expanded ? <ChevronUp size={16} className="text-argo-grey" /> : <ChevronDown size={16} className="text-argo-grey" />}
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] text-argo-grey/60">
-                            <Clock size={10} />
-                            {formatDate(session.created_at, lang)}
-                            {months > 0 && <span>· {months} {dt.players.meses}</span>}
-                        </div>
-                    </div>
+                {/* Name + meta */}
+                <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-semibold text-argo-navy truncate">{session.child_name}</p>
+                    <p className="text-xs text-argo-grey mt-0.5">
+                        {session.child_age} {dt.common.anos}{session.sport ? `  ·  ${session.sport}` : ''}  ·  {formatDate(session.created_at, lang)}
+                    </p>
                 </div>
+
+                {/* Profile chip */}
+                <span
+                    className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden md:inline-block"
+                    style={{ border: `1px solid ${chip.border}`, color: chip.text }}
+                >
+                    {session.archetype_label}
+                </span>
+
+                {/* Motor */}
+                <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline-block"
+                    style={{ background: motorCfg.bg, color: motorCfg.text }}
+                >
+                    {dt.profile.motorNames[session.motor] ?? session.motor}
+                </span>
+
+                {/* Re-profile badge */}
+                {needsReprofile && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0 hidden sm:flex">
+                        <AlertCircle size={10} />
+                        {dt.players.rePerfilar}
+                    </span>
+                )}
+
+                {/* Chevron */}
+                {expanded ? <ChevronUp size={14} className="text-argo-light flex-shrink-0" /> : <ChevronDown size={14} className="text-argo-light flex-shrink-0" />}
             </button>
 
-            {/* ── Level 2: Expanded detail ─────────────────────────────────── */}
-            {expanded && (
-                <div className="border-t border-argo-border px-5 py-5 space-y-5">
-                    {/* Key insight */}
-                    {reportData && (
-                        <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.loEsencial}</h4>
-                            <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfil}</p>
-                        </div>
-                    )}
+            {/* ── Expanded detail ──────────────────────────────────────── */}
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeOut' }}
+                        className="overflow-hidden"
+                    >
+                        <div className="px-6 pb-6 pt-2">
+                            {/* 2-column layout for detail */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Left column: profile info */}
+                                <div className="space-y-4">
+                                    {/* Key insight */}
+                                    {reportData && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.loEsencial}</p>
+                                            <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfil}</p>
+                                        </div>
+                                    )}
 
-                    {/* Bridge words (full) */}
-                    {reportData && (
-                        <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.palabrasPuente}</h4>
-                            <div className="flex flex-wrap gap-1.5">
-                                {reportData.palabrasPuente.map((w, i) => (
-                                    <span
-                                        key={i}
-                                        className="px-2.5 py-1 rounded-lg text-xs font-medium border"
-                                        style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
-                                {tendenciaContent?.palabrasPuenteExtra?.map((w, i) => (
-                                    <span
-                                        key={`e-${i}`}
-                                        className="px-2.5 py-1 rounded-lg text-xs font-medium border border-dashed"
-                                        style={{ background: axisCfg?.bgColor + '80', color: axisCfg?.color, borderColor: axisCfg?.borderColor }}
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                                    {/* Tendencia */}
+                                    {tendenciaContent && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                {dt.players.brujulaSecundaria}: {tendencia}
+                                            </p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name)}</p>
+                                        </div>
+                                    )}
 
-                    {/* Noise words */}
-                    {reportData && (
-                        <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.evitarComunicacion}</h4>
-                            <div className="flex flex-wrap gap-1.5">
-                                {reportData.palabrasRuido.map((w, i) => (
-                                    <span
-                                        key={i}
-                                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200"
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
-                                {tendenciaContent?.palabrasRuidoExtra?.map((w, i) => (
-                                    <span
-                                        key={`e-${i}`}
-                                        className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50/50 text-red-600 border border-dashed border-red-200"
-                                    >
-                                        {w}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                                    {/* Bridge words */}
+                                    {reportData && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasPuente.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>
+                                                        {w}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
 
-                    {/* Tendencia paragraph */}
-                    {tendenciaContent && (
-                        <div className="space-y-1.5">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">
-                                {dt.players.brujulaSecundaria}: {tendencia}
-                            </h4>
-                            <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name)}</p>
-                        </div>
-                    )}
-
-                    {/* Coaching situations (guía) */}
-                    {reportData && reportData.guia?.length > 0 && (
-                        <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.guiaRapida}</h4>
-                            {reportData.guia.map((g, i) => (
-                                <div key={i} className="bg-argo-bg/50 rounded-xl p-3 space-y-1">
-                                    <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
-                                    <p className="text-[11px] text-emerald-700">
-                                        <span className="font-semibold">{dt.players.activar}:</span> {g.activador}
-                                    </p>
-                                    <p className="text-[11px] text-red-600">
-                                        <span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}
-                                    </p>
+                                    {/* Noise words */}
+                                    {reportData && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasRuido.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                                        {w}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            ))}
-                        </div>
-                    )}
 
-                    {/* Checklist */}
-                    {reportData?.checklist && (
-                        <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold text-argo-navy uppercase tracking-widest">{dt.players.checklistEntrenamiento}</h4>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[
-                                    { label: dt.players.antes, text: reportData.checklist.antes },
-                                    { label: dt.players.durante, text: reportData.checklist.durante },
-                                    { label: dt.players.despues, text: reportData.checklist.despues },
-                                ].map(c => (
-                                    <div key={c.label} className="bg-argo-bg/50 rounded-xl p-3">
-                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
-                                    </div>
-                                ))}
+                                {/* Right column: coaching + checklist */}
+                                <div className="space-y-4">
+                                    {/* Coaching situations */}
+                                    {reportData && reportData.guia?.length > 0 && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
+                                            <div className="space-y-2">
+                                                {reportData.guia.map((g, i) => (
+                                                    <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
+                                                        <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
+                                                        <p className="text-[11px] text-emerald-700">
+                                                            <span className="font-semibold">{dt.players.activar}:</span> {g.activador}
+                                                        </p>
+                                                        <p className="text-[11px] text-red-600">
+                                                            <span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}
+                                                        </p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Checklist */}
+                                    {reportData?.checklist && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { label: dt.players.antes, text: reportData.checklist.antes },
+                                                    { label: dt.players.durante, text: reportData.checklist.durante },
+                                                    { label: dt.players.despues, text: reportData.checklist.despues },
+                                                ].map(c => (
+                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Bottom bar: timeline + resend + adult info */}
+                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <div className="flex items-center gap-4 text-xs text-argo-grey">
+                                    <span className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        {formatDate(session.created_at, lang)}
+                                        {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
+                                    </span>
+                                    <span className="text-argo-light">{session.adult_name} ({session.adult_email})</span>
+                                </div>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); handleResend(); }}
+                                    disabled={resending}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50 flex-shrink-0"
+                                >
+                                    {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                    {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
+                                </button>
                             </div>
                         </div>
-                    )}
-
-                    {/* Re-profile timeline */}
-                    <div className="pt-3 border-t border-argo-border">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <Clock size={14} className="text-argo-grey" />
-                                <span className="text-xs text-argo-grey">
-                                    {dt.players.perfiladoEl} {formatDate(session.created_at, lang)} ({daysSince(session.created_at)} {dt.players.dias})
-                                </span>
-                            </div>
-                            {needsReprofile && (
-                                <span className="text-xs text-amber-700 font-medium">
-                                    {dt.players.seRecomiendaRePerfilar}
-                                </span>
-                            )}
-                        </div>
-                        {/* Timeline bar */}
-                        <div className="mt-2 w-full h-1.5 rounded-full bg-argo-bg overflow-hidden">
-                            <div
-                                className="h-full rounded-full transition-all"
-                                style={{
-                                    width: `${Math.min(100, (monthsSince(session.created_at) / 8) * 100)}%`,
-                                    background: needsReprofile ? '#f59e0b' : '#6366f1',
-                                }}
-                            />
-                        </div>
-                        <div className="flex justify-between mt-1">
-                            <span className="text-[9px] text-argo-grey/50">{dt.players.perfiladoEl.split(' ')[0]}</span>
-                            <span className="text-[9px] text-argo-grey/50">8 {dt.players.meses} ({dt.players.rePerfilar.toLowerCase()})</span>
-                        </div>
-                    </div>
-
-                    {/* Adult info */}
-                    <div className="text-xs text-argo-grey/60 pt-2 border-t border-argo-border">
-                        {dt.homeExtra.adulto}: {session.adult_name} ({session.adult_email})
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -328,66 +295,48 @@ export const TenantPlayers: React.FC = () => {
     const [search, setSearch] = useState('');
     const [ejeFilter, setEjeFilter] = useState<string | null>(null);
     const [showReprofileOnly, setShowReprofileOnly] = useState(false);
+    const [page, setPage] = useState(0);
 
     const fetchSessions = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch('/api/tenant-sessions', {
-                headers: { Authorization: `Bearer ${session.access_token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setSessions(data.sessions);
-            }
-        } finally {
-            setLoading(false);
-        }
+            const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
+        } finally { setLoading(false); }
     }, []);
 
-    useEffect(() => {
-        if (tenant) fetchSessions();
-    }, [tenant, fetchSessions]);
+    useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
-    // Filters
     const filtered = useMemo(() => {
         return sessions.filter(s => {
             if (ejeFilter && s.eje !== ejeFilter) return false;
             if (showReprofileOnly && monthsSince(s.created_at) < 6) return false;
             if (search) {
                 const q = search.toLowerCase();
-                return s.child_name.toLowerCase().includes(q) ||
-                    s.archetype_label.toLowerCase().includes(q) ||
-                    (s.sport ?? '').toLowerCase().includes(q);
+                return s.child_name.toLowerCase().includes(q) || s.archetype_label.toLowerCase().includes(q) || (s.sport ?? '').toLowerCase().includes(q);
             }
             return true;
         });
     }, [sessions, search, ejeFilter, showReprofileOnly]);
 
-    // Stats
+    // Reset page when filters change
+    useEffect(() => { setPage(0); }, [search, ejeFilter, showReprofileOnly]);
+
+    const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+    const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
     const reprofileCount = sessions.filter(s => monthsSince(s.created_at) >= 6).length;
 
     if (!tenant) {
-        return (
-            <div className="flex items-center justify-center py-20">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
-            </div>
-        );
+        return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
     }
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-6"
-        >
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
-                    <p className="text-[13px] text-argo-grey mt-1">
-                        {dt.players.subtitulo}
-                    </p>
+                    <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
                 {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
             </div>
@@ -397,12 +346,8 @@ export const TenantPlayers: React.FC = () => {
                 <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-start gap-3">
                     <AlertCircle size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
                     <div>
-                        <p className="text-sm font-medium text-amber-800">
-                            {dt.players.rePerfilarAlerta(reprofileCount)}
-                        </p>
-                        <p className="text-xs text-amber-700 mt-0.5">
-                            {dt.players.rePerfilarAlertaDesc}
-                        </p>
+                        <p className="text-sm font-medium text-amber-800">{dt.players.rePerfilarAlerta(reprofileCount)}</p>
+                        <p className="text-xs text-amber-700 mt-0.5">{dt.players.rePerfilarAlertaDesc}</p>
                     </div>
                 </div>
             )}
@@ -415,11 +360,10 @@ export const TenantPlayers: React.FC = () => {
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         placeholder={dt.players.buscarPlaceholder}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-argo-border text-sm outline-none focus:border-argo-navy transition-colors"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-argo-border text-sm outline-none focus:border-argo-violet-200 transition-colors"
                     />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                    {/* Eje filters */}
                     {(['D', 'I', 'S', 'C'] as const).map(eje => {
                         const cfg = AXIS_CONFIG[eje];
                         const isActive = ejeFilter === eje;
@@ -428,23 +372,19 @@ export const TenantPlayers: React.FC = () => {
                                 key={eje}
                                 onClick={() => setEjeFilter(isActive ? null : eje)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${
-                                    isActive ? 'text-white border-transparent' : 'border-argo-border text-argo-grey hover:border-argo-navy/30'
+                                    isActive ? 'text-white border-transparent' : 'border-argo-border text-argo-grey hover:border-argo-violet-200'
                                 }`}
                                 style={isActive ? { background: cfg?.color } : {}}
                             >
-                                <span className={`w-3 h-3 rounded ${isActive ? 'bg-white/30' : ''}`}
-                                    style={!isActive ? { background: cfg?.color, opacity: 0.6 } : {}} />
+                                <span className={`w-3 h-3 rounded ${isActive ? 'bg-white/30' : ''}`} style={!isActive ? { background: cfg?.color, opacity: 0.6 } : {}} />
                                 {dt.profile.axisNames[eje] ?? cfg?.name}
                             </button>
                         );
                     })}
-                    {/* Re-profile filter */}
                     <button
                         onClick={() => setShowReprofileOnly(!showReprofileOnly)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${
-                            showReprofileOnly
-                                ? 'bg-amber-500 text-white border-amber-500'
-                                : 'border-argo-border text-argo-grey hover:border-amber-300'
+                            showReprofileOnly ? 'bg-amber-500 text-white border-amber-500' : 'border-argo-border text-argo-grey hover:border-amber-300'
                         }`}
                     >
                         <AlertCircle size={12} />
@@ -455,27 +395,76 @@ export const TenantPlayers: React.FC = () => {
 
             {/* Players list */}
             {loading ? (
-                <div className="space-y-3">
-                    {Array.from({ length: 4 }).map((_, i) => <SkeletonPlayerCard key={i} />)}
+                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="px-6 py-4 border-b border-argo-border last:border-b-0">
+                            <div className="flex items-center gap-3.5">
+                                <div className="w-2 h-2 rounded-full bg-argo-bg" />
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-3.5 w-32 bg-argo-bg rounded animate-pulse" />
+                                    <div className="h-3 w-48 bg-argo-bg rounded animate-pulse" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12">
                     <div className="w-12 h-12 rounded-[14px] bg-argo-violet-50 flex items-center justify-center mx-auto mb-3">
                         <UserCircle size={20} className="text-argo-violet-500" />
                     </div>
-                    <p className="text-sm text-argo-secondary">
-                        {sessions.length === 0
-                            ? dt.players.sinJugadores
-                            : dt.players.sinResultados}
-                    </p>
+                    <p className="text-sm text-argo-secondary">{sessions.length === 0 ? dt.players.sinJugadores : dt.players.sinResultados}</p>
                 </div>
             ) : (
-                <div className="space-y-3">
-                    <p className="text-xs text-argo-grey">{filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
-                    {filtered.map(s => (
-                        <PlayerCard key={s.id} session={s} dt={dt} lang={lang} />
-                    ))}
-                </div>
+                <>
+                    {/* Count + pagination info */}
+                    <div className="flex items-center justify-between">
+                        <p className="text-xs text-argo-grey">
+                            {filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}
+                            {totalPages > 1 && <span className="text-argo-light"> · {lang === 'en' ? 'page' : lang === 'pt' ? 'pagina' : 'pagina'} {page + 1}/{totalPages}</span>}
+                        </p>
+                    </div>
+
+                    {/* List card */}
+                    <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
+                        {paginated.map(s => (
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} />
+                        ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex items-center justify-center gap-2">
+                            <button
+                                onClick={() => setPage(p => Math.max(0, p - 1))}
+                                disabled={page === 0}
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-bg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                {lang === 'en' ? 'Previous' : lang === 'pt' ? 'Anterior' : 'Anterior'}
+                            </button>
+                            {Array.from({ length: totalPages }).map((_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setPage(i)}
+                                    className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                                        page === i
+                                            ? 'bg-argo-navy text-white'
+                                            : 'text-argo-grey hover:bg-argo-bg'
+                                    }`}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                                disabled={page === totalPages - 1}
+                                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-bg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                            >
+                                {lang === 'en' ? 'Next' : lang === 'pt' ? 'Proximo' : 'Siguiente'}
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
         </motion.div>
     );
