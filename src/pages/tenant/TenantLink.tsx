@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { Copy, Check, Share2 } from 'lucide-react';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 interface TenantData {
     id: string;
@@ -48,10 +49,15 @@ export const TenantLink: React.FC = () => {
 
     return (
         <div>
-            <h1 className="text-[26px] font-bold text-argo-navy tracking-tight mb-1">{dt.link.titulo}</h1>
-            <p className="text-sm text-argo-secondary mb-8">
-                {dt.link.descripcion}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+                <div>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.link.titulo}</h1>
+                    <p className="text-[13px] text-argo-grey mt-1">
+                        {dt.link.descripcion}
+                    </p>
+                </div>
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
+            </div>
 
             <div className="bg-white rounded-[14px] p-6 shadow-argo">
                 <div className="flex items-center gap-2 mb-4">

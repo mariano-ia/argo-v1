@@ -8,8 +8,8 @@ import { getTendenciaContent } from '../../lib/archetypeData';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { SkeletonPlayerCard } from '../../components/ui/Skeleton';
 import { getDashboardT } from '../../lib/dashboardTranslations';
-import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { useLang } from '../../context/LangContext';
+import { LinkWidget } from '../../components/dashboard/LinkWidget';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
