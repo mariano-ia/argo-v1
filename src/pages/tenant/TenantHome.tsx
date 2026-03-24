@@ -1,15 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Send, Loader2, Coins, Activity, Users, Layers, Copy, ChevronRight } from 'lucide-react';
+import { Check, Coins, Activity, Users, Layers, Copy, ChevronRight } from 'lucide-react';
 import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 import { supabase } from '../../lib/supabase';
-import { getReportData } from '../../lib/argosEngine';
-import { getTendenciaContent } from '../../lib/archetypeData';
-import { TENDENCIA_LABELS } from '../../lib/profileResolver';
-import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
-import { sendReport } from '../../lib/emailService';
-import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { calcAxisDistribution, getGroupTypes } from '../../lib/groupBalance';
@@ -142,8 +136,6 @@ export const TenantHome: React.FC = () => {
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
     const [groupCount, setGroupCount] = useState<number | null>(null);
-    const [resendingId, setResendingId] = useState<string | null>(null);
-    const [resendMsg, setResendMsg] = useState<{ id: string; ok: boolean } | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'cancel'; text: string } | null>(null);
 
@@ -206,43 +198,10 @@ export const TenantHome: React.FC = () => {
     sessions.forEach(s => { if (axisCounts[s.eje] !== undefined) axisCounts[s.eje]++; });
     const totalForDist = sessions.length || 1;
 
-    const handleResend = async (s: SessionRow) => {
-        setResendingId(s.id);
-        try {
-            const sLang = s.lang || 'es';
-            const ot = getOdysseyT(sLang as 'es' | 'en' | 'pt');
-            const report = getReportData(s.eje, s.motor, s.eje_secundario ?? '', s.child_name);
-            if (s.eje_secundario) {
-                const tendencia = getTendenciaContent(s.eje, s.eje_secundario);
-                if (tendencia) {
-                    report.tendenciaLabel = TENDENCIA_LABELS[s.eje_secundario as keyof typeof TENDENCIA_LABELS];
-                    report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, s.child_name);
-                    report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
-                    report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;
-                }
-            }
-            const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
-            await sendReport({
-                toEmail: s.adult_email, nombreAdulto: s.adult_name, nombreNino: s.child_name,
-                deporte: s.sport ?? '', edad: s.child_age, arquetipo: arquetipoFull,
-                reportHtml: buildReportHtml(report, null, ot), maduracionTemprana: s.child_age < 10,
-                sessionId: s.id, lang: sLang,
-                emailSubject: ot.emailSubject(s.child_name, arquetipoFull), emailHeader: ot.emailHeader,
-                emailPreparedFor: ot.emailPreparedFor(s.adult_name), emailArchetypeOf: ot.emailArchetypeOf(s.child_name),
-                emailFooter: ot.emailFooter, emailMaturationTitle: ot.emailMaturationTitle, emailMaturationBody: ot.emailMaturationBody,
-            });
-            setResendMsg({ id: s.id, ok: true });
-        } catch (err) { console.error('[TenantHome] Resend error:', err); setResendMsg({ id: s.id, ok: false }); }
-        finally { setResendingId(null); setTimeout(() => setResendMsg(null), 3000); }
-    };
+
 
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-            {resendMsg && (
-                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${resendMsg.ok ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                    {resendMsg.ok ? dt.home.informeEnviado : dt.home.errorEnvio}
-                </div>
-            )}
             {paymentMsg && (
                 <div className={`mb-6 px-4 py-3 rounded-xl text-sm font-medium ${paymentMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
                     {paymentMsg.text}
@@ -431,9 +390,6 @@ export const TenantHome: React.FC = () => {
                                             <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden sm:inline-block" style={{ border: `1px solid ${chip.border}`, color: chip.text }}>
                                                 {s.archetype_label}
                                             </span>
-                                            <button onClick={() => handleResend(s)} disabled={resendingId === s.id} title={dt.home.reenviarInforme} className="p-1.5 rounded-lg text-argo-light hover:text-argo-violet-500 hover:bg-argo-bg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50 flex-shrink-0">
-                                                {resendingId === s.id ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                                            </button>
                                         </motion.div>
                                     );
                                 })}

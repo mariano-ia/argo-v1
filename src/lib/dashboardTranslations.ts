@@ -250,13 +250,13 @@ interface DashboardTexts {
 const es: DashboardTexts = {
     nav: {
         inicio: 'Inicio',
-        jugadores: 'Jugadores',
-        grupos: 'Grupos',
-        guia: 'Guía',
+        jugadores: 'Mi equipo',
+        grupos: 'Formaciones',
+        guia: 'Brujula',
         chat: 'Chat',
-        miLink: 'Mi link',
+        miLink: 'Invitar',
         ajustes: 'Ajustes',
-        cerrarSesion: 'Cerrar sesión',
+        cerrarSesion: 'Cerrar sesion',
     },
     common: {
         crear: 'Crear',
@@ -465,11 +465,11 @@ const es: DashboardTexts = {
 const en: DashboardTexts = {
     nav: {
         inicio: 'Home',
-        jugadores: 'Players',
-        grupos: 'Groups',
-        guia: 'Guide',
+        jugadores: 'My team',
+        grupos: 'Formations',
+        guia: 'Compass',
         chat: 'Chat',
-        miLink: 'My link',
+        miLink: 'Invite',
         ajustes: 'Settings',
         cerrarSesion: 'Sign out',
     },
@@ -679,13 +679,13 @@ const en: DashboardTexts = {
 
 const pt: DashboardTexts = {
     nav: {
-        inicio: 'Início',
-        jugadores: 'Jogadores',
-        grupos: 'Grupos',
-        guia: 'Guia',
+        inicio: 'Inicio',
+        jugadores: 'Minha equipe',
+        grupos: 'Formacoes',
+        guia: 'Bussola',
         chat: 'Chat',
-        miLink: 'Meu link',
-        ajustes: 'Configurações',
+        miLink: 'Convidar',
+        ajustes: 'Configuracoes',
         cerrarSesion: 'Sair',
     },
     common: {
