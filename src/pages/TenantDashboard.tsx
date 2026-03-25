@@ -44,9 +44,12 @@ export const TenantDashboard: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
-    // DEV bypass
-    const isDev = import.meta.env.DEV;
-    const [devBypass] = useState(() => isDev && new URLSearchParams(window.location.search).has('dev'));
+    // DEV bypass — only on localhost, never on deployed previews
+    const [devBypass] = useState(() =>
+        import.meta.env.DEV
+        && window.location.hostname === 'localhost'
+        && new URLSearchParams(window.location.search).has('dev')
+    );
 
     useEffect(() => {
         if (devBypass) {
