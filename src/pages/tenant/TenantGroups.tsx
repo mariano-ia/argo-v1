@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal } from 'lucide-react';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
@@ -289,8 +290,8 @@ export const TenantGroups: React.FC = () => {
                                                     className="flex-1 text-lg font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
                                                     autoFocus
                                                 />
-                                                <button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button>
-                                                <button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button>
+                                                <Tooltip text={lang === 'en' ? 'Confirm' : lang === 'pt' ? 'Confirmar' : 'Confirmar'}><button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button></Tooltip>
+                                                <Tooltip text={lang === 'en' ? 'Cancel' : lang === 'pt' ? 'Cancelar' : 'Cancelar'}><button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button></Tooltip>
                                             </div>
                                         ) : (
                                             <>
@@ -299,9 +300,11 @@ export const TenantGroups: React.FC = () => {
                                                     <p className="text-[11px] text-argo-light mt-0.5">{members.length} {members.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                                                 </div>
                                                 <div className="relative">
-                                                    <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
-                                                        <MoreHorizontal size={16} />
-                                                    </button>
+                                                    <Tooltip text={lang === 'en' ? 'Options' : lang === 'pt' ? 'Opções' : 'Opciones'}>
+                                                        <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
+                                                            <MoreHorizontal size={16} />
+                                                        </button>
+                                                    </Tooltip>
                                                     {showMenu && (
                                                         <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-argo-hover border border-argo-border py-1 w-40">
                                                             <button onClick={() => { setEditName(detailGroup?.name ?? ''); setEditing(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
@@ -348,9 +351,11 @@ export const TenantGroups: React.FC = () => {
                                                     <div key={m.id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
                                                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
                                                         {m.child_name}
-                                                        <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                                            <X size={10} />
-                                                        </button>
+                                                        <Tooltip text={lang === 'en' ? 'Remove' : lang === 'pt' ? 'Remover' : 'Quitar'}>
+                                                            <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                                <X size={10} />
+                                                            </button>
+                                                        </Tooltip>
                                                     </div>
                                                 );
                                             })}

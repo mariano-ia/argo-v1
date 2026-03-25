@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
 
 function generateSlug(name: string): string {
     const base = name
@@ -8,7 +9,7 @@ function generateSlug(name: string): string {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '')
         .slice(0, 30);
-    const suffix = Math.random().toString(36).slice(2, 8);
+    const suffix = randomBytes(4).toString('hex'); // 8 hex chars, cryptographically secure
     return `${base}-${suffix}`;
 }
 
@@ -32,6 +33,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (!auth_user_id || !email || !display_name) {
             return res.status(400).json({ error: 'Missing required fields: auth_user_id, email, display_name' });
+        }
+
+        // Input validation
+        if (typeof email !== 'string' || email.length > 255 || !email.includes('@')) {
+            return res.status(400).json({ error: 'Invalid email' });
+        }
+        if (typeof display_name !== 'string' || display_name.length > 100) {
+            return res.status(400).json({ error: 'Display name too long' });
+        }
+        if (typeof auth_user_id !== 'string' || auth_user_id.length > 100) {
+            return res.status(400).json({ error: 'Invalid auth_user_id' });
         }
 
         // Check if tenant already exists for this auth user

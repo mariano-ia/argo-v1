@@ -3,7 +3,8 @@ import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom
 import { motion } from 'framer-motion';
 import { Coins, Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
-import { AreaChart, Area, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { AreaChart, Area, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis } from 'recharts';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -210,10 +211,10 @@ export const TenantHome: React.FC = () => {
             {/* ═══ ROW 2: Stats ═══ */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
                 {[
-                    { icon: Coins, label: dt.home.creditos, value: tenant.credits_remaining, sub: `Plan ${tenant.plan}` },
-                    { icon: Activity, label: lang === 'en' ? 'Sessions' : lang === 'pt' ? 'Sessoes' : 'Sesiones', value: sessionsLoading ? '...' : sessions.length, sub: thisMonthCount > 0 ? `+${thisMonthCount} ${lang === 'en' ? 'this month' : lang === 'pt' ? 'este mes' : 'este mes'}` : (lang === 'en' ? 'completed' : 'completadas') },
-                    { icon: Users, label: lang === 'en' ? 'Athletes' : lang === 'pt' ? 'Atletas' : 'Deportistas', value: sessionsLoading ? '...' : uniquePlayers, sub: lang === 'en' ? 'with profile' : lang === 'pt' ? 'com perfil' : 'con perfil' },
-                    { icon: Layers, label: lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos', value: groupCount ?? (sessionsLoading ? '...' : 0), sub: lang === 'en' ? 'created' : lang === 'pt' ? 'criados' : 'creados' },
+                    { icon: Coins, label: dt.home.creditos, value: tenant.credits_remaining, sub: `Plan ${tenant.plan}`, tip: lang === 'en' ? '1 credit = 1 play. Credits are consumed when a session starts.' : lang === 'pt' ? '1 crédito = 1 jogada. Os créditos são consumidos ao iniciar uma sessão.' : '1 crédito = 1 jugada. Los créditos se consumen al iniciar una sesión.' },
+                    { icon: Activity, label: lang === 'en' ? 'Sessions' : lang === 'pt' ? 'Sessoes' : 'Sesiones', value: sessionsLoading ? '...' : sessions.length, sub: thisMonthCount > 0 ? `+${thisMonthCount} ${lang === 'en' ? 'this month' : lang === 'pt' ? 'este mes' : 'este mes'}` : (lang === 'en' ? 'completed' : 'completadas'), tip: lang === 'en' ? 'Total completed experiences by your athletes' : lang === 'pt' ? 'Total de experiências completadas pelos seus atletas' : 'Total de experiencias completadas por tus deportistas' },
+                    { icon: Users, label: lang === 'en' ? 'Athletes' : lang === 'pt' ? 'Atletas' : 'Deportistas', value: sessionsLoading ? '...' : uniquePlayers, sub: lang === 'en' ? 'with profile' : lang === 'pt' ? 'com perfil' : 'con perfil', tip: lang === 'en' ? 'Unique athletes who completed a profile' : lang === 'pt' ? 'Atletas únicos que completaram um perfil' : 'Deportistas únicos que completaron un perfil' },
+                    { icon: Layers, label: lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos', value: groupCount ?? (sessionsLoading ? '...' : 0), sub: lang === 'en' ? 'created' : lang === 'pt' ? 'criados' : 'creados', tip: lang === 'en' ? 'Organize your athletes in groups to see team dynamics' : lang === 'pt' ? 'Organize seus atletas em grupos para ver a dinâmica de equipe' : 'Organiza tus deportistas en grupos para ver la dinámica de equipo' },
                 ].map((stat, i) => (
                     <motion.div
                         key={i}
@@ -222,9 +223,11 @@ export const TenantHome: React.FC = () => {
                         transition={{ duration: 0.3, delay: i * 0.05 }}
                         className="bg-white rounded-[14px] px-6 py-5 shadow-argo transition-all hover:shadow-argo-hover group"
                     >
-                        <div className="w-9 h-9 rounded-[10px] bg-argo-bg flex items-center justify-center text-argo-grey mb-3.5 transition-colors group-hover:bg-argo-violet-50 group-hover:text-argo-violet-400">
-                            <stat.icon size={18} />
-                        </div>
+                        <Tooltip text={stat.tip} position="right" maxWidth={220}>
+                            <div className="w-9 h-9 rounded-[10px] bg-argo-bg flex items-center justify-center text-argo-grey mb-3.5 transition-colors group-hover:bg-argo-violet-50 group-hover:text-argo-violet-400">
+                                <stat.icon size={18} />
+                            </div>
+                        </Tooltip>
                         <p className="text-xs text-argo-grey font-medium mb-2">{stat.label}</p>
                         <p className="text-[32px] font-bold text-argo-navy tracking-tight leading-none">{stat.value}</p>
                         <p className="text-[11px] text-argo-light mt-1">{stat.sub}</p>
@@ -255,7 +258,7 @@ export const TenantHome: React.FC = () => {
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#AEAEB2' }} axisLine={false} tickLine={false} />
-                                    <Tooltip
+                                    <RechartsTooltip
                                         contentStyle={{ background: '#1D1D1F', border: 'none', borderRadius: 8, fontSize: 12, color: 'white', padding: '6px 10px' }}
                                         labelStyle={{ color: '#AEAEB2', fontSize: 10 }}
                                     />

@@ -202,6 +202,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Message required' });
         }
 
+        // Rate limiting: max 60 messages per tenant per hour
+        const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
+        const { count: recentCount } = await sb
+            .from('chat_messages')
+            .select('id', { count: 'exact', head: true })
+            .eq('tenant_id', tenant.id)
+            .eq('role', 'user')
+            .gt('created_at', oneHourAgo);
+
+        if ((recentCount ?? 0) >= 60) {
+            return res.status(429).json({ error: 'Rate limit exceeded. Try again later.' });
+        }
+
         const trimmedMsg = message.trim().slice(0, 2000); // Cap at 2000 chars
         const threadId = thread_id || crypto.randomUUID();
         const promptLang = (['es', 'en', 'pt'].includes(lang) ? lang : 'es') as string;
@@ -217,9 +230,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .limit(50);
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
+        // Sanitize player data to prevent prompt injection
+        const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
         const playerList = (sessions ?? []).map(s => {
             const tend = s.eje_secundario ? `, ${tendLabels[s.eje_secundario] ?? ''}` : '';
-            return `- ${s.child_name} (${s.child_age} años, ${s.sport ?? 'N/A'}): ${s.archetype_label}${tend}`;
+            return `- ${sanitize(s.child_name)} (${s.child_age} años, ${sanitize(s.sport ?? 'N/A', 40)}): ${s.archetype_label}${tend}`;
         }).join('\n');
 
         // ── Context injection based on keywords ───────────────────────────
@@ -243,7 +258,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
-            extraContext += `\n\nDATOS DETALLADOS DEL JUGADOR MENCIONADO:\nNombre: ${mp.child_name}\nEdad: ${mp.child_age}\nDeporte: ${mp.sport}\nArquetipo: ${mp.archetype_label}\nEje dominante: ${mp.eje}\nMotor: ${mp.motor}\nBrújula secundaria: ${mp.eje_secundario ?? 'N/A'} (${tend})\n`;
+            // Sanitize player data to prevent prompt injection
+            const safeName = mp.child_name.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, 60);
+            const safeSport = (mp.sport ?? '').replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, 40);
+            extraContext += `\n\nDATOS DETALLADOS DEL JUGADOR MENCIONADO:\nNombre: ${safeName}\nEdad: ${mp.child_age}\nDeporte: ${safeSport}\nArquetipo: ${mp.archetype_label}\nEje dominante: ${mp.eje}\nMotor: ${mp.motor}\nBrújula secundaria: ${mp.eje_secundario ?? 'N/A'} (${tend})\n`;
         } else if (potentialNames.length > 0) {
             // User mentioned a name but it doesn't match any registered player
             const knownNames = (sessions ?? []).map(s => s.child_name).join(', ');
