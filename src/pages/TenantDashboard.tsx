@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ToastProvider } from '../components/ui/Toast';
+import { Tooltip } from '../components/ui/Tooltip';
 import { useLang } from '../context/LangContext';
 import { getDashboardT } from '../lib/dashboardTranslations';
 import type { Session } from '@supabase/supabase-js';
@@ -19,6 +20,7 @@ interface TenantData {
 }
 
 const OTHER_LANGS: Record<string, [string, string]> = { es: ['en', 'pt'], en: ['es', 'pt'], pt: ['es', 'en'] };
+const LANG_LABELS: Record<string, string> = { es: 'Español', en: 'English', pt: 'Português' };
 
 export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -126,9 +128,11 @@ export const TenantDashboard: React.FC = () => {
                 {/* Logo + collapse toggle */}
                 {isCollapsed ? (
                     <div className="flex items-center justify-center pt-5 pb-4">
-                        <button onClick={() => setCollapsed(false)} className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg">
-                            <PanelLeftOpen size={16} />
-                        </button>
+                        <Tooltip text={dt.nav.inicio} position="right">
+                            <button onClick={() => setCollapsed(false)} className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg">
+                                <PanelLeftOpen size={16} />
+                            </button>
+                        </Tooltip>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between px-6 pt-7 pb-8">
@@ -139,9 +143,11 @@ export const TenantDashboard: React.FC = () => {
                             <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
                         </div>
                         {!mobile && (
-                            <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
-                                <PanelLeftClose size={16} />
-                            </button>
+                            <Tooltip text={lang === 'en' ? 'Collapse' : lang === 'pt' ? 'Recolher' : 'Colapsar'}>
+                                <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
+                                    <PanelLeftClose size={16} />
+                                </button>
+                            </Tooltip>
                         )}
                     </div>
                 )}
@@ -167,25 +173,31 @@ export const TenantDashboard: React.FC = () => {
                                 {initials}
                             </div>
                             <span className="text-xs font-medium text-argo-secondary truncate flex-1">{tenant.display_name}</span>
-                            <button onClick={handleLogout} title={dt.nav.cerrarSesion} className="text-argo-light hover:text-argo-grey transition-colors">
-                                <LogOut size={14} />
-                            </button>
+                            <Tooltip text={dt.nav.cerrarSesion}>
+                                <button onClick={handleLogout} className="text-argo-light hover:text-argo-grey transition-colors">
+                                    <LogOut size={14} />
+                                </button>
+                            </Tooltip>
                         </div>
                     )}
 
                     {isCollapsed && (
-                        <button onClick={handleLogout} title={dt.nav.cerrarSesion} className="flex items-center justify-center py-2 w-full text-argo-light hover:text-argo-grey transition-colors">
-                            <LogOut size={15} />
-                        </button>
+                        <Tooltip text={dt.nav.cerrarSesion} position="right">
+                            <button onClick={handleLogout} className="flex items-center justify-center py-2 w-full text-argo-light hover:text-argo-grey transition-colors">
+                                <LogOut size={15} />
+                            </button>
+                        </Tooltip>
                     )}
 
                     {/* Language selector */}
                     {!isCollapsed && (
                         <div className="flex items-center gap-2 px-3">
                             {(OTHER_LANGS[lang] ?? ['en', 'pt']).map(l => (
-                                <button key={l} onClick={() => setLang(l as 'es' | 'en' | 'pt')} className="text-[11px] font-medium text-argo-light hover:text-argo-navy transition-colors uppercase tracking-wide">
-                                    {l}
-                                </button>
+                                <Tooltip key={l} text={LANG_LABELS[l] ?? l} position="top">
+                                    <button onClick={() => setLang(l as 'es' | 'en' | 'pt')} className="text-[11px] font-medium text-argo-light hover:text-argo-navy transition-colors uppercase tracking-wide">
+                                        {l}
+                                    </button>
+                                </Tooltip>
                             ))}
                             <span className="text-[11px] font-bold text-argo-navy uppercase tracking-wide">{lang}</span>
                         </div>
@@ -217,9 +229,11 @@ export const TenantDashboard: React.FC = () => {
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
                 {/* Mobile topbar */}
                 <div className="md:hidden h-14 flex items-center gap-3 px-4 bg-white border-b border-argo-border">
-                    <button onClick={() => setSidebarOpen(true)} className="text-argo-grey">
-                        <Menu size={20} />
-                    </button>
+                    <Tooltip text="Menu" position="bottom">
+                        <button onClick={() => setSidebarOpen(true)} className="text-argo-grey">
+                            <Menu size={20} />
+                        </button>
+                    </Tooltip>
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
                     </span>

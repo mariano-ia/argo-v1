@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Send, Plus, Loader2, MessageCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -181,13 +182,14 @@ export const TenantChat: React.FC = () => {
                             <span className="text-[14px] font-medium">{lang === 'en' ? 'New chat' : lang === 'pt' ? 'Novo chat' : 'Nuevo chat'}</span>
                         </button>
                     )}
-                    <button
-                        onClick={() => setPanelOpen(v => !v)}
-                        className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg"
-                        title={panelOpen ? 'Collapse' : 'Expand'}
-                    >
-                        {panelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
-                    </button>
+                    <Tooltip text={panelOpen ? (lang === 'en' ? 'Hide conversations' : lang === 'pt' ? 'Ocultar conversas' : 'Ocultar conversaciones') : (lang === 'en' ? 'Show conversations' : lang === 'pt' ? 'Mostrar conversas' : 'Mostrar conversaciones')}>
+                        <button
+                            onClick={() => setPanelOpen(v => !v)}
+                            className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg"
+                        >
+                            {panelOpen ? <PanelLeftClose size={16} /> : <PanelLeftOpen size={16} />}
+                        </button>
+                    </Tooltip>
                 </div>
 
                 {/* Thread list — only when expanded */}

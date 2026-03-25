@@ -15,6 +15,7 @@ import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
+import { Tooltip } from '../../components/ui/Tooltip';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -204,19 +205,23 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 </span>
 
                 {/* Motor */}
-                <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline-block"
-                    style={{ background: motorCfg.bg, color: motorCfg.text }}
-                >
-                    {dt.profile.motorNames[session.motor] ?? session.motor}
-                </span>
+                <Tooltip text={lang === 'en' ? 'Processing speed during the experience' : lang === 'pt' ? 'Velocidade de processamento durante a experiência' : 'Velocidad de procesamiento durante la experiencia'}>
+                    <span
+                        className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline-block"
+                        style={{ background: motorCfg.bg, color: motorCfg.text }}
+                    >
+                        {dt.profile.motorNames[session.motor] ?? session.motor}
+                    </span>
+                </Tooltip>
 
                 {/* Re-profile badge */}
                 {needsReprofile && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0 hidden sm:flex">
-                        <AlertCircle size={10} />
-                        {dt.players.rePerfilar}
-                    </span>
+                    <Tooltip text={lang === 'en' ? `${months} months since last profile — we recommend a new session` : lang === 'pt' ? `${months} meses desde o último perfil — recomendamos uma nova sessão` : `${months} meses desde el último perfil — recomendamos una nueva sesión`} maxWidth={220}>
+                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0 hidden sm:flex">
+                            <AlertCircle size={10} />
+                            {dt.players.rePerfilar}
+                        </span>
+                    </Tooltip>
                 )}
 
                 {/* Chevron */}
