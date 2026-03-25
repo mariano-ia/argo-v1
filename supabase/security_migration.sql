@@ -39,7 +39,7 @@ CREATE INDEX IF NOT EXISTS idx_groups_tenant
     WHERE deleted_at IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_group_members_group
-    ON group_members(group_id, created_at DESC);
+    ON group_members(group_id, added_at DESC);
 
 -- Tenants
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug);
