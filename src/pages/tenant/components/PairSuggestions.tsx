@@ -85,7 +85,7 @@ export const PairSuggestions: React.FC<Props> = ({ complementarias, afinidades }
                     <p className="text-[11px] font-semibold text-argo-grey uppercase tracking-wide">
                         {dt.groupBalance.estilosComplementan}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-2.5">
                         {complementarias.map((p, i) => (
                             <PairCard key={`c-${i}`} pair={p} />
                         ))}
@@ -98,7 +98,7 @@ export const PairSuggestions: React.FC<Props> = ({ complementarias, afinidades }
                     <p className="text-[11px] font-semibold text-argo-grey uppercase tracking-wide">
                         {dt.groupBalance.estilosAfines}
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="space-y-2.5">
                         {afinidades.map((p, i) => (
                             <PairCard key={`a-${i}`} pair={p} />
                         ))}
