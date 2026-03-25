@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Coins, Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AreaChart, Area, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis } from 'recharts';
-import { Tooltip } from '../../components/ui/Tooltip';
+import { InfoTip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -223,12 +223,13 @@ export const TenantHome: React.FC = () => {
                         transition={{ duration: 0.3, delay: i * 0.05 }}
                         className="bg-white rounded-[14px] px-6 py-5 shadow-argo transition-all hover:shadow-argo-hover group"
                     >
-                        <Tooltip text={stat.tip} position="right" maxWidth={220}>
-                            <div className="w-9 h-9 rounded-[10px] bg-argo-bg flex items-center justify-center text-argo-grey mb-3.5 transition-colors group-hover:bg-argo-violet-50 group-hover:text-argo-violet-400">
-                                <stat.icon size={18} />
-                            </div>
-                        </Tooltip>
-                        <p className="text-xs text-argo-grey font-medium mb-2">{stat.label}</p>
+                        <div className="w-9 h-9 rounded-[10px] bg-argo-bg flex items-center justify-center text-argo-grey mb-3.5 transition-colors group-hover:bg-argo-violet-50 group-hover:text-argo-violet-400">
+                            <stat.icon size={18} />
+                        </div>
+                        <div className="flex items-center gap-1.5 mb-2">
+                            <p className="text-xs text-argo-grey font-medium">{stat.label}</p>
+                            <InfoTip text={stat.tip} />
+                        </div>
                         <p className="text-[32px] font-bold text-argo-navy tracking-tight leading-none">{stat.value}</p>
                         <p className="text-[11px] text-argo-light mt-1">{stat.sub}</p>
                     </motion.div>

@@ -17,12 +17,13 @@ import { SimulatorPanel } from './SimulatorPanel';
 import { CollapsibleSection } from './CollapsibleSection';
 import { getDashboardT } from '../../../lib/dashboardTranslations';
 import { useLang } from '../../../context/LangContext';
+import { InfoTip } from '../../../components/ui/Tooltip';
 
 interface Props {
     members: MemberProfile[];
 }
 
-/* ── DISC mini-dots (hero) ──────────────────────────────────────────────────── */
+/* ── Axis mini-dots (hero) ────────────────────────────────────────────────── */
 
 const DiscDots: React.FC<{ members: MemberProfile[] }> = ({ members }) => {
     const axes = (['D', 'I', 'S', 'C'] as const);
@@ -75,6 +76,16 @@ const DiscDots: React.FC<{ members: MemberProfile[] }> = ({ members }) => {
     );
 };
 
+/* ── Group type InfoTip descriptions ──────────────────────────────────────── */
+
+const GROUP_TYPE_INFOTIPS: Record<string, string> = {
+    Competitivo: 'Este grupo se enciende con los desafíos. La energía competitiva es su combustible natural.',
+    Social: 'La conexión humana es protagonista. La energía viene del vínculo entre los jugadores.',
+    Cohesivo: 'La consistencia y la lealtad son el tejido que une a los jugadores.',
+    'Metódico': 'Observa antes de actuar. La precisión es su manera natural de abordar desafíos.',
+    Balanceado: 'Conviven diferentes estilos. La variedad permite adaptarse a múltiples situaciones.',
+};
+
 /* ── Main panel ─────────────────────────────────────────────────────────────── */
 
 export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
@@ -113,7 +124,16 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
     );
 
     // Human-friendly group name
-    const groupName = groupTypes.map(t => `Equipo ${t}`).join(' + ');
+    const groupName = groupTypes.map(t => `${dt.groupBalance.equipo} ${t}`).join(' + ');
+
+    // Build InfoTip text for the active group types
+    const groupTypeInfoText = groupTypes
+        .map(t => GROUP_TYPE_INFOTIPS[t])
+        .filter(Boolean)
+        .join(' ');
+
+    // Duplas count
+    const duplasCount = pairs.complementarias.length + pairs.afinidades.length;
 
     return (
         <div className="space-y-4">
@@ -133,16 +153,19 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                 transition={{ duration: 0.35 }}
                 className="bg-white rounded-[14px] shadow-argo p-6 space-y-4"
             >
-                {/* Group type badges */}
+                {/* Group type badges + InfoTip */}
                 <div className="flex items-center gap-2 flex-wrap">
                     {groupTypes.map(type => (
                         <span
                             key={type}
                             className="px-3 py-1 rounded-full text-xs font-bold bg-argo-navy text-white"
                         >
-                            Equipo {type}
+                            {dt.groupBalance.equipo} {type}
                         </span>
                     ))}
+                    {groupTypeInfoText && (
+                        <InfoTip text={groupTypeInfoText} />
+                    )}
                 </div>
 
                 {/* Large heading */}
@@ -153,8 +176,22 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                     )}
                 </div>
 
-                {/* DISC mini visual */}
+                {/* Axis mini visual */}
                 <DiscDots members={members} />
+
+                {/* Diversity + motor summary metrics */}
+                <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-semibold text-argo-grey">Diversidad:</span>
+                        <span className="text-[11px] font-bold" style={{ color: '#7c5cfc' }}>{DIVERSITY_TEXTS[diversityLevel].label}</span>
+                        <InfoTip text={DIVERSITY_TEXTS[diversityLevel].description} />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-semibold text-argo-grey">Ritmo:</span>
+                        <span className="text-[11px] font-bold text-argo-navy">{MOTOR_TEXTS[motorType].identity.split('.')[0]}</span>
+                        <InfoTip text={MOTOR_TEXTS[motorType].tools} />
+                    </div>
+                </div>
 
                 <p className="text-[11px] text-argo-grey/60">
                     {dt.groupBalance.jugadoresEnGrupo(members.length)}
@@ -198,8 +235,9 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                 <CollapsibleSection
                     title={dt.groupBalance.secDistribucion}
                     defaultOpen={false}
-                    badge={`${members.length} jugadores`}
+                    badge={`${members.length} ${members.length === 1 ? dt.common.jugador : dt.common.jugadores}`}
                 >
+                    <p className="text-xs text-argo-grey leading-relaxed mb-4">Así se distribuyen los estilos de comportamiento y los ritmos de procesamiento en tu grupo.</p>
                     <div className="space-y-6">
                         <AxisChart dist={axisDist} memberCount={members.length} members={members} />
                         <div className="border-t border-argo-border pt-5">
@@ -210,9 +248,10 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
 
                 {/* Indicadores */}
                 <CollapsibleSection title={dt.groupBalance.secIndicadores} defaultOpen={false}>
+                    <p className="text-xs text-argo-grey leading-relaxed mb-3">Cada indicador muestra qué tan presente está cada estilo en tu grupo. Expande "¿Qué significa esto?" para ver cómo usarlo.</p>
                     <div className="space-y-3">
                         <IndicatorBar
-                            label={dt.groupBalance.diversidadDISC}
+                            label={lang === 'en' ? 'Style diversity' : lang === 'pt' ? 'Diversidade de estilos' : 'Diversidad de estilos'}
                             percentage={diversity}
                             color="#7c5cfc"
                             bgColor="#f0ecff"
@@ -243,6 +282,9 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
 
                 {/* Motor del grupo */}
                 <CollapsibleSection title={dt.groupBalance.secMotor} defaultOpen={false}>
+                    <div className="flex items-center gap-1.5 mb-2">
+                        <InfoTip text="El motor indica la velocidad de procesamiento del grupo: cómo tienden a reaccionar ante estímulos y tomar decisiones." />
+                    </div>
                     <div className="space-y-2">
                         <p className="text-sm text-argo-navy leading-relaxed">
                             {MOTOR_TEXTS[motorType].identity}
@@ -258,8 +300,9 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                     <CollapsibleSection
                         title={dt.groupBalance.secDuplas}
                         defaultOpen={false}
-                        badge={`${pairs.complementarias.length + pairs.afinidades.length} duplas`}
+                        badge={`${duplasCount}`}
                     >
+                        <p className="text-xs text-argo-grey leading-relaxed mb-3">Duplas de jugadores que pueden potenciarse mutuamente en ejercicios, tareas o dinámicas de equipo.</p>
                         <PairSuggestions
                             complementarias={pairs.complementarias}
                             afinidades={pairs.afinidades}

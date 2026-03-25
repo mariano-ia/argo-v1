@@ -1,6 +1,6 @@
 /**
  * Group Balance — Deterministic calculations for team composition analysis.
- * Zero AI tokens. Pure arithmetic on DISC distributions.
+ * Zero AI tokens. Pure arithmetic on axis distributions.
  */
 
 export type Axis = 'D' | 'I' | 'S' | 'C';
