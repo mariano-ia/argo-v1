@@ -256,7 +256,7 @@ export const TenantGroups: React.FC = () => {
                 </div>
 
                 {/* ═══ RIGHT PANEL ═══ */}
-                <div className="min-w-0 lg:sticky lg:top-6">
+                <div className="min-w-0 lg:sticky lg:top-6 lg:pt-[52px]">
                     <AnimatePresence mode="wait">
                         {!selectedId ? (
                             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center h-[300px]">
