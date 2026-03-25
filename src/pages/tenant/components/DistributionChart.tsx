@@ -4,6 +4,14 @@ import type { AxisDistribution, MotorDistribution, MemberProfile } from '../../.
 import { AXIS_CONFIG } from '../../../lib/groupBalanceRules';
 import { getDashboardT } from '../../../lib/dashboardTranslations';
 import { useLang } from '../../../context/LangContext';
+import { InfoTip } from '../../../components/ui/Tooltip';
+
+const AXIS_INFOTIPS: Record<string, string> = {
+    D: 'Energía de liderazgo y desafío. Jugadores que proponen, compiten y toman la iniciativa.',
+    I: 'Energía de conexión social. Jugadores que motivan, integran y contagian entusiasmo al grupo.',
+    S: 'Energía de estabilidad. Jugadores leales y consistentes que sostienen al grupo en momentos difíciles.',
+    C: 'Energía de observación y análisis. Jugadores que leen el juego, cuidan los detalles y buscan precisión.',
+};
 
 /* ── Shared: Avatar dot ─────────────────────────────────────────────────────── */
 
@@ -103,14 +111,13 @@ export const AxisChart: React.FC<{
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                 <span
-                                    className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0"
+                                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                                     style={{ background: a.color }}
-                                >
-                                    {a.axis}
-                                </span>
+                                />
                                 <span className="text-xs font-medium text-argo-navy">
                                     {dt.profile.axisNames[a.axis] ?? a.name}
                                 </span>
+                                <InfoTip text={AXIS_INFOTIPS[a.axis] ?? ''} />
                             </div>
                             <span className="text-xs font-bold" style={{ color: a.color }}>
                                 {a.pct}%

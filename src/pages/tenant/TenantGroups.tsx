@@ -6,6 +6,7 @@ import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
 import { GroupBalancePanel } from './components/GroupBalancePanel';
+import { CollapsibleSection } from './components/CollapsibleSection';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -330,10 +331,14 @@ export const TenantGroups: React.FC = () => {
                                     )}
                                 </div>
 
-                                {/* Members as chips */}
-                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">{dt.common.jugadores}</p>
+                                {/* Members as chips — collapsible */}
+                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-2">
+                                    <CollapsibleSection
+                                        title={`${dt.common.jugadores} (${members.length})`}
+                                        defaultOpen={false}
+                                        badge={undefined}
+                                    >
+                                    <div className="flex items-center justify-end mb-3">
                                         <button onClick={openAddPanel} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
                                             <Plus size={12} /> {dt.groups.agregarJugadores}
                                         </button>
@@ -411,6 +416,7 @@ export const TenantGroups: React.FC = () => {
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
+                                    </CollapsibleSection>
                                 </div>
 
                                 {/* Balance panel */}
