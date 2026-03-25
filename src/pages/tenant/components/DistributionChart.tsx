@@ -34,7 +34,7 @@ const PlayerDot: React.FC<{
     );
 };
 
-/* ── DISC Distribution ──────────────────────────────────────────────────────── */
+/* ── Axis Distribution ─────────────────────────────────────────────────────── */
 
 export const AxisChart: React.FC<{
     dist: AxisDistribution;

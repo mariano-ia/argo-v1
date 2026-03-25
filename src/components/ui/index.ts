@@ -2,7 +2,7 @@ export { Button } from './Button';
 export { Input } from './Input';
 export { Badge, AxisBadge, MotorBadge } from './Badge';
 export { Card } from './Card';
-export { Tooltip } from './Tooltip';
+export { Tooltip, InfoTip } from './Tooltip';
 export { ToastProvider, useToast } from './Toast';
 export {
     SkeletonSessionRow,

@@ -5,10 +5,28 @@ import { simulateRemoval } from '../../../lib/groupBalance';
 import { AXIS_CONFIG } from '../../../lib/groupBalanceRules';
 import { getDashboardT } from '../../../lib/dashboardTranslations';
 import { useLang } from '../../../context/LangContext';
+import { InfoTip } from '../../../components/ui/Tooltip';
 
-interface Props {
-    members: MemberProfile[];
-}
+/* ── Impact & recommendation content ──────────────────────────────────────── */
+
+// Impact descriptions when removing the LAST player of a given axis
+const AXIS_LOSS_IMPACT: Record<string, string> = {
+    D: 'nadie va a tomar la iniciativa de forma natural en situaciones competitivas. El adulto va a necesitar asumir un rol más activo de impulso.',
+    I: 'el grupo pierde su conector social natural. Las dinámicas de integración y motivación grupal van a depender más del adulto.',
+    S: 'el grupo pierde su ancla de estabilidad. Puede volverse más reactivo y menos predecible en momentos de presión.',
+    C: 'el grupo pierde capacidad de observación y análisis táctico. Las decisiones van a ser más impulsivas y menos reflexionadas.',
+};
+
+// Recommendations when removing the LAST player of a given axis
+const AXIS_LOSS_RECO: Record<string, string> = {
+    D: 'Si lo mueves, busca compensar proponiendo desafíos claros al grupo y asignando roles de liderazgo rotativo.',
+    I: 'Si lo mueves, refuerza los rituales de equipo (saludos, celebraciones, rondas de cierre) para mantener la conexión social.',
+    S: 'Si lo mueves, mantén las rutinas del grupo lo más estables posible y anticipa los cambios con tiempo.',
+    C: 'Si lo mueves, incorpora pausas breves de observación en los ejercicios ("¿qué vieron?") para mantener la reflexión activa.',
+};
+
+// Recommendation when it's NOT the last player of that axis
+const AXIS_PARTIAL_RECO = 'El impacto es moderado porque el grupo mantiene otros jugadores con ese estilo. Observa si la dinámica cambia en los primeros entrenamientos.';
 
 /* ── Delta label helpers ────────────────────────────────────────────────────── */
 
@@ -28,7 +46,7 @@ function axisLabel(delta: number, axisName: string, dt: ReturnType<typeof getDas
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 
-export const SimulatorPanel: React.FC<Props> = ({ members }) => {
+export const SimulatorPanel: React.FC<{ members: MemberProfile[] }> = ({ members }) => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -40,12 +58,52 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
 
     const selectedMember = members.find(m => m.session_id === selectedId);
 
+    /* ── Impact computation ─────────────────────────────────────────────────── */
+    const impact = useMemo(() => {
+        if (!selectedMember || !delta) return null;
+
+        const memberEje = selectedMember.eje;
+        const axisName = dt.profile.axisNames[memberEje] ?? AXIS_CONFIG[memberEje]?.name ?? memberEje;
+        const sameAxisCount = members.filter(m => m.eje === memberEje).length;
+        const isLast = sameAxisCount === 1;
+        const remainingAfter = members.length - 1;
+
+        let paragraph: string;
+        let recommendation: string;
+
+        if (isLast) {
+            // Losing the only representative of this axis
+            paragraph = `El grupo pierde por completo la energía de ${axisName}. Esto significa que ${AXIS_LOSS_IMPACT[memberEje] ?? 'el grupo pierde un estilo que no tiene sustituto.'}`;
+            recommendation = AXIS_LOSS_RECO[memberEje] ?? 'Observa de cerca cómo responde el grupo en las primeras sesiones sin este jugador.';
+        } else {
+            // There are others with the same axis
+            const remaining = sameAxisCount - 1;
+            paragraph = `El grupo mantiene presencia de ${axisName} con ${remaining} jugador${remaining > 1 ? 'es' : ''}. El impacto directo es menor, pero el equilibrio general se ajusta.`;
+            recommendation = AXIS_PARTIAL_RECO;
+        }
+
+        // Diversity-based framing overlay
+        if (delta.diversity >= 10) {
+            paragraph += ` La diversidad de estilos del grupo mejora — quedaría un equipo más equilibrado con ${remainingAfter} jugadores.`;
+        } else if (delta.diversity <= -10) {
+            paragraph += ` Atención: la diversidad de estilos baja significativamente. El grupo de ${remainingAfter} jugadores quedaría más concentrado en pocos estilos.`;
+        }
+
+        return { paragraph, recommendation };
+    }, [selectedMember, delta, members, dt]);
+
     if (members.length < 2) return null;
 
     return (
         <div className="space-y-4">
             <div className="space-y-1">
-                <h3 className="text-sm font-bold text-argo-navy">{dt.groupBalance.simTitulo}</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-argo-navy">{dt.groupBalance.simTitulo}</h3>
+                    <InfoTip
+                        text="Simula cómo cambiaría el equilibrio de tu grupo si un jugador se mueve a otro equipo. Te ayuda a anticipar ajustes."
+                        position="bottom"
+                    />
+                </div>
                 <p className="text-xs text-argo-grey leading-relaxed">
                     {dt.groupBalance.simDesc}
                 </p>
@@ -115,7 +173,7 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                                     {diversityLabel(delta.diversity, dt).text}
                                 </p>
                                 <p className="text-[11px] text-argo-grey mt-0.5">
-                                    Diversidad DISC: {delta.diversity > 0 ? '+' : ''}{delta.diversity} pts
+                                    Diversidad de estilos: {delta.diversity > 0 ? '+' : ''}{delta.diversity} pts
                                 </p>
                             </div>
                         </div>
@@ -151,6 +209,21 @@ export const SimulatorPanel: React.FC<Props> = ({ members }) => {
                                 </p>
                             )}
                         </div>
+
+                        {/* Impact & recommendation */}
+                        {impact && (
+                            <div className="bg-argo-bg rounded-xl p-4 space-y-3">
+                                <p className="text-xs font-bold text-argo-navy">Impacto en el grupo</p>
+                                <p className="text-xs text-argo-navy/80 leading-relaxed">
+                                    {impact.paragraph}
+                                </p>
+                                <div className="border-l-[3px] border-argo-violet-400 pl-3">
+                                    <p className="text-xs text-argo-navy/70 leading-relaxed italic">
+                                        {impact.recommendation}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
