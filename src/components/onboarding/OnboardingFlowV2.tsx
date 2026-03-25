@@ -5,7 +5,6 @@ import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onb
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
 import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
-import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
@@ -389,18 +388,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         const run = async () => {
             let sessionCtx: SessionContext | undefined;
             try {
-                const { data } = await supabase
-                    .from('sessions')
-                    .select('eje,motor')
-                    .is('deleted_at', null)
-                    .not('eje', 'eq', '_pending')
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-                if (data && data.length > 0) {
-                    sessionCtx = {
-                        priorEjes: data.map((s: { eje: string }) => s.eje),
-                        priorMotors: data.map((s: { motor: string }) => s.motor),
-                    };
+                const res = await fetch('/api/session-context');
+                if (res.ok) {
+                    const ctx = await res.json() as { ejes: string[]; motors: string[] };
+                    if (ctx.ejes.length > 0) {
+                        sessionCtx = { priorEjes: ctx.ejes, priorMotors: ctx.motors };
+                    }
                 }
             } catch {
                 // proceed without tiebreaker
