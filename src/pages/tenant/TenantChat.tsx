@@ -238,8 +238,8 @@ export const TenantChat: React.FC = () => {
                         </div>
                     ) : messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full space-y-5">
-                            <div className="w-12 h-12 rounded-full bg-argo-violet-50 flex items-center justify-center">
-                                <MessageCircle size={22} className="text-argo-violet-500" />
+                            <div className="w-9 h-9 rounded-[10px] bg-argo-bg flex items-center justify-center text-argo-grey">
+                                <MessageCircle size={18} />
                             </div>
                             <div className="text-center max-w-sm">
                                 <h2 className="text-base font-semibold text-argo-navy">

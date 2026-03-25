@@ -9,6 +9,7 @@ import { TENDENCIA_LABELS } from '../../lib/profileResolver';
 import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
+import { AXIS_CHIP } from '../../lib/designTokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -55,13 +56,6 @@ interface LeadRow {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const EJE_COLOR: Record<string, string> = {
-    D: 'bg-red-100 text-red-700',
-    I: 'bg-amber-100 text-amber-700',
-    S: 'bg-green-100 text-green-700',
-    C: 'bg-blue-100 text-blue-700',
-};
 
 function mergeRows(sessions: SessionRow[], leads: LeadRow[]): UnifiedRow[] {
     const sessionEmails = new Set(sessions.map(s => s.adult_email?.toLowerCase()));
@@ -338,7 +332,7 @@ export const Sessions: React.FC = () => {
                                             <td className="px-5 py-3 text-argo-navy font-medium">{row.archetype_label ?? '—'}</td>
                                             <td className="px-5 py-3">
                                                 {row.eje ? (
-                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${EJE_COLOR[row.eje] ?? 'bg-gray-100 text-gray-600'}`}>
+                                                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${AXIS_CHIP[row.eje] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
                                                         {row.eje}
                                                     </span>
                                                 ) : '—'}

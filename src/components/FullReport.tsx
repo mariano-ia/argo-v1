@@ -4,6 +4,7 @@ import { Sparkles } from 'lucide-react';
 import { ReportData } from '../lib/argosEngine';
 import { useLang } from '../context/LangContext';
 import { getOdysseyT } from '../lib/odysseyTranslations';
+import { AXIS_COLORS } from '../lib/designTokens';
 
 interface FullReportProps {
     report: ReportData;
@@ -14,10 +15,6 @@ interface FullReportProps {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const EJE_COLORS: Record<string, string> = {
-    D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1',
-};
 
 const EJE_ORDER = ['D', 'I', 'S', 'C'] as const;
 
@@ -216,7 +213,7 @@ const AxisBars: React.FC<{
                     <div key={axis} className="flex items-center gap-2.5">
                         <span
                             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: EJE_COLORS[axis] }}
+                            style={{ backgroundColor: AXIS_COLORS[axis] }}
                         />
                         <span className={`text-xs w-[90px] flex-shrink-0 ${isDominant ? 'font-extrabold text-[#1D1D1F]' : 'font-semibold text-[#1D1D1F]'}`}>
                             {axisNames[axis] ?? axis}
@@ -227,7 +224,7 @@ const AxisBars: React.FC<{
                                 initial={{ width: 0 }}
                                 animate={{ width: `${pct}%` }}
                                 transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0, 0, 1] }}
-                                style={{ backgroundColor: EJE_COLORS[axis] }}
+                                style={{ backgroundColor: AXIS_COLORS[axis] }}
                             />
                         </div>
                         <span className={`text-[11px] w-8 text-right flex-shrink-0 ${isDominant ? 'font-bold text-[#1D1D1F]' : 'font-semibold text-[#86868B]'}`}>
@@ -389,7 +386,7 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-1.5 mt-3.5">
-                    <span className="px-3 py-1 rounded-full text-[11px] font-semibold text-white" style={{ backgroundColor: EJE_COLORS[arquetipo.eje] ?? '#86868B' }}>
+                    <span className="px-3 py-1 rounded-full text-[11px] font-semibold text-white" style={{ backgroundColor: AXIS_COLORS[arquetipo.eje] ?? '#86868B' }}>
                         {arquetipo.eje}
                     </span>
                     <span className="px-3 py-1 bg-[#1D1D1F] text-white rounded-full text-[11px] font-semibold">

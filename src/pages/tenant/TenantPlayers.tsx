@@ -14,6 +14,7 @@ import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -22,19 +23,6 @@ interface SessionRow { id: string; child_name: string; child_age: number; adult_
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
-const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
-const AXIS_CHIP: Record<string, { border: string; text: string }> = {
-    D: { border: 'rgba(249,115,22,0.35)', text: 'rgba(249,115,22,0.75)' },
-    I: { border: 'rgba(245,158,11,0.35)', text: 'rgba(180,120,14,0.75)' },
-    S: { border: 'rgba(34,197,94,0.35)',  text: 'rgba(22,101,52,0.75)' },
-    C: { border: 'rgba(99,102,241,0.35)', text: 'rgba(99,102,241,0.75)' },
-};
-
-const MOTOR_CHIP: Record<string, { bg: string; text: string }> = {
-    'Rápido': { bg: '#fffbeb', text: '#b45309' },
-    'Medio':  { bg: '#eef2ff', text: '#4338ca' },
-    'Lento':  { bg: '#ecfeff', text: '#0e7490' },
-};
 
 const formatDate = (iso: string, lang: string) => {
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
@@ -57,9 +45,9 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const [resendOk, setResendOk] = useState<boolean | null>(null);
 
     const axisCfg = AXIS_CONFIG[session.eje];
-    const dot = AXIS_DOT[session.eje] ?? '#6366f1';
-    const chip = AXIS_CHIP[session.eje] ?? AXIS_CHIP.C;
-    const motorCfg = MOTOR_CHIP[session.motor] ?? MOTOR_CHIP['Medio'];
+    const dot = AXIS_COLORS[session.eje] ?? '#6366f1';
+    const chip = AXIS_CHIP_STYLE[session.eje] ?? AXIS_CHIP_STYLE.C;
+    const motorCfg = MOTOR_CHIP_STYLE[session.motor] ?? MOTOR_CHIP_STYLE['Medio'];
     const needsReprofile = monthsSince(session.created_at) >= 6;
     const months = monthsSince(session.created_at);
 
@@ -107,7 +95,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
         finally { setResending(false); setTimeout(() => setResendOk(null), 3000); }
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         const sLang = session.lang || 'es';
         const locale = sLang === 'pt' ? 'pt-BR' : sLang === 'en' ? 'en-US' : 'es-AR';
         const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
@@ -129,13 +117,64 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
             date: new Date(session.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' }),
             lang: sLang,
         });
-        const blob = new Blob([html], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.html`;
-        a.click();
-        URL.revokeObjectURL(url);
+
+        // Create hidden iframe, render HTML, capture as PDF
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.left = '-9999px';
+        iframe.style.width = '800px';
+        iframe.style.height = '1200px';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument ?? iframe.contentWindow?.document;
+        if (!iframeDoc) { document.body.removeChild(iframe); return; }
+        iframeDoc.open();
+        iframeDoc.write(html);
+        iframeDoc.close();
+
+        // Wait for fonts/images to load
+        await new Promise(r => setTimeout(r, 500));
+
+        try {
+            const html2canvas = (await import('html2canvas')).default;
+            const jsPDF = (await import('jspdf')).default;
+
+            const canvas = await html2canvas(iframeDoc.body, {
+                scale: 2,
+                useCORS: true,
+                width: 800,
+                windowWidth: 800,
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            // Handle multi-page if content is tall
+            let position = 0;
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            while (position < pdfHeight) {
+                if (position > 0) pdf.addPage();
+                pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, pdfHeight);
+                position += pageHeight;
+            }
+
+            pdf.save(`argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+        } catch (err) {
+            console.error('PDF generation failed, falling back to HTML:', err);
+            // Fallback: download as HTML
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        } finally {
+            document.body.removeChild(iframe);
+        }
     };
 
     return (
@@ -307,7 +346,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
                                     >
                                         <Download size={12} />
-                                        {lang === 'en' ? 'Download full report' : lang === 'pt' ? 'Baixar informe completo' : 'Descargar informe completo'}
+                                        {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
                                     </button>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleResend(); }}

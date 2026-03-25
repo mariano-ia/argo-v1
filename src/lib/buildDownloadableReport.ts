@@ -48,11 +48,11 @@ export function buildDownloadableReportHtml(opts: DownloadReportOptions): string
     const labels = {
         es: {
             title: 'Informe de perfil',
-            age: 'anos', sport: 'Deporte', adult: 'Adulto responsable', date: 'Fecha',
-            profile: 'Perfil', motor: 'Motor', compass: 'Brujula secundaria',
-            bridgeWords: 'Palabras puente', noiseWords: 'Evitar en la comunicacion',
-            guide: 'Guia rapida', activate: 'Activar', consider: 'A considerar',
-            checklist: 'Checklist de entrenamiento', before: 'Antes', during: 'Durante', after: 'Despues',
+            age: 'años', sport: 'Deporte', adult: 'Adulto responsable', date: 'Fecha',
+            profile: 'Perfil', motor: 'Motor', compass: 'Brújula secundaria',
+            bridgeWords: 'Palabras puente', noiseWords: 'Evitar en la comunicación',
+            guide: 'Guía rápida', activate: 'Activar', consider: 'A considerar',
+            checklist: 'Checklist de entrenamiento', before: 'Antes', during: 'Durante', after: 'Después',
             echoes: 'Ecos fuera de la cancha', reset: 'Consejo de reset',
             footer: 'Generado por Argo Method',
             tendencia: 'Tendencia',
@@ -69,15 +69,15 @@ export function buildDownloadableReportHtml(opts: DownloadReportOptions): string
             tendencia: 'Tendency',
         },
         pt: {
-            title: 'Relatorio de perfil',
-            age: 'anos', sport: 'Esporte', adult: 'Adulto responsavel', date: 'Data',
-            profile: 'Perfil', motor: 'Motor', compass: 'Bussola secundaria',
-            bridgeWords: 'Palavras ponte', noiseWords: 'Evitar na comunicacao',
-            guide: 'Guia rapido', activate: 'Ativar', consider: 'A considerar',
+            title: 'Relatório de perfil',
+            age: 'anos', sport: 'Esporte', adult: 'Adulto responsável', date: 'Data',
+            profile: 'Perfil', motor: 'Motor', compass: 'Bússola secundária',
+            bridgeWords: 'Palavras ponte', noiseWords: 'Evitar na comunicação',
+            guide: 'Guia rápido', activate: 'Ativar', consider: 'A considerar',
             checklist: 'Checklist de treino', before: 'Antes', during: 'Durante', after: 'Depois',
             echoes: 'Ecos fora do campo', reset: 'Conselho de reset',
             footer: 'Gerado pelo Argo Method',
-            tendencia: 'Tendencia',
+            tendencia: 'Tendência',
         },
     };
     const t = labels[lang as keyof typeof labels] ?? labels.es;

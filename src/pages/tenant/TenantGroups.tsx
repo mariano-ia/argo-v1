@@ -9,6 +9,7 @@ import type { MemberProfile } from '../../lib/groupBalance';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
@@ -19,7 +20,6 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 const getToken = async () => { const { data: { session } } = await supabase.auth.getSession(); return session?.access_token ?? null; };
 const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
-const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
 export const TenantGroups: React.FC = () => {
@@ -343,7 +343,7 @@ export const TenantGroups: React.FC = () => {
                                     ) : (
                                         <div className="flex flex-wrap gap-2">
                                             {members.map(m => {
-                                                const dot = AXIS_DOT[m.eje] ?? '#6366f1';
+                                                const dot = AXIS_COLORS[m.eje] ?? '#6366f1';
                                                 return (
                                                     <div key={m.id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
                                                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
@@ -374,7 +374,7 @@ export const TenantGroups: React.FC = () => {
                                                     ) : (
                                                         <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto">
                                                             {filteredAvailable.map(s => {
-                                                                const dot = AXIS_DOT[s.eje] ?? '#6366f1';
+                                                                const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
                                                                 const isSelected = selectedSessions.has(s.id);
                                                                 return (
                                                                     <button

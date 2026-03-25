@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Plus, Minus } from 'lucide-react';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
+import { AXIS_COLORS } from '../lib/designTokens';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 // #1D1D1F  text-argo-navy
@@ -99,12 +100,6 @@ const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     },
 ];
 
-const EJE_COLOR: Record<string, string> = {
-    D: '#f97316',
-    I: '#f59e0b',
-    S: '#22c55e',
-    C: '#6366f1',
-};
 
 // ─── Rotating profiles for Sistema animation ──────────────────────────────────
 const ROTATING_PROFILES = [
@@ -518,7 +513,7 @@ export const Landing: React.FC = () => {
                                 exit={{ opacity: 0, y: slotConf[0].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
                             >
                                 <div className="flex items-center gap-2 mb-5">
-                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[profile.eje], flexShrink: 0 }} />
+                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: AXIS_COLORS[profile.eje], flexShrink: 0 }} />
                                     <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                                         {pk(profile, 'ejeLabel')}
                                     </p>
@@ -624,7 +619,7 @@ export const Landing: React.FC = () => {
                                 className="bg-white p-6 md:p-8 flex flex-col"
                             >
                                 <div className="flex items-center gap-2 mb-2">
-                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: EJE_COLOR[axis.eje], flexShrink: 0 }} />
+                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: AXIS_COLORS[axis.eje], flexShrink: 0 }} />
                                     <p style={{ fontWeight: 500, fontSize: '14px', color: '#1D1D1F', letterSpacing: '-0.01em' }}>
                                         {name}
                                     </p>
@@ -683,12 +678,12 @@ export const Landing: React.FC = () => {
                                 onClick={() => setSelectedIdx(isSelected ? null : i)}
                                 style={{
                                     cursor: 'pointer',
-                                    backgroundColor: isSelected ? EJE_COLOR[arch.eje] : '#ffffff',
+                                    backgroundColor: isSelected ? AXIS_COLORS[arch.eje] : '#ffffff',
                                     transition: 'background-color 0.2s ease',
                                 }}
                                 className="p-4 md:p-6"
                             >
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : EJE_COLOR[arch.eje], marginBottom: '10px' }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : AXIS_COLORS[arch.eje], marginBottom: '10px' }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
                                     {label}
                                 </p>
@@ -712,14 +707,14 @@ export const Landing: React.FC = () => {
                             style={{
                                 marginTop: '20px',
                                 padding: '28px 32px',
-                                border: `1px solid ${EJE_COLOR[ARCHETYPES[selectedIdx].eje]}40`,
-                                borderLeft: `3px solid ${EJE_COLOR[ARCHETYPES[selectedIdx].eje]}`,
+                                border: `1px solid ${AXIS_COLORS[ARCHETYPES[selectedIdx].eje]}40`,
+                                borderLeft: `3px solid ${AXIS_COLORS[ARCHETYPES[selectedIdx].eje]}`,
                                 borderRadius: '12px',
                                 backgroundColor: '#F5F5F7',
                             }}
                         >
                             <div className="flex items-center gap-2 mb-3">
-                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: EJE_COLOR[ARCHETYPES[selectedIdx].eje], flexShrink: 0 }} />
+                                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: AXIS_COLORS[ARCHETYPES[selectedIdx].eje], flexShrink: 0 }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: '#1D1D1F', letterSpacing: '0.02em' }}>
                                     {pk(ARCHETYPES[selectedIdx], 'label')}
                                 </p>

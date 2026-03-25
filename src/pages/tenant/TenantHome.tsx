@@ -10,19 +10,11 @@ import { useLang } from '../../context/LangContext';
 import { calcAxisDistribution, getGroupTypes } from '../../lib/groupBalance';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import type { MemberProfile } from '../../lib/groupBalance';
+import { AXIS_COLORS, AXIS_CHIP_STYLE, AXIS_LABELS } from '../../lib/designTokens';
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
 interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
 
-/* ── Axis colors ─────────────────────────────────────────────────────────── */
-const AXIS_CHIP: Record<string, { border: string; text: string }> = {
-    D: { border: 'rgba(249,115,22,0.35)', text: 'rgba(249,115,22,0.75)' },
-    I: { border: 'rgba(245,158,11,0.35)', text: 'rgba(180,120,14,0.75)' },
-    S: { border: 'rgba(34,197,94,0.35)',  text: 'rgba(22,101,52,0.75)' },
-    C: { border: 'rgba(99,102,241,0.35)', text: 'rgba(99,102,241,0.75)' },
-};
-const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
-const AXIS_NAMES_ES: Record<string, string> = { D: 'Impulsor', I: 'Conector', S: 'Sosten', C: 'Estratega' };
 
 const MICRO_DESC: Record<string, string> = {
     'D-Rápido': 'Lidera con accion directa',
@@ -358,8 +350,8 @@ export const TenantHome: React.FC = () => {
                         ) : (
                             <div>
                                 {sessions.slice(0, 3).map((s, idx) => {
-                                    const chip = AXIS_CHIP[s.eje] ?? AXIS_CHIP.C;
-                                    const dot = AXIS_DOT[s.eje] ?? '#6366f1';
+                                    const chip = AXIS_CHIP_STYLE[s.eje] ?? AXIS_CHIP_STYLE.C;
+                                    const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
                                     const micro = MICRO_DESC[`${s.eje}-${s.motor}`] ?? '';
                                     return (
                                         <motion.div
@@ -405,7 +397,7 @@ export const TenantHome: React.FC = () => {
                                 const count = axisCounts[axis];
                                 const pct = Math.round((count / totalForDist) * 100);
                                 const cfg = AXIS_CONFIG[axis];
-                                const name = dt.profile?.axisNames?.[axis] ?? AXIS_NAMES_ES[axis];
+                                const name = dt.profile?.axisNames?.[axis] ?? AXIS_LABELS[axis];
                                 return (
                                     <div key={axis} className="flex items-center gap-3">
                                         <span className="text-xs font-medium text-argo-secondary w-20">{name}</span>

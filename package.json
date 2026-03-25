@@ -14,6 +14,8 @@
     "@supabase/supabase-js": "^2.99.0",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.323.0",
     "micro": "^10.0.1",
