@@ -56,7 +56,7 @@ export const GROUP_PROFILE_TEXTS: Record<GroupType, GroupProfileText> = {
         ],
         tools: [
             'Introduce cambios de manera gradual y explica el porqué. Este grupo procesa mejor las novedades cuando entiende la razón detrás del cambio.',
-            'Desafía al grupo con metas progresivas: "la semana pasada llegamos hasta acá, esta semana sumamos esto". El crecimiento incremental es el ritmo natural de este grupo.',
+            'Desafía al grupo con metas progresivas: "la semana pasada llegamos hasta aquí, esta semana sumamos esto". El crecimiento incremental es el ritmo natural de este grupo.',
             'Valora explícitamente la consistencia del grupo. A veces la estabilidad es invisible, y reconocerla refuerza lo que el grupo hace bien.',
         ],
     },
@@ -142,6 +142,38 @@ export const COMPOSITE_TEXTS: Record<string, CompositeText> = {
             'Introduce elementos de sorpresa y velocidad de forma gradual: ejercicios con cambio de reglas a mitad de la actividad, variaciones inesperadas en la rutina.',
             'Valora la consistencia del grupo ("este grupo no comete el mismo error dos veces") y desde ahí invita a la acción más rápida.',
             'Los momentos de alta presión competitiva son la oportunidad de crecimiento de este grupo. Prepáralos con anticipación: "hoy vamos a practicar jugar con presión de tiempo".',
+        ],
+    },
+    'Balanceado-Competitivo': {
+        identity: 'Un grupo con base diversa que encuentra su motor en la competencia. La variedad de estilos le permite abordar los desafíos desde múltiples ángulos, y la energía competitiva le da dirección.',
+        tools: [
+            'Aprovecha la diversidad del grupo para crear equipos internos equilibrados: cada equipo tiene un poco de todo, y la competencia se vuelve más rica.',
+            'Usa la variedad de estilos como ventaja táctica: "en este ejercicio, los que observan dan feedback a los que ejecutan, y después cambian". La rotación de roles mantiene a todos activos.',
+            'La competencia en este grupo funciona mejor cuando es colectiva y no individual. Desafíos de equipo contra el reloj, récords grupales o metas compartidas canalizan la energía sin generar fricciones entre estilos distintos.',
+        ],
+    },
+    'Balanceado-Social': {
+        identity: 'Un grupo diverso que se une a través del vínculo. La variedad de estilos enriquece las interacciones, y la energía social actúa como el pegamento que mantiene cohesionado al grupo a pesar de las diferencias.',
+        tools: [
+            'Usa la energía social como puente entre estilos: "explícale a tu compañero cómo lo ves" genera intercambios naturales entre jugadores que piensan distinto.',
+            'Las actividades de integración son especialmente efectivas en este grupo porque la diversidad garantiza que cada jugador aporte algo distinto al momento compartido.',
+            'Alterna entre ejercicios sociales (en grupo, con comunicación) y ejercicios individuales (concentración, técnica). La diversidad del grupo tolera bien los cambios de formato si el clima emocional se mantiene positivo.',
+        ],
+    },
+    'Balanceado-Cohesivo': {
+        identity: 'Un grupo diverso que construye desde la confianza. La variedad de estilos se sostiene sobre una base de estabilidad emocional que permite que cada jugador encuentre su espacio sin competir por él.',
+        tools: [
+            'La estabilidad de este grupo permite introducir desafíos nuevos con seguridad: la base cohesiva amortigua la incomodidad del cambio, y la diversidad garantiza que alguien del grupo se adapte rápido.',
+            'Mantén rituales y rutinas que refuercen la pertenencia, pero dentro de esas rutinas varía los ejercicios para activar los distintos estilos.',
+            'Cuando incorpores un jugador nuevo, apóyate en la cohesión natural del grupo: "el equipo se va a encargar de integrarte". La diversidad hace que el nuevo encuentre rápidamente a alguien con un estilo similar.',
+        ],
+    },
+    'Balanceado-Metódico': {
+        identity: 'Un grupo diverso con tendencia a la reflexión. La variedad de estilos se complementa con una inclinación natural a observar, analizar y entender antes de actuar.',
+        tools: [
+            'Explica el propósito de cada ejercicio antes de empezar. La diversidad del grupo hace que cada jugador lo procese distinto, pero la tendencia analítica compartida necesita el "para qué" como punto de partida.',
+            'Usa la capacidad de observación del grupo como herramienta de feedback: "¿qué vieron en esa jugada?" genera respuestas diversas y ricas porque cada estilo observa cosas diferentes.',
+            'Alterna momentos de análisis con momentos de acción espontánea. El equilibrio entre reflexión y ejecución es clave: "primero piensen 10 segundos qué van a hacer, después ejecuten sin parar".',
         ],
     },
 };
