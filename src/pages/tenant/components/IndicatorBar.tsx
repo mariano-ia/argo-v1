@@ -13,32 +13,30 @@ interface Props {
 }
 
 export const IndicatorBar: React.FC<Props> = ({
-    label, percentage, color, bgColor, levelLabel, description,
+    label, percentage, color, bgColor: _, levelLabel, description,
 }) => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [expanded, setExpanded] = React.useState(false);
 
     return (
-        <div
-            className="rounded-xl p-4 space-y-2 transition-colors"
-            style={{ backgroundColor: bgColor }}
-        >
-            <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-sm font-bold text-argo-navy">{label}</span>
+        <div className="space-y-1.5">
+            {/* Label + level + percentage */}
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-argo-navy">{label}</span>
                 <div className="flex items-center gap-2">
                     <span
-                        className="text-[10px] font-semibold px-2.5 py-1 rounded-full"
-                        style={{ background: color + '22', color }}
+                        className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: color + '15', color }}
                     >
                         {levelLabel}
                     </span>
-                    <span className="text-xs font-bold" style={{ color }}>{percentage}%</span>
+                    <span className="text-[10px] font-bold text-argo-grey">{percentage}%</span>
                 </div>
             </div>
 
-            {/* Bar */}
-            <div className="w-full h-3 rounded-full bg-white/60 overflow-hidden">
+            {/* Thin bar */}
+            <div className="w-full h-1.5 rounded-full bg-argo-bg overflow-hidden">
                 <motion.div
                     className="h-full rounded-full"
                     style={{ background: color }}
@@ -51,13 +49,12 @@ export const IndicatorBar: React.FC<Props> = ({
             {/* Expand button */}
             <button
                 onClick={() => setExpanded(!expanded)}
-                className="text-[11px] font-medium flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-offset-1 rounded-lg transition-opacity hover:opacity-70"
-                style={{ color }}
+                className="text-[10px] font-medium text-argo-grey hover:text-argo-navy flex items-center gap-1 transition-colors"
             >
                 <motion.svg
                     animate={{ rotate: expanded ? 90 : 0 }}
                     transition={{ duration: 0.2 }}
-                    className="w-3 h-3"
+                    className="w-2.5 h-2.5"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -75,8 +72,7 @@ export const IndicatorBar: React.FC<Props> = ({
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xs text-argo-navy/70 leading-relaxed pl-3 border-l-2 overflow-hidden"
-                        style={{ borderColor: color + '55' }}
+                        className="text-xs text-argo-grey leading-relaxed pl-3 border-l-2 border-argo-border overflow-hidden"
                     >
                         {description}
                     </motion.p>
