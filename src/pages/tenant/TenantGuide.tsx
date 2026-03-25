@@ -11,6 +11,7 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -19,7 +20,6 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 
 /* ── Category icons (replace emojis) ───────────────────────────────────────── */
 
-const AXIS_DOT: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
 
 /** Renders profilePerspectives text with styled axis name markers */
 function renderPerspectives(text: string): React.ReactNode {
@@ -324,7 +324,7 @@ export const TenantGuide: React.FC = () => {
                                                   return (
                                                       <div className="space-y-3">
                                                           {parts.map((p, i) => (
-                                                              <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_DOT[['D','I','S','C'][i]] + '40' }}>
+                                                              <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_COLORS[['D','I','S','C'][i]] + '40' }}>
                                                                   <p className="text-[13px] text-argo-secondary leading-[1.75]">
                                                                       {renderPerspectives(p.text)}
                                                                   </p>
@@ -397,7 +397,7 @@ export const TenantGuide: React.FC = () => {
 
                                                         {/* Eje filter chips */}
                                                         {(['D', 'I', 'S', 'C'] as const).map(eje => {
-                                                            const dot = AXIS_DOT[eje];
+                                                            const dot = AXIS_COLORS[eje];
                                                             const isActive = playerEjeFilter === eje;
                                                             return (
                                                                 <button
@@ -417,7 +417,7 @@ export const TenantGuide: React.FC = () => {
                                                     {/* Player chips */}
                                                     <div className="flex flex-wrap gap-2">
                                                         {visiblePlayers.map(s => {
-                                                            const dot = AXIS_DOT[s.eje] ?? '#6366f1';
+                                                            const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
                                                             const isSelected = selectedPlayerId === s.id;
                                                             return (
                                                                 <button

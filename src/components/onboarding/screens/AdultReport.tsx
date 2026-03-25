@@ -7,6 +7,7 @@ import { sendReport } from '../../../lib/emailService';
 import { FullReport } from '../../FullReport';
 import { useLang } from '../../../context/LangContext';
 import { getOdysseyT, OdysseyTranslations } from '../../../lib/odysseyTranslations';
+import { AXIS_COLORS } from '../../../lib/designTokens';
 
 interface AdultData {
     nombreAdulto: string;
@@ -164,7 +165,6 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     const axisNames = ot.axisNames;
     const axisCounts = report.axisCounts || { D: 3, I: 3, S: 3, C: 3 };
     const total = Object.values(axisCounts).reduce((s, v) => s + v, 0) || 1;
-    const EJE_COLORS: Record<string, string> = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
     const axisOrder = ['D', 'I', 'S', 'C'];
 
     // Confidence level from axis dominance
@@ -182,7 +182,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
         const count = axisCounts[axis] || 0;
         const pct = Math.round((count / total) * 100);
         const name = axisNames[axis] || axis;
-        const color = EJE_COLORS[axis];
+        const color = AXIS_COLORS[axis];
         const isDominant = axis === report.arquetipo.eje;
         return `<tr style="height:28px;">
         <td width="12" valign="middle"><div style="width:8px;height:8px;border-radius:50%;background:${color};"></div></td>

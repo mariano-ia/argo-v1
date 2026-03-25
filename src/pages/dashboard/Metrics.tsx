@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp, staggerContainer, staggerItem } from '../../lib/animations';
+import { AXIS_COLORS } from '../../lib/designTokens';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend,
@@ -21,13 +22,6 @@ interface SessionRow {
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
-
-const EJE_COLORS: Record<string, string> = {
-    D: '#ef4444',
-    I: '#f59e0b',
-    S: '#22c55e',
-    C: '#6366f1',
-};
 
 const EJE_LABELS: Record<string, string> = {
     D: 'Impulsor',
@@ -209,7 +203,7 @@ export const Metrics: React.FC = () => {
                                     cornerRadius={4}
                                 >
                                     {pieData.map(entry => (
-                                        <Cell key={entry.eje} fill={EJE_COLORS[entry.eje] ?? '#94a3b8'} stroke="none" />
+                                        <Cell key={entry.eje} fill={AXIS_COLORS[entry.eje] ?? '#94a3b8'} stroke="none" />
                                     ))}
                                 </Pie>
                                 <Tooltip
