@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Plus, Minus } from 'lucide-react';
+import { InfoTip } from '../components/ui/Tooltip';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 import { AXIS_COLORS } from '../lib/designTokens';
@@ -169,6 +170,7 @@ const ROTATING_PROFILES = [
 const FAQS: Record<Lang, { q: string; a: string }[]> = {
     es: [
         { q: '¿Qué es Argo Method?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 12 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
+        { q: '¿Qué es el modelo DISC?', a: 'DISC es un modelo de comportamiento observable utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales: Impulsor (orientado a la acción y los resultados), Conector (orientado a las personas y la energía), Sostenedor (orientado a la estabilidad y el equipo) y Estratega (orientado al análisis y la precisión). Argo adapta este marco al deporte juvenil con lenguaje para niños, gamificación y una capa adicional —el Motor— que mide el ritmo de procesamiento de cada deportista.' },
         { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al atleta: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el menor, es una herramienta para que el adulto pueda acompañar mejor.' },
         { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
         { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 12 minutos. Una aventura interactiva con mini-juegos y decisiones, presentada con temática náutica. Se responden a solas, en un ambiente tranquilo.' },
@@ -179,6 +181,7 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
     ],
     en: [
         { q: 'What is Argo Method?', a: 'There are no incorrect children — only children who haven\'t yet found an adult who understands them. Argo Method is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 12-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
+        { q: 'What is the DISC model?', a: 'DISC is a behavioral observation model used worldwide for over 30 years. It describes four behavioral patterns: Driver (action and results oriented), Connector (people and energy oriented), Sustainer (stability and team oriented), and Strategist (analysis and precision oriented). Argo adapts this framework to youth sports with child-friendly language, gamification, and an additional layer — the Engine — that measures each athlete\'s processing pace.' },
         { q: 'Who receives the report?', a: 'The adult who accompanies the athlete: coaches, parents, or representatives of sports institutions. The report is sent by email when the experience ends. It\'s not a report for the child — it\'s a tool for the adult to better support them.' },
         { q: 'Does the child need to create an account?', a: 'No. Only a brief form with name, age, and sport is needed. No passwords, no downloads, no installations.' },
         { q: 'How long does the experience take?', a: 'About 12 minutes. An interactive adventure with mini-games and decisions, presented with a nautical theme. The child answers them alone, in a quiet environment.' },
@@ -189,6 +192,7 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
     ],
     pt: [
         { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas — existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 12 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
+        { q: 'O que é o modelo DISC?', a: 'DISC é um modelo de comportamento observável utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais: Impulsionador (orientado à ação e resultados), Conector (orientado às pessoas e energia), Sustentador (orientado à estabilidade e equipe) e Estrategista (orientado à análise e precisão). Argo adapta esse modelo ao esporte juvenil com linguagem para crianças, gamificação e uma camada adicional — o Motor — que mede o ritmo de processamento de cada atleta.' },
         { q: 'Para quem é o relatório?', a: 'Para o adulto que acompanha o atleta: treinadores, pais, mães ou representantes de instituições esportivas. O relatório chega por email ao finalizar a experiência. Não é um relatório para a criança — é uma ferramenta para que o adulto possa acompanhá-la melhor.' },
         { q: 'A criança precisa criar uma conta?', a: 'Não. Apenas um formulário breve com nome, idade e esporte. Sem senhas, sem downloads, sem instalar nada.' },
         { q: 'Quanto tempo dura a experiência?', a: 'Aproximadamente 12 minutos. Uma aventura interativa com mini-jogos e decisões, apresentada com temática náutica. A criança responde sozinha, em um ambiente tranquilo.' },
@@ -259,14 +263,401 @@ const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, ans
     );
 };
 
-// ─── DISC axes data ──────────────────────────────────────────────────────────
+// ─── Flip card data ───────────────────────────────────────────────────────────
 
-const DISC_AXES = [
-    { letter: 'D', eje: 'D', nameEs: 'Impulsor', nameEn: 'Driver', namePt: 'Impulsionador', descEs: 'Orientado a la acción y los resultados. Decide rápido, compite, lidera.', descEn: 'Action and results oriented. Decides fast, competes, leads.', descPt: 'Orientado à ação e aos resultados. Decide rápido, compete, lidera.' },
-    { letter: 'I', eje: 'I', nameEs: 'Conector', nameEn: 'Connector', namePt: 'Conector', descEs: 'Orientado a las personas y la energía. Entusiasma, conecta, motiva.', descEn: 'People and energy oriented. Enthuses, connects, motivates.', descPt: 'Orientado às pessoas e à energia. Entusiasma, conecta, motiva.' },
-    { letter: 'S', eje: 'S', nameEs: 'Sostenedor', nameEn: 'Sustainer', namePt: 'Sustentador', descEs: 'Orientado a la estabilidad y el equipo. Persiste, cuida, sostiene.', descEn: 'Stability and team oriented. Persists, nurtures, sustains.', descPt: 'Orientado à estabilidade e à equipe. Persiste, cuida, sustenta.' },
-    { letter: 'C', eje: 'C', nameEs: 'Estratega', nameEn: 'Strategist', namePt: 'Estrategista', descEs: 'Orientado al análisis y la precisión. Planifica, evalúa, optimiza.', descEn: 'Analysis and precision oriented. Plans, evaluates, optimizes.', descPt: 'Orientado à análise e à precisão. Planeja, avalia, otimiza.' },
+// Real storm questions from the game (Q5 + Q6), slightly shortened for the card
+const FLIP_QUESTIONS = [
+    {
+        intro: 'Una tormenta inesperada sacude el Argo. El equipo te necesita.',
+        text: 'En medio del lío de la tormenta...',
+        options: [
+            'Me agarro y sigo haciendo mi tarea',
+            'Me muevo rápido a donde me necesiten',
+            'Pausa breve: busco el orden en el caos',
+            'Busco la mirada de mis compañeros',
+        ],
+    },
+    {
+        intro: 'El barco se inclina de golpe. Todo se sacude a tu alrededor.',
+        text: '¿Qué te sale hacer en ese segundo?',
+        options: [
+            '¡Vamos equipo! para que el ánimo no caiga',
+            'Agarro lo primero para enderezar el barco',
+            'Busco qué cambió para saber cómo arreglarlo',
+            'Me quedo firme para dar equilibrio al grupo',
+        ],
+    },
 ];
+
+const CARD_COLORS = ['#3B82F6', '#F59E0B', '#8B5CF6', '#10B981'] as const;
+
+
+// ─── FlipCard ────────────────────────────────────────────────────────────────
+
+const AXIS_BARS: Record<string, Record<string, number>> = {
+    D: { D: 88, I: 34, S: 22, C: 45 },
+    I: { D: 42, I: 85, S: 38, C: 28 },
+    S: { D: 25, I: 55, S: 90, C: 40 },
+    C: { D: 38, I: 22, S: 45, C: 88 },
+};
+
+const ANALYSIS_LABELS: Record<string, Record<Lang, string>> = {
+    D: { es: 'Respuesta ante el reto',  en: 'Response to challenge',   pt: 'Resposta ao desafio' },
+    I: { es: 'Vínculo con el equipo',   en: 'Bond with the team',      pt: 'Vínculo com a equipe' },
+    S: { es: 'Constancia y sostén',     en: 'Consistency and support', pt: 'Constância e suporte' },
+    C: { es: 'Análisis y precisión',    en: 'Analysis and precision',  pt: 'Análise e precisão' },
+};
+
+const DISC_IDX: Record<string, number> = { D: 0, I: 1, S: 2, C: 3 };
+
+const STEP_LABELS: Record<Lang, [string, string, string]> = {
+    es: ['El niño juega',  'Argo procesa',   'El perfil'],
+    en: ['Child plays',    'Argo processes', 'The profile'],
+    pt: ['A criança joga', 'Argo processa',  'O perfil'],
+};
+
+const CARD_H = 440;
+
+// Communication tips per behavioral axis
+const COMM_TIPS: Record<string, {
+    bridgeEs: string[]; bridgeEn: string[]; bridgePt: string[];
+    avoidEs:  string[]; avoidEn:  string[]; avoidPt:  string[];
+}> = {
+    D: {
+        bridgeEs: ['Reto', 'Directo', 'Logra'],       bridgeEn: ['Challenge', 'Direct', 'Achieve'],    bridgePt: ['Desafio', 'Direto', 'Conquista'],
+        avoidEs:  ['Espera', 'Sin razón'],             avoidEn:  ['Wait', 'No reason'],                avoidPt:  ['Espera', 'Sem motivo'],
+    },
+    I: {
+        bridgeEs: ['Equipo', 'Juntos', 'Genial'],      bridgeEn: ['Team', 'Together', 'Great'],         bridgePt: ['Equipe', 'Juntos', 'Incrível'],
+        avoidEs:  ['Solo', 'Aburrido'],                avoidEn:  ['Alone', 'Boring'],                  avoidPt:  ['Sozinho', 'Chato'],
+    },
+    S: {
+        bridgeEs: ['Seguro', 'Paso a paso', 'Juntos'], bridgeEn: ['Safe', 'Step by step', 'Together'],  bridgePt: ['Seguro', 'Passo a passo', 'Juntos'],
+        avoidEs:  ['De repente', 'Sin avisar'],        avoidEn:  ['Suddenly', 'No warning'],            avoidPt:  ['De repente', 'Sem avisar'],
+    },
+    C: {
+        bridgeEs: ['¿Por qué?', 'Exacto', 'Con calma'],bridgeEn: ['Why?', 'Precise', 'Calmly'],         bridgePt: ['Por quê?', 'Exato', 'Com calma'],
+        avoidEs:  ['Apresúrate', 'Sin datos'],         avoidEn:  ['Hurry up', 'No data'],               avoidPt:  ['Apressa-te', 'Sem dados'],
+    },
+};
+
+type CardFace = 'game' | 'analysis' | 'profile';
+
+const FlipCard: React.FC = () => {
+    const { lang }  = useLang();
+    const [qIdx,   setQIdx]   = useState(0);
+    const [fpIdx,  setFpIdx]  = useState(0);
+    const [face,   setFace]   = useState<CardFace>('game');
+    const [selOpt, setSelOpt] = useState<number | null>(null);
+    const [bars0,  setBars0]  = useState(false);
+    const [paused, setPaused] = useState(false);
+
+    useEffect(() => {
+        if (paused) return;
+        if (face === 'game') {
+            const t1 = setTimeout(() => setSelOpt(Math.floor(Math.random() * 4)), 1500);
+            const t2 = setTimeout(() => { setSelOpt(null); setBars0(false); setFace('analysis'); }, 5500);
+            return () => { clearTimeout(t1); clearTimeout(t2); };
+        }
+        if (face === 'analysis') {
+            const t1 = setTimeout(() => setBars0(true), 180);
+            const t2 = setTimeout(() => setFace('profile'), 4500);
+            return () => { clearTimeout(t1); clearTimeout(t2); };
+        }
+        // profile
+        const t = setTimeout(() => {
+            setFace('game');
+            setQIdx( i => (i + 1) % FLIP_QUESTIONS.length);
+            setFpIdx(i => (i + 1) % ROTATING_PROFILES.length);
+        }, 6000);
+        return () => clearTimeout(t);
+    }, [face, paused]);
+
+    const jumpToFace = (target: CardFace) => {
+        setSelOpt(null);
+        setBars0(false);
+        setFace(target);
+    };
+
+    const q  = FLIP_QUESTIONS[qIdx];
+    const fp = ROTATING_PROFILES[fpIdx];
+    const axBars = AXIS_BARS[fp.eje] ?? AXIS_BARS.D;
+
+    const archetypeName = lang === 'es' ? fp.archetypeEs   : lang === 'pt' ? fp.archetypePt   : fp.archetypeEn;
+    const ejeLabel      = lang === 'es' ? fp.ejeLabelEs    : lang === 'pt' ? fp.ejeLabelPt    : fp.ejeLabelEn;
+    const motorLabel    = lang === 'es' ? fp.motorEs       : lang === 'pt' ? fp.motorPt       : fp.motorEn;
+    const motorDesc     = lang === 'es' ? fp.motorDescEs   : lang === 'pt' ? fp.motorDescPt   : fp.motorDescEn;
+    const behaviors     = lang === 'es' ? fp.behaviorsEs   : lang === 'pt' ? fp.behaviorsPt   : fp.behaviorsEn;
+    const archIdx       = DISC_IDX[fp.eje] * 3 + (3 - fp.motorBars);
+    const richDesc      = ARCHETYPE_DESCRIPTIONS[archIdx]?.[lang] ?? '';
+    const comm          = COMM_TIPS[fp.eje] ?? COMM_TIPS.D;
+    const bridge        = lang === 'es' ? comm.bridgeEs : lang === 'pt' ? comm.bridgePt : comm.bridgeEn;
+    const avoid         = lang === 'es' ? comm.avoidEs  : lang === 'pt' ? comm.avoidPt  : comm.avoidEn;
+
+    const stepIdx = face === 'game' ? 0 : face === 'analysis' ? 1 : 2;
+    const steps   = STEP_LABELS[lang];
+
+    return (
+        <div className="select-none">
+            <div
+                style={{ perspective: '1200px' }}
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
+            >
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={face}
+                    initial={{ rotateY: 90, opacity: 0 }}
+                    animate={{ rotateY: 0, opacity: 1 }}
+                    exit={{ rotateY: -90, opacity: 0 }}
+                    transition={{ duration: 0.4, ease: [0.25, 0, 0, 1] }}
+                    style={{ transformOrigin: 'center center', height: CARD_H }}
+                >
+
+                    {/* ── GAME FACE ── */}
+                    {face === 'game' && (
+                        <div style={{
+                            borderRadius: '20px', overflow: 'hidden', height: '100%',
+                            position: 'relative', boxShadow: '0 12px 52px rgba(0,0,0,0.22)',
+                        }}>
+                            <img
+                                src="/scenes/storm.png"
+                                alt=""
+                                aria-hidden="true"
+                                style={{
+                                    position: 'absolute', inset: 0,
+                                    width: '100%', height: '100%',
+                                    objectFit: 'cover', objectPosition: 'center',
+                                }}
+                            />
+                            <div style={{
+                                position: 'absolute', inset: 0,
+                                background: 'linear-gradient(165deg, rgba(5,10,20,0.78) 0%, rgba(5,15,30,0.88) 100%)',
+                            }} />
+                            <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                {/* Chapter header */}
+                                <div style={{ padding: '14px 18px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+                                     className="flex items-center justify-between">
+                                    <span style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                                        La Tormenta
+                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        {[0,1,2,3,4,5,6].map(i => (
+                                            <div key={i} style={{
+                                                width: i === 4 ? 9 : 6, height: i === 4 ? 9 : 6, borderRadius: '50%',
+                                                background: i < 4 ? 'rgba(34,211,238,0.6)' : i === 4 ? '#ffffff' : 'rgba(255,255,255,0.18)',
+                                            }} />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Story intro */}
+                                <p style={{ padding: '16px 18px 4px', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.32)', lineHeight: 1.55 }}>
+                                    {q.intro}
+                                </p>
+
+                                {/* Question */}
+                                <AnimatePresence mode="wait">
+                                    <motion.p
+                                        key={qIdx}
+                                        initial={{ opacity: 0, y: 4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -4 }}
+                                        transition={{ duration: 0.22 }}
+                                        style={{ padding: '10px 18px 16px', fontSize: '16px', fontWeight: 500, color: '#fff', lineHeight: 1.4, letterSpacing: '-0.01em' }}
+                                    >
+                                        {q.text}
+                                    </motion.p>
+                                </AnimatePresence>
+
+                                {/* Options 2×2 */}
+                                <div style={{ padding: '0 14px 18px', flex: 1 }} className="grid grid-cols-2 gap-2 content-start">
+                                    {q.options.map((opt, i) => (
+                                        <motion.div
+                                            key={`${qIdx}-${i}`}
+                                            animate={{
+                                                backgroundColor: selOpt === i ? `${CARD_COLORS[i]}22` : 'rgba(255,255,255,0.05)',
+                                                borderColor:     selOpt === i ? CARD_COLORS[i]        : 'rgba(255,255,255,0.1)',
+                                                opacity:         selOpt !== null && selOpt !== i ? 0.34 : 1,
+                                            }}
+                                            transition={{ duration: 0.22 }}
+                                            style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '13px', padding: '11px 11px' }}
+                                        >
+                                            <div style={{
+                                                width: 28, height: 28, borderRadius: '8px',
+                                                background: CARD_COLORS[i],
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                marginBottom: '9px', flexShrink: 0,
+                                            }}>
+                                                <span style={{ fontSize: '11px', fontWeight: 800, color: '#fff' }}>{String.fromCharCode(65 + i)}</span>
+                                            </div>
+                                            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.82)', lineHeight: 1.48 }}>{opt}</p>
+                                        </motion.div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ── ANALYSIS FACE ── */}
+                    {face === 'analysis' && (
+                        <div style={{
+                            borderRadius: '20px', background: '#F8F8FA', height: '100%',
+                            border: '1px solid #E8E8ED', padding: '28px 24px',
+                            boxShadow: '0 4px 32px rgba(0,0,0,0.06)',
+                            display: 'flex', flexDirection: 'column',
+                        }}>
+                            <div className="flex items-center gap-2.5 mb-4">
+                                <motion.div
+                                    animate={{ scale: [1, 1.4, 1] }}
+                                    transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+                                    style={{ width: 8, height: 8, borderRadius: '50%', background: '#955FB5', flexShrink: 0 }}
+                                />
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '0.1em', textTransform: 'uppercase' as const }}>
+                                    {lang === 'es' ? 'Argo analiza' : lang === 'pt' ? 'Argo analisa' : 'Argo analyzes'}
+                                </span>
+                            </div>
+                            <p style={{ fontSize: '13px', color: '#424245', lineHeight: 1.65, marginBottom: '20px' }}>
+                                {lang === 'es'
+                                    ? 'Argo cruza las 12 respuestas del juego con patrones conductuales para construir el perfil único de este deportista.'
+                                    : lang === 'pt'
+                                    ? 'Argo cruza as 12 respostas do jogo com padrões comportamentais para construir o perfil único deste atleta.'
+                                    : 'Argo cross-references the 12 game responses with behavioral patterns to build this athlete\'s unique profile.'}
+                            </p>
+                            <div className="space-y-4" style={{ flex: 1 }}>
+                                {(['D', 'I', 'S', 'C'] as const).map((axis, ai) => (
+                                    <div key={axis}>
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span style={{ fontSize: '10px', fontWeight: 600, color: '#86868B' }}>
+                                                {ANALYSIS_LABELS[axis][lang]}
+                                            </span>
+                                            <motion.span
+                                                animate={{ opacity: bars0 ? 1 : 0 }}
+                                                transition={{ delay: ai * 0.1 + 0.5 }}
+                                                style={{ fontSize: '10px', fontWeight: 600, color: '#86868B' }}
+                                            >
+                                                {axBars[axis]}%
+                                            </motion.span>
+                                        </div>
+                                        <div style={{ height: '5px', background: '#E8E8ED', borderRadius: 3, overflow: 'hidden' }}>
+                                            <motion.div
+                                                animate={{ width: bars0 ? `${axBars[axis]}%` : '3%' }}
+                                                transition={{ duration: 0.65, delay: ai * 0.1, ease: [0.25, 0, 0, 1] }}
+                                                style={{ height: '100%', background: AXIS_COLORS[axis], borderRadius: 3 }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Motor note */}
+                            <motion.div
+                                animate={{ opacity: bars0 ? 1 : 0 }}
+                                transition={{ delay: 0.8 }}
+                                style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #E8E8ED' }}
+                                className="flex items-center gap-2.5"
+                            >
+                                <div className="flex items-center gap-1">
+                                    {[1,2,3].map(b => (
+                                        <div key={b} style={{ height: 3, width: 12, borderRadius: 2, backgroundColor: b <= fp.motorBars ? '#1D1D1F' : '#D2D2D7' }} />
+                                    ))}
+                                </div>
+                                <span style={{ fontSize: '10px', fontWeight: 700, color: '#1D1D1F' }}>{motorLabel}</span>
+                                <span style={{ fontSize: '10px', color: '#AEAEB2' }}>·</span>
+                                <span style={{ fontSize: '10px', color: '#86868B', lineHeight: 1.4 }}>{motorDesc}</span>
+                            </motion.div>
+                        </div>
+                    )}
+
+                    {/* ── PROFILE FACE ── */}
+                    {face === 'profile' && (
+                        <div style={{
+                            borderRadius: '20px', background: '#fff', height: '100%',
+                            border: '1px solid #E8E8ED', padding: '28px 24px',
+                            boxShadow: '0 4px 32px rgba(0,0,0,0.07)',
+                            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                        }}>
+                            <div className="flex items-center justify-between mb-5">
+                                <div className="flex items-center gap-2">
+                                    <div style={{ width: 9, height: 9, borderRadius: '50%', background: AXIS_COLORS[fp.eje], flexShrink: 0 }} />
+                                    <span style={{ fontSize: '11px', fontWeight: 700, color: AXIS_COLORS[fp.eje], letterSpacing: '0.08em', textTransform: 'uppercase' as const }}>{ejeLabel}</span>
+                                </div>
+                                <span style={{ fontSize: '10px', fontWeight: 500, color: '#86868B', background: '#F5F5F7', borderRadius: '20px', padding: '3px 10px' }}>{motorLabel}</span>
+                            </div>
+                            <p style={{ fontWeight: 300, fontSize: '24px', letterSpacing: '-0.025em', color: '#1D1D1F', lineHeight: 1.15, marginBottom: '14px' }}>{archetypeName}</p>
+                            <div className="flex flex-wrap gap-1.5 mb-4">
+                                {(behaviors as string[]).map(b => (
+                                    <span key={b} style={{ fontSize: '11px', fontWeight: 500, color: AXIS_COLORS[fp.eje], background: `${AXIS_COLORS[fp.eje]}14`, borderRadius: '20px', padding: '3px 10px' }}>{b}</span>
+                                ))}
+                            </div>
+                            <div className="flex items-center gap-2 mb-5">
+                                {[1, 2, 3].map(b => (
+                                    <div key={b} style={{ height: 3, width: 20, borderRadius: 2, backgroundColor: b <= fp.motorBars ? '#1D1D1F' : '#D2D2D7' }} />
+                                ))}
+                            </div>
+                            <p style={{ fontSize: '13px', color: '#424245', lineHeight: 1.65, marginBottom: '16px' }}>{richDesc}</p>
+                            <div style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #F5F5F7' }}>
+                                <div className="flex items-start gap-2 mb-2">
+                                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#86868B', letterSpacing: '0.1em', textTransform: 'uppercase', paddingTop: '3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                        {lang === 'es' ? 'Palabras puente' : lang === 'pt' ? 'Palavras ponte' : 'Bridge words'}
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {bridge.map(w => (
+                                            <span key={w} style={{ fontSize: '10px', fontWeight: 500, color: AXIS_COLORS[fp.eje], background: `${AXIS_COLORS[fp.eje]}12`, borderRadius: '20px', padding: '2px 9px' }}>{w}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                    <span style={{ fontSize: '9px', fontWeight: 700, color: '#86868B', letterSpacing: '0.1em', textTransform: 'uppercase', paddingTop: '3px', flexShrink: 0, whiteSpace: 'nowrap' }}>
+                                        {lang === 'es' ? 'Palabras a evitar' : lang === 'pt' ? 'Palavras a evitar' : 'Words to avoid'}
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {avoid.map(w => (
+                                            <span key={w} style={{ fontSize: '10px', fontWeight: 500, color: '#86868B', background: '#F5F5F7', borderRadius: '20px', padding: '2px 9px' }}>{w}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </motion.div>
+            </AnimatePresence>
+            </div>
+
+            {/* ── Step indicator ── */}
+            <div className="flex items-center justify-center mt-5">
+                {steps.map((label, i) => {
+                    const target: CardFace = i === 0 ? 'game' : i === 1 ? 'analysis' : 'profile';
+                    const active = i === stepIdx;
+                    return (
+                        <React.Fragment key={i}>
+                            <button
+                                onClick={() => jumpToFace(target)}
+                                className="flex flex-col items-center gap-1.5"
+                                style={{ cursor: 'pointer', background: 'none', border: 'none', padding: '4px 0' }}
+                            >
+                                <div style={{
+                                    width: 7, height: 7, borderRadius: '50%',
+                                    background: active ? '#955FB5' : '#D2D2D7',
+                                    transition: 'background 0.3s ease',
+                                }} />
+                                <span style={{
+                                    fontSize: '10px', fontWeight: active ? 600 : 400,
+                                    color: active ? '#955FB5' : '#AEAEB2',
+                                    transition: 'color 0.3s ease',
+                                    whiteSpace: 'nowrap',
+                                }}>{label}</span>
+                            </button>
+                            {i < 2 && (
+                                <div style={{ width: 28, height: 1, background: '#E8E8ED', margin: '0 8px', marginBottom: '20px' }} />
+                            )}
+                        </React.Fragment>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
 
 // ─── Landing ─────────────────────────────────────────────────────────────────
 
@@ -354,7 +745,7 @@ export const Landing: React.FC = () => {
             </nav>
 
             {/* ── HERO ── */}
-            <section className="relative max-w-5xl mx-auto px-4 md:px-6 pt-20 pb-20 md:pt-32 md:pb-36 overflow-hidden">
+            <section className="relative max-w-5xl mx-auto px-4 md:px-6 pt-14 pb-8 md:pt-24 md:pb-12 overflow-hidden">
                 <motion.div {...fadeUp(0)}>
                     <SectionLabel>
                         {L('Ciencia del Comportamiento', 'Behavioral Science', 'Ciência do Comportamento')}
@@ -365,7 +756,7 @@ export const Landing: React.FC = () => {
                     {...fadeUp(0.08)}
                     style={{
                         fontWeight: 300,
-                        fontSize: 'clamp(2.8rem, 6vw, 5rem)',
+                        fontSize: 'clamp(1.9rem, 3.8vw, 3.2rem)',
                         lineHeight: 1.06,
                         letterSpacing: '-0.03em',
                         color: '#1D1D1F',
@@ -374,25 +765,46 @@ export const Landing: React.FC = () => {
                     className="mb-8"
                 >
                     {L(
-                        'Inteligencia deportiva para que cada niño disfrute el deporte.',
-                        'Sports intelligence so every child can enjoy sport.',
-                        'Inteligência esportiva para que cada criança aproveite o esporte.',
+                        'Cada niño tiene un modo único de jugar. Argo lo descubre.',
+                        'Every child has a unique way of playing. Argo discovers it.',
+                        'Cada criança tem um jeito único de jogar. O Argo descobre.',
                     )}
                 </motion.h1>
 
                 <motion.p
                     {...fadeUp(0.16)}
                     style={{ fontWeight: 400, fontSize: '17px', lineHeight: 1.65, color: '#424245', maxWidth: '560px' }}
-                    className="mb-12"
+                    className="mb-8"
                 >
                     {L(
-                        'A través de una dinámica gamificada basada en DISC + Motor, alineamos el entorno con la naturaleza del deportista. Una solución técnica para eliminar el estrés y asegurar el disfrute genuino de cada deportista.',
+                        'El niño vive una aventura gamificada de 12 minutos. Al terminar, la institución, el club y la familia reciben un informe con el perfil conductual del deportista.',
                         'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.',
                         'Através de uma dinâmica gamificada baseada em DISC + Motor, alinhamos o ambiente com a natureza do atleta. Uma solução técnica para eliminar o estresse e garantir o prazer genuíno das crianças.',
                     )}
                 </motion.p>
 
-                <motion.div {...fadeUp(0.22)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+                <motion.div
+                    {...fadeUp(0.20)}
+                    className="flex flex-wrap items-center gap-x-3 gap-y-2 mb-10"
+                >
+                    {[
+                        { num: '01', text: 'El niño juega' },
+                        { num: '02', text: 'Argo analiza su perfil' },
+                        { num: '03', text: 'La institución recibe el informe' },
+                    ].map(({ num, text }, i, arr) => (
+                        <React.Fragment key={num}>
+                            <div className="flex items-center gap-2">
+                                <span style={{ fontWeight: 600, fontSize: '10px', color: '#86868B', letterSpacing: '0.08em' }}>{num}</span>
+                                <span style={{ fontWeight: 400, fontSize: '13px', color: '#424245' }}>{text}</span>
+                            </div>
+                            {i < arr.length - 1 && (
+                                <span style={{ color: '#D2D2D7', fontSize: '13px', lineHeight: 1 }}>→</span>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </motion.div>
+
+                <motion.div {...fadeUp(0.28)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
                         onClick={() => navigate('/app')}
                         style={{
@@ -419,8 +831,74 @@ export const Landing: React.FC = () => {
 
             </section>
 
+            {/* ── LA HERRAMIENTA ── */}
+            <div style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
+                {/* Violet strip — narrower than the card, creating the overflow effect */}
+                <div style={{
+                    position: 'absolute', left: 0, right: 0,
+                    top: '128px', bottom: '128px',
+                    background: '#E3E3FF',
+                }} />
+                {/* Floating white card — -mx-14 expands 56px each side to match other sections' content width */}
+                <div className="max-w-5xl mx-auto px-4 md:px-6" style={{ position: 'relative', zIndex: 1 }}>
+                    <motion.div
+                        {...fadeUp(0)}
+                        className="bg-white rounded-3xl p-8 md:p-14 md:-mx-14"
+                        style={{ boxShadow: '0 24px 80px rgba(0,0,0,0.09), 0 4px 20px rgba(0,0,0,0.05)' }}
+                    >
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+                            {/* Text */}
+                            <div>
+                                <SectionLabel>La herramienta · Dos experiencias</SectionLabel>
+                                <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
+                                    Cómo funciona.
+                                </h2>
+                                <div className="mt-10 space-y-7">
+                                    <div>
+                                        <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
+                                            01 — El juego
+                                        </p>
+                                        <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
+                                            Los niños experimentan una aventura gráfica de 12 minutos. Sus elecciones revelan su perfil conductual de forma natural, sin preguntas directas.
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
+                                            02 — El dashboard
+                                        </p>
+                                        <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
+                                            La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte desde su naturaleza.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="mt-8 flex flex-wrap gap-2">
+                                    {[
+                                        { label: 'Mi equipo',           tip: 'El perfil conductual de cada deportista y su historial de informes.' },
+                                        { label: 'Grupos de sintonía',  tip: 'Agrupa deportistas y entiende la dinámica colectiva de cada equipo.' },
+                                        { label: 'Brújula situacional', tip: 'Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.' },
+                                        { label: 'Consultor IA',        tip: 'Hazle consultas sobre tus deportistas y recibe consejos personalizados.' },
+                                    ].map(({ label, tip }) => (
+                                        <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#424245', background: '#F5F5F7', border: '1px solid #E8E8ED', borderRadius: '20px', padding: '3px 8px 3px 11px' }}>
+                                            {label}
+                                            <InfoTip text={tip} position="top" />
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Flip card */}
+                            <motion.div {...fadeUp(0.1)}>
+                                <FlipCard />
+                            </motion.div>
+
+                        </div>
+                    </motion.div>
+                </div>
+            </div>
+
             {/* ── EL MITO ── */}
-            <div style={{ backgroundColor: '#E3E3FF' }}>
+            <div style={{ backgroundColor: '#ffffff' }}>
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20">
                     <motion.div {...fadeUp(0)}>
@@ -430,6 +908,13 @@ export const Landing: React.FC = () => {
                         <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
                             {{ es: <>50 especialistas.<br />Una sola misión.</>, en: <>50 specialists.<br />One single mission.</>, pt: <>50 especialistas.<br />Uma única missão.</> }[lang]}
                         </h2>
+                        <div style={{ marginTop: '24px', display: 'inline-block', borderRadius: '12px', overflow: 'hidden', maxWidth: '280px' }}>
+                            <img
+                                src="/argonautas.jpg"
+                                alt="Los argonautas"
+                                style={{ display: 'block', width: '100%', opacity: 0.88 }}
+                            />
+                        </div>
                     </motion.div>
 
                     <motion.div {...fadeUp(0.1)} className="flex flex-col justify-center">
@@ -452,9 +937,8 @@ export const Landing: React.FC = () => {
             </section>
             </div>
 
-            <Divider />
-
             {/* ── EL SISTEMA ── */}
+            <div style={{ backgroundColor: '#F5F5F7' }}>
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <motion.div {...fadeUp(0)} className="mb-16">
                     <SectionLabel>
@@ -583,70 +1067,7 @@ export const Landing: React.FC = () => {
                     </div>
                 </div>
             </section>
-
-            <Divider />
-
-            {/* ── DISC ── */}
-            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
-                <motion.div {...fadeUp(0)} className="mb-12">
-                    <SectionLabel>
-                        {L('El marco · Cuatro ejes de conducta', 'The framework · Four behavioral axes', 'O modelo · Quatro eixos de conduta')}
-                    </SectionLabel>
-                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('¿Qué es DISC?', 'What is DISC?', 'O que é DISC?')}
-                    </h2>
-                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '12px', maxWidth: '640px', lineHeight: 1.75 }}>
-                        {L(
-                            'DISC es un modelo de comportamiento utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales observables (no personalidades, no diagnósticos) que nos ayudan a entender cómo una persona actúa, se comunica y toma decisiones.',
-                            'DISC is a behavioral model used worldwide for over 30 years. It describes four observable behavioral patterns (not personalities, not diagnoses) that help us understand how a person acts, communicates, and makes decisions.',
-                            'DISC é um modelo comportamental utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais observáveis (não personalidades, não diagnósticos) que nos ajudam a entender como uma pessoa age, se comunica e toma decisões.',
-                        )}
-                    </p>
-                </motion.div>
-
-                {/* 4-axis grid */}
-                <div
-                    className="grid grid-cols-2 md:grid-cols-4 gap-px"
-                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}
-                >
-                    {DISC_AXES.map((axis, i) => {
-                        const name = pk(axis, 'name');
-                        const desc = pk(axis, 'desc');
-                        return (
-                            <motion.div
-                                key={axis.letter}
-                                {...fadeUp(i * 0.06)}
-                                className="bg-white p-6 md:p-8 flex flex-col"
-                            >
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: AXIS_COLORS[axis.eje], flexShrink: 0 }} />
-                                    <p style={{ fontWeight: 500, fontSize: '14px', color: '#1D1D1F', letterSpacing: '-0.01em' }}>
-                                        {name}
-                                    </p>
-                                </div>
-                                <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-3">
-                                    {axis.letter}
-                                </p>
-                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#424245', lineHeight: 1.55 }}>
-                                    {desc}
-                                </p>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-
-                {/* Closing differentiation */}
-                <motion.p
-                    {...fadeUp(0.3)}
-                    style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.75, maxWidth: '640px', marginTop: '28px' }}
-                >
-                    {L(
-                        'Argo Method toma este marco y lo adapta al universo del deporte juvenil: lenguaje para niños, gamificación, contexto deportivo y una capa adicional, el Motor, que mide el ritmo de procesamiento. El resultado no es una etiqueta sino una brújula para que el adulto entienda cómo sintonizar con cada deportista.',
-                        'Argo Method takes this framework and adapts it to the world of youth sports: child-friendly language, gamification, a sports context, and an additional layer, the Engine, that measures processing pace. The result is not a label but a compass so the adult can attune to each athlete.',
-                        'Argo Method pega esse modelo e o adapta ao universo do esporte juvenil: linguagem para crianças, gamificação, contexto esportivo e uma camada adicional, o Motor, que mede o ritmo de processamento. O resultado não é um rótulo, mas uma bússola para que o adulto entenda como sintonizar com cada atleta.',
-                    )}
-                </motion.p>
-            </section>
+            </div>
 
             <Divider />
 
