@@ -4,18 +4,14 @@ export interface EmailReportParams {
     nombreNino: string;
     deporte: string;
     edad: number;
+    eje: string;
+    motor: string;
     arquetipo: string;
-    reportHtml: string;
-    maduracionTemprana: boolean;
+    perfil: string;
+    palabrasPuente: string[];
     sessionId?: string;
     lang?: string;
     emailSubject?: string;
-    emailHeader?: string;
-    emailPreparedFor?: string;
-    emailArchetypeOf?: string;
-    emailFooter?: string;
-    emailMaturationTitle?: string;
-    emailMaturationBody?: string;
 }
 
 export async function sendReport(params: EmailReportParams): Promise<void> {

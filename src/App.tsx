@@ -21,6 +21,7 @@ import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
 import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
 import { FeedbackForm }       from './pages/FeedbackForm';
+import { ReportPage }         from './pages/ReportPage';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -144,6 +145,7 @@ function App() {
             <Route path="/signup" element={<TenantSignup />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
+            <Route path="/report/:sessionId" element={<ReportPage />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/test/islas" element={<TestIslas />} />
