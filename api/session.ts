@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
 
-            const { error } = await sb.from('sessions').insert({
+            const { data: saveData, error } = await sb.from('sessions').insert({
                 adult_name,
                 adult_email,
                 child_name,
@@ -114,14 +114,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_tokens_input:  ai_tokens_input ?? 0,
                 ai_tokens_output: ai_tokens_output ?? 0,
                 ai_cost_usd:      ai_cost_usd ?? 0,
-            });
+            }).select('id').single();
 
             if (error) {
                 console.error('[session:save] Insert error:', error.message, error.details);
                 return res.status(500).json({ error: error.message });
             }
 
-            return res.status(200).json({ ok: true });
+            return res.status(200).json({ ok: true, id: saveData.id });
         }
 
         return res.status(400).json({ error: `Unknown action: ${action}` });
