@@ -261,7 +261,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     {reportData && (
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.loEsencial}</p>
-                                            <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfil}</p>
+                                            <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfilExtended ?? reportData.perfil}</p>
                                         </div>
                                     )}
 
@@ -285,7 +285,11 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
                                                 {dt.players.brujulaSecundaria}: {tendencia}
                                             </p>
-                                            <p className="text-xs text-argo-grey leading-relaxed">{tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name)}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{(() => {
+                                                const full = tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name);
+                                                const end = full.indexOf('. ');
+                                                return end !== -1 ? full.slice(0, end + 1) : full;
+                                            })()}</p>
                                         </div>
                                     )}
 

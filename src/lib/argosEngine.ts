@@ -29,6 +29,7 @@ export interface ReportData {
     nombre: string;
     arquetipo: Archetype;
     perfil: string;
+    perfilExtended?: string;
     bienvenida: string;
     wow: string;
     motorDesc: string;
@@ -94,6 +95,7 @@ export function getReportData(
         nombre,
         arquetipo: { id: data.id, eje: data.eje, motor: data.motor, label: data.label },
         perfil: data.perfil,
+        perfilExtended: data.perfilExtended,
         bienvenida: injectNombre(data.bienvenida, nombre),
         wow: injectNombre(data.wow, nombre),
         motorDesc: injectNombre(data.motorDesc, nombre),
