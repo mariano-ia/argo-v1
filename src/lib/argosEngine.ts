@@ -67,8 +67,8 @@ function injectNombre(text: string, nombre: string): string {
 
 const TENDENCIA_LABELS_I18N: Record<string, Record<string, string>> = {
     es: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
-    en: { D: 'with a spark of action', I: 'with a social compass', S: 'with steady roots', C: 'with a sharp eye for detail' },
-    pt: { D: 'com chispa de ação', I: 'com bússola social', S: 'com raíz firme', C: 'com olho para detalhes' },
+    en: { D: 'with a spark of action', I: 'with a social compass', S: 'with firm roots', C: 'with an eye for detail' },
+    pt: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
 };
 
 export function getLocalizedTendenciaLabel(axis: string, lang: string = 'es'): string {
@@ -114,7 +114,7 @@ export function getReportData(
         nombre,
         arquetipo: { id: data.id, eje: data.eje, motor: data.motor, label: t.label },
         perfil: t.perfil,
-        perfilExtended: t.perfilExtended,
+        perfilExtended: injectNombre(t.perfilExtended ?? '', nombre),
         bienvenida: injectNombre(t.bienvenida, nombre),
         wow: injectNombre(t.wow, nombre),
         motorDesc: injectNombre(t.motorDesc, nombre),

@@ -106,8 +106,8 @@ const HOME_DISTRIBUTION_DIGEST: Record<string, Record<string, string>> = {
 function getDistributionDigest(sessions: SessionRow[], lang: string): string {
     if (sessions.length < 3) {
         return lang === 'en' ? 'More profiles are needed to see the distribution of your athletes.' :
-               lang === 'pt' ? 'Mais perfis sao necessarios para ver a distribuicao dos seus atletas.' :
-               'Se necesitan mas perfiles para ver la distribucion de tus deportistas.';
+               lang === 'pt' ? 'Mais perfis são necessários para ver a distribuição dos seus atletas.' :
+               'Se necesitan más perfiles para ver la distribución de tus deportistas.';
     }
     const members: MemberProfile[] = sessions.map(s => ({
         session_id: s.id, child_name: s.child_name, child_age: s.child_age,
@@ -387,7 +387,7 @@ export const TenantHome: React.FC = () => {
                 {/* Distribution */}
                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 flex flex-col">
                     <h2 className="text-[15px] font-semibold text-argo-navy mb-1">
-                        {lang === 'en' ? 'Profile distribution' : lang === 'pt' ? 'Distribuicao de perfis' : 'Distribucion de perfiles'}
+                        {lang === 'en' ? 'Profile distribution' : lang === 'pt' ? 'Distribuição de perfis' : 'Distribución de perfiles'}
                     </h2>
                     <p className="text-[11px] text-argo-light mb-4">
                         {lang === 'en' ? 'Your athletes by behavioral axis' : lang === 'pt' ? 'Seus atletas por eixo comportamental' : 'Tus deportistas por eje de conducta'}

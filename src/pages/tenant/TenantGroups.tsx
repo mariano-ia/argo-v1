@@ -263,10 +263,10 @@ export const TenantGroups: React.FC = () => {
                                 <div className="text-center max-w-sm">
                                     <Layers size={28} className="text-argo-border mx-auto mb-4" />
                                     <p className="text-[15px] font-semibold text-argo-navy mb-2">
-                                        {lang === 'en' ? 'Select a formation' : lang === 'pt' ? 'Selecione uma formacao' : 'Selecciona una formacion'}
+                                        {lang === 'en' ? 'Select a formation' : lang === 'pt' ? 'Selecione uma formação' : 'Selecciona una formación'}
                                     </p>
                                     <p className="text-xs text-argo-light leading-relaxed">
-                                        {lang === 'en' ? 'Choose a formation from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma formacao da lista para ver seus membros, analise de equilibrio e ferramentas.' : 'Elige una formacion de la lista para ver sus miembros, analisis de equilibrio y herramientas.'}
+                                        {lang === 'en' ? 'Choose a formation from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma formação da lista para ver seus membros, análise de equilíbrio e ferramentas.' : 'Elige una formación de la lista para ver sus miembros, análisis de equilibrio y herramientas.'}
                                     </p>
                                 </div>
                             </motion.div>

@@ -56,44 +56,80 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const months = monthsSince(session.created_at);
 
     const sessionLang = session.lang || 'es';
+
+    // Returns a full report in the session's original language with AI sections merged.
+    // Used only for email/download (not for card display).
+    const getSessionReport = () => {
+        const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name, sessionLang);
+        if (session.eje_secundario) {
+            const t = getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
+            if (t) {
+                r.tendenciaLabel = getLocalizedTendenciaLabel(session.eje_secundario, sessionLang);
+                r.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
+                r.palabrasPuenteExtra = t.palabrasPuenteExtra;
+                r.palabrasRuidoExtra = t.palabrasRuidoExtra;
+            }
+        }
+        const ai = session.ai_sections;
+        if (ai) {
+            if (ai.label)               r.arquetipo.label    = ai.label;
+            if (ai.motorDesc)           r.motorDesc          = ai.motorDesc;
+            if (ai.combustible)         r.combustible        = ai.combustible;
+            if (ai.ecos)                r.ecos               = ai.ecos;
+            if (ai.reseteo)             r.reseteo            = ai.reseteo;
+            if (ai.checklist)           r.checklist          = ai.checklist;
+            if (ai.guia)                r.guia               = ai.guia;
+            if (ai.palabrasPuente)      r.palabrasPuente     = ai.palabrasPuente;
+            if (ai.palabrasRuido)       r.palabrasRuido      = ai.palabrasRuido;
+            if (ai.tendenciaLabel)      r.tendenciaLabel     = ai.tendenciaLabel;
+            if (ai.tendenciaParagraph)  r.tendenciaParagraph = ai.tendenciaParagraph;
+            if (ai.palabrasPuenteExtra) r.palabrasPuenteExtra = ai.palabrasPuenteExtra;
+            if (ai.palabrasRuidoExtra)  r.palabrasRuidoExtra  = ai.palabrasRuidoExtra;
+        }
+        return r;
+    };
+
+    // Card display: use dashboard UI language. AI sections merged only when lang matches session lang.
     const reportData = useMemo(() => {
         try {
-            const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name, sessionLang);
+            const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name, lang);
             if (session.eje_secundario) {
-                const t = getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
+                const t = getLocalizedTendenciaContent(session.eje, session.eje_secundario, lang);
                 if (t) {
-                    r.tendenciaLabel = getLocalizedTendenciaLabel(session.eje_secundario, sessionLang);
+                    r.tendenciaLabel = getLocalizedTendenciaLabel(session.eje_secundario, lang);
                     r.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
                     r.palabrasPuenteExtra = t.palabrasPuenteExtra;
                     r.palabrasRuidoExtra = t.palabrasRuidoExtra;
                 }
             }
-            // Merge AI-personalized sections if available
-            const ai = session.ai_sections;
-            if (ai) {
-                if (ai.label)               r.arquetipo.label    = ai.label;
-                if (ai.motorDesc)           r.motorDesc          = ai.motorDesc;
-                if (ai.combustible)         r.combustible        = ai.combustible;
-                if (ai.ecos)                r.ecos               = ai.ecos;
-                if (ai.reseteo)             r.reseteo            = ai.reseteo;
-                if (ai.checklist)           r.checklist          = ai.checklist;
-                if (ai.guia)                r.guia               = ai.guia;
-                if (ai.palabrasPuente)      r.palabrasPuente     = ai.palabrasPuente;
-                if (ai.palabrasRuido)       r.palabrasRuido      = ai.palabrasRuido;
-                if (ai.tendenciaLabel)      r.tendenciaLabel     = ai.tendenciaLabel;
-                if (ai.tendenciaParagraph)  r.tendenciaParagraph = ai.tendenciaParagraph;
-                if (ai.palabrasPuenteExtra) r.palabrasPuenteExtra = ai.palabrasPuenteExtra;
-                if (ai.palabrasRuidoExtra)  r.palabrasRuidoExtra  = ai.palabrasRuidoExtra;
+            // Only merge AI sections when dashboard language matches the session language
+            if (lang === sessionLang) {
+                const ai = session.ai_sections;
+                if (ai) {
+                    if (ai.label)               r.arquetipo.label    = ai.label;
+                    if (ai.motorDesc)           r.motorDesc          = ai.motorDesc;
+                    if (ai.combustible)         r.combustible        = ai.combustible;
+                    if (ai.ecos)                r.ecos               = ai.ecos;
+                    if (ai.reseteo)             r.reseteo            = ai.reseteo;
+                    if (ai.checklist)           r.checklist          = ai.checklist;
+                    if (ai.guia)                r.guia               = ai.guia;
+                    if (ai.palabrasPuente)      r.palabrasPuente     = ai.palabrasPuente;
+                    if (ai.palabrasRuido)       r.palabrasRuido      = ai.palabrasRuido;
+                    if (ai.tendenciaLabel)      r.tendenciaLabel     = ai.tendenciaLabel;
+                    if (ai.tendenciaParagraph)  r.tendenciaParagraph = ai.tendenciaParagraph;
+                    if (ai.palabrasPuenteExtra) r.palabrasPuenteExtra = ai.palabrasPuenteExtra;
+                    if (ai.palabrasRuidoExtra)  r.palabrasRuidoExtra  = ai.palabrasRuidoExtra;
+                }
             }
             return r;
         }
         catch { return null; }
-    }, [session.eje, session.motor, session.eje_secundario, session.child_name, session.ai_sections]);
+    }, [session.eje, session.motor, session.eje_secundario, session.child_name, session.ai_sections, lang, sessionLang]);
 
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
-        return getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
-    }, [session.eje, session.eje_secundario, sessionLang]);
+        return getLocalizedTendenciaContent(session.eje, session.eje_secundario, lang);
+    }, [session.eje, session.eje_secundario, lang]);
 
     const tendencia = session.eje_secundario
         ? (dt.profile?.tendenciaLabels?.[session.eje_secundario] ?? '')
@@ -107,7 +143,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const handleResend = async () => {
         setResending(true);
         try {
-            const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name, sessionLang);
+            const report = getSessionReport();
             const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
             await sendReport({
                 toEmail:        session.adult_email,
@@ -130,7 +166,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
     const handleDownload = async () => {
         const locale = sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR';
-        const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name, sessionLang);
+        const report = getSessionReport();
         const html = buildDownloadableReportHtml({
             report,
             childName: session.child_name,
@@ -383,7 +419,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                         {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
                                     </span>
                                     <span className="text-argo-light">
-                                        <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsavel' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
+                                        <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsável' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -550,7 +586,7 @@ export const TenantPlayers: React.FC = () => {
                     <div className="flex items-center justify-between">
                         <p className="text-xs text-argo-grey">
                             {filtered.length} {filtered.length === 1 ? dt.common.jugador : dt.common.jugadores}
-                            {totalPages > 1 && <span className="text-argo-light"> · {lang === 'en' ? 'page' : lang === 'pt' ? 'pagina' : 'pagina'} {page + 1}/{totalPages}</span>}
+                            {totalPages > 1 && <span className="text-argo-light"> · {lang === 'en' ? 'page' : 'página'} {page + 1}/{totalPages}</span>}
                         </p>
                         <div className="flex items-center gap-1.5">
                             <span className="text-[11px] text-argo-light">{lang === 'en' ? 'Show' : lang === 'pt' ? 'Mostrar' : 'Mostrar'}</span>
@@ -615,7 +651,7 @@ export const TenantPlayers: React.FC = () => {
                                 disabled={page === totalPages - 1}
                                 className="px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-bg transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                             >
-                                {lang === 'en' ? 'Next' : lang === 'pt' ? 'Proximo' : 'Siguiente'}
+                                {lang === 'en' ? 'Next' : lang === 'pt' ? 'Próximo' : 'Siguiente'}
                             </button>
                         </div>
                     )}
