@@ -5,8 +5,7 @@ import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onb
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
 import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
-import { getReportData } from '../../lib/argosEngine';
-import { getTendenciaContent } from '../../lib/archetypeData';
+import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import {
     startSession, updateSession, saveSession,
@@ -406,11 +405,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     rhythm: gameBMetricsRef.current,
                     adaptation: gameCMetricsRef.current,
                 });
-                report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino);
+                report  = getReportData(profile.eje, profile.motor, '', adultData.nombreNino, lang);
                 report.ejeSecundario  = profile.ejeSecundario;
-                report.tendenciaLabel = profile.tendenciaLabel;
+                report.tendenciaLabel = getLocalizedTendenciaLabel(profile.ejeSecundario, lang);
 
-                const tendencia = getTendenciaContent(profile.eje, profile.ejeSecundario);
+                const tendencia = getLocalizedTendenciaContent(profile.eje, profile.ejeSecundario, lang);
                 if (tendencia) {
                     const injectNombre = (t: string) => t.replace(/\{nombre\}/g, adultData.nombreNino);
                     report.tendenciaParagraph  = injectNombre(tendencia.parrafo);

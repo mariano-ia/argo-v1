@@ -3,9 +3,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
 import { Search, Download, Trash2, Send, Loader2 } from 'lucide-react';
-import { getReportData } from '../../lib/argosEngine';
-import { getTendenciaContent } from '../../lib/archetypeData';
-import { TENDENCIA_LABELS } from '../../lib/profileResolver';
+import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CHIP } from '../../lib/designTokens';
 
@@ -158,11 +156,11 @@ export const Sessions: React.FC = () => {
         setResendingId(row.id);
         try {
             const lang = row.lang || 'es';
-            const report = getReportData(row.eje, row.motor, row.eje_secundario ?? '', row.child_name);
+            const report = getReportData(row.eje, row.motor, row.eje_secundario ?? '', row.child_name, lang);
             if (row.eje_secundario) {
-                const tendencia = getTendenciaContent(row.eje, row.eje_secundario);
+                const tendencia = getLocalizedTendenciaContent(row.eje, row.eje_secundario, lang);
                 if (tendencia) {
-                    report.tendenciaLabel = TENDENCIA_LABELS[row.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    report.tendenciaLabel = getLocalizedTendenciaLabel(row.eje_secundario, lang);
                     report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, row.child_name);
                     report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
                     report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;

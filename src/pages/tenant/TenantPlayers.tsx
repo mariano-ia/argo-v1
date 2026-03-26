@@ -3,9 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2, Download } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { getReportData } from '../../lib/argosEngine';
-import { getTendenciaContent } from '../../lib/archetypeData';
-import { TENDENCIA_LABELS } from '../../lib/profileResolver';
+import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
@@ -57,13 +55,14 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const needsReprofile = monthsSince(session.created_at) >= 6;
     const months = monthsSince(session.created_at);
 
+    const sessionLang = session.lang || 'es';
     const reportData = useMemo(() => {
         try {
-            const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name);
+            const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name, sessionLang);
             if (session.eje_secundario) {
-                const t = getTendenciaContent(session.eje, session.eje_secundario);
+                const t = getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
                 if (t) {
-                    r.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    r.tendenciaLabel = getLocalizedTendenciaLabel(session.eje_secundario, sessionLang);
                     r.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
                     r.palabrasPuenteExtra = t.palabrasPuenteExtra;
                     r.palabrasRuidoExtra = t.palabrasRuidoExtra;
@@ -93,8 +92,8 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
-        return getTendenciaContent(session.eje, session.eje_secundario);
-    }, [session.eje, session.eje_secundario]);
+        return getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
+    }, [session.eje, session.eje_secundario, sessionLang]);
 
     const tendencia = session.eje_secundario
         ? (dt.profile?.tendenciaLabels?.[session.eje_secundario] ?? '')
@@ -108,8 +107,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const handleResend = async () => {
         setResending(true);
         try {
-            const sLang = session.lang || 'es';
-            const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name);
+            const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name, sessionLang);
             const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
             await sendReport({
                 toEmail:        session.adult_email,
@@ -120,10 +118,10 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 eje:            session.eje,
                 motor:          session.motor,
                 arquetipo:      arquetipoFull,
-                perfil:         sLang === 'es' ? report.perfil : '',
+                perfil:         sessionLang === 'es' ? report.perfil : '',
                 palabrasPuente: report.palabrasPuente,
                 sessionId:      session.id,
-                lang:           sLang,
+                lang:           sessionLang,
             });
             setResendOk(true);
         } catch { setResendOk(false); }
@@ -131,9 +129,8 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     };
 
     const handleDownload = async () => {
-        const sLang = session.lang || 'es';
-        const locale = sLang === 'pt' ? 'pt-BR' : sLang === 'en' ? 'en-US' : 'es-AR';
-        const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name);
+        const locale = sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR';
+        const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name, sessionLang);
         const html = buildDownloadableReportHtml({
             report,
             childName: session.child_name,
@@ -141,7 +138,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
             sport: session.sport ?? '',
             adultName: session.adult_name,
             date: new Date(session.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' }),
-            lang: sLang,
+            lang: sessionLang,
             answers: session.answers ?? [],
         });
 
