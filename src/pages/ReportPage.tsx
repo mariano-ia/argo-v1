@@ -432,7 +432,7 @@ export const ReportPage: React.FC = () => {
                             {t.motor} {motorDisplayName}
                         </span>
                     </div>
-                    <p className="text-base font-semibold text-argo-navy mb-3 leading-snug">{report.perfil}</p>
+                    {lang === 'es' && <p className="text-base font-semibold text-argo-navy mb-3 leading-snug">{report.perfil}</p>}
                     <DigestBox>{cleanText(report.bienvenida)}</DigestBox>
 
                     {/* Axis distribution */}
