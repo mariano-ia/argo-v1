@@ -72,7 +72,7 @@ export const Login: React.FC = () => {
                             beta
                         </span>
                     </div>
-                    <h1 className="font-display text-2xl font-bold text-argo-navy">Dashboard</h1>
+                    <h1 className="font-display text-2xl font-bold text-argo-navy">Plataforma</h1>
                 </div>
 
                 {/* Mode tabs */}

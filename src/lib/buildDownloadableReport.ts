@@ -4,6 +4,7 @@
  */
 
 import type { ReportData } from './argosEngine';
+import { classifyDecisionPattern, getPatternCopy, getPatternSectionLabel, getImplicationLabel } from './decisionPattern';
 
 /* ── DS Colors ─────────────────────────────────────────────────────────────── */
 const C = {
@@ -38,10 +39,11 @@ interface DownloadReportOptions {
     adultName: string;
     date: string;
     lang?: string;
+    answers?: { responseTimeMs?: number }[];
 }
 
 export function buildDownloadableReportHtml(opts: DownloadReportOptions): string {
-    const { report, childName, childAge, sport, adultName, date, lang = 'es' } = opts;
+    const { report, childName, childAge, sport, adultName, date, lang = 'es', answers = [] } = opts;
     const eje = report.arquetipo.eje;
     const ac = AXIS_COLOR[eje] ?? AXIS_COLOR.C;
 
@@ -157,6 +159,20 @@ export function buildDownloadableReportHtml(opts: DownloadReportOptions): string
         ${sectionLabel(t.motor)}
         ${bodyText(clean(report.motorDesc))}
     `)}
+
+    <!-- Decision pattern -->
+    ${(() => {
+        const pattern = classifyDecisionPattern(answers);
+        if (!pattern) return '';
+        const p = getPatternCopy(pattern, lang);
+        return card(
+            `${sectionLabel(getPatternSectionLabel(lang))}` +
+            `<p style="font-size:15px;font-weight:600;color:${C.navy};margin:0 0 6px 0;">${p.label}</p>` +
+            bodyText(p.desc) +
+            `<p style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:${C.light};margin:12px 0 6px 0;">${getImplicationLabel(lang)}</p>` +
+            digestBox(p.imp)
+        );
+    })()}
 
     <!-- Bridge words + Noise words side by side -->
     <div style="display:flex;gap:16px;margin-bottom:16px;">

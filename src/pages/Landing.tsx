@@ -169,11 +169,11 @@ const ROTATING_PROFILES = [
 // ─── FAQs per language ───────────────────────────────────────────────────────
 const FAQS: Record<Lang, { q: string; a: string }[]> = {
     es: [
-        { q: '¿Qué es Argo Method?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 12 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
+        { q: '¿Qué es Argo Method?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
         { q: '¿Qué es el modelo DISC?', a: 'DISC es un modelo de comportamiento observable utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales: Impulsor (orientado a la acción y los resultados), Conector (orientado a las personas y la energía), Sostenedor (orientado a la estabilidad y el equipo) y Estratega (orientado al análisis y la precisión). Argo adapta este marco al deporte juvenil con lenguaje para niños, gamificación y una capa adicional —el Motor— que mide el ritmo de procesamiento de cada deportista.' },
         { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al atleta: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el menor, es una herramienta para que el adulto pueda acompañar mejor.' },
         { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
-        { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 12 minutos. Una aventura interactiva con mini-juegos y decisiones, presentada con temática náutica. Se responden a solas, en un ambiente tranquilo.' },
+        { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 10 minutos. Una aventura interactiva con mini-juegos y decisiones, presentada con temática náutica. Se responden a solas, en un ambiente tranquilo.' },
         { q: '¿Hay respuestas correctas o incorrectas?', a: 'No. Cada respuesta refleja una tendencia conductual, no un acierto ni un error. No se miden capacidades ni se emiten diagnósticos. Todas las respuestas son válidas.' },
         { q: '¿Es un test psicológico?', a: 'No. Argo Method no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
         { q: '¿Cuánto cuesta?', a: 'La experiencia es gratuita durante esta etapa.' },
@@ -191,11 +191,11 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
         { q: 'What data do you collect?', a: 'Adult\'s name, email, child\'s name, age, and sport. Game answers are used exclusively to generate the report. We do not sell or share data with third parties.' },
     ],
     pt: [
-        { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas — existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 12 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
+        { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas — existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 10 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
         { q: 'O que é o modelo DISC?', a: 'DISC é um modelo de comportamento observável utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais: Impulsionador (orientado à ação e resultados), Conector (orientado às pessoas e energia), Sustentador (orientado à estabilidade e equipe) e Estrategista (orientado à análise e precisão). Argo adapta esse modelo ao esporte juvenil com linguagem para crianças, gamificação e uma camada adicional — o Motor — que mede o ritmo de processamento de cada atleta.' },
         { q: 'Para quem é o relatório?', a: 'Para o adulto que acompanha o atleta: treinadores, pais, mães ou representantes de instituições esportivas. O relatório chega por email ao finalizar a experiência. Não é um relatório para a criança — é uma ferramenta para que o adulto possa acompanhá-la melhor.' },
         { q: 'A criança precisa criar uma conta?', a: 'Não. Apenas um formulário breve com nome, idade e esporte. Sem senhas, sem downloads, sem instalar nada.' },
-        { q: 'Quanto tempo dura a experiência?', a: 'Aproximadamente 12 minutos. Uma aventura interativa com mini-jogos e decisões, apresentada com temática náutica. A criança responde sozinha, em um ambiente tranquilo.' },
+        { q: 'Quanto tempo dura a experiência?', a: 'Aproximadamente 10 minutos. Uma aventura interativa com mini-jogos e decisões, apresentada com temática náutica. A criança responde sozinha, em um ambiente tranquilo.' },
         { q: 'Existem respostas certas ou erradas?', a: 'Não. Cada resposta reflete uma tendência comportamental, não um acerto ou erro. Não se medem capacidades nem se emitem diagnósticos. Todas as respostas são válidas.' },
         { q: 'É um teste psicológico?', a: 'Não. Argo Method não substitui psicólogos esportivos nem especialistas em desenvolvimento infantil. É uma ferramenta de observação comportamental que oferece um ponto de partida para individualizar o acompanhamento esportivo.' },
         { q: 'Quanto custa?', a: 'A experiência é gratuita durante esta etapa.' },
@@ -764,11 +764,11 @@ export const Landing: React.FC = () => {
                     }}
                     className="mb-8"
                 >
-                    {L(
-                        'Cada niño tiene un modo único de jugar. Argo lo descubre.',
-                        'Every child has a unique way of playing. Argo discovers it.',
-                        'Cada criança tem um jeito único de jogar. O Argo descobre.',
-                    )}
+                    {lang === 'en'
+                        ? <>Every child is unique.<br />Argo discovers their ideal way of experiencing sport.</>
+                        : lang === 'pt'
+                        ? <>Cada criança é única.<br />O Argo descobre sua maneira ideal de viver o esporte.</>
+                        : <>Cada niño es único.<br />Argo descubre su manera ideal de vivir el deporte.</>}
                 </motion.h1>
 
                 <motion.p
@@ -777,7 +777,7 @@ export const Landing: React.FC = () => {
                     className="mb-8"
                 >
                     {L(
-                        'El niño vive una aventura gamificada de 12 minutos. Al terminar, la institución, el club y la familia reciben un informe con el perfil conductual del deportista.',
+                        '10 minutos de juego para el niño, generan un mapa de sintonía inmediato para el club y la familia.',
                         'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.',
                         'Através de uma dinâmica gamificada baseada em DISC + Motor, alinhamos o ambiente com a natureza do atleta. Uma solução técnica para eliminar o estresse e garantir o prazer genuíno das crianças.',
                     )}
@@ -790,7 +790,7 @@ export const Landing: React.FC = () => {
                     {[
                         { num: '01', text: 'El niño juega' },
                         { num: '02', text: 'Argo analiza su perfil' },
-                        { num: '03', text: 'La institución recibe el informe' },
+                        { num: '03', text: 'La institución y la familia reciben el informe' },
                     ].map(({ num, text }, i, arr) => (
                         <React.Fragment key={num}>
                             <div className="flex items-center gap-2">
@@ -822,9 +822,9 @@ export const Landing: React.FC = () => {
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
                         {L(
-                            '12 minutos para comprender mejor a tu pequeño atleta',
+                            '10 minutos para comprender mejor a tu pequeño atleta',
                             '12 minutes to better understand your young athlete',
-                            '12 minutos para compreender melhor seu pequeno atleta',
+                            '10 minutos para compreender melhor seu pequeno atleta',
                         )}
                     </span>
                 </motion.div>
@@ -860,12 +860,12 @@ export const Landing: React.FC = () => {
                                             01 — El juego
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                            Los niños experimentan una aventura gráfica de 12 minutos. Sus elecciones revelan su perfil conductual de forma natural, sin preguntas directas.
+                                            Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones revelan su perfil conductual de forma natural, sin preguntas directas.
                                         </p>
                                     </div>
                                     <div>
                                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
-                                            02 — El dashboard
+                                            02 — La plataforma
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
                                             La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte desde su naturaleza.
@@ -1200,9 +1200,9 @@ export const Landing: React.FC = () => {
                     </h2>
                     <p style={{ fontWeight: 400, fontSize: '16px', color: '#86868B', marginBottom: '40px' }}>
                         {L(
-                            '12 minutos. Un informe al email. Sin apps ni instalaciones.',
+                            '10 minutos. Un informe al email. Sin apps ni instalaciones.',
                             '12 minutes. A report to your inbox. No apps or installs.',
-                            '12 minutos. Um relatório no email. Sem apps nem instalações.',
+                            '10 minutos. Um relatório no email. Sem apps nem instalações.',
                         )}
                     </p>
                     <button
