@@ -24,7 +24,8 @@ import {
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
-interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; }
+interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
+interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -57,9 +58,38 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const months = monthsSince(session.created_at);
 
     const reportData = useMemo(() => {
-        try { return getReportData(session.eje as any, session.motor as any, '', session.child_name); }
+        try {
+            const r = getReportData(session.eje as any, session.motor as any, session.eje_secundario ?? '', session.child_name);
+            if (session.eje_secundario) {
+                const t = getTendenciaContent(session.eje, session.eje_secundario);
+                if (t) {
+                    r.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
+                    r.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
+                    r.palabrasPuenteExtra = t.palabrasPuenteExtra;
+                    r.palabrasRuidoExtra = t.palabrasRuidoExtra;
+                }
+            }
+            // Merge AI-personalized sections if available
+            const ai = session.ai_sections;
+            if (ai) {
+                if (ai.label)               r.arquetipo.label    = ai.label;
+                if (ai.motorDesc)           r.motorDesc          = ai.motorDesc;
+                if (ai.combustible)         r.combustible        = ai.combustible;
+                if (ai.ecos)                r.ecos               = ai.ecos;
+                if (ai.reseteo)             r.reseteo            = ai.reseteo;
+                if (ai.checklist)           r.checklist          = ai.checklist;
+                if (ai.guia)                r.guia               = ai.guia;
+                if (ai.palabrasPuente)      r.palabrasPuente     = ai.palabrasPuente;
+                if (ai.palabrasRuido)       r.palabrasRuido      = ai.palabrasRuido;
+                if (ai.tendenciaLabel)      r.tendenciaLabel     = ai.tendenciaLabel;
+                if (ai.tendenciaParagraph)  r.tendenciaParagraph = ai.tendenciaParagraph;
+                if (ai.palabrasPuenteExtra) r.palabrasPuenteExtra = ai.palabrasPuenteExtra;
+                if (ai.palabrasRuidoExtra)  r.palabrasRuidoExtra  = ai.palabrasRuidoExtra;
+            }
+            return r;
+        }
         catch { return null; }
-    }, [session.eje, session.motor, session.child_name]);
+    }, [session.eje, session.motor, session.eje_secundario, session.child_name, session.ai_sections]);
 
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
@@ -79,16 +109,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
         setResending(true);
         try {
             const sLang = session.lang || 'es';
-            const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
-            if (session.eje_secundario) {
-                const t = getTendenciaContent(session.eje, session.eje_secundario);
-                if (t) {
-                    report.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
-                    report.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
-                    report.palabrasPuenteExtra = t.palabrasPuenteExtra;
-                    report.palabrasRuidoExtra = t.palabrasRuidoExtra;
-                }
-            }
+            const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name);
             const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
             await sendReport({
                 toEmail:        session.adult_email,
@@ -99,7 +120,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 eje:            session.eje,
                 motor:          session.motor,
                 arquetipo:      arquetipoFull,
-                perfil:         report.perfil,
+                perfil:         sLang === 'es' ? report.perfil : '',
                 palabrasPuente: report.palabrasPuente,
                 sessionId:      session.id,
                 lang:           sLang,
@@ -112,16 +133,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
     const handleDownload = async () => {
         const sLang = session.lang || 'es';
         const locale = sLang === 'pt' ? 'pt-BR' : sLang === 'en' ? 'en-US' : 'es-AR';
-        const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
-        if (session.eje_secundario) {
-            const t = getTendenciaContent(session.eje, session.eje_secundario);
-            if (t) {
-                report.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
-                report.tendenciaParagraph = t.parrafo.replace(/\{nombre\}/g, session.child_name);
-                report.palabrasPuenteExtra = t.palabrasPuenteExtra;
-                report.palabrasRuidoExtra = t.palabrasRuidoExtra;
-            }
-        }
+        const report = reportData ?? getReportData(session.eje, session.motor, '', session.child_name);
         const html = buildDownloadableReportHtml({
             report,
             childName: session.child_name,
@@ -215,7 +227,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                     className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden md:inline-block"
                     style={{ border: `1px solid ${chip.border}`, color: chip.text }}
                 >
-                    {session.archetype_label}
+                    {reportData?.arquetipo.label ?? session.archetype_label}
                 </span>
 
                 {/* Motor */}

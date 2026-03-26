@@ -21,7 +21,7 @@ import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { ChildResultReveal } from './screens/ChildResultReveal';
 import { sendReport } from '../../lib/emailService';
-import { CHILD_REVEAL_TEXTS } from '../../lib/childRevealTexts';
+import { CHILD_REVEAL_TEXTS, CHILD_REVEAL_TEXTS_EN, CHILD_REVEAL_TEXTS_PT } from '../../lib/childRevealTexts';
 import { AnimatedScene } from './scenes/AnimatedScene';
 import { IslasDesconocidas, IslandMetrics } from '../games/IslasDesconocidas';
 import { MiniGame1, RhythmMetrics } from './screens/MiniGame1';
@@ -498,12 +498,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 finalSections = sections;
                 setAiSections(sections);
 
-                // Option 1: Update session with AI usage data
+                // Option 1: Update session with AI usage + persist sections
                 if (sessionIdRef.current) {
                     await updateSession(sessionIdRef.current, {
                         ai_tokens_input:  usage.inputTokens,
                         ai_tokens_output: usage.outputTokens,
                         ai_cost_usd:      usage.costUsd,
+                        ai_sections:      sections,
                     });
                 }
             } catch (err) {
@@ -531,8 +532,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     eje:            profile.eje,
                     motor:          profile.motor,
                     arquetipo:      arquetipoFull,
-                    perfil:         report.perfil,
-                    palabrasPuente: report.palabrasPuente,
+                    perfil:         lang === 'es' ? report.perfil : '',
+                    palabrasPuente: finalSections?.palabrasPuente ?? report.palabrasPuente,
                     sessionId:      sessionIdRef.current ?? undefined,
                     lang,
                 });
@@ -733,7 +734,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         nombreNino={nombre}
                         arquetipoLabel={reportRef.current.arquetipo.label}
                         adultEmail={adultData.email}
-                        resultText={CHILD_REVEAL_TEXTS[reportRef.current.arquetipo.id] ?? CHILD_REVEAL_TEXTS['impulsor_decidido']}
+                        lang={lang}
+                        resultText={(() => {
+                            const id = reportRef.current!.arquetipo.id;
+                            const textMap = lang === 'en' ? CHILD_REVEAL_TEXTS_EN
+                                : lang === 'pt' ? CHILD_REVEAL_TEXTS_PT
+                                : CHILD_REVEAL_TEXTS;
+                            return textMap[id] ?? CHILD_REVEAL_TEXTS[id] ?? CHILD_REVEAL_TEXTS['impulsor_decidido'];
+                        })()}
                     />
                 )}
 

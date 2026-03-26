@@ -4,6 +4,7 @@ import { Link2, Printer, CheckCircle } from 'lucide-react';
 import { getReportData } from '../lib/argosEngine';
 import { getTendenciaContent } from '../lib/archetypeData';
 import { TENDENCIA_LABELS } from '../lib/profileResolver';
+import type { AISections } from '../lib/openaiService';
 import {
     classifyDecisionPattern,
     getPatternCopy,
@@ -26,6 +27,7 @@ interface SessionData {
     lang: string;
     answers: { axis: string; responseTimeMs: number }[] | null;
     created_at: string;
+    ai_sections: AISections | null;
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -253,6 +255,7 @@ export const ReportPage: React.FC = () => {
                     ...Array.from({ length: 2 }, () => ({ axis: 'C', responseTimeMs: 5500 })),
                 ],
                 created_at: new Date().toISOString(),
+                ai_sections: null,
             });
             setLoading(false);
             return;
@@ -269,6 +272,7 @@ export const ReportPage: React.FC = () => {
             })
             .catch(() => { setNotFound(true); setLoading(false); });
     }, [sessionId]);
+
 
     const handleCopy = () => {
         navigator.clipboard.writeText(window.location.href).then(() => {
@@ -314,6 +318,25 @@ export const ReportPage: React.FC = () => {
             report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
             report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;
         }
+    }
+
+    // Merge AI-personalized sections from DB
+    const aiSections = session.ai_sections;
+    if (aiSections) {
+        if (aiSections.label)              report.arquetipo.label     = aiSections.label;
+        if (aiSections.bienvenida)         report.bienvenida          = aiSections.bienvenida;
+        if (aiSections.motorDesc)          report.motorDesc           = aiSections.motorDesc;
+        if (aiSections.combustible)        report.combustible         = aiSections.combustible;
+        if (aiSections.ecos)               report.ecos                = aiSections.ecos;
+        if (aiSections.reseteo)            report.reseteo             = aiSections.reseteo;
+        if (aiSections.checklist)          report.checklist           = aiSections.checklist;
+        if (aiSections.guia)               report.guia                = aiSections.guia;
+        if (aiSections.palabrasPuente)     report.palabrasPuente      = aiSections.palabrasPuente;
+        if (aiSections.palabrasRuido)      report.palabrasRuido       = aiSections.palabrasRuido;
+        if (aiSections.tendenciaLabel)     report.tendenciaLabel      = aiSections.tendenciaLabel;
+        if (aiSections.tendenciaParagraph) report.tendenciaParagraph  = aiSections.tendenciaParagraph;
+        if (aiSections.palabrasPuenteExtra) report.palabrasPuenteExtra = aiSections.palabrasPuenteExtra;
+        if (aiSections.palabrasRuidoExtra)  report.palabrasRuidoExtra  = aiSections.palabrasRuidoExtra;
     }
 
     const decisionPattern = session.answers?.length

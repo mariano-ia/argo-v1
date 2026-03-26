@@ -10,7 +10,14 @@ interface Props {
     arquetipoLabel: string;
     adultEmail: string;
     resultText: string;
+    lang?: string;
 }
+
+const REVEAL_STRINGS = {
+    es: { title: 'Misión cumplida, navegante', sentTo: 'Informe enviado a:' },
+    en: { title: 'Mission accomplished, navigator', sentTo: 'Report sent to:' },
+    pt: { title: 'Missão cumprida, navegante', sentTo: 'Relatório enviado para:' },
+};
 
 // ─── Confetti Lottie ────────────────────────────────────────────────────────────
 
@@ -143,8 +150,9 @@ const WaterSparkles: React.FC = () => (
 // ─── Main Component ─────────────────────────────────────────────────────────────
 
 export const ChildResultReveal: React.FC<Props> = ({
-    nombreNino, arquetipoLabel: _arquetipoLabel, adultEmail, resultText,
+    nombreNino, arquetipoLabel: _arquetipoLabel, adultEmail, resultText, lang = 'es',
 }) => {
+    const strings = REVEAL_STRINGS[lang as keyof typeof REVEAL_STRINGS] ?? REVEAL_STRINGS.es;
     const fullText = resultText.replace(/\{\{NOMBRE\}\}/g, nombreNino);
     const [showContent, setShowContent] = useState(false);
 
@@ -231,7 +239,7 @@ export const ChildResultReveal: React.FC<Props> = ({
                         transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                         className="font-adventure text-white text-3xl font-light leading-tight tracking-normal"
                     >
-                        Misión cumplida, navegante
+                        {strings.title}
                     </motion.h1>
 
                     {/* Body text — fade-in, left-aligned, respects line breaks */}
@@ -261,7 +269,7 @@ export const ChildResultReveal: React.FC<Props> = ({
                     >
                         <Mail size={16} className="text-white/60 shrink-0" />
                         <p className="font-quest text-white/70 text-sm leading-snug">
-                            Informe enviado a:{' '}
+                            {strings.sentTo}{' '}
                             <span className="text-white/90 font-semibold">{adultEmail}</span>
                         </p>
                     </motion.div>

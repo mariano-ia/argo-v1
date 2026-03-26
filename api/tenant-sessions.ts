@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Fetch sessions for this tenant
         const { data: sessions, error: sessError } = await sb
             .from('sessions')
-            .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, created_at, lang, answers')
+            .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, created_at, lang, answers, ai_sections')
             .eq('tenant_id', tenant.id)
             .is('deleted_at', null)
             .not('eje', 'eq', '_pending')
