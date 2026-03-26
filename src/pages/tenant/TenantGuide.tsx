@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Compass } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
-    SITUATIONS, SITUATION_CARDS, CATEGORY_COLORS,
+    CATEGORY_COLORS, getSituations, getSituationCards,
     type Situation, type SituationCard,
 } from '../../lib/situationalGuide';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
@@ -21,15 +21,33 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 /* ── Category icons (replace emojis) ───────────────────────────────────────── */
 
 
+const CATEGORY_LABELS: Record<string, Record<string, string>> = {
+    es: { Motivación: 'Motivación', Emocional: 'Emocional', Comunicación: 'Comunicación', Presión: 'Presión', Social: 'Social', Concentración: 'Concentración', Observación: 'Observación', Grupal: 'Grupal' },
+    en: { Motivación: 'Motivation', Emocional: 'Emotional', Comunicación: 'Communication', Presión: 'Pressure', Social: 'Social', Concentración: 'Focus', Observación: 'Observation', Grupal: 'Team' },
+    pt: { Motivación: 'Motivação', Emocional: 'Emocional', Comunicación: 'Comunicação', Presión: 'Pressão', Social: 'Social', Concentración: 'Concentração', Observación: 'Observação', Grupal: 'Coletivo' },
+};
+const getCategoryLabel = (cat: string, lang: string) => CATEGORY_LABELS[lang]?.[cat] ?? cat;
+
 /** Renders profilePerspectives text with styled axis name markers */
-function renderPerspectives(text: string): React.ReactNode {
-    const MARKER_MAP: Record<string, { label: string; color: string }> = {
+function renderPerspectives(text: string, lang: string): React.ReactNode {
+    const MARKER_MAP: Record<string, { label: string; color: string }> = lang === 'en' ? {
+        '{{Driver}}':     { label: 'Driver',     color: '#f97316' },
+        '{{Connector}}':  { label: 'Connector',  color: '#f59e0b' },
+        '{{Supporter}}':  { label: 'Supporter',  color: '#22c55e' },
+        '{{Strategist}}': { label: 'Strategist', color: '#6366f1' },
+    } : lang === 'pt' ? {
+        '{{Impulsionador}}': { label: 'Impulsionador', color: '#f97316' },
+        '{{Conector}}':      { label: 'Conector',      color: '#f59e0b' },
+        '{{Sustentador}}':   { label: 'Sustentador',   color: '#22c55e' },
+        '{{Estrategista}}':  { label: 'Estrategista',  color: '#6366f1' },
+    } : {
         '{{Impulsor}}':  { label: 'Impulsor',  color: '#f97316' },
         '{{Conector}}':  { label: 'Conector',  color: '#f59e0b' },
         '{{Sosten}}':    { label: 'Sosten',    color: '#22c55e' },
         '{{Estratega}}': { label: 'Estratega', color: '#6366f1' },
     };
-    const regex = /\{\{(Impulsor|Conector|Sosten|Estratega)\}\}/g;
+    const markerNames = Object.keys(MARKER_MAP).map(k => k.slice(2, -2));
+    const regex = new RegExp(`\\{\\{(${markerNames.join('|')})\\}\\}`, 'g');
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
@@ -109,26 +127,27 @@ export const TenantGuide: React.FC = () => {
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
-    const categories = useMemo(() => [...new Set(SITUATIONS.map(s => s.category))], []);
-    const filtered = useMemo(() => SITUATIONS.filter(s => {
+    const categories = useMemo(() => [...new Set(getSituations(lang).map(s => s.category))], [lang]);
+    const filtered = useMemo(() => getSituations(lang).filter(s => {
         if (categoryFilter && s.category !== categoryFilter) return false;
         if (search) { const q = search.toLowerCase(); return s.title.toLowerCase().includes(q) || s.whatYouSee.toLowerCase().includes(q); }
         return true;
-    }), [search, categoryFilter]);
+    }), [search, categoryFilter, lang]);
 
     const selectedPlayer = sessions.find(s => s.id === selectedPlayerId) ?? null;
 
     // Get card for selected situation + player
     const activeCard: SituationCard | null = useMemo(() => {
         if (!selectedSituation) return null;
+        const cards = getSituationCards(lang);
         if (selectedSituation.category === 'Grupal') {
-            return SITUATION_CARDS.find(c => c.situationId === selectedSituation.id && c.eje === 'group') ?? null;
+            return cards.find(c => c.situationId === selectedSituation.id && c.eje === 'group') ?? null;
         }
         if (selectedPlayer) {
-            return SITUATION_CARDS.find(c => c.situationId === selectedSituation.id && c.eje === selectedPlayer.eje) ?? null;
+            return cards.find(c => c.situationId === selectedSituation.id && c.eje === selectedPlayer.eje) ?? null;
         }
         return null;
-    }, [selectedSituation, selectedPlayer]);
+    }, [selectedSituation, selectedPlayer, lang]);
 
     if (!tenant) {
         return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
@@ -181,7 +200,7 @@ export const TenantGuide: React.FC = () => {
                                 }`}
                                 style={isActive ? { background: cc.text, borderColor: cc.text } : {}}
                             >
-                                {cat}
+                                {getCategoryLabel(cat, lang)}
                             </button>
                         );
                     })}
@@ -209,7 +228,7 @@ export const TenantGuide: React.FC = () => {
                                         {situation.title}
                                     </p>
                                     <span className="px-2 py-0.5 rounded-full text-[9px] font-semibold flex-shrink-0" style={{ background: cc.bg, color: cc.text }}>
-                                        {situation.category}
+                                        {getCategoryLabel(situation.category, lang)}
                                     </span>
                                 </div>
                                 <p className="text-[11px] text-argo-light line-clamp-2 leading-relaxed">{situation.whatYouSee}</p>
@@ -263,7 +282,7 @@ export const TenantGuide: React.FC = () => {
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="px-2.5 py-0.5 rounded-md text-[10px] font-semibold" style={{ background: (CATEGORY_COLORS[selectedSituation.category] ?? { bg: '#f3f4f6' }).bg, color: (CATEGORY_COLORS[selectedSituation.category] ?? { text: '#374151' }).text }}>
-                                            {selectedSituation.category}
+                                            {getCategoryLabel(selectedSituation.category, lang)}
                                         </span>
                                     </div>
                                     <h2 className="text-lg font-bold text-argo-navy">{selectedSituation.title}</h2>
@@ -316,7 +335,7 @@ export const TenantGuide: React.FC = () => {
                                                   if (parts.length === 0) {
                                                       return (
                                                           <p className="text-[13px] text-argo-secondary leading-[1.8]">
-                                                              {renderPerspectives(text)}
+                                                              {renderPerspectives(text, lang)}
                                                           </p>
                                                       );
                                                   }
@@ -326,14 +345,14 @@ export const TenantGuide: React.FC = () => {
                                                           {parts.map((p, i) => (
                                                               <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_COLORS[['D','I','S','C'][i]] + '40' }}>
                                                                   <p className="text-[13px] text-argo-secondary leading-[1.75]">
-                                                                      {renderPerspectives(p.text)}
+                                                                      {renderPerspectives(p.text, lang)}
                                                                   </p>
                                                               </div>
                                                           ))}
                                                       </div>
                                                   );
                                               })()
-                                            : <p className="text-[13px] text-argo-secondary leading-[1.8]">{renderPerspectives(selectedSituation.profilePerspectives)}</p>
+                                            : <p className="text-[13px] text-argo-secondary leading-[1.8]">{renderPerspectives(selectedSituation.profilePerspectives, lang)}</p>
                                         }
                                     </div>
                                 )}

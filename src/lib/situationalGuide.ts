@@ -812,6 +812,23 @@ export function getCardForSituationAndEje(situationId: string, eje: string): Sit
     return SITUATION_CARDS.find(c => c.situationId === situationId && c.eje === eje);
 }
 
+/* ── Localized getters ──────────────────────────────────────────────────────── */
+
+import { SITUATIONS_EN, SITUATION_CARDS_EN } from './situationalGuide.en';
+import { SITUATIONS_PT, SITUATION_CARDS_PT } from './situationalGuide.pt';
+
+export function getSituations(lang: string): Situation[] {
+    if (lang === 'en') return SITUATIONS_EN;
+    if (lang === 'pt') return SITUATIONS_PT;
+    return SITUATIONS;
+}
+
+export function getSituationCards(lang: string): SituationCard[] {
+    if (lang === 'en') return SITUATION_CARDS_EN;
+    if (lang === 'pt') return SITUATION_CARDS_PT;
+    return SITUATION_CARDS;
+}
+
 export const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
     Motivación:    { bg: '#fef3c7', text: '#92400e' },
     Emocional:     { bg: '#fce7f3', text: '#9d174d' },

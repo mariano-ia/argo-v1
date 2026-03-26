@@ -7,8 +7,8 @@ import {
     getNotablePairs,
 } from '../../../lib/groupBalance';
 import {
-    GROUP_PROFILE_TEXTS, COMPOSITE_TEXTS, getCompositeKey,
-    INDICATOR_TEXTS, DIVERSITY_TEXTS, MOTOR_TEXTS, AXIS_CONFIG,
+    getCompositeKey, AXIS_CONFIG,
+    getGroupProfileText, getCompositeText, getIndicatorText, getDiversityText, getMotorText,
 } from '../../../lib/groupBalanceRules';
 import { IndicatorBar } from './IndicatorBar';
 import { PairSuggestions } from './PairSuggestions';
@@ -52,16 +52,16 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
     const pairs = getNotablePairs(members, 3);
 
     const compositeKey = groupTypes.length === 2 ? getCompositeKey(groupTypes) : null;
-    const compositeText = compositeKey ? COMPOSITE_TEXTS[compositeKey] : null;
+    const compositeText = getCompositeText(compositeKey, lang);
 
     const primaryText = compositeText ?? (
-        groupTypes.length > 0 ? GROUP_PROFILE_TEXTS[groupTypes[0]] : null
+        groupTypes.length > 0 ? getGroupProfileText(groupTypes[0], lang) : null
     );
 
     const duplasCount = pairs.complementarias.length + pairs.afinidades.length;
 
     const strengths = !compositeText && groupTypes.length > 0
-        ? GROUP_PROFILE_TEXTS[groupTypes[0]]?.strengths
+        ? getGroupProfileText(groupTypes[0], lang)?.strengths
         : null;
 
     return (
@@ -116,13 +116,13 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                 <div className="flex items-center gap-4 flex-wrap pt-1">
                     <div className="flex items-center gap-1.5">
                         <span className="text-[11px] font-semibold text-argo-grey">{lang === 'en' ? 'Diversity:' : lang === 'pt' ? 'Diversidade:' : 'Diversidad:'}</span>
-                        <span className="text-[11px] font-bold" style={{ color: '#7c5cfc' }}>{DIVERSITY_TEXTS[diversityLevel].label}</span>
-                        <InfoTip text={DIVERSITY_TEXTS[diversityLevel].description} />
+                        <span className="text-[11px] font-bold" style={{ color: '#7c5cfc' }}>{getDiversityText(diversityLevel, lang).label}</span>
+                        <InfoTip text={getDiversityText(diversityLevel, lang).description} />
                     </div>
                     <div className="flex items-center gap-1.5">
                         <span className="text-[11px] font-semibold text-argo-grey">{lang === 'en' ? 'Pace:' : lang === 'pt' ? 'Ritmo:' : 'Ritmo:'}</span>
-                        <span className="text-[11px] font-bold text-argo-navy">{MOTOR_TEXTS[motorType].identity.split('.')[0]}</span>
-                        <InfoTip text={MOTOR_TEXTS[motorType].tools} />
+                        <span className="text-[11px] font-bold text-argo-navy">{getMotorText(motorType, lang).identity.split('.')[0]}</span>
+                        <InfoTip text={getMotorText(motorType, lang).tools} />
                     </div>
                 </div>
 
@@ -168,13 +168,13 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                                     percentage={diversity}
                                     color="#7c5cfc"
                                     bgColor="#f0ecff"
-                                    levelLabel={DIVERSITY_TEXTS[diversityLevel].label}
-                                    description={DIVERSITY_TEXTS[diversityLevel].description}
+                                    levelLabel={getDiversityText(diversityLevel, lang).label}
+                                    description={getDiversityText(diversityLevel, lang).description}
                                 />
                                 {(['D', 'I', 'S', 'C'] as const).map(axis => {
                                     const pct = axisDist[axis];
                                     const level = getIndicatorLevel(pct);
-                                    const text = INDICATOR_TEXTS[axis][level];
+                                    const text = getIndicatorText(axis, level, lang);
                                     const cfg = AXIS_CONFIG[axis];
                                     return (
                                         <IndicatorBar
@@ -200,10 +200,10 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                                 <InfoTip text={lang === 'en' ? "How the group tends to react to stimuli and make decisions." : lang === 'pt' ? "Como o grupo tende a reagir a estímulos e tomar decisões." : "Cómo tiende el grupo a reaccionar ante estímulos y tomar decisiones."} />
                             </div>
                             <p className="text-sm text-argo-secondary leading-relaxed">
-                                {MOTOR_TEXTS[motorType].identity}
+                                {getMotorText(motorType, lang).identity}
                             </p>
                             <p className="text-xs text-argo-grey leading-relaxed mt-2 pl-3 border-l-2 border-argo-border">
-                                {MOTOR_TEXTS[motorType].tools}
+                                {getMotorText(motorType, lang).tools}
                             </p>
                         </div>
 

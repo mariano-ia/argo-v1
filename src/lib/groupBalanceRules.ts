@@ -259,6 +259,41 @@ export const MOTOR_TEXTS: Record<MotorGroupType, MotorText> = {
     },
 };
 
+/* ── Localized getters ──────────────────────────────────────────────────────── */
+
+import { GROUP_PROFILE_TEXTS_EN, COMPOSITE_TEXTS_EN, INDICATOR_TEXTS_EN, DIVERSITY_TEXTS_EN, MOTOR_TEXTS_EN } from './groupBalanceRules.en';
+import { GROUP_PROFILE_TEXTS_PT, COMPOSITE_TEXTS_PT, INDICATOR_TEXTS_PT, DIVERSITY_TEXTS_PT, MOTOR_TEXTS_PT } from './groupBalanceRules.pt';
+
+export function getGroupProfileText(type: GroupType, lang: string): GroupProfileText {
+    if (lang === 'en') return GROUP_PROFILE_TEXTS_EN[type] ?? GROUP_PROFILE_TEXTS[type];
+    if (lang === 'pt') return GROUP_PROFILE_TEXTS_PT[type] ?? GROUP_PROFILE_TEXTS[type];
+    return GROUP_PROFILE_TEXTS[type];
+}
+
+export function getCompositeText(key: string | null, lang: string): CompositeText | null {
+    if (!key) return null;
+    const map = lang === 'en' ? COMPOSITE_TEXTS_EN : lang === 'pt' ? COMPOSITE_TEXTS_PT : COMPOSITE_TEXTS;
+    return map[key] ?? null;
+}
+
+export function getIndicatorText(axis: string, level: IndicatorLevel, lang: string): IndicatorText {
+    if (lang === 'en') return INDICATOR_TEXTS_EN[axis]?.[level] ?? INDICATOR_TEXTS[axis][level];
+    if (lang === 'pt') return INDICATOR_TEXTS_PT[axis]?.[level] ?? INDICATOR_TEXTS[axis][level];
+    return INDICATOR_TEXTS[axis][level];
+}
+
+export function getDiversityText(level: DiversityLevel, lang: string): IndicatorText {
+    if (lang === 'en') return DIVERSITY_TEXTS_EN[level] ?? DIVERSITY_TEXTS[level];
+    if (lang === 'pt') return DIVERSITY_TEXTS_PT[level] ?? DIVERSITY_TEXTS[level];
+    return DIVERSITY_TEXTS[level];
+}
+
+export function getMotorText(type: MotorGroupType, lang: string): MotorText {
+    if (lang === 'en') return MOTOR_TEXTS_EN[type] ?? MOTOR_TEXTS[type];
+    if (lang === 'pt') return MOTOR_TEXTS_PT[type] ?? MOTOR_TEXTS[type];
+    return MOTOR_TEXTS[type];
+}
+
 /* ── Axis display config ───────────────────────────────────────────────────── */
 
 export const AXIS_CONFIG: Record<string, { name: string; indicatorLabel: string; color: string; bgColor: string; borderColor: string }> = {
