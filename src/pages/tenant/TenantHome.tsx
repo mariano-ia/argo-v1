@@ -165,7 +165,7 @@ export const TenantHome: React.FC = () => {
     const chartData = useMemo(() => {
         const nowMs = Date.now();
         const buckets: { week: string; sessions: number }[] = [];
-        for (let i = 7; i >= 0; i--) {
+        for (let i = 8; i >= 1; i--) {
             const weekStart = nowMs - i * 7 * 86400000;
             const weekEnd = weekStart + 7 * 86400000;
             const count = sessions.filter(s => { const t = new Date(s.created_at).getTime(); return t >= weekStart && t < weekEnd; }).length;
