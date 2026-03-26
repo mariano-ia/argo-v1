@@ -11,7 +11,7 @@ import {
     getPatternSectionLabel,
     getImplicationLabel,
 } from '../lib/decisionPattern';
-import { AXIS_COLORS, AXIS_CHIP, AXIS_LABELS, MOTOR_CHIP } from '../lib/designTokens';
+import { AXIS_COLORS, AXIS_CHIP, MOTOR_CHIP } from '../lib/designTokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,11 +176,19 @@ const DigestBox: React.FC<{ children: string }> = ({ children }) => (
 
 // ─── Axis distribution mini-bars ──────────────────────────────────────────────
 
+const AXIS_LABELS_I18N: Record<string, Record<string, string>> = {
+    es: { D: 'Impulsor', I: 'Conector', S: 'Sostén',    C: 'Estratega' },
+    en: { D: 'Driver',   I: 'Connector', S: 'Supporter', C: 'Strategist' },
+    pt: { D: 'Impulsor', I: 'Conector',  S: 'Sustento',  C: 'Estrategista' },
+};
+
 const AxisBars: React.FC<{
     answers: { axis: string }[];
     dominantEje: string;
     label: string;
-}> = ({ answers, dominantEje, label }) => {
+    lang: string;
+}> = ({ answers, dominantEje, label, lang }) => {
+    const axisLabels = AXIS_LABELS_I18N[lang] ?? AXIS_LABELS_I18N.es;
     const counts = { D: 0, I: 0, S: 0, C: 0 };
     answers.forEach(a => { if (a.axis in counts) counts[a.axis as keyof typeof counts]++; });
     const maxCount = Math.max(...Object.values(counts), 1);
@@ -195,7 +203,7 @@ const AxisBars: React.FC<{
                     return (
                         <div key={axis} className="flex items-center gap-3">
                             <span className="text-[11px] font-medium text-argo-grey w-20 flex-shrink-0">
-                                {AXIS_LABELS[axis]}
+                                {axisLabels[axis]}
                             </span>
                             <div className="flex-1 bg-argo-bg rounded-full h-2 overflow-hidden">
                                 <div
@@ -433,6 +441,7 @@ export const ReportPage: React.FC = () => {
                             answers={session.answers!}
                             dominantEje={session.eje}
                             label={t.distribution}
+                            lang={lang}
                         />
                     )}
                 </Card>
