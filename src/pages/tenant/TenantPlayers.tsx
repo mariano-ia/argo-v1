@@ -18,7 +18,6 @@ import {
     classifyDecisionPattern,
     getPatternCopy,
     getPatternSectionLabel,
-    getImplicationLabel,
 } from '../../lib/decisionPattern';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -254,33 +253,6 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
-                            {/* ── Patrón de decisión ──────────────────────── */}
-                            {decisionPattern ? (() => {
-                                const p = getPatternCopy(decisionPattern, lang);
-                                return (
-                                    <div className="mb-5 rounded-xl bg-argo-bg border border-argo-border px-4 py-3.5">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2.5">
-                                            {getPatternSectionLabel(lang)}
-                                        </p>
-                                        <p className="text-sm font-semibold text-argo-navy mb-1">{p.label}</p>
-                                        <p className="text-xs text-argo-secondary leading-relaxed mb-3">{p.desc}</p>
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-1.5">
-                                            {getImplicationLabel(lang)}
-                                        </p>
-                                        <div className="border-l-2 border-argo-violet-200 pl-3">
-                                            <p className="text-xs text-argo-grey leading-relaxed">{p.imp}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })() : (
-                                <div className="mb-5 rounded-xl bg-argo-bg border border-argo-border px-4 py-3.5">
-                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                        {getPatternSectionLabel(lang)}
-                                    </p>
-                                    <p className="text-xs text-argo-light">Sin datos de tiempos de respuesta para esta sesión.</p>
-                                </div>
-                            )}
-
                             {/* 2-column layout for detail */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
@@ -292,6 +264,20 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfil}</p>
                                         </div>
                                     )}
+
+                                    {/* Decision pattern */}
+                                    {decisionPattern && (() => {
+                                        const p = getPatternCopy(decisionPattern, lang);
+                                        return (
+                                            <div>
+                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                    {getPatternSectionLabel(lang)}
+                                                </p>
+                                                <p className="text-xs font-semibold text-argo-navy mb-0.5">{p.label}</p>
+                                                <p className="text-xs text-argo-grey leading-relaxed">{p.desc}</p>
+                                            </div>
+                                        );
+                                    })()}
 
                                     {/* Tendencia */}
                                     {tendenciaContent && (
