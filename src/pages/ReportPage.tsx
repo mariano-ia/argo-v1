@@ -331,6 +331,7 @@ export const ReportPage: React.FC = () => {
     // Merge AI-personalized sections from DB
     const aiSections = session.ai_sections;
     if (aiSections) {
+        if (aiSections.perfil)             report.perfil              = aiSections.perfil;
         if (aiSections.label)              report.arquetipo.label     = aiSections.label;
         if (aiSections.bienvenida)         report.bienvenida          = aiSections.bienvenida;
         if (aiSections.motorDesc)          report.motorDesc           = aiSections.motorDesc;
@@ -432,7 +433,7 @@ export const ReportPage: React.FC = () => {
                             {t.motor} {motorDisplayName}
                         </span>
                     </div>
-                    {lang === 'es' && <p className="text-base font-semibold text-argo-navy mb-3 leading-snug">{report.perfil}</p>}
+                    <p className="text-base font-semibold text-argo-navy mb-3 leading-snug">{report.perfil}</p>
                     <DigestBox>{cleanText(report.bienvenida)}</DigestBox>
 
                     {/* Axis distribution */}

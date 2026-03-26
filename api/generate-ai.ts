@@ -144,6 +144,7 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const additionalContent = isNonEs ? `
 ADDITIONAL CONTENT TO TRANSLATE (translate these from Spanish into ${langLabel}):
 - Archetype label: ${base.arquetipo.label}
+- Perfil tagline (5-8 word subtitle shown under the archetype name): ${base.perfil}
 - Bienvenida (welcome/contract): ${base.bienvenida}
 - Grupo y Espacio (group life): ${base.grupoEspacio}
 - Guía de Sintonía (tuning guide rows):
@@ -167,6 +168,7 @@ ${guiaText}
   "ecos": "rewritten text",
   "checklist": { "antes": "text", "durante": "text", "despues": "text" },
   "label": "translated archetype name",
+  "perfil": "translated perfil tagline",
   "bienvenida": "translated welcome/contract text",
   "grupoEspacio": "translated group life text",
   "guia": [{"situacion":"...","activador":"...","desmotivacion":"..."}, ...],
