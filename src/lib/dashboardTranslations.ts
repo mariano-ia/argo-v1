@@ -681,11 +681,11 @@ const pt: DashboardTexts = {
     nav: {
         inicio: 'Inicio',
         jugadores: 'Minha equipe',
-        grupos: 'Formacoes',
+        grupos: 'Formações',
         guia: 'Bússola',
         chat: 'Consultor Argo',
         miLink: 'Convidar',
-        ajustes: 'Configuracoes',
+        ajustes: 'Configurações',
         cerrarSesion: 'Sair',
     },
     common: {
@@ -847,7 +847,7 @@ const pt: DashboardTexts = {
         indicadoresGrupo: 'Indicadores do grupo',
         diversidadDISC: 'Diversidade de estilos',
         perfilMotorGrupo: 'Perfil de motor do grupo',
-        distribucionDISC: 'Distribuicao de estilos',
+        distribucionDISC: 'Distribuição de estilos',
         distribucionMotor: 'Distribuição de motor',
         guiaDuplas: 'Guia de duplas',
         mayorComplementariedad: 'Maior complementaridade',

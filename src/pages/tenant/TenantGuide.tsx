@@ -219,7 +219,7 @@ export const TenantGuide: React.FC = () => {
 
                     {filtered.length === 0 && (
                         <div className="py-8 text-center">
-                            <p className="text-xs text-argo-light">{lang === 'en' ? 'No situations found.' : lang === 'pt' ? 'Nenhuma situacao encontrada.' : 'No se encontraron situaciones.'}</p>
+                            <p className="text-xs text-argo-light">{lang === 'en' ? 'No situations found.' : lang === 'pt' ? 'Nenhuma situação encontrada.' : 'No se encontraron situaciones.'}</p>
                         </div>
                     )}
                 </div>
@@ -239,14 +239,14 @@ export const TenantGuide: React.FC = () => {
                                 <div className="text-center max-w-sm">
                                     <Compass size={28} className="text-argo-border mx-auto mb-4" />
                                     <p className="text-[15px] font-semibold text-argo-navy mb-2">
-                                        {lang === 'en' ? 'Select a situation' : lang === 'pt' ? 'Selecione uma situacao' : 'Selecciona una situacion'}
+                                        {lang === 'en' ? 'Select a situation' : lang === 'pt' ? 'Selecione uma situação' : 'Selecciona una situación'}
                                     </p>
                                     <p className="text-xs text-argo-light leading-relaxed">
                                         {lang === 'en'
                                             ? 'Choose a situation from the list to understand what is happening and how to help. You can also select one of your athletes to get personalized recommendations based on their profile.'
                                             : lang === 'pt'
-                                                ? 'Escolha uma situacao da lista para entender o que esta acontecendo e como ajudar. Voce tambem pode selecionar um dos seus atletas para obter recomendacoes personalizadas com base no perfil dele.'
-                                                : 'Elige una situacion de la lista para entender que esta pasando y como ayudar. Tambien puedes seleccionar a uno de tus deportistas para recibir recomendaciones personalizadas segun su perfil.'}
+                                                ? 'Escolha uma situação da lista para entender o que está acontecendo e como ajudar. Você também pode selecionar um dos seus atletas para obter recomendações personalizadas com base no perfil dele.'
+                                                : 'Elige una situación de la lista para entender qué está pasando y cómo ayudar. También puedes seleccionar a uno de tus deportistas para recibir recomendaciones personalizadas según su perfil.'}
                                     </p>
                                 </div>
                             </motion.div>
@@ -273,7 +273,7 @@ export const TenantGuide: React.FC = () => {
                                 {selectedSituation.profilePerspectives && (
                                     <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
                                         <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">
-                                            {lang === 'en' ? 'How each profile experiences this situation' : lang === 'pt' ? 'Como cada perfil vivencia esta situacao' : 'Como vive cada perfil esta situacion'}
+                                            {lang === 'en' ? 'How each profile experiences this situation' : lang === 'pt' ? 'Como cada perfil vivencia esta situação' : 'Cómo vive cada perfil esta situación'}
                                         </p>
                                         {selectedSituation.profilePerspectives
                                             .split(/Si (?:el jugador tiene perfil |es |el perfil es |hay un )|Un /)
@@ -390,7 +390,7 @@ export const TenantGuide: React.FC = () => {
                                                                 onChange={e => { setPlayerGroupFilter(e.target.value || null); setPlayerShowAll(false); }}
                                                                 className="px-2 py-1.5 rounded-md border border-argo-border text-[11px] text-argo-secondary outline-none focus:border-argo-violet-200 transition-colors bg-white"
                                                             >
-                                                                <option value="">{lang === 'en' ? 'All formations' : lang === 'pt' ? 'Todas as formacoes' : 'Todas las formaciones'}</option>
+                                                                <option value="">{lang === 'en' ? 'All formations' : lang === 'pt' ? 'Todas as formações' : 'Todas las formaciones'}</option>
                                                                 {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                                                             </select>
                                                         )}
