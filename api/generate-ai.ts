@@ -225,8 +225,8 @@ ${jsonSchema}`;
 
 // ─── Pricing ─────────────────────────────────────────────────────────────────
 
-const GPT4O_INPUT_COST_PER_TOKEN = 2.50 / 1_000_000;
-const GPT4O_OUTPUT_COST_PER_TOKEN = 10.00 / 1_000_000;
+const GPT4O_INPUT_COST_PER_TOKEN = 0.15 / 1_000_000;
+const GPT4O_OUTPUT_COST_PER_TOKEN = 0.60 / 1_000_000;
 
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
@@ -260,7 +260,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: 'gpt-4o',
+                model: 'gpt-4o-mini',
                 temperature: 0.7,
                 max_tokens: isNonEs ? 4500 : 2500,
                 messages: [

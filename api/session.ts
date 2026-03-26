@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const allowed: Record<string, unknown> = {};
             const safeKeys = [
                 'eje', 'motor', 'archetype_label', 'eje_secundario',
-                'answers', 'ai_tokens_input', 'ai_tokens_output', 'ai_cost_usd',
+                'answers', 'ai_tokens_input', 'ai_tokens_output', 'ai_cost_usd', 'ai_sections',
             ];
             for (const key of safeKeys) {
                 if (rest[key] !== undefined) allowed[key] = rest[key];
