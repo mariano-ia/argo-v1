@@ -18,6 +18,7 @@ export interface AISections {
     ecos: string;
     checklist: { antes: string; durante: string; despues: string };
     // Additional translated fields (present when lang !== 'es')
+    perfil?: string;
     label?: string;
     bienvenida?: string;
     grupoEspacio?: string;
