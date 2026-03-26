@@ -9,19 +9,19 @@ interface Props {
 const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string }> = {
     es: {
         label: 'Invita deportistas a jugar con tu link',
-        tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a tu dashboard.',
+        tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a la plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
     },
     en: {
         label: 'Invite athletes to play with your link',
-        tooltip: 'When you share this link, athletes can complete the experience and their profiles are linked to your dashboard.',
+        tooltip: 'When you share this link, athletes can complete the experience and their profiles are linked to your platform.',
         copy: 'Copy link',
         copied: 'Copied',
     },
     pt: {
         label: 'Convide atletas a jogar com seu link',
-        tooltip: 'Ao compartilhar este link, os atletas podem completar a experiencia e seus perfis ficam associados ao seu dashboard.',
+        tooltip: 'Ao compartilhar este link, os atletas podem completar a experiencia e seus perfis ficam associados à plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
     },

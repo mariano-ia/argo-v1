@@ -16,11 +16,20 @@ import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
 import { Tooltip } from '../../components/ui/Tooltip';
+import {
+    classifyDecisionPattern,
+    getPatternCopy,
+    getPatternSectionLabel,
+    getImplicationLabel,
+    buildSparklineSvg,
+    buildPatternEmailHtml,
+} from '../../lib/decisionPattern';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
-interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
+interface AnswerRecord { axis: string; responseTimeMs: number; }
+interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -66,6 +75,11 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
         ? (dt.profile?.tendenciaLabels?.[session.eje_secundario] ?? '')
         : '';
 
+    const decisionPattern = useMemo(() => {
+        if (!session.answers?.length) return null;
+        return classifyDecisionPattern(session.answers);
+    }, [session.answers]);
+
     const handleResend = async () => {
         setResending(true);
         try {
@@ -82,10 +96,11 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 }
             }
             const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
+            const patternBlock = decisionPattern ? buildPatternEmailHtml(decisionPattern, sLang) : '';
             await sendReport({
                 toEmail: session.adult_email, nombreAdulto: session.adult_name, nombreNino: session.child_name,
                 deporte: session.sport ?? '', edad: session.child_age, arquetipo: arquetipoFull,
-                reportHtml: buildReportHtml(report, null, ot), maduracionTemprana: session.child_age < 10,
+                reportHtml: patternBlock + buildReportHtml(report, null, ot), maduracionTemprana: session.child_age < 10,
                 sessionId: session.id, lang: sLang,
                 emailSubject: ot.emailSubject(session.child_name, arquetipoFull), emailHeader: ot.emailHeader,
                 emailPreparedFor: ot.emailPreparedFor(session.adult_name), emailArchetypeOf: ot.emailArchetypeOf(session.child_name),
@@ -117,6 +132,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
             adultName: session.adult_name,
             date: new Date(session.created_at).toLocaleDateString(locale, { day: '2-digit', month: 'long', year: 'numeric' }),
             lang: sLang,
+            answers: session.answers ?? [],
         });
 
         // Create hidden iframe, render HTML, capture as PDF
@@ -239,6 +255,37 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
+                            {/* ── Patrón de decisión ──────────────────────── */}
+                            {decisionPattern && (() => {
+                                const p = getPatternCopy(decisionPattern, lang);
+                                const sparkSvg = buildSparklineSvg(session.answers ?? [], dot);
+                                return (
+                                    <div className="mb-5 rounded-xl bg-argo-bg border border-argo-border px-4 py-3.5">
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2.5">
+                                            {getPatternSectionLabel(lang)}
+                                        </p>
+                                        <div className="flex items-start gap-4">
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-argo-navy mb-1">{p.label}</p>
+                                                <p className="text-xs text-argo-secondary leading-relaxed mb-3">{p.desc}</p>
+                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-1.5">
+                                                    {getImplicationLabel(lang)}
+                                                </p>
+                                                <div className="border-l-2 border-argo-violet-200 pl-3">
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{p.imp}</p>
+                                                </div>
+                                            </div>
+                                            {sparkSvg && (
+                                                <div
+                                                    className="hidden sm:block flex-shrink-0 mt-1 opacity-80"
+                                                    dangerouslySetInnerHTML={{ __html: sparkSvg }}
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+
                             {/* 2-column layout for detail */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
