@@ -121,7 +121,7 @@ export async function updateSession(
  * Creates a complete session in one call (legacy path).
  * Used as fallback when startSession failed and we have no session ID.
  */
-export async function saveSession(payload: SessionPayload): Promise<{ ok: boolean; error?: string }> {
+export async function saveSession(payload: SessionPayload): Promise<{ ok: boolean; id?: string; error?: string }> {
     const body = {
         adult_name:       payload.adultData.nombreAdulto,
         adult_email:      payload.adultData.email,

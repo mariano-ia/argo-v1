@@ -469,6 +469,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     ejeSecundario:  profile.ejeSecundario,
                     answers, tenantId, lang,
                 });
+                if (fallback.ok && fallback.id) {
+                    sessionIdRef.current = fallback.id;
+                }
                 if (!fallback.ok) {
                     console.warn('[session] Fallback save failed:', fallback.error);
                     setSaveError(fallback.error ?? 'Failed to save session');
