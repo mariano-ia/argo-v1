@@ -1,4 +1,6 @@
-import { ARCHETYPE_DATA, getArchetypeByEjeMotor, ArchetypeData } from './archetypeData';
+import { ARCHETYPE_DATA, TENDENCIA_CONTENT, getArchetypeByEjeMotor, ArchetypeData } from './archetypeData';
+import { ARCHETYPE_DATA_EN, TENDENCIA_CONTENT_EN } from './archetypeData.en';
+import { ARCHETYPE_DATA_PT, TENDENCIA_CONTENT_PT } from './archetypeData.pt';
 
 export type Eje = 'D' | 'I' | 'S' | 'C';
 export type Motor = 'Rápido' | 'Medio' | 'Lento';
@@ -63,11 +65,22 @@ function injectNombre(text: string, nombre: string): string {
     return text.replace(/\{nombre\}/g, nombre);
 }
 
+const TENDENCIA_LABELS_I18N: Record<string, Record<string, string>> = {
+    es: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
+    en: { D: 'with a spark of action', I: 'with a social compass', S: 'with steady roots', C: 'with a sharp eye for detail' },
+    pt: { D: 'com chispa de ação', I: 'com bússola social', S: 'com raíz firme', C: 'com olho para detalhes' },
+};
+
+export function getLocalizedTendenciaLabel(axis: string, lang: string = 'es'): string {
+    return TENDENCIA_LABELS_I18N[lang]?.[axis] ?? TENDENCIA_LABELS_I18N.es[axis] ?? '';
+}
+
 export function getReportData(
     eje: EjeInput,
     motor: MotorInput,
     _sintonia: SintoniaInput = '',
-    nombre: string = 'el deportista'
+    nombre: string = 'el deportista',
+    lang: string = 'es'
 ): ReportData {
     const data: ArchetypeData | null = getArchetypeByEjeMotor(eje, motor);
 
@@ -91,32 +104,49 @@ export function getReportData(
         };
     }
 
+    const t = lang === 'en'
+        ? (ARCHETYPE_DATA_EN[data.id] ?? data)
+        : lang === 'pt'
+            ? (ARCHETYPE_DATA_PT[data.id] ?? data)
+            : data;
+
     return {
         nombre,
-        arquetipo: { id: data.id, eje: data.eje, motor: data.motor, label: data.label },
-        perfil: data.perfil,
-        perfilExtended: data.perfilExtended,
-        bienvenida: injectNombre(data.bienvenida, nombre),
-        wow: injectNombre(data.wow, nombre),
-        motorDesc: injectNombre(data.motorDesc, nombre),
-        combustible: injectNombre(data.combustible, nombre),
-        grupoEspacio: injectNombre(data.grupoEspacio, nombre),
-        corazon: injectNombre(data.corazon, nombre),
-        palabrasPuente: data.palabrasPuente,
-        palabrasRuido: data.palabrasRuido,
-        guia: data.guia.map(row => ({
+        arquetipo: { id: data.id, eje: data.eje, motor: data.motor, label: t.label },
+        perfil: t.perfil,
+        perfilExtended: t.perfilExtended,
+        bienvenida: injectNombre(t.bienvenida, nombre),
+        wow: injectNombre(t.wow, nombre),
+        motorDesc: injectNombre(t.motorDesc, nombre),
+        combustible: injectNombre(t.combustible, nombre),
+        grupoEspacio: injectNombre(t.grupoEspacio, nombre),
+        corazon: injectNombre(t.corazon, nombre),
+        palabrasPuente: t.palabrasPuente,
+        palabrasRuido: t.palabrasRuido,
+        guia: t.guia.map(row => ({
             situacion: row.situacion,
             activador: injectNombre(row.activador, nombre),
             desmotivacion: injectNombre(row.desmotivacion, nombre),
         })),
-        reseteo: injectNombre(data.reseteo, nombre),
-        ecos: injectNombre(data.ecos, nombre),
+        reseteo: injectNombre(t.reseteo, nombre),
+        ecos: injectNombre(t.ecos, nombre),
         checklist: {
-            antes: injectNombre(data.checklist.antes, nombre),
-            durante: injectNombre(data.checklist.durante, nombre),
-            despues: injectNombre(data.checklist.despues, nombre),
+            antes: injectNombre(t.checklist.antes, nombre),
+            durante: injectNombre(t.checklist.durante, nombre),
+            despues: injectNombre(t.checklist.despues, nombre),
         },
     };
+}
+
+export function getLocalizedTendenciaContent(
+    ejePrimario: string,
+    ejeSecundario: string,
+    lang: string = 'es'
+): { parrafo: string; palabrasPuenteExtra: string[]; palabrasRuidoExtra: string[] } | null {
+    const key = `${ejePrimario}_${ejeSecundario}`;
+    if (lang === 'en') return TENDENCIA_CONTENT_EN[key] ?? TENDENCIA_CONTENT[key] ?? null;
+    if (lang === 'pt') return TENDENCIA_CONTENT_PT[key] ?? TENDENCIA_CONTENT[key] ?? null;
+    return TENDENCIA_CONTENT[key] ?? null;
 }
 
 // Legacy compat

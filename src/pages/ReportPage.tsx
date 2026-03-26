@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Link2, Printer, CheckCircle } from 'lucide-react';
-import { getReportData } from '../lib/argosEngine';
-import { getTendenciaContent } from '../lib/archetypeData';
-import { TENDENCIA_LABELS } from '../lib/profileResolver';
+import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../lib/argosEngine';
 import type { AISections } from '../lib/openaiService';
 import {
     classifyDecisionPattern,
@@ -317,11 +315,12 @@ export const ReportPage: React.FC = () => {
     const motorChip = MOTOR_CHIP[session.motor] ?? 'bg-violet-50 text-violet-700 border-violet-200';
     const motorDisplayName = t.motorNames[session.motor] ?? session.motor;
 
-    const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
+    const sessionLang = session.lang || 'es';
+    const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name, sessionLang);
     if (session.eje_secundario) {
-        const tendencia = getTendenciaContent(session.eje, session.eje_secundario);
+        const tendencia = getLocalizedTendenciaContent(session.eje, session.eje_secundario, sessionLang);
         if (tendencia) {
-            report.tendenciaLabel = TENDENCIA_LABELS[session.eje_secundario as keyof typeof TENDENCIA_LABELS];
+            report.tendenciaLabel = getLocalizedTendenciaLabel(session.eje_secundario, sessionLang);
             report.tendenciaParagraph = tendencia.parrafo.replace(/\{nombre\}/g, session.child_name);
             report.palabrasPuenteExtra = tendencia.palabrasPuenteExtra;
             report.palabrasRuidoExtra = tendencia.palabrasRuidoExtra;

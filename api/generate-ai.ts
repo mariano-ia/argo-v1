@@ -60,17 +60,6 @@ interface AISections {
     reseteo: string;
     ecos: string;
     checklist: { antes: string; durante: string; despues: string };
-    // Additional translated fields (present when lang !== 'es')
-    label?: string;
-    bienvenida?: string;
-    grupoEspacio?: string;
-    guia?: GuiaRow[];
-    palabrasPuente?: string[];
-    palabrasRuido?: string[];
-    tendenciaParagraph?: string;
-    tendenciaLabel?: string;
-    palabrasPuenteExtra?: string[];
-    palabrasRuidoExtra?: string[];
 }
 
 interface AIUsage {
@@ -133,63 +122,20 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const isNonEs = langCode !== 'es';
 
     const langInstruction = isNonEs
-        ? `\n\nCRITICAL LANGUAGE INSTRUCTION: Write ALL output text in ${langLabel}. The base content below is in Spanish — use it as conceptual reference ONLY. Your response MUST be entirely in ${langLabel}. Do NOT mix languages. Every single string value in the JSON must be in ${langLabel}.`
+        ? `\n\nCRITICAL LANGUAGE INSTRUCTION: Write ALL output text in ${langLabel}. The base content below is in Spanish — use it as conceptual reference ONLY. Your response MUST be entirely in ${langLabel}. Do NOT mix languages.`
         : '';
 
-    // Build the additional content block for non-es languages
-    const guiaText = (base.guia || []).map((row, i) =>
-        `  Row ${i + 1}: situacion="${row.situacion}" | activador="${row.activador}" | desmotivacion="${row.desmotivacion}"`
-    ).join('\n');
-
-    const additionalContent = isNonEs ? `
-ADDITIONAL CONTENT TO TRANSLATE (translate these from Spanish into ${langLabel}):
-- Archetype label: ${base.arquetipo.label}
-- Perfil tagline (5-8 word subtitle shown under the archetype name): ${base.perfil}
-- Bienvenida (welcome/contract): ${base.bienvenida}
-- Grupo y Espacio (group life): ${base.grupoEspacio}
-- Guía de Sintonía (tuning guide rows):
-${guiaText}
-- Palabras Puente (bridge words): ${(base.palabrasPuente || []).join(', ')}
-- Palabras Ruido (noise words): ${(base.palabrasRuido || []).join(', ')}${
-    base.tendenciaLabel ? `\n- Tendencia label: ${base.tendenciaLabel}` : ''}${
-    base.tendenciaParagraph ? `\n- Tendencia paragraph: ${base.tendenciaParagraph}` : ''}${
-    base.palabrasPuenteExtra?.length ? `\n- Extra bridge words: ${base.palabrasPuenteExtra.join(', ')}` : ''}${
-    base.palabrasRuidoExtra?.length ? `\n- Extra noise words: ${base.palabrasRuidoExtra.join(', ')}` : ''}
-` : '';
-
-    // Build the JSON schema — expanded for non-es
-    const jsonSchema = isNonEs
-        ? `{
-  "wow": "rewritten text",
-  "motorDesc": "rewritten text",
-  "combustible": "rewritten text",
-  "corazon": "rewritten text",
-  "reseteo": "rewritten text",
-  "ecos": "rewritten text",
-  "checklist": { "antes": "text", "durante": "text", "despues": "text" },
-  "label": "translated archetype name",
-  "perfil": "translated perfil tagline",
-  "bienvenida": "translated welcome/contract text",
-  "grupoEspacio": "translated group life text",
-  "guia": [{"situacion":"...","activador":"...","desmotivacion":"..."}, ...],
-  "palabrasPuente": ["word1", "word2", ...],
-  "palabrasRuido": ["phrase1", "phrase2", ...]${
-      base.tendenciaLabel ? `,\n  "tendenciaLabel": "translated tendency label"` : ''}${
-      base.tendenciaParagraph ? `,\n  "tendenciaParagraph": "translated tendency paragraph"` : ''}${
-      base.palabrasPuenteExtra?.length ? `,\n  "palabrasPuenteExtra": ["word1", ...]` : ''}${
-      base.palabrasRuidoExtra?.length ? `,\n  "palabrasRuidoExtra": ["phrase1", ...]` : ''}
-}`
-        : `{
-  "wow": "texto sección 1",
-  "motorDesc": "texto sección 2",
-  "combustible": "texto sección 3",
-  "corazon": "texto sección 5",
-  "reseteo": "texto sección 9",
-  "ecos": "texto sección 10",
+    const jsonSchema = `{
+  "wow": "section text",
+  "motorDesc": "section text",
+  "combustible": "section text",
+  "corazon": "section text",
+  "reseteo": "section text",
+  "ecos": "section text",
   "checklist": {
-    "antes": "texto antes",
-    "durante": "texto durante",
-    "despues": "texto después"
+    "antes": "text",
+    "durante": "text",
+    "despues": "text"
   }
 }`;
 
@@ -216,9 +162,8 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 - Checklist Antes: ${base.checklist.antes}
 - Checklist Durante: ${base.checklist.durante}
 - Checklist Después: ${base.checklist.despues}
-${additionalContent}
-TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.${
-    isNonEs ? ` ALSO translate all additional content listed above into ${langLabel}. The "bienvenida" and "grupoEspacio" texts should be adapted (not just translated literally) to sound natural. The "guia" rows must keep the same array structure. The "palabrasPuente" and "palabrasRuido" must remain as short phrases/words.` : ''}
+
+TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
 Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones):
@@ -253,7 +198,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const prompt = buildPrompt(report, context);
         const langCode = context.lang || 'es';
         const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
-        const isNonEs = langCode !== 'es';
 
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -264,7 +208,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 temperature: 0.7,
-                max_tokens: isNonEs ? 4500 : 2500,
+                max_tokens: 2500,
                 messages: [
                     {
                         role: 'system',
