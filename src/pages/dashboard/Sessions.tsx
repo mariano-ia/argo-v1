@@ -6,9 +6,7 @@ import { Search, Download, Trash2, Send, Loader2 } from 'lucide-react';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { TENDENCIA_LABELS } from '../../lib/profileResolver';
-import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
-import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { AXIS_CHIP } from '../../lib/designTokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -160,7 +158,6 @@ export const Sessions: React.FC = () => {
         setResendingId(row.id);
         try {
             const lang = row.lang || 'es';
-            const ot = getOdysseyT(lang as 'es' | 'en' | 'pt');
             const report = getReportData(row.eje, row.motor, row.eje_secundario ?? '', row.child_name);
             if (row.eje_secundario) {
                 const tendencia = getTendenciaContent(row.eje, row.eje_secundario);
@@ -174,26 +171,20 @@ export const Sessions: React.FC = () => {
             const arquetipoFull = report.tendenciaLabel
                 ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
                 : report.arquetipo.label;
-            const maduracionTemprana = (row.child_age ?? 10) < 10;
 
             await sendReport({
-                toEmail:           row.email,
-                nombreAdulto:      row.adult_name ?? '',
-                nombreNino:        row.child_name,
-                deporte:           row.sport ?? '',
-                edad:              row.child_age ?? 0,
-                arquetipo:         arquetipoFull,
-                reportHtml:        buildReportHtml(report, null, ot),
-                maduracionTemprana,
-                sessionId:         row.id,
+                toEmail:        row.email,
+                nombreAdulto:   row.adult_name ?? '',
+                nombreNino:     row.child_name,
+                deporte:        row.sport ?? '',
+                edad:           row.child_age ?? 0,
+                eje:            row.eje,
+                motor:          row.motor,
+                arquetipo:      arquetipoFull,
+                perfil:         report.perfil,
+                palabrasPuente: report.palabrasPuente,
+                sessionId:      row.id,
                 lang,
-                emailSubject:      ot.emailSubject(row.child_name, arquetipoFull),
-                emailHeader:       ot.emailHeader,
-                emailPreparedFor:  ot.emailPreparedFor(row.adult_name ?? ''),
-                emailArchetypeOf:  ot.emailArchetypeOf(row.child_name),
-                emailFooter:       ot.emailFooter,
-                emailMaturationTitle: ot.emailMaturationTitle,
-                emailMaturationBody:  ot.emailMaturationBody,
             });
             setResendMsg({ ok: true });
         } catch (err) {

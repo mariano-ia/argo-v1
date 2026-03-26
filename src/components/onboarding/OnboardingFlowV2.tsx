@@ -20,7 +20,6 @@ import { DeviceHandoff } from './screens/DeviceHandoff';
 import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { ChildResultReveal } from './screens/ChildResultReveal';
-import { buildReportHtml } from './screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
 import { CHILD_REVEAL_TEXTS } from '../../lib/childRevealTexts';
 import { AnimatedScene } from './scenes/AnimatedScene';
@@ -512,7 +511,6 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             }
 
             // ── Send report email ────────────────────────────────────────────
-            const maduracionTemprana = adultData.edad < 10;
             // Use AI-translated labels for non-es languages
             const translatedLabel = finalSections?.label ?? report.arquetipo.label;
             const translatedTendencia = finalSections?.tendenciaLabel ?? report.tendenciaLabel;
@@ -520,41 +518,20 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 ? `${translatedLabel}, ${translatedTendencia}`
                 : translatedLabel;
 
-            // Build report HTML with fallback — if the rich template crashes,
-            // send a plain-text version so the email ALWAYS goes out.
-            let reportHtml: string;
-            try {
-                reportHtml = buildReportHtml(report, finalSections, ot);
-            } catch (htmlErr) {
-                console.error('[Argo] buildReportHtml crashed — using fallback:', htmlErr);
-                const r = finalSections
-                    ? { ...report, wow: finalSections.wow, motorDesc: finalSections.motorDesc, combustible: finalSections.combustible, corazon: finalSections.corazon, reseteo: finalSections.reseteo, ecos: finalSections.ecos }
-                    : report;
-                reportHtml = [r.bienvenida, r.wow, r.motorDesc, r.combustible, r.grupoEspacio, r.corazon, r.reseteo, r.ecos]
-                    .filter(Boolean)
-                    .map(s => `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 14px 0;">${s}</p>`)
-                    .join('');
-            }
-
             try {
                 await sendReport({
-                    toEmail:           adultData.email,
-                    nombreAdulto:      adultData.nombreAdulto,
-                    nombreNino:        adultData.nombreNino,
-                    deporte:           adultData.deporte,
-                    edad:              adultData.edad,
-                    arquetipo:         arquetipoFull,
-                    reportHtml,
-                    maduracionTemprana,
-                    sessionId:         sessionIdRef.current ?? undefined,
+                    toEmail:        adultData.email,
+                    nombreAdulto:   adultData.nombreAdulto,
+                    nombreNino:     adultData.nombreNino,
+                    deporte:        adultData.deporte,
+                    edad:           adultData.edad,
+                    eje:            profile.eje,
+                    motor:          profile.motor,
+                    arquetipo:      arquetipoFull,
+                    perfil:         report.perfil,
+                    palabrasPuente: report.palabrasPuente,
+                    sessionId:      sessionIdRef.current ?? undefined,
                     lang,
-                    emailSubject:      ot.emailSubject(adultData.nombreNino, arquetipoFull),
-                    emailHeader:       ot.emailHeader,
-                    emailPreparedFor:  ot.emailPreparedFor(adultData.nombreAdulto),
-                    emailArchetypeOf:  ot.emailArchetypeOf(adultData.nombreNino),
-                    emailFooter:       ot.emailFooter,
-                    emailMaturationTitle: ot.emailMaturationTitle,
-                    emailMaturationBody:  ot.emailMaturationBody,
                 });
                 console.log('[Argo] Report email sent to', adultData.email);
             } catch (err) {

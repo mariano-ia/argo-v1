@@ -7,122 +7,258 @@ function buildHtml(params: {
     nombreNino: string;
     deporte: string;
     edad: number;
+    eje: string;
+    motor: string;
     arquetipo: string;
-    reportHtml: string;
-    maduracionTemprana: boolean;
+    perfil: string;
+    palabrasPuente: string[];
     sessionId?: string;
     lang?: string;
-    emailHeader?: string;
-    emailPreparedFor?: string;
-    emailArchetypeOf?: string;
-    emailFooter?: string;
-    emailMaturationTitle?: string;
-    emailMaturationBody?: string;
 }): string {
-    const langAttr = params.lang || 'es';
-    const header = params.emailHeader || 'Informe de Sintonía';
-    const preparedFor = params.emailPreparedFor || `Preparado para ${params.nombreAdulto}`;
-    const archetypeOf = params.emailArchetypeOf || `Arquetipo de ${params.nombreNino}`;
-    const footer = params.emailFooter || 'Argo Method · Este informe es una fotografía del presente, no una etiqueta permanente.';
-    const matTitle = params.emailMaturationTitle || 'Nota: Maduración Temprana';
-    const matBody = params.emailMaturationBody || 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.';
-
-    // ── Feedback CTA block ──────────────────────────────────────────────────
+    const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = 'https://argomethod.com';
-    const ctaText: Record<string, { title: string; question: string; chips: [string, string, string]; subtitle: string }> = {
-        es: { title: 'Tu opinión nos ayuda a mejorar', question: '¿Qué tan claro te resultó el informe?', chips: ['Muy claro', 'Algo claro', 'Confuso'], subtitle: 'Son solo 4 preguntas · 30 segundos' },
-        en: { title: 'Your feedback helps us improve', question: 'How clear was the report?', chips: ['Very clear', 'Somewhat clear', 'Confusing'], subtitle: 'Just 4 questions · 30 seconds' },
-        pt: { title: 'Sua opinião nos ajuda a melhorar', question: 'Quão claro foi o relatório?', chips: ['Muito claro', 'Um pouco claro', 'Confuso'], subtitle: 'São apenas 4 perguntas · 30 segundos' },
-    };
-    const cta = ctaText[langAttr] || ctaText.es;
-    const feedbackCta = params.sessionId ? `
-    <div style="background:#E3E3FF;border:2px solid #955fb5;border-radius:16px;padding:28px 20px;margin:0 16px 24px 16px;text-align:center;">
-        <div style="width:48px;height:48px;border-radius:50%;background:#955fb5;margin:0 auto 16px auto;line-height:48px;text-align:center;">
-            <span style="font-size:22px;color:#ffffff;">?</span>
-        </div>
-        <div style="font-size:17px;font-weight:700;color:#1D1D1F;letter-spacing:-0.02em;margin-bottom:6px;">
-            ${cta.title}
-        </div>
-        <div style="font-size:13px;color:#6366f1;margin-bottom:20px;">
-            ${cta.question}
-        </div>
-        <div style="margin-bottom:16px;">
-            <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=muy_claro&lang=${langAttr}" style="display:inline-block;background:#955fb5;color:#ffffff;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;box-shadow:0 2px 8px rgba(149,95,181,0.3);">${cta.chips[0]}</a>
-            <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=algo_claro&lang=${langAttr}" style="display:inline-block;background:#ffffff;color:#4b5563;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;border:1px solid #D2D2D7;">${cta.chips[1]}</a>
-            <!--[if mso]></td><td style="padding:0 6px;"><![endif]-->
-            <a href="${baseUrl}/review/${params.sessionId}?q1=confuso&lang=${langAttr}" style="display:inline-block;background:#F5F5F7;color:#86868B;font-size:14px;font-weight:600;text-decoration:none;padding:11px 24px;border-radius:24px;margin:0 4px 8px 4px;">${cta.chips[2]}</a>
-            <!--[if mso]></td></tr></table><![endif]-->
-        </div>
-        <div style="font-size:12px;color:#86868B;">
-            ${cta.subtitle}
-        </div>
-    </div>` : '';
+    const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}` : baseUrl;
 
-    const maduracionBanner = params.maduracionTemprana ? `
-    <div style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:16px;margin-bottom:24px;">
-        <strong style="color:#92400e;">${matTitle}</strong><br/>
-        <span style="color:#78350f;font-size:14px;">${matBody}</span>
-    </div>` : '';
+    const AXIS_DOT: Record<string, string> = {
+        D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1',
+    };
+    const axisColor = AXIS_DOT[params.eje] ?? '#955FB5';
+
+    const MOTOR_LABELS: Record<string, Record<string, string>> = {
+        es: { Rápido: 'Dinámico',  Medio: 'Decidido', Lento: 'Persistente' },
+        en: { Rápido: 'Dynamic',   Medio: 'Decisive',  Lento: 'Persistent'  },
+        pt: { Rápido: 'Dinâmico',  Medio: 'Decidido',  Lento: 'Persistente' },
+    };
+    const MOTOR_STYLE: Record<string, { bg: string; text: string }> = {
+        Rápido: { bg: 'rgba(245,158,11,0.13)', text: '#b45309' },
+        Medio:  { bg: 'rgba(149,95,181,0.1)',  text: '#7A4D96' },
+        Lento:  { bg: 'rgba(59,130,246,0.1)',  text: '#1d4ed8' },
+    };
+    const motorLabelMap = MOTOR_LABELS[langAttr] ?? MOTOR_LABELS.es;
+    const motorLabel = motorLabelMap[params.motor] ?? params.motor;
+    const motorStyle = MOTOR_STYLE[params.motor] ?? MOTOR_STYLE.Medio;
+    const motorPrefix = langAttr === 'en' ? 'Engine' : 'Motor';
+
+    const violet = '#955FB5';
+    const violetShadow = 'rgba(149,95,181,0.28)';
+    const pillColor = '#16a34a';
+    const pillBg = 'rgba(34,197,94,0.09)';
+    const pillBorder = 'rgba(34,197,94,0.25)';
+
+    const pill = (word: string) =>
+        `<span style="display:inline-block;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:500;color:${pillColor};background:${pillBg};border:1px solid ${pillBorder};margin:0 5px 6px 0;">${word}</span>`;
+
+    const copy = {
+        es: {
+            headerTitle: `El informe de <strong style="font-weight:700;">${params.nombreNino}</strong> está listo.`,
+            headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} años`,
+            eyebrow: 'Arquetipo',
+            bridgeLabel: 'Palabras que lo activan',
+            ctaSub: 'El informe completo incluye patrón de decisión, guía de comunicación, checklist de entrenamiento, brújula secundaria y más.',
+            ctaBtn: 'Ver informe completo →',
+            security: '🔒 Este link es personal e intransferible. Solo tú lo recibiste.',
+            privacyLink: 'Política de Privacidad de Argo Method',
+            reviewTitle: 'Tu opinión nos ayuda a mejorar',
+            reviewQ: '¿Qué tan claro te resultó el informe?',
+            chips: ['Muy claro', 'Algo claro', 'Confuso'],
+            reviewSub: 'Son solo 4 preguntas · 30 segundos',
+            footerLine1: 'Argo Method · Informe de Sintonía',
+            footerLine2: 'Este informe es una fotografía del presente, no una etiqueta permanente.',
+            privacy: 'Privacidad',
+            terms: 'Términos',
+        },
+        en: {
+            headerTitle: `<strong style="font-weight:700;">${params.nombreNino}</strong>'s report is ready.`,
+            headerSub: `For ${params.nombreAdulto} · ${params.deporte} · ${params.edad} years`,
+            eyebrow: 'Archetype',
+            bridgeLabel: 'Activating words',
+            ctaSub: 'The full report includes decision pattern, communication guide, training checklist, secondary compass, and more.',
+            ctaBtn: 'View full report →',
+            security: '🔒 This link is personal and non-transferable. Only you received it.',
+            privacyLink: 'Argo Method Privacy Policy',
+            reviewTitle: 'Your feedback helps us improve',
+            reviewQ: 'How clear was the report?',
+            chips: ['Very clear', 'Somewhat clear', 'Confusing'],
+            reviewSub: 'Just 4 questions · 30 seconds',
+            footerLine1: 'Argo Method · Profile Report',
+            footerLine2: 'This report is a snapshot of the present, not a permanent label.',
+            privacy: 'Privacy',
+            terms: 'Terms',
+        },
+        pt: {
+            headerTitle: `O relatório de <strong style="font-weight:700;">${params.nombreNino}</strong> está pronto.`,
+            headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} anos`,
+            eyebrow: 'Arquétipo',
+            bridgeLabel: 'Palavras que o ativam',
+            ctaSub: 'O relatório completo inclui padrão de decisão, guia de comunicação, checklist de treino, bússola secundária e mais.',
+            ctaBtn: 'Ver relatório completo →',
+            security: '🔒 Este link é pessoal e intransferível. Só você o recebeu.',
+            privacyLink: 'Política de Privacidade do Argo Method',
+            reviewTitle: 'Sua opinião nos ajuda a melhorar',
+            reviewQ: 'Quão claro foi o relatório?',
+            chips: ['Muito claro', 'Um pouco claro', 'Confuso'],
+            reviewSub: 'São apenas 4 perguntas · 30 segundos',
+            footerLine1: 'Argo Method · Relatório de Perfil',
+            footerLine2: 'Este relatório é uma fotografia do presente, não um rótulo permanente.',
+            privacy: 'Privacidade',
+            terms: 'Termos',
+        },
+    };
+    const c = copy[langAttr] ?? copy.es;
+
+    const reviewWidget = params.sessionId ? `
+  <!-- SEPARATOR -->
+  <tr><td style="padding:28px 28px 0;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
+
+  <!-- REVIEW WIDGET -->
+  <tr>
+    <td style="padding:24px 28px;">
+      <div style="background:#F5F5F7;border-radius:14px;padding:22px 20px;text-align:center;">
+        <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#1D1D1F;letter-spacing:-0.01em;">${c.reviewTitle}</p>
+        <p style="margin:0 0 18px;font-size:13px;color:#86868B;">${c.reviewQ}</p>
+        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 4px;"><![endif]-->
+        <a href="${reportUrl}?feedback=muy_claro"
+           style="display:inline-block;background:${violet};color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;box-shadow:0 2px 8px ${violetShadow};">
+          ${c.chips[0]}
+        </a>
+        <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
+        <a href="${reportUrl}?feedback=algo_claro"
+           style="display:inline-block;background:#ffffff;color:#424245;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
+          ${c.chips[1]}
+        </a>
+        <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
+        <a href="${reportUrl}?feedback=confuso"
+           style="display:inline-block;background:#ffffff;color:#86868B;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
+          ${c.chips[2]}
+        </a>
+        <!--[if mso]></td></tr></table><![endif]-->
+        <p style="margin:12px 0 0;font-size:11px;color:#AEAEB2;">${c.reviewSub}</p>
+      </div>
+    </td>
+  </tr>` : '';
 
     return `<!DOCTYPE html>
 <html lang="${langAttr}">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>${header} · ${params.nombreNino}</title>
+<title>${params.arquetipo} · Argo Method</title>
 </head>
-<body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1D1D1F;">
+<body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
-<div style="max-width:600px;margin:32px auto;background:#ffffff;border-radius:18px;overflow:hidden;box-shadow:0 4px 24px rgba(29,29,31,0.06);">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0"
+  style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 
-    <!-- Header -->
-    <div style="background:#1D1D1F;padding:28px 24px;">
-        <div style="margin-bottom:8px;">
-            <span style="font-size:18px;letter-spacing:-0.02em;color:#ffffff;">
-                <span style="font-weight:800;">Argo</span><span style="font-weight:100;"> Method</span>
-            </span>
-            <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;margin-left:6px;">beta</span>
+  <!-- HEADER -->
+  <tr>
+    <td style="background:#1D1D1F;padding:26px 28px 28px;">
+      <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+          <td>
+            <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;"> Method</span>
+            <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.05em;margin-left:8px;vertical-align:middle;">beta</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding-top:14px;">
+            <p style="margin:0;font-size:23px;font-weight:300;color:#ffffff;letter-spacing:-0.4px;line-height:1.2;">
+              ${c.headerTitle}
+            </p>
+            <p style="margin:7px 0 0;font-size:13px;color:#86868B;">${c.headerSub}</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <!-- HERO: ARQUETIPO -->
+  <tr>
+    <td style="padding:30px 28px 26px;">
+
+      <!-- Eyebrow -->
+      <p style="margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:0.13em;text-transform:uppercase;color:#AEAEB2;">${c.eyebrow}</p>
+
+      <!-- Archetype name row -->
+      <table cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="vertical-align:middle;padding-right:9px;">
+            <span style="display:block;width:11px;height:11px;border-radius:50%;background:${axisColor};"></span>
+          </td>
+          <td style="vertical-align:middle;padding-right:12px;">
+            <span style="font-size:29px;font-weight:300;color:#1D1D1F;letter-spacing:-0.04em;line-height:1;">${params.arquetipo}</span>
+          </td>
+          <td style="vertical-align:middle;">
+            <span style="background:${motorStyle.bg};color:${motorStyle.text};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;">${motorPrefix} ${motorLabel}</span>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Perfil sentence -->
+      <p style="margin:18px 0 0;font-size:15px;color:#424245;line-height:1.7;max-width:480px;">
+        ${params.perfil}
+      </p>
+
+      <!-- Bridge words -->
+      <div style="margin-top:20px;">
+        <p style="margin:0 0 10px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">${c.bridgeLabel}</p>
+        <div style="line-height:1;">
+          ${params.palabrasPuente.map(pill).join('')}
         </div>
-        <h1 style="margin:0;font-size:24px;font-weight:300;color:#ffffff;letter-spacing:-0.5px;">
-            ${header}
-        </h1>
-        <p style="margin:8px 0 0;font-size:14px;color:#86868B;">
-            ${preparedFor}
-        </p>
-    </div>
+      </div>
 
-    <!-- Archetype badge -->
-    <div style="background:#F5F5F7;border-bottom:1px solid #D2D2D7;padding:20px 24px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#86868B;margin-bottom:4px;">
-            ${archetypeOf}
-        </div>
-        <div style="font-size:24px;font-weight:300;color:#1D1D1F;letter-spacing:-0.03em;">${params.arquetipo}</div>
-        <div style="font-size:13px;color:#86868B;margin-top:4px;">
-            ${params.deporte} · ${params.edad}
-        </div>
-    </div>
+    </td>
+  </tr>
 
-    <!-- Body -->
-    <div style="padding:24px 16px;background:#F5F5F7;">
-        ${maduracionBanner}
-        <div style="font-size:14px;line-height:1.8;color:#424245;">
-            ${params.reportHtml}
-        </div>
-    </div>
+  <!-- SEPARATOR -->
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
 
-    <!-- Feedback CTA -->
-    ${feedbackCta}
+  <!-- CTA -->
+  <tr>
+    <td style="padding:28px 28px 8px;text-align:center;">
 
-    <!-- Footer -->
-    <div style="background:#F5F5F7;border-top:1px solid #D2D2D7;padding:16px 24px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#86868B;letter-spacing:0.1em;text-transform:uppercase;">
-            ${footer}
-        </p>
-    </div>
+      <p style="margin:0 0 22px;font-size:14px;color:#86868B;line-height:1.65;max-width:420px;margin-left:auto;margin-right:auto;">
+        ${c.ctaSub}
+      </p>
 
-</div>
+      <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td><![endif]-->
+      <a href="${reportUrl}"
+         style="display:inline-block;background:${violet};color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:17px 44px;border-radius:12px;letter-spacing:-0.01em;box-shadow:0 4px 18px ${violetShadow};">
+        ${c.ctaBtn}
+      </a>
+      <!--[if mso]></td></tr></table><![endif]-->
+
+      <!-- Security note -->
+      <p style="margin:20px auto 0;font-size:11px;color:#AEAEB2;line-height:1.7;max-width:400px;">
+        ${c.security}<br/>
+        <a href="https://argomethod.com/privacy" style="color:#AEAEB2;text-decoration:underline;">${c.privacyLink}</a>
+      </p>
+
+    </td>
+  </tr>
+  ${reviewWidget}
+
+  <!-- FOOTER -->
+  <tr>
+    <td style="background:#F5F5F7;border-top:1px solid #E8E8ED;padding:18px 28px;text-align:center;">
+      <p style="margin:0 0 5px;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">
+        ${c.footerLine1}
+      </p>
+      <p style="margin:0;font-size:11px;color:#AEAEB2;line-height:1.6;">
+        ${c.footerLine2}
+        <br/>
+        <a href="https://argomethod.com/privacy" style="color:#AEAEB2;text-decoration:underline;">${c.privacy}</a>
+        &nbsp;·&nbsp;
+        <a href="https://argomethod.com/terms" style="color:#AEAEB2;text-decoration:underline;">${c.terms}</a>
+      </p>
+    </td>
+  </tr>
+
+</table>
+</td></tr>
+</table>
+
 </body>
 </html>`;
 }
@@ -145,36 +281,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         nombreNino,
         deporte,
         edad,
+        eje,
+        motor,
         arquetipo,
-        reportHtml,
-        maduracionTemprana,
+        perfil,
+        palabrasPuente,
         sessionId,
         lang,
         emailSubject,
-        emailHeader,
-        emailPreparedFor,
-        emailArchetypeOf,
-        emailFooter,
-        emailMaturationTitle,
-        emailMaturationBody,
     } = req.body as {
         toEmail: string;
         nombreAdulto: string;
         nombreNino: string;
         deporte: string;
         edad: number;
+        eje: string;
+        motor: string;
         arquetipo: string;
-        reportHtml: string;
-        maduracionTemprana: boolean;
+        perfil: string;
+        palabrasPuente: string[];
         sessionId?: string;
         lang?: string;
         emailSubject?: string;
-        emailHeader?: string;
-        emailPreparedFor?: string;
-        emailArchetypeOf?: string;
-        emailFooter?: string;
-        emailMaturationTitle?: string;
-        emailMaturationBody?: string;
     };
 
     if (!toEmail || !nombreNino) {
@@ -182,11 +310,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const html = buildHtml({
-        nombreAdulto, nombreNino, deporte, edad, arquetipo, reportHtml, maduracionTemprana,
-        sessionId, lang, emailHeader, emailPreparedFor, emailArchetypeOf, emailFooter, emailMaturationTitle, emailMaturationBody,
+        nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
+        palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
+        sessionId, lang,
     });
 
-    const subject = emailSubject || `Informe de Sintonía Argo · ${nombreNino} · ${arquetipo}`;
+    const langAttr = lang || 'es';
+    const autoSubject = langAttr === 'en'
+        ? `${nombreNino}'s Argo Method report is ready`
+        : langAttr === 'pt'
+        ? `O relatório de ${nombreNino} pelo Argo Method está pronto`
+        : `El informe de ${nombreNino} en Argo Method está listo`;
+    const subject = emailSubject || autoSubject;
 
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',

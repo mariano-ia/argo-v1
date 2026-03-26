@@ -360,24 +360,19 @@ export const AdultReport: React.FC<Props> = ({
         if (hasSentRef.current) return;
         setEmailStatus('sending');
         sendReport({
-            toEmail:           adultData.email,
-            nombreAdulto:      adultData.nombreAdulto,
-            nombreNino:        adultData.nombreNino,
-            deporte:           adultData.deporte,
-            edad:              adultData.edad,
-            arquetipo:         report.tendenciaLabel
+            toEmail:        adultData.email,
+            nombreAdulto:   adultData.nombreAdulto,
+            nombreNino:     adultData.nombreNino,
+            deporte:        adultData.deporte,
+            edad:           adultData.edad,
+            eje:            report.arquetipo.eje,
+            motor:          report.arquetipo.motor,
+            arquetipo:      report.tendenciaLabel
                 ? `${report.arquetipo.label}, ${report.tendenciaLabel}`
                 : report.arquetipo.label,
-            reportHtml:        buildReportHtml(report, aiSections, ot),
-            maduracionTemprana,
+            perfil:         report.perfil,
+            palabrasPuente: report.palabrasPuente,
             lang,
-            emailSubject:      ot.emailSubject(adultData.nombreNino, report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label),
-            emailHeader:       ot.emailHeader,
-            emailPreparedFor:  ot.emailPreparedFor(adultData.nombreAdulto),
-            emailArchetypeOf:  ot.emailArchetypeOf(adultData.nombreNino),
-            emailFooter:       ot.emailFooter,
-            emailMaturationTitle: ot.emailMaturationTitle,
-            emailMaturationBody:  ot.emailMaturationBody,
         })
             .then(() => {
                 hasSentRef.current = true;
@@ -385,7 +380,7 @@ export const AdultReport: React.FC<Props> = ({
             })
             .catch(() => setEmailStatus('error'));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [adultData, report.arquetipo.label, aiSections, maduracionTemprana]);
+    }, [adultData, report.arquetipo.label, report.arquetipo.eje, report.arquetipo.motor, report.perfil, report.palabrasPuente, lang]);
 
     // Auto-send once AI finishes (or immediately if AI already done/unavailable)
     useEffect(() => {

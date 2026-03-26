@@ -6,9 +6,7 @@ import { supabase } from '../../lib/supabase';
 import { getReportData } from '../../lib/argosEngine';
 import { getTendenciaContent } from '../../lib/archetypeData';
 import { TENDENCIA_LABELS } from '../../lib/profileResolver';
-import { buildReportHtml } from '../../components/onboarding/screens/AdultReport';
 import { sendReport } from '../../lib/emailService';
-import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -21,8 +19,6 @@ import {
     getPatternCopy,
     getPatternSectionLabel,
     getImplicationLabel,
-    buildSparklineSvg,
-    buildPatternEmailHtml,
 } from '../../lib/decisionPattern';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -84,7 +80,6 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
         setResending(true);
         try {
             const sLang = session.lang || 'es';
-            const ot = getOdysseyT(sLang as 'es' | 'en' | 'pt');
             const report = getReportData(session.eje, session.motor, session.eje_secundario ?? '', session.child_name);
             if (session.eje_secundario) {
                 const t = getTendenciaContent(session.eje, session.eje_secundario);
@@ -96,15 +91,19 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                 }
             }
             const arquetipoFull = report.tendenciaLabel ? `${report.arquetipo.label}, ${report.tendenciaLabel}` : report.arquetipo.label;
-            const patternBlock = decisionPattern ? buildPatternEmailHtml(decisionPattern, sLang) : '';
             await sendReport({
-                toEmail: session.adult_email, nombreAdulto: session.adult_name, nombreNino: session.child_name,
-                deporte: session.sport ?? '', edad: session.child_age, arquetipo: arquetipoFull,
-                reportHtml: patternBlock + buildReportHtml(report, null, ot), maduracionTemprana: session.child_age < 10,
-                sessionId: session.id, lang: sLang,
-                emailSubject: ot.emailSubject(session.child_name, arquetipoFull), emailHeader: ot.emailHeader,
-                emailPreparedFor: ot.emailPreparedFor(session.adult_name), emailArchetypeOf: ot.emailArchetypeOf(session.child_name),
-                emailFooter: ot.emailFooter, emailMaturationTitle: ot.emailMaturationTitle, emailMaturationBody: ot.emailMaturationBody,
+                toEmail:        session.adult_email,
+                nombreAdulto:   session.adult_name,
+                nombreNino:     session.child_name,
+                deporte:        session.sport ?? '',
+                edad:           session.child_age,
+                eje:            session.eje,
+                motor:          session.motor,
+                arquetipo:      arquetipoFull,
+                perfil:         report.perfil,
+                palabrasPuente: report.palabrasPuente,
+                sessionId:      session.id,
+                lang:           sLang,
             });
             setResendOk(true);
         } catch { setResendOk(false); }
@@ -256,35 +255,31 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                     >
                         <div className="px-6 pb-6 pt-2">
                             {/* ── Patrón de decisión ──────────────────────── */}
-                            {decisionPattern && (() => {
+                            {decisionPattern ? (() => {
                                 const p = getPatternCopy(decisionPattern, lang);
-                                const sparkSvg = buildSparklineSvg(session.answers ?? [], dot);
                                 return (
                                     <div className="mb-5 rounded-xl bg-argo-bg border border-argo-border px-4 py-3.5">
                                         <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2.5">
                                             {getPatternSectionLabel(lang)}
                                         </p>
-                                        <div className="flex items-start gap-4">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-argo-navy mb-1">{p.label}</p>
-                                                <p className="text-xs text-argo-secondary leading-relaxed mb-3">{p.desc}</p>
-                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-1.5">
-                                                    {getImplicationLabel(lang)}
-                                                </p>
-                                                <div className="border-l-2 border-argo-violet-200 pl-3">
-                                                    <p className="text-xs text-argo-grey leading-relaxed">{p.imp}</p>
-                                                </div>
-                                            </div>
-                                            {sparkSvg && (
-                                                <div
-                                                    className="hidden sm:block flex-shrink-0 mt-1 opacity-80"
-                                                    dangerouslySetInnerHTML={{ __html: sparkSvg }}
-                                                />
-                                            )}
+                                        <p className="text-sm font-semibold text-argo-navy mb-1">{p.label}</p>
+                                        <p className="text-xs text-argo-secondary leading-relaxed mb-3">{p.desc}</p>
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-1.5">
+                                            {getImplicationLabel(lang)}
+                                        </p>
+                                        <div className="border-l-2 border-argo-violet-200 pl-3">
+                                            <p className="text-xs text-argo-grey leading-relaxed">{p.imp}</p>
                                         </div>
                                     </div>
                                 );
-                            })()}
+                            })() : (
+                                <div className="mb-5 rounded-xl bg-argo-bg border border-argo-border px-4 py-3.5">
+                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                        {getPatternSectionLabel(lang)}
+                                    </p>
+                                    <p className="text-xs text-argo-light">Sin datos de tiempos de respuesta para esta sesión.</p>
+                                </div>
+                            )}
 
                             {/* 2-column layout for detail */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
