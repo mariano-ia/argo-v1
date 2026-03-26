@@ -485,6 +485,14 @@ export const TenantGuide: React.FC = () => {
                                             transition={{ duration: 0.2 }}
                                             className="space-y-4"
                                         >
+                                            {/* What's happening for this profile */}
+                                            {activeCard.whatsHappeningForProfile && (
+                                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">{dt.guide.loQuePasa}</p>
+                                                    <p className="text-[13px] text-argo-secondary leading-relaxed">{activeCard.whatsHappeningForProfile}</p>
+                                                </div>
+                                            )}
+
                                             {/* How to accompany */}
                                             <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                                 <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-3">{dt.guide.comoAcompanar}</p>
