@@ -51,7 +51,7 @@ export const TenantLink: React.FC = () => {
         <div>
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.link.titulo}</h1>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.miLink}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">
                         {dt.link.descripcion}
                     </p>

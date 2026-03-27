@@ -17,19 +17,34 @@ interface TenantData { id: string; slug: string; display_name: string; plan: str
 interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
 
 
-const MICRO_DESC: Record<string, string> = {
-    'D-Rápido': 'Lidera con accion directa',
-    'D-Medio': 'Decide con proposito claro',
-    'D-Lento': 'Persiste con determinacion firme',
-    'I-Rápido': 'Contagia entusiasmo al grupo',
-    'I-Medio': 'Conecta a traves del vinculo',
-    'I-Lento': 'Observa y conecta en profundidad',
-    'S-Rápido': 'Responde rapido para apoyar',
-    'S-Medio': 'Sostiene con consistencia',
-    'S-Lento': 'Estabiliza desde la calma',
-    'C-Rápido': 'Analiza y ejecuta al instante',
-    'C-Medio': 'Procesa con metodo y precision',
-    'C-Lento': 'Observa antes de intervenir',
+const MICRO_DESC: Record<string, Record<string, string>> = {
+    'D-Rápido': { es: 'Lidera con acción directa', en: 'Leads with direct action', pt: 'Lidera com ação direta' },
+    'D-Medio':  { es: 'Decide con propósito claro', en: 'Decides with clear purpose', pt: 'Decide com propósito claro' },
+    'D-Lento':  { es: 'Persiste con determinación firme', en: 'Persists with steady resolve', pt: 'Persiste com determinação firme' },
+    'I-Rápido': { es: 'Contagia entusiasmo al grupo', en: 'Spreads enthusiasm to the group', pt: 'Contagia o grupo com entusiasmo' },
+    'I-Medio':  { es: 'Conecta a través del vínculo', en: 'Connects through relationship', pt: 'Conecta pelo vínculo' },
+    'I-Lento':  { es: 'Observa y conecta en profundidad', en: 'Observes and connects deeply', pt: 'Observa e conecta em profundidade' },
+    'S-Rápido': { es: 'Responde rápido para apoyar', en: 'Responds quickly to support', pt: 'Responde rápido para apoiar' },
+    'S-Medio':  { es: 'Sostiene con consistencia', en: 'Sustains with consistency', pt: 'Sustenta com consistência' },
+    'S-Lento':  { es: 'Estabiliza desde la calma', en: 'Stabilizes from a place of calm', pt: 'Estabiliza a partir da calma' },
+    'C-Rápido': { es: 'Analiza y ejecuta al instante', en: 'Analyzes and acts instantly', pt: 'Analisa e executa na hora' },
+    'C-Medio':  { es: 'Procesa con método y precisión', en: 'Processes with method and precision', pt: 'Processa com método e precisão' },
+    'C-Lento':  { es: 'Observa antes de intervenir', en: 'Observes before acting', pt: 'Observa antes de intervir' },
+};
+
+const ARCHETYPE_LABELS: Record<string, Record<string, string>> = {
+    'D-Rápido': { es: 'Impulsor Dinámico',    en: 'Dynamic Driver',        pt: 'Impulsor Dinâmico' },
+    'D-Medio':  { es: 'Impulsor Decidido',     en: 'Decisive Driver',       pt: 'Impulsor Decidido' },
+    'D-Lento':  { es: 'Impulsor Persistente',  en: 'Persistent Driver',     pt: 'Impulsor Persistente' },
+    'I-Rápido': { es: 'Conector Vibrante',     en: 'Vibrant Connector',     pt: 'Conector Vibrante' },
+    'I-Medio':  { es: 'Conector Relacional',   en: 'Relational Connector',  pt: 'Conector Relacional' },
+    'I-Lento':  { es: 'Conector Reflexivo',    en: 'Reflective Connector',  pt: 'Conector Reflexivo' },
+    'S-Rápido': { es: 'Sostén Ágil',           en: 'Agile Supporter',       pt: 'Sustento Ágil' },
+    'S-Medio':  { es: 'Sostén Confiable',      en: 'Reliable Supporter',    pt: 'Sustento Confiável' },
+    'S-Lento':  { es: 'Sostén Sereno',         en: 'Serene Supporter',      pt: 'Sustento Sereno' },
+    'C-Rápido': { es: 'Estratega Reactivo',    en: 'Reactive Strategist',   pt: 'Estrategista Reativo' },
+    'C-Medio':  { es: 'Estratega Analítico',   en: 'Analytical Strategist', pt: 'Estrategista Analítico' },
+    'C-Lento':  { es: 'Estratega Observador',  en: 'Observer Strategist',   pt: 'Estrategista Observador' },
 };
 
 /* ── Activity digest. 5 cases ───────────────────────────────────────────── */
@@ -356,7 +371,9 @@ export const TenantHome: React.FC = () => {
                                 {sessions.slice(0, 3).map((s, idx) => {
                                     const chip = AXIS_CHIP_STYLE[s.eje] ?? AXIS_CHIP_STYLE.C;
                                     const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
-                                    const micro = MICRO_DESC[`${s.eje}-${s.motor}`] ?? '';
+                                    const key = `${s.eje}-${s.motor}`;
+                                    const micro = MICRO_DESC[key]?.[lang] ?? '';
+                                    const archetypeLabel = ARCHETYPE_LABELS[key]?.[lang] ?? s.archetype_label;
                                     return (
                                         <motion.div
                                             key={s.id}
@@ -374,7 +391,7 @@ export const TenantHome: React.FC = () => {
                                                 {micro && <p className="text-[11px] text-argo-light mt-0.5 italic">{micro}</p>}
                                             </div>
                                             <span className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden sm:inline-block" style={{ border: `1px solid ${chip.border}`, color: chip.text }}>
-                                                {s.archetype_label}
+                                                {archetypeLabel}
                                             </span>
                                         </motion.div>
                                     );

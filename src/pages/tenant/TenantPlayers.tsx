@@ -500,7 +500,7 @@ export const TenantPlayers: React.FC = () => {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.players.titulo}</h1>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
                 {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}

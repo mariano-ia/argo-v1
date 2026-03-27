@@ -175,6 +175,8 @@ interface DashboardTexts {
         slug: string;
         plan: string;
         masOpciones: string;
+        idioma: string;
+        idiomaDesc: string;
     };
 
     // Home extra
@@ -398,6 +400,8 @@ const es: DashboardTexts = {
         slug: 'Slug',
         plan: 'Plan',
         masOpciones: 'Más opciones de configuración próximamente.',
+        idioma: 'Idioma del panel',
+        idiomaDesc: 'Elige en qué idioma quieres ver el dashboard.',
     },
     homeExtra: {
         tuLinkInvitacion: 'Tu link de invitación',
@@ -613,6 +617,8 @@ const en: DashboardTexts = {
         slug: 'Slug',
         plan: 'Plan',
         masOpciones: 'More settings coming soon.',
+        idioma: 'Dashboard language',
+        idiomaDesc: 'Choose the language you want to see the dashboard in.',
     },
     homeExtra: {
         tuLinkInvitacion: 'Your invitation link',
@@ -828,6 +834,8 @@ const pt: DashboardTexts = {
         slug: 'Slug',
         plan: 'Plano',
         masOpciones: 'Mais opções de configuração em breve.',
+        idioma: 'Idioma do painel',
+        idiomaDesc: 'Escolha o idioma em que deseja ver o painel.',
     },
     homeExtra: {
         tuLinkInvitacion: 'Seu link de convite',

@@ -13,7 +13,7 @@ interface Props {
 
 const PairCard: React.FC<{ pair: PairResult }> = ({ pair }) => {
     const { lang } = useLang();
-    const guide = getPairGuide(pair.member1.eje, pair.member2.eje);
+    const guide = getPairGuide(pair.member1.eje, pair.member2.eje, lang);
     const [expanded, setExpanded] = React.useState(false);
 
     if (!guide) return null;

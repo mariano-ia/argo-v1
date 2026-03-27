@@ -183,7 +183,7 @@ export const TenantGroups: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.groups.titulo}</h1>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.grupos}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.groups.subtitulo}</p>
                 </div>
                 {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
