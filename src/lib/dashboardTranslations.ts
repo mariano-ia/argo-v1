@@ -14,8 +14,26 @@ interface DashboardTexts {
         guia: string;
         chat: string;
         miLink: string;
+        usuarios: string;
         ajustes: string;
         cerrarSesion: string;
+    };
+
+    // Users (team members / access management)
+    users: {
+        subtitulo: string;
+        invitar: string;
+        invitarDesc: string;
+        emailPlaceholder: string;
+        enviar: string;
+        miembros: string;
+        activo: string;
+        pendiente: string;
+        tu: string;
+        yaEsMiembro: string;
+        yaInvitado: string;
+        errorEnvio: string;
+        enviado: (email: string) => string;
     };
 
     // Common
@@ -257,8 +275,24 @@ const es: DashboardTexts = {
         guia: 'Brújula',
         chat: 'Consultor Argo',
         miLink: 'Invitar',
+        usuarios: 'Usuarios',
         ajustes: 'Ajustes',
-        cerrarSesion: 'Cerrar sesion',
+        cerrarSesion: 'Cerrar sesión',
+    },
+    users: {
+        subtitulo: 'Administra quién tiene acceso a este panel.',
+        invitar: 'Invitar usuario',
+        invitarDesc: 'El usuario recibirá un email para crear su contraseña y acceder al dashboard.',
+        emailPlaceholder: 'email@ejemplo.com',
+        enviar: 'Invitar',
+        miembros: 'Miembros del equipo',
+        activo: 'Activo',
+        pendiente: 'Pendiente',
+        tu: 'Tú',
+        yaEsMiembro: 'Este usuario ya es miembro.',
+        yaInvitado: 'Ya se envió una invitación a este email.',
+        errorEnvio: 'No se pudo enviar la invitación.',
+        enviado: (email) => `Invitación enviada a ${email}.`,
     },
     common: {
         crear: 'Crear',
@@ -474,8 +508,24 @@ const en: DashboardTexts = {
         guia: 'Compass',
         chat: 'Argo Consultant',
         miLink: 'Invite',
+        usuarios: 'Users',
         ajustes: 'Settings',
         cerrarSesion: 'Sign out',
+    },
+    users: {
+        subtitulo: 'Manage who has access to this dashboard.',
+        invitar: 'Invite user',
+        invitarDesc: 'The user will receive an email to create their password and access the dashboard.',
+        emailPlaceholder: 'email@example.com',
+        enviar: 'Invite',
+        miembros: 'Team members',
+        activo: 'Active',
+        pendiente: 'Pending',
+        tu: 'You',
+        yaEsMiembro: 'This user is already a member.',
+        yaInvitado: 'An invitation has already been sent to this email.',
+        errorEnvio: 'Could not send the invitation.',
+        enviado: (email) => `Invitation sent to ${email}.`,
     },
     common: {
         crear: 'Create',
@@ -691,8 +741,24 @@ const pt: DashboardTexts = {
         guia: 'Bússola',
         chat: 'Consultor Argo',
         miLink: 'Convidar',
+        usuarios: 'Usuários',
         ajustes: 'Configurações',
         cerrarSesion: 'Sair',
+    },
+    users: {
+        subtitulo: 'Gerencie quem tem acesso a este painel.',
+        invitar: 'Convidar usuário',
+        invitarDesc: 'O usuário receberá um email para criar sua senha e acessar o painel.',
+        emailPlaceholder: 'email@exemplo.com',
+        enviar: 'Convidar',
+        miembros: 'Membros da equipe',
+        activo: 'Ativo',
+        pendiente: 'Pendente',
+        tu: 'Você',
+        yaEsMiembro: 'Este usuário já é membro.',
+        yaInvitado: 'Um convite já foi enviado para este email.',
+        errorEnvio: 'Não foi possível enviar o convite.',
+        enviado: (email) => `Convite enviado para ${email}.`,
     },
     common: {
         crear: 'Criar',

@@ -7,8 +7,8 @@ import { useLang } from '../context/LangContext';
 import { getDashboardT } from '../lib/dashboardTranslations';
 import type { Session } from '@supabase/supabase-js';
 import {
-    LayoutDashboard, Link2, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
-    Users, Compass, MessageCircle, Layers,
+    LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    Users, Compass, MessageCircle, Layers, UserPlus,
 } from 'lucide-react';
 
 interface TenantData {
@@ -33,7 +33,7 @@ export const TenantDashboard: React.FC = () => {
         { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
     ];
     const NAV_CONFIG = [
-        { to: '/dashboard/link',     label: dt.nav.miLink,    icon: Link2,           end: false },
+        { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,        end: false },
         { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,        end: false },
     ];
 
@@ -60,14 +60,22 @@ export const TenantDashboard: React.FC = () => {
         return () => subscription.unsubscribe();
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const fetchTenant = React.useCallback(() => {
+    const fetchTenant = React.useCallback(async () => {
         if (!session || devBypass) return;
-        supabase
+        // Look up via tenant_members (works for owner + invited members)
+        const { data: memberRow } = await supabase
+            .from('tenant_members')
+            .select('tenant_id')
+            .eq('auth_user_id', session.user.id)
+            .eq('status', 'active')
+            .single();
+        if (!memberRow) return;
+        const { data } = await supabase
             .from('tenants')
             .select('id, slug, display_name, plan, credits_remaining')
-            .eq('auth_user_id', session.user.id)
-            .single()
-            .then(({ data }) => { if (data) setTenant(data); });
+            .eq('id', memberRow.tenant_id)
+            .single();
+        if (data) setTenant(data);
     }, [session, devBypass]);
 
     useEffect(() => { fetchTenant(); }, [fetchTenant]);

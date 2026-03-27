@@ -172,6 +172,8 @@ export const TenantHome: React.FC = () => {
             } catch { /* silently fail */ }
         };
         fetchData();
+        const interval = setInterval(fetchData, 30_000);
+        return () => clearInterval(interval);
     }, [tenant]);
 
     // All hooks MUST be above any early return
