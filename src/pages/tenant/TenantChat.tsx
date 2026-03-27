@@ -18,6 +18,19 @@ interface ChatMessage { role: 'user' | 'assistant'; content: string; created_at?
 const getToken = async () => { const { data: { session } } = await supabase.auth.getSession(); return session?.access_token ?? null; };
 const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
 
+function renderMd(text: string): React.ReactNode {
+    const parts: React.ReactNode[] = [];
+    const re = /\*\*(.*?)\*\*/g;
+    let last = 0, match: RegExpExecArray | null, k = 0;
+    while ((match = re.exec(text)) !== null) {
+        if (match.index > last) parts.push(text.slice(last, match.index));
+        parts.push(<strong key={k++} className="font-semibold">{match[1]}</strong>);
+        last = re.lastIndex;
+    }
+    if (last < text.length) parts.push(text.slice(last));
+    return parts.length ? parts : text;
+}
+
 const SUGGESTED_PROMPTS = {
     es: ['¿Como motivo a un jugador que no quiere entrenar?', 'Explicame el perfil de Mateo y Allegra', '¿Que hago si un jugador se frustra cuando pierde?'],
     en: ['How do I motivate a player who doesn\'t want to train?', 'Explain the profiles of Mateo and Allegra', 'What do I do if a player gets frustrated when they lose?'],
@@ -272,7 +285,7 @@ export const TenantChat: React.FC = () => {
                                             ? 'bg-argo-navy text-white rounded-br-md'
                                             : 'bg-argo-bg text-argo-navy rounded-bl-md'
                                     }`}>
-                                        <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                        <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{renderMd(msg.content)}</p>
                                     </div>
                                 </div>
                             ))}
