@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const { data: tenant } = await sb
             .from('tenants')
-            .select('id, slug, display_name, plan, credits_remaining')
+            .select('id, slug, display_name, plan, credits_remaining, institution_type, sport, country, city, logo_url, onboarding_completed')
             .eq('id', tenantId)
             .single();
 
