@@ -310,18 +310,18 @@ export const TenantChat: React.FC = () => {
                 <div className="flex-shrink-0 border-t border-argo-border px-5 py-3 space-y-1.5">
                     {/* Trial query counter */}
                     {tenant?.plan === 'trial' && (
-                        <div className="flex items-center justify-between mb-1">
-                            <p className="text-[10px] text-argo-light">
-                                {lang === 'en' ? 'Trial queries' : lang === 'pt' ? 'Consultas de teste' : 'Consultas de prueba'}
-                            </p>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                        <div className="flex justify-end mb-1">
+                            <span className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${
                                 threads.length >= 10
                                     ? 'bg-red-50 text-red-600'
                                     : threads.length >= 7
                                         ? 'bg-amber-50 text-amber-600'
                                         : 'bg-argo-violet-50 text-argo-violet-500'
                             }`}>
-                                {threads.length}/10
+                                <span className="font-bold tabular-nums">{threads.length}/10</span>
+                                <span className="font-medium opacity-80">
+                                    {lang === 'en' ? 'free trial queries' : 'consultas free trial'}
+                                </span>
                             </span>
                         </div>
                     )}

@@ -42,7 +42,7 @@ export const TenantSignup: React.FC = () => {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
-                const googleName = session.user.user_metadata?.full_name as string | undefined;
+                const googleName = (session.user.user_metadata?.full_name || session.user.user_metadata?.name) as string | undefined;
                 createTenantAndRedirect(
                     session.user.id,
                     session.user.email ?? '',
