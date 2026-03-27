@@ -56,7 +56,7 @@ export const TenantUsers: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify({ email: email.trim() }),
+                body: JSON.stringify({ email: email.trim(), lang }),
             });
 
             if (res.ok) {
