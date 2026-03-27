@@ -73,6 +73,7 @@ export const TenantChat: React.FC = () => {
     const dt = getDashboardT(lang);
 
     const [threads, setThreads] = useState<Thread[]>([]);
+    const [totalUserMessages, setTotalUserMessages] = useState(0);
     const [threadsLoading, setThreadsLoading] = useState(true);
     const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -98,7 +99,11 @@ export const TenantChat: React.FC = () => {
         if (!token) return;
         try {
             const res = await fetch('/api/tenant-chat?action=threads', { headers: authHeaders(token) });
-            if (res.ok) { const data = await res.json(); setThreads(data.threads); }
+            if (res.ok) {
+                const data = await res.json();
+                setThreads(data.threads);
+                setTotalUserMessages(data.total_user_messages ?? 0);
+            }
         } finally { setThreadsLoading(false); }
     }, []);
 
@@ -156,6 +161,7 @@ export const TenantChat: React.FC = () => {
                 const data = await res.json();
                 if (!activeThreadId && data.thread_id) setActiveThreadId(data.thread_id);
                 setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
+                setTotalUserMessages(prev => prev + 1);
                 scrollToBottom();
                 fetchThreads();
             } else {
@@ -312,20 +318,20 @@ export const TenantChat: React.FC = () => {
                     {tenant?.plan === 'trial' && (
                         <div className="flex justify-end mb-1">
                             <span className={`flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${
-                                threads.length >= 10
+                                totalUserMessages >= 10
                                     ? 'bg-red-50 text-red-600'
-                                    : threads.length >= 7
+                                    : totalUserMessages >= 7
                                         ? 'bg-amber-50 text-amber-600'
                                         : 'bg-argo-violet-50 text-argo-violet-500'
                             }`}>
-                                <span className="font-bold tabular-nums">{threads.length}/10</span>
+                                <span className="font-bold tabular-nums">{totalUserMessages}/10</span>
                                 <span className="font-medium opacity-80">
                                     {lang === 'en' ? 'free trial queries' : 'consultas free trial'}
                                 </span>
                             </span>
                         </div>
                     )}
-                    {tenant?.plan === 'trial' && threads.length >= 10 ? (
+                    {tenant?.plan === 'trial' && totalUserMessages >= 10 ? (
                         <div className="flex items-center gap-2.5 bg-argo-bg rounded-xl px-4 py-3 border border-argo-border">
                             <Lock size={13} className="text-argo-light flex-shrink-0" />
                             <p className="text-[12px] text-argo-secondary">
@@ -354,7 +360,7 @@ export const TenantChat: React.FC = () => {
                             </button>
                         </div>
                     )}
-                    {(tenant?.plan !== 'trial' || threads.length < 10) && (
+                    {(tenant?.plan !== 'trial' || totalUserMessages < 10) && (
                         <p className="text-[10px] text-argo-light text-center">
                             {dt.chat.disclaimer}
                         </p>

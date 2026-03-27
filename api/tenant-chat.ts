@@ -163,13 +163,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const action = req.query.action as string;
 
             if (action === 'threads') {
-                // Get distinct threads with last message
-                const { data: threads } = await sb
-                    .from('chat_messages')
-                    .select('thread_id, content, created_at')
-                    .eq('tenant_id', tenant.id)
-                    .eq('role', 'user')
-                    .order('created_at', { ascending: false });
+                // Get distinct threads with last message + total user message count
+                const [{ data: threads }, { count: totalUserMessages }] = await Promise.all([
+                    sb.from('chat_messages')
+                        .select('thread_id, content, created_at')
+                        .eq('tenant_id', tenant.id)
+                        .eq('role', 'user')
+                        .order('created_at', { ascending: false }),
+                    sb.from('chat_messages')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('tenant_id', tenant.id)
+                        .eq('role', 'user'),
+                ]);
 
                 // Deduplicate by thread_id, keep most recent
                 const seen = new Set<string>();
@@ -179,7 +184,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     return true;
                 }).slice(0, 20);
 
-                return res.status(200).json({ threads: unique });
+                return res.status(200).json({ threads: unique, total_user_messages: totalUserMessages ?? 0 });
             }
 
             if (action === 'messages') {
@@ -209,6 +214,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { thread_id, message, lang = 'es' } = req.body ?? {};
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({ error: 'Message required' });
+        }
+
+        // Trial plan: max 10 user messages total
+        const { data: tenantPlan } = await sb.from('tenants').select('plan').eq('id', tenant.id).maybeSingle();
+        if (tenantPlan?.plan === 'trial') {
+            const { count: totalMessages } = await sb
+                .from('chat_messages')
+                .select('id', { count: 'exact', head: true })
+                .eq('tenant_id', tenant.id)
+                .eq('role', 'user');
+            if ((totalMessages ?? 0) >= 10) {
+                return res.status(403).json({ error: 'Trial message limit reached' });
+            }
         }
 
         // Rate limiting: max 60 messages per tenant per hour
