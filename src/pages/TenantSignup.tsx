@@ -24,7 +24,7 @@ export const TenantSignup: React.FC = () => {
     const [searchParams] = useSearchParams();
     const plan = searchParams.get('plan') || 'trial';
 
-    const [mode, setMode]         = useState<Mode>('signup');
+    const [mode, setMode]         = useState<Mode>(searchParams.get('login') === '1' ? 'login' : 'signup');
     const [name, setName]         = useState('');
     const [email, setEmail]       = useState('');
     const [password, setPassword] = useState('');

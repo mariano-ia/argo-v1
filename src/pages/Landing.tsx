@@ -730,7 +730,14 @@ export const Landing: React.FC = () => {
                             </button>
                         ))}
                         <button
-                            onClick={() => navigate('/app')}
+                            onClick={() => navigate('/signup?login=1')}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                        >
+                            {L('Iniciar sesión', 'Log in', 'Entrar')}
+                        </button>
+                        <button
+                            onClick={() => navigate('/signup')}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -738,7 +745,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {L('Iniciar experiencia', 'Start experience', 'Iniciar experiência')}
+                            {L('Prueba gratis', 'Try free', 'Teste grátis')}
                         </button>
                     </div>
                 </div>
@@ -806,7 +813,7 @@ export const Landing: React.FC = () => {
 
                 <motion.div {...fadeUp(0.28)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => navigate('/signup')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -817,7 +824,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
+                        {L('Iniciar prueba gratuita', 'Start free trial', 'Iniciar avaliação gratuita')}
                         <ArrowRight size={15} />
                     </button>
                     <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
@@ -1206,7 +1213,7 @@ export const Landing: React.FC = () => {
                         )}
                     </p>
                     <button
-                        onClick={() => navigate('/app')}
+                        onClick={() => navigate('/signup')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '10px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -1217,7 +1224,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar experiencia Argo', 'Start Argo experience', 'Iniciar experiência Argo')}
+                        {L('Iniciar prueba gratuita', 'Start free trial', 'Iniciar avaliação gratuita')}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>
