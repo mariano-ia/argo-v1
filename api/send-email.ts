@@ -270,77 +270,106 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-        return res.status(500).json({ error: 'RESEND_API_KEY no está configurada en las variables de entorno de Vercel.' });
+    try {
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey) {
+            console.error('[send-email] RESEND_API_KEY is not set');
+            return res.status(500).json({ error: 'RESEND_API_KEY no está configurada en las variables de entorno de Vercel.' });
+        }
+
+        const body = req.body;
+        if (!body || typeof body !== 'object') {
+            console.error('[send-email] req.body is missing or not an object:', typeof body);
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+
+        const {
+            toEmail,
+            nombreAdulto,
+            nombreNino,
+            deporte,
+            edad,
+            eje,
+            motor,
+            arquetipo,
+            perfil,
+            palabrasPuente,
+            sessionId,
+            lang,
+            emailSubject,
+        } = body as {
+            toEmail: string;
+            nombreAdulto: string;
+            nombreNino: string;
+            deporte: string;
+            edad: number;
+            eje: string;
+            motor: string;
+            arquetipo: string;
+            perfil: string;
+            palabrasPuente: string[];
+            sessionId?: string;
+            lang?: string;
+            emailSubject?: string;
+        };
+
+        console.log('[send-email] Request received:', {
+            toEmail,
+            nombreNino,
+            eje,
+            motor,
+            lang,
+            sessionId,
+            hasApiKey: !!apiKey,
+        });
+
+        if (!toEmail || !nombreNino) {
+            console.error('[send-email] Missing required fields — toEmail:', toEmail, 'nombreNino:', nombreNino);
+            return res.status(400).json({ error: 'Missing required fields: toEmail, nombreNino' });
+        }
+
+        const html = buildHtml({
+            nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
+            palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
+            sessionId, lang,
+        });
+
+        const langAttr = lang || 'es';
+        const autoSubject = langAttr === 'en'
+            ? `${nombreNino}'s Argo Method report is ready`
+            : langAttr === 'pt'
+            ? `O relatório de ${nombreNino} pelo Argo Method está pronto`
+            : `El informe de ${nombreNino} en Argo Method está listo`;
+        const subject = emailSubject || autoSubject;
+
+        console.log('[send-email] Calling Resend API — to:', toEmail, 'subject:', subject);
+
+        const response = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                from: 'Argo Method <hola@argomethod.com>',
+                to: [toEmail],
+                subject,
+                html,
+            }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ message: 'Error desconocido de Resend' }));
+            console.error('[send-email] Resend API error — status:', response.status, 'body:', JSON.stringify(error));
+            return res.status(response.status).json({ error });
+        }
+
+        const resendData = await response.json().catch(() => ({}));
+        console.log('[send-email] Success — Resend response:', JSON.stringify(resendData));
+        return res.status(200).json({ success: true });
+
+    } catch (err) {
+        console.error('[send-email] Unhandled exception:', err instanceof Error ? err.message : err);
+        return res.status(500).json({ error: 'Internal server error' });
     }
-
-    const {
-        toEmail,
-        nombreAdulto,
-        nombreNino,
-        deporte,
-        edad,
-        eje,
-        motor,
-        arquetipo,
-        perfil,
-        palabrasPuente,
-        sessionId,
-        lang,
-        emailSubject,
-    } = req.body as {
-        toEmail: string;
-        nombreAdulto: string;
-        nombreNino: string;
-        deporte: string;
-        edad: number;
-        eje: string;
-        motor: string;
-        arquetipo: string;
-        perfil: string;
-        palabrasPuente: string[];
-        sessionId?: string;
-        lang?: string;
-        emailSubject?: string;
-    };
-
-    if (!toEmail || !nombreNino) {
-        return res.status(400).json({ error: 'Missing required fields: toEmail, nombreNino' });
-    }
-
-    const html = buildHtml({
-        nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
-        palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
-        sessionId, lang,
-    });
-
-    const langAttr = lang || 'es';
-    const autoSubject = langAttr === 'en'
-        ? `${nombreNino}'s Argo Method report is ready`
-        : langAttr === 'pt'
-        ? `O relatório de ${nombreNino} pelo Argo Method está pronto`
-        : `El informe de ${nombreNino} en Argo Method está listo`;
-    const subject = emailSubject || autoSubject;
-
-    const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            from: 'Argo Method <hola@argomethod.com>',
-            to: [toEmail],
-            subject,
-            html,
-        }),
-    });
-
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Error desconocido de Resend' }));
-        return res.status(response.status).json({ error });
-    }
-
-    return res.status(200).json({ success: true });
 }

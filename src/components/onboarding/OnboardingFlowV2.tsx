@@ -521,6 +521,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 ? `${translatedLabel}, ${translatedTendencia}`
                 : translatedLabel;
 
+            console.log('[Argo] Attempting email send to:', adultData.email, '— sessionId:', sessionIdRef.current);
             try {
                 await sendReport({
                     toEmail:        adultData.email,
