@@ -144,8 +144,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        const { data: tenant } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).single();
-        if (!tenant) return res.status(404).json({ error: 'Tenant not found' });
+        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id').eq('auth_user_id', user.id).eq('status', 'active').single();
+        if (!memberRow) return res.status(404).json({ error: 'Tenant not found' });
+        const tenant = { id: memberRow.tenant_id };
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GET: List threads or messages

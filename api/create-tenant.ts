@@ -94,12 +94,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     console.error('[create-tenant] Retry insert error:', retryError.message);
                     return res.status(500).json({ error: retryError.message });
                 }
+                await sb.from('tenant_members').upsert(
+                    { tenant_id: retryTenant!.id, auth_user_id, email, role: 'owner', status: 'active' },
+                    { onConflict: 'tenant_id,email' },
+                );
                 return res.status(200).json({ ok: true, tenant: retryTenant, existing: false });
             }
 
             console.error('[create-tenant] Insert error:', error.message);
             return res.status(500).json({ error: error.message });
         }
+
+        // Also register owner in tenant_members
+        await sb.from('tenant_members').upsert(
+            { tenant_id: tenant!.id, auth_user_id, email, role: 'owner', status: 'active' },
+            { onConflict: 'tenant_id,email' },
+        );
 
         return res.status(200).json({ ok: true, tenant, existing: false });
     } catch (err) {

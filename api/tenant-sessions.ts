@@ -28,16 +28,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        // Find their tenant
-        const { data: tenant, error: tenantError } = await sb
-            .from('tenants')
-            .select('id')
+        // Find their tenant via tenant_members (supports owner + invited members)
+        const { data: memberRow } = await sb
+            .from('tenant_members')
+            .select('tenant_id')
             .eq('auth_user_id', user.id)
+            .eq('status', 'active')
             .single();
 
-        if (tenantError || !tenant) {
+        if (!memberRow) {
             return res.status(404).json({ error: 'Tenant not found' });
         }
+        const tenant = { id: memberRow.tenant_id };
 
         // Fetch sessions for this tenant
         const { data: sessions, error: sessError } = await sb

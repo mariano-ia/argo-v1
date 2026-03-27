@@ -9,6 +9,8 @@ import { TenantDashboard }   from './pages/TenantDashboard';
 import { TenantHome }        from './pages/tenant/TenantHome';
 import { TenantLink }        from './pages/tenant/TenantLink';
 import { TenantSettings }    from './pages/tenant/TenantSettings';
+import { TenantUsers }       from './pages/tenant/TenantUsers';
+import { SetPassword }       from './pages/SetPassword';
 import { TenantGroups }      from './pages/tenant/TenantGroups';
 import { TenantGuide }       from './pages/tenant/TenantGuide';
 import { TenantPlayers }    from './pages/tenant/TenantPlayers';
@@ -143,6 +145,7 @@ function App() {
             <Route path="/app"    element={<UserApp />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
+            <Route path="/set-password" element={<SetPassword />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/report/:sessionId" element={<ReportPage />} />
@@ -160,6 +163,7 @@ function App() {
                 <Route path="guide"    element={<TenantGuide />} />
                 <Route path="chat"     element={<TenantChat />} />
                 <Route path="link"     element={<TenantLink />} />
+                <Route path="users"    element={<TenantUsers />} />
                 <Route path="settings" element={<TenantSettings />} />
             </Route>
 
