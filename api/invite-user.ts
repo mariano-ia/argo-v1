@@ -175,14 +175,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         if (inviteError || !linkData?.properties?.action_link) {
-            console.error('[invite-user] generateLink error:', inviteError?.message);
-            return res.status(500).json({ error: inviteError?.message ?? 'Failed to generate invite link' });
+            const msg = inviteError?.message ?? '';
+            console.error('[invite-user] generateLink error:', msg);
+            // Supabase returns this when the email is already registered
+            if (msg.toLowerCase().includes('already been registered') || msg.toLowerCase().includes('already registered')) {
+                return res.status(409).json({ error: 'email_already_exists' });
+            }
+            return res.status(500).json({ error: msg || 'Failed to generate invite link' });
         }
 
-        // Insert pending member record
+        // Insert pending member record — store auth_user_id now so remove-member can clean up later
         const { error: insertError } = await sb
             .from('tenant_members')
-            .insert({ tenant_id: tenantId, email: normalizedEmail, role: 'member', status: 'pending' });
+            .insert({ tenant_id: tenantId, email: normalizedEmail, role: 'member', status: 'pending', auth_user_id: linkData.user.id });
         if (insertError) {
             console.error('[invite-user] Insert error:', insertError.message);
             return res.status(500).json({ error: 'Failed to create invite record' });
