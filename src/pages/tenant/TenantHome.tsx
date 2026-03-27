@@ -137,7 +137,7 @@ function getDistributionDigest(sessions: SessionRow[], lang: string): string {
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 export const TenantHome: React.FC = () => {
-    const { tenant, refreshTenant, userEmail } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string }>();
+    const { tenant, refreshTenant, userEmail, memberProfile } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const navigate = useNavigate();
@@ -225,7 +225,7 @@ export const TenantHome: React.FC = () => {
             {/* ═══ ROW 1: Header + Link ═══ */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(userEmail.split('@')[0])}</h1>
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
                 <LinkWidget slug={tenant.slug} lang={lang} />

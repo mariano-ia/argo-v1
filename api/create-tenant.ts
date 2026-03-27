@@ -29,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { auth_user_id, email, display_name } = req.body;
+        const { auth_user_id, email, display_name, full_name } = req.body;
 
         if (!auth_user_id || !email || !display_name) {
             return res.status(400).json({ error: 'Missing required fields: auth_user_id, email, display_name' });
@@ -95,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     return res.status(500).json({ error: retryError.message });
                 }
                 await sb.from('tenant_members').upsert(
-                    { tenant_id: retryTenant!.id, auth_user_id, email, role: 'owner', status: 'active' },
+                    { tenant_id: retryTenant!.id, auth_user_id, email, role: 'owner', status: 'active', full_name: full_name || null },
                     { onConflict: 'tenant_id,email' },
                 );
                 return res.status(200).json({ ok: true, tenant: retryTenant, existing: false });
@@ -107,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Also register owner in tenant_members
         await sb.from('tenant_members').upsert(
-            { tenant_id: tenant!.id, auth_user_id, email, role: 'owner', status: 'active' },
+            { tenant_id: tenant!.id, auth_user_id, email, role: 'owner', status: 'active', full_name: full_name || null },
             { onConflict: 'tenant_id,email' },
         );
 

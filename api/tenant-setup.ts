@@ -75,11 +75,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Update owner profile on tenant_members
-        if (memberRowId && (body.full_name !== undefined || body.role_in_institution !== undefined)) {
+        if (body.full_name !== undefined || body.role_in_institution !== undefined) {
             const memberUpdate: Record<string, unknown> = {};
-            if (body.full_name           !== undefined) memberUpdate.full_name           = body.full_name.trim();
+            if (body.full_name           !== undefined) memberUpdate.full_name           = body.full_name ? (body.full_name as string).trim() : null;
             if (body.role_in_institution !== undefined) memberUpdate.role_in_institution = body.role_in_institution;
-            await sb.from('tenant_members').update(memberUpdate).eq('id', memberRowId);
+
+            if (memberRowId) {
+                await sb.from('tenant_members').update(memberUpdate).eq('id', memberRowId);
+            } else {
+                // Owner predates tenant_members — create their row now
+                await sb.from('tenant_members').upsert(
+                    { tenant_id: tenantId, auth_user_id: user.id, email: user.email, role: 'owner', status: 'active', ...memberUpdate },
+                    { onConflict: 'tenant_id,email' },
+                );
+            }
         }
 
         return res.status(200).json({ ok: true });
