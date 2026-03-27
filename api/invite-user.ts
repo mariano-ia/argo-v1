@@ -18,15 +18,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        // Get caller's tenant via tenant_members
+        // Get caller's tenant — try tenant_members first, fall back to tenants.auth_user_id
+        let tenantId: string | null = null;
         const { data: callerRow } = await sb
             .from('tenant_members')
             .select('tenant_id')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
-            .single();
-        if (!callerRow) return res.status(404).json({ error: 'Tenant not found' });
-        const tenantId = callerRow.tenant_id;
+            .maybeSingle();
+        if (callerRow) {
+            tenantId = callerRow.tenant_id;
+        } else {
+            const { data: tenantRow } = await sb
+                .from('tenants')
+                .select('id')
+                .eq('auth_user_id', user.id)
+                .maybeSingle();
+            if (tenantRow) tenantId = tenantRow.id;
+        }
+        if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
 
         // Validate email
         const { email } = req.body ?? {};
