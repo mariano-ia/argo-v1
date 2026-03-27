@@ -9,7 +9,7 @@ import { TenantOnboarding } from './tenant/TenantOnboarding';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
-    Users, Compass, MessageCircle, Layers, UserPlus,
+    Users, Compass, MessageCircle, Layers, UserPlus, User,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -141,29 +141,68 @@ export const TenantDashboard: React.FC = () => {
             }`}>
                 {/* Logo + collapse toggle */}
                 {isCollapsed ? (
-                    <div className="flex items-center justify-center pt-5 pb-4">
+                    <div className="flex flex-col items-center pt-5 pb-3 gap-3">
                         <Tooltip text={dt.nav.inicio} position="right">
                             <button onClick={() => setCollapsed(false)} className="text-argo-light hover:text-argo-grey transition-colors p-1.5 rounded-lg hover:bg-argo-bg">
                                 <PanelLeftOpen size={16} />
                             </button>
                         </Tooltip>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-between px-6 pt-7 pb-8">
-                        <div className="flex items-center gap-1.5">
-                            <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                                <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
-                            </span>
-                            <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
-                        </div>
-                        {!mobile && (
-                            <Tooltip text={lang === 'en' ? 'Collapse' : lang === 'pt' ? 'Recolher' : 'Colapsar'}>
-                                <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
-                                    <PanelLeftClose size={16} />
-                                </button>
+                        {/* Institution logo — collapsed */}
+                        {tenant && (
+                            <Tooltip text={tenant.display_name} position="right">
+                                {tenant.logo_url ? (
+                                    <img
+                                        src={tenant.logo_url}
+                                        alt={tenant.display_name}
+                                        className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white"
+                                    />
+                                ) : (
+                                    <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold">
+                                        {initials}
+                                    </div>
+                                )}
                             </Tooltip>
                         )}
+                        <div className="w-6 h-px bg-argo-border" />
                     </div>
+                ) : (
+                    <>
+                        <div className="flex items-center justify-between px-6 pt-7 pb-4">
+                            <div className="flex items-center gap-1.5">
+                                <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                                </span>
+                                <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
+                            </div>
+                            {!mobile && (
+                                <Tooltip text={lang === 'en' ? 'Collapse' : lang === 'pt' ? 'Recolher' : 'Colapsar'}>
+                                    <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
+                                        <PanelLeftClose size={16} />
+                                    </button>
+                                </Tooltip>
+                            )}
+                        </div>
+                        {/* Institution block */}
+                        {tenant && (
+                            <div className="px-4 pb-4">
+                                <div className="flex items-center gap-2.5 px-2 py-2 rounded-[10px]">
+                                    {tenant.logo_url ? (
+                                        <img
+                                            src={tenant.logo_url}
+                                            alt={tenant.display_name}
+                                            className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white flex-shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                                            {initials}
+                                        </div>
+                                    )}
+                                    <span className="text-[13px] font-semibold text-argo-navy truncate">{tenant.display_name}</span>
+                                </div>
+                                <div className="mx-2 mt-1 h-px bg-argo-border" />
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* Nav — Principal */}
@@ -183,13 +222,11 @@ export const TenantDashboard: React.FC = () => {
                     {/* User + logout — always visible when sidebar is expanded */}
                     {!isCollapsed && (
                         <div className="flex items-center gap-2.5 px-3 py-2">
-                            {tenant && (
-                                <div className="w-[30px] h-[30px] rounded-full bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
-                                    {initials}
-                                </div>
-                            )}
+                            <div className="w-[28px] h-[28px] rounded-full bg-argo-bg border border-argo-border text-argo-grey flex items-center justify-center flex-shrink-0">
+                                <User size={13} />
+                            </div>
                             <span className="text-xs font-medium text-argo-secondary truncate flex-1">
-                                {tenant?.display_name ?? session?.user?.email ?? ''}
+                                {session?.user?.email ?? ''}
                             </span>
                             <Tooltip text={dt.nav.cerrarSesion}>
                                 <button onClick={handleLogout} className="text-argo-light hover:text-argo-grey transition-colors flex-shrink-0">
