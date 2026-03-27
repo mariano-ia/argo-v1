@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Plus, Loader2, MessageCircle, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { Send, Plus, Loader2, MessageCircle, PanelLeftClose, PanelLeftOpen, Lock } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -200,7 +200,8 @@ export const TenantChat: React.FC = () => {
                                 {[1,2,3,4].map(i => <div key={i} className="h-10 bg-argo-bg rounded-lg animate-pulse" />)}
                             </div>
                         ) : threads.length === 0 ? (
-                            <div className="px-3 pt-6 text-center">
+                            <div className="flex flex-col items-center pt-8 px-3 text-center">
+                                <MessageCircle size={20} className="text-argo-border mb-2" />
                                 <p className="text-xs text-argo-light">{dt.chat.sinConversaciones}</p>
                             </div>
                         ) : (
@@ -294,29 +295,57 @@ export const TenantChat: React.FC = () => {
 
                 {/* Input */}
                 <div className="flex-shrink-0 border-t border-argo-border px-5 py-3 space-y-1.5">
-                    <div className="flex items-end gap-2">
-                        <textarea
-                            ref={inputRef}
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={handleKeyDown}
-                            placeholder={dt.chat.escribePlaceholder}
-                            rows={1}
-                            className="flex-1 resize-none rounded-xl border border-argo-border px-4 py-2.5 text-[13px] outline-none focus:border-argo-violet-200 transition-colors max-h-32 bg-argo-bg"
-                            style={{ minHeight: '42px' }}
-                            disabled={sending}
-                        />
-                        <button
-                            onClick={() => sendMessage()}
-                            disabled={!input.trim() || sending}
-                            className="p-2.5 rounded-xl bg-argo-navy text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-argo-navy/90 transition-colors flex-shrink-0"
-                        >
-                            {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                        </button>
-                    </div>
-                    <p className="text-[10px] text-argo-light text-center">
-                        {dt.chat.disclaimer}
-                    </p>
+                    {/* Trial query counter */}
+                    {tenant?.plan === 'trial' && (
+                        <div className="flex items-center justify-between mb-1">
+                            <p className="text-[10px] text-argo-light">
+                                {lang === 'en' ? 'Trial queries' : lang === 'pt' ? 'Consultas de teste' : 'Consultas de prueba'}
+                            </p>
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
+                                threads.length >= 10
+                                    ? 'bg-red-50 text-red-600'
+                                    : threads.length >= 7
+                                        ? 'bg-amber-50 text-amber-600'
+                                        : 'bg-argo-violet-50 text-argo-violet-500'
+                            }`}>
+                                {threads.length}/10
+                            </span>
+                        </div>
+                    )}
+                    {tenant?.plan === 'trial' && threads.length >= 10 ? (
+                        <div className="flex items-center gap-2.5 bg-argo-bg rounded-xl px-4 py-3 border border-argo-border">
+                            <Lock size={13} className="text-argo-light flex-shrink-0" />
+                            <p className="text-[12px] text-argo-secondary">
+                                {lang === 'en' ? 'You\'ve used all 10 trial queries.' : lang === 'pt' ? 'Você usou todas as 10 consultas de teste.' : 'Usaste las 10 consultas de prueba.'}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="flex items-end gap-2">
+                            <textarea
+                                ref={inputRef}
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                placeholder={dt.chat.escribePlaceholder}
+                                rows={1}
+                                className="flex-1 resize-none rounded-xl border border-argo-border px-4 py-2.5 text-[13px] outline-none focus:border-argo-violet-200 transition-colors max-h-32 bg-argo-bg"
+                                style={{ minHeight: '42px' }}
+                                disabled={sending}
+                            />
+                            <button
+                                onClick={() => sendMessage()}
+                                disabled={!input.trim() || sending}
+                                className="p-2.5 rounded-xl bg-argo-navy text-white disabled:opacity-30 disabled:cursor-not-allowed hover:bg-argo-navy/90 transition-colors flex-shrink-0"
+                            >
+                                {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                            </button>
+                        </div>
+                    )}
+                    {(tenant?.plan !== 'trial' || threads.length < 10) && (
+                        <p className="text-[10px] text-argo-light text-center">
+                            {dt.chat.disclaimer}
+                        </p>
+                    )}
                 </div>
             </div>
         </motion.div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Clock, Trash2 } from 'lucide-react';
+import { Check, Clock, Trash2, Users } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -156,6 +156,16 @@ export const TenantUsers: React.FC = () => {
                 {loading ? (
                     <div className="space-y-3">
                         {[1, 2].map(i => <div key={i} className="h-12 bg-argo-bg rounded-lg animate-pulse" />)}
+                    </div>
+                ) : members.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <Users size={28} className="text-argo-border mb-3" />
+                        <p className="text-sm font-semibold text-argo-navy mb-1">
+                            {lang === 'en' ? 'No members yet' : lang === 'pt' ? 'Nenhum membro ainda' : 'Aún no hay miembros'}
+                        </p>
+                        <p className="text-xs text-argo-light leading-relaxed max-w-[240px]">
+                            {lang === 'en' ? 'Invite a colleague using the form above.' : lang === 'pt' ? 'Convide um colega usando o formulário acima.' : 'Invita a un colega usando el formulario de arriba.'}
+                        </p>
                     </div>
                 ) : (
                     <div className="divide-y divide-argo-border">

@@ -23,9 +23,26 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 const getToken = async () => { const { data: { session } } = await supabase.auth.getSession(); return session?.access_token ?? null; };
 const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
 
+/* ── Dev mock data ─────────────────────────────────────────────────────────── */
+const DEV_GROUPS: GroupRow[] = [
+    { id: 'dev-g1', name: 'Sub-12 Fútbol', created_at: new Date().toISOString(), member_count: 3 },
+    { id: 'dev-g2', name: 'Sub-15 Básquet', created_at: new Date().toISOString(), member_count: 2 },
+];
+const DEV_MEMBERS: Record<string, MemberRow[]> = {
+    'dev-g1': [
+        { id: 'dm-1', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
+        { id: 'dm-2', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
+        { id: 'dm-3', session_id: 'dev-3', added_at: new Date().toISOString(), child_name: 'Sofía Martínez', child_age: 13, sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S' },
+    ],
+    'dev-g2': [
+        { id: 'dm-4', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
+        { id: 'dm-5', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
+    ],
+};
+
 /* ── Component ─────────────────────────────────────────────────────────────── */
 export const TenantGroups: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { tenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const { toast } = useToast();
@@ -63,13 +80,14 @@ export const TenantGroups: React.FC = () => {
 
     /* ── Fetch groups ──────────────────────────────────────────────────────── */
     const fetchGroups = useCallback(async () => {
+        if (devBypass) { setGroups(DEV_GROUPS); setLoading(false); return; }
         const token = await getToken();
         if (!token) return;
         try {
             const res = await fetch('/api/tenant-groups', { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setGroups(data.groups); }
         } finally { setLoading(false); }
-    }, []);
+    }, [devBypass]);
 
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
@@ -88,13 +106,20 @@ export const TenantGroups: React.FC = () => {
     /* ── Fetch detail ──────────────────────────────────────────────────────── */
     const fetchDetail = useCallback(async (groupId: string) => {
         setDetailLoading(true);
+        if (devBypass) {
+            const g = DEV_GROUPS.find(g => g.id === groupId);
+            setDetailGroup(g ? { id: g.id, name: g.name } : null);
+            setMembers(DEV_MEMBERS[groupId] ?? []);
+            setDetailLoading(false);
+            return;
+        }
         const token = await getToken();
         if (!token) return;
         try {
             const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); }
         } finally { setDetailLoading(false); }
-    }, []);
+    }, [devBypass]);
 
     const selectGroup = (id: string) => {
         setSelectedId(id);
@@ -212,12 +237,22 @@ export const TenantGroups: React.FC = () => {
                                 <X size={14} />
                             </button>
                         </div>
-                    ) : (
-                        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
-                            <Plus size={16} strokeWidth={1.5} />
-                            {dt.groups.crearGrupo}
-                        </button>
-                    )}
+                    ) : (() => {
+                        const trialLimitReached = tenant?.plan === 'trial' && groups.length >= 1;
+                        return trialLimitReached ? (
+                            <Tooltip text={lang === 'en' ? 'Trial plan allows 1 formation. Upgrade to create more.' : lang === 'pt' ? 'O plano de teste permite 1 formação. Faça upgrade para criar mais.' : 'El plan de prueba permite 1 formación. Mejora tu plan para crear más.'} maxWidth={220}>
+                                <span className="flex items-center gap-2 text-[13px] font-medium text-argo-light px-3 py-2.5 rounded-lg cursor-not-allowed">
+                                    <Plus size={16} strokeWidth={1.5} />
+                                    {dt.groups.crearGrupo}
+                                </span>
+                            </Tooltip>
+                        ) : (
+                            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
+                                <Plus size={16} strokeWidth={1.5} />
+                                {dt.groups.crearGrupo}
+                            </button>
+                        );
+                    })()}
 
                     {/* Groups list */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-y-auto" style={{ maxHeight: 'calc(100vh - 18rem)' }}>
@@ -422,6 +457,7 @@ export const TenantGroups: React.FC = () => {
                                 {/* Balance panel */}
                                 {!detailLoading && members.length >= 2 && (
                                     <GroupBalancePanel
+                                        locked={tenant?.plan === 'trial'}
                                         members={members.map(m => ({
                                             session_id: m.session_id,
                                             child_name: m.child_name,

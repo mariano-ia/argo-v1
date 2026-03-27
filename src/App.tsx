@@ -15,6 +15,7 @@ import { TenantGroups }      from './pages/tenant/TenantGroups';
 import { TenantGuide }       from './pages/tenant/TenantGuide';
 import { TenantPlayers }    from './pages/tenant/TenantPlayers';
 import { TenantChat }       from './pages/tenant/TenantChat';
+import { TenantPricing }   from './pages/tenant/TenantPricing';
 import { TenantPlay }        from './pages/TenantPlay';
 import { Dashboard }          from './pages/Dashboard';
 import { Sessions }           from './pages/dashboard/Sessions';
@@ -165,6 +166,7 @@ function App() {
                 <Route path="link"     element={<TenantLink />} />
                 <Route path="users"    element={<TenantUsers />} />
                 <Route path="settings" element={<TenantSettings />} />
+                <Route path="pricing"  element={<TenantPricing />} />
             </Route>
 
             {/* Admin (superadmin) */}

@@ -135,9 +135,16 @@ function getDistributionDigest(sessions: SessionRow[], lang: string): string {
     return HOME_DISTRIBUTION_DIGEST[primary]?.[lang] ?? HOME_DISTRIBUTION_DIGEST[primary]?.es ?? '';
 }
 
+/* ── Dev mock data ───────────────────────────────────────────────────────── */
+const DEV_SESSIONS: SessionRow[] = [
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 21 * 86400000).toISOString() },
+];
+
 /* ── Component ───────────────────────────────────────────────────────────── */
 export const TenantHome: React.FC = () => {
-    const { tenant, refreshTenant, userEmail, memberProfile } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null }>();
+    const { tenant, refreshTenant, userEmail, memberProfile, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const navigate = useNavigate();
@@ -155,6 +162,7 @@ export const TenantHome: React.FC = () => {
 
     useEffect(() => {
         if (!tenant) return;
+        if (devBypass) { setSessions(DEV_SESSIONS); setGroupCount(2); setSessionsLoading(false); return; }
         const fetchData = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
@@ -174,7 +182,7 @@ export const TenantHome: React.FC = () => {
         fetchData();
         const interval = setInterval(fetchData, 30_000);
         return () => clearInterval(interval);
-    }, [tenant]);
+    }, [tenant, devBypass]);
 
     // All hooks MUST be above any early return
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';

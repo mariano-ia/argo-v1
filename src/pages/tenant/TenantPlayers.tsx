@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2, Download } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Send, Loader2, Download, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -10,6 +10,7 @@ import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
 import { Tooltip } from '../../components/ui/Tooltip';
 import {
@@ -43,7 +44,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string }> = ({ session, dt, lang }) => {
+const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean }> = ({ session, dt, lang, locked = false }) => {
     const [expanded, setExpanded] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
@@ -339,73 +340,126 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     )}
 
                                     {/* Bridge words */}
-                                    {reportData && (
+                                    {reportData && (locked ? (
+                                        <LockedSection
+                                            label={dt.players.palabrasPuente}
+                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                        >
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasPuente.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
+                                                ))}
+                                            </div>
+                                        </LockedSection>
+                                    ) : (
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {reportData.palabrasPuente.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>
-                                                        {w}
-                                                    </span>
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
                                                 ))}
                                             </div>
                                         </div>
-                                    )}
+                                    ))}
 
                                     {/* Noise words */}
-                                    {reportData && (
+                                    {reportData && (locked ? (
+                                        <LockedSection
+                                            label={dt.players.evitarComunicacion}
+                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                        >
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasRuido.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
+                                                ))}
+                                            </div>
+                                        </LockedSection>
+                                    ) : (
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {reportData.palabrasRuido.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">
-                                                        {w}
-                                                    </span>
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
                                                 ))}
                                             </div>
                                         </div>
-                                    )}
+                                    ))}
                                 </div>
 
                                 {/* Right column: coaching + checklist */}
                                 <div className="space-y-4">
-                                    {/* Coaching situations */}
-                                    {reportData && reportData.guia?.length > 0 && (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
-                                            <div className="space-y-2">
-                                                {reportData.guia.map((g, i) => (
-                                                    <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
-                                                        <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
-                                                        <p className="text-[11px] text-emerald-700">
-                                                            <span className="font-semibold">{dt.players.activar}:</span> {g.activador}
-                                                        </p>
-                                                        <p className="text-[11px] text-red-600">
-                                                            <span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}
-                                                        </p>
+                                    {locked ? (
+                                        <>
+                                            {reportData && reportData.guia?.length > 0 && (
+                                                <LockedSection
+                                                    label={dt.players.guiaRapida}
+                                                    cta={lang === 'en' ? 'Activators and demotivators per situation. Available in paid plans.' : lang === 'pt' ? 'Ativadores e desmotivadores por situação. Disponível nos planos pagos.' : 'Activadores y desmotivadores por situación. Disponible en planes pagos.'}
+                                                >
+                                                    <div className="space-y-2">
+                                                        {reportData.guia.map((g, i) => (
+                                                            <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
+                                                                <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
+                                                                <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
+                                                                <p className="text-[11px] text-red-600"><span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* Checklist */}
-                                    {reportData?.checklist && (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {[
-                                                    { label: dt.players.antes, text: reportData.checklist.antes },
-                                                    { label: dt.players.durante, text: reportData.checklist.durante },
-                                                    { label: dt.players.despues, text: reportData.checklist.despues },
-                                                ].map(c => (
-                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                </LockedSection>
+                                            )}
+                                            {reportData?.checklist && (
+                                                <LockedSection
+                                                    label={dt.players.checklistEntrenamiento}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                >
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { label: dt.players.antes, text: reportData.checklist.antes },
+                                                            { label: dt.players.durante, text: reportData.checklist.durante },
+                                                            { label: dt.players.despues, text: reportData.checklist.despues },
+                                                        ].map(c => (
+                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </div>
+                                                </LockedSection>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {reportData && reportData.guia?.length > 0 && (
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
+                                                    <div className="space-y-2">
+                                                        {reportData.guia.map((g, i) => (
+                                                            <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
+                                                                <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
+                                                                <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
+                                                                <p className="text-[11px] text-red-600"><span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {reportData?.checklist && (
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { label: dt.players.antes, text: reportData.checklist.antes },
+                                                            { label: dt.players.durante, text: reportData.checklist.durante },
+                                                            { label: dt.players.despues, text: reportData.checklist.despues },
+                                                        ].map(c => (
+                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -423,13 +477,22 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleDownload(); }}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
-                                    >
-                                        <Download size={12} />
-                                        {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                    </button>
+                                    {locked ? (
+                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
+                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
+                                                <Lock size={11} />
+                                                {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleDownload(); }}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
+                                        >
+                                            <Download size={12} />
+                                            {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
+                                        </button>
+                                    )}
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleResend(); }}
                                         disabled={resending}
@@ -450,8 +513,14 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
 /* ── Main Component ────────────────────────────────────────────────────────── */
 
+const DEV_SESSIONS: SessionRow[] = [
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'D', responseTimeMs: 3200 }), ai_sections: null },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 30 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'I', responseTimeMs: 7500 }), ai_sections: null },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 210 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'C', responseTimeMs: 14000 }), ai_sections: null },
+];
+
 export const TenantPlayers: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { tenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -463,13 +532,14 @@ export const TenantPlayers: React.FC = () => {
     const [pageSize, setPageSize] = useState(20);
 
     const fetchSessions = useCallback(async () => {
+        if (devBypass) { setSessions(DEV_SESSIONS); setLoading(false); return; }
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
             const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
         } finally { setLoading(false); }
-    }, []);
+    }, [devBypass]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
@@ -619,7 +689,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} />
                         ))}
                     </div>
 

@@ -22,6 +22,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Missing slug' });
         }
 
+        // Check trial expiration before deducting credit
+        const { data: tenantCheck } = await sb
+            .from('tenants')
+            .select('plan, trial_expires_at')
+            .eq('slug', slug)
+            .single();
+
+        if (tenantCheck?.plan === 'trial' && tenantCheck?.trial_expires_at) {
+            if (new Date(tenantCheck.trial_expires_at) < new Date()) {
+                return res.status(403).json({ error: 'Trial expired' });
+            }
+        }
+
         // Atomic credit deduction: UPDATE only if credits > 0, return new value
         const { data, error } = await sb.rpc('deduct_credit', { tenant_slug: slug });
 

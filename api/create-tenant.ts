@@ -69,6 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 slug,
                 plan: 'trial',
                 credits_remaining: 3,
+                trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
             })
             .select('id, slug')
             .single();
@@ -86,6 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         slug: retrySlug,
                         plan: 'trial',
                         credits_remaining: 3,
+                        trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
                     })
                     .select('id, slug')
                     .single();
