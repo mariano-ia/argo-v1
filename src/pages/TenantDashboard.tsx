@@ -287,7 +287,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '' }} />
                     )}
                 </main>
             </div>
