@@ -281,6 +281,11 @@ export const TenantDashboard: React.FC = () => {
                     </div>
 
                     {NAV_CONFIG.map(item => <NavItem key={item.to} {...item} showDot={item.to === '/dashboard/settings' ? profileIncomplete : undefined} />)}
+                    {profileIncomplete && !isCollapsed && (
+                        <p className="px-3 pt-0.5 text-[11px] text-argo-light leading-snug">
+                            {lang === 'en' ? 'Complete your institution profile.' : lang === 'pt' ? 'Complete o perfil da sua instituição.' : 'Completa el perfil de tu institución.'}
+                        </p>
+                    )}
                 </nav>
 
                 {/* Bottom section */}
