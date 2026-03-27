@@ -8,6 +8,51 @@ const TIPOS  = ['club', 'school', 'academy', 'federation', 'family', 'other'] as
 const PAISES = ['argentina', 'mexico', 'spain', 'brazil', 'usa', 'other'] as const;
 const ROLES  = ['coach', 'director', 'coordinator', 'parent', 'other'] as const;
 
+/* ── Sub-components defined outside to avoid remount on every render ────── */
+
+const StepDot: React.FC<{ n: number; label: string; step: number }> = ({ n, label, step }) => {
+    const done    = step > n;
+    const current = step === n;
+    return (
+        <div className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+                done || current ? 'bg-argo-violet-500 text-white' : 'bg-argo-border text-argo-light'
+            }`}>
+                {done ? <CheckCircle2 size={14} /> : n}
+            </div>
+            <span className={`text-[13px] font-medium transition-colors ${
+                current ? 'text-argo-navy' : done ? 'text-argo-grey' : 'text-argo-light'
+            }`}>{label}</span>
+        </div>
+    );
+};
+
+const ChipButton: React.FC<{ selected: boolean; onClick: () => void; children: React.ReactNode }> = ({ selected, onClick, children }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        className={`px-3.5 py-2 rounded-xl text-[13px] font-medium border transition-colors ${
+            selected
+                ? 'bg-argo-violet-500 text-white border-argo-violet-500'
+                : 'bg-white text-argo-secondary border-argo-border hover:border-argo-violet-300 hover:text-argo-violet-500'
+        }`}
+    >
+        {children}
+    </button>
+);
+
+const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
+    <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold text-argo-light uppercase tracking-[0.08em]">{label}</label>
+        {children}
+    </div>
+);
+
+const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-argo-border text-[14px] text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 focus:border-argo-violet-400 transition";
+const selectClass = `${inputClass} bg-white`;
+
+/* ── Main component ────────────────────────────────────────────────────── */
+
 interface Props {
     tenant: TenantData;
     onComplete: () => Promise<void>;
@@ -68,14 +113,11 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         setSaving(false);
     };
 
-    const handleNext = () => setStep(2);
-
     const handleFinish = async () => {
         setSaving(true);
         const token = await getToken();
         if (!token) { setSaving(false); return; }
 
-        // Upload logo if selected
         if (logoFile) {
             const form = new FormData();
             form.append('logo', logoFile);
@@ -91,7 +133,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
             }
         }
 
-        // Save all fields + mark onboarding complete
         const body: Record<string, unknown> = { onboarding_completed: true };
         if (displayName.trim())  body.display_name        = displayName.trim();
         if (tipo)                body.institution_type    = tipo;
@@ -117,54 +158,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         setSaving(false);
     };
 
-    /* ── Stepper indicator ────────────────────────────────────────────────── */
-    const StepDot = ({ n, label }: { n: number; label: string }) => {
-        const done    = step > n;
-        const current = step === n;
-        return (
-            <div className="flex items-center gap-2">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
-                    done    ? 'bg-argo-violet-500 text-white'
-                    : current ? 'bg-argo-violet-500 text-white'
-                    : 'bg-argo-border text-argo-light'
-                }`}>
-                    {done ? <CheckCircle2 size={14} /> : n}
-                </div>
-                <span className={`text-[13px] font-medium transition-colors ${
-                    current ? 'text-argo-navy' : done ? 'text-argo-grey' : 'text-argo-light'
-                }`}>{label}</span>
-            </div>
-        );
-    };
-
-    /* ── Chip button (for tipo selector) ──────────────────────────────────── */
-    const ChipButton = ({ selected, onClick, children }: {
-        selected: boolean; onClick: () => void; children: React.ReactNode;
-    }) => (
-        <button
-            type="button"
-            onClick={onClick}
-            className={`px-3.5 py-2 rounded-xl text-[13px] font-medium border transition-colors ${
-                selected
-                    ? 'bg-argo-violet-500 text-white border-argo-violet-500'
-                    : 'bg-white text-argo-secondary border-argo-border hover:border-argo-violet-300 hover:text-argo-violet-500'
-            }`}
-        >
-            {children}
-        </button>
-    );
-
-    /* ── Field wrapper ───────────────────────────────────────────────────── */
-    const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-        <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-argo-light uppercase tracking-[0.08em]">{label}</label>
-            {children}
-        </div>
-    );
-
-    const inputClass = "w-full px-3.5 py-2.5 rounded-xl border border-argo-border text-[14px] text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 focus:border-argo-violet-400 transition";
-    const selectClass = `${inputClass} bg-white`;
-
     return (
         <div className="max-w-[540px] mx-auto">
             {/* Header */}
@@ -175,9 +168,9 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
             {/* Step indicator */}
             <div className="flex items-center gap-3 mb-7">
-                <StepDot n={1} label={o.paso1Label} />
+                <StepDot n={1} label={o.paso1Label} step={step} />
                 <div className="flex-1 h-px bg-argo-border" />
-                <StepDot n={2} label={o.paso2Label} />
+                <StepDot n={2} label={o.paso2Label} step={step} />
             </div>
 
             {/* Card */}
@@ -185,7 +178,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
                 {step === 1 && (
                     <>
-                        {/* Institution name */}
                         <Field label={o.nombreInstitucion}>
                             <input
                                 className={inputClass}
@@ -195,7 +187,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             />
                         </Field>
 
-                        {/* Logo */}
                         <Field label={o.logo}>
                             <div className="flex items-center gap-4">
                                 {logoPreview ? (
@@ -229,7 +220,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             </div>
                         </Field>
 
-                        {/* Institution type */}
                         <Field label={o.tipoInstitucion}>
                             <div className="flex flex-wrap gap-2">
                                 {TIPOS.map(v => (
@@ -244,7 +234,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             </div>
                         </Field>
 
-                        {/* Sport */}
                         <Field label={o.deporte}>
                             <input
                                 className={inputClass}
@@ -254,7 +243,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             />
                         </Field>
 
-                        {/* Country + City */}
                         <div className="grid grid-cols-2 gap-4">
                             <Field label={o.pais}>
                                 <select
@@ -282,7 +270,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
                 {step === 2 && (
                     <>
-                        {/* Full name */}
                         <Field label={o.nombreCompleto}>
                             <input
                                 className={inputClass}
@@ -292,7 +279,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             />
                         </Field>
 
-                        {/* Role */}
                         <Field label={o.rolEnInstitucion}>
                             <select
                                 className={selectClass}
@@ -333,7 +319,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                     {step === 1 ? (
                         <button
                             type="button"
-                            onClick={handleNext}
+                            onClick={() => setStep(2)}
                             className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
                         >
                             {o.siguiente}
@@ -351,9 +337,8 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                 </div>
             </div>
 
-            {/* Toast */}
             {toast && (
-                <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-white transition-all z-50 ${
+                <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-white z-50 ${
                     toast.ok ? 'bg-green-500' : 'bg-red-500'
                 }`}>
                     {toast.msg}
