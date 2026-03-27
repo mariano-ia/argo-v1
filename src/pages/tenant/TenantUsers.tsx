@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Check, Clock } from 'lucide-react';
+import { Check, Clock, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -23,6 +23,8 @@ export const TenantUsers: React.FC = () => {
     const [email, setEmail] = useState('');
     const [inviting, setInviting] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+    const [deleting, setDeleting] = useState(false);
 
     const fetchMembers = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -74,6 +76,35 @@ export const TenantUsers: React.FC = () => {
             setFeedback({ type: 'error', text: dt.users.errorEnvio });
         } finally {
             setInviting(false);
+        }
+    };
+
+    const isOwner = members.some(m => m.isCurrentUser && m.role === 'owner');
+
+    const handleRemove = async (memberId: string) => {
+        setDeleting(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setDeleting(false); return; }
+        try {
+            const res = await fetch('/api/remove-member', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${session.access_token}`,
+                },
+                body: JSON.stringify({ memberId }),
+            });
+            if (res.ok) {
+                setFeedback({ type: 'success', text: dt.users.eliminado });
+                fetchMembers();
+            } else {
+                setFeedback({ type: 'error', text: dt.users.errorEliminar });
+            }
+        } catch {
+            setFeedback({ type: 'error', text: dt.users.errorEliminar });
+        } finally {
+            setDeleting(false);
+            setConfirmDeleteId(null);
         }
     };
 
@@ -146,6 +177,34 @@ export const TenantUsers: React.FC = () => {
                                     {m.status === 'active' ? <Check size={10} /> : <Clock size={10} />}
                                     {m.status === 'active' ? dt.users.activo : dt.users.pendiente}
                                 </span>
+                                {isOwner && m.role !== 'owner' && (
+                                    confirmDeleteId === m.id ? (
+                                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                                            <button
+                                                onClick={() => handleRemove(m.id)}
+                                                disabled={deleting}
+                                                className="text-[11px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-50"
+                                            >
+                                                {dt.common.eliminar}
+                                            </button>
+                                            <span className="text-argo-border">|</span>
+                                            <button
+                                                onClick={() => setConfirmDeleteId(null)}
+                                                className="text-[11px] font-medium text-argo-light hover:text-argo-grey"
+                                            >
+                                                {dt.common.cancelar}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setConfirmDeleteId(m.id)}
+                                            title={dt.users.eliminarMiembro}
+                                            className="text-argo-light hover:text-red-500 transition-colors flex-shrink-0 p-1"
+                                        >
+                                            <Trash2 size={13} />
+                                        </button>
+                                    )
+                                )}
                             </div>
                         ))}
                     </div>
