@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await sb
         .from('sessions')
-        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections')
+        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
         .single();
@@ -37,7 +37,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Report not found' });
     }
 
+    // Resolve tenant plan — sessions without a tenant (legacy MVP) show full report
+    let tenantPlan: string | null = null;
+    if (data.tenant_id) {
+        const { data: tenant } = await sb
+            .from('tenants')
+            .select('plan')
+            .eq('id', data.tenant_id)
+            .maybeSingle();
+        tenantPlan = tenant?.plan ?? null;
+    }
+
     // Set noindex header so crawlers respect it even without the meta tag
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    return res.status(200).json(data);
+    return res.status(200).json({ ...data, tenant_plan: tenantPlan });
 }

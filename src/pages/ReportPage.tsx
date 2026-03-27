@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Link2, Printer, CheckCircle } from 'lucide-react';
+import { Link2, Printer, CheckCircle, Lock } from 'lucide-react';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../lib/argosEngine';
 import type { AISections } from '../lib/openaiService';
 import {
@@ -26,6 +26,7 @@ interface SessionData {
     answers: { axis: string; responseTimeMs: number }[] | null;
     created_at: string;
     ai_sections: AISections | null;
+    tenant_plan?: string | null;
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -63,6 +64,9 @@ const T = {
         notFound: 'Informe no encontrado.',
         notFoundSub: 'El link puede haber expirado o ser inválido.',
         loading: 'Cargando informe...',
+        lockedTitle: 'El informe completo incluye mucho más',
+        lockedBody: 'Motor de rendimiento · Palabras clave · Patrón de decisión · Guía de entrenamiento · Checklist · Ecos fuera de la cancha',
+        lockedCta: 'Contacta con quien te compartió este link para acceder al informe completo.',
     },
     en: {
         reportTitle: 'Profile report',
@@ -96,6 +100,9 @@ const T = {
         notFound: 'Report not found.',
         notFoundSub: 'The link may have expired or be invalid.',
         loading: 'Loading report...',
+        lockedTitle: 'The full report includes much more',
+        lockedBody: 'Performance engine · Key words · Decision pattern · Training guide · Checklist · Echoes outside the field',
+        lockedCta: 'Contact whoever shared this link to access the full report.',
     },
     pt: {
         reportTitle: 'Relatório de perfil',
@@ -129,6 +136,9 @@ const T = {
         notFound: 'Relatório não encontrado.',
         notFoundSub: 'O link pode ter expirado ou ser inválido.',
         loading: 'Carregando relatório...',
+        lockedTitle: 'O relatório completo inclui muito mais',
+        lockedBody: 'Motor de desempenho · Palavras-chave · Padrão de decisão · Guia de treino · Checklist · Ecos fora do campo',
+        lockedCta: 'Entre em contato com quem compartilhou este link para acessar o relatório completo.',
     },
 };
 
@@ -446,131 +456,140 @@ export const ReportPage: React.FC = () => {
                     )}
                 </Card>
 
-                {/* 2. Motor */}
-                <Card>
-                    <SectionLabel>{t.motorSection}</SectionLabel>
-                    <BodyText leadBold>{report.motorDesc}</BodyText>
-                </Card>
-
-                {/* 3. Combustible — moved up: key insight for the adult */}
-                {report.combustible && (
-                    <Card>
-                        <SectionLabel>{t.fuel}</SectionLabel>
-                        <BodyText leadBold>{cleanText(report.combustible)}</BodyText>
-                    </Card>
-                )}
-
-                {/* 4. Decision pattern */}
-                {decisionPattern && (() => {
-                    const p = getPatternCopy(decisionPattern, lang);
-                    return (
+                {/* ── TRIAL LOCK: show upsell after first card ── */}
+                {session.tenant_plan === 'trial' ? (
+                    <div className="bg-white rounded-[14px] shadow-argo p-8 text-center space-y-4 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-argo-violet-50 border border-argo-violet-100 flex items-center justify-center mx-auto">
+                            <Lock size={18} className="text-argo-violet-500" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-base font-semibold text-argo-navy">{t.lockedTitle}</h3>
+                            <p className="text-xs text-argo-grey leading-relaxed max-w-xs mx-auto">{t.lockedBody}</p>
+                        </div>
+                        <div className="pt-2 border-t border-argo-border">
+                            <p className="text-xs text-argo-light leading-relaxed max-w-xs mx-auto">{t.lockedCta}</p>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* 2. Motor */}
                         <Card>
-                            <SectionLabel>{getPatternSectionLabel(lang)}</SectionLabel>
-                            <p className="text-sm font-semibold text-argo-navy mb-1.5">{p.label}</p>
-                            <BodyText>{p.desc}</BodyText>
-                            <p className="text-[10px] font-semibold tracking-[0.08em] uppercase text-argo-light mt-3 mb-1.5">
-                                {getImplicationLabel(lang)}
-                            </p>
-                            <DigestBox>{p.imp}</DigestBox>
+                            <SectionLabel>{t.motorSection}</SectionLabel>
+                            <BodyText leadBold>{report.motorDesc}</BodyText>
                         </Card>
-                    );
-                })()}
 
-                {/* 5. Bridge words + Noise words */}
-                <div className="flex gap-3 mb-4 flex-col sm:flex-row">
-                    <div className="flex-1 bg-white rounded-[14px] p-5 shadow-argo">
-                        <SectionLabel>{t.bridgeWords}</SectionLabel>
-                        <div className="flex flex-wrap gap-1.5">
-                            {allBridgeWords.map((w, i) => (
-                                <span
-                                    key={i}
-                                    className="text-xs font-semibold px-3 py-1.5 rounded-full border"
-                                    style={{ color: axisColor, background: `${axisColor}14`, borderColor: `${axisColor}40` }}
-                                >
-                                    {w}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="flex-1 bg-white rounded-[14px] p-5 shadow-argo">
-                        <SectionLabel>{t.noiseWords}</SectionLabel>
-                        <div className="flex flex-wrap gap-1.5">
-                            {allNoiseWords.map((w, i) => (
-                                <span
-                                    key={i}
-                                    className="text-xs font-medium px-3 py-1.5 rounded-full border text-red-600 bg-red-50 border-red-200"
-                                >
-                                    {w}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                        {/* 3. Combustible */}
+                        {report.combustible && (
+                            <Card>
+                                <SectionLabel>{t.fuel}</SectionLabel>
+                                <BodyText leadBold>{cleanText(report.combustible)}</BodyText>
+                            </Card>
+                        )}
 
-                {/* 6. Tendencia */}
-                {report.tendenciaParagraph && (
-                    <Card>
-                        <SectionLabel>{t.tendency}{report.tendenciaLabel ? `: ${report.tendenciaLabel}` : ''}</SectionLabel>
-                        <BodyText leadBold>{report.tendenciaParagraph}</BodyText>
-                    </Card>
-                )}
-
-                {/* 7. Coaching guide */}
-                {report.guia?.length > 0 && (
-                    <Card>
-                        <SectionLabel>{t.guide}</SectionLabel>
-                        <div className="space-y-3">
-                            {report.guia.map((g, i) => (
-                                <div key={i} className="bg-argo-bg rounded-xl p-3.5">
-                                    <p className="text-sm font-semibold text-argo-navy mb-2">{g.situacion}</p>
-                                    <p className="text-xs text-green-700 mb-1.5 leading-relaxed">
-                                        <span className="font-bold">{t.activate}: </span>{g.activador}
+                        {/* 4. Decision pattern */}
+                        {decisionPattern && (() => {
+                            const p = getPatternCopy(decisionPattern, lang);
+                            return (
+                                <Card>
+                                    <SectionLabel>{getPatternSectionLabel(lang)}</SectionLabel>
+                                    <p className="text-sm font-semibold text-argo-navy mb-1.5">{p.label}</p>
+                                    <BodyText>{p.desc}</BodyText>
+                                    <p className="text-[10px] font-semibold tracking-[0.08em] uppercase text-argo-light mt-3 mb-1.5">
+                                        {getImplicationLabel(lang)}
                                     </p>
-                                    <p className="text-xs text-red-600 leading-relaxed">
-                                        <span className="font-bold">{t.consider}: </span>{g.desmotivacion}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
-                )}
+                                    <DigestBox>{p.imp}</DigestBox>
+                                </Card>
+                            );
+                        })()}
 
-                {/* 8. Checklist with sport-specific labels */}
-                {report.checklist && (
-                    <div className="flex gap-3 mb-4 flex-col sm:flex-row">
-                        {[
-                            { label: t.before,  text: report.checklist.antes,   color: 'text-argo-violet-500', dot: '#955FB5' },
-                            { label: t.during,  text: report.checklist.durante, color: 'text-green-600',       dot: '#22c55e' },
-                            { label: t.after,   text: report.checklist.despues, color: 'text-amber-600',       dot: '#f59e0b' },
-                        ].map(c => (
-                            <div key={c.label} className="flex-1 bg-white rounded-[14px] p-4 shadow-argo">
-                                <div className="flex items-center gap-1.5 mb-2.5">
-                                    <span
-                                        className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0"
-                                        style={{ background: c.dot }}
-                                    />
-                                    <p className={`text-[10px] font-bold uppercase tracking-wider ${c.color}`}>{c.label}</p>
+                        {/* 5. Bridge words + Noise words */}
+                        <div className="flex gap-3 mb-4 flex-col sm:flex-row">
+                            <div className="flex-1 bg-white rounded-[14px] p-5 shadow-argo">
+                                <SectionLabel>{t.bridgeWords}</SectionLabel>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {allBridgeWords.map((w, i) => (
+                                        <span key={i} className="text-xs font-semibold px-3 py-1.5 rounded-full border"
+                                            style={{ color: axisColor, background: `${axisColor}14`, borderColor: `${axisColor}40` }}>
+                                            {w}
+                                        </span>
+                                    ))}
                                 </div>
-                                <p className="text-xs text-argo-grey leading-relaxed">{c.text}</p>
                             </div>
-                        ))}
-                    </div>
-                )}
+                            <div className="flex-1 bg-white rounded-[14px] p-5 shadow-argo">
+                                <SectionLabel>{t.noiseWords}</SectionLabel>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {allNoiseWords.map((w, i) => (
+                                        <span key={i} className="text-xs font-medium px-3 py-1.5 rounded-full border text-red-600 bg-red-50 border-red-200">
+                                            {w}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
 
-                {/* 9. Echoes */}
-                {report.ecos && (
-                    <Card>
-                        <SectionLabel>{t.echoes}</SectionLabel>
-                        <BodyText leadBold>{cleanText(report.ecos)}</BodyText>
-                    </Card>
-                )}
+                        {/* 6. Tendencia */}
+                        {report.tendenciaParagraph && (
+                            <Card>
+                                <SectionLabel>{t.tendency}{report.tendenciaLabel ? `: ${report.tendenciaLabel}` : ''}</SectionLabel>
+                                <BodyText leadBold>{report.tendenciaParagraph}</BodyText>
+                            </Card>
+                        )}
 
-                {/* 10. Reset */}
-                {report.reseteo && (
-                    <Card>
-                        <SectionLabel>{t.reset}</SectionLabel>
-                        <BodyText leadBold>{cleanText(report.reseteo)}</BodyText>
-                    </Card>
+                        {/* 7. Coaching guide */}
+                        {report.guia?.length > 0 && (
+                            <Card>
+                                <SectionLabel>{t.guide}</SectionLabel>
+                                <div className="space-y-3">
+                                    {report.guia.map((g, i) => (
+                                        <div key={i} className="bg-argo-bg rounded-xl p-3.5">
+                                            <p className="text-sm font-semibold text-argo-navy mb-2">{g.situacion}</p>
+                                            <p className="text-xs text-green-700 mb-1.5 leading-relaxed">
+                                                <span className="font-bold">{t.activate}: </span>{g.activador}
+                                            </p>
+                                            <p className="text-xs text-red-600 leading-relaxed">
+                                                <span className="font-bold">{t.consider}: </span>{g.desmotivacion}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        )}
+
+                        {/* 8. Checklist */}
+                        {report.checklist && (
+                            <div className="flex gap-3 mb-4 flex-col sm:flex-row">
+                                {[
+                                    { label: t.before,  text: report.checklist.antes,   color: 'text-argo-violet-500', dot: '#955FB5' },
+                                    { label: t.during,  text: report.checklist.durante, color: 'text-green-600',       dot: '#22c55e' },
+                                    { label: t.after,   text: report.checklist.despues, color: 'text-amber-600',       dot: '#f59e0b' },
+                                ].map(c => (
+                                    <div key={c.label} className="flex-1 bg-white rounded-[14px] p-4 shadow-argo">
+                                        <div className="flex items-center gap-1.5 mb-2.5">
+                                            <span className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: c.dot }} />
+                                            <p className={`text-[10px] font-bold uppercase tracking-wider ${c.color}`}>{c.label}</p>
+                                        </div>
+                                        <p className="text-xs text-argo-grey leading-relaxed">{c.text}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* 9. Echoes */}
+                        {report.ecos && (
+                            <Card>
+                                <SectionLabel>{t.echoes}</SectionLabel>
+                                <BodyText leadBold>{cleanText(report.ecos)}</BodyText>
+                            </Card>
+                        )}
+
+                        {/* 10. Reset */}
+                        {report.reseteo && (
+                            <Card>
+                                <SectionLabel>{t.reset}</SectionLabel>
+                                <BodyText leadBold>{cleanText(report.reseteo)}</BodyText>
+                            </Card>
+                        )}
+                    </>
                 )}
 
                 {/* Footer */}
