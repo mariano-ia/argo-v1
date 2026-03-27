@@ -11,6 +11,7 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
@@ -156,8 +157,20 @@ export const TenantGuide: React.FC = () => {
 
     /* ── Render ────────────────────────────────────────────────────────────── */
 
+    const guideIntroBody = lang === 'en'
+        ? 'Common training situations, organized by category. For each one, guidance based on the athlete\'s profile.'
+        : lang === 'pt'
+            ? 'Situações comuns do treino, organizadas por categoria. Para cada uma, orientações com base no perfil do atleta.'
+            : 'Situaciones habituales del entrenamiento, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.';
+
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+            <SectionIntro
+                storageKey="argo_intro_guide_v1"
+                icon={<Compass size={16} />}
+                title={lang === 'en' ? 'Guide' : lang === 'pt' ? 'Guia' : 'Guía'}
+                body={guideIntroBody}
+            />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div>

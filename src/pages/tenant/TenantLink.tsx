@@ -4,6 +4,7 @@ import { Copy, Check, Share2 } from 'lucide-react';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { SectionIntro } from '../../components/dashboard/SectionIntro';
 
 interface TenantData {
     id: string;
@@ -47,8 +48,20 @@ export const TenantLink: React.FC = () => {
         }
     };
 
+    const linkIntroBody = lang === 'en'
+        ? 'Share this link with the responsible adult (parent or guardian). Each experience consumes 1 credit at the start.'
+        : lang === 'pt'
+            ? 'Compartilhe este link com o adulto responsável (pai, mãe ou responsável). Cada experiência consome 1 crédito no início.'
+            : 'Comparte este link con el adulto responsable (padre, madre o tutor). Cada experiencia consume 1 crédito al inicio.';
+
     return (
         <div>
+            <SectionIntro
+                storageKey="argo_intro_link_v1"
+                icon={<Share2 size={16} />}
+                title={lang === 'en' ? 'My Link' : lang === 'pt' ? 'Meu Link' : 'Mi Link'}
+                body={linkIntroBody}
+            />
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.miLink}</h1>

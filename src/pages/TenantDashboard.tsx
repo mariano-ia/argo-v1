@@ -117,8 +117,10 @@ export const TenantDashboard: React.FC = () => {
         || '';
     const userInitials = userDisplayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
+    const profileIncomplete = !!(tenant && !tenant.institution_type);
+
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
-    const NavItem = ({ to, label, icon: Icon, end }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean }) => (
+    const NavItem = ({ to, label, icon: Icon, end, showDot }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean; showDot?: boolean }) => (
         <NavLink
             to={to}
             end={end}
@@ -137,8 +139,16 @@ export const TenantDashboard: React.FC = () => {
             {({ isActive }) => (
                 <>
                     {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-argo-violet-500" />}
-                    <Icon size={16} />
+                    <div className="relative flex-shrink-0">
+                        <Icon size={16} />
+                        {showDot && collapsed && !sidebarOpen && (
+                            <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                        )}
+                    </div>
                     {(!collapsed || sidebarOpen) && label}
+                    {(!collapsed || sidebarOpen) && showDot && (
+                        <span className="ml-auto w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                    )}
                     {collapsed && !sidebarOpen && (
                         <span className="absolute left-full ml-2 px-2.5 py-1 rounded-lg bg-argo-navy text-white text-xs font-medium whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
                             {label}
@@ -270,7 +280,7 @@ export const TenantDashboard: React.FC = () => {
                         <div className="h-px bg-argo-border opacity-60" />
                     </div>
 
-                    {NAV_CONFIG.map(item => <NavItem key={item.to} {...item} />)}
+                    {NAV_CONFIG.map(item => <NavItem key={item.to} {...item} showDot={item.to === '/dashboard/settings' ? profileIncomplete : undefined} />)}
                 </nav>
 
                 {/* Bottom section */}

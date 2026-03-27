@@ -12,6 +12,11 @@ Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (Postg
 - All user-facing copy: **español latam neutro (NO voseo)**. Use "tú" conjugations.
 - Code, comments, commits: English.
 
+### Punctuation rules (STRICT)
+- **No dashes** (em dash —, en dash –) in user-facing copy. Use periods, commas, or parentheses instead.
+  - Wrong: "Compártelo con el adulto — padre, madre o tutor."
+  - Correct: "Compártelo con el adulto (padre, madre o tutor)."
+
 ### Voseo rules (STRICT — enforced by post-edit hook)
 Never use Argentine voseo forms. Always use standard tuteo. Reference:
 

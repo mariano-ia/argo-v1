@@ -11,6 +11,7 @@ import type { MemberProfile } from '../../lib/groupBalance';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -203,8 +204,20 @@ export const TenantGroups: React.FC = () => {
         return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
     }
 
+    const groupIntroBody = lang === 'en'
+        ? 'Create teams and analyze how profiles complement or tension each other. Each group shows the behavioral balance of its members.'
+        : lang === 'pt'
+            ? 'Crie equipes e analise como os perfis se complementam ou tensionam. Cada grupo mostra o equilíbrio comportamental dos seus integrantes.'
+            : 'Crea equipos y analiza cómo se complementan o tensionan los perfiles. Cada grupo muestra el balance conductual de sus integrantes.';
+
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+            <SectionIntro
+                storageKey="argo_intro_groups_v1"
+                icon={<Layers size={16} />}
+                title={lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos'}
+                body={groupIntroBody}
+            />
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div>

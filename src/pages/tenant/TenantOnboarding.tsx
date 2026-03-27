@@ -2,7 +2,108 @@ import React, { useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import type { TenantData } from '../TenantDashboard';
-import { Upload, CheckCircle2 } from 'lucide-react';
+import { Upload, CheckCircle2, User, Monitor, Mail, Users, Layers, Compass, MessageCircle, AlertCircle } from 'lucide-react';
+
+// ─── Orientation slide content (3 langs) ─────────────────────────────────────
+
+const SLIDE_TEXT = {
+    es: {
+        s0: {
+            tag: 'La experiencia',
+            title: '¿Qué vivirá el deportista?',
+            body: 'El deportista juega una aventura interactiva de menos de 10 minutos. No sabe que es un test conductual. Al terminar, el adulto responsable recibe un informe de perfil personalizado por email y el perfil aparece automáticamente en tu dashboard.',
+            flow: ['Deportista', 'La odisea\nmenos de 10 min', 'Informe\npor email', 'Adulto\nresponsable'],
+        },
+        s1: {
+            tag: 'Tu link único',
+            title: 'La puerta de entrada de tus deportistas',
+            shareNote: 'Compártelo con el adulto responsable (padre, madre o tutor). Ellos completan el registro y le pasan el dispositivo al deportista.',
+            creditNote: 'Cada experiencia consume 1 crédito al inicio, incluso si el deportista no la completa.',
+        },
+        s2: {
+            tag: 'Tu plataforma',
+            title: 'Qué encontrarás en tu dashboard',
+            items: [
+                { label: 'Jugadores', desc: 'Todos los perfiles generados. Accede al informe completo de cada deportista.' },
+                { label: 'Grupos',    desc: 'Crea equipos y analiza su dinámica conductual. Cómo se complementan o tensionan los perfiles.' },
+                { label: 'Guía',      desc: 'Situaciones habituales del entrenamiento, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.' },
+                { label: 'Consultor IA', desc: 'Hazle preguntas por nombre: "¿Cómo motivo a Mateo?". Tiene acceso a todos los perfiles de tu plataforma.' },
+            ],
+        },
+        s3: {
+            tag: 'Listo para empezar',
+            title: 'Tu primer paso: compartir el link',
+            body: 'Comparte el link con el adulto responsable de un deportista. El sistema hace el resto.',
+            hint: 'Compártelo por WhatsApp, email o el canal que uses con los padres.',
+            orNote: 'o antes configura los datos de tu institución',
+        },
+        nav: { skip: 'Completar después', skipLast: 'Ir al dashboard', next: 'Siguiente', setup: 'Configurar mi institución', back: 'Atrás' },
+    },
+    en: {
+        s0: {
+            tag: 'The experience',
+            title: 'What will the athlete experience?',
+            body: 'The athlete plays an interactive adventure of less than 10 minutes. They do not know it is a behavioral test. When finished, the responsible adult receives a personalized profile report by email and the profile appears automatically in your dashboard.',
+            flow: ['Athlete', 'The odyssey\nless than 10 min', 'Report\nby email', 'Responsible\nadult'],
+        },
+        s1: {
+            tag: 'Your unique link',
+            title: "Your athletes' entry point",
+            shareNote: 'Share it with the responsible adult (parent or guardian). They complete the registration and hand the device to the athlete.',
+            creditNote: 'Each experience consumes 1 credit at the start, even if the athlete does not complete it.',
+        },
+        s2: {
+            tag: 'Your platform',
+            title: "What you'll find in your dashboard",
+            items: [
+                { label: 'Players',      desc: 'All generated profiles. Access the full report of each athlete.' },
+                { label: 'Groups',       desc: 'Create teams and analyze their behavioral dynamics. How profiles complement or tension each other.' },
+                { label: 'Guide',        desc: 'Common training situations, organized by category. Guidance based on the athlete\'s profile.' },
+                { label: 'AI Consultant', desc: 'Ask by name: "How do I motivate Mateo?". Has access to all profiles on your platform.' },
+            ],
+        },
+        s3: {
+            tag: 'Ready to start',
+            title: 'Your first step: share the link',
+            body: 'Share the link with the responsible adult of an athlete. The system does the rest.',
+            hint: 'Share it via WhatsApp, email, or whatever channel you use with parents.',
+            orNote: 'or first set up your institution details',
+        },
+        nav: { skip: 'Complete later', skipLast: 'Go to dashboard', next: 'Next', setup: 'Set up my institution', back: 'Back' },
+    },
+    pt: {
+        s0: {
+            tag: 'A experiência',
+            title: 'O que o atleta viverá?',
+            body: 'O atleta joga uma aventura interativa de menos de 10 minutos. Ele não sabe que é um teste comportamental. Ao terminar, o adulto responsável recebe um relatório de perfil personalizado por email e o perfil aparece automaticamente no seu dashboard.',
+            flow: ['Atleta', 'A odisseia\nmenos de 10 min', 'Relatório\npor email', 'Adulto\nresponsável'],
+        },
+        s1: {
+            tag: 'Seu link único',
+            title: 'A porta de entrada dos seus atletas',
+            shareNote: 'Compartilhe com o adulto responsável (pai, mãe ou responsável). Eles completam o registro e passam o dispositivo ao atleta.',
+            creditNote: 'Cada experiência consome 1 crédito no início, mesmo que o atleta não a complete.',
+        },
+        s2: {
+            tag: 'Sua plataforma',
+            title: 'O que você encontrará no seu dashboard',
+            items: [
+                { label: 'Jogadores',    desc: 'Todos os perfis gerados. Acesse o relatório completo de cada atleta.' },
+                { label: 'Grupos',       desc: 'Crie equipes e analise sua dinâmica comportamental. Como os perfis se complementam ou tensionam.' },
+                { label: 'Guia',         desc: 'Situações comuns do treino, organizadas por categoria. Orientações com base no perfil do atleta.' },
+                { label: 'Consultor IA', desc: 'Faça perguntas por nome: "Como motivo o Mateo?". Tem acesso a todos os perfis da sua plataforma.' },
+            ],
+        },
+        s3: {
+            tag: 'Pronto para começar',
+            title: 'Seu primeiro passo: compartilhar o link',
+            body: 'Compartilhe o link com o adulto responsável de um atleta. O sistema faz o resto.',
+            hint: 'Compartilhe pelo WhatsApp, email ou o canal que você usa com os pais.',
+            orNote: 'ou antes configure os dados da sua instituição',
+        },
+        nav: { skip: 'Completar depois', skipLast: 'Ir ao dashboard', next: 'Próximo', setup: 'Configurar minha instituição', back: 'Voltar' },
+    },
+} as const;
 
 const TIPOS  = ['club', 'school', 'academy', 'federation', 'family', 'other'] as const;
 const PAISES = ['argentina', 'mexico', 'spain', 'brazil', 'usa', 'other'] as const;
@@ -63,7 +164,8 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
     const dt = getDashboardT(lang);
     const o  = dt.onboarding;
 
-    const [step, setStep]       = useState(1);
+    const [step, setStep]       = useState(0);
+    const [slideIndex, setSlideIndex] = useState(0);
     const [saving, setSaving]   = useState(false);
     const [toast, setToast]     = useState<{ msg: string; ok: boolean } | null>(null);
 
@@ -158,8 +260,176 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         setSaving(false);
     };
 
+    const sl = SLIDE_TEXT[(lang as keyof typeof SLIDE_TEXT)] ?? SLIDE_TEXT.es;
+    const FLOW_ICONS = [
+        <User size={20} />,
+        <Monitor size={20} />,
+        <Mail size={20} />,
+        <Users size={20} />,
+    ];
+    const DASH_ICONS = [
+        <Users size={15} />,
+        <Layers size={15} />,
+        <Compass size={15} />,
+        <MessageCircle size={15} />,
+    ];
+
     return (
         <div className="max-w-[540px] mx-auto">
+
+            {/* ── STEP 0: Orientation slides ─────────────────────────────── */}
+            {step === 0 && (
+                <>
+                    {/* Progress dots */}
+                    <div className="flex items-center gap-1.5 mb-8">
+                        {[0, 1, 2, 3].map(i => (
+                            <div
+                                key={i}
+                                className={`h-1.5 rounded-full transition-all duration-200 ${
+                                    i === slideIndex ? 'w-4 bg-argo-violet-500' : 'w-1.5 bg-argo-border'
+                                }`}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Card */}
+                    <div className="bg-white rounded-[18px] shadow-argo p-8">
+
+                        {/* Slide 0 — La experiencia */}
+                        {slideIndex === 0 && (
+                            <>
+                                <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s0.tag}</p>
+                                <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-5">{sl.s0.title}</h2>
+                                {/* Flow visual */}
+                                <div className="flex items-start gap-1.5 mb-6 flex-wrap">
+                                    {sl.s0.flow.map((label, i) => (
+                                        <React.Fragment key={i}>
+                                            <div className="flex flex-col items-center gap-2 flex-1 min-w-[56px] text-center">
+                                                <div className="w-11 h-11 rounded-[13px] border border-argo-border bg-argo-bg flex items-center justify-center text-argo-violet-500">
+                                                    {FLOW_ICONS[i]}
+                                                </div>
+                                                <span className="text-[10px] font-medium text-argo-grey leading-tight whitespace-pre-line">{label}</span>
+                                            </div>
+                                            {i < 3 && (
+                                                <div className="flex items-center flex-shrink-0 text-argo-border" style={{ height: '44px', fontSize: '18px' }}>›</div>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                                <p className="text-sm text-argo-secondary leading-relaxed">
+                                    {sl.s0.body.split('No sabe que es un test conductual.')[0]}
+                                    <strong className="text-argo-navy">
+                                        {lang === 'en' ? 'They do not know it is a behavioral test.' : lang === 'pt' ? 'Ele não sabe que é um teste comportamental.' : 'No sabe que es un test conductual.'}
+                                    </strong>
+                                    {sl.s0.body.split(/No sabe que es un test conductual\.|They do not know it is a behavioral test\.|Ele não sabe que é um teste comportamental\./)[1]}
+                                </p>
+                            </>
+                        )}
+
+                        {/* Slide 1 — Tu link único */}
+                        {slideIndex === 1 && (
+                            <>
+                                <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s1.tag}</p>
+                                <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-5">{sl.s1.title}</h2>
+                                <div className="flex items-center justify-between gap-3 bg-argo-bg border border-argo-border rounded-xl px-4 py-3 mb-5">
+                                    <span className="text-sm font-medium text-argo-violet-500 truncate">
+                                        argomethod.com/play/<strong>{tenant.slug}</strong>
+                                    </span>
+                                </div>
+                                <p className="text-sm text-argo-secondary leading-relaxed mb-5">{sl.s1.shareNote}</p>
+                                <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3">
+                                    <AlertCircle size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                                    <p className="text-xs text-amber-800 leading-relaxed">{sl.s1.creditNote}</p>
+                                </div>
+                            </>
+                        )}
+
+                        {/* Slide 2 — Tu plataforma */}
+                        {slideIndex === 2 && (
+                            <>
+                                <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s2.tag}</p>
+                                <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-5">{sl.s2.title}</h2>
+                                <div className="space-y-2.5">
+                                    {sl.s2.items.map((item, i) => (
+                                        <div key={i} className="flex items-start gap-3 bg-argo-bg rounded-xl px-3.5 py-3">
+                                            <div className="w-7 h-7 rounded-[8px] bg-white border border-argo-border flex items-center justify-center flex-shrink-0 text-argo-violet-500">
+                                                {DASH_ICONS[i]}
+                                            </div>
+                                            <div>
+                                                <p className="text-[13px] font-semibold text-argo-navy mb-0.5">{item.label}</p>
+                                                <p className="text-xs text-argo-grey leading-relaxed">{item.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+
+                        {/* Slide 3 — Listo */}
+                        {slideIndex === 3 && (
+                            <>
+                                <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s3.tag}</p>
+                                <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-3">{sl.s3.title}</h2>
+                                <p className="text-sm text-argo-grey leading-relaxed mb-6">{sl.s3.body}</p>
+                                <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-xl p-4 mb-4">
+                                    <div className="flex items-center justify-between gap-3 mb-2">
+                                        <span className="text-xs font-medium text-argo-violet-500 truncate">
+                                            argomethod.com/play/{tenant.slug}
+                                        </span>
+                                    </div>
+                                    <p className="text-[11px] text-argo-grey">{sl.s3.hint}</p>
+                                </div>
+                                <p className="text-xs text-argo-light text-center">{sl.s3.orNote}</p>
+                            </>
+                        )}
+
+                    </div>
+
+                    {/* Slide navigation */}
+                    <div className="flex items-center justify-between mt-5">
+                        <button
+                            type="button"
+                            onClick={handleSkip}
+                            disabled={saving}
+                            className="text-[13px] text-argo-grey hover:text-argo-navy transition-colors disabled:opacity-50"
+                        >
+                            {slideIndex === 3 ? sl.nav.skipLast : sl.nav.skip}
+                        </button>
+                        <div className="flex items-center gap-2.5">
+                            {slideIndex > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSlideIndex(i => i - 1)}
+                                    className="px-4 py-2.5 rounded-xl text-[13px] font-medium text-argo-grey hover:text-argo-navy border border-argo-border hover:bg-argo-bg transition-colors"
+                                >
+                                    {sl.nav.back}
+                                </button>
+                            )}
+                            {slideIndex < 3 ? (
+                                <button
+                                    type="button"
+                                    onClick={() => setSlideIndex(i => i + 1)}
+                                    className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                                >
+                                    {sl.nav.next}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setStep(1)}
+                                    className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                                >
+                                    {sl.nav.setup}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* ── STEPS 1 & 2: Institution + profile wizard ──────────────── */}
+            {step > 0 && (
+            <>
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{o.titulo}</h1>
@@ -343,6 +613,8 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                 }`}>
                     {toast.msg}
                 </div>
+            )}
+            </>
             )}
         </div>
     );
