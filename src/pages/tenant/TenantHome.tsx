@@ -182,11 +182,13 @@ export const TenantHome: React.FC = () => {
     const chartData = useMemo(() => {
         const nowMs = Date.now();
         const buckets: { week: string; sessions: number }[] = [];
-        for (let i = 8; i >= 1; i--) {
-            const weekStart = nowMs - i * 7 * 86400000;
-            const weekEnd = weekStart + 7 * 86400000;
-            const count = sessions.filter(s => { const t = new Date(s.created_at).getTime(); return t >= weekStart && t < weekEnd; }).length;
-            const d = new Date(weekStart);
+        // i=7 is the oldest week, i=0 is the current week ending today
+        for (let i = 7; i >= 0; i--) {
+            const weekEnd = i === 0 ? nowMs : nowMs - i * 7 * 86400000;
+            const weekStart = weekEnd - 7 * 86400000;
+            const count = sessions.filter(s => { const t = new Date(s.created_at).getTime(); return t > weekStart && t <= weekEnd; }).length;
+            // Label with the END of the period so the last bar always shows today's date
+            const d = new Date(weekEnd);
             buckets.push({ week: d.toLocaleDateString(locale, { day: '2-digit', month: 'short' }), sessions: count });
         }
         return buckets;
