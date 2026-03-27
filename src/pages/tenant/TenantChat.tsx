@@ -166,7 +166,13 @@ export const TenantChat: React.FC = () => {
                 fetchThreads();
             } else {
                 const errData = await res.json().catch(() => ({}));
-                setMessages(prev => [...prev, { role: 'assistant', content: errData.error === 'AI service error' ? dt.chat.errorIA : dt.chat.errorGenerico }]);
+                const errMsg = errData.error === 'AI service error'
+                    ? dt.chat.errorIA
+                    : errData.error === 'Trial message limit reached'
+                        ? (lang === 'en' ? 'You\'ve reached the 10-query trial limit.' : lang === 'pt' ? 'Você atingiu o limite de 10 consultas do trial.' : 'Alcanzaste el límite de 10 consultas del trial.')
+                        : dt.chat.errorGenerico;
+                setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
+                if (errData.error === 'Trial message limit reached') setTotalUserMessages(10);
             }
         } catch {
             setMessages(prev => [...prev, { role: 'assistant', content: dt.chat.errorConexion }]);
