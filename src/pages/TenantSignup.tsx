@@ -42,10 +42,12 @@ export const TenantSignup: React.FC = () => {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             if (session && (event === 'SIGNED_IN' || event === 'USER_UPDATED')) {
+                const googleName = session.user.user_metadata?.full_name as string | undefined;
                 createTenantAndRedirect(
                     session.user.id,
                     session.user.email ?? '',
-                    session.user.user_metadata?.full_name || name || session.user.email?.split('@')[0] || 'Mi equipo',
+                    googleName || name || session.user.email?.split('@')[0] || 'Mi equipo',
+                    googleName,
                 );
             }
         });
@@ -53,7 +55,7 @@ export const TenantSignup: React.FC = () => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const createTenantAndRedirect = async (userId: string, userEmail: string, displayName: string) => {
+    const createTenantAndRedirect = async (userId: string, userEmail: string, displayName: string, fullName?: string) => {
         try {
             const res = await fetch('/api/create-tenant', {
                 method: 'POST',
@@ -62,6 +64,7 @@ export const TenantSignup: React.FC = () => {
                     auth_user_id: userId,
                     email: userEmail,
                     display_name: displayName,
+                    full_name: fullName || null,
                 }),
             });
 

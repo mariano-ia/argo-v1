@@ -106,7 +106,11 @@ export const TenantDashboard: React.FC = () => {
 
     if (!session) return <Navigate to="/signup" replace />;
 
+    // Institution initials (for institution block in sidebar)
     const initials = tenant?.display_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() ?? '';
+    // User display name and initials (for footer and greeting)
+    const userDisplayName = memberProfile?.full_name || session?.user?.email?.split('@')[0] || '';
+    const userInitials = userDisplayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
     const NavItem = ({ to, label, icon: Icon, end }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean }) => (
@@ -230,11 +234,11 @@ export const TenantDashboard: React.FC = () => {
                     {/* User + logout — always visible when sidebar is expanded */}
                     {!isCollapsed && (
                         <div className="flex items-center gap-2.5 px-3 py-2">
-                            <div className="w-[28px] h-[28px] rounded-full bg-argo-bg border border-argo-border text-argo-grey flex items-center justify-center flex-shrink-0">
-                                <User size={13} />
+                            <div className="w-[28px] h-[28px] rounded-full bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[10px] font-bold flex-shrink-0">
+                                {userInitials || <User size={13} />}
                             </div>
                             <span className="text-xs font-medium text-argo-secondary truncate flex-1">
-                                {session?.user?.email ?? ''}
+                                {userDisplayName}
                             </span>
                             <Tooltip text={dt.nav.cerrarSesion}>
                                 <button onClick={handleLogout} className="text-argo-light hover:text-argo-grey transition-colors flex-shrink-0">
