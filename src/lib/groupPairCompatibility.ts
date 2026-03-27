@@ -4,6 +4,9 @@
  * No scores, no rankings, no "bad" pairs.
  */
 
+import { PAIR_GUIDES_EN } from './groupPairCompatibility.en';
+import { PAIR_GUIDES_PT } from './groupPairCompatibility.pt';
+
 export interface PairGuide {
     title: string;
     strength: string;
@@ -68,9 +71,10 @@ export const PAIR_GUIDES: Record<string, PairGuide> = {
 };
 
 /**
- * Get pair guide by two axes (order doesn't matter).
+ * Get pair guide by two axes (order doesn't matter). Lang-aware.
  */
-export function getPairGuide(axis1: string, axis2: string): PairGuide | null {
+export function getPairGuide(axis1: string, axis2: string, lang = 'es'): PairGuide | null {
     const key = [axis1, axis2].sort().join('+');
-    return PAIR_GUIDES[key] ?? null;
+    const guides = lang === 'en' ? PAIR_GUIDES_EN : lang === 'pt' ? PAIR_GUIDES_PT : PAIR_GUIDES;
+    return guides[key] ?? null;
 }

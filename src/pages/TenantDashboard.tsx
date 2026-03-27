@@ -19,12 +19,10 @@ interface TenantData {
     credits_remaining: number;
 }
 
-const OTHER_LANGS: Record<string, [string, string]> = { es: ['en', 'pt'], en: ['es', 'pt'], pt: ['es', 'en'] };
-const LANG_LABELS: Record<string, string> = { es: 'Español', en: 'English', pt: 'Português' };
 
 export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
-    const { lang, setLang } = useLang();
+    const { lang } = useLang();
     const dt = getDashboardT(lang);
 
     const NAV_MAIN = [
@@ -192,19 +190,6 @@ export const TenantDashboard: React.FC = () => {
                         </Tooltip>
                     )}
 
-                    {/* Language selector */}
-                    {!isCollapsed && (
-                        <div className="flex items-center gap-2 px-3">
-                            {(OTHER_LANGS[lang] ?? ['en', 'pt']).map(l => (
-                                <Tooltip key={l} text={LANG_LABELS[l] ?? l} position="top">
-                                    <button onClick={() => setLang(l as 'es' | 'en' | 'pt')} className="text-[11px] font-medium text-argo-light hover:text-argo-navy transition-colors uppercase tracking-wide">
-                                        {l}
-                                    </button>
-                                </Tooltip>
-                            ))}
-                            <span className="text-[11px] font-bold text-argo-navy uppercase tracking-wide">{lang}</span>
-                        </div>
-                    )}
                 </div>
             </aside>
         );

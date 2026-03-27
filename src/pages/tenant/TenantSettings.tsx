@@ -2,7 +2,14 @@ import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
+import type { Lang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+
+const LANG_OPTIONS: { value: Lang; label: string; native: string }[] = [
+    { value: 'es', label: 'Español',   native: 'ES' },
+    { value: 'en', label: 'English',   native: 'EN' },
+    { value: 'pt', label: 'Português', native: 'PT' },
+];
 
 interface TenantData {
     id: string;
@@ -14,7 +21,7 @@ interface TenantData {
 
 export const TenantSettings: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
-    const { lang } = useLang();
+    const { lang, setLang } = useLang();
     const dt = getDashboardT(lang);
 
     if (!tenant) {
@@ -57,11 +64,25 @@ export const TenantSettings: React.FC = () => {
 
                 <div className="border-t border-argo-border" />
 
-                {/* Placeholder for future settings */}
-                <div className="text-center py-4">
-                    <p className="text-sm text-argo-grey/60">
-                        {dt.settings.masOpciones}
-                    </p>
+                {/* Language */}
+                <div>
+                    <h2 className="text-[15px] font-semibold text-argo-navy mb-0.5">{dt.settings.idioma}</h2>
+                    <p className="text-[13px] text-argo-grey mb-4">{dt.settings.idiomaDesc}</p>
+                    <div className="inline-flex rounded-xl border border-argo-border overflow-hidden">
+                        {LANG_OPTIONS.map(({ value, label }) => (
+                            <button
+                                key={value}
+                                onClick={() => setLang(value)}
+                                className={`px-5 py-2 text-sm font-medium transition-colors border-r border-argo-border last:border-r-0 ${
+                                    lang === value
+                                        ? 'bg-argo-navy text-white'
+                                        : 'bg-white text-argo-grey hover:text-argo-navy hover:bg-argo-bg'
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
