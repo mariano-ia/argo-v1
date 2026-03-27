@@ -69,6 +69,7 @@ export const TenantUsers: React.FC = () => {
                 const data = await res.json();
                 const text = data.error === 'already_member' ? dt.users.yaEsMiembro
                     : data.error === 'already_invited' ? dt.users.yaInvitado
+                    : data.error === 'email_already_exists' ? dt.users.emailYaRegistrado
                     : `${dt.users.errorEnvio} (${data.error ?? res.status})`;
                 setFeedback({ type: 'error', text });
             }

@@ -37,6 +37,7 @@ interface DashboardTexts {
         eliminarMiembro: string;
         eliminado: string;
         errorEliminar: string;
+        emailYaRegistrado: string;
     };
 
     // Common
@@ -299,6 +300,7 @@ const es: DashboardTexts = {
         eliminarMiembro: 'Eliminar miembro',
         eliminado: 'Miembro eliminado.',
         errorEliminar: 'No se pudo eliminar al miembro.',
+        emailYaRegistrado: 'Este email ya tiene una cuenta en Argo. Elimina primero al miembro anterior si quieres re-invitarlo.',
     },
     common: {
         crear: 'Crear',
@@ -535,6 +537,7 @@ const en: DashboardTexts = {
         eliminarMiembro: 'Remove member',
         eliminado: 'Member removed.',
         errorEliminar: 'Could not remove the member.',
+        emailYaRegistrado: 'This email already has an Argo account. Remove the previous member first if you want to re-invite them.',
     },
     common: {
         crear: 'Create',
@@ -771,6 +774,7 @@ const pt: DashboardTexts = {
         eliminarMiembro: 'Remover membro',
         eliminado: 'Membro removido.',
         errorEliminar: 'Não foi possível remover o membro.',
+        emailYaRegistrado: 'Este email já tem uma conta no Argo. Remova o membro anterior primeiro se quiser convidá-lo novamente.',
     },
     common: {
         crear: 'Criar',

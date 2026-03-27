@@ -36,14 +36,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Make sure the target belongs to this tenant and is not an owner
         const { data: target } = await sb
             .from('tenant_members')
-            .select('id, role')
+            .select('id, role, auth_user_id, email')
             .eq('id', memberId)
             .eq('tenant_id', tenantId)
             .maybeSingle();
 
         if (!target) return res.status(404).json({ error: 'Member not found' });
-        if ((target as { role: string }).role === 'owner') return res.status(403).json({ error: 'Cannot remove an owner' });
+        const tgt = target as { id: string; role: string; auth_user_id: string | null; email: string };
+        if (tgt.role === 'owner') return res.status(403).json({ error: 'Cannot remove an owner' });
 
+        // Delete the tenant_members record first
         const { error: deleteError } = await sb
             .from('tenant_members')
             .delete()
@@ -52,6 +54,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (deleteError) {
             console.error('[remove-member] Delete error:', deleteError.message);
             return res.status(500).json({ error: deleteError.message });
+        }
+
+        // Also delete the Supabase Auth user so the email can be re-invited later
+        try {
+            let authUserId = tgt.auth_user_id;
+            if (!authUserId) {
+                // Pending invite: user was created by generateLink but auth_user_id wasn't stored yet
+                const { data: { users } } = await sb.auth.admin.listUsers({ perPage: 1000 });
+                const found = users.find(u => u.email === tgt.email);
+                if (found) authUserId = found.id;
+            }
+            if (authUserId) {
+                await sb.auth.admin.deleteUser(authUserId);
+            }
+        } catch (err) {
+            // Non-fatal: member record is already deleted, log and continue
+            console.warn('[remove-member] Could not delete auth user:', err);
         }
 
         return res.status(200).json({ ok: true });
