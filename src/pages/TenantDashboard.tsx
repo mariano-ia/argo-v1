@@ -59,7 +59,8 @@ export const TenantDashboard: React.FC = () => {
     useEffect(() => {
         if (devBypass) {
             setSession({} as Session);
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: true });
+            const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: !forceOnboarding });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
