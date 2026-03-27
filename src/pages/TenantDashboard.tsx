@@ -26,6 +26,11 @@ export interface TenantData {
     onboarding_completed: boolean;
 }
 
+export interface MemberProfile {
+    full_name: string | null;
+    role_in_institution: string | null;
+}
+
 
 export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -46,6 +51,7 @@ export const TenantDashboard: React.FC = () => {
 
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [tenant, setTenant] = useState<TenantData | null>(null);
+    const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
 
@@ -80,6 +86,7 @@ export const TenantDashboard: React.FC = () => {
             if (res.ok) {
                 const data = await res.json();
                 if (data.tenant) setTenant(data.tenant);
+                if (data.memberProfile !== undefined) setMemberProfile(data.memberProfile);
             }
         } catch { /* silently fail */ }
     }, [session, devBypass]);
@@ -287,7 +294,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '' }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile }} />
                     )}
                 </main>
             </div>

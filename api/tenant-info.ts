@@ -19,15 +19,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Try tenant_members first (works for both owners and invited members)
         let tenantId: string | null = null;
+        let memberProfile: { full_name: string | null; role_in_institution: string | null } | null = null;
         const { data: memberRow } = await sb
             .from('tenant_members')
-            .select('tenant_id')
+            .select('tenant_id, full_name, role_in_institution')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
             .maybeSingle();
 
         if (memberRow) {
             tenantId = (memberRow as { tenant_id: string }).tenant_id;
+            memberProfile = {
+                full_name: (memberRow as { full_name: string | null }).full_name ?? null,
+                role_in_institution: (memberRow as { role_in_institution: string | null }).role_in_institution ?? null,
+            };
         } else {
             // Fallback: owner who predates the tenant_members migration
             const { data: tenantRow } = await sb
@@ -46,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .eq('id', tenantId)
             .single();
 
-        return res.status(200).json({ tenant: tenant ?? null });
+        return res.status(200).json({ tenant: tenant ?? null, memberProfile });
     } catch (err) {
         console.error('[tenant-info] Unexpected error:', err);
         return res.status(500).json({ error: 'Internal server error' });
