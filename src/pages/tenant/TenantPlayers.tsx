@@ -10,6 +10,7 @@ import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
 import { Tooltip } from '../../components/ui/Tooltip';
 import {
@@ -40,21 +41,6 @@ const monthsSince = (iso: string) => {
 };
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
-
-/* ── LockedSection ─────────────────────────────────────────────────────────── */
-
-const LockedSection: React.FC<{ label: string; description: string; children: React.ReactNode }> = ({ label, description, children }) => (
-    <div className="relative rounded-xl overflow-hidden">
-        <div className="blur-[3px] pointer-events-none select-none opacity-70">{children}</div>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-white/70 backdrop-blur-[1px] rounded-xl px-4">
-            <div className="w-6 h-6 rounded-full bg-argo-violet-100 flex items-center justify-center flex-shrink-0">
-                <Lock size={11} className="text-argo-violet-500" />
-            </div>
-            <p className="text-[12px] font-semibold text-argo-navy text-center leading-snug">{label}</p>
-            <p className="text-[11px] text-argo-grey text-center leading-snug">{description}</p>
-        </div>
-    </div>
-);
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
@@ -357,15 +343,12 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     {reportData && (locked ? (
                                         <LockedSection
                                             label={dt.players.palabrasPuente}
-                                            description={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
                                         >
-                                            <div>
-                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {reportData.palabrasPuente.map((w, i) => (
-                                                        <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
-                                                    ))}
-                                                </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasPuente.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
+                                                ))}
                                             </div>
                                         </LockedSection>
                                     ) : (
@@ -383,15 +366,12 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     {reportData && (locked ? (
                                         <LockedSection
                                             label={dt.players.evitarComunicacion}
-                                            description={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
                                         >
-                                            <div>
-                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {reportData.palabrasRuido.map((w, i) => (
-                                                        <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
-                                                    ))}
-                                                </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {reportData.palabrasRuido.map((w, i) => (
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
+                                                ))}
                                             </div>
                                         </LockedSection>
                                     ) : (
@@ -409,44 +389,43 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                 {/* Right column: coaching + checklist */}
                                 <div className="space-y-4">
                                     {locked ? (
-                                        <LockedSection
-                                            label={lang === 'en' ? 'Personalized coaching guide' : lang === 'pt' ? 'Guia de treinamento personalizado' : 'Guía de entrenamiento personalizada'}
-                                            description={lang === 'en' ? 'Situations, activators and training checklist. Available in paid plans.' : lang === 'pt' ? 'Situações, ativadores e checklist de treino. Disponível nos planos pagos.' : 'Situaciones, activadores y checklist de entrenamiento. Disponible en planes pagos.'}
-                                        >
-                                            <div className="space-y-4">
-                                                {reportData && reportData.guia?.length > 0 && (
-                                                    <div>
-                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
-                                                        <div className="space-y-2">
-                                                            {reportData.guia.map((g, i) => (
-                                                                <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
-                                                                    <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
-                                                                    <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
-                                                                    <p className="text-[11px] text-red-600"><span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
+                                        <>
+                                            {reportData && reportData.guia?.length > 0 && (
+                                                <LockedSection
+                                                    label={dt.players.guiaRapida}
+                                                    cta={lang === 'en' ? 'Activators and demotivators per situation. Available in paid plans.' : lang === 'pt' ? 'Ativadores e desmotivadores por situação. Disponível nos planos pagos.' : 'Activadores y desmotivadores por situación. Disponible en planes pagos.'}
+                                                >
+                                                    <div className="space-y-2">
+                                                        {reportData.guia.map((g, i) => (
+                                                            <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
+                                                                <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
+                                                                <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
+                                                                <p className="text-[11px] text-red-600"><span className="font-semibold">{dt.players.aConsiderar}:</span> {g.desmotivacion}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                )}
-                                                {reportData?.checklist && (
-                                                    <div>
-                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
-                                                        <div className="grid grid-cols-3 gap-2">
-                                                            {[
-                                                                { label: dt.players.antes, text: reportData.checklist.antes },
-                                                                { label: dt.players.durante, text: reportData.checklist.durante },
-                                                                { label: dt.players.despues, text: reportData.checklist.despues },
-                                                            ].map(c => (
-                                                                <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                                    <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                                    <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
-                                                                </div>
-                                                            ))}
-                                                        </div>
+                                                </LockedSection>
+                                            )}
+                                            {reportData?.checklist && (
+                                                <LockedSection
+                                                    label={dt.players.checklistEntrenamiento}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                >
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { label: dt.players.antes, text: reportData.checklist.antes },
+                                                            { label: dt.players.durante, text: reportData.checklist.durante },
+                                                            { label: dt.players.despues, text: reportData.checklist.despues },
+                                                        ].map(c => (
+                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </LockedSection>
+                                                </LockedSection>
+                                            )}
+                                        </>
                                     ) : (
                                         <>
                                             {reportData && reportData.guia?.length > 0 && (
@@ -534,8 +513,14 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
 /* ── Main Component ────────────────────────────────────────────────────────── */
 
+const DEV_SESSIONS: SessionRow[] = [
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'D', responseTimeMs: 3200 }), ai_sections: null },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 30 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'I', responseTimeMs: 7500 }), ai_sections: null },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 210 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'C', responseTimeMs: 14000 }), ai_sections: null },
+];
+
 export const TenantPlayers: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void }>();
+    const { tenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -547,13 +532,14 @@ export const TenantPlayers: React.FC = () => {
     const [pageSize, setPageSize] = useState(20);
 
     const fetchSessions = useCallback(async () => {
+        if (devBypass) { setSessions(DEV_SESSIONS); setLoading(false); return; }
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
             const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
         } finally { setLoading(false); }
-    }, []);
+    }, [devBypass]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
@@ -703,7 +689,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={true} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} />
                         ))}
                     </div>
 

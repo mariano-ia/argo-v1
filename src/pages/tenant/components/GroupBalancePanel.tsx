@@ -17,14 +17,16 @@ import { CollapsibleSection } from './CollapsibleSection';
 import { getDashboardT } from '../../../lib/dashboardTranslations';
 import { useLang } from '../../../context/LangContext';
 import { InfoTip } from '../../../components/ui/Tooltip';
+import { LockedSection } from '../../../components/dashboard/LockedSection';
 
 interface Props {
     members: MemberProfile[];
+    locked?: boolean;
 }
 
 /* ── Main panel ─────────────────────────────────────────────────────────────── */
 
-export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
+export const GroupBalancePanel: React.FC<Props> = ({ members, locked = false }) => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
@@ -128,26 +130,48 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
 
                 {/* Tools */}
                 {primaryText?.tools && (
-                    <div className="pt-3 border-t border-argo-border">
-                        <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest mb-3">
-                            {dt.groupBalance.secHerramientas}
-                        </h3>
-                        <div className="space-y-3">
-                            {primaryText.tools.map((t, i) => (
-                                <p
-                                    key={i}
-                                    className="text-sm text-argo-secondary leading-relaxed pl-3 border-l-2 border-argo-violet-500/25"
-                                >
-                                    {t}
-                                </p>
-                            ))}
+                    locked ? (
+                        <div className="pt-3 border-t border-argo-border">
+                            <LockedSection
+                                label={dt.groupBalance.secHerramientas}
+                                cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                            >
+                                <div className="space-y-3">
+                                    {primaryText.tools.map((t, i) => (
+                                        <p key={i} className="text-sm text-argo-secondary leading-relaxed pl-3 border-l-2 border-argo-violet-500/25">{t}</p>
+                                    ))}
+                                </div>
+                            </LockedSection>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="pt-3 border-t border-argo-border">
+                            <h3 className="text-xs font-bold text-argo-navy uppercase tracking-widest mb-3">
+                                {dt.groupBalance.secHerramientas}
+                            </h3>
+                            <div className="space-y-3">
+                                {primaryText.tools.map((t, i) => (
+                                    <p key={i} className="text-sm text-argo-secondary leading-relaxed pl-3 border-l-2 border-argo-violet-500/25">{t}</p>
+                                ))}
+                            </div>
+                        </div>
+                    )
                 )}
             </motion.div>
 
             {/* ── Single "Análisis detallado" accordion ─────────────────── */}
             <div className="bg-white rounded-[14px] shadow-argo px-6 py-2">
+                {locked ? (
+                    <LockedSection
+                        label={lang === 'en' ? 'Detailed analysis' : lang === 'pt' ? 'Análise detalhada' : 'Análisis detallado'}
+                        cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                    >
+                        <div className="py-3 space-y-3">
+                            {[0,1,2].map(i => (
+                                <div key={i} className="h-3 bg-argo-bg rounded-lg" style={{ width: `${75 - i * 12}%` }} />
+                            ))}
+                        </div>
+                    </LockedSection>
+                ) : (
                 <CollapsibleSection
                     title={lang === 'en' ? 'Detailed analysis' : lang === 'pt' ? 'Análise detalhada' : 'Análisis detallado'}
                     defaultOpen={false}
@@ -229,6 +253,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members }) => {
                         </div>
                     </div>
                 </CollapsibleSection>
+                )}
             </div>
         </div>
     );

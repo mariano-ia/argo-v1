@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Compass } from 'lucide-react';
+import { Search, Compass, Users } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
     CATEGORY_COLORS, getSituations, getSituationCards,
@@ -11,6 +11,7 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -237,7 +238,8 @@ export const TenantGuide: React.FC = () => {
                     })}
 
                     {filtered.length === 0 && (
-                        <div className="py-8 text-center">
+                        <div className="py-10 flex flex-col items-center text-center">
+                            <Search size={22} className="text-argo-border mb-2" />
                             <p className="text-xs text-argo-light">{lang === 'en' ? 'No situations found.' : lang === 'pt' ? 'Nenhuma situação encontrada.' : 'No se encontraron situaciones.'}</p>
                         </div>
                     )}
@@ -358,7 +360,24 @@ export const TenantGuide: React.FC = () => {
                                 )}
 
                                 {/* Player selector with search, filters, pagination */}
-                                {selectedSituation.category !== 'Grupal' && (() => {
+                                {selectedSituation.category !== 'Grupal' && tenant?.plan === 'trial' && (
+                                    <LockedSection
+                                        label={lang === 'en' ? 'Personalize for a player' : lang === 'pt' ? 'Personalizar para um jogador' : 'Personalizar para un jugador'}
+                                        cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                    >
+                                        <div className="bg-white rounded-[14px] px-6 py-5 space-y-3">
+                                            <div className="flex flex-wrap gap-2">
+                                                {['Valentina', 'Tomás', 'Sofía', 'Lucas', 'Camila'].map(n => (
+                                                    <span key={n} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-argo-border text-argo-secondary">
+                                                        <span className="w-2 h-2 rounded-full bg-argo-border" />
+                                                        {n}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </LockedSection>
+                                )}
+                                {selectedSituation.category !== 'Grupal' && tenant?.plan !== 'trial' && (() => {
                                     const VISIBLE_COUNT = 10;
                                     const groupSessionIds = playerGroupFilter
                                         ? new Set(groups.find(g => g.id === playerGroupFilter)?.session_ids ?? [])
@@ -385,9 +404,12 @@ export const TenantGuide: React.FC = () => {
                                                     {[1,2,3].map(i => <div key={i} className="h-8 w-24 bg-argo-bg rounded-lg animate-pulse" />)}
                                                 </div>
                                             ) : sessions.length === 0 ? (
-                                                <p className="text-xs text-argo-light">
-                                                    {lang === 'en' ? 'No athletes profiled yet. Share your link to get started.' : lang === 'pt' ? 'Nenhum atleta perfilado ainda. Compartilhe seu link para comecar.' : 'Todavia no hay deportistas perfilados. Comparte tu link para comenzar.'}
-                                                </p>
+                                                <div className="flex flex-col items-center py-4 text-center">
+                                                    <Users size={20} className="text-argo-border mb-2" />
+                                                    <p className="text-xs text-argo-light leading-relaxed">
+                                                        {lang === 'en' ? 'No athletes profiled yet. Share your link to get started.' : lang === 'pt' ? 'Nenhum atleta perfilado ainda. Compartilhe seu link para começar.' : 'Todavía no hay deportistas perfilados. Comparte tu link para comenzar.'}
+                                                    </p>
+                                                </div>
                                             ) : (
                                                 <>
                                                     {/* Filters row */}
@@ -477,7 +499,7 @@ export const TenantGuide: React.FC = () => {
 
                                 {/* Personalized card (if player selected or grupal) */}
                                 <AnimatePresence>
-                                    {activeCard && (
+                                    {activeCard && tenant?.plan !== 'trial' && (
                                         <motion.div
                                             initial={{ opacity: 0, y: 6 }}
                                             animate={{ opacity: 1, y: 0 }}

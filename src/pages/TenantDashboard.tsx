@@ -24,6 +24,7 @@ export interface TenantData {
     city?: string | null;
     logo_url?: string | null;
     onboarding_completed: boolean;
+    trial_expires_at?: string | null;
 }
 
 export interface MemberProfile {
@@ -66,7 +67,7 @@ export const TenantDashboard: React.FC = () => {
         if (devBypass) {
             setSession({} as Session);
             const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: !forceOnboarding });
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -147,6 +148,9 @@ export const TenantDashboard: React.FC = () => {
     /* ── Sidebar ───────────────────────────────────────────────────────────── */
     const Sidebar = ({ mobile = false }: { mobile?: boolean }) => {
         const isCollapsed = collapsed && !mobile;
+        const daysLeft = tenant?.trial_expires_at
+            ? Math.max(0, Math.ceil((new Date(tenant.trial_expires_at).getTime() - Date.now()) / 86400000))
+            : null;
         return (
             <aside className={`flex flex-col h-full bg-white border-r border-argo-border flex-shrink-0 transition-all duration-200 ${
                 mobile ? 'w-[220px]' : isCollapsed ? 'w-14' : 'w-[220px]'
@@ -215,6 +219,42 @@ export const TenantDashboard: React.FC = () => {
                             </div>
                         )}
                     </>
+                )}
+
+                {/* Trial banner */}
+                {tenant?.plan === 'trial' && !isCollapsed && (
+                    <div className="mx-3 mb-3">
+                        <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-[10px] px-3 py-2.5 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <p className="text-[11px] font-semibold text-argo-violet-500">
+                                    {lang === 'en' ? 'Trial plan' : lang === 'pt' ? 'Plano de teste' : 'Plan de prueba'}
+                                </p>
+                                <span className="text-[10px] font-bold text-argo-violet-400 bg-argo-violet-100 px-1.5 py-0.5 rounded-md">
+                                    {tenant.credits_remaining} {tenant.credits_remaining === 1
+                                        ? (lang === 'en' ? 'credit' : lang === 'pt' ? 'crédito' : 'crédito')
+                                        : (lang === 'en' ? 'credits' : lang === 'pt' ? 'créditos' : 'créditos')}
+                                </span>
+                            </div>
+                            {daysLeft !== null && (
+                                <p className={`text-[10px] font-medium ${daysLeft <= 3 ? 'text-amber-600' : 'text-argo-violet-400'}`}>
+                                    {daysLeft === 0
+                                        ? (lang === 'en' ? 'Expires today' : lang === 'pt' ? 'Expira hoje' : 'Expira hoy')
+                                        : daysLeft === 1
+                                            ? (lang === 'en' ? '1 day left' : lang === 'pt' ? '1 dia restante' : '1 día restante')
+                                            : (lang === 'en' ? `${daysLeft} days left` : lang === 'pt' ? `${daysLeft} dias restantes` : `${daysLeft} días restantes`)}
+                                </p>
+                            )}
+                            <p className="text-[10px] text-argo-violet-400 leading-snug">
+                                {lang === 'en' ? 'Unlock all features with a paid plan.' : lang === 'pt' ? 'Desbloqueie tudo com um plano pago.' : 'Accede a todo con un plan pago.'}
+                            </p>
+                            <button
+                                onClick={() => navigate('/dashboard/pricing')}
+                                className="w-full text-center text-[11px] font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 transition-colors rounded-lg py-1.5"
+                            >
+                                {lang === 'en' ? 'See plans' : lang === 'pt' ? 'Ver planos' : 'Ver planes'}
+                            </button>
+                        </div>
+                    </div>
                 )}
 
                 {/* Nav — Principal */}
@@ -298,7 +338,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, devBypass }} />
                     )}
                 </main>
             </div>
