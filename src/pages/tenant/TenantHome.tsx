@@ -180,16 +180,20 @@ export const TenantHome: React.FC = () => {
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
 
     const chartData = useMemo(() => {
-        const nowMs = Date.now();
+        const now = new Date();
         const buckets: { week: string; sessions: number }[] = [];
-        // i=7 is the oldest week, i=0 is the current week ending today
-        for (let i = 7; i >= 0; i--) {
-            const weekEnd = i === 0 ? nowMs : nowMs - i * 7 * 86400000;
-            const weekStart = weekEnd - 7 * 86400000;
-            const count = sessions.filter(s => { const t = new Date(s.created_at).getTime(); return t > weekStart && t <= weekEnd; }).length;
-            // Label with the END of the period so the last bar always shows today's date
-            const d = new Date(weekEnd);
-            buckets.push({ week: d.toLocaleDateString(locale, { day: '2-digit', month: 'short' }), sessions: count });
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(now.getDate() - i);
+            d.setHours(0, 0, 0, 0);
+            const dayStart = d.getTime();
+            const dayEnd = dayStart + 86400000;
+            const count = sessions.filter(s => {
+                const t = new Date(s.created_at).getTime();
+                return t >= dayStart && t < dayEnd;
+            }).length;
+            const label = d.toLocaleDateString(locale, { day: '2-digit', month: 'short' });
+            buckets.push({ week: label, sessions: count });
         }
         return buckets;
     }, [sessions, locale]);
@@ -263,7 +267,7 @@ export const TenantHome: React.FC = () => {
                         {lang === 'en' ? 'Recent activity' : lang === 'pt' ? 'Atividade recente' : 'Actividad reciente'}
                     </h2>
                     <p className="text-[11px] text-argo-light mb-4">
-                        {lang === 'en' ? 'Sessions per week, last 8 weeks' : lang === 'pt' ? 'Sessoes por semana, ultimas 8 semanas' : 'Sesiones por semana, ultimas 8 semanas'}
+                        {lang === 'en' ? 'Sessions per day, last 30 days' : lang === 'pt' ? 'Sessões por dia, últimos 30 dias' : 'Sesiones por día, últimos 30 días'}
                     </p>
                     {sessionsLoading ? (
                         <div className="h-[120px] bg-argo-bg rounded-lg animate-pulse" />
@@ -277,7 +281,7 @@ export const TenantHome: React.FC = () => {
                                             <stop offset="100%" stopColor="#955FB5" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#AEAEB2' }} axisLine={false} tickLine={false} />
+                                    <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#AEAEB2' }} axisLine={false} tickLine={false} interval={5} />
                                     <RechartsTooltip
                                         contentStyle={{ background: '#1D1D1F', border: 'none', borderRadius: 8, fontSize: 12, color: 'white', padding: '6px 10px' }}
                                         labelStyle={{ color: '#AEAEB2', fontSize: 10 }}
