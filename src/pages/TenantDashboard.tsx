@@ -5,18 +5,25 @@ import { ToastProvider } from '../components/ui/Toast';
 import { Tooltip } from '../components/ui/Tooltip';
 import { useLang } from '../context/LangContext';
 import { getDashboardT } from '../lib/dashboardTranslations';
+import { TenantOnboarding } from './tenant/TenantOnboarding';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
     Users, Compass, MessageCircle, Layers, UserPlus,
 } from 'lucide-react';
 
-interface TenantData {
+export interface TenantData {
     id: string;
     slug: string;
     display_name: string;
     plan: string;
     credits_remaining: number;
+    institution_type?: string | null;
+    sport?: string | null;
+    country?: string | null;
+    city?: string | null;
+    logo_url?: string | null;
+    onboarding_completed: boolean;
 }
 
 
@@ -52,7 +59,7 @@ export const TenantDashboard: React.FC = () => {
     useEffect(() => {
         if (devBypass) {
             setSession({} as Session);
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99 });
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: true });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -239,7 +246,11 @@ export const TenantDashboard: React.FC = () => {
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:px-12 md:py-10">
-                    <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang }} />
+                    {tenant && !tenant.onboarding_completed ? (
+                        <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
+                    ) : (
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang }} />
+                    )}
                 </main>
             </div>
         </div>

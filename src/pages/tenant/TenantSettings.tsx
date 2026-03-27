@@ -4,20 +4,13 @@ import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import type { Lang } from '../../context/LangContext';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import type { TenantData } from '../TenantDashboard';
 
 const LANG_OPTIONS: { value: Lang; label: string; native: string }[] = [
     { value: 'es', label: 'Español',   native: 'ES' },
     { value: 'en', label: 'English',   native: 'EN' },
     { value: 'pt', label: 'Português', native: 'PT' },
 ];
-
-interface TenantData {
-    id: string;
-    slug: string;
-    display_name: string;
-    plan: string;
-    credits_remaining: number;
-}
 
 export const TenantSettings: React.FC = () => {
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
@@ -50,10 +43,6 @@ export const TenantSettings: React.FC = () => {
                         <div>
                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-0.5">{dt.settings.nombre}</p>
                             <p className="text-sm text-argo-navy font-medium">{tenant.display_name}</p>
-                        </div>
-                        <div>
-                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-0.5">{dt.settings.slug}</p>
-                            <p className="text-sm text-argo-navy font-mono">{tenant.slug}</p>
                         </div>
                         <div>
                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-0.5">{dt.settings.plan}</p>

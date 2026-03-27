@@ -201,6 +201,41 @@ interface DashboardTexts {
         idiomaDesc: string;
     };
 
+    // Onboarding
+    onboarding: {
+        titulo: string;
+        subtitulo: string;
+        paso1Label: string;
+        paso2Label: string;
+        completarDespues: string;
+        siguiente: string;
+        comenzar: string;
+        nombreInstitucion: string;
+        nombrePlaceholder: string;
+        logo: string;
+        subirLogo: string;
+        cambiarLogo: string;
+        tipoInstitucion: string;
+        deporte: string;
+        deportePlaceholder: string;
+        pais: string;
+        seleccionarPais: string;
+        ciudad: string;
+        ciudadPlaceholder: string;
+        nombreCompleto: string;
+        nombreCompletoPlaceholder: string;
+        rolEnInstitucion: string;
+        seleccionarRol: string;
+        guardando: string;
+        guardado: string;
+        errorGuardar: string;
+        logoSubido: string;
+        errorLogo: string;
+        tipoLabels: Record<string, string>;
+        paisLabels: Record<string, string>;
+        rolLabels: Record<string, string>;
+    };
+
     // Home extra
     homeExtra: {
         tuLinkInvitacion: string;
@@ -453,6 +488,48 @@ const es: DashboardTexts = {
         procesando: 'Procesando...',
         adulto: 'Adulto',
     },
+    onboarding: {
+        titulo: 'Configura tu institución',
+        subtitulo: 'Personaliza tu dashboard con la información de tu institución. Puedes completarlo ahora o más adelante desde Ajustes.',
+        paso1Label: 'Institución',
+        paso2Label: 'Mi perfil',
+        completarDespues: 'Completar después',
+        siguiente: 'Siguiente',
+        comenzar: 'Comenzar',
+        nombreInstitucion: 'Nombre de la institución',
+        nombrePlaceholder: 'Ej: Club Atlético Rosario',
+        logo: 'Logo',
+        subirLogo: 'Subir logo',
+        cambiarLogo: 'Cambiar logo',
+        tipoInstitucion: 'Tipo de institución',
+        deporte: 'Deporte principal',
+        deportePlaceholder: 'Ej: Fútbol, Básquet, Natación...',
+        pais: 'País',
+        seleccionarPais: 'Seleccionar país',
+        ciudad: 'Ciudad',
+        ciudadPlaceholder: 'Ej: Buenos Aires',
+        nombreCompleto: 'Tu nombre completo',
+        nombreCompletoPlaceholder: 'Ej: Martín García',
+        rolEnInstitucion: 'Tu rol en la institución',
+        seleccionarRol: 'Seleccionar rol',
+        guardando: 'Guardando...',
+        guardado: 'Configuración guardada',
+        errorGuardar: 'No se pudo guardar la configuración.',
+        logoSubido: 'Logo actualizado',
+        errorLogo: 'No se pudo subir el logo.',
+        tipoLabels: {
+            club: 'Club', school: 'Escuela', academy: 'Academia',
+            federation: 'Federación', family: 'Familia', other: 'Otro',
+        },
+        paisLabels: {
+            argentina: 'Argentina', mexico: 'México', spain: 'España',
+            brazil: 'Brasil', usa: 'Estados Unidos', other: 'Otro',
+        },
+        rolLabels: {
+            coach: 'Entrenador/a', director: 'Director/a', coordinator: 'Coordinador/a',
+            parent: 'Padre/Madre', other: 'Otro',
+        },
+    },
     groupBalance: {
         minJugadores: (n) => `Agrega al menos ${n} jugadores para ver el análisis de equilibrio del grupo.`,
         minRecomendado: 'Para mayor precisión, se recomienda un mínimo de 4 jugadores.',
@@ -690,6 +767,48 @@ const en: DashboardTexts = {
         procesando: 'Processing...',
         adulto: 'Adult',
     },
+    onboarding: {
+        titulo: 'Set up your institution',
+        subtitulo: 'Personalize your dashboard with your institution\'s information. You can complete it now or later from Settings.',
+        paso1Label: 'Institution',
+        paso2Label: 'My profile',
+        completarDespues: 'Complete later',
+        siguiente: 'Next',
+        comenzar: 'Get started',
+        nombreInstitucion: 'Institution name',
+        nombrePlaceholder: 'E.g.: Rosario Athletic Club',
+        logo: 'Logo',
+        subirLogo: 'Upload logo',
+        cambiarLogo: 'Change logo',
+        tipoInstitucion: 'Institution type',
+        deporte: 'Main sport',
+        deportePlaceholder: 'E.g.: Soccer, Basketball, Swimming...',
+        pais: 'Country',
+        seleccionarPais: 'Select country',
+        ciudad: 'City',
+        ciudadPlaceholder: 'E.g.: Buenos Aires',
+        nombreCompleto: 'Your full name',
+        nombreCompletoPlaceholder: 'E.g.: Martin Garcia',
+        rolEnInstitucion: 'Your role in the institution',
+        seleccionarRol: 'Select role',
+        guardando: 'Saving...',
+        guardado: 'Settings saved',
+        errorGuardar: 'Could not save settings.',
+        logoSubido: 'Logo updated',
+        errorLogo: 'Could not upload the logo.',
+        tipoLabels: {
+            club: 'Club', school: 'School', academy: 'Academy',
+            federation: 'Federation', family: 'Family', other: 'Other',
+        },
+        paisLabels: {
+            argentina: 'Argentina', mexico: 'Mexico', spain: 'Spain',
+            brazil: 'Brazil', usa: 'United States', other: 'Other',
+        },
+        rolLabels: {
+            coach: 'Coach', director: 'Director', coordinator: 'Coordinator',
+            parent: 'Parent', other: 'Other',
+        },
+    },
     groupBalance: {
         minJugadores: (n) => `Add at least ${n} players to see the group balance analysis.`,
         minRecomendado: 'For better accuracy, a minimum of 4 players is recommended.',
@@ -926,6 +1045,48 @@ const pt: DashboardTexts = {
         comprarCreditos: 'Comprar créditos',
         procesando: 'Processando...',
         adulto: 'Adulto',
+    },
+    onboarding: {
+        titulo: 'Configure sua instituição',
+        subtitulo: 'Personalize seu painel com as informações da sua instituição. Você pode completar agora ou depois, nas Configurações.',
+        paso1Label: 'Instituição',
+        paso2Label: 'Meu perfil',
+        completarDespues: 'Completar depois',
+        siguiente: 'Próximo',
+        comenzar: 'Começar',
+        nombreInstitucion: 'Nome da instituição',
+        nombrePlaceholder: 'Ex: Clube Atlético Rosário',
+        logo: 'Logo',
+        subirLogo: 'Enviar logo',
+        cambiarLogo: 'Trocar logo',
+        tipoInstitucion: 'Tipo de instituição',
+        deporte: 'Esporte principal',
+        deportePlaceholder: 'Ex: Futebol, Basquete, Natação...',
+        pais: 'País',
+        seleccionarPais: 'Selecionar país',
+        ciudad: 'Cidade',
+        ciudadPlaceholder: 'Ex: São Paulo',
+        nombreCompleto: 'Seu nome completo',
+        nombreCompletoPlaceholder: 'Ex: Martín García',
+        rolEnInstitucion: 'Sua função na instituição',
+        seleccionarRol: 'Selecionar função',
+        guardando: 'Salvando...',
+        guardado: 'Configurações salvas',
+        errorGuardar: 'Não foi possível salvar as configurações.',
+        logoSubido: 'Logo atualizado',
+        errorLogo: 'Não foi possível enviar o logo.',
+        tipoLabels: {
+            club: 'Clube', school: 'Escola', academy: 'Academia',
+            federation: 'Federação', family: 'Família', other: 'Outro',
+        },
+        paisLabels: {
+            argentina: 'Argentina', mexico: 'México', spain: 'Espanha',
+            brazil: 'Brasil', usa: 'Estados Unidos', other: 'Outro',
+        },
+        rolLabels: {
+            coach: 'Treinador/a', director: 'Diretor/a', coordinator: 'Coordenador/a',
+            parent: 'Pai/Mãe', other: 'Outro',
+        },
     },
     groupBalance: {
         minJugadores: (n) => `Adicione pelo menos ${n} jogadores para ver a análise de equilíbrio do grupo.`,
