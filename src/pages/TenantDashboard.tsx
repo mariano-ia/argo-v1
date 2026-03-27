@@ -110,7 +110,11 @@ export const TenantDashboard: React.FC = () => {
     // Institution initials (for institution block in sidebar)
     const initials = tenant?.display_name?.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() ?? '';
     // User display name and initials (for footer and greeting)
-    const userDisplayName = memberProfile?.full_name || session?.user?.email?.split('@')[0] || '';
+    const userDisplayName = memberProfile?.full_name
+        || (session?.user?.user_metadata?.full_name as string | undefined)
+        || (session?.user?.user_metadata?.name as string | undefined)
+        || session?.user?.email?.split('@')[0]
+        || '';
     const userInitials = userDisplayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */

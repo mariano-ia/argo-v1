@@ -20,9 +20,9 @@ export const LockedSection: React.FC<{
                 {children}
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-sm border border-argo-border">
-                    <Lock size={10} className="text-argo-navy flex-shrink-0" />
-                    <p className="text-[11px] text-argo-secondary font-medium">{cta}</p>
+                <div className="bg-amber-50 border border-amber-300 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-sm">
+                    <Lock size={9} className="text-amber-600 flex-shrink-0" />
+                    <p className="text-[11px] text-amber-700 font-semibold">{cta}</p>
                 </div>
             </div>
         </div>

@@ -493,14 +493,23 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
                                         </button>
                                     )}
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); handleResend(); }}
-                                        disabled={resending}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
-                                    >
-                                        {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                        {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
-                                    </button>
+                                    {locked ? (
+                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
+                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
+                                                <Lock size={11} />
+                                                {dt.home.reenviarInforme}
+                                            </span>
+                                        </Tooltip>
+                                    ) : (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleResend(); }}
+                                            disabled={resending}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
+                                        >
+                                            {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
+                                            {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
