@@ -1,4 +1,5 @@
 import React from 'react';
+import { Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 import type { MemberProfile } from '../../../lib/groupBalance';
 import {
@@ -32,15 +33,16 @@ export const GroupBalancePanel: React.FC<Props> = ({ members, locked = false }) 
 
     if (members.length < 2) {
         return (
-            <div className="bg-white rounded-[14px] shadow-argo p-6 text-center space-y-1">
-                <p className="text-sm text-argo-grey">
-                    {dt.groupBalance.minJugadores(2)}
-                </p>
-                {members.length === 1 && (
-                    <p className="text-xs text-argo-grey/50">
+            <div className="bg-white rounded-[14px] shadow-argo p-8 flex flex-col items-center text-center gap-3">
+                <Users size={28} className="text-argo-light" />
+                <div className="space-y-1.5">
+                    <p className="text-sm font-medium text-argo-navy">
+                        {dt.groupBalance.minJugadores(members.length)}
+                    </p>
+                    <p className="text-xs text-argo-grey">
                         {dt.groupBalance.minRecomendado}
                     </p>
-                )}
+                </div>
             </div>
         );
     }

@@ -236,7 +236,7 @@ export const TenantHome: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
-                <LinkWidget slug={tenant.slug} lang={lang} />
+                <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}

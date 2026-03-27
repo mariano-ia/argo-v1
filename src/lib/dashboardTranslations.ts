@@ -531,8 +531,10 @@ const es: DashboardTexts = {
         },
     },
     groupBalance: {
-        minJugadores: (n) => `Agrega al menos ${n} jugadores para ver el análisis de equilibrio del grupo.`,
-        minRecomendado: 'Para mayor precisión, se recomienda un mínimo de 4 jugadores.',
+        minJugadores: (n) => n === 0
+            ? 'Agrega jugadores a esta formación para ver el análisis de equilibrio.'
+            : `Tienes ${n} jugador${n !== 1 ? 'es' : ''}. El análisis requiere al menos 2.`,
+        minRecomendado: 'Se recomiendan 4 jugadores o más para obtener un análisis preciso.',
         precisionNota: (n) => `El grupo tiene ${n} jugadores. Para mayor precisión en el análisis, se recomienda un mínimo de 4.`,
         equipo: 'Equipo',
         fortalezas: 'Fortalezas',
@@ -810,8 +812,10 @@ const en: DashboardTexts = {
         },
     },
     groupBalance: {
-        minJugadores: (n) => `Add at least ${n} players to see the group balance analysis.`,
-        minRecomendado: 'For better accuracy, a minimum of 4 players is recommended.',
+        minJugadores: (n) => n === 0
+            ? 'Add players to this group to see the balance analysis.'
+            : `You have ${n} player${n !== 1 ? 's' : ''}. The analysis requires at least 2.`,
+        minRecomendado: '4 or more players are recommended for a meaningful analysis.',
         precisionNota: (n) => `The group has ${n} players. For better accuracy, a minimum of 4 is recommended.`,
         equipo: 'Team',
         fortalezas: 'Strengths',
@@ -1089,8 +1093,10 @@ const pt: DashboardTexts = {
         },
     },
     groupBalance: {
-        minJugadores: (n) => `Adicione pelo menos ${n} jogadores para ver a análise de equilíbrio do grupo.`,
-        minRecomendado: 'Para maior precisão, recomenda-se um mínimo de 4 jogadores.',
+        minJugadores: (n) => n === 0
+            ? 'Adicione jogadores a este grupo para ver a análise de equilíbrio.'
+            : `Você tem ${n} jogador${n !== 1 ? 'es' : ''}. A análise requer pelo menos 2.`,
+        minRecomendado: 'Recomenda-se 4 jogadores ou mais para uma análise precisa.',
         precisionNota: (n) => `O grupo tem ${n} jogadores. Para maior precisão na análise, recomenda-se um mínimo de 4.`,
         equipo: 'Equipe',
         fortalezas: 'Pontos fortes',

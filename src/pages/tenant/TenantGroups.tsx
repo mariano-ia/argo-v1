@@ -211,7 +211,7 @@ export const TenantGroups: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.grupos}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.groups.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />}
             </div>
 
             {/* Two-panel layout */}

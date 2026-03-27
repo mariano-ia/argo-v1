@@ -56,7 +56,7 @@ export const TenantLink: React.FC = () => {
                         {dt.link.descripcion}
                     </p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} />}
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />}
             </div>
 
             <div className="bg-white rounded-[14px] p-6 shadow-argo">
