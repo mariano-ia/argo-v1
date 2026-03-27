@@ -165,7 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Build redirect URL dynamically from request host
         const proto = (req.headers['x-forwarded-proto'] as string) ?? 'https';
         const host = (req.headers['x-forwarded-host'] as string) ?? req.headers.host ?? 'argomethod.com';
-        const redirectTo = `${proto}://${host}/set-password`;
+        const redirectTo = `${proto}://${host}/set-password?lang=${emailLang}`;
 
         // Generate invite link (does NOT send any email — we send our own below)
         const { data: linkData, error: inviteError } = await sb.auth.admin.generateLink({
