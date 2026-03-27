@@ -40,7 +40,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .select('id')
                 .eq('auth_user_id', user.id)
                 .maybeSingle();
-            if (tenantRow) tenantId = (tenantRow as { id: string }).id;
+            if (tenantRow) {
+                tenantId = (tenantRow as { id: string }).id;
+                // Also try to load owner profile (may exist even if auth_user_id wasn't indexed)
+                const { data: ownerMember } = await sb
+                    .from('tenant_members')
+                    .select('full_name, role_in_institution')
+                    .eq('tenant_id', tenantId)
+                    .eq('role', 'owner')
+                    .maybeSingle();
+                if (ownerMember) {
+                    memberProfile = {
+                        full_name: (ownerMember as { full_name: string | null }).full_name ?? null,
+                        role_in_institution: (ownerMember as { role_in_institution: string | null }).role_in_institution ?? null,
+                    };
+                }
+            }
         }
 
         if (!tenantId) return res.status(200).json({ tenant: null });

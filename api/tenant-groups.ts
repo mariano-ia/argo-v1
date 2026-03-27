@@ -43,12 +43,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .select('tenant_id')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
-            .single();
+            .maybeSingle();
 
-        if (!memberRow) {
+        let tenantId: string | null = memberRow?.tenant_id ?? null;
+
+        if (!tenantId) {
+            const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
+            if (tenantRow) tenantId = tenantRow.id;
+        }
+
+        if (!tenantId) {
             return res.status(404).json({ error: 'Tenant not found' });
         }
-        const tenant = { id: memberRow.tenant_id };
+        const tenant = { id: tenantId };
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GET: List groups or group detail
