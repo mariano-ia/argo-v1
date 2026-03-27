@@ -62,20 +62,18 @@ export const TenantDashboard: React.FC = () => {
 
     const fetchTenant = React.useCallback(async () => {
         if (!session || devBypass) return;
-        // Look up via tenant_members (works for owner + invited members)
-        const { data: memberRow } = await supabase
-            .from('tenant_members')
-            .select('tenant_id')
-            .eq('auth_user_id', session.user.id)
-            .eq('status', 'active')
-            .single();
-        if (!memberRow) return;
-        const { data } = await supabase
-            .from('tenants')
-            .select('id, slug, display_name, plan, credits_remaining')
-            .eq('id', memberRow.tenant_id)
-            .single();
-        if (data) setTenant(data);
+        // Use server endpoint so tenant_members RLS is bypassed (service role key)
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (!authSession) return;
+        try {
+            const res = await fetch('/api/tenant-info', {
+                headers: { Authorization: `Bearer ${authSession.access_token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.tenant) setTenant(data.tenant);
+            }
+        } catch { /* silently fail */ }
     }, [session, devBypass]);
 
     useEffect(() => { fetchTenant(); }, [fetchTenant]);
@@ -175,15 +173,19 @@ export const TenantDashboard: React.FC = () => {
 
                 {/* Bottom section */}
                 <div className={`pb-5 space-y-3 ${isCollapsed ? 'px-1.5' : 'px-4'}`}>
-                    {/* User + logout */}
-                    {!isCollapsed && tenant && (
+                    {/* User + logout — always visible when sidebar is expanded */}
+                    {!isCollapsed && (
                         <div className="flex items-center gap-2.5 px-3 py-2">
-                            <div className="w-[30px] h-[30px] rounded-full bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
-                                {initials}
-                            </div>
-                            <span className="text-xs font-medium text-argo-secondary truncate flex-1">{tenant.display_name}</span>
+                            {tenant && (
+                                <div className="w-[30px] h-[30px] rounded-full bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
+                                    {initials}
+                                </div>
+                            )}
+                            <span className="text-xs font-medium text-argo-secondary truncate flex-1">
+                                {tenant?.display_name ?? session?.user?.email ?? ''}
+                            </span>
                             <Tooltip text={dt.nav.cerrarSesion}>
-                                <button onClick={handleLogout} className="text-argo-light hover:text-argo-grey transition-colors">
+                                <button onClick={handleLogout} className="text-argo-light hover:text-argo-grey transition-colors flex-shrink-0">
                                     <LogOut size={14} />
                                 </button>
                             </Tooltip>
