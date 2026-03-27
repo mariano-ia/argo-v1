@@ -34,6 +34,9 @@ interface DashboardTexts {
         yaInvitado: string;
         errorEnvio: string;
         enviado: (email: string) => string;
+        eliminarMiembro: string;
+        eliminado: string;
+        errorEliminar: string;
     };
 
     // Common
@@ -293,6 +296,9 @@ const es: DashboardTexts = {
         yaInvitado: 'Ya se envió una invitación a este email.',
         errorEnvio: 'No se pudo enviar la invitación.',
         enviado: (email) => `Invitación enviada a ${email}.`,
+        eliminarMiembro: 'Eliminar miembro',
+        eliminado: 'Miembro eliminado.',
+        errorEliminar: 'No se pudo eliminar al miembro.',
     },
     common: {
         crear: 'Crear',
@@ -526,6 +532,9 @@ const en: DashboardTexts = {
         yaInvitado: 'An invitation has already been sent to this email.',
         errorEnvio: 'Could not send the invitation.',
         enviado: (email) => `Invitation sent to ${email}.`,
+        eliminarMiembro: 'Remove member',
+        eliminado: 'Member removed.',
+        errorEliminar: 'Could not remove the member.',
     },
     common: {
         crear: 'Create',
@@ -759,6 +768,9 @@ const pt: DashboardTexts = {
         yaInvitado: 'Um convite já foi enviado para este email.',
         errorEnvio: 'Não foi possível enviar o convite.',
         enviado: (email) => `Convite enviado para ${email}.`,
+        eliminarMiembro: 'Remover membro',
+        eliminado: 'Membro removido.',
+        errorEliminar: 'Não foi possível remover o membro.',
     },
     common: {
         crear: 'Criar',
