@@ -1,8 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
+import { useLang } from '../../context/LangContext';
+import type { Lang } from '../../context/LangContext';
 import type { TenantData } from '../TenantDashboard';
-import { Upload, CheckCircle2, User, Monitor, Mail, Users, Layers, Compass, MessageCircle, AlertCircle } from 'lucide-react';
+import { Upload, CheckCircle2, User, Monitor, Mail, Users, Layers, Compass, MessageCircle, AlertCircle, Globe, Copy, Check } from 'lucide-react';
 
 // ─── Orientation slide content (3 langs) ─────────────────────────────────────
 
@@ -38,6 +40,8 @@ const SLIDE_TEXT = {
             orNote: 'o antes configura los datos de tu institución',
         },
         nav: { skip: 'Completar después', skipLast: 'Ir al dashboard', next: 'Siguiente', setup: 'Configurar mi institución', back: 'Atrás' },
+        copiarLink: 'Copiar link',
+        copiado: 'Copiado',
     },
     en: {
         s0: {
@@ -70,6 +74,8 @@ const SLIDE_TEXT = {
             orNote: 'or first set up your institution details',
         },
         nav: { skip: 'Complete later', skipLast: 'Go to dashboard', next: 'Next', setup: 'Set up my institution', back: 'Back' },
+        copiarLink: 'Copy link',
+        copiado: 'Copied',
     },
     pt: {
         s0: {
@@ -102,6 +108,8 @@ const SLIDE_TEXT = {
             orNote: 'ou antes configure os dados da sua instituição',
         },
         nav: { skip: 'Completar depois', skipLast: 'Ir ao dashboard', next: 'Próximo', setup: 'Configurar minha instituição', back: 'Voltar' },
+        copiarLink: 'Copiar link',
+        copiado: 'Copiado',
     },
 } as const;
 
@@ -160,13 +168,21 @@ interface Props {
     lang: string;
 }
 
+const LANG_OPTIONS: { value: Lang; label: string }[] = [
+    { value: 'es', label: 'ES' },
+    { value: 'en', label: 'EN' },
+    { value: 'pt', label: 'PT' },
+];
+
 export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) => {
+    const { setLang } = useLang();
     const dt = getDashboardT(lang);
     const o  = dt.onboarding;
 
     const [step, setStep]       = useState(0);
     const [slideIndex, setSlideIndex] = useState(0);
     const [saving, setSaving]   = useState(false);
+    const [copied, setCopied]   = useState(false);
     const [toast, setToast]     = useState<{ msg: string; ok: boolean } | null>(null);
 
     // Step 1 — institution
@@ -238,7 +254,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         const body: Record<string, unknown> = { onboarding_completed: true };
         if (displayName.trim())  body.display_name        = displayName.trim();
         if (tipo)                body.institution_type    = tipo;
-        if (sport.trim())        body.sport               = sport.trim();
+        if (sport.trim() && sport !== '_other') body.sport = sport.trim();
         if (country)             body.country             = country;
         if (city.trim())         body.city                = city.trim();
         if (fullName.trim())     body.full_name           = fullName.trim();
@@ -276,6 +292,26 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
     return (
         <div className="max-w-[540px] mx-auto">
+
+            {/* ── Language switcher ────────────────────────────────────── */}
+            <div className="flex justify-end mb-4">
+                <div className="inline-flex items-center gap-1 rounded-lg border border-argo-border bg-white px-1 py-0.5">
+                    <Globe size={12} className="text-argo-grey ml-1" />
+                    {LANG_OPTIONS.map(({ value, label }) => (
+                        <button
+                            key={value}
+                            onClick={() => setLang(value)}
+                            className={`px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                                lang === value
+                                    ? 'bg-argo-navy text-white'
+                                    : 'text-argo-grey hover:text-argo-navy'
+                            }`}
+                        >
+                            {label}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
             {/* ── STEP 0: Orientation slides ─────────────────────────────── */}
             {step === 0 && (
@@ -376,6 +412,22 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                                         <span className="text-xs font-medium text-argo-violet-500 truncate">
                                             argomethod.com/play/{tenant.slug}
                                         </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`https://argomethod.com/play/${tenant.slug}`);
+                                                setCopied(true);
+                                                setTimeout(() => setCopied(false), 2000);
+                                            }}
+                                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex-shrink-0 ${
+                                                copied
+                                                    ? 'bg-green-100 text-green-700 border border-green-200'
+                                                    : 'bg-white text-argo-violet-500 border border-argo-violet-200 hover:bg-argo-violet-100'
+                                            }`}
+                                        >
+                                            {copied ? <Check size={12} /> : <Copy size={12} />}
+                                            {copied ? sl.copiado : sl.copiarLink}
+                                        </button>
                                     </div>
                                     <p className="text-[11px] text-argo-grey">{sl.s3.hint}</p>
                                 </div>
@@ -505,12 +557,32 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                         </Field>
 
                         <Field label={o.deporte}>
-                            <input
-                                className={inputClass}
-                                value={sport}
-                                onChange={e => setSport(e.target.value)}
-                                placeholder={o.deportePlaceholder}
-                            />
+                            <div className="flex flex-wrap gap-2">
+                                {o.deportes.map(d => (
+                                    <ChipButton
+                                        key={d}
+                                        selected={sport === d}
+                                        onClick={() => setSport(sport === d ? '' : d)}
+                                    >
+                                        {d}
+                                    </ChipButton>
+                                ))}
+                                <ChipButton
+                                    selected={!!sport && !o.deportes.includes(sport)}
+                                    onClick={() => setSport(sport && !o.deportes.includes(sport) ? '' : '_other')}
+                                >
+                                    {o.deporteOtro}
+                                </ChipButton>
+                            </div>
+                            {sport && !o.deportes.includes(sport) && (
+                                <input
+                                    className={`${inputClass} mt-2`}
+                                    value={sport === '_other' ? '' : sport}
+                                    onChange={e => setSport(e.target.value || '_other')}
+                                    placeholder={o.deporteOtroPlaceholder}
+                                    autoFocus
+                                />
+                            )}
                         </Field>
 
                         <div className="grid grid-cols-2 gap-4">

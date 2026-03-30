@@ -218,6 +218,9 @@ interface DashboardTexts {
         tipoInstitucion: string;
         deporte: string;
         deportePlaceholder: string;
+        deportes: string[];
+        deporteOtro: string;
+        deporteOtroPlaceholder: string;
         pais: string;
         seleccionarPais: string;
         ciudad: string;
@@ -504,6 +507,9 @@ const es: DashboardTexts = {
         tipoInstitucion: 'Tipo de institución',
         deporte: 'Deporte principal',
         deportePlaceholder: 'Ej: Fútbol, Básquet, Natación...',
+        deportes: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol'],
+        deporteOtro: 'Otro',
+        deporteOtroPlaceholder: 'Escribe el deporte...',
         pais: 'País',
         seleccionarPais: 'Seleccionar país',
         ciudad: 'Ciudad',
@@ -785,6 +791,9 @@ const en: DashboardTexts = {
         tipoInstitucion: 'Institution type',
         deporte: 'Main sport',
         deportePlaceholder: 'E.g.: Soccer, Basketball, Swimming...',
+        deportes: ['Soccer', 'Hockey', 'Basketball', 'Rugby', 'Tennis', 'Swimming', 'Volleyball', 'Track & Field', 'Handball', 'Baseball'],
+        deporteOtro: 'Other',
+        deporteOtroPlaceholder: 'Type the sport...',
         pais: 'Country',
         seleccionarPais: 'Select country',
         ciudad: 'City',
@@ -1066,6 +1075,9 @@ const pt: DashboardTexts = {
         tipoInstitucion: 'Tipo de instituição',
         deporte: 'Esporte principal',
         deportePlaceholder: 'Ex: Futebol, Basquete, Natação...',
+        deportes: ['Futebol', 'Hóquei', 'Basquete', 'Rugby', 'Tênis', 'Natação', 'Vôlei', 'Atletismo', 'Handebol', 'Beisebol'],
+        deporteOtro: 'Outro',
+        deporteOtroPlaceholder: 'Digite o esporte...',
         pais: 'País',
         seleccionarPais: 'Selecionar país',
         ciudad: 'Cidade',

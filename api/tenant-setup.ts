@@ -81,13 +81,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (body.role_in_institution !== undefined) memberUpdate.role_in_institution = body.role_in_institution;
 
             if (memberRowId) {
-                await sb.from('tenant_members').update(memberUpdate).eq('id', memberRowId);
+                const { error: updateErr } = await sb.from('tenant_members').update(memberUpdate).eq('id', memberRowId);
+                if (updateErr) {
+                    console.error('[tenant-setup] Member update error:', updateErr.message);
+                    return res.status(500).json({ error: updateErr.message });
+                }
             } else {
                 // Owner predates tenant_members — create their row now
-                await sb.from('tenant_members').upsert(
+                const { error: upsertErr } = await sb.from('tenant_members').upsert(
                     { tenant_id: tenantId, auth_user_id: user.id, email: user.email, role: 'owner', status: 'active', ...memberUpdate },
-                    { onConflict: 'tenant_id,email' },
+                    { onConflict: 'tenant_id,auth_user_id' },
                 );
+                if (upsertErr) {
+                    console.error('[tenant-setup] Member upsert error:', upsertErr.message);
+                    return res.status(500).json({ error: upsertErr.message });
+                }
             }
         }
 

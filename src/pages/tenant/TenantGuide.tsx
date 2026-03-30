@@ -377,6 +377,7 @@ export const TenantGuide: React.FC = () => {
                                     <LockedSection
                                         label={lang === 'en' ? 'Personalize for a player' : lang === 'pt' ? 'Personalizar para um jogador' : 'Personalizar para un jugador'}
                                         cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                        tooltip={lang === 'en' ? 'Select a specific player to see recommendations tailored to their behavioral profile for this situation.' : lang === 'pt' ? 'Selecione um jogador específico para ver recomendações adaptadas ao seu perfil comportamental para esta situação.' : 'Selecciona un jugador específico para ver recomendaciones adaptadas a su perfil conductual para esta situación.'}
                                     >
                                         <div className="bg-white rounded-[14px] px-6 py-5 space-y-3">
                                             <div className="flex flex-wrap gap-2">

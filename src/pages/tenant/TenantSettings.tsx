@@ -134,7 +134,7 @@ export const TenantSettings: React.FC = () => {
         const body: Record<string, unknown> = {};
         if (displayName.trim()) body.display_name     = displayName.trim();
         body.institution_type = tipo || null;
-        body.sport            = sport.trim() || null;
+        body.sport            = (sport.trim() && sport !== '_other') ? sport.trim() : null;
         body.country          = country || null;
         body.city             = city.trim() || null;
 
@@ -266,12 +266,32 @@ export const TenantSettings: React.FC = () => {
                     </Field>
 
                     <Field label={o.deporte}>
-                        <input
-                            className={inputClass}
-                            value={sport}
-                            onChange={e => setSport(e.target.value)}
-                            placeholder={o.deportePlaceholder}
-                        />
+                        <div className="flex flex-wrap gap-2">
+                            {o.deportes.map(d => (
+                                <ChipButton
+                                    key={d}
+                                    selected={sport === d}
+                                    onClick={() => setSport(sport === d ? '' : d)}
+                                >
+                                    {d}
+                                </ChipButton>
+                            ))}
+                            <ChipButton
+                                selected={!!sport && !o.deportes.includes(sport)}
+                                onClick={() => setSport(sport && !o.deportes.includes(sport) ? '' : '_other')}
+                            >
+                                {o.deporteOtro}
+                            </ChipButton>
+                        </div>
+                        {sport && !o.deportes.includes(sport) && (
+                            <input
+                                className={`${inputClass} mt-2`}
+                                value={sport === '_other' ? '' : sport}
+                                onChange={e => setSport(e.target.value || '_other')}
+                                placeholder={o.deporteOtroPlaceholder}
+                                autoFocus
+                            />
+                        )}
                     </Field>
 
                     <div className="grid grid-cols-2 gap-4">

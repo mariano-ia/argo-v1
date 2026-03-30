@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Outlet, NavLink, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { ToastProvider } from '../components/ui/Toast';
 import { Tooltip } from '../components/ui/Tooltip';
@@ -50,11 +50,14 @@ export const TenantDashboard: React.FC = () => {
         { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,        end: false },
     ];
 
+    const location = useLocation();
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [tenant, setTenant] = useState<TenantData | null>(null);
     const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+    const [hasNewPlayers, setHasNewPlayers] = useState(false);
+    const sessionCountRef = useRef<number | null>(null);
 
     // DEV bypass — only on localhost, never on deployed previews
     const [devBypass] = useState(() =>
@@ -93,6 +96,39 @@ export const TenantDashboard: React.FC = () => {
     }, [session, devBypass]);
 
     useEffect(() => { fetchTenant(); }, [fetchTenant]);
+
+    /* ── New-session notification dot ─────────────────────────────────────── */
+    const checkNewSessions = useCallback(async () => {
+        if (!session || devBypass || !tenant) return;
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (!authSession) return;
+        try {
+            const res = await fetch('/api/tenant-sessions', {
+                headers: { Authorization: `Bearer ${authSession.access_token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            const count = data.sessions?.length ?? 0;
+            sessionCountRef.current = count;
+            const storageKey = `argo_seen_sessions_${tenant.id}`;
+            const lastSeen = parseInt(localStorage.getItem(storageKey) ?? '0', 10);
+            setHasNewPlayers(count > lastSeen);
+        } catch { /* silently fail */ }
+    }, [session, devBypass, tenant]);
+
+    useEffect(() => {
+        checkNewSessions();
+        const interval = setInterval(checkNewSessions, 30_000);
+        return () => clearInterval(interval);
+    }, [checkNewSessions]);
+
+    // Clear dot when user visits /dashboard/players
+    useEffect(() => {
+        if (location.pathname.startsWith('/dashboard/players') && tenant && sessionCountRef.current !== null) {
+            localStorage.setItem(`argo_seen_sessions_${tenant.id}`, String(sessionCountRef.current));
+            setHasNewPlayers(false);
+        }
+    }, [location.pathname, tenant]);
 
     const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
 
@@ -273,7 +309,7 @@ export const TenantDashboard: React.FC = () => {
 
                 {/* Nav — Principal */}
                 <nav className={`flex-1 space-y-0.5 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
-                    {NAV_MAIN.map(item => <NavItem key={item.to} {...item} />)}
+                    {NAV_MAIN.map(item => <NavItem key={item.to} {...item} showDot={item.to === '/dashboard/players' ? hasNewPlayers : undefined} />)}
 
                     {/* Separator */}
                     <div className={`${isCollapsed ? 'mx-1 my-4' : 'mx-3 my-5'}`}>
