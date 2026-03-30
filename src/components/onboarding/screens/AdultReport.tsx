@@ -36,6 +36,7 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     const r = aiSections
         ? {
             ...report,
+            resumenPerfil: aiSections.resumenPerfil ?? report.resumenPerfil,
             wow: aiSections.wow ?? report.wow,
             motorDesc: aiSections.motorDesc ?? report.motorDesc,
             combustible: aiSections.combustible ?? report.combustible,
@@ -129,15 +130,6 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     // so we show the full body without separating callouts.
     const hasSpanishMarkers = (r.bienvenida || '').includes('Nota fundamental:') ||
                               (r.bienvenida || '').includes('Nota de seguridad:');
-
-    let bienvenidaCalloutLabel = et.calloutNotaFundamental;
-    let bienvenidaParsed = hasSpanishMarkers
-        ? extractCallout(r.bienvenida, 'Nota fundamental:')
-        : { body: r.bienvenida, callout: '' };
-    if (hasSpanishMarkers && !bienvenidaParsed.callout) {
-        bienvenidaCalloutLabel = et.calloutNotaSeguridad;
-        bienvenidaParsed = extractCallout(r.bienvenida, 'Nota de seguridad:');
-    }
 
     // For AI sections: extract from ORIGINAL Spanish text only if markers present
     const motorOriginal = extractCallout(report.motorDesc, 'Invitación de sintonía:');
@@ -301,11 +293,20 @@ export function buildReportHtml(report: ReportData, aiSections: AISections | nul
     // Only render callout boxes when we have Spanish text with extractable markers
     const showCallouts = hasSpanishMarkers;
 
+    // Disclaimer text — compact note under the portrait
+    const disclaimerNote = `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+  <tr><td style="padding:12px 14px;background:#F5F5F7;border-radius:12px;">
+    <p style="font-size:11px;color:#86868B;line-height:1.6;margin:0;">
+      <span style="display:inline-block;vertical-align:middle;margin-right:6px;">ℹ️</span>${et.disclaimer}
+    </p>
+  </td></tr>
+</table>`;
+
     const sections = [
         brujulaHtml,
 
         section(et.contract,
-            txt(bienvenidaParsed.body) + (showCallouts ? calloutBox(bienvenidaCalloutLabel, bienvenidaParsed.callout, 'amber') : '')),
+            (r.resumenPerfil ? txt(r.resumenPerfil) : txt(r.bienvenida)) + disclaimerNote),
 
         section(et.placeInShip, txt(r.wow)),
 
@@ -351,7 +352,7 @@ export const AdultReport: React.FC<Props> = ({
     const hasSentRef = useRef(false);
 
     const mergedReport = aiSections
-        ? { ...report, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
+        ? { ...report, resumenPerfil: aiSections.resumenPerfil, wow: aiSections.wow, motorDesc: aiSections.motorDesc, combustible: aiSections.combustible, corazon: aiSections.corazon, reseteo: aiSections.reseteo, ecos: aiSections.ecos, checklist: aiSections.checklist }
         : report;
 
     const maduracionTemprana = adultData.edad < 10;
@@ -373,6 +374,7 @@ export const AdultReport: React.FC<Props> = ({
             perfil:         report.perfil,
             palabrasPuente: report.palabrasPuente,
             lang,
+            resumenPerfil: aiSections?.resumenPerfil,
         })
             .then(() => {
                 hasSentRef.current = true;

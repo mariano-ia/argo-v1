@@ -12,6 +12,7 @@ export interface EmailReportParams {
     sessionId?: string;
     lang?: string;
     emailSubject?: string;
+    resumenPerfil?: string;
 }
 
 export async function sendReport(params: EmailReportParams): Promise<void> {

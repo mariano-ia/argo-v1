@@ -42,6 +42,7 @@ interface ReportData {
     tendenciaParagraph?: string;
     palabrasPuenteExtra?: string[];
     palabrasRuidoExtra?: string[];
+    resumenPerfil?: string;
 }
 
 interface ReportContext {
@@ -53,6 +54,7 @@ interface ReportContext {
 }
 
 interface AISections {
+    resumenPerfil: string;
     wow: string;
     motorDesc: string;
     combustible: string;
@@ -126,6 +128,7 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
         : '';
 
     const jsonSchema = `{
+  "resumenPerfil": "section text (3-4 sentences, use **bold** for key traits)",
   "wow": "section text",
   "motorDesc": "section text",
   "combustible": "section text",
@@ -164,6 +167,16 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 - Checklist Después: ${base.checklist.despues}
 
 TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.
+
+SECCIÓN ESPECIAL — "resumenPerfil" (Retrato de Sintonía):
+Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture la esencia de ${ctx.nombre} en el deporte. Debe ser:
+- Único e irrepetible (que un padre lea esto y sienta "esto ES mi hijo")
+- Usa **negritas** en las frases clave para que sea escaneable (2-3 frases en negrita por párrafo)
+- Abre con algo específico sobre cómo ${ctx.nombre} tiende a vivir ${ctx.deporte} (no genérico)
+- Nombra su fortaleza central, cómo se manifiesta en cancha, y qué lo hace especial en un equipo
+- Cierra con una invitación sutil al adulto a seguir leyendo el informe para sintonizar mejor con el deportista (adapta esta frase al idioma de salida)
+- NO repitas contenido del "wow" ni del "combustible", este es un retrato rápido y emocional
+- Tono: cálido, directo, que enganche desde la primera línea
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
 Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones):
@@ -208,7 +221,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             body: JSON.stringify({
                 model: 'gpt-4o-mini',
                 temperature: 0.7,
-                max_tokens: 2500,
+                max_tokens: 3000,
                 messages: [
                     {
                         role: 'system',

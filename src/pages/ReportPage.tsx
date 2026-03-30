@@ -182,6 +182,27 @@ const DigestBox: React.FC<{ children: string }> = ({ children }) => (
     </div>
 );
 
+/** Renders text with **bold** markdown markers */
+const RichBodyText: React.FC<{ children: string }> = ({ children }) => {
+    const paragraphs = children.split(/\n\n+/).filter(Boolean);
+    return (
+        <div className="space-y-2.5">
+            {paragraphs.map((para, idx) => {
+                const parts = para.split(/(\*\*[^*]+\*\*)/g);
+                return (
+                    <p key={idx} className="text-sm text-argo-secondary leading-relaxed">
+                        {parts.map((part, i) =>
+                            part.startsWith('**') && part.endsWith('**')
+                                ? <strong key={i} className="text-argo-navy font-semibold">{part.slice(2, -2)}</strong>
+                                : <span key={i}>{part}</span>
+                        )}
+                    </p>
+                );
+            })}
+        </div>
+    );
+};
+
 // ─── Axis distribution mini-bars ──────────────────────────────────────────────
 
 const AXIS_LABELS_I18N: Record<string, Record<string, string>> = {
@@ -340,11 +361,15 @@ export const ReportPage: React.FC = () => {
     // Merge AI-personalized sections from DB
     const aiSections = session.ai_sections;
     if (aiSections) {
+        if (aiSections.resumenPerfil)      report.resumenPerfil       = aiSections.resumenPerfil;
         if (aiSections.perfil)             report.perfil              = aiSections.perfil;
         if (aiSections.label)              report.arquetipo.label     = aiSections.label;
         if (aiSections.bienvenida)         report.bienvenida          = aiSections.bienvenida;
         if (aiSections.motorDesc)          report.motorDesc           = aiSections.motorDesc;
+        if (aiSections.wow)                report.wow                 = aiSections.wow;
         if (aiSections.combustible)        report.combustible         = aiSections.combustible;
+        if (aiSections.corazon)            report.corazon             = aiSections.corazon;
+        if (aiSections.grupoEspacio)       report.grupoEspacio        = aiSections.grupoEspacio;
         if (aiSections.ecos)               report.ecos                = aiSections.ecos;
         if (aiSections.reseteo)            report.reseteo             = aiSections.reseteo;
         if (aiSections.checklist)          report.checklist           = aiSections.checklist;
@@ -443,7 +468,10 @@ export const ReportPage: React.FC = () => {
                         </span>
                     </div>
                     <p className="text-base font-semibold text-argo-navy mb-3 leading-snug">{report.perfil}</p>
-                    <DigestBox>{cleanText(report.bienvenida)}</DigestBox>
+                    {report.resumenPerfil
+                        ? <RichBodyText>{report.resumenPerfil}</RichBodyText>
+                        : <DigestBox>{cleanText(report.bienvenida)}</DigestBox>
+                    }
 
                     {/* Axis distribution */}
                     {(session.answers?.length ?? 0) > 0 && (

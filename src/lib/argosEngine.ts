@@ -51,6 +51,7 @@ export interface ReportData {
     palabrasRuidoExtra?: string[];
     axisCounts?: Record<string, number>;
     sessionId?: string;
+    resumenPerfil?: string;
 }
 
 // Legacy: list of archetypes for the resolver

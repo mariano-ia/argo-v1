@@ -14,6 +14,7 @@ function buildHtml(params: {
     palabrasPuente: string[];
     sessionId?: string;
     lang?: string;
+    resumenPerfil?: string;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = 'https://argomethod.com';
@@ -211,6 +212,31 @@ function buildHtml(params: {
     </td>
   </tr>
 
+  ${params.resumenPerfil ? `<!-- CONTRATO DE SINTONÍA -->
+  <tr>
+    <td style="padding:0 28px 28px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D2D2D7;border-radius:14px;">
+        <tr><td style="padding:20px 18px;">
+          <p style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#86868B;margin:0 0 14px 0;">
+            <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#86868B;vertical-align:middle;margin-right:8px;"></span>
+            ${langAttr === 'en' ? 'THE TUNING CONTRACT' : langAttr === 'pt' ? 'O CONTRATO DE SINTONIA' : 'EL CONTRATO DE SINTONÍA'}
+          </p>
+          ${params.resumenPerfil.split(/\n\n+/).filter(Boolean).map(p => {
+              const html = p.trim().replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+              return `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${html}</p>`;
+          }).join('')}
+          <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">
+            <tr><td style="padding:12px 14px;background:#F5F5F7;border-radius:12px;">
+              <p style="font-size:11px;color:#86868B;line-height:1.6;margin:0;">
+                ℹ️ ${langAttr === 'en' ? 'This report does not evaluate talent or predict athletic future. It describes present tendencies that may evolve. It is a snapshot, not a permanent label.' : langAttr === 'pt' ? 'Este relatório não avalia talento nem prevê o futuro esportivo. Descreve tendências presentes que podem evoluir. É uma fotografia do momento, não um rótulo permanente.' : 'Este informe no evalúa talento ni predice el futuro deportivo. Describe tendencias presentes que pueden evolucionar. Es una fotografía del momento, no una etiqueta permanente.'}
+              </p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </td>
+  </tr>` : ''}
+
   <!-- SEPARATOR -->
   <tr><td style="padding:0 28px;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
 
@@ -297,6 +323,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             sessionId,
             lang,
             emailSubject,
+            resumenPerfil,
         } = body as {
             toEmail: string;
             nombreAdulto: string;
@@ -311,6 +338,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             sessionId?: string;
             lang?: string;
             emailSubject?: string;
+            resumenPerfil?: string;
         };
 
         console.log('[send-email] Request received:', {
@@ -331,7 +359,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const html = buildHtml({
             nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
             palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
-            sessionId, lang,
+            sessionId, lang, resumenPerfil,
         });
 
         const langAttr = lang || 'es';

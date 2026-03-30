@@ -93,6 +93,7 @@ export interface OdysseyTranslations {
     // FullReport section titles
     reportSections: {
         contract: string;
+        disclaimer: string;
         placeInShip: string;
         secondaryCompass: string;
         motorRhythm: string;
@@ -126,6 +127,7 @@ export interface OdysseyTranslations {
     // Email HTML section titles (buildReportHtml)
     emailSections: {
         contract: string;
+        disclaimer: string;
         placeInShip: string;
         secondaryCompass: string;
         motorRhythm: string;
@@ -243,7 +245,8 @@ const es: OdysseyTranslations = {
     reviewSub: 'Solo 4 preguntas · 30 segundos',
 
     reportSections: {
-        contract: 'El Contrato de Sintonía',
+        contract: 'Retrato de Sintonía',
+        disclaimer: 'Este informe no evalúa talento ni predice el futuro deportivo. Describe tendencias presentes que pueden evolucionar. Es una fotografía del momento, no una etiqueta permanente.',
         placeInShip: 'Su lugar en la Nave',
         secondaryCompass: 'La Brújula Secundaria',
         motorRhythm: 'El Ritmo del Motor',
@@ -274,7 +277,8 @@ const es: OdysseyTranslations = {
     emailMaturationBody: 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.',
 
     emailSections: {
-        contract: 'El Contrato de Sintonía',
+        contract: 'Retrato de Sintonía',
+        disclaimer: 'Este informe no evalúa talento ni predice el futuro deportivo. Describe tendencias presentes que pueden evolucionar. Es una fotografía del momento, no una etiqueta permanente.',
         placeInShip: 'Su lugar en la Nave',
         secondaryCompass: 'La Brújula Secundaria',
         motorRhythm: 'El Ritmo del Motor',
@@ -391,7 +395,8 @@ const en: OdysseyTranslations = {
     reviewSub: 'Just 4 questions · 30 seconds',
 
     reportSections: {
-        contract: 'The Tuning Contract',
+        contract: 'Tuning Portrait',
+        disclaimer: 'This report does not evaluate talent or predict athletic future. It describes present tendencies that may evolve. It is a snapshot, not a permanent label.',
         placeInShip: 'Their Place on the Ship',
         secondaryCompass: 'The Secondary Compass',
         motorRhythm: 'The Motor Rhythm',
@@ -422,7 +427,8 @@ const en: OdysseyTranslations = {
     emailMaturationBody: 'DISC profiles in early childhood (under 7 years) are highly plastic. We recommend revisiting this profile in 6 months to observe the evolution of tendencies.',
 
     emailSections: {
-        contract: 'The Tuning Contract',
+        contract: 'Tuning Portrait',
+        disclaimer: 'This report does not evaluate talent or predict athletic future. It describes present tendencies that may evolve. It is a snapshot, not a permanent label.',
         placeInShip: 'Their Place on the Ship',
         secondaryCompass: 'The Secondary Compass',
         motorRhythm: 'The Motor Rhythm',
@@ -539,7 +545,8 @@ const pt: OdysseyTranslations = {
     reviewSub: 'Apenas 4 perguntas · 30 segundos',
 
     reportSections: {
-        contract: 'O Contrato de Sintonia',
+        contract: 'Retrato de Sintonia',
+        disclaimer: 'Este relatório não avalia talento nem prevê o futuro esportivo. Descreve tendências presentes que podem evoluir. É uma fotografia do momento, não um rótulo permanente.',
         placeInShip: 'Seu Lugar no Navio',
         secondaryCompass: 'A Bússola Secundária',
         motorRhythm: 'O Ritmo do Motor',
@@ -570,7 +577,8 @@ const pt: OdysseyTranslations = {
     emailMaturationBody: 'Os perfis DISC na primeira infância (menores de 7 anos) são altamente plásticos. Recomenda-se revisitar este perfil em 6 meses para observar a evolução das tendências.',
 
     emailSections: {
-        contract: 'O Contrato de Sintonia',
+        contract: 'Retrato de Sintonia',
+        disclaimer: 'Este relatório não avalia talento nem prevê o futuro esportivo. Descreve tendências presentes que podem evoluir. É uma fotografia do momento, não um rótulo permanente.',
         placeInShip: 'Seu Lugar no Navio',
         secondaryCompass: 'A Bússola Secundária',
         motorRhythm: 'O Ritmo do Motor',

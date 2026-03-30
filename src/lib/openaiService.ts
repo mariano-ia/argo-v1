@@ -10,6 +10,7 @@ export interface ReportContext {
 
 // Sections the AI rewrites (narrative) — always present
 export interface AISections {
+    resumenPerfil: string;
     wow: string;
     motorDesc: string;
     combustible: string;

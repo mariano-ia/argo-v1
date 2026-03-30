@@ -184,6 +184,28 @@ const TextBlock: React.FC<{ text: string; leadBold?: boolean }> = ({ text, leadB
     );
 };
 
+/** Renders text with **bold** markdown markers as <strong> */
+const RichTextBlock: React.FC<{ text: string; className?: string }> = ({ text, className = '' }) => {
+    const paragraphs = splitParagraphs(text);
+    return (
+        <div className={`space-y-3 ${className}`}>
+            {paragraphs.map((para, idx) => {
+                const parts = para.split(/(\*\*[^*]+\*\*)/g);
+                return (
+                    <p key={idx} className="text-[15px] text-[#424245] leading-[1.8]">
+                        {parts.map((part, i) => {
+                            if (part.startsWith('**') && part.endsWith('**')) {
+                                return <strong key={i} className="text-[#1D1D1F] font-semibold">{part.slice(2, -2)}</strong>;
+                            }
+                            return <span key={i}>{part}</span>;
+                        })}
+                    </p>
+                );
+            })}
+        </div>
+    );
+};
+
 const ChecklistBlock: React.FC<{ label: string; text: string; color: string; isLoading: boolean }> = ({
     label, text, color, isLoading,
 }) => (
@@ -359,11 +381,11 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
         bienvenida, wow, motorDesc, combustible, grupoEspacio, corazon,
         palabrasPuente, palabrasRuido, guia, reseteo, ecos, checklist,
         tendenciaParagraph, palabrasPuenteExtra, palabrasRuidoExtra,
-        axisCounts, sessionId,
+        axisCounts, sessionId, resumenPerfil,
     } = report;
 
-    const aiSections = ['wow', 'motorDesc', 'combustible', 'corazon', 'reseteo', 'ecos', 'checklist'];
-    const isLoading = (section: string) => !!aiLoading && aiSections.includes(section);
+    const aiSectionKeys = ['resumenPerfil', 'wow', 'motorDesc', 'combustible', 'corazon', 'reseteo', 'ecos', 'checklist'];
+    const isLoading = (section: string) => !!aiLoading && aiSectionKeys.includes(section);
 
     return (
         <motion.div
@@ -429,12 +451,22 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                 />
             </div>
 
-            {/* ── 1. El Contrato de Sintonía ── */}
+            {/* ── 1. Retrato de Sintonía ── */}
             <Card>
                 <SectionTitle title={s.contract} icon={SectionIcons.contract} />
-                <blockquote className="border-l-[3px] border-[#6366f1] pl-5 py-4 bg-[#F8F8FF] rounded-r-xl">
-                    <TextBlock text={bienvenida} />
-                </blockquote>
+                {isLoading('resumenPerfil')
+                    ? <AISkeleton />
+                    : resumenPerfil
+                        ? <RichTextBlock text={resumenPerfil} />
+                        : <TextBlock text={bienvenida} />
+                }
+                {/* Disclaimer — subtle note */}
+                <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-[#F5F5F7] rounded-xl">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="#86868B" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4 flex-shrink-0 mt-0.5">
+                        <circle cx="8" cy="8" r="6.5"/><path d="M8 5.5v3"/><circle cx="8" cy="11.5" r="0.5" fill="#86868B" stroke="none"/>
+                    </svg>
+                    <p className="text-[11px] text-[#86868B] leading-relaxed">{s.disclaimer}</p>
+                </div>
             </Card>
 
             {/* ── 2. Su lugar en la Nave (WOW) ── */}
