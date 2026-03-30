@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Coins, Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
+import { Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AreaChart, Area, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis } from 'recharts';
 import { InfoTip } from '../../components/ui/Tooltip';
@@ -13,7 +13,7 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, AXIS_LABELS } from '../../lib/designTokens';
 
-interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
 
 
@@ -236,13 +236,13 @@ export const TenantHome: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
-                <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />
+                <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
                 {[
-                    { icon: Coins, label: dt.home.creditos, value: tenant.credits_remaining, sub: `Plan ${tenant.plan}`, tip: lang === 'en' ? '1 credit = 1 play. Credits are consumed when a session starts.' : lang === 'pt' ? '1 crédito = 1 jogada. Os créditos são consumidos ao iniciar uma sessão.' : '1 crédito = 1 jugada. Los créditos se consumen al iniciar una sesión.' },
+                    { icon: Users, label: lang === 'en' ? 'Roster' : lang === 'pt' ? 'Elenco' : 'Roster', value: `${tenant.active_players_count}/${tenant.roster_limit}`, sub: `Plan ${tenant.plan}`, tip: lang === 'en' ? 'Active players in your roster. Archive players to free up space.' : lang === 'pt' ? 'Jogadores ativos no seu elenco. Arquive jogadores para liberar espaço.' : 'Jugadores activos en tu roster. Archiva jugadores para liberar lugar.' },
                     { icon: Activity, label: lang === 'en' ? 'Sessions' : lang === 'pt' ? 'Sessoes' : 'Sesiones', value: sessionsLoading ? '...' : sessions.length, sub: thisMonthCount > 0 ? `+${thisMonthCount} ${lang === 'en' ? 'this month' : lang === 'pt' ? 'este mes' : 'este mes'}` : (lang === 'en' ? 'completed' : 'completadas'), tip: lang === 'en' ? 'Total completed experiences by your athletes' : lang === 'pt' ? 'Total de experiências completadas pelos seus atletas' : 'Total de experiencias completadas por tus deportistas' },
                     { icon: Users, label: lang === 'en' ? 'Athletes' : lang === 'pt' ? 'Atletas' : 'Deportistas', value: sessionsLoading ? '...' : uniquePlayers, sub: lang === 'en' ? 'with profile' : lang === 'pt' ? 'com perfil' : 'con perfil', tip: lang === 'en' ? 'Unique athletes who completed a profile' : lang === 'pt' ? 'Atletas únicos que completaram um perfil' : 'Deportistas únicos que completaron un perfil' },
                     { icon: Layers, label: lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos', value: groupCount ?? (sessionsLoading ? '...' : 0), sub: lang === 'en' ? 'created' : lang === 'pt' ? 'criados' : 'creados', tip: lang === 'en' ? 'Organize your athletes in groups to see team dynamics' : lang === 'pt' ? 'Organize seus atletas em grupos para ver a dinâmica de equipe' : 'Organiza tus deportistas en grupos para ver la dinámica de equipo' },

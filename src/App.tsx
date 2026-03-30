@@ -25,6 +25,9 @@ import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
 import { FeedbackForm }       from './pages/FeedbackForm';
 import { ReportPage }         from './pages/ReportPage';
+import { TermsPage }          from './pages/TermsPage';
+import { PrivacyPage }        from './pages/PrivacyPage';
+import { PricingPage }        from './pages/PricingPage';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -150,6 +153,9 @@ function App() {
             <Route path="/preview/result" element={<ResultRevealPreview />} />
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/report/:sessionId" element={<ReportPage />} />
+            <Route path="/pricing"    element={<PricingPage />} />
+            <Route path="/terms"      element={<TermsPage />} />
+            <Route path="/privacy"    element={<PrivacyPage />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/test/islas" element={<TestIslas />} />

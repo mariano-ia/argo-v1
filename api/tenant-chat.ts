@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { callAI, getCostUsd } from './_ai-provider';
 
 /**
  * Chat DISC endpoint.
@@ -127,8 +128,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
-    const openaiKey = process.env.OPENAI_API_KEY;
-
     if (!serviceKey || !supabaseUrl) {
         return res.status(500).json({ error: 'Server configuration error' });
     }
@@ -209,14 +208,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // POST: Send message
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        if (!openaiKey) return res.status(500).json({ error: 'AI not configured' });
 
         const { thread_id, message, lang = 'es' } = req.body ?? {};
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({ error: 'Message required' });
         }
 
-        // Trial plan: max 10 user messages total
+        // Fair use: increment AI query counter and check soft cap
+        const { data: fairUseData, error: fairUseErr } = await sb.rpc('increment_ai_queries', { p_tenant_id: tenant.id });
+        if (fairUseErr) {
+            console.error('[tenant-chat] Fair use check error:', fairUseErr.message);
+        }
+        const fairUseExceeded = fairUseData?.fair_use_exceeded === true;
+
+        // Trial plan: hard cap at 10 total user messages
         const { data: tenantPlan } = await sb.from('tenants').select('plan').eq('id', tenant.id).maybeSingle();
         if (tenantPlan?.plan === 'trial') {
             const { count: totalMessages } = await sb
@@ -317,37 +322,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             + (playerList ? `\n\nJUGADORES DEL ENTRENADOR:\n${playerList}` : '\n\nEl entrenador todavía no tiene jugadores registrados.')
             + extraContext;
 
-        const messages = [
-            { role: 'system', content: systemPrompt },
-            ...((history ?? []).map(m => ({ role: m.role, content: m.content }))),
-            { role: 'user', content: trimmedMsg },
+        const aiMessages = [
+            { role: 'system' as const, content: systemPrompt },
+            ...((history ?? []).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))),
+            { role: 'user' as const, content: trimmedMsg },
         ];
 
-        // ── Call OpenAI ───────────────────────────────────────────────────
-        const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${openaiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                messages,
-                temperature: 0.4,
-                max_tokens: 800,
-            }),
-        });
-
-        if (!aiRes.ok) {
-            const errBody = await aiRes.text();
-            console.error('[tenant-chat] OpenAI error:', aiRes.status, errBody);
-            return res.status(502).json({ error: 'AI service error' });
-        }
-
-        const aiData = await aiRes.json();
-        let assistantContent = aiData.choices?.[0]?.message?.content ?? '';
-        const tokensIn = aiData.usage?.prompt_tokens ?? 0;
-        const tokensOut = aiData.usage?.completion_tokens ?? 0;
+        // ── Call AI provider ────────────────────────────────────────────
+        const aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 800 });
+        let assistantContent = aiResult.content;
 
         // ── Post-processing: scan for prohibited words ────────────────────
         const PROHIBITED_WORDS = [
@@ -359,35 +342,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
 
         if (foundProhibited.length > 0) {
-            // Retry once with stronger guardrail
             console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
             const retryMessages = [
-                ...messages,
-                { role: 'assistant', content: assistantContent },
-                { role: 'user', content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
+                ...aiMessages,
+                { role: 'assistant' as const, content: assistantContent },
+                { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
             ];
-            const retryRes = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ model: 'gpt-4o-mini', messages: retryMessages, temperature: 0.3, max_tokens: 800 }),
-            });
-            if (retryRes.ok) {
-                const retryData = await retryRes.json();
-                const retryContent = retryData.choices?.[0]?.message?.content;
-                if (retryContent) assistantContent = retryContent;
-            }
+            try {
+                const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800 });
+                if (retryResult.content) assistantContent = retryResult.content;
+            } catch { /* keep original response */ }
         }
 
         // ── Save messages to DB ───────────────────────────────────────────
         await sb.from('chat_messages').insert([
             { tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
-            { tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: tokensIn, tokens_out: tokensOut },
+            { tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: aiResult.inputTokens, tokens_out: aiResult.outputTokens },
         ]);
 
         return res.status(200).json({
             thread_id: threadId,
             message: { role: 'assistant', content: assistantContent },
-            usage: { tokensIn, tokensOut, costUsd: (tokensIn * 0.15 + tokensOut * 0.60) / 1_000_000 },
+            usage: { tokensIn: aiResult.inputTokens, tokensOut: aiResult.outputTokens, costUsd: getCostUsd(aiResult) },
+            fair_use_exceeded: fairUseExceeded,
         });
 
     } catch (err) {

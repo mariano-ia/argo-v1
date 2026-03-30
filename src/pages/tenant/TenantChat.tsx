@@ -9,7 +9,7 @@ import { useLang } from '../../context/LangContext';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface Thread { thread_id: string; content: string; created_at: string; }
 interface ChatMessage { role: 'user' | 'assistant'; content: string; created_at?: string; }
 

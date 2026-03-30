@@ -17,7 +17,7 @@ import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; motor: string; }
 
 /* ── Category icons (replace emojis) ───────────────────────────────────────── */
@@ -177,7 +177,7 @@ export const TenantGuide: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.guia}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.guide.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />}
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Search + filters — full width */}

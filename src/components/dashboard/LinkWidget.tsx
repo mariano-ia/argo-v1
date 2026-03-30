@@ -13,21 +13,21 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a la plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
-        noCredits: 'Sin créditos disponibles. Compra más para compartir el link.',
+        noCredits: 'Tu roster está lleno. Archiva jugadores para liberar lugar.',
     },
     en: {
         label: 'Invite athletes to play with your link',
         tooltip: 'When you share this link, athletes can complete the experience and their profiles are linked to your platform.',
         copy: 'Copy link',
         copied: 'Copied',
-        noCredits: 'No credits available. Purchase more to share your link.',
+        noCredits: 'Your roster is full. Archive players to free up space.',
     },
     pt: {
         label: 'Convide atletas a jogar com seu link',
         tooltip: 'Ao compartilhar este link, os atletas podem completar a experiencia e seus perfis ficam associados à plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
-        noCredits: 'Sem créditos disponíveis. Compre mais para compartilhar o link.',
+        noCredits: 'Seu elenco está cheio. Arquive jogadores para liberar espaço.',
     },
 };
 

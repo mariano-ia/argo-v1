@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -22,7 +22,7 @@ import {
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface TenantData { id: string; slug: string; display_name: string; plan: string; credits_remaining: number; }
+interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
 interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; }
@@ -45,7 +45,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean }> = ({ session, dt, lang, locked = false }) => {
+const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate }) => {
     const [expanded, setExpanded] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
@@ -515,6 +515,24 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
                                         </button>
                                     )}
+                                    {archived && onReactivate && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onReactivate(session.id); }}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-all"
+                                        >
+                                            <RotateCcw size={12} />
+                                            {lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
+                                        </button>
+                                    )}
+                                    {!archived && onArchive && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); onArchive(session.id); }}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all"
+                                        >
+                                            <Archive size={12} />
+                                            {lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -534,10 +552,12 @@ const DEV_SESSIONS: SessionRow[] = [
 ];
 
 export const TenantPlayers: React.FC = () => {
-    const { tenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean }>();
+    const { tenant, refreshTenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; devBypass?: boolean }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
+    const [archivedSessions, setArchivedSessions] = useState<SessionRow[]>([]);
+    const [showArchived, setShowArchived] = useState(false);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [ejeFilter, setEjeFilter] = useState<string | null>(null);
@@ -552,10 +572,35 @@ export const TenantPlayers: React.FC = () => {
         try {
             const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
+            // Also fetch archived
+            const arRes = await fetch('/api/tenant-sessions?archived=1', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            if (arRes.ok) { const arData = await arRes.json(); setArchivedSessions(arData.sessions ?? []); }
         } finally { setLoading(false); }
     }, [devBypass]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
+
+    const handleArchive = async (sessionId: string) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/archive-player', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId, action: 'archive' }),
+        });
+        if (res.ok) { await fetchSessions(); await refreshTenant(); }
+    };
+
+    const handleReactivate = async (sessionId: string) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch('/api/archive-player', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ session_id: sessionId, action: 'reactivate' }),
+        });
+        if (res.ok) { await fetchSessions(); await refreshTenant(); }
+    };
 
     const filtered = useMemo(() => {
         return sessions.filter(s => {
@@ -599,7 +644,7 @@ export const TenantPlayers: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />}
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Re-profile alert */}
@@ -715,7 +760,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} onArchive={handleArchive} />
                         ))}
                     </div>
 
@@ -752,6 +797,27 @@ export const TenantPlayers: React.FC = () => {
                         </div>
                     )}
                 </>
+            )}
+
+            {/* ── Archived players ─────────────────────────────────────── */}
+            {archivedSessions.length > 0 && (
+                <div className="mt-8">
+                    <button
+                        onClick={() => setShowArchived(v => !v)}
+                        className="flex items-center gap-2 text-[13px] font-medium text-argo-grey hover:text-argo-navy transition-colors"
+                    >
+                        <Archive size={14} />
+                        {lang === 'en' ? `Archived players (${archivedSessions.length})` : lang === 'pt' ? `Jogadores arquivados (${archivedSessions.length})` : `Jugadores archivados (${archivedSessions.length})`}
+                        {showArchived ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                    </button>
+                    {showArchived && (
+                        <div className="bg-white rounded-[14px] shadow-argo overflow-hidden mt-3 opacity-75">
+                            {archivedSessions.map(s => (
+                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} archived onReactivate={handleReactivate} />
+                            ))}
+                        </div>
+                    )}
+                </div>
             )}
         </motion.div>
     );

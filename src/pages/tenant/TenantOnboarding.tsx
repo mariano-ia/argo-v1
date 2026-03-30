@@ -20,7 +20,7 @@ const SLIDE_TEXT = {
             tag: 'Tu link único',
             title: 'La puerta de entrada de tus deportistas',
             shareNote: 'Compártelo con el adulto responsable (padre, madre o tutor). Ellos completan el registro y le pasan el dispositivo al deportista.',
-            creditNote: 'Cada experiencia consume 1 crédito al inicio, incluso si el deportista no la completa.',
+            creditNote: 'Cada deportista que juega ocupa un lugar en tu roster. Si no completa la experiencia, el perfil queda pendiente y puedes reintentar.',
         },
         s2: {
             tag: 'Tu plataforma',
@@ -54,7 +54,7 @@ const SLIDE_TEXT = {
             tag: 'Your unique link',
             title: "Your athletes' entry point",
             shareNote: 'Share it with the responsible adult (parent or guardian). They complete the registration and hand the device to the athlete.',
-            creditNote: 'Each experience consumes 1 credit at the start, even if the athlete does not complete it.',
+            creditNote: 'Each athlete who plays takes a spot on your roster. If they don\'t complete the experience, the profile stays pending and you can retry.',
         },
         s2: {
             tag: 'Your platform',
@@ -88,7 +88,7 @@ const SLIDE_TEXT = {
             tag: 'Seu link único',
             title: 'A porta de entrada dos seus atletas',
             shareNote: 'Compartilhe com o adulto responsável (pai, mãe ou responsável). Eles completam o registro e passam o dispositivo ao atleta.',
-            creditNote: 'Cada experiência consome 1 crédito no início, mesmo que o atleta não a complete.',
+            creditNote: 'Cada atleta que joga ocupa um lugar no seu elenco. Se não completar a experiência, o perfil fica pendente e você pode tentar novamente.',
         },
         s2: {
             tag: 'Sua plataforma',

@@ -11,7 +11,8 @@ interface TenantData {
     slug: string;
     display_name: string;
     plan: string;
-    credits_remaining: number;
+    roster_limit: number;
+    active_players_count: number;
 }
 
 export const TenantLink: React.FC = () => {
@@ -49,10 +50,10 @@ export const TenantLink: React.FC = () => {
     };
 
     const linkIntroBody = lang === 'en'
-        ? 'Share this link with the responsible adult (parent or guardian). Each experience consumes 1 credit at the start.'
+        ? 'Share this link with the responsible adult (parent or guardian). Each athlete who plays takes a spot on your roster.'
         : lang === 'pt'
-            ? 'Compartilhe este link com o adulto responsável (pai, mãe ou responsável). Cada experiência consome 1 crédito no início.'
-            : 'Comparte este link con el adulto responsable (padre, madre o tutor). Cada experiencia consume 1 crédito al inicio.';
+            ? 'Compartilhe este link com o adulto responsável (pai, mãe ou responsável). Cada atleta que joga ocupa um lugar no seu elenco.'
+            : 'Comparte este link con el adulto responsable (padre, madre o tutor). Cada deportista que juega ocupa un lugar en tu roster.';
 
     return (
         <div>
@@ -69,7 +70,7 @@ export const TenantLink: React.FC = () => {
                         {dt.link.descripcion}
                     </p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.credits_remaining === 0} />}
+                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             <div className="bg-white rounded-[14px] p-6 shadow-argo">
@@ -97,8 +98,11 @@ export const TenantLink: React.FC = () => {
 
                 <div className="mt-6 pt-4 border-t border-argo-border">
                     <p className="text-xs text-argo-grey">
-                        {dt.link.creditoNota}
-                        {' '}{dt.link.creditoConteo(tenant.credits_remaining)}
+                        {lang === 'en'
+                            ? `Each athlete who plays takes a spot on your roster. You have ${tenant.active_players_count} of ${tenant.roster_limit} spots used.`
+                            : lang === 'pt'
+                                ? `Cada atleta que joga ocupa um lugar no seu elenco. Você tem ${tenant.active_players_count} de ${tenant.roster_limit} lugares ocupados.`
+                                : `Cada deportista que juega ocupa un lugar en tu roster. Tienes ${tenant.active_players_count} de ${tenant.roster_limit} lugares ocupados.`}
                     </p>
                 </div>
             </div>

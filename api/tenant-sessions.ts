@@ -49,8 +49,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const tenant = { id: tenantId };
 
+        // Determine if requesting archived players
+        const showArchived = req.query.archived === '1';
+
         // Fetch sessions for this tenant
-        const { data: sessions, error: sessError } = await sb
+        let query = sb
             .from('sessions')
             .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, created_at, lang, answers, ai_sections')
             .eq('tenant_id', tenant.id)
@@ -58,6 +61,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .not('eje', 'eq', '_pending')
             .order('created_at', { ascending: false })
             .limit(100);
+
+        // Filter by archived status
+        if (showArchived) {
+            query = query.not('archived_at', 'is', null);
+        } else {
+            query = query.is('archived_at', null);
+        }
+
+        const { data: sessions, error: sessError } = await query;
 
         if (sessError) {
             console.error('[tenant-sessions] Query error:', sessError.message);

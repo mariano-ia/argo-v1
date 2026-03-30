@@ -35,3 +35,6 @@ dist-ssr
 design-system/assets/
 .vercel
 .env*.local
+
+# Local previews (email templates, etc.)
+preview/

@@ -22,39 +22,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Missing slug' });
         }
 
-        // Check trial expiration before deducting credit
-        const { data: tenantCheck } = await sb
+        // Get tenant by slug
+        const { data: tenant } = await sb
             .from('tenants')
-            .select('plan, trial_expires_at')
+            .select('id, display_name, plan, trial_expires_at, roster_limit')
             .eq('slug', slug)
             .single();
 
-        if (tenantCheck?.plan === 'trial' && tenantCheck?.trial_expires_at) {
-            if (new Date(tenantCheck.trial_expires_at) < new Date()) {
-                return res.status(403).json({ error: 'Trial expired' });
+        if (!tenant) {
+            return res.status(404).json({ error: 'Tenant not found' });
+        }
+
+        // Check trial expiration
+        if (tenant.plan === 'trial' && tenant.trial_expires_at) {
+            if (new Date(tenant.trial_expires_at) < new Date()) {
+                return res.status(403).json({ error: 'trial_expired' });
             }
         }
 
-        // Atomic credit deduction: UPDATE only if credits > 0, return new value
-        const { data, error } = await sb.rpc('deduct_credit', { tenant_slug: slug });
+        // Check roster capacity via RPC (atomic, uses SELECT FOR UPDATE)
+        const { data, error } = await sb.rpc('check_roster_capacity', { p_tenant_id: tenant.id });
 
         if (error) {
             console.error('[start-play] RPC error:', error.message);
-            // Distinguish between "not found" and "no credits"
-            if (error.message.includes('not found')) {
-                return res.status(404).json({ error: 'Tenant not found' });
+            if (error.message.includes('trial_expired')) {
+                return res.status(403).json({ error: 'trial_expired' });
             }
-            if (error.message.includes('no credits')) {
-                return res.status(403).json({ error: 'No credits remaining' });
+            if (error.message.includes('roster_full')) {
+                return res.status(403).json({
+                    error: 'roster_full',
+                    roster_limit: tenant.roster_limit,
+                });
             }
             return res.status(500).json({ error: 'Internal server error' });
         }
 
         return res.status(200).json({
             ok: true,
-            tenant_id: data.tenant_id,
-            tenant_name: data.tenant_name,
-            credits_remaining: data.credits_remaining,
+            tenant_id: tenant.id,
+            tenant_name: tenant.display_name,
+            roster_limit: data.roster_limit,
+            active_count: data.active_count,
+            available: data.available,
         });
     } catch (err) {
         console.error('[start-play] Unexpected error:', err);

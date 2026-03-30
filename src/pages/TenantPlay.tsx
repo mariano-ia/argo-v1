@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { OnboardingFlowV2 } from '../components/onboarding/OnboardingFlowV2';
 
-type Status = 'loading' | 'ready' | 'not_found' | 'no_credits' | 'error';
+type Status = 'loading' | 'ready' | 'not_found' | 'roster_full' | 'trial_expired' | 'error';
 
 export const TenantPlay: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
@@ -25,7 +25,8 @@ export const TenantPlay: React.FC = () => {
                 } else if (res.status === 404) {
                     setStatus('not_found');
                 } else if (res.status === 403) {
-                    setStatus('no_credits');
+                    const errData = await res.json().catch(() => ({}));
+                    setStatus(errData.error === 'trial_expired' ? 'trial_expired' : 'roster_full');
                 } else {
                     setStatus('error');
                 }
@@ -50,11 +51,20 @@ export const TenantPlay: React.FC = () => {
         );
     }
 
-    if (status === 'no_credits') {
+    if (status === 'roster_full') {
         return (
             <StatusScreen
-                title="Sin créditos disponibles"
-                message="La cuenta asociada a este link no tiene créditos disponibles. Contacta al responsable para más información."
+                title="Equipo completo"
+                message="La cuenta asociada a este link alcanzó el límite de jugadores activos. Contacta al responsable para más información."
+            />
+        );
+    }
+
+    if (status === 'trial_expired') {
+        return (
+            <StatusScreen
+                title="Periodo de prueba finalizado"
+                message="El periodo de prueba de esta cuenta ha finalizado. Contacta al responsable para más información."
             />
         );
     }

@@ -183,22 +183,13 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, s
 ${jsonSchema}`;
 }
 
-// ─── Pricing ─────────────────────────────────────────────────────────────────
-
-const GPT4O_INPUT_COST_PER_TOKEN = 0.15 / 1_000_000;
-const GPT4O_OUTPUT_COST_PER_TOKEN = 0.60 / 1_000_000;
-
 // ─── Handler ─────────────────────────────────────────────────────────────────
+
+import { callAI, getCostUsd, getProvider } from './_ai-provider';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
-    }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-        console.error('[generate-ai] Missing OPENAI_API_KEY');
-        return res.status(500).json({ error: 'Server configuration error' });
     }
 
     try {
@@ -212,58 +203,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const langCode = context.lang || 'es';
         const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-                model: 'gpt-4o-mini',
-                temperature: 0.7,
-                max_tokens: 3000,
-                messages: [
-                    {
-                        role: 'system',
-                        content: langCode !== 'es'
-                            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
-                            : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.',
-                    },
-                    {
-                        role: 'user',
-                        content: prompt,
-                    },
-                ],
-            }),
-        });
+        const systemContent = langCode !== 'es'
+            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
+            : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.';
 
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            console.error('[generate-ai] OpenAI error:', response.status, err);
-            return res.status(502).json({ error: `OpenAI error ${response.status}` });
-        }
-
-        const data = await response.json();
-        const content = data.choices?.[0]?.message?.content ?? '';
+        const aiResponse = await callAI([
+            { role: 'system', content: systemContent },
+            { role: 'user', content: prompt },
+        ], { temperature: 0.7, maxTokens: 3000 });
 
         // Strip potential markdown code fences
-        const cleaned = content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+        const cleaned = aiResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
 
         let sections: AISections;
         try {
             sections = JSON.parse(cleaned);
         } catch {
-            console.error('[generate-ai] Failed to parse OpenAI response:', cleaned.slice(0, 200));
+            console.error(`[generate-ai] Failed to parse ${getProvider()} response:`, cleaned.slice(0, 200));
             return res.status(502).json({ error: 'Invalid AI response format' });
         }
 
-        const inputTokens: number = data.usage?.prompt_tokens ?? 0;
-        const outputTokens: number = data.usage?.completion_tokens ?? 0;
         const usage: AIUsage = {
-            inputTokens,
-            outputTokens,
-            totalTokens: data.usage?.total_tokens ?? 0,
-            costUsd: inputTokens * GPT4O_INPUT_COST_PER_TOKEN + outputTokens * GPT4O_OUTPUT_COST_PER_TOKEN,
+            inputTokens: aiResponse.inputTokens,
+            outputTokens: aiResponse.outputTokens,
+            totalTokens: aiResponse.totalTokens,
+            costUsd: getCostUsd(aiResponse),
         };
 
         return res.status(200).json({ sections, usage });

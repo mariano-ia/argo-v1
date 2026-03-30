@@ -17,7 +17,8 @@ export interface TenantData {
     slug: string;
     display_name: string;
     plan: string;
-    credits_remaining: number;
+    roster_limit: number;
+    active_players_count: number;
     institution_type?: string | null;
     sport?: string | null;
     country?: string | null;
@@ -25,6 +26,8 @@ export interface TenantData {
     logo_url?: string | null;
     onboarding_completed: boolean;
     trial_expires_at?: string | null;
+    ai_queries_count?: number;
+    ai_queries_reset_at?: string | null;
 }
 
 export interface MemberProfile {
@@ -70,7 +73,7 @@ export const TenantDashboard: React.FC = () => {
         if (devBypass) {
             setSession({} as Session);
             const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', credits_remaining: 99, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', roster_limit: 8, active_players_count: 3, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -280,9 +283,7 @@ export const TenantDashboard: React.FC = () => {
                                     {lang === 'en' ? 'Trial plan' : lang === 'pt' ? 'Plano de teste' : 'Plan de prueba'}
                                 </p>
                                 <span className="text-[10px] font-bold text-argo-violet-400 bg-argo-violet-100 px-1.5 py-0.5 rounded-md">
-                                    {tenant.credits_remaining} {tenant.credits_remaining === 1
-                                        ? (lang === 'en' ? 'credit' : lang === 'pt' ? 'crédito' : 'crédito')
-                                        : (lang === 'en' ? 'credits' : lang === 'pt' ? 'créditos' : 'créditos')}
+                                    {tenant.active_players_count}/{tenant.roster_limit} {lang === 'en' ? 'players' : lang === 'pt' ? 'jogadores' : 'jugadores'}
                                 </span>
                             </div>
                             {daysLeft !== null && (

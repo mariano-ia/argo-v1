@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Plus, Minus } from 'lucide-react';
+import { ArrowRight, Plus, Minus, Check } from 'lucide-react';
 import { InfoTip } from '../components/ui/Tooltip';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
@@ -659,6 +659,237 @@ const FlipCard: React.FC = () => {
     );
 };
 
+// ─── Pricing section (inline in landing) ─────────────────────────────────────
+
+const PricingFeature: React.FC<{ label: string; sub?: string }> = ({ label, sub }) => (
+    <li className="flex items-start gap-2 py-[7px] border-b border-[#F5F5F7] last:border-b-0">
+        <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: '#955FB5' }} />
+        <span style={{ fontSize: '13px', color: '#424245' }}>
+            {label}{sub && <span style={{ color: '#AEAEB2' }}> ({sub})</span>}
+        </span>
+    </li>
+);
+
+const PricingSection: React.FC<{
+    L: (es: string, en: string, pt: string) => string;
+    navigate: (path: string) => void;
+    lang: string;
+}> = ({ L, navigate }) => {
+    const [annual, setAnnual] = useState(true);
+
+    const included = L('incluido', 'included', 'incluído');
+    const unlimited = L('ilimitado', 'unlimited', 'ilimitado');
+
+    return (
+        <div>
+            {/* Header */}
+            <div className="text-center mb-10">
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '12px' }}>
+                    {L('Precios', 'Pricing', 'Preços')}
+                </p>
+                <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '12px' }} className="text-argo-navy">
+                    {L('El plan que se ajusta a tu equipo', 'The plan that fits your team', 'O plano que se ajusta ao seu time')}
+                </h2>
+            </div>
+
+            {/* Toggle */}
+            <div className="flex items-center justify-center gap-3 mb-8">
+                <span style={{ fontSize: '13px', fontWeight: annual ? 400 : 600, color: annual ? '#86868B' : '#1D1D1F' }}>{L('Mensual', 'Monthly', 'Mensal')}</span>
+                <button
+                    onClick={() => setAnnual(v => !v)}
+                    style={{ width: '44px', height: '24px', borderRadius: '12px', position: 'relative', transition: 'background 0.2s', background: annual ? '#955FB5' : '#D2D2D7', border: 'none', cursor: 'pointer' }}
+                >
+                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', ...(annual ? { right: '2px' } : { left: '2px' }) }} />
+                </button>
+                <span style={{ fontSize: '13px', fontWeight: annual ? 600 : 400, color: annual ? '#1D1D1F' : '#86868B' }}>{L('Anual', 'Annual', 'Anual')}</span>
+                {annual && (
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff', background: '#955FB5', padding: '3px 10px', borderRadius: '20px' }}>
+                        {L('Ahorra hasta 21%', 'Save up to 21%', 'Economize até 21%')}
+                    </span>
+                )}
+            </div>
+
+            {/* Trial */}
+            <div style={{ background: 'rgba(149,95,181,0.06)', border: '1px solid rgba(149,95,181,0.15)', borderRadius: '12px', padding: '14px 24px', textAlign: 'center', marginBottom: '32px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: '#955FB5', marginBottom: '2px' }}>
+                    {L('Comienza con 14 días gratis', 'Start with 14 free days', 'Comece com 14 dias grátis')}
+                </p>
+                <p style={{ fontSize: '12px', color: '#86868B' }}>
+                    {L(
+                        'Dashboard completo, 8 deportistas, consultor IA. Sin tarjeta de crédito.',
+                        'Full dashboard, 8 athletes, AI consultant. No credit card required.',
+                        'Dashboard completo, 8 atletas, consultor IA. Sem cartão de crédito.',
+                    )}
+                </p>
+            </div>
+
+            {/* Plans */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
+
+                {/* PRO */}
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>PRO</p>
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                            {L('Precio beta', 'Beta price', 'Preço beta')}
+                        </span>
+                    </div>
+                    <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                        {annual ? '$40' : '$49'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
+                    </p>
+                    {annual ? (
+                        <>
+                            <div style={{ marginTop: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '13px', color: '#AEAEB2', textDecoration: 'line-through', marginRight: '6px' }}>$49/{L('mes', 'mo', 'mês')}</span>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{L('Ahorra 18%', 'Save 18%', 'Economize 18%')}</span>
+                            </div>
+                            <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
+                                {L('Facturado como $480/año', 'Billed as $480/year', 'Cobrado como $480/ano')}
+                            </p>
+                        </>
+                    ) : (
+                        <p style={{ fontSize: '12px', color: '#AEAEB2', marginTop: '6px', marginBottom: '16px' }}>
+                            {L('Facturación mensual', 'Billed monthly', 'Cobrança mensal')}
+                        </p>
+                    )}
+                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
+                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={included} />
+                        <PricingFeature label={L('Hasta 50 jugadores activos', 'Up to 50 active players', 'Até 50 jogadores ativos')} />
+                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
+                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
+                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
+                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
+                    </ul>
+                    <button
+                        onClick={() => navigate('/signup')}
+                        style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer' }}
+                    >
+                        {L('Probar PRO gratis', 'Try PRO free', 'Testar PRO grátis')}
+                    </button>
+                    <p style={{ fontSize: '11px', color: '#AEAEB2', textAlign: 'center', marginTop: '8px' }}>
+                        {L('Sin tarjeta de crédito · 14 días', 'No credit card · 14 days', 'Sem cartão · 14 dias')}
+                    </p>
+                </div>
+
+                {/* ACADEMY */}
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
+                    <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                        {L('Más popular', 'Most popular', 'Mais popular')}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Academy</p>
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.04em' }}>
+                            {L('Precio beta', 'Beta price', 'Preço beta')}
+                        </span>
+                    </div>
+                    <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
+                        {annual ? '$70' : '$89'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
+                    </p>
+                    {annual ? (
+                        <>
+                            <div style={{ marginTop: '6px', marginBottom: '4px' }}>
+                                <span style={{ fontSize: '13px', color: '#AEAEB2', textDecoration: 'line-through', marginRight: '6px' }}>$89/{L('mes', 'mo', 'mês')}</span>
+                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{L('Ahorra 21%', 'Save 21%', 'Economize 21%')}</span>
+                            </div>
+                            <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
+                                {L('Facturado como $840/año', 'Billed as $840/year', 'Cobrado como $840/ano')}
+                            </p>
+                        </>
+                    ) : (
+                        <p style={{ fontSize: '12px', color: '#AEAEB2', marginTop: '6px', marginBottom: '16px' }}>
+                            {L('Facturación mensual', 'Billed monthly', 'Cobrança mensal')}
+                        </p>
+                    )}
+                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
+                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={included} />
+                        <PricingFeature label={L('Hasta 100 jugadores activos', 'Up to 100 active players', 'Até 100 jogadores ativos')} />
+                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
+                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
+                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
+                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
+                        <PricingFeature label={L('Multi-usuario', 'Multi-user access', 'Multi-usuário')} sub={L('varios coaches', 'multiple coaches', 'vários treinadores')} />
+                        <PricingFeature label={L('Soporte prioritario', 'Priority support', 'Suporte prioritário')} />
+                    </ul>
+                    <button
+                        onClick={() => navigate('/signup')}
+                        style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: 'none', background: '#955FB5', color: '#fff', cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
+                    >
+                        {L('Probar Academy gratis', 'Try Academy free', 'Testar Academy grátis')}
+                    </button>
+                    <p style={{ fontSize: '11px', color: '#AEAEB2', textAlign: 'center', marginTop: '8px' }}>
+                        {L('Sin tarjeta de crédito · 14 días', 'No credit card · 14 days', 'Sem cartão · 14 dias')}
+                    </p>
+                </div>
+
+                {/* ENTERPRISE */}
+                <div style={{ background: '#FAFAFA', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 700, color: '#1D1D1F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Enterprise</p>
+                    <p style={{ fontSize: '22px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '4px' }}>
+                        {L('A medida', 'Custom', 'Sob medida')}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
+                        {L('A partir de 150 jugadores', 'From 150 players', 'A partir de 150 jogadores')}
+                    </p>
+                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
+                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={unlimited} />
+                        <PricingFeature label={L('Jugadores ilimitados', 'Unlimited players', 'Jogadores ilimitados')} />
+                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
+                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Dashboard completo + API', 'Full dashboard + API', 'Dashboard completo + API')} />
+                        <PricingFeature label={L('Integraciones custom', 'Custom integrations', 'Integrações custom')} />
+                        <PricingFeature label={L('Onboarding asistido', 'Assisted onboarding', 'Onboarding assistido')} />
+                        <PricingFeature label={L('Soporte dedicado', 'Dedicated support', 'Suporte dedicado')} />
+                    </ul>
+                    <a
+                        href="mailto:hola@argomethod.com"
+                        style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
+                    >
+                        {L('Contactar ventas', 'Contact sales', 'Contatar vendas')}
+                    </a>
+                </div>
+            </div>
+
+            {/* Argo One — compact */}
+            <div style={{ borderTop: '1px solid #E8E8ED', paddingTop: '32px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '12px' }}>
+                    {L('Padres y familias', 'Parents & families', 'Pais e famílias')}
+                </p>
+                <div style={{ background: '#fff', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }} className="flex flex-col sm:flex-row sm:items-center gap-6">
+                    <div className="flex-1">
+                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1D1D1F', marginBottom: '4px' }}>Argo One</p>
+                        <p style={{ fontSize: '13px', color: '#86868B', lineHeight: 1.6 }}>
+                            {L(
+                                'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
+                                'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
+                                'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
+                            )}
+                        </p>
+                    </div>
+                    <div className="flex gap-3 flex-shrink-0">
+                        {[
+                            { n: 1, price: '$14.99', each: '' },
+                            { n: 3, price: '$34.99', each: '$11.66' },
+                            { n: 5, price: '$49.99', each: '$10.00' },
+                        ].map(p => (
+                            <a key={p.n} href={`mailto:hola@argomethod.com?subject=Argo One - ${p.n} ${p.n === 1 ? 'informe' : 'informes'}`} style={{ textAlign: 'center', padding: '14px 20px', borderRadius: '12px', border: '1px solid #E8E8ED', minWidth: '96px', display: 'block', textDecoration: 'none', transition: 'border-color 0.2s' }}
+                                onMouseEnter={e => (e.currentTarget.style.borderColor = '#955FB5')}
+                                onMouseLeave={e => (e.currentTarget.style.borderColor = '#E8E8ED')}>
+                                <p style={{ fontSize: '15px', fontWeight: 500, color: '#1D1D1F' }}>
+                                    {p.n} {p.n === 1 ? L('informe', 'report', 'relatório') : L('informes', 'reports', 'relatórios')}
+                                </p>
+                                <p style={{ fontSize: '13px', fontWeight: 600, color: '#955FB5', marginTop: '4px' }}>{p.price}</p>
+                                {p.each && <p style={{ fontSize: '10px', color: '#AEAEB2', marginTop: '2px' }}>{p.each} {L('por informe', 'per report', 'por relatório')}</p>}
+                            </a>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ─── Landing ─────────────────────────────────────────────────────────────────
 
 export const Landing: React.FC = () => {
@@ -703,36 +934,33 @@ export const Landing: React.FC = () => {
             <nav style={{ borderBottom: '1px solid #D2D2D7' }}
                  className="sticky top-0 z-50 bg-white/95 backdrop-blur-md">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
+                    <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                         </span>
                         <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
                             beta
                         </span>
-                    </span>
+                    </button>
                     <div className="flex items-center gap-3">
                         <button
-                            onClick={() => navigate('/blog')}
+                            onClick={() => document.getElementById('como-funciona')?.scrollIntoView({ behavior: 'smooth' })}
+                            style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
+                            className="text-argo-grey hover:text-argo-navy transition-colors hidden sm:block"
+                        >
+                            {L('Cómo funciona', 'How it works', 'Como funciona')}
+                        </button>
+                        <button
+                            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
                             style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
                             className="text-argo-grey hover:text-argo-navy transition-colors"
                         >
-                            Blog
+                            {L('Precios', 'Pricing', 'Preços')}
                         </button>
-                        {OTHER_LANGS[lang].map(l => (
-                            <button
-                                key={l}
-                                onClick={() => setLang(l)}
-                                style={{ fontWeight: 400, fontSize: '11px', letterSpacing: '0.06em' }}
-                                className="text-argo-grey hover:text-argo-navy transition-colors uppercase"
-                            >
-                                {l.toUpperCase()}
-                            </button>
-                        ))}
                         <button
                             onClick={() => navigate('/signup?login=1')}
                             style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em' }}
-                            className="text-argo-grey hover:text-argo-navy transition-colors"
+                            className="text-argo-grey hover:text-argo-navy transition-colors hidden sm:block"
                         >
                             {L('Iniciar sesión', 'Log in', 'Entrar')}
                         </button>
@@ -745,7 +973,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {L('Prueba gratis', 'Try free', 'Teste grátis')}
+                            {L('14 días gratis', '14 days free', '14 dias grátis')}
                         </button>
                     </div>
                 </div>
@@ -827,19 +1055,25 @@ export const Landing: React.FC = () => {
                         {L('Iniciar prueba gratuita', 'Start free trial', 'Iniciar avaliação gratuita')}
                         <ArrowRight size={15} />
                     </button>
-                    <span style={{ fontWeight: 400, fontSize: '12px', color: '#86868B' }}>
-                        {L(
-                            '10 minutos para comprender mejor a tu pequeño atleta',
-                            '12 minutes to better understand your young athlete',
-                            '10 minutos para compreender melhor seu pequeno atleta',
-                        )}
-                    </span>
+                    <button
+                        onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                        style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            fontWeight: 500, fontSize: '13px', letterSpacing: '-0.01em',
+                            color: '#86868B', background: 'none', border: 'none', cursor: 'pointer',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#1D1D1F')}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#86868B')}
+                    >
+                        {L('Ver planes', 'See plans', 'Ver planos')}
+                        <ArrowRight size={13} />
+                    </button>
                 </motion.div>
 
             </section>
 
             {/* ── LA HERRAMIENTA ── */}
-            <div style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
+            <div id="como-funciona" style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
                 {/* Violet strip — narrower than the card, creating the overflow effect */}
                 <div style={{
                     position: 'absolute', left: 0, right: 0,
@@ -1180,6 +1414,13 @@ export const Landing: React.FC = () => {
 
             <Divider />
 
+            {/* ── PRICING ── */}
+            <section id="pricing" className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
+                <PricingSection L={L} navigate={navigate} lang={lang} />
+            </section>
+
+            <Divider />
+
             {/* ── FAQs ── */}
             <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
                 <div className="max-w-2xl mx-auto">
@@ -1251,6 +1492,12 @@ export const Landing: React.FC = () => {
                            className="hover:text-argo-navy transition-colors" style={{ textDecoration: 'none' }}>
                             Yacaré Lab
                         </a>
+                        <button
+                            onClick={() => navigate('/blog')}
+                            className="hover:text-argo-navy transition-colors"
+                        >
+                            Blog
+                        </button>
                         <span>© 2026 Argo.</span>
                         {OTHER_LANGS[lang].map(l => (
                             <button

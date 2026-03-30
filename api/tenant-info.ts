@@ -62,11 +62,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const { data: tenant } = await sb
             .from('tenants')
-            .select('id, slug, display_name, plan, credits_remaining, institution_type, sport, country, city, logo_url, onboarding_completed, trial_expires_at')
+            .select('id, slug, display_name, plan, roster_limit, institution_type, sport, country, city, logo_url, onboarding_completed, trial_expires_at, ai_queries_count, ai_queries_reset_at')
             .eq('id', tenantId)
             .single();
 
-        return res.status(200).json({ tenant: tenant ?? null, memberProfile });
+        // Count active players for this tenant
+        let activePlayersCount = 0;
+        if (tenant) {
+            const { count } = await sb
+                .from('sessions')
+                .select('*', { count: 'exact', head: true })
+                .eq('tenant_id', tenantId)
+                .is('archived_at', null)
+                .is('deleted_at', null);
+            activePlayersCount = count ?? 0;
+        }
+
+        return res.status(200).json({
+            tenant: tenant ? { ...tenant, active_players_count: activePlayersCount } : null,
+            memberProfile,
+        });
     } catch (err) {
         console.error('[tenant-info] Unexpected error:', err);
         return res.status(500).json({ error: 'Internal server error' });
