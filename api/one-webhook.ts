@@ -27,26 +27,70 @@ async function sendConfirmationEmail(
         ? 'Tu informe Argo One está listo para usar'
         : `Tus ${packSize} informes Argo One están listos para usar`;
 
+    const packLabel = packSize === 1 ? '1 informe' : `${packSize} informes`;
+
     const html = `
-<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
 <tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+
+<tr><td style="background:#1D1D1F;padding:28px;">
     <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-    <span style="background:#955FB5;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;">ONE</span>
+    <span style="background:#955FB5;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">ONE</span>
+    <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">Compra confirmada</p>
 </td></tr>
+
 <tr><td style="padding:28px;">
-    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">Compra confirmada</h2>
-    <p style="font-size:14px;color:#86868B;margin:0 0 24px;">${packSize === 1 ? 'Tu informe está listo para usar.' : `Tus ${packSize} informes están listos para usar.`}</p>
-    <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">
-        Ir a mis informes
-    </a>
-    <p style="font-size:12px;color:#AEAEB2;margin:20px 0 0;">Este link es personal. Guárdalo para acceder a tus informes cuando quieras.</p>
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#16a34a;">Pago recibido: ${packLabel}</p>
+    </div>
+
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;margin:0 0 14px;">Tu siguiente paso</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td width="28" style="vertical-align:top;padding-bottom:14px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">1</div>
+        </td>
+        <td style="vertical-align:top;padding-left:10px;padding-bottom:14px;">
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Accede a tu panel</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">Desde tu panel puedes generar links para que los deportistas jueguen la experiencia.</p>
+        </td>
+    </tr>
+    <tr>
+        <td width="28" style="vertical-align:top;padding-bottom:14px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">2</div>
+        </td>
+        <td style="vertical-align:top;padding-left:10px;padding-bottom:14px;">
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Genera un link y compártelo</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">El adulto responsable completa un breve registro y le pasa el dispositivo al deportista.</p>
+        </td>
+    </tr>
+    <tr>
+        <td width="28" style="vertical-align:top;">
+            <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">3</div>
+        </td>
+        <td style="vertical-align:top;padding-left:10px;">
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Recibe el informe</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">El deportista juega una aventura de menos de 10 minutos. El informe completo llega al email del adulto responsable.</p>
+        </td>
+    </tr>
+    </table>
+
+    <div style="text-align:center;margin:28px 0 0;">
+        <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
+            Ir a mis informes
+        </a>
+    </div>
+
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">Este link es personal. Guárdalo para acceder a tus informes cuando quieras.</p>
 </td></tr>
-<tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method</p>
+
+<tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
 </td></tr>
+
 </table></td></tr></table>
 </body></html>`;
 
