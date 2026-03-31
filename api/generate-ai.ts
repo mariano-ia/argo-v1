@@ -205,8 +205,6 @@ async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens
     const body: Record<string, unknown> = {
         contents,
         generationConfig: { temperature, maxOutputTokens: maxTokens, responseMimeType: 'application/json' },
-        // Disable thinking for structured JSON output (saves tokens)
-        thinkingConfig: { thinkingBudget: 0 },
     };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
