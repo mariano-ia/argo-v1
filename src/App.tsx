@@ -23,6 +23,7 @@ import { Metrics }            from './pages/dashboard/Metrics';
 import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
 import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { AdminTenants }       from './pages/dashboard/AdminTenants';
+import { AdminAIUsage }       from './pages/dashboard/AdminAIUsage';
 import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
 import { FeedbackForm }       from './pages/FeedbackForm';
 import { ReportPage }         from './pages/ReportPage';
@@ -187,6 +188,7 @@ function App() {
                 <Route path="sessions"  element={<Sessions />} />
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="tenants"   element={<AdminTenants />} />
+                <Route path="ai-usage"  element={<AdminAIUsage />} />
                 <Route path="feedback"  element={<AdminFeedback />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
                 <Route path="users"     element={<AdminUsers />} />

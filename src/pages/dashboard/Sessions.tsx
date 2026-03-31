@@ -16,6 +16,8 @@ interface UnifiedRow {
     created_at: string;
     email: string;
     status: RowStatus;
+    tenant_id?: string | null;
+    tenant_name?: string;
     // completed-only fields
     adult_name?: string;
     child_name?: string;
@@ -44,6 +46,7 @@ interface SessionRow {
     lang: string | null;
     archetype_label: string;
     ai_cost_usd: number;
+    tenant_id: string | null;
 }
 
 interface LeadRow {
@@ -61,6 +64,7 @@ function mergeRows(sessions: SessionRow[], leads: LeadRow[]): UnifiedRow[] {
         created_at: s.created_at,
         email: s.adult_email,
         status: 'completed',
+        tenant_id: s.tenant_id,
         adult_name: s.adult_name,
         child_name: s.child_name,
         child_age: s.child_age,
@@ -98,13 +102,17 @@ export const Sessions: React.FC = () => {
     const [resendMsg, setResendMsg] = useState<{ ok: boolean } | null>(null);
     const PAGE_SIZE = 20;
 
+    const [tenantMap, setTenantMap] = useState<Record<string, string>>({});
+    const [tenantFilter, setTenantFilter] = useState<string>('');
+    const [tenantList, setTenantList] = useState<{ id: string; name: string }[]>([]);
+
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            const [{ data: sessions }, { data: leads }] = await Promise.all([
+            const [{ data: sessions }, { data: leads }, { data: tenants }] = await Promise.all([
                 supabase
                     .from('sessions')
-                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd')
+                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id')
                     .is('deleted_at', null)
                     .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false }),
@@ -112,17 +120,39 @@ export const Sessions: React.FC = () => {
                     .from('leads')
                     .select('email,last_seen')
                     .order('last_seen', { ascending: false }),
+                supabase
+                    .from('tenants')
+                    .select('id,display_name')
+                    .order('display_name'),
             ]);
+
+            // Build tenant name lookup
+            const tMap: Record<string, string> = {};
+            const tList: { id: string; name: string }[] = [];
+            for (const t of tenants ?? []) {
+                tMap[t.id] = t.display_name;
+                tList.push({ id: t.id, name: t.display_name });
+            }
+            setTenantMap(tMap);
+            setTenantList(tList);
+
             setRows(mergeRows(sessions ?? [], leads ?? []));
             setLoading(false);
         };
         load();
     }, []);
 
-    const filtered = rows.filter(r =>
-        [r.email, r.adult_name, r.child_name, r.archetype_label]
-            .some(v => v?.toLowerCase().includes(search.toLowerCase()))
-    );
+    const filtered = rows.filter(r => {
+        if (tenantFilter) {
+            if (tenantFilter === '_none' && r.tenant_id) return false;
+            if (tenantFilter !== '_none' && r.tenant_id !== tenantFilter) return false;
+        }
+        if (search) {
+            return [r.email, r.adult_name, r.child_name, r.archetype_label, r.tenant_id ? tenantMap[r.tenant_id] : '']
+                .some(v => v?.toLowerCase().includes(search.toLowerCase()));
+        }
+        return true;
+    });
 
     const paginated = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
     const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
@@ -252,6 +282,15 @@ export const Sessions: React.FC = () => {
                             className="pl-9 pr-4 py-2 text-sm border border-argo-border rounded-lg focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 w-56"
                         />
                     </div>
+                    <select
+                        value={tenantFilter}
+                        onChange={e => { setTenantFilter(e.target.value); setPage(0); }}
+                        className="px-3 py-2 text-sm border border-argo-border rounded-lg bg-white focus:outline-none"
+                    >
+                        <option value="">Todas las cuentas</option>
+                        <option value="_none">Sin tenant (Argo One)</option>
+                        {tenantList.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                    </select>
                     <button
                         onClick={exportCSV}
                         disabled={filtered.length === 0}
@@ -274,6 +313,7 @@ export const Sessions: React.FC = () => {
                                 <thead>
                                     <tr className="bg-argo-neutral border-b border-argo-border text-[10px] uppercase tracking-widest text-argo-grey">
                                         <th className="text-left px-5 py-3 font-semibold">Fecha</th>
+                                        <th className="text-left px-5 py-3 font-semibold">Cuenta</th>
                                         <th className="text-left px-5 py-3 font-semibold">Email</th>
                                         <th className="text-left px-5 py-3 font-semibold">Estado</th>
                                         <th className="text-left px-5 py-3 font-semibold">Adulto</th>
@@ -290,7 +330,7 @@ export const Sessions: React.FC = () => {
                                 <tbody>
                                     {paginated.length === 0 ? (
                                         <tr>
-                                            <td colSpan={12} className="text-center py-12 text-argo-grey/50 text-sm">
+                                            <td colSpan={13} className="text-center py-12 text-argo-grey/50 text-sm">
                                                 {search ? 'Sin resultados para esa búsqueda.' : 'Todavía no hay sesiones registradas.'}
                                             </td>
                                         </tr>
@@ -302,6 +342,13 @@ export const Sessions: React.FC = () => {
                                             }`}
                                         >
                                             <td className="px-5 py-3 text-argo-grey whitespace-nowrap">{fmt(row.created_at)}</td>
+                                            <td className="px-5 py-3">
+                                                {row.tenant_id ? (
+                                                    <span className="text-xs font-medium text-gray-700 truncate max-w-[120px] block">{tenantMap[row.tenant_id] ?? '—'}</span>
+                                                ) : (
+                                                    <span className="text-[10px] text-gray-400">Argo One</span>
+                                                )}
+                                            </td>
                                             <td className="px-5 py-3 text-argo-grey">{row.email}</td>
                                             <td className="px-5 py-3">
                                                 {row.status === 'completed' ? (
