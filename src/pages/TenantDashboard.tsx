@@ -274,37 +274,53 @@ export const TenantDashboard: React.FC = () => {
                     </>
                 )}
 
-                {/* Trial banner */}
-                {tenant?.plan === 'trial' && !isCollapsed && (
+                {/* Plan banner */}
+                {tenant && !isCollapsed && (
                     <div className="mx-3 mb-3">
-                        <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-[10px] px-3 py-2.5 space-y-2">
-                            <div className="flex items-center justify-between">
-                                <p className="text-[11px] font-semibold text-argo-violet-500">
-                                    {lang === 'en' ? 'Trial plan' : lang === 'pt' ? 'Plano de teste' : 'Plan de prueba'}
+                        {tenant.plan === 'trial' ? (
+                            <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-[10px] px-3 py-2.5 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-[11px] font-semibold text-argo-violet-500">
+                                        {lang === 'en' ? 'Trial plan' : lang === 'pt' ? 'Plano de teste' : 'Plan de prueba'}
+                                    </p>
+                                    <span className="text-[10px] font-bold text-argo-violet-400 bg-argo-violet-100 px-1.5 py-0.5 rounded-md">
+                                        {tenant.active_players_count}/{tenant.roster_limit} {lang === 'en' ? 'players' : lang === 'pt' ? 'jogadores' : 'jugadores'}
+                                    </span>
+                                </div>
+                                {daysLeft !== null && (
+                                    <p className={`text-[10px] font-medium ${daysLeft <= 3 ? 'text-amber-600' : 'text-argo-violet-400'}`}>
+                                        {daysLeft === 0
+                                            ? (lang === 'en' ? 'Expires today' : lang === 'pt' ? 'Expira hoje' : 'Expira hoy')
+                                            : daysLeft === 1
+                                                ? (lang === 'en' ? '1 day left' : lang === 'pt' ? '1 dia restante' : '1 día restante')
+                                                : (lang === 'en' ? `${daysLeft} days left` : lang === 'pt' ? `${daysLeft} dias restantes` : `${daysLeft} días restantes`)}
+                                    </p>
+                                )}
+                                <p className="text-[10px] text-argo-violet-400 leading-snug">
+                                    {lang === 'en' ? 'Unlock all features with a paid plan.' : lang === 'pt' ? 'Desbloqueie tudo com um plano pago.' : 'Accede a todo con un plan pago.'}
                                 </p>
-                                <span className="text-[10px] font-bold text-argo-violet-400 bg-argo-violet-100 px-1.5 py-0.5 rounded-md">
-                                    {tenant.active_players_count}/{tenant.roster_limit} {lang === 'en' ? 'players' : lang === 'pt' ? 'jogadores' : 'jugadores'}
-                                </span>
+                                <button
+                                    onClick={() => navigate('/dashboard/pricing')}
+                                    className="w-full text-center text-[11px] font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 transition-colors rounded-lg py-1.5"
+                                >
+                                    {lang === 'en' ? 'See plans' : lang === 'pt' ? 'Ver planos' : 'Ver planes'}
+                                </button>
                             </div>
-                            {daysLeft !== null && (
-                                <p className={`text-[10px] font-medium ${daysLeft <= 3 ? 'text-amber-600' : 'text-argo-violet-400'}`}>
-                                    {daysLeft === 0
-                                        ? (lang === 'en' ? 'Expires today' : lang === 'pt' ? 'Expira hoje' : 'Expira hoy')
-                                        : daysLeft === 1
-                                            ? (lang === 'en' ? '1 day left' : lang === 'pt' ? '1 dia restante' : '1 día restante')
-                                            : (lang === 'en' ? `${daysLeft} days left` : lang === 'pt' ? `${daysLeft} dias restantes` : `${daysLeft} días restantes`)}
+                        ) : (
+                            <div className="bg-green-50 border border-green-200 rounded-[10px] px-3 py-2.5">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-[11px] font-bold text-green-700 uppercase tracking-wide">
+                                        {tenant.plan === 'pro' ? 'PRO' : tenant.plan === 'academy' ? 'Academy' : 'Enterprise'}
+                                    </p>
+                                    <span className="text-[10px] font-bold text-green-600 bg-green-100 px-1.5 py-0.5 rounded-md">
+                                        {tenant.active_players_count}/{tenant.roster_limit}
+                                    </span>
+                                </div>
+                                <p className="text-[10px] text-green-600 mt-1">
+                                    {lang === 'en' ? 'All features unlocked' : lang === 'pt' ? 'Todas as funções desbloqueadas' : 'Todas las funcionalidades activas'}
                                 </p>
-                            )}
-                            <p className="text-[10px] text-argo-violet-400 leading-snug">
-                                {lang === 'en' ? 'Unlock all features with a paid plan.' : lang === 'pt' ? 'Desbloqueie tudo com um plano pago.' : 'Accede a todo con un plan pago.'}
-                            </p>
-                            <button
-                                onClick={() => navigate('/dashboard/pricing')}
-                                className="w-full text-center text-[11px] font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 transition-colors rounded-lg py-1.5"
-                            >
-                                {lang === 'en' ? 'See plans' : lang === 'pt' ? 'Ver planos' : 'Ver planes'}
-                            </button>
-                        </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

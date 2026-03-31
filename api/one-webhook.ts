@@ -273,6 +273,90 @@ async function handleSubscription(
         return res.status(500).json({ error: 'Failed to update tenant' });
     }
 
+    // Send upgrade confirmation email
+    const email = session.customer_email;
+    if (email) {
+        await sendUpgradeEmail(email, plan, config.roster_limit);
+    }
+
     console.info(`[one-webhook] Subscription: Tenant ${tenantId} upgraded to ${plan} (roster: ${config.roster_limit})`);
     return res.status(200).json({ received: true, tenant_id: tenantId, plan });
+}
+
+// ── Upgrade email ───────────────────────────────────────────────────────────
+
+async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
+    const planLabel = plan === 'pro' ? 'PRO' : 'Academy';
+    const features = [
+        { label: 'Consultas IA ilimitadas', desc: 'Pregunta lo que necesites sobre tus jugadores sin restricción.' },
+        { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
+        { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después del entrenamiento.' },
+        { label: `Hasta ${rosterLimit} jugadores activos`, desc: 'Perfila y re-perfila cada 6 meses. Sin créditos, sin límites de uso.' },
+        { label: 'Formaciones ilimitadas con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
+        { label: 'Guía situacional personalizada', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },
+    ];
+
+    const featureRows = features.map(f => `
+        <tr>
+            <td width="28" style="vertical-align:top;padding-bottom:12px;">
+                <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
+            </td>
+            <td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
+                <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">${f.label}</p>
+                <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">${f.desc}</p>
+            </td>
+        </tr>`).join('');
+
+    const html = `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+
+<tr><td style="background:#1D1D1F;padding:28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+    <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;">Tu plan está activo.</p>
+</td></tr>
+
+<tr><td style="padding:28px;">
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+        <p style="margin:0;font-size:14px;font-weight:700;color:#16a34a;">Plan ${planLabel} activo</p>
+        <p style="margin:4px 0 0;font-size:12px;color:#86868B;">Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas.</p>
+    </div>
+
+    <p style="margin:0 0 16px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">Qué se desbloqueó con tu plan</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+        ${featureRows}
+    </table>
+
+    <div style="text-align:center;margin:24px 0 0;">
+        <p style="margin:0 0 16px;font-size:13px;color:#86868B;">Tu dashboard ya refleja las funcionalidades desbloqueadas.</p>
+        <a href="${origin}/dashboard" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
+            Ir al dashboard
+        </a>
+    </div>
+</td></tr>
+
+<tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
+</td></tr>
+
+</table></td></tr></table>
+</body></html>`;
+
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [email],
+            subject: `Tu plan ${planLabel} en Argo Method está activo`,
+            html,
+        }),
+    });
 }
