@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
 
 /**
  * POST /api/one-webhook
@@ -91,8 +92,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 // ── Stripe handler ──────────────────────────────────────────────────────────
 
 async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
-    // In production, verify the webhook signature with STRIPE_WEBHOOK_SECRET
-    // For now, we trust the payload structure
+    // Verify Stripe webhook signature
+    const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const sig = req.headers['stripe-signature'] as string;
+
+    if (whSecret && sig) {
+        const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+        const parts = Object.fromEntries(sig.split(',').map(p => { const [k, v] = p.split('='); return [k, v]; }));
+        const signedPayload = `${parts.t}.${rawBody}`;
+        const expected = createHmac('sha256', whSecret).update(signedPayload).digest('hex');
+        if (expected !== parts.v1) {
+            console.error('[one-webhook] Invalid Stripe signature');
+            return res.status(400).json({ error: 'Invalid signature' });
+        }
+    }
+
     const event = req.body;
 
     if (event.type !== 'checkout.session.completed') {
