@@ -37,9 +37,9 @@ export const TermsPage: React.FC = () => (
                 <p><strong>Trial:</strong> periodo de prueba gratuito de 14 días con hasta 8 jugadores activos y funcionalidades limitadas. Al vencer el trial, el dashboard pasa a solo lectura. Los perfiles no se eliminan.</p>
             </Section>
 
-            <Section title="4. Modelo de roster">
-                <p>Los planes institucionales funcionan con un modelo de "roster" (capacidad de jugadores activos). Cada plan tiene un límite de jugadores activos simultáneos. Perfilar y re-perfilar jugadores está incluido en la suscripción.</p>
-                <p>El re-perfilamiento de un jugador está disponible cada 6 meses desde su último perfilamiento. Los jugadores pueden ser archivados para liberar lugar en el roster, sin perder sus datos.</p>
+            <Section title="4. Equipo y jugadores activos">
+                <p>Los planes institucionales funcionan con un modelo de capacidad de jugadores activos. Cada plan tiene un límite de jugadores activos simultáneos. Perfilar y re-perfilar jugadores está incluido en la suscripción.</p>
+                <p>El re-perfilamiento de un jugador está disponible cada 6 meses desde su último perfilamiento. Los jugadores pueden ser archivados para liberar lugar en el equipo, sin perder sus datos.</p>
             </Section>
 
             <Section title="5. Consultor IA y política de uso justo">

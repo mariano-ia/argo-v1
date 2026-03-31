@@ -50,7 +50,7 @@ export const PrivacyPage: React.FC = () => (
             </Section>
 
             <Section title="6. Retención de datos">
-                <p>Los perfiles de deportistas se conservan mientras el tenant mantenga una suscripción activa o mientras el adulto responsable no solicite su eliminación. Los perfiles archivados se conservan pero no ocupan lugar en el roster activo.</p>
+                <p>Los perfiles de deportistas se conservan mientras el tenant mantenga una suscripción activa o mientras el adulto responsable no solicite su eliminación. Los perfiles archivados se conservan pero no ocupan lugar en el equipo activo.</p>
                 <p>Los datos de Argo One (compra puntual) se conservan indefinidamente asociados al email del adulto responsable, salvo solicitud de eliminación.</p>
             </Section>
 

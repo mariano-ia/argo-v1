@@ -185,7 +185,7 @@ ${jsonSchema}`;
 
 // ─── Handler ─────────────────────────────────────────────────────────────────
 
-import { callAI, getCostUsd, getProvider } from './_ai-provider';
+import { callAI, getCostUsd, getProvider } from './lib/ai-provider';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {

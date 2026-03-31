@@ -271,7 +271,7 @@ export const TenantSettings: React.FC = () => {
                             <p className="text-sm text-argo-navy font-medium capitalize">{tenant.plan}</p>
                         </div>
                         <div>
-                            <p className="text-[11px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-0.5">{lang === 'en' ? 'Roster' : lang === 'pt' ? 'Elenco' : 'Roster'}</p>
+                            <p className="text-[11px] font-semibold text-argo-light uppercase tracking-[0.08em] mb-0.5">{lang === 'en' ? 'Team' : lang === 'pt' ? 'Equipe' : 'Equipo'}</p>
                             <p className="text-sm text-argo-navy font-medium">{tenant.active_players_count} / {tenant.roster_limit} {lang === 'en' ? 'players' : lang === 'pt' ? 'jogadores' : 'jugadores'}</p>
                         </div>
                     </div>

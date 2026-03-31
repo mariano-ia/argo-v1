@@ -50,10 +50,10 @@ export const TenantLink: React.FC = () => {
     };
 
     const linkIntroBody = lang === 'en'
-        ? 'Share this link with the responsible adult (parent or guardian). Each athlete who plays takes a spot on your roster.'
+        ? 'Share this link with the responsible adult (parent or guardian). Each athlete who plays takes a spot on your team.'
         : lang === 'pt'
-            ? 'Compartilhe este link com o adulto responsável (pai, mãe ou responsável). Cada atleta que joga ocupa um lugar no seu elenco.'
-            : 'Comparte este link con el adulto responsable (padre, madre o tutor). Cada deportista que juega ocupa un lugar en tu roster.';
+            ? 'Compartilhe este link com o adulto responsável (pai, mãe ou responsável). Cada atleta que joga ocupa um lugar na sua equipe.'
+            : 'Comparte este link con el adulto responsable (padre, madre o tutor). Cada deportista que juega ocupa un lugar en tu equipo.';
 
     return (
         <div>

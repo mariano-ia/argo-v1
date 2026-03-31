@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { callAI, getCostUsd } from './_ai-provider';
+import { callAI, getCostUsd } from './lib/ai-provider';
 
 /**
  * Chat DISC endpoint.
