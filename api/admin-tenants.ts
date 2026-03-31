@@ -13,13 +13,17 @@ import { createClient } from '@supabase/supabase-js';
  *   - "extend-trial"   { tenant_id, days }
  */
 
-async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient>): Promise<boolean> {
+async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient>): Promise<string | null> {
     const authHeader = req.headers.authorization;
-    if (!authHeader?.startsWith('Bearer ')) return false;
+    if (!authHeader?.startsWith('Bearer ')) return null;
     const { data: { user }, error } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
-    if (error || !user) return false;
+    if (error || !user) return null;
     const { data: admin } = await sb.from('admin_users').select('id').eq('email', user.email).maybeSingle();
-    return !!admin;
+    return admin ? (user.email ?? null) : null;
+}
+
+async function auditLog(sb: ReturnType<typeof createClient>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
+    await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }).catch(() => {});
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -31,7 +35,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sb = createClient(supabaseUrl, serviceKey);
 
-    if (!(await verifyAdmin(req, sb))) return res.status(403).json({ error: 'Admin access required' });
+    const adminEmail = await verifyAdmin(req, sb);
+    if (!adminEmail) return res.status(403).json({ error: 'Admin access required' });
 
     try {
         // ── GET: List all tenants with stats ────────────────────────────
@@ -110,6 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }).eq('id', tenant_id);
 
             if (error) return res.status(500).json({ error: error.message });
+            await auditLog(sb, adminEmail, 'change-plan', 'tenant', tenant_id, { plan, roster_limit: roster_limit || defaultRoster[plan] });
             return res.status(200).json({ ok: true, action: 'plan_changed' });
         }
 
@@ -135,6 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }).select('id, slug').single();
 
             if (insertErr) return res.status(500).json({ error: insertErr.message });
+            await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, roster_limit: roster_limit || 500 });
             return res.status(200).json({ ok: true, tenant, action: 'enterprise_created' });
         }
 
@@ -146,6 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
             }).eq('id', tenant_id);
             if (error) return res.status(500).json({ error: error.message });
+            await auditLog(sb, adminEmail, 'reset-trial', 'tenant', tenant_id, {});
             return res.status(200).json({ ok: true, action: 'trial_reset' });
         }
 
@@ -157,6 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const newExpiry = new Date(Math.max(baseDate.getTime(), Date.now()) + extDays * 86400000);
             const { error } = await sb.from('tenants').update({ trial_expires_at: newExpiry.toISOString() }).eq('id', tenant_id);
             if (error) return res.status(500).json({ error: error.message });
+            await auditLog(sb, adminEmail, 'extend-trial', 'tenant', tenant_id, { days: extDays, expires_at: newExpiry.toISOString() });
             return res.status(200).json({ ok: true, action: 'trial_extended', expires_at: newExpiry.toISOString() });
         }
 

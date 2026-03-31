@@ -24,6 +24,9 @@ import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
 import { AdminUsers }         from './pages/dashboard/AdminUsers';
 import { AdminTenants }       from './pages/dashboard/AdminTenants';
 import { AdminAIUsage }       from './pages/dashboard/AdminAIUsage';
+import { AdminRevenue }       from './pages/dashboard/AdminRevenue';
+import { AdminArgoOne }       from './pages/dashboard/AdminArgoOne';
+import { AdminAuditLog }      from './pages/dashboard/AdminAuditLog';
 import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
 import { FeedbackForm }       from './pages/FeedbackForm';
 import { ReportPage }         from './pages/ReportPage';
@@ -189,6 +192,9 @@ function App() {
                 <Route path="metrics"   element={<Metrics />} />
                 <Route path="tenants"   element={<AdminTenants />} />
                 <Route path="ai-usage"  element={<AdminAIUsage />} />
+                <Route path="revenue"   element={<AdminRevenue />} />
+                <Route path="argo-one"  element={<AdminArgoOne />} />
+                <Route path="audit"     element={<AdminAuditLog />} />
                 <Route path="feedback"  element={<AdminFeedback />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
                 <Route path="users"     element={<AdminUsers />} />
