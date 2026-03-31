@@ -676,6 +676,33 @@ const PricingSection: React.FC<{
     lang: string;
 }> = ({ L, navigate }) => {
     const [annual, setAnnual] = useState(true);
+    const [onePack, setOnePack] = useState<number | null>(null);
+    const [oneEmail, setOneEmail] = useState('');
+    const [oneLoading, setOneLoading] = useState(false);
+    const [oneError, setOneError] = useState('');
+
+    const handleOneBuy = async () => {
+        if (!onePack || !oneEmail) return;
+        setOneLoading(true);
+        setOneError('');
+        try {
+            const res = await fetch('/api/one-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: oneEmail, pack_size: onePack }),
+            });
+            const data = await res.json();
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+            } else {
+                setOneError(L('Error al crear el checkout. Intenta de nuevo.', 'Checkout error. Try again.', 'Erro ao criar o checkout. Tente novamente.'));
+                setOneLoading(false);
+            }
+        } catch {
+            setOneError(L('Error de conexión. Intenta de nuevo.', 'Connection error. Try again.', 'Erro de conexão. Tente novamente.'));
+            setOneLoading(false);
+        }
+    };
 
     const included = L('incluido', 'included', 'incluído');
     const unlimited = L('ilimitado', 'unlimited', 'ilimitado');
@@ -851,39 +878,79 @@ const PricingSection: React.FC<{
                 </div>
             </div>
 
-            {/* Argo One — compact */}
+            {/* Argo One — compact with buy flow */}
             <div style={{ borderTop: '1px solid #E8E8ED', paddingTop: '32px' }}>
                 <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '12px' }}>
                     {L('Padres y familias', 'Parents & families', 'Pais e famílias')}
                 </p>
-                <div style={{ background: '#fff', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }} className="flex flex-col sm:flex-row sm:items-center gap-6">
-                    <div className="flex-1">
-                        <p style={{ fontSize: '15px', fontWeight: 600, color: '#1D1D1F', marginBottom: '4px' }}>Argo One</p>
-                        <p style={{ fontSize: '13px', color: '#86868B', lineHeight: 1.6 }}>
-                            {L(
-                                'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
-                                'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
-                                'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
-                            )}
-                        </p>
+                <div style={{ background: '#fff', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-5">
+                        <div className="flex-1">
+                            <p style={{ fontSize: '15px', fontWeight: 600, color: '#1D1D1F', marginBottom: '4px' }}>Argo One</p>
+                            <p style={{ fontSize: '13px', color: '#86868B', lineHeight: 1.6 }}>
+                                {L(
+                                    'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
+                                    'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
+                                    'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
+                                )}
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex gap-3 flex-shrink-0">
+
+                    {/* Pack selector */}
+                    <div className="flex gap-3 mb-4">
                         {[
                             { n: 1, price: '$14.99', each: '' },
                             { n: 3, price: '$34.99', each: '$11.66' },
                             { n: 5, price: '$49.99', each: '$10.00' },
                         ].map(p => (
-                            <button key={p.n} onClick={() => navigate(`/pricing?pack=${p.n}`)} style={{ textAlign: 'center', padding: '14px 20px', borderRadius: '12px', border: '1px solid #E8E8ED', minWidth: '96px', display: 'block', background: '#fff', cursor: 'pointer', transition: 'border-color 0.2s' }}
-                                onMouseEnter={e => (e.currentTarget.style.borderColor = '#955FB5')}
-                                onMouseLeave={e => (e.currentTarget.style.borderColor = '#E8E8ED')}>
-                                <p style={{ fontSize: '15px', fontWeight: 500, color: '#1D1D1F' }}>
+                            <button
+                                key={p.n}
+                                onClick={() => setOnePack(p.n)}
+                                style={{
+                                    textAlign: 'center', padding: '12px 16px', borderRadius: '12px', minWidth: '96px', flex: 1,
+                                    border: onePack === p.n ? '2px solid #955FB5' : '1px solid #E8E8ED',
+                                    background: onePack === p.n ? 'rgba(149,95,181,0.04)' : '#fff',
+                                    cursor: 'pointer', transition: 'all 0.2s',
+                                }}
+                            >
+                                <p style={{ fontSize: '14px', fontWeight: 500, color: '#1D1D1F' }}>
                                     {p.n} {p.n === 1 ? L('informe', 'report', 'relatório') : L('informes', 'reports', 'relatórios')}
                                 </p>
-                                <p style={{ fontSize: '13px', fontWeight: 600, color: '#955FB5', marginTop: '4px' }}>{p.price}</p>
-                                {p.each && <p style={{ fontSize: '10px', color: '#AEAEB2', marginTop: '2px' }}>{p.each} {L('por informe', 'per report', 'por relatório')}</p>}
+                                <p style={{ fontSize: '14px', fontWeight: 700, color: '#955FB5', marginTop: '2px' }}>{p.price}</p>
+                                {p.each && <p style={{ fontSize: '10px', color: '#AEAEB2', marginTop: '1px' }}>{p.each} {L('por informe', 'per report', 'por relatório')}</p>}
                             </button>
                         ))}
                     </div>
+
+                    {/* Email + buy */}
+                    {onePack && (
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                                type="email"
+                                placeholder={L('Tu email', 'Your email', 'Seu email')}
+                                value={oneEmail}
+                                onChange={e => setOneEmail(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleOneBuy()}
+                                style={{ flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #D2D2D7', fontSize: '14px', outline: 'none' }}
+                            />
+                            <button
+                                onClick={handleOneBuy}
+                                disabled={oneLoading || !oneEmail}
+                                style={{
+                                    padding: '12px 24px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 600,
+                                    background: oneEmail ? '#955FB5' : '#D2D2D7', color: '#fff', cursor: oneEmail ? 'pointer' : 'default',
+                                    opacity: oneLoading ? 0.6 : 1, transition: 'all 0.2s', whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {oneLoading
+                                    ? '...'
+                                    : L('Comprar', 'Buy', 'Comprar')
+                                }
+                            </button>
+                        </div>
+                    )}
+                    {oneError && <p style={{ fontSize: '12px', color: '#DC2626', marginTop: '8px' }}>{oneError}</p>}
                 </div>
             </div>
         </div>
