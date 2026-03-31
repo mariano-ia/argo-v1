@@ -28,6 +28,8 @@ import { ReportPage }         from './pages/ReportPage';
 import { TermsPage }          from './pages/TermsPage';
 import { PrivacyPage }        from './pages/PrivacyPage';
 import { PricingPage }        from './pages/PricingPage';
+import { OnePlay }            from './pages/OnePlay';
+import { OnePanel }           from './pages/OnePanel';
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -154,6 +156,8 @@ function App() {
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/report/:sessionId" element={<ReportPage />} />
             <Route path="/pricing"    element={<PricingPage />} />
+            <Route path="/one/:slug"  element={<OnePlay />} />
+            <Route path="/one/panel"  element={<OnePanel />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
             <Route path="/blog"       element={<BlogIndex />} />

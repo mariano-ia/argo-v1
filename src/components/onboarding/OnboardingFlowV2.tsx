@@ -120,9 +120,10 @@ interface OnboardingV2Props {
     userEmail?: string;
     onPlayComplete?: () => void;
     tenantId?: string;
+    oneLinkId?: string;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId: _oneLinkId }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 

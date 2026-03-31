@@ -873,7 +873,7 @@ const PricingSection: React.FC<{
                             { n: 3, price: '$34.99', each: '$11.66' },
                             { n: 5, price: '$49.99', each: '$10.00' },
                         ].map(p => (
-                            <a key={p.n} href={`mailto:hola@argomethod.com?subject=Argo One - ${p.n} ${p.n === 1 ? 'informe' : 'informes'}`} style={{ textAlign: 'center', padding: '14px 20px', borderRadius: '12px', border: '1px solid #E8E8ED', minWidth: '96px', display: 'block', textDecoration: 'none', transition: 'border-color 0.2s' }}
+                            <button key={p.n} onClick={() => navigate(`/pricing?pack=${p.n}`)} style={{ textAlign: 'center', padding: '14px 20px', borderRadius: '12px', border: '1px solid #E8E8ED', minWidth: '96px', display: 'block', background: '#fff', cursor: 'pointer', transition: 'border-color 0.2s' }}
                                 onMouseEnter={e => (e.currentTarget.style.borderColor = '#955FB5')}
                                 onMouseLeave={e => (e.currentTarget.style.borderColor = '#E8E8ED')}>
                                 <p style={{ fontSize: '15px', fontWeight: 500, color: '#1D1D1F' }}>
@@ -881,7 +881,7 @@ const PricingSection: React.FC<{
                                 </p>
                                 <p style={{ fontSize: '13px', fontWeight: 600, color: '#955FB5', marginTop: '4px' }}>{p.price}</p>
                                 {p.each && <p style={{ fontSize: '10px', color: '#AEAEB2', marginTop: '2px' }}>{p.each} {L('por informe', 'per report', 'por relatório')}</p>}
-                            </a>
+                            </button>
                         ))}
                     </div>
                 </div>
