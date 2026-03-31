@@ -129,12 +129,15 @@ export const OnePanel: React.FC = () => {
     const t = T[lang as keyof typeof T] ?? T.es;
 
     const [data, setData] = useState<PanelData | null>(null);
-    const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'not_paid'>('loading');
+    const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'not_paid' | 'confirming'>('loading');
     const [modal, setModal] = useState<string | null>(null); // link_id for modal
     const [modalEmail, setModalEmail] = useState('');
     const [modalName, setModalName] = useState('');
     const [sending, setSending] = useState(false);
     const [copied, setCopied] = useState<string | null>(null);
+    const pollRef = React.useRef<ReturnType<typeof setInterval>>();
+
+    const isSuccess = searchParams.get('success') === '1';
 
     const fetchData = useCallback(async () => {
         if (!token) { setStatus('not_found'); return; }
@@ -143,15 +146,46 @@ export const OnePanel: React.FC = () => {
             if (res.ok) {
                 setData(await res.json());
                 setStatus('ok');
+                // Stop polling if active
+                if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = undefined; }
             } else if (res.status === 403) {
-                setStatus('not_paid');
+                // If coming from successful checkout, poll for webhook
+                if (isSuccess && status !== 'ok') {
+                    setStatus('confirming');
+                } else {
+                    setStatus('not_paid');
+                }
             } else {
                 setStatus('not_found');
             }
         } catch { setStatus('not_found'); }
-    }, [token]);
+    }, [token, isSuccess, status]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
+
+    // Poll when confirming payment (waiting for webhook)
+    useEffect(() => {
+        if (status === 'confirming' && !pollRef.current) {
+            let attempts = 0;
+            pollRef.current = setInterval(async () => {
+                attempts++;
+                try {
+                    const res = await fetch(`/api/one-panel?token=${token}`);
+                    if (res.ok) {
+                        setData(await res.json());
+                        setStatus('ok');
+                        clearInterval(pollRef.current!);
+                        pollRef.current = undefined;
+                    } else if (attempts >= 15) { // 30 seconds max
+                        setStatus('not_paid');
+                        clearInterval(pollRef.current!);
+                        pollRef.current = undefined;
+                    }
+                } catch { /* keep polling */ }
+            }, 2000);
+        }
+        return () => { if (pollRef.current) clearInterval(pollRef.current); };
+    }, [status, token]);
 
     const handleGenerate = async () => {
         if (!modal || !modalEmail) return;
@@ -175,10 +209,30 @@ export const OnePanel: React.FC = () => {
         setTimeout(() => setCopied(null), 2000);
     };
 
-    if (status === 'loading') {
+    if (status === 'loading' || status === 'confirming') {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-argo-neutral">
-                <div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" />
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-argo-neutral">
+                <div className="flex items-center justify-center gap-1.5 mb-8">
+                    <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                    </span>
+                    <span style={{ background: '#955FB5', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>ONE</span>
+                </div>
+                <div className="w-6 h-6 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin mb-4" />
+                {status === 'confirming' && (
+                    <div className="text-center" style={{ maxWidth: '320px' }}>
+                        <p className="text-base font-semibold text-argo-navy mb-2">
+                            {lang === 'en' ? 'We received your payment' : lang === 'pt' ? 'Recebemos seu pagamento' : 'Recibimos tu pago'}
+                        </p>
+                        <p className="text-sm text-argo-grey leading-relaxed">
+                            {lang === 'en'
+                                ? 'We are confirming your purchase. When it\'s ready, we\'ll send you an email and this page will update automatically.'
+                                : lang === 'pt'
+                                    ? 'Estamos confirmando sua compra. Quando estiver pronto, enviaremos um email e esta página será atualizada automaticamente.'
+                                    : 'Estamos confirmando tu compra. Cuando esté listo, te enviaremos un email y esta página se actualizará automáticamente.'}
+                        </p>
+                    </div>
+                )}
             </div>
         );
     }
