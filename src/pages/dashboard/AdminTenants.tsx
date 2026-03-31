@@ -49,6 +49,7 @@ export const AdminTenants: React.FC = () => {
     // Create form
     const [newEmail, setNewEmail] = useState('');
     const [newName, setNewName] = useState('');
+    const [newOwnerName, setNewOwnerName] = useState('');
     const [newRoster, setNewRoster] = useState('500');
     const [creating, setCreating] = useState(false);
 
@@ -88,12 +89,13 @@ export const AdminTenants: React.FC = () => {
         await fetch('/api/admin-tenants', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'create-enterprise', email: newEmail, display_name: newName, roster_limit: parseInt(newRoster) || 500 }),
+            body: JSON.stringify({ action: 'create-enterprise', email: newEmail, display_name: newName, full_name: newOwnerName, roster_limit: parseInt(newRoster) || 500 }),
         });
         setCreating(false);
         setShowCreate(false);
         setNewEmail('');
         setNewName('');
+        setNewOwnerName('');
         setNewRoster('500');
         fetchTenants();
     };
@@ -273,17 +275,25 @@ export const AdminTenants: React.FC = () => {
                             <h3 className="text-base font-semibold text-gray-900">Crear cuenta Enterprise</h3>
                             <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
                         </div>
+                        <p className="text-xs text-gray-400 mb-4">El owner recibe un email de bienvenida personalizado con instrucciones para configurar su cuenta.</p>
                         <div className="space-y-3">
                             <input
                                 type="text"
-                                placeholder="Nombre de la institución"
+                                placeholder="Nombre de la institución (ej: Club Atlético Rosario)"
                                 value={newName}
                                 onChange={e => setNewName(e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
                             />
                             <input
+                                type="text"
+                                placeholder="Nombre del responsable (ej: Martín García)"
+                                value={newOwnerName}
+                                onChange={e => setNewOwnerName(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                            />
+                            <input
                                 type="email"
-                                placeholder="Email del owner"
+                                placeholder="Email del responsable"
                                 value={newEmail}
                                 onChange={e => setNewEmail(e.target.value)}
                                 className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-200"

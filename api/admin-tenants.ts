@@ -1,6 +1,79 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// ─── Enterprise welcome email ───────────────────────────────────────────────
+
+function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string, rosterLimit: number, origin: string): string {
+    return `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
+<tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+
+<tr><td style="background:#1D1D1F;padding:32px 28px 36px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+    <span style="background:#16a34a;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">ENTERPRISE</span>
+    <p style="margin:18px 0 0;font-size:26px;font-weight:300;color:#fff;letter-spacing:-0.03em;line-height:1.2;">
+        Bienvenido, <strong style="font-weight:700;">${ownerName}</strong>.
+    </p>
+    <p style="margin:8px 0 0;font-size:14px;color:#86868B;">
+        Tu plataforma de perfilamiento conductual para ${institutionName} está lista.
+    </p>
+</td></tr>
+
+<tr><td style="padding:28px;">
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:18px 20px;margin-bottom:24px;">
+        <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#16a34a;">Plan Enterprise activo</p>
+        <p style="margin:0;font-size:13px;color:#86868B;">Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas. Consultor IA con modelo premium.</p>
+    </div>
+
+    <p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">Tu plataforma incluye</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td width="28" style="vertical-align:top;padding-bottom:12px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
+    </td><td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Consultor IA premium</p>
+        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Modelo avanzado, consultas ilimitadas. Pregunta sobre cualquier jugador por nombre.</p>
+    </td></tr>
+    <tr><td width="28" style="vertical-align:top;padding-bottom:12px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
+    </td><td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Hasta ${rosterLimit} jugadores activos</p>
+        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Perfila y re-perfila cada 6 meses. Sin limites de uso.</p>
+    </td></tr>
+    <tr><td width="28" style="vertical-align:top;padding-bottom:12px;">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
+    </td><td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Dashboard completo + API</p>
+        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Grupos ilimitados, guia situacional, palabras puente, checklist, integraciones.</p>
+    </td></tr>
+    <tr><td width="28" style="vertical-align:top;">
+        <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
+    </td><td style="vertical-align:top;padding-left:8px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Soporte dedicado</p>
+        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Onboarding asistido y canal directo con nuestro equipo.</p>
+    </td></tr>
+    </table>
+
+    <div style="text-align:center;margin:28px 0 0;">
+        <p style="margin:0 0 16px;font-size:14px;color:#86868B;">Para acceder a tu plataforma, configura tu contraseña:</p>
+        <a href="${origin}/signup" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
+            Configurar mi cuenta
+        </a>
+    </div>
+
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">Si tienes preguntas, responde directamente a este email.</p>
+</td></tr>
+
+<tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jovenes</p>
+</td></tr>
+
+</table></td></tr></table>
+</body></html>`;
+}
+
 /**
  * Admin Tenants API.
  * GET  /api/admin-tenants                          → list all tenants with stats
@@ -122,26 +195,82 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (action === 'create-enterprise') {
             if (!email || !display_name) return res.status(400).json({ error: 'Missing email or display_name' });
 
+            const { full_name } = req.body ?? {};
+
             // Check if tenant already exists
             const { data: existing } = await sb.from('tenants').select('id').eq('email', email).maybeSingle();
             if (existing) return res.status(400).json({ error: 'Tenant with this email already exists' });
+
+            // Create Supabase Auth user with invite (sends magic link email)
+            const { data: authUser, error: authErr } = await sb.auth.admin.createUser({
+                email,
+                email_confirm: false,
+                user_metadata: { full_name: full_name || display_name },
+            });
+
+            if (authErr) {
+                console.error('[admin-tenants] Auth user creation error:', authErr.message);
+                // If user already exists in auth, continue with tenant creation
+                if (!authErr.message.includes('already been registered')) {
+                    return res.status(500).json({ error: `Failed to create auth user: ${authErr.message}` });
+                }
+            }
+
+            const authUserId = authUser?.user?.id;
 
             // Generate slug
             const base = display_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30);
             const suffix = Math.random().toString(36).slice(2, 10);
             const slug = `${base}-${suffix}`;
 
-            const { data: tenant, error: insertErr } = await sb.from('tenants').insert({
+            const tenantInsert: Record<string, unknown> = {
                 email,
                 display_name,
                 slug,
                 plan: 'enterprise',
                 roster_limit: roster_limit || 500,
                 onboarding_completed: false,
-            }).select('id, slug').single();
+            };
+            if (authUserId) tenantInsert.auth_user_id = authUserId;
+
+            const { data: tenant, error: insertErr } = await sb.from('tenants')
+                .insert(tenantInsert)
+                .select('id, slug')
+                .single();
 
             if (insertErr) return res.status(500).json({ error: insertErr.message });
-            await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, roster_limit: roster_limit || 500 });
+
+            // Create tenant_members row for owner
+            await sb.from('tenant_members').insert({
+                tenant_id: tenant!.id,
+                auth_user_id: authUserId || null,
+                email,
+                role: 'owner',
+                status: 'active',
+                full_name: full_name || null,
+            });
+
+            // Send welcome email
+            const origin = process.env.SITE_URL || 'https://argomethod.com';
+            const resendKey = process.env.RESEND_API_KEY;
+            if (resendKey) {
+                const ownerName = full_name || display_name;
+                await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: 'Argo Method <hola@argomethod.com>',
+                        to: [email],
+                        subject: `Bienvenido a Argo Method Enterprise, ${display_name}`,
+                        html: buildEnterpriseWelcomeEmail(ownerName, display_name, roster_limit || 500, origin),
+                    }),
+                });
+            }
+
+            // Send password setup email via Supabase Auth
+            await sb.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: `${origin}/signup` } }).catch(() => {});
+
+            await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, full_name, roster_limit: roster_limit || 500 });
             return res.status(200).json({ ok: true, tenant, action: 'enterprise_created' });
         }
 
