@@ -86,7 +86,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }).eq('id', link_id);
 
         // Send play link email to recipient
-        const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://argomethod.com';
+        const origin = process.env.SITE_URL || 'https://argomethod.com';
         const playUrl = `${origin}/one/${link.slug}`;
 
         const resendKey = process.env.RESEND_API_KEY;

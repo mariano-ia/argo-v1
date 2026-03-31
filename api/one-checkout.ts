@@ -28,7 +28,7 @@ async function createStripeCheckout(pack: typeof PACKS[1], email: string, purcha
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
 
-    const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173';
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -64,7 +64,7 @@ async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId
     const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!mpToken) throw new Error('Missing MERCADOPAGO_ACCESS_TOKEN');
 
-    const origin = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:5173';
+    const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
 
     const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
         method: 'POST',
