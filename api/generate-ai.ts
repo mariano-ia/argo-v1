@@ -241,7 +241,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const aiResponse = await callAI([
             { role: 'system', content: systemContent },
             { role: 'user', content: prompt },
-        ], { temperature: 0.7, maxTokens: 3000 });
+        ], { temperature: 0.7, maxTokens: 8192 });
 
         // Strip potential markdown code fences
         const cleaned = aiResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
@@ -262,8 +262,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
 
         return res.status(200).json({ sections, usage });
-    } catch (err) {
-        console.error('[generate-ai] Unexpected error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[generate-ai] Unexpected error:', msg);
+        return res.status(500).json({ error: 'Internal server error', detail: msg });
     }
 }
