@@ -21,7 +21,7 @@ async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTo
     const systemMsg = messages.find(m => m.role === 'system');
     const conversationMsgs = messages.filter(m => m.role !== 'system');
     const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens }, thinkingConfig: { thinkingBudget: 1024 } };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {

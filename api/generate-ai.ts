@@ -202,7 +202,12 @@ async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens
     const systemMsg = messages.find(m => m.role === 'system');
     const conversationMsgs = messages.filter(m => m.role !== 'system');
     const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    const body: Record<string, unknown> = {
+        contents,
+        generationConfig: { temperature, maxOutputTokens: maxTokens, responseMimeType: 'application/json' },
+        // Disable thinking for structured JSON output (saves tokens)
+        thinkingConfig: { thinkingBudget: 0 },
+    };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
