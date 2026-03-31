@@ -3,11 +3,12 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText,
+    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
     { to: '/admin/sessions',  label: 'Sesiones',  icon: Users },
+    { to: '/admin/tenants',   label: 'Tenants',   icon: Building2 },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
     { to: '/admin/feedback',  label: 'Feedback',  icon: MessageCircle },
     { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
