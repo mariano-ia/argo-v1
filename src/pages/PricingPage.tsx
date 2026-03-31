@@ -264,7 +264,7 @@ export const PricingPage: React.FC = () => {
                             <FeatureRow label={f.playersUnlimited} />
                             <FeatureRow label={f.reprofile} sub={f.included} />
                             <FeatureRow label={f.groups} />
-                            <FeatureRow label={f.ai} sub={f.unlimited} />
+                            <FeatureRow label={lang === 'en' ? 'Premium AI Consultant' : lang === 'pt' ? 'Consultor IA premium' : 'Consultor IA premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
                             <FeatureRow label={f.dashboardApi} />
                             <FeatureRow label={f.custom} />
                             <FeatureRow label={f.onboarding} />

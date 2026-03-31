@@ -302,10 +302,10 @@ export const TenantPricing: React.FC = () => {
                         </span>
                     </div>
                     <ul className="flex-1 mb-6">
+                        <FeatureRow label={lang === 'en' ? 'Premium AI Consultant' : lang === 'pt' ? 'Consultor IA premium' : 'Consultor IA premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
                         <FeatureRow label={f.playersUnlimited} />
                         <FeatureRow label={f.reprofile} sub={f.included} />
                         <FeatureRow label={f.groups} />
-                        <FeatureRow label={f.ai} sub={f.unlimited} />
                         <FeatureRow label={f.dashboardApi} />
                         <FeatureRow label={f.custom} />
                         <FeatureRow label={f.onboarding} />

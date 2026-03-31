@@ -183,9 +183,37 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, s
 ${jsonSchema}`;
 }
 
-// ─── Handler ─────────────────────────────────────────────────────────────────
+// ─── Inline AI provider (Vercel serverless can't import between api files) ──
 
-import { callAI, getCostUsd, getProvider } from './lib/ai-provider';
+interface AIMsg { role: 'system' | 'user' | 'assistant'; content: string; }
+interface AIResp { content: string; inputTokens: number; outputTokens: number; totalTokens: number; }
+
+function getCostUsd(r: AIResp): number {
+    return r.inputTokens * (0.15 / 1_000_000) + r.outputTokens * (0.60 / 1_000_000);
+}
+
+function getProvider(): string { return process.env.AI_PROVIDER?.toLowerCase() === 'openai' ? 'openai' : 'gemini'; }
+
+async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number } = {}): Promise<AIResp> {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
+    const temperature = opts.temperature ?? 0.7;
+    const maxTokens = opts.maxTokens ?? 3000;
+    const systemMsg = messages.find(m => m.role === 'system');
+    const conversationMsgs = messages.filter(m => m.role !== 'system');
+    const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!res.ok) { const err = await res.text(); throw new Error(`Gemini error ${res.status}: ${err}`); }
+    const data = await res.json();
+    const usage = data.usageMetadata ?? {};
+    return { content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '', inputTokens: usage.promptTokenCount ?? 0, outputTokens: usage.candidatesTokenCount ?? 0, totalTokens: usage.totalTokenCount ?? 0 };
+}
+
+// ─── Handler ─────────────────────────────────────────────────────────────────
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {

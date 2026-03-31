@@ -211,7 +211,6 @@ export const TenantHome: React.FC = () => {
     }
 
     const formatDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { day: '2-digit', month: 'short' });
-    const uniquePlayers = new Set(sessions.map(s => s.child_name)).size;
     const now = new Date();
     const thisMonthCount = sessions.filter(s => { const d = new Date(s.created_at); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); }).length;
 
@@ -243,8 +242,8 @@ export const TenantHome: React.FC = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
                 {[
                     { icon: Users, label: lang === 'en' ? 'Team' : lang === 'pt' ? 'Equipe' : 'Equipo', value: `${tenant.active_players_count}/${tenant.roster_limit}`, sub: `Plan ${tenant.plan}`, tip: lang === 'en' ? 'Active players in your team. Archive players to free up space.' : lang === 'pt' ? 'Jogadores ativos na sua equipe. Arquive jogadores para liberar espaço.' : 'Jugadores activos en tu equipo. Archiva jugadores para liberar lugar.' },
-                    { icon: Activity, label: lang === 'en' ? 'Sessions' : lang === 'pt' ? 'Sessoes' : 'Sesiones', value: sessionsLoading ? '...' : sessions.length, sub: thisMonthCount > 0 ? `+${thisMonthCount} ${lang === 'en' ? 'this month' : lang === 'pt' ? 'este mes' : 'este mes'}` : (lang === 'en' ? 'completed' : 'completadas'), tip: lang === 'en' ? 'Total completed experiences by your athletes' : lang === 'pt' ? 'Total de experiências completadas pelos seus atletas' : 'Total de experiencias completadas por tus deportistas' },
-                    { icon: Users, label: lang === 'en' ? 'Athletes' : lang === 'pt' ? 'Atletas' : 'Deportistas', value: sessionsLoading ? '...' : uniquePlayers, sub: lang === 'en' ? 'with profile' : lang === 'pt' ? 'com perfil' : 'con perfil', tip: lang === 'en' ? 'Unique athletes who completed a profile' : lang === 'pt' ? 'Atletas únicos que completaram um perfil' : 'Deportistas únicos que completaron un perfil' },
+                    { icon: Activity, label: lang === 'en' ? 'Total sessions' : lang === 'pt' ? 'Sessões totais' : 'Sesiones totales', value: sessionsLoading ? '...' : sessions.length, sub: lang === 'en' ? 'completed' : lang === 'pt' ? 'completadas' : 'completadas', tip: lang === 'en' ? 'Total completed experiences by your athletes' : lang === 'pt' ? 'Total de experiências completadas pelos seus atletas' : 'Total de experiencias completadas por tus deportistas' },
+                    { icon: Activity, label: lang === 'en' ? 'This month' : lang === 'pt' ? 'Este mês' : 'Este mes', value: sessionsLoading ? '...' : thisMonthCount, sub: lang === 'en' ? 'new sessions' : lang === 'pt' ? 'novas sessões' : 'nuevas sesiones', tip: lang === 'en' ? 'Experiences completed this month' : lang === 'pt' ? 'Experiências completadas este mês' : 'Experiencias completadas este mes' },
                     { icon: Layers, label: lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos', value: groupCount ?? (sessionsLoading ? '...' : 0), sub: lang === 'en' ? 'created' : lang === 'pt' ? 'criados' : 'creados', tip: lang === 'en' ? 'Organize your athletes in groups to see team dynamics' : lang === 'pt' ? 'Organize seus atletas em grupos para ver a dinâmica de equipe' : 'Organiza tus deportistas en grupos para ver la dinámica de equipo' },
                 ].map((stat, i) => (
                     <motion.div

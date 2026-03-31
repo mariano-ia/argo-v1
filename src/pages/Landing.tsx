@@ -705,7 +705,6 @@ const PricingSection: React.FC<{
     };
 
     const included = L('incluido', 'included', 'incluído');
-    const unlimited = L('ilimitado', 'unlimited', 'ilimitado');
 
     return (
         <div>
@@ -860,7 +859,7 @@ const PricingSection: React.FC<{
                         {L('A partir de 150 jugadores', 'From 150 players', 'A partir de 150 jogadores')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={unlimited} />
+                        <PricingFeature label={L('Consultor IA premium', 'Premium AI Consultant', 'Consultor IA premium')} sub={L('modelo avanzado', 'advanced model', 'modelo avançado')} />
                         <PricingFeature label={L('Jugadores ilimitados', 'Unlimited players', 'Jogadores ilimitados')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />

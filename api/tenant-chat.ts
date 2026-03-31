@@ -1,6 +1,44 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { callAI, getCostUsd } from './lib/ai-provider';
+
+// ─── Inline AI provider (Vercel serverless can't import between api files) ──
+
+interface AIMessage { role: 'system' | 'user' | 'assistant'; content: string; }
+interface AIResponse { content: string; inputTokens: number; outputTokens: number; totalTokens: number; }
+
+function getCostUsd(r: AIResponse): number {
+    const rate = 0.15 / 1_000_000; // gemini-2.5-flash input ≈ output
+    return r.inputTokens * rate + r.outputTokens * (0.60 / 1_000_000);
+}
+
+async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTokens?: number; model?: string } = {}): Promise<AIResponse> {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
+    const temperature = opts.temperature ?? 0.7;
+    const maxTokens = opts.maxTokens ?? 3000;
+    const model = opts.model ?? 'gemini-2.5-flash';
+
+    const systemMsg = messages.find(m => m.role === 'system');
+    const conversationMsgs = messages.filter(m => m.role !== 'system');
+    const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
+    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    });
+    if (!res.ok) { const err = await res.text(); throw new Error(`Gemini error ${res.status}: ${err}`); }
+    const data = await res.json();
+    const usage = data.usageMetadata ?? {};
+    return {
+        content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '',
+        inputTokens: usage.promptTokenCount ?? 0,
+        outputTokens: usage.candidatesTokenCount ?? 0,
+        totalTokens: usage.totalTokenCount ?? 0,
+    };
+}
+
+// ─── End inline AI provider ─────────────────────────────────────────────────
 
 /**
  * Chat DISC endpoint.
@@ -328,8 +366,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'user' as const, content: trimmedMsg },
         ];
 
-        // ── Call AI provider ────────────────────────────────────────────
-        const aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 800 });
+        // ── Call AI provider (enterprise gets premium model) ─────────────
+        const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+        const aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 800, model: aiModel });
         let assistantContent = aiResult.content;
 
         // ── Post-processing: scan for prohibited words ────────────────────
