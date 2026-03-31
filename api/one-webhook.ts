@@ -146,9 +146,15 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     }
 
     const session = event.data?.object;
-    const purchaseId = session?.metadata?.purchase_id;
+    const source = session?.metadata?.source;
 
-    if (!purchaseId || session?.metadata?.source !== 'argo_one') {
+    // Route to subscription handler if applicable
+    if (source === 'argo_subscription') {
+        return handleSubscription(session, res, sb);
+    }
+
+    const purchaseId = session?.metadata?.purchase_id;
+    if (!purchaseId || source !== 'argo_one') {
         return res.status(200).json({ received: true, ignored: true });
     }
 
@@ -233,4 +239,40 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
 
     console.info(`[one-webhook] MP: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
     return res.status(200).json({ received: true, purchase_id: purchaseId });
+}
+
+// ── Subscription handler ────────────────────────────────────────────────────
+
+const PLAN_CONFIG: Record<string, { roster_limit: number }> = {
+    pro: { roster_limit: 50 },
+    academy: { roster_limit: 100 },
+};
+
+async function handleSubscription(
+    session: { id: string; metadata: Record<string, string>; subscription?: string; customer_email?: string },
+    res: VercelResponse,
+    sb: ReturnType<typeof createClient>,
+) {
+    const tenantId = session.metadata?.tenant_id;
+    const plan = session.metadata?.plan;
+
+    if (!tenantId || !plan || !PLAN_CONFIG[plan]) {
+        return res.status(200).json({ received: true, ignored: true, reason: 'missing metadata' });
+    }
+
+    const config = PLAN_CONFIG[plan];
+
+    // Update tenant plan + roster
+    const { error } = await sb.from('tenants').update({
+        plan,
+        roster_limit: config.roster_limit,
+    }).eq('id', tenantId);
+
+    if (error) {
+        console.error('[one-webhook] Subscription update error:', error.message);
+        return res.status(500).json({ error: 'Failed to update tenant' });
+    }
+
+    console.info(`[one-webhook] Subscription: Tenant ${tenantId} upgraded to ${plan} (roster: ${config.roster_limit})`);
+    return res.status(200).json({ received: true, tenant_id: tenantId, plan });
 }

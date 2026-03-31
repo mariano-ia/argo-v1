@@ -142,10 +142,29 @@ export const TenantPricing: React.FC = () => {
     const { lang } = useLang();
     const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
     const [annual, setAnnual] = useState(true);
+    const [upgrading, setUpgrading] = useState<string | null>(null);
     const t = T[lang as keyof typeof T] ?? T.es;
     const f = t.features;
 
     const currentPlan = tenant?.plan ?? 'trial';
+
+    const handleUpgrade = async (plan: 'pro' | 'academy') => {
+        setUpgrading(plan);
+        try {
+            const { data: { session } } = await (await import('../../lib/supabase')).supabase.auth.getSession();
+            if (!session) return;
+            const res = await fetch('/api/create-subscription', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan, billing: annual ? 'annual' : 'monthly' }),
+            });
+            const data = await res.json();
+            if (data.checkout_url) {
+                window.location.href = data.checkout_url;
+            }
+        } catch { /* silently fail */ }
+        setUpgrading(null);
+    };
 
     return (
         <motion.div
@@ -218,8 +237,12 @@ export const TenantPricing: React.FC = () => {
                     {currentPlan === 'pro' ? (
                         <div className="text-center text-[13px] font-semibold text-argo-violet-500 py-3">{t.currentPlan}</div>
                     ) : (
-                        <button className="w-full py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-navy hover:border-argo-violet-300 hover:text-argo-violet-500 transition-colors">
-                            {lang === 'en' ? 'Try PRO free' : lang === 'pt' ? 'Testar PRO grátis' : 'Probar PRO gratis'}
+                        <button
+                            onClick={() => handleUpgrade('pro')}
+                            disabled={upgrading === 'pro'}
+                            className="w-full py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-navy hover:border-argo-violet-300 hover:text-argo-violet-500 transition-colors disabled:opacity-50"
+                        >
+                            {upgrading === 'pro' ? '...' : (lang === 'en' ? 'Upgrade to PRO' : lang === 'pt' ? 'Assinar PRO' : 'Suscribirse a PRO')}
                         </button>
                     )}
                 </div>
@@ -260,8 +283,12 @@ export const TenantPricing: React.FC = () => {
                     {currentPlan === 'academy' ? (
                         <div className="text-center text-[13px] font-semibold text-argo-violet-500 py-3">{t.currentPlan}</div>
                     ) : (
-                        <button className="w-full py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors shadow-lg shadow-argo-violet-500/25">
-                            {lang === 'en' ? 'Try Academy free' : lang === 'pt' ? 'Testar Academy grátis' : 'Probar Academy gratis'}
+                        <button
+                            onClick={() => handleUpgrade('academy')}
+                            disabled={upgrading === 'academy'}
+                            className="w-full py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors shadow-lg shadow-argo-violet-500/25 disabled:opacity-50"
+                        >
+                            {upgrading === 'academy' ? '...' : (lang === 'en' ? 'Upgrade to Academy' : lang === 'pt' ? 'Assinar Academy' : 'Suscribirse a Academy')}
                         </button>
                     )}
                 </div>
@@ -284,9 +311,9 @@ export const TenantPricing: React.FC = () => {
                         <FeatureRow label={f.onboarding} />
                         <FeatureRow label={f.dedicated} />
                     </ul>
-                    <button className="w-full py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-navy hover:border-argo-violet-300 hover:text-argo-violet-500 transition-colors">
+                    <a href="mailto:hola@argomethod.com?subject=Argo Enterprise" className="block w-full py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-navy hover:border-argo-violet-300 hover:text-argo-violet-500 transition-colors text-center">
                         {t.contactSales}
-                    </button>
+                    </a>
                 </div>
             </div>
 
