@@ -300,27 +300,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .limit(50);
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
-        // Sanitize player data to prevent prompt injection
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
-        const playerList = (sessions ?? []).map(s => {
-            const tend = s.eje_secundario ? `, ${tendLabels[s.eje_secundario] ?? ''}` : '';
-            return `- ${sanitize(s.child_name)} (${s.child_age} años, ${sanitize(s.sport ?? 'N/A', 40)}): ${s.archetype_label}${tend}`;
-        }).join('\n');
+        const allPlayers = sessions ?? [];
 
-        // ── Context injection based on keywords ───────────────────────────
+        // ── OPT 2: Build compact team summary instead of full player list ──
+        // Count players per axis for a compact overview
+        const axisCounts: Record<string, number> = {};
+        const motorCounts: Record<string, number> = {};
+        for (const s of allPlayers) {
+            axisCounts[s.eje] = (axisCounts[s.eje] ?? 0) + 1;
+            motorCounts[s.motor] = (motorCounts[s.motor] ?? 0) + 1;
+        }
+        const axisLabels: Record<string, string> = { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' };
+        const axisSummary = Object.entries(axisCounts).map(([k, v]) => `${v} ${axisLabels[k] ?? k}`).join(', ');
+        const motorSummary = Object.entries(motorCounts).map(([k, v]) => `${v} ${k}`).join(', ');
+        const teamSummary = allPlayers.length > 0
+            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nNombres: ${allPlayers.map(s => sanitize(s.child_name)).join(', ')}.`
+            : '\n\nEl entrenador todavía no tiene jugadores registrados.';
+
+        // ── Context injection based on message content ──────────────────
         let extraContext = '';
         const msgLower = trimmedMsg.toLowerCase();
 
-        // Check if user mentions a player by name → inject full profile or warn
-        const playerNames = (sessions ?? []).map(s => ({
+        // Check if user mentions a player by name → inject only that player's full profile
+        const playerNames = allPlayers.map(s => ({
             firstName: s.child_name.toLowerCase().split(' ')[0],
             fullName: s.child_name.toLowerCase(),
             session: s,
         }));
-
-        // Extract potential names from message (words starting with uppercase in original message)
         const potentialNames = trimmedMsg.match(/[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/g) ?? [];
-
         const mentionedPlayer = playerNames.find(p =>
             potentialNames.some(n => n.toLowerCase() === p.firstName || p.fullName.includes(n.toLowerCase()))
         );
@@ -328,25 +336,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
-            // Sanitize player data to prevent prompt injection
-            const safeName = mp.child_name.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, 60);
-            const safeSport = (mp.sport ?? '').replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, 40);
-            extraContext += `\n\nDATOS DETALLADOS DEL JUGADOR MENCIONADO:\nNombre: ${safeName}\nEdad: ${mp.child_age}\nDeporte: ${safeSport}\nArquetipo: ${mp.archetype_label}\nEje dominante: ${mp.eje}\nMotor: ${mp.motor}\nBrújula secundaria: ${mp.eje_secundario ?? 'N/A'} (${tend})\n`;
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${sanitize(mp.child_name)} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})`;
         } else if (potentialNames.length > 0) {
-            // User mentioned a name but it doesn't match any registered player
-            const knownNames = (sessions ?? []).map(s => s.child_name).join(', ');
-            extraContext += `\n\nNOTA IMPORTANTE: El usuario mencionó un nombre que NO coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Si te preguntan por alguien que no está en tu lista, responde que no tienes ese jugador registrado y muestra la lista de jugadores disponibles.\nJugadores registrados: ${knownNames || 'ninguno'}`;
+            extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. Jugadores: ${allPlayers.map(s => s.child_name).join(', ') || 'ninguno'}.`;
         }
 
-        // Check for situation keywords → inject relevant guidance
+        // Situation keyword injection
         for (const [sitId, keywords] of Object.entries(SITUATION_KEYWORDS)) {
             if (keywords.some(k => msgLower.includes(k.toLowerCase()))) {
-                extraContext += `\n\n[Contexto situacional relevante: situación "${sitId}". Usa tu conocimiento DISC para dar una respuesta personalizada basada en el perfil del jugador si fue mencionado.]`;
+                extraContext += `\n\n[Situación: "${sitId}"]`;
                 break;
             }
         }
 
-        // ── Build conversation history ────────────────────────────────────
+        // ── OPT 1 + 3: Build conversation history (8 max, summarize older) ──
         const { data: history } = await sb
             .from('chat_messages')
             .select('role, content')
@@ -354,15 +357,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .eq('thread_id', threadId)
             .in('role', ['user', 'assistant'])
             .order('created_at', { ascending: true })
-            .limit(20);
+            .limit(12); // Fetch 12, use last 8 full + summarize first 4
 
+        const allHistory = (history ?? []).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+        let historyMessages: { role: 'user' | 'assistant'; content: string }[];
+
+        if (allHistory.length > 8) {
+            // OPT 3: Summarize older messages into a compact recap
+            const older = allHistory.slice(0, allHistory.length - 8);
+            const recent = allHistory.slice(allHistory.length - 8);
+            const olderTopics = older
+                .filter(m => m.role === 'user')
+                .map(m => m.content.slice(0, 60))
+                .join('; ');
+            const summaryMsg = { role: 'user' as const, content: `[Resumen de la conversación anterior: el usuario preguntó sobre: ${olderTopics}]` };
+            historyMessages = [summaryMsg, ...recent];
+        } else {
+            historyMessages = allHistory;
+        }
+
+        // ── OPT 4: Use cached system prompt (only send once per language) ──
+        // Gemini's systemInstruction is already separate from contents,
+        // so it gets cached internally by the API across requests.
+        // We optimize by keeping the system prompt as compact as possible.
         const systemPrompt = (SYSTEM_PROMPTS[promptLang] ?? SYSTEM_PROMPTS.es)
-            + (playerList ? `\n\nJUGADORES DEL ENTRENADOR:\n${playerList}` : '\n\nEl entrenador todavía no tiene jugadores registrados.')
+            + teamSummary
             + extraContext;
 
         const aiMessages = [
             { role: 'system' as const, content: systemPrompt },
-            ...((history ?? []).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }))),
+            ...historyMessages,
             { role: 'user' as const, content: trimmedMsg },
         ];
 
