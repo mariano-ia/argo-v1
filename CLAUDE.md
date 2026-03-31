@@ -5,8 +5,8 @@ Behavioral profiling tool for young athletes (8-16 years) based on the DISC mode
 A gamified "odyssey" with nautical theme generates a personalized report for the responsible adult (coach, parent, institution).
 
 ## Stack
-React + TypeScript + Vite + TailwindCSS + Framer Motion + OpenAI
-Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (PostgreSQL). Auth: Supabase Auth (email/password + Google OAuth).
+React + TypeScript + Vite + TailwindCSS + Framer Motion + Google Gemini AI
+Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (PostgreSQL). Auth: Supabase Auth (email/password + Google OAuth). Payments: Stripe.
 
 ## Language
 - All user-facing copy: **español latam neutro (NO voseo)**. Use "tú" conjugations.
@@ -46,31 +46,41 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 | **Player** | Child + accompanying adult. Arrives via tenant's link. Lightweight identification (no full account). |
 
 #### Tenant flow
-1. Registers / logs in (Google or email)
-2. Hits paywall → receives credits (1 credit = 1 play)
-3. Accesses own dashboard → sees unique link, sessions, remaining credits
-4. Shares link with players
+1. Registers / logs in (Google or email) → 14-day trial (8 players)
+2. Accesses dashboard → sees unique link, sessions, roster usage
+3. Shares link with players
+4. Upgrades via Stripe when ready (PRO/Academy)
 
 #### Player flow
 1. Receives link (`argomethod.com/play/:slug`)
 2. Lightweight identification (form: name, email, child name, age, sport — no account creation)
-3. Plays the odyssey → **credit deducted at start**
-4. If completes: full result in tenant's dashboard
-5. If abandons: credit consumed, recorded as "started / not completed" in tenant's dashboard
+3. Plays the odyssey → occupies a roster slot
+4. If completes: full result in tenant's dashboard + email to adult
+5. If abandons: slot occupied, profile shows as "pending", can retry
+
+#### Pricing model (roster-based, NO credits)
+- **No credits.** Users pay for roster capacity (active player slots).
+- Re-profiling included every 6 months per player.
+- Trial: 8 players, 14 days. PRO: 50 players. Academy: 100. Enterprise: custom.
+- AI consultant included in all plans (fair use soft cap, invisible to user).
+- Enterprise gets Gemini 2.5 Pro (premium model); others get Gemini 2.5 Flash.
+- Argo One (parents): one-time purchase, no dashboard, report by email.
+- Full pricing docs: `docs/pricing-v2.md`
 
 #### Key decisions (confirmed)
-- Credits deduct on **start**, not on completion
-- Abandoned sessions are visible in tenant dashboard with status
-- Player does NOT need a full account — lightweight form only (same as current onboarding)
-- Current admin dashboard becomes superadmin view
-- Tenant dashboard is a new, scoped view
+- **Never reference "credits"** — the concept is eliminated
+- Use "equipo" (not "roster") in user-facing Spanish copy
+- Abandoned sessions occupy a slot but can be retried (no "lost credit")
+- Player does NOT need a full account — lightweight form only
+- Superadmin can create Enterprise accounts with personalized welcome email
+- All admin actions logged in audit_log table
 
-#### Data model implications
-- `tenant_id` on `sessions` table to link each play to the link owner
-- `tenants` table: plan, remaining credits, slug, auth user reference
-- `credit_transactions` table: who paid, how many credits, when
-- Session states: `started` → `completed` | `abandoned`
-- RLS or server-side logic: each tenant sees only their own sessions
+#### Data model
+- `tenants` table: plan, roster_limit, ai_queries_count, slug, auth user reference
+- `tenant_id` on `sessions` table to link each play to the tenant
+- `one_purchases` + `one_links` for Argo One standalone purchases
+- `admin_audit_log` for superadmin action tracking
+- Stripe handles subscription billing; webhook at `/api/one-webhook`
 
 ## Git workflow
 - **`main`** branch = production (`argomethod.com`). Do NOT push here unless the user explicitly says "mandalo a producción" or "push to main".
@@ -83,7 +93,22 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `POST /api/save-session` — insert completed session
 - `POST /api/delete-session` — soft-delete session or hard-delete lead
 - `POST /api/send-email` — send report email via Resend
+- `POST /api/generate-ai` — generate AI report sections via Gemini
 - `POST /api/create-tenant` — create tenant record on signup (idempotent)
+- `POST /api/start-play` — validate roster capacity + start play
+- `POST /api/archive-player` — archive/reactivate players
+- `POST /api/create-subscription` — Stripe subscription checkout (PRO/Academy)
+- `POST /api/one-checkout` — Argo One Stripe checkout
+- `POST /api/one-webhook` — Stripe webhook (Argo One + subscriptions)
+- `GET/POST /api/one-panel` — Argo One mini-panel (magic link auth)
+- `POST /api/one-start-play` — validate Argo One link
+- `POST /api/one-complete` — save Argo One session
+- `GET/POST /api/tenant-chat` — AI consultant (Gemini)
+- `GET /api/admin-tenants` — superadmin tenant management
+- `GET /api/admin-ai-usage` — AI consumption per tenant
+- `GET /api/admin-revenue` — revenue metrics
+- `GET /api/admin-argo-one` — Argo One purchases
+- **Important**: Vercel serverless cannot import between files in `/api`. AI provider is inlined in each file that needs it.
 
 ## Key conventions
 - Option colors in questions are positional (A=sky, B=amber, C=violet, D=emerald) — never reveal DISC axis
