@@ -24,7 +24,7 @@ function getProvider(country?: string): 'mercadopago' | 'stripe' {
     return MP_COUNTRIES.includes(country.toUpperCase()) ? 'mercadopago' : 'stripe';
 }
 
-async function createStripeCheckout(pack: typeof PACKS[1], email: string, purchaseId: string): Promise<string> {
+async function createStripeCheckout(pack: typeof PACKS[1], email: string, purchaseId: string, accessToken: string): Promise<string> {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
 
@@ -45,13 +45,14 @@ async function createStripeCheckout(pack: typeof PACKS[1], email: string, purcha
             'line_items[0][quantity]': '1',
             'metadata[purchase_id]': purchaseId,
             'metadata[source]': 'argo_one',
-            'success_url': `${origin}/one/panel?token={CHECKOUT_SESSION_ID}&success=1`,
+            'success_url': `${origin}/one/panel?token=${accessToken}&success=1`,
             'cancel_url': `${origin}/pricing`,
         }).toString(),
     });
 
     if (!res.ok) {
         const err = await res.text();
+        console.error('[one-checkout] Stripe API error:', err);
         throw new Error(`Stripe error: ${err}`);
     }
 
@@ -148,12 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Create checkout session with the chosen provider
         let checkoutUrl: string;
         if (provider === 'stripe') {
-            checkoutUrl = await createStripeCheckout(pack, email, purchase.id);
-            // Save Stripe session reference
-            const sessionId = new URL(checkoutUrl).searchParams.get('session_id') || '';
-            if (sessionId) {
-                await sb.from('one_purchases').update({ payment_id: sessionId }).eq('id', purchase.id);
-            }
+            checkoutUrl = await createStripeCheckout(pack, email, purchase.id, purchase.access_token);
         } else {
             checkoutUrl = await createMPCheckout(pack, email, purchase.id);
         }
@@ -163,7 +159,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             purchase_id: purchase.id,
         });
     } catch (err) {
-        console.error('[one-checkout] Error:', err);
-        return res.status(500).json({ error: 'Failed to create checkout session' });
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[one-checkout] Error:', msg);
+        return res.status(500).json({ error: 'Failed to create checkout session', detail: msg });
     }
 }
