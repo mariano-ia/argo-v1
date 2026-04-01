@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
-import { Search, Download, Trash2, Send, Loader2 } from 'lucide-react';
+import { Search, Download, Trash2, Send, Loader2, Unlock } from 'lucide-react';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CHIP } from '../../lib/designTokens';
@@ -100,6 +100,8 @@ export const Sessions: React.FC = () => {
     const [confirmingId, setConfirmingId] = useState<string | null>(null);
     const [resendingId, setResendingId] = useState<string | null>(null);
     const [resendMsg, setResendMsg] = useState<{ ok: boolean } | null>(null);
+    const [grantingId, setGrantingId] = useState<string | null>(null);
+    const [grantMsg, setGrantMsg] = useState<{ ok: boolean } | null>(null);
     const PAGE_SIZE = 20;
 
     const [tenantMap, setTenantMap] = useState<Record<string, string>>({});
@@ -224,6 +226,26 @@ export const Sessions: React.FC = () => {
         }
     };
 
+    const handleGrantAccess = async (row: UnifiedRow) => {
+        if (row.status !== 'completed') return;
+        setGrantingId(row.id);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+            const res = await fetch('/api/admin-grant-access', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: row.id }),
+            });
+            setGrantMsg({ ok: res.ok });
+        } catch {
+            setGrantMsg({ ok: false });
+        } finally {
+            setGrantingId(null);
+            setTimeout(() => setGrantMsg(null), 3000);
+        }
+    };
+
     const exportCSV = () => {
         const headers = ['Fecha', 'Email', 'Estado', 'Adulto', 'Niño', 'Edad', 'Deporte', 'Arquetipo', 'Eje', 'Motor', 'Costo IA'];
         const csvRows = [
@@ -262,6 +284,13 @@ export const Sessions: React.FC = () => {
                     resendMsg.ok ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {resendMsg.ok ? 'Informe enviado con éxito' : 'Error al enviar el informe'}
+                </div>
+            )}
+            {grantMsg && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                    grantMsg.ok ? 'bg-purple-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    {grantMsg.ok ? 'Informe completo desbloqueado y enviado' : 'Error al desbloquear el informe'}
                 </div>
             )}
 
@@ -380,10 +409,22 @@ export const Sessions: React.FC = () => {
                                             <td className="px-5 py-3 text-right whitespace-nowrap">
                                                 <span className="flex items-center justify-end gap-1">
                                                 {row.status === 'completed' && (
+                                                    <>
+                                                    <button
+                                                        onClick={() => handleGrantAccess(row)}
+                                                        disabled={grantingId === row.id}
+                                                        title="Enviar informe completo (desbloquear)"
+                                                        className="text-argo-grey/40 hover:text-purple-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    >
+                                                        {grantingId === row.id
+                                                            ? <Loader2 size={14} className="animate-spin" />
+                                                            : <Unlock size={14} />
+                                                        }
+                                                    </button>
                                                     <button
                                                         onClick={() => handleResend(row)}
                                                         disabled={resendingId === row.id}
-                                                        title="Reenviar informe"
+                                                        title="Reenviar informe teaser"
                                                         className="text-argo-grey/40 hover:text-argo-indigo transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                     >
                                                         {resendingId === row.id
@@ -391,6 +432,7 @@ export const Sessions: React.FC = () => {
                                                             : <Send size={14} />
                                                         }
                                                     </button>
+                                                    </>
                                                 )}
                                                 {confirmingId === row.id ? (
                                                     <span className="flex items-center justify-end gap-2">

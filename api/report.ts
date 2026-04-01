@@ -28,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await sb
         .from('sessions')
-        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id')
+        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
         .single();
@@ -50,5 +50,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Set noindex header so crawlers respect it even without the meta tag
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    return res.status(200).json({ ...data, tenant_plan: tenantPlan });
+    return res.status(200).json({ ...data, tenant_plan: tenantPlan, full_access: data.full_access ?? false });
 }

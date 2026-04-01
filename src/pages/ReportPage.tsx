@@ -27,6 +27,7 @@ interface SessionData {
     created_at: string;
     ai_sections: AISections | null;
     tenant_plan?: string | null;
+    full_access?: boolean;
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -485,7 +486,7 @@ export const ReportPage: React.FC = () => {
                 </Card>
 
                 {/* ── TRIAL LOCK: show upsell after first card ── */}
-                {session.tenant_plan === 'trial' ? (
+                {session.tenant_plan === 'trial' && !session.full_access ? (
                     <div className="bg-white rounded-[14px] shadow-argo p-8 text-center space-y-4 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-argo-violet-50 border border-argo-violet-100 flex items-center justify-center mx-auto">
                             <Lock size={18} className="text-argo-violet-500" />
