@@ -109,13 +109,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Audit log
-        await sb.from('admin_audit_log').insert({
-            admin_email: user.email,
-            action: 'grant-full-access',
-            target_type: 'session',
-            target_id: session_id,
-            details: { child_name: session.child_name, adult_email: session.adult_email },
-        }).catch(() => {});
+        try {
+            await sb.from('admin_audit_log').insert({
+                admin_email: user.email,
+                action: 'grant-full-access',
+                target_type: 'session',
+                target_id: session_id,
+                details: { child_name: session.child_name, adult_email: session.adult_email },
+            });
+        } catch { /* non-blocking */ }
 
         return res.status(200).json({ ok: true, email_sent: !!session.adult_email });
     } catch (err: unknown) {

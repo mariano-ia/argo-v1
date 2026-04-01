@@ -96,7 +96,7 @@ async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClien
 }
 
 async function auditLog(sb: ReturnType<typeof createClient>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
-    await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }).catch(() => {});
+    try { await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }); } catch { /* non-blocking */ }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -291,7 +291,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             // Send password setup email via Supabase Auth
-            await sb.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: `${origin}/signup` } }).catch(() => {});
+            try { await sb.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: `${origin}/signup` } }); } catch { /* non-blocking */ }
 
             await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, full_name, roster_limit: roster_limit || 500, email_sent: emailSent });
             return res.status(200).json({ ok: true, tenant, action: 'enterprise_created', email_sent: emailSent });
