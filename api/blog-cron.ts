@@ -181,7 +181,9 @@ async function seedTopicsIfNeeded(): Promise<void> {
 
 // ─── Pick the best topic and trigger generation ─────────────────────────────
 
-async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; post_id?: string }> {
+const ALL_LANGS = ['es', 'en', 'pt'] as const;
+
+async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; results?: { lang: string; post_id: string }[] }> {
     // Get highest-relevance pending topic
     const { data: topics } = await supabase
         .from('blog_topics')
@@ -199,36 +201,72 @@ async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; 
     // Mark as generating
     await supabase.from('blog_topics').update({ status: 'generating' }).eq('id', topic.id);
 
-    // Call blog-generate internally
     const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.SITE_URL ?? 'https://argomethod.com';
 
-    const genRes = await fetch(`${baseUrl}/api/blog-generate`, {
+    const prompt = `${topic.title}. ${topic.description ?? ''}`;
+
+    // Generate Spanish first (primary, linked to topic)
+    const esRes = await fetch(`${baseUrl}/api/blog-generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            prompt: `${topic.title}. ${topic.description ?? ''}`,
+            prompt,
             pillar: topic.pillar,
             audience: topic.audience,
             format: topic.format,
             archetype_ref: topic.archetype_ref,
-            lang: topic.lang,
+            lang: 'es',
             topic_id: topic.id,
             auto_publish: true,
         }),
     });
 
-    if (!genRes.ok) {
-        const err = await genRes.text();
-        console.error('blog-generate failed:', err);
-        // Revert to pending
+    if (!esRes.ok) {
+        const err = await esRes.text();
+        console.error('blog-generate ES failed:', err);
         await supabase.from('blog_topics').update({ status: 'pending' }).eq('id', topic.id);
         return { generated: false };
     }
 
-    const result = await genRes.json();
-    return { generated: true, topic: topic.title, post_id: result.post_id };
+    const esResult = await esRes.json();
+    const langGroup = esResult.lang_group;
+    const results = [{ lang: 'es', post_id: esResult.post_id }];
+
+    // Generate en and pt in parallel with shared lang_group
+    const otherLangs = ALL_LANGS.filter(l => l !== 'es');
+    const otherResults = await Promise.allSettled(
+        otherLangs.map(async (lang) => {
+            const r = await fetch(`${baseUrl}/api/blog-generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt,
+                    pillar: topic.pillar,
+                    audience: topic.audience,
+                    format: topic.format,
+                    archetype_ref: topic.archetype_ref,
+                    lang,
+                    lang_group: langGroup,
+                    auto_publish: true,
+                }),
+            });
+            if (!r.ok) throw new Error(`${lang}: ${await r.text()}`);
+            return r.json();
+        })
+    );
+
+    for (let i = 0; i < otherLangs.length; i++) {
+        const result = otherResults[i];
+        if (result.status === 'fulfilled') {
+            results.push({ lang: otherLangs[i], post_id: result.value.post_id });
+        } else {
+            console.error(`blog-cron ${otherLangs[i]} failed:`, result.reason);
+        }
+    }
+
+    return { generated: true, topic: topic.title, results };
 }
 
 // ─── HTTP handler ───────────────────────────────────────────────────────────

@@ -39,7 +39,7 @@ export const BlogAdmin: React.FC = () => {
     // Generate state
     const [idea, setIdea] = useState('');
     const [generating, setGenerating] = useState(false);
-    const [genResult, setGenResult] = useState<{ title: string; slug: string } | null>(null);
+    const [genResults, setGenResults] = useState<{ lang: string; title: string; slug: string }[]>([]);
     const [genError, setGenError] = useState<string | null>(null);
 
     // ─── Posts ───────────────────────────────────────────────────────────────
@@ -97,11 +97,11 @@ export const BlogAdmin: React.FC = () => {
     const handleGenerate = async () => {
         if (!idea.trim()) return;
         setGenerating(true);
-        setGenResult(null);
+        setGenResults([]);
         setGenError(null);
         try {
-            const result = await generateFromIdea(idea.trim());
-            setGenResult({ title: result.title, slug: result.slug });
+            const data = await generateFromIdea(idea.trim());
+            setGenResults(data.results.map(r => ({ lang: r.lang, title: r.title, slug: r.slug })));
             setIdea('');
             loadPosts();
         } catch (err) {
@@ -199,6 +199,7 @@ export const BlogAdmin: React.FC = () => {
                                 <thead>
                                     <tr className="border-b border-argo-border text-left">
                                         <th className="px-4 py-3 font-semibold text-argo-grey text-xs uppercase tracking-wider">Titulo</th>
+                                        <th className="px-4 py-3 font-semibold text-argo-grey text-xs uppercase tracking-wider w-12">Lang</th>
                                         <th className="px-4 py-3 font-semibold text-argo-grey text-xs uppercase tracking-wider w-20">Origen</th>
                                         <th className="px-4 py-3 font-semibold text-argo-grey text-xs uppercase tracking-wider w-24">Estado</th>
                                         <th className="px-4 py-3 font-semibold text-argo-grey text-xs uppercase tracking-wider w-28">Fecha</th>
@@ -220,6 +221,11 @@ export const BlogAdmin: React.FC = () => {
                                                         ))}
                                                     </div>
                                                 )}
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-argo-neutral text-argo-secondary">
+                                                    {post.lang}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <span className={`text-[10px] font-bold uppercase tracking-wider ${
@@ -284,7 +290,7 @@ export const BlogAdmin: React.FC = () => {
                             <h2 className="text-sm font-bold text-argo-navy">Generar desde una idea</h2>
                         </div>
                         <p className="text-xs text-argo-grey mb-4">
-                            Escribe una idea en lenguaje natural. El sistema genera el articulo completo, lo humaniza y lo publica.
+                            Escribe una idea en lenguaje natural. El sistema genera 3 versiones (ES, EN, PT), las humaniza y las publica.
                         </p>
                         <textarea
                             value={idea}
@@ -311,17 +317,22 @@ export const BlogAdmin: React.FC = () => {
                             </button>
                         </div>
 
-                        {genResult && (
-                            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <p className="text-sm text-green-800 font-medium">Publicado: {genResult.title}</p>
-                                <a
-                                    href={`/blog/${genResult.slug}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-green-600 hover:underline"
-                                >
-                                    /blog/{genResult.slug}
-                                </a>
+                        {genResults.length > 0 && (
+                            <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                                <p className="text-sm text-green-800 font-medium">Publicado en {genResults.length} idiomas:</p>
+                                {genResults.map(r => (
+                                    <div key={r.lang} className="flex items-center gap-2">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-green-700 w-5">{r.lang}</span>
+                                        <a
+                                            href={`/blog/${r.slug}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-green-600 hover:underline truncate"
+                                        >
+                                            {r.title}
+                                        </a>
+                                    </div>
+                                ))}
                             </div>
                         )}
 
@@ -336,10 +347,10 @@ export const BlogAdmin: React.FC = () => {
                     <div className="mt-4 bg-argo-neutral border border-argo-border rounded-xl p-4">
                         <h3 className="text-xs font-bold text-argo-navy uppercase tracking-wider mb-2">Proceso automatico</h3>
                         <div className="space-y-1.5 text-xs text-argo-secondary">
-                            <p>1. Gemini genera el articulo con voz Argo y estructura SEO</p>
-                            <p>2. Un segundo paso humaniza el texto (elimina patrones de IA)</p>
-                            <p>3. Se inyectan links internos a posts existentes</p>
-                            <p>4. Se publica con meta description, tags y schema markup</p>
+                            <p>1. Gemini genera el articulo en ES, EN y PT con voz Argo</p>
+                            <p>2. Un segundo paso humaniza cada version (elimina patrones de IA)</p>
+                            <p>3. Se inyectan links internos y se vinculan las 3 versiones (hreflang)</p>
+                            <p>4. Se publican con meta description, tags y schema markup</p>
                         </div>
                     </div>
                 </div>

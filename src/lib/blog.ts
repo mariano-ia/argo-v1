@@ -15,6 +15,7 @@ export interface BlogPost {
     reading_time: number | null;
     generated_by: 'human' | 'ai-cron' | 'ai-demand';
     topic_id: string | null;
+    lang_group: string | null;
     published_at: string;
     created_at: string;
 }
@@ -42,7 +43,7 @@ export interface BlogTopic {
 export async function fetchPosts(lang = 'es') {
     const { data, error } = await supabase
         .from('blog_posts')
-        .select('id, slug, title, meta_description, lang, status, published_at, created_at')
+        .select('id, slug, title, meta_description, lang, status, reading_time, published_at, created_at')
         .eq('status', 'published')
         .eq('lang', lang)
         .order('published_at', { ascending: false });
@@ -63,12 +64,23 @@ export async function fetchPostBySlug(slug: string) {
     return data as BlogPost | null;
 }
 
+export async function fetchAlternateLangs(langGroup: string): Promise<{ lang: string; slug: string }[]> {
+    if (!langGroup) return [];
+    const { data, error } = await supabase
+        .from('blog_posts')
+        .select('lang, slug')
+        .eq('lang_group', langGroup)
+        .eq('status', 'published');
+    if (error) throw error;
+    return data ?? [];
+}
+
 // ─── Admin queries ───────────────────────────────────────────────────────────
 
 export async function fetchAllPosts(statusFilter?: 'draft' | 'published') {
     let query = supabase
         .from('blog_posts')
-        .select('id, slug, title, meta_description, lang, status, published_at, created_at')
+        .select('id, slug, title, meta_description, lang, status, tags, reading_time, generated_by, lang_group, published_at, created_at')
         .order('created_at', { ascending: false });
 
     if (statusFilter) query = query.eq('status', statusFilter);
@@ -163,11 +175,11 @@ export async function deleteTopic(id: string) {
 
 // ─── On-demand generation ───────────────────────────────────────────────────
 
-export async function generateFromIdea(idea: string, lang = 'es'): Promise<{ post_id: string; slug: string; title: string; status: string }> {
+export async function generateFromIdea(idea: string): Promise<{ results: { lang: string; post_id: string; slug: string; title: string }[] }> {
     const res = await fetch('/api/blog-now', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea, lang }),
+        body: JSON.stringify({ idea }),
     });
     if (!res.ok) {
         const err = await res.json().catch(() => ({ error: 'Unknown error' }));

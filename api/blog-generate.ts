@@ -137,7 +137,9 @@ DETECTA Y CORRIGE estos patrones:
 
 REGLAS:
 - NO cambies el significado, solo la forma
-- Mantiene el espanol latam neutro con tuteo (nunca voseo)
+- Mantiene el idioma original del texto intacto
+- Si es espanol: mantiene latam neutro con tuteo (nunca voseo)
+- Si es ingles o portugues: mantiene el idioma natural, no traduzcas
 - Mantiene el HTML intacto (tags, estructura)
 - Devuelve SOLO el HTML corregido, nada mas
 - Si el texto ya es bueno, devuelvelo como esta`;
@@ -208,6 +210,7 @@ interface GenerateInput {
     archetype_ref?: string;
     lang?: string;
     topic_id?: string;
+    lang_group?: string;  // shared UUID linking translations
 }
 
 interface GenerateResult {
@@ -215,10 +218,19 @@ interface GenerateResult {
     slug: string;
     title: string;
     status: string;
+    lang: string;
+    lang_group: string;
 }
+
+const LANG_INSTRUCTIONS: Record<string, string> = {
+    es: 'Espanol latinoamericano neutro (tuteo). NUNCA voseo argentino.',
+    en: 'English. Professional but warm. Adapt Argo terminology naturally: Impulsor=Driver, Conector=Connector, Sosten=Sustainer, Estratega=Strategist. Keep archetype names in Spanish with English translation in parentheses on first use.',
+    pt: 'Portugues brasileiro. Tom profissional e acolhedor. Adapte a terminologia Argo naturalmente: Impulsor=Impulsionador, Conector=Conector, Sosten=Sustentador, Estratega=Estrategista. Mantenha os nomes dos arquetipos em espanhol com traducao em portugues na primeira mencao.',
+};
 
 async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Promise<GenerateResult> {
     const lang = input.lang ?? 'es';
+    const langGroup = input.lang_group ?? crypto.randomUUID();
 
     // Fetch recent posts to avoid duplication and enable internal linking
     const existingPosts = await getExistingPosts();
@@ -239,7 +251,11 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
         userPrompt += `\n\nARTICULOS YA PUBLICADOS (no repitas temas ni enfoques):\n- ${recentTitles}`;
     }
 
-    userPrompt += `\n\nIdioma: ${lang === 'es' ? 'Espanol latinoamericano neutro (tuteo)' : lang === 'en' ? 'English' : 'Portugues brasileiro'}`;
+    userPrompt += `\n\nIdioma de escritura: ${LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.es}`;
+    userPrompt += `\n\nEl slug debe ser en el idioma del articulo.`;
+    if (lang !== 'es') {
+        userPrompt += `\nAdapta el contenido culturalmente, no hagas una traduccion literal. El articulo debe sentirse nativo en ${lang === 'en' ? 'ingles' : 'portugues'}.`;
+    }
     userPrompt += `\n\nDevuelve SOLO el JSON, sin markdown ni backticks.`;
 
     // Step 1: Generate
@@ -305,6 +321,7 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
             reading_time: readingTime,
             generated_by: input.topic_id ? 'ai-cron' : 'ai-demand',
             topic_id: input.topic_id || null,
+            lang_group: langGroup,
             published_at: status === 'published' ? now : null,
             created_at: now,
         })
@@ -323,7 +340,7 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
         }).eq('id', input.topic_id);
     }
 
-    return { post_id: post.id, slug, title: article.title, status };
+    return { post_id: post.id, slug, title: article.title, status, lang, lang_group: langGroup };
 }
 
 // ─── HTTP handler ───────────────────────────────────────────────────────────
