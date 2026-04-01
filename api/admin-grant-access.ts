@@ -118,8 +118,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }).catch(() => {});
 
         return res.status(200).json({ ok: true, email_sent: !!session.adult_email });
-    } catch (err) {
-        console.error('[admin-grant-access] Error:', err);
-        return res.status(500).json({ error: 'Internal server error' });
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error('[admin-grant-access] Error:', msg);
+        return res.status(500).json({ error: msg });
     }
 }

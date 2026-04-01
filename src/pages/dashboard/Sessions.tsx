@@ -101,7 +101,7 @@ export const Sessions: React.FC = () => {
     const [resendingId, setResendingId] = useState<string | null>(null);
     const [resendMsg, setResendMsg] = useState<{ ok: boolean } | null>(null);
     const [grantingId, setGrantingId] = useState<string | null>(null);
-    const [grantMsg, setGrantMsg] = useState<{ ok: boolean } | null>(null);
+    const [grantMsg, setGrantMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
     const PAGE_SIZE = 20;
 
     const [tenantMap, setTenantMap] = useState<Record<string, string>>({});
@@ -237,9 +237,10 @@ export const Sessions: React.FC = () => {
                 headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ session_id: row.id }),
             });
-            setGrantMsg({ ok: res.ok });
-        } catch {
-            setGrantMsg({ ok: false });
+            const data = await res.json().catch(() => ({}));
+            setGrantMsg({ ok: res.ok, detail: data.error });
+        } catch (e) {
+            setGrantMsg({ ok: false, detail: String(e) });
         } finally {
             setGrantingId(null);
             setTimeout(() => setGrantMsg(null), 3000);
@@ -290,7 +291,7 @@ export const Sessions: React.FC = () => {
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     grantMsg.ok ? 'bg-purple-600 text-white' : 'bg-red-600 text-white'
                 }`}>
-                    {grantMsg.ok ? 'Informe completo desbloqueado y enviado' : 'Error al desbloquear el informe'}
+                    {grantMsg.ok ? 'Informe completo desbloqueado y enviado' : `Error: ${grantMsg.detail || 'desconocido'}`}
                 </div>
             )}
 
