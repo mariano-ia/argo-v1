@@ -110,12 +110,24 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `GET /api/admin-argo-one` — Argo One purchases
 - **Important**: Vercel serverless cannot import between files in `/api`. AI provider is inlined in each file that needs it.
 
+## AI quality & anti-hallucination
+The AI consultant (`tenant-chat.ts`) has 5 anti-hallucination layers:
+1. **Expanded knowledge base**: all 12 Argo archetypes with axis descriptions and combustible
+2. **Full report injection**: when a player is mentioned, their ai_sections are injected (resumenPerfil, combustible, corazon, palabras puente/ruido)
+3. **Prohibited words filter**: 35+ terms scanned post-generation (clinical, negative labeling, deterministic language). If found, response is regenerated.
+4. **Few-shot examples**: 3 correct Q&A per language showing expected tone, format, and probabilistic language
+5. **Ground truth validation**: post-generation check verifies the response doesn't attribute the wrong DISC axis to a named player
+
+Report generation (`generate-ai.ts`) has retry resilience: 1 retry on API failure + 1 retry on JSON parse failure.
+Admin can grant `full_access` on any session — regenerates AI if missing before sending full report email.
+
 ## Key conventions
 - Option colors in questions are positional (A=sky, B=amber, C=violet, D=emerald) — never reveal DISC axis
 - Email auto-sends when AI generation completes (no manual button)
 - Nautical theme for children: ship progress bar, explorer metaphors
 - Professional but warm tone for adults
 - Logo: **Argo** (fontWeight: 800) **Method** (fontWeight: 100)
+- User-facing copy: "equipo" (not "roster"), never mention "credits"
 
 ## Design System
 
