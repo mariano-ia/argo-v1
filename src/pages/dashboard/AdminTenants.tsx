@@ -52,6 +52,7 @@ export const AdminTenants: React.FC = () => {
     const [newOwnerName, setNewOwnerName] = useState('');
     const [newRoster, setNewRoster] = useState('500');
     const [creating, setCreating] = useState(false);
+    const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
     const getToken = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -71,14 +72,25 @@ export const AdminTenants: React.FC = () => {
 
     useEffect(() => { fetchTenants(); }, [fetchTenants]);
 
+    const showToast = (msg: string, ok: boolean) => {
+        setToast({ msg, ok });
+        setTimeout(() => setToast(null), 4000);
+    };
+
     const doAction = async (action: string, tenantId: string, extra: Record<string, unknown> = {}) => {
         const token = await getToken();
-        await fetch('/api/admin-tenants', {
+        const res = await fetch('/api/admin-tenants', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ action, tenant_id: tenantId, ...extra }),
         });
         setActionTenant(null);
+        if (res.ok) {
+            showToast(`Acción "${action}" ejecutada correctamente.`, true);
+        } else {
+            const data = await res.json().catch(() => ({}));
+            showToast(data.error || 'Error al ejecutar la acción.', false);
+        }
         fetchTenants();
     };
 
@@ -86,18 +98,25 @@ export const AdminTenants: React.FC = () => {
         if (!newEmail || !newName) return;
         setCreating(true);
         const token = await getToken();
-        await fetch('/api/admin-tenants', {
+        const res = await fetch('/api/admin-tenants', {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'create-enterprise', email: newEmail, display_name: newName, full_name: newOwnerName, roster_limit: parseInt(newRoster) || 500 }),
         });
+        const data = await res.json().catch(() => ({}));
         setCreating(false);
-        setShowCreate(false);
-        setNewEmail('');
-        setNewName('');
-        setNewOwnerName('');
-        setNewRoster('500');
-        fetchTenants();
+
+        if (res.ok) {
+            setShowCreate(false);
+            setNewEmail('');
+            setNewName('');
+            setNewOwnerName('');
+            setNewRoster('500');
+            showToast(`Cuenta Enterprise creada. Email de bienvenida enviado a ${newEmail}.`, true);
+            fetchTenants();
+        } else {
+            showToast(data.error || 'Error al crear la cuenta.', false);
+        }
     };
 
     const filtered = tenants.filter(t => {
@@ -313,6 +332,15 @@ export const AdminTenants: React.FC = () => {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Toast */}
+            {toast && (
+                <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-3 rounded-xl shadow-lg text-sm font-medium text-white z-50 max-w-md text-center ${
+                    toast.ok ? 'bg-green-600' : 'bg-red-600'
+                }`}>
+                    {toast.msg}
                 </div>
             )}
         </div>

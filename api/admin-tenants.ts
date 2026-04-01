@@ -253,25 +253,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Send welcome email
             const origin = process.env.SITE_URL || 'https://argomethod.com';
             const resendKey = process.env.RESEND_API_KEY;
+            let emailSent = false;
             if (resendKey) {
                 const ownerName = full_name || display_name;
-                await fetch('https://api.resend.com/emails', {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        from: 'Argo Method <hola@argomethod.com>',
-                        to: [email],
-                        subject: `Bienvenido a Argo Method Enterprise, ${display_name}`,
-                        html: buildEnterpriseWelcomeEmail(ownerName, display_name, roster_limit || 500, origin),
-                    }),
-                });
+                try {
+                    const emailRes = await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from: 'Argo Method <hola@argomethod.com>',
+                            to: [email],
+                            subject: `Bienvenido a Argo Method Enterprise, ${display_name}`,
+                            html: buildEnterpriseWelcomeEmail(ownerName, display_name, roster_limit || 500, origin),
+                        }),
+                    });
+                    emailSent = emailRes.ok;
+                    if (!emailRes.ok) {
+                        const errBody = await emailRes.text();
+                        console.error('[admin-tenants] Resend email error:', errBody);
+                    }
+                } catch (emailErr) {
+                    console.error('[admin-tenants] Email send failed:', emailErr);
+                }
+            } else {
+                console.warn('[admin-tenants] RESEND_API_KEY not set, skipping welcome email');
             }
 
             // Send password setup email via Supabase Auth
             await sb.auth.admin.generateLink({ type: 'magiclink', email, options: { redirectTo: `${origin}/signup` } }).catch(() => {});
 
-            await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, full_name, roster_limit: roster_limit || 500 });
-            return res.status(200).json({ ok: true, tenant, action: 'enterprise_created' });
+            await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, full_name, roster_limit: roster_limit || 500, email_sent: emailSent });
+            return res.status(200).json({ ok: true, tenant, action: 'enterprise_created', email_sent: emailSent });
         }
 
         if (action === 'reset-trial') {
