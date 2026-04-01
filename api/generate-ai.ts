@@ -238,10 +238,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
             : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.';
 
-        const aiResponse = await callAI([
+        const messages: AIMsg[] = [
             { role: 'system', content: systemContent },
             { role: 'user', content: prompt },
-        ], { temperature: 0.7, maxTokens: 8192 });
+        ];
+        const aiOpts = { temperature: 0.7, maxTokens: 8192 };
+
+        // Try with 1 retry (2 second delay) for resilience
+        let aiResponse: AIResp;
+        try {
+            aiResponse = await callAI(messages, aiOpts);
+        } catch (firstErr) {
+            console.warn('[generate-ai] First attempt failed, retrying in 2s...', firstErr instanceof Error ? firstErr.message : firstErr);
+            await new Promise(r => setTimeout(r, 2000));
+            aiResponse = await callAI(messages, aiOpts);
+        }
 
         // Strip potential markdown code fences
         const cleaned = aiResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
@@ -250,8 +261,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
             sections = JSON.parse(cleaned);
         } catch {
-            console.error(`[generate-ai] Failed to parse ${getProvider()} response:`, cleaned.slice(0, 200));
-            return res.status(502).json({ error: 'Invalid AI response format' });
+            console.warn(`[generate-ai] JSON parse failed, retrying AI call...`, cleaned.slice(0, 100));
+            // Retry once — sometimes the model returns truncated JSON
+            try {
+                await new Promise(r => setTimeout(r, 2000));
+                const retryResponse = await callAI(messages, aiOpts);
+                const retryCleaned = retryResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+                sections = JSON.parse(retryCleaned);
+                // Update usage with retry totals
+                aiResponse = retryResponse;
+            } catch {
+                console.error(`[generate-ai] Retry also failed. Original response:`, cleaned.slice(0, 200));
+                return res.status(502).json({ error: 'Invalid AI response format after retry' });
+            }
         }
 
         const usage: AIUsage = {

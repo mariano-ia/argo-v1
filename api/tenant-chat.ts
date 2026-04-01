@@ -392,7 +392,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ── Call AI provider (enterprise gets premium model) ─────────────
         const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
-        const aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 800, model: aiModel });
+        const chatOpts = { temperature: 0.4, maxTokens: 800, model: aiModel };
+        let aiResult;
+        try {
+            aiResult = await callAI(aiMessages, chatOpts);
+        } catch (firstErr) {
+            console.warn('[tenant-chat] First attempt failed, retrying in 2s...', firstErr instanceof Error ? firstErr.message : firstErr);
+            await new Promise(r => setTimeout(r, 2000));
+            aiResult = await callAI(aiMessages, chatOpts);
+        }
         let assistantContent = aiResult.content;
 
         // ── Post-processing: scan for prohibited words ────────────────────

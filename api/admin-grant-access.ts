@@ -29,14 +29,59 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { session_id } = req.body as { session_id?: string };
         if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
-        // Get session data
+        // Get session data including AI sections
         const { data: session } = await sb
             .from('sessions')
-            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, archetype_label, lang')
+            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd')
             .eq('id', session_id)
             .single();
 
         if (!session) return res.status(404).json({ error: 'Session not found' });
+
+        // If AI sections are missing, regenerate before sending
+        if (!session.ai_sections || !session.ai_cost_usd) {
+            console.info(`[admin-grant-access] Session ${session_id} missing AI, regenerating...`);
+            const origin = process.env.SITE_URL || 'https://argomethod.com';
+            try {
+                const aiRes = await fetch(`${origin}/api/generate-ai`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        report: {
+                            nombre: session.child_name,
+                            arquetipo: { id: `${session.eje}-${session.motor}`, eje: session.eje, motor: session.motor, label: session.archetype_label },
+                            perfil: '', bienvenida: '', wow: '', motorDesc: '', combustible: '',
+                            grupoEspacio: '', corazon: '', reseteo: '', ecos: '',
+                            checklist: { antes: '', durante: '', despues: '' },
+                            palabrasPuente: [], palabrasRuido: [], guia: [],
+                            ejeSecundario: session.eje_secundario,
+                        },
+                        context: {
+                            nombre: session.child_name,
+                            deporte: session.sport ?? '',
+                            edad: session.child_age,
+                            destinatario: 'entrenador',
+                            lang: session.lang || 'es',
+                        },
+                    }),
+                });
+                if (aiRes.ok) {
+                    const aiData = await aiRes.json();
+                    await sb.from('sessions').update({
+                        ai_sections: aiData.sections,
+                        ai_cost_usd: aiData.usage?.costUsd ?? 0,
+                        ai_tokens_input: aiData.usage?.inputTokens ?? 0,
+                        ai_tokens_output: aiData.usage?.outputTokens ?? 0,
+                    }).eq('id', session_id);
+                    console.info(`[admin-grant-access] AI regenerated for session ${session_id}`);
+                } else {
+                    console.warn(`[admin-grant-access] AI regeneration failed: ${aiRes.status}`);
+                }
+            } catch (aiErr) {
+                console.warn('[admin-grant-access] AI regeneration error:', aiErr);
+                // Continue anyway — better to send without AI than not send at all
+            }
+        }
 
         // Set full_access
         const { error: updateErr } = await sb
