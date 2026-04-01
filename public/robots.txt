@@ -23,4 +23,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://argomethod.com/sitemap.xml
+Sitemap: https://argomethod.com/api/sitemap.xml

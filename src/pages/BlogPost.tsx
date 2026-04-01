@@ -22,10 +22,11 @@ export const BlogPost: React.FC = () => {
             .finally(() => setLoading(false));
     }, [slug]);
 
-    // SEO meta tags
+    // SEO meta tags + Article schema markup
     useEffect(() => {
         if (!post) return;
-        document.title = `${post.title} — Argo Method Blog`;
+        const seoTitle = (post as any).seo_title || post.title;
+        document.title = `${seoTitle} — Argo Method Blog`;
         const setMeta = (name: string, content: string) => {
             let el = document.querySelector(`meta[name="${name}"]`) || document.querySelector(`meta[property="${name}"]`);
             if (!el) {
@@ -39,10 +40,42 @@ export const BlogPost: React.FC = () => {
             setMeta('description', post.meta_description);
             setMeta('og:description', post.meta_description);
         }
-        setMeta('og:title', post.title);
+        setMeta('og:title', seoTitle);
         setMeta('og:type', 'article');
+        setMeta('og:url', `https://argomethod.com/blog/${post.slug}`);
+        setMeta('article:published_time', post.published_at);
 
-        return () => { document.title = 'Argo Method'; };
+        // Article JSON-LD schema
+        const schema = {
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: seoTitle,
+            description: post.meta_description || '',
+            url: `https://argomethod.com/blog/${post.slug}`,
+            datePublished: post.published_at,
+            author: { '@type': 'Organization', name: 'Argo Method', url: 'https://argomethod.com' },
+            publisher: {
+                '@type': 'Organization',
+                name: 'Argo Method',
+                url: 'https://argomethod.com',
+                logo: { '@type': 'ImageObject', url: 'https://argomethod.com/favicon.svg' },
+            },
+            mainEntityOfPage: { '@type': 'WebPage', '@id': `https://argomethod.com/blog/${post.slug}` },
+        };
+        let scriptEl = document.querySelector('script[data-blog-schema]');
+        if (!scriptEl) {
+            scriptEl = document.createElement('script');
+            scriptEl.setAttribute('type', 'application/ld+json');
+            scriptEl.setAttribute('data-blog-schema', 'true');
+            document.head.appendChild(scriptEl);
+        }
+        scriptEl.textContent = JSON.stringify(schema);
+
+        return () => {
+            document.title = 'Argo Method';
+            const el = document.querySelector('script[data-blog-schema]');
+            if (el) el.remove();
+        };
     }, [post]);
 
     const formatDate = (date: string) =>
