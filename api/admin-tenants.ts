@@ -209,19 +209,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 user_metadata: { full_name: full_name || display_name },
             });
 
-            if (authErr) {
-                console.error('[admin-tenants] Auth user creation error:', authErr.message);
-                if (authErr.message.includes('already') || authErr.message.includes('exists') || authErr.message.includes('registered')) {
-                    // User already exists in auth — look up their ID
-                    const { data: existingUsers } = await sb.auth.admin.listUsers({ filter: email });
-                    const found = (existingUsers?.users ?? []).find(u => u.email === email);
+            if (!authErr && authUser?.user?.id) {
+                authUserId = authUser.user.id;
+            } else {
+                console.warn('[admin-tenants] createUser failed, trying lookup:', authErr?.message);
+                try {
+                    const { data: listData } = await sb.auth.admin.listUsers({ perPage: 1000 });
+                    const found = (listData?.users ?? []).find((u: { email?: string }) => u.email === email);
                     if (found) authUserId = found.id;
+                } catch (e) {
+                    console.error('[admin-tenants] listUsers failed:', e);
                 }
                 if (!authUserId) {
-                    return res.status(500).json({ error: `Failed to create auth user: ${authErr.message}` });
+                    return res.status(500).json({ error: `No se pudo crear el usuario para ${email}: ${authErr?.message ?? 'unknown'}` });
                 }
-            } else {
-                authUserId = authUser?.user?.id;
             }
 
             // Generate slug
