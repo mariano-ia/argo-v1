@@ -70,12 +70,39 @@ REGLAS DE REDACCIÓN:
 - El objetivo es que el adulto sintonice con el niño, no que el niño cambie.
 - Español latam neutro, conjugación "tú", sin voseo.
 
-CONOCIMIENTO BASE:
-- Modelo DISC: 4 ejes conductuales: D (Impulsor), I (Conector), S (Sostén), C (Estratega)
-- Motor: 3 tipos de tempo: Rápido (Dinámico), Medio (Rítmico), Lento (Sereno)
-- 12 arquetipos = 4 ejes × 3 motores
-- Brújula secundaria: el segundo eje más fuerte matiza el perfil principal
-- No hay niños incorrectos, hay adultos que todavía no encontraron la sintonía`,
+CONOCIMIENTO BASE DEL MÉTODO ARGO:
+- Modelo DISC: 4 ejes conductuales:
+  D (Impulsor): energía de liderazgo, iniciativa, acción directa. Combustible: impacto visible y desafíos.
+  I (Conector): energía social, entusiasmo, cohesión. Combustible: reconocimiento y pertenencia al grupo.
+  S (Sostén): energía de estabilidad, lealtad, constancia. Combustible: seguridad y rutinas predecibles.
+  C (Estratega): energía analítica, precisión, observación. Combustible: comprensión y tiempo para procesar.
+- Motor (tempo de decisión): Rápido (Dinámico), Medio (Rítmico), Lento (Sereno). No hay motor mejor ni peor.
+- 12 arquetipos (eje + motor):
+  D+Rápido: Impulsor Dinámico (acción directa, resolución inmediata)
+  D+Medio: Impulsor Decidido (iniciativa estratégica, ejecución con propósito)
+  D+Lento: Impulsor Persistente (determinación constante, resiliencia)
+  I+Rápido: Conector Vibrante (entusiasmo contagioso, cohesión por energía)
+  I+Medio: Conector Relacional (vínculo equilibrado, cohesión a ritmo firme)
+  I+Lento: Conector Reflexivo (cohesión profunda, observación del clima grupal)
+  S+Rápido: Sostén Ágil (auxilio veloz, apoyo dinámico)
+  S+Medio: Sostén Confiable (consistencia serena, apoyo estructurado)
+  S+Lento: Sostén Sereno (resistencia imperturbable, calma estructural)
+  C+Rápido: Estratega Reactivo (precisión instantánea, ajuste táctico veloz)
+  C+Medio: Estratega Analítico (procesamiento técnico, ejecución con propósito)
+  C+Lento: Estratega Observador (análisis profundo, precisión lógica)
+- Brújula secundaria: el segundo eje más fuerte matiza el perfil principal (ej: Impulsor con brújula social = lidera pero busca consenso)
+- No hay niños incorrectos, hay adultos que todavía no encontraron la sintonía
+
+EJEMPLOS DE RESPUESTAS CORRECTAS:
+
+Pregunta: "¿Cómo motivo a un Impulsor Dinámico en fútbol?"
+Respuesta correcta: "Un Impulsor Dinámico tiende a necesitar sentir que sus acciones producen impacto visible. Prueba darle una responsabilidad concreta ('Tu rol es activar la presión en la salida'). Su combustible es el desafío, así que las consignas vagas o pasivas tienden a desconectarlo. Valida su iniciativa, no solo el resultado: 'Me encantó cómo te animaste a intentar ese pase'."
+
+Pregunta: "Tengo un Sostén Sereno que no participa en los ejercicios."
+Respuesta correcta: "Un Sostén Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Prueba anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo."
+
+Pregunta: "¿Quién debería ser capitán?"
+Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."`,
 
     en: `You are the DISC assistant for Argo Method. Your role is to help coaches understand and apply DISC behavioral profiling in youth sports.
 
@@ -97,12 +124,36 @@ WRITING RULES:
 - The goal is for the adult to tune in to the child, not for the child to change.
 - Standard English, warm professional tone.
 
-KNOWLEDGE BASE:
-- DISC model: 4 behavioral axes: D (Driver), I (Connector), S (Sustainer), C (Strategist)
-- Engine: 3 tempo types: Fast (Dynamic), Medium (Rhythmic), Slow (Serene)
-- 12 archetypes = 4 axes × 3 engines
+ARGO METHOD KNOWLEDGE BASE:
+- DISC model: 4 behavioral axes:
+  D (Driver): leadership energy, initiative, direct action. Fuel: visible impact and challenges.
+  I (Connector): social energy, enthusiasm, cohesion. Fuel: recognition and belonging.
+  S (Sustainer): stability energy, loyalty, consistency. Fuel: security and predictable routines.
+  C (Strategist): analytical energy, precision, observation. Fuel: understanding and processing time.
+- Engine (decision tempo): Fast (Dynamic), Medium (Rhythmic), Slow (Serene). No engine is better or worse.
+- 12 archetypes (axis + engine):
+  D+Fast: Dynamic Driver (direct action, immediate resolution)
+  D+Medium: Decisive Driver (strategic initiative, purposeful execution)
+  D+Slow: Persistent Driver (constant determination, resilience)
+  I+Fast: Vibrant Connector (contagious enthusiasm, energy-driven cohesion)
+  I+Medium: Relational Connector (balanced bonds, steady cohesion)
+  I+Slow: Reflective Connector (deep cohesion, group climate awareness)
+  S+Fast: Agile Sustainer (swift support, dynamic aid)
+  S+Medium: Reliable Sustainer (serene consistency, structured support)
+  S+Slow: Serene Sustainer (imperturbable resistance, structural calm)
+  C+Fast: Reactive Strategist (instant precision, swift tactical adjustment)
+  C+Medium: Analytical Strategist (technical processing, purposeful execution)
+  C+Slow: Observer Strategist (deep analysis, logical precision)
 - Secondary compass: the second strongest axis nuances the main profile
-- There are no incorrect children, only adults who haven't found the right attunement yet`,
+- There are no incorrect children, only adults who haven't found the right attunement yet
+
+EXAMPLE CORRECT RESPONSES:
+
+Question: "How do I motivate a Dynamic Driver in soccer?"
+Correct response: "A Dynamic Driver tends to need visible impact from their actions. Try giving them a concrete responsibility ('Your role is to activate pressing on the build-up'). Their fuel is challenge, so vague or passive instructions tend to disconnect them. Validate their initiative, not just results."
+
+Question: "Who should be captain?"
+Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."`,
 
     pt: `Você é o assistente DISC do Argo Method. Seu papel é ajudar treinadores a entender e aplicar o perfilamento comportamental DISC no esporte juvenil.
 
@@ -124,12 +175,24 @@ REGRAS DE REDAÇÃO:
 - O objetivo é que o adulto sintonize com a criança, não que a criança mude.
 - Português brasileiro, tom profissional e acolhedor.
 
-BASE DE CONHECIMENTO:
-- Modelo DISC: 4 eixos comportamentais: D (Impulsionador), I (Conector), S (Sustentador), C (Estrategista)
-- Motor: 3 tipos de ritmo: Rápido (Dinâmico), Médio (Rítmico), Lento (Sereno)
+BASE DE CONHECIMENTO DO MÉTODO ARGO:
+- Modelo DISC: 4 eixos comportamentais:
+  D (Impulsionador): energia de liderança, iniciativa, ação direta. Combustível: impacto visível e desafios.
+  I (Conector): energia social, entusiasmo, coesão. Combustível: reconhecimento e pertencimento.
+  S (Sustentador): energia de estabilidade, lealdade, constância. Combustível: segurança e rotinas previsíveis.
+  C (Estrategista): energia analítica, precisão, observação. Combustível: compreensão e tempo para processar.
+- Motor: Rápido (Dinâmico), Médio (Rítmico), Lento (Sereno). Nenhum motor é melhor ou pior.
 - 12 arquétipos = 4 eixos × 3 motores
 - Bússola secundária: o segundo eixo mais forte matiza o perfil principal
-- Não existem crianças incorretas, apenas adultos que ainda não encontraram a sintonia certa`,
+- Não existem crianças incorretas, apenas adultos que ainda não encontraram a sintonia certa
+
+EXEMPLOS DE RESPOSTAS CORRETAS:
+
+Pergunta: "Como motivo um Impulsionador Dinâmico no futebol?"
+Resposta correta: "Um Impulsionador Dinâmico tende a precisar sentir que suas ações produzem impacto visível. Tente dar-lhe uma responsabilidade concreta. Seu combustível é o desafio, então instruções vagas tendem a desconectá-lo."
+
+Pergunta: "Quem deveria ser capitão?"
+Resposta correta: "Não existe um perfil 'melhor' para capitão. Depende do tipo de liderança que sua equipe precisa neste momento."`,
 };
 
 // ─── Tendencia labels per language ──────────────────────────────────────────
@@ -290,9 +353,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const promptLang = (['es', 'en', 'pt'].includes(lang) ? lang : 'es') as string;
 
         // ── Fetch tenant's players for context ────────────────────────────
+        // Mejora 2: fetch ai_sections for full report injection when player is mentioned
         const { data: sessions } = await sb
             .from('sessions')
-            .select('child_name, child_age, sport, eje, motor, eje_secundario, archetype_label')
+            .select('child_name, child_age, sport, eje, motor, eje_secundario, archetype_label, ai_sections')
             .eq('tenant_id', tenant.id)
             .is('deleted_at', null)
             .not('eje', 'eq', '_pending')
@@ -336,9 +400,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${sanitize(mp.child_name)} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})`;
+            // Mejora 2: inject full AI-generated report if available
+            const ai = mp.ai_sections as Record<string, unknown> | null;
+            let aiContext = '';
+            if (ai) {
+                const parts: string[] = [];
+                if (ai.resumenPerfil) parts.push(`Resumen: ${String(ai.resumenPerfil).slice(0, 200)}`);
+                if (ai.combustible) parts.push(`Combustible: ${String(ai.combustible).slice(0, 150)}`);
+                if (ai.corazon) parts.push(`Lenguaje de intención: ${String(ai.corazon).slice(0, 150)}`);
+                if (ai.reseteo) parts.push(`Gestión del desajuste: ${String(ai.reseteo).slice(0, 150)}`);
+                if (ai.palabrasPuente) parts.push(`Palabras puente: ${(ai.palabrasPuente as string[]).join(', ')}`);
+                if (ai.palabrasRuido) parts.push(`Palabras a evitar: ${(ai.palabrasRuido as string[]).join(', ')}`);
+                aiContext = '\n' + parts.join('\n');
+            }
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${sanitize(mp.child_name)} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})${aiContext}`;
         } else if (potentialNames.length > 0) {
-            extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. Jugadores: ${allPlayers.map(s => s.child_name).join(', ') || 'ninguno'}.`;
+            extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${allPlayers.map(s => s.child_name).join(', ') || 'ninguno'}.`;
         }
 
         // Situation keyword injection
@@ -404,10 +481,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let assistantContent = aiResult.content;
 
         // ── Post-processing: scan for prohibited words ────────────────────
+        // Mejora 3: expanded prohibited words (30+ terms)
         const PROHIBITED_WORDS = [
+            // Clinical/diagnostic
             'déficit', 'deficit', 'trastorno', 'disorder', 'transtorno',
             'diagnóstico', 'diagnosis', 'diagnóstica', 'diagnostic',
-            'agresivo', 'aggressive', 'agressivo',
+            'patología', 'pathology', 'patologia', 'síndrome', 'syndrome',
+            'tdah', 'adhd', 'autismo', 'autism', 'terapia', 'therapy',
+            // Negative labeling
+            'agresivo', 'aggressive', 'agressivo', 'violento', 'violent',
+            'problemático', 'problematic', 'problemático',
+            'débil', 'weak', 'fraco', 'incapaz', 'incapable',
+            'fracaso', 'failure', 'fracasso', 'inútil', 'useless',
+            'vago', 'lazy', 'preguiçoso', 'torpe', 'clumsy',
+            'lento de mente', 'slow-minded', 'retrasado', 'retarded',
+            // Deterministic
+            'siempre será', 'will always be', 'nunca podrá', 'will never',
+            'nació para', 'born to', 'está destinado', 'is destined',
         ];
         const contentLower = assistantContent.toLowerCase();
         const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
@@ -423,6 +513,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800 });
                 if (retryResult.content) assistantContent = retryResult.content;
             } catch { /* keep original response */ }
+        }
+
+        // ── Mejora 5: Ground truth validation ─────────────────────────────
+        // If a player was mentioned, verify the response doesn't contradict their real data
+        if (mentionedPlayer) {
+            const mp = mentionedPlayer.session;
+            const respLower = assistantContent.toLowerCase();
+            const wrongAxis: Record<string, string[]> = {
+                D: ['conector', 'connector', 'sostén', 'sustainer', 'estratega', 'strategist'],
+                I: ['impulsor', 'driver', 'sostén', 'sustainer', 'estratega', 'strategist'],
+                S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
+                C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sustainer'],
+            };
+            const wrongLabels = wrongAxis[mp.eje] ?? [];
+            // Check if the response calls this player by the wrong archetype
+            const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
+            const sentences = assistantContent.split(/[.!?]+/);
+            let factualError = false;
+            for (const sentence of sentences) {
+                const sLower = sentence.toLowerCase();
+                if (sLower.includes(playerNameLower)) {
+                    for (const wrong of wrongLabels) {
+                        if (sLower.includes(wrong)) {
+                            factualError = true;
+                            break;
+                        }
+                    }
+                }
+                if (factualError) break;
+            }
+            if (factualError) {
+                console.warn(`[tenant-chat] Ground truth violation: response attributed wrong axis to ${mp.child_name} (${mp.eje})`);
+                // Append a correction note
+                assistantContent += `\n\n_Nota: ${mp.child_name} es un ${mp.archetype_label} (eje ${mp.eje}, motor ${mp.motor}). Las recomendaciones están basadas en su perfil real._`;
+            }
         }
 
         // ── Save messages to DB ───────────────────────────────────────────
