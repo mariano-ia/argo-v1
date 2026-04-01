@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Argo Method — Deck</title>
+<link rel="icon" href="/favicon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1D1D1F;--secondary:#424245;--grey:#86868B;--light:#AEAEB2;
+  --border:#E5E7EB;--border-light:#E8E8ED;--neutral:#F5F5F7;--bg:#FAFAFA;--white:#F5F5F7;
+  --violet:#955FB5;--violet-50:#F9F5FC;--violet-100:#EDE5F5;--violet-200:#D4BCE8;--violet-400:#A97BD2;--violet-600:#7A4D96;
+  --axis-d:#f97316;--axis-i:#f59e0b;--axis-s:#22c55e;--axis-c:#6366f1;
+}
+html{scroll-snap-type:y mandatory;-webkit-font-smoothing:antialiased;font-family:'Inter',sans-serif;color:var(--navy);background:var(--neutral)}
+body{overflow-x:hidden}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--grey)}
+
+/* ─── NAV ─── */
+.deck-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:48px;display:flex;align-items:center;justify-content:center;padding:0 24px}
+.logo span:first-child{font-weight:800;font-size:18px;letter-spacing:-.02em}
+.logo span:last-child{font-weight:100;font-size:18px;letter-spacing:-.02em}
+.nav-dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:101;display:flex;flex-direction:column;gap:8px}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--border-light);cursor:pointer;transition:all .3s cubic-bezier(.25,0,0,1)}
+.nav-dot.active{background:var(--violet);transform:scale(1.4)}
+.nav-progress{position:absolute;bottom:0;left:0;height:2px;background:var(--violet);transition:width .3s cubic-bezier(.25,0,0,1)}
+
+/* ─── SECTIONS ─── */
+section{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:80px 24px;position:relative;overflow:hidden;scroll-snap-align:start;scroll-snap-stop:always;border-top:1px solid var(--border)}
+section:first-of-type{border-top:none}
+.s-neutral{background:var(--neutral)}
+.s-alt{background:var(--bg)}
+.s-lavender{background:#E3E3FF}
+.container{max-width:1024px;width:100%;margin:0 auto}
+
+/* ─── REVEAL ─── */
+.reveal{opacity:0;transform:translateY(20px);transition:opacity .6s cubic-bezier(.25,0,0,1),transform .6s cubic-bezier(.25,0,0,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
+
+/* ─── TYPOGRAPHY ─── */
+.sl{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--light);margin-bottom:12px}
+h1,h2{font-weight:300;letter-spacing:-.03em;line-height:1.06}
+h1{font-size:clamp(1.9rem,3.8vw,3.2rem)}
+h2{font-size:clamp(1.8rem,3.5vw,2.8rem)}
+h1 strong,h2 strong{font-weight:700}
+.body{font-size:17px;font-weight:400;line-height:1.65;color:var(--secondary)}
+.body-sm{font-size:16px;font-weight:400;line-height:1.75;color:var(--secondary)}
+
+/* ─── CARDS ─── */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:28px 24px;transition:transform .3s cubic-bezier(.25,0,0,1)}
+.card:hover{transform:translateY(-1px)}
+.s-alt .card{background:var(--neutral)}
+.g{display:grid;gap:16px;margin-top:28px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+
+/* ─── STAT ─── */
+.stat{text-align:center}
+.sv{font-size:clamp(2rem,4vw,3.2rem);font-weight:800;letter-spacing:-.03em;color:var(--navy)}
+.sv-violet{background:linear-gradient(135deg,var(--violet),var(--violet-600));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sl2{font-size:13px;color:var(--grey);margin-top:4px;font-weight:500}
+
+/* ─── BADGES ─── */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.bv{background:rgba(149,95,181,0.1);color:var(--violet)}
+.bn{background:var(--navy);color:var(--white)}
+
+/* ─── TABLE ─── */
+.tw{overflow-x:auto;margin-top:24px;border-radius:14px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{background:var(--neutral);font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--grey);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border-light)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);color:var(--secondary);background:#fff}
+tr:last-child td{border-bottom:none}
+td:first-child{font-weight:600;color:var(--navy)}
+
+/* ─── TOGGLE ─── */
+.tg{display:flex;background:var(--neutral);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px;margin:24px auto;width:fit-content}
+.tb{padding:7px 18px;border-radius:9px;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;color:var(--grey);cursor:pointer;transition:all .22s cubic-bezier(.25,0,0,1)}
+.tb.active{background:var(--bg);color:var(--navy);border:1px solid var(--border)}
+
+/* ─── BARS ─── */
+.br{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bl{font-size:11px;font-weight:600;width:75px;text-align:right;color:var(--grey)}
+.bt{flex:1;height:5px;background:var(--border-light);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.25,0,0,1)}
+.bval{font-size:11px;font-weight:700;width:50px;color:var(--navy)}
+
+/* ─── FLOW ─── */
+.flow{display:flex;gap:0;align-items:stretch;margin-top:32px;position:relative}
+.flow::before{content:'';position:absolute;top:30px;left:48px;right:48px;height:1px;background:var(--border)}
+.fs{flex:1;text-align:center;position:relative;z-index:1}
+.fd{width:22px;height:22px;border-radius:50%;background:var(--violet);margin:20px auto 14px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:700;box-shadow:0 0 0 3px var(--neutral),0 0 0 5px var(--violet-200)}
+.ft{font-size:13px;font-weight:600;margin-bottom:4px}
+.fdesc{font-size:12px;color:var(--grey);line-height:1.5}
+
+/* ─── TIMELINE ─── */
+.tl{position:relative;padding-left:28px;margin-top:28px}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--violet),var(--violet-200))}
+.ti{position:relative;margin-bottom:28px}
+.td{position:absolute;left:-24px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--violet);background:var(--neutral)}
+.ti.active .td{background:var(--violet);box-shadow:0 0 0 4px var(--violet-100)}
+.tt{font-size:14px;font-weight:700;margin-bottom:6px}
+.tdesc{font-size:14px;color:var(--secondary);line-height:1.6}
+.tf{list-style:none;margin-top:8px}
+.tf li{font-size:13px;color:var(--grey);padding:3px 0 3px 16px;position:relative}
+.tf li::before{content:'';position:absolute;left:0;top:10px;width:5px;height:5px;border-radius:50%;background:var(--violet-200)}
+
+/* ─── REPORT GRID ─── */
+.rg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:24px}
+.ri{padding:18px;border-radius:14px;border:1px solid var(--border);background:transparent;transition:all .3s cubic-bezier(.25,0,0,1)}
+.ri:hover{transform:translateY(-1px)}
+.ri h4{font-size:13px;font-weight:700;margin-bottom:5px;color:var(--navy)}
+.ri p{font-size:11px;color:var(--grey);line-height:1.5}
+
+/* ─── WHY NOW ─── */
+.wn{font-size:56px;font-weight:800;color:var(--violet);margin-bottom:14px;line-height:1}
+.s-neutral .wn{color:var(--violet-200)}
+
+/* ─── TWO COL ─── */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+
+/* ─── VISION ─── */
+.vl{font-size:clamp(16px,2vw,20px);line-height:1.7;color:var(--light);font-weight:300}
+.vl strong{color:var(--navy);font-weight:500}
+
+/* ─── CLOSE ─── */
+.cl{display:inline-block;margin-top:24px;padding:12px 32px;background:var(--navy);color:var(--white);border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;transition:all .2s cubic-bezier(.25,0,0,1)}
+.cl:hover{opacity:.9}
+
+/* ─── DISCLAIMER ─── */
+.disc{border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-top:20px;font-size:12px;color:var(--grey);line-height:1.6;border-left:3px solid var(--violet-200)}
+
+/* ─── PULSE ─── */
+.pulse{animation:pr 2s ease-out infinite}
+@keyframes pr{0%{box-shadow:0 0 0 0 rgba(149,95,181,.4)}70%{box-shadow:0 0 0 10px rgba(149,95,181,0)}100%{box-shadow:0 0 0 0 rgba(149,95,181,0)}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  section{padding:64px 20px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+  .flow{flex-direction:column;gap:16px}
+  .flow::before{display:none}
+  .rg{grid-template-columns:1fr}
+  .nav-dots{display:none !important}
+  .two{grid-template-columns:1fr}
+  .tg{flex-direction:column;width:100%}
+  .tb{text-align:center}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="deck-nav">
+  <div class="logo"><span>Argo</span><span> Method</span></div>
+  <div class="nav-progress" id="navProgress"></div>
+</nav>
+<div class="nav-dots" id="navDots"></div>
+
+<!-- ══════════ 1. COVER ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal" style="color:var(--violet)">Argo Method</p>
+    <h1 class="reveal d1" style="max-width:820px">
+      No hay jóvenes <strong>incorrectos.</strong><br/>
+      Hay entrenadores sin las herramientas<br/>para descubrir dónde <strong>brilla</strong> cada uno.
+    </h1>
+    <p class="body reveal d2" style="margin-top:20px;max-width:560px">
+      Perfilamiento conductual gamificado para jóvenes atletas.<br/>
+      Basado en ciencia. Potenciado por IA. Diseñado para el deporte real.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:24px" class="reveal d3">
+      <span class="badge bv">En producción</span>
+      <span class="badge bv">3 idiomas</span>
+      <span class="badge bv">DISC adaptado</span>
+      <span class="badge bv">IA generativa</span>
+    </div>
+  </div>
+  <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);opacity:.3;animation:bounce 2s ease-in-out infinite">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--grey)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+  <style>@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(6px)}}</style>
+</section>
+
+<!-- ══════════ 2. EL ORIGEN ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal" style="color:var(--violet)">El origen</p>
+    <h2 class="reveal d1">Los argonautas no ganaron por ser<br/>los más fuertes o los más rápidos.</h2>
+    <p class="body reveal d2" style="margin-top:20px;max-width:640px">
+      En la mitología griega, la nave Argos cumplió su misión porque cada tripulante ocupó el rol exacto según su naturaleza. Orfeo ponía el ritmo. Hércules, la fuerza. Tifis, el rumbo.
+    </p>
+    <p class="body reveal d3" style="margin-top:14px;max-width:640px">
+      <strong>Ganaron porque cada uno ocupó el espacio que mejor sabía ocupar.</strong>
+    </p>
+    <p class="body-sm reveal d4" style="margin-top:20px;max-width:640px">
+      Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen deportistas jóvenes incorrectos. Existen deportistas fuera de sintonía. Cuando un niño no disfruta del deporte, no es por falta de capacidad: es porque está ocupando un lugar en la tripulación que no le corresponde.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ 3. EL PROBLEMA ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">El problema</p>
+    <h2 class="reveal d1">Un entrenador entrena <strong>técnica.</strong><br/>Pero gestiona <strong>personas.</strong></h2>
+    <div class="body reveal d2" style="margin-top:20px;max-width:640px">
+      <p>Cada joven atleta tiene un perfil conductual único: cómo reacciona a la presión, qué lo motiva, cómo se comunica, dónde se siente cómodo.</p>
+      <p style="margin-top:14px">Hoy, el entrenador adivina. No tiene herramientas diseñadas para entender el comportamiento de un niño de 10 años en contexto deportivo.</p>
+    </div>
+    <div style="margin-top:28px;display:flex;align-items:center;gap:16px;border:1px solid var(--border);border-radius:14px;padding:20px 24px" class="reveal d3">
+      <span style="font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--violet);flex-shrink:0">70%</span>
+      <div>
+        <span style="font-size:14px;color:var(--grey);line-height:1.6">de los niños en EE.UU. deja el deporte organizado antes de los 13 años. La razón principal no es falta de talento. <strong style="color:var(--navy)">Es falta de disfrute.</strong></span>
+        <span style="display:block;font-size:10px;color:var(--light);margin-top:6px">Fuente: National Alliance for Youth Sports, citado por The Washington Post (2016)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 4. LA OPORTUNIDAD ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">La oportunidad</p>
+    <h2 class="reveal d1">Un mercado enorme<br/><strong>sin soluciones específicas</strong></h2>
+    <div class="g g3 reveal d2">
+      <div class="card stat"><div class="sv sv-violet counter" data-target="150">0</div><div class="sl2">Millones de jóvenes atletas organizados globalmente</div></div>
+      <div class="card stat"><div class="sv sv-violet">20%</div><div class="sl2">Crecimiento anual sports tech</div></div>
+      <div class="card stat"><div class="sv sv-violet">0</div><div class="sl2">Herramientas de perfilamiento conductual juvenil</div></div>
+    </div>
+    <p class="body-sm reveal d3" style="margin-top:20px">La psicología deportiva existe, pero es cara, lenta, y diseñada para adultos profesionales. No existe una herramienta accesible, gamificada y escalable para deporte juvenil.</p>
+
+    <h3 class="reveal d4" style="font-size:14px;font-weight:700;margin-top:32px;margin-bottom:16px">Estrategia de mercado</h3>
+    <div class="g g3 reveal d5">
+      <div class="card" style="padding:20px;border-top:3px solid var(--violet)">
+        <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);margin-bottom:8px">Fase 1 (lanzamiento)</p>
+        <h4 style="font-size:16px;font-weight:700;margin-bottom:4px">Argentina</h4>
+        <p style="font-size:24px;font-weight:800;color:var(--navy)">~3.5M</p>
+        <p style="font-size:11px;color:var(--grey);margin-top:4px">jóvenes en deporte organizado. +10.000 clubes. Alta cultura deportiva y adopción digital temprana.</p>
+      </div>
+      <div class="card" style="padding:20px;border-top:3px solid var(--violet)">
+        <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);margin-bottom:8px">Fase 1 (lanzamiento)</p>
+        <h4 style="font-size:16px;font-weight:700;margin-bottom:4px">Estados Unidos</h4>
+        <p style="font-size:24px;font-weight:800;color:var(--navy)">~30M</p>
+        <p style="font-size:11px;color:var(--grey);margin-top:4px">jóvenes en deporte organizado (6-17 años). El mayor mercado de youth sports del mundo. Producto ya disponible en inglés.</p>
+      </div>
+      <div class="card" style="padding:20px;border-top:3px solid var(--border)">
+        <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);margin-bottom:8px">Fase 2 (expansión)</p>
+        <h4 style="font-size:16px;font-weight:700;margin-bottom:4px">España</h4>
+        <p style="font-size:24px;font-weight:800;color:var(--navy)">~1.2M</p>
+        <p style="font-size:11px;color:var(--grey);margin-top:4px">jóvenes federados (de 4.1M totales). Fuerte cultura de club, idioma nativo. Puerta de entrada a Europa.</p>
+      </div>
+    </div>
+    <p style="font-size:11px;color:var(--light);margin-top:12px" class="reveal d6">Fuentes: Project Play / Aspen Institute (EE.UU., 2025), Consejo Superior de Deportes (España, 2022), estimaciones sobre estructura federativa argentina.</p>
+  </div>
+</section>
+
+<!-- ══════════ 5. QUÉ ES ARGO ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">Qué es Argo</p>
+    <h2 class="reveal d1">Una <strong>odisea</strong> que revela<br/>quién es cada joven atleta</h2>
+    <p class="body reveal d2" style="margin-top:20px;max-width:640px">Argo es una experiencia gamificada de 5 a 7 minutos con temática náutica donde el joven toma decisiones ante escenarios. Detrás, un motor basado en el modelo <strong>DISC</strong> adaptado al deporte juvenil.</p>
+    <div class="g g4 reveal d3">
+      <div class="card" style="padding:18px;text-align:center;border-top:3px solid var(--axis-d)">
+        <div style="font-size:12px;font-weight:700;color:var(--axis-d)">Impulsor</div>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Acción, competencia, decisión rápida</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:3px solid var(--axis-i)">
+        <div style="font-size:12px;font-weight:700;color:var(--axis-i)">Conector</div>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Vínculo, entusiasmo, equipo</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:3px solid var(--axis-s)">
+        <div style="font-size:12px;font-weight:700;color:var(--axis-s)">Sostén</div>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Estabilidad, lealtad, constancia</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center;border-top:3px solid var(--axis-c)">
+        <div style="font-size:12px;font-weight:700;color:var(--axis-c)">Estratega</div>
+        <div style="font-size:11px;color:var(--grey);margin-top:4px">Análisis, precisión, estructura</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6. CÓMO FUNCIONA ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">Cómo funciona</p>
+    <h2 class="reveal d1">De un link a un <strong>perfil completo</strong> en minutos</h2>
+    <div class="flow reveal d2">
+      <div class="fs"><div class="fd">1</div><div class="ft">Compartir</div><div class="fdesc">El entrenador comparte<br/>su link único</div></div>
+      <div class="fs"><div class="fd">2</div><div class="ft">Jugar</div><div class="fdesc">El niño juega la odisea.<br/>No sabe que lo están perfilando</div></div>
+      <div class="fs"><div class="fd">3</div><div class="ft">Generar</div><div class="fdesc">La IA genera el reporte<br/>en menos de 30 segundos</div></div>
+      <div class="fs"><div class="fd">4</div><div class="ft">Recibir</div><div class="fdesc">El adulto recibe el resultado<br/>en dashboard o email</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 7. EL DASHBOARD ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal" style="color:var(--violet)">El dashboard</p>
+    <h2 class="reveal d1">Todo el equipo en <strong>un solo lugar</strong></h2>
+    <p class="body reveal d2" style="margin-top:16px;max-width:600px">El entrenador no solo recibe reportes. Tiene una plataforma completa para gestionar, entender y potenciar a cada jugador de su equipo.</p>
+    <div class="g g3 reveal d3">
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Equipo</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Todos los jugadores con su perfil, estado y fecha de último perfilamiento. Archiva y reactiva según necesites.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Grupos</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Arma equipos y visualiza la composición conductual del grupo. Detecta desbalances y complementos.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Consultor IA</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Pregunta sobre cualquier jugador: "¿Cómo motivo a Mateo?" La IA responde con contexto real del perfil.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Guía situacional</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Base de datos con escenarios específicos para cada arquetipo: pre-entrenamiento, durante, post-partido, conflictos.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Link único</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Cada institución tiene su link. Lo comparte con los padres y los jugadores llegan directo a la odisea.</p>
+      </div>
+      <div class="card" style="padding:20px">
+        <h3 style="font-size:13px;font-weight:700;margin-bottom:6px">Multi-usuario</h3>
+        <p style="font-size:12px;color:var(--grey);line-height:1.5">Invita a otros coaches de tu institución. Cada uno accede al mismo equipo con su propia cuenta.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 8. EL REPORTE ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">El producto</p>
+    <h2 class="reveal d1">No es un test. Es un <strong>mapa.</strong></h2>
+    <p class="body reveal d2" style="margin-top:16px;max-width:600px">Cada reporte es único. La IA genera contenido específico para ese niño, en ese deporte, para ese tipo de adulto.</p>
+    <div class="rg reveal d3">
+      <div class="ri"><h4>Perfil conductual</h4><p>Eje principal y motor de rendimiento. Cómo procesa decisiones, qué rol natural ocupa en un equipo.</p></div>
+      <div class="ri"><h4>Factor Wow</h4><p>La cualidad que lo hace único y que el entrenador debería potenciar. Lo que lo distingue.</p></div>
+      <div class="ri"><h4>Combustible</h4><p>Qué lo impulsa. La fuente de motivación que lo mantiene comprometido con el deporte.</p></div>
+      <div class="ri"><h4>Reseteo</h4><p>Cómo se recupera del estrés o la frustración. Qué necesita para volver a su mejor versión.</p></div>
+      <div class="ri"><h4>Guía situacional</h4><p>Qué hacer antes, durante y después del entrenamiento. Activadores y desmotivadores de su perfil.</p></div>
+      <div class="ri"><h4>Palabras puente</h4><p>Frases que conectan con su perfil. El lenguaje que genera confianza y respuesta positiva.</p></div>
+      <div class="ri"><h4>Palabras ruido</h4><p>Lo que hay que evitar decirle. Expresiones que lo bloquean o generan rechazo.</p></div>
+      <div class="ri"><h4>Checklist</h4><p>Lista accionable: qué hacer antes, durante y después de cada sesión con este jugador.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 9. PARA QUIÉN ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">Para quién</p>
+    <h2 class="reveal d1">Dos segmentos, <strong>un mismo motor</strong></h2>
+    <div class="g g2 reveal d2">
+      <div class="card" style="border-top:3px solid var(--violet)">
+        <span class="badge bv" style="margin-bottom:14px">B2B SaaS</span>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:10px">Instituciones</h3>
+        <p style="font-size:14px;color:var(--secondary);line-height:1.6">Clubes deportivos, academias, escuelas de deporte. Dashboard completo con equipo de jugadores, grupos, análisis y consultor IA.</p>
+        <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge bv">Dashboard</span><span class="badge bv">Grupos</span><span class="badge bv">Consultor IA</span>
+        </div>
+      </div>
+      <div class="card" style="border-top:3px solid var(--navy)">
+        <span class="badge bn" style="margin-bottom:14px">B2C</span>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:10px">Padres</h3>
+        <p style="font-size:14px;color:var(--secondary);line-height:1.6">Argo One: compra única, sin suscripción. El padre compra un pack, recibe links de juego, y el reporte llega por email.</p>
+        <div style="margin-top:14px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge bn">Sin cuenta</span><span class="badge bn">Compra única</span><span class="badge bn">Email</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 8. MODELO DE NEGOCIO ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">Modelo de negocio</p>
+    <h2 class="reveal d1">Diseñado para fomentar<br/>el <strong>uso</strong>, no para limitarlo.</h2>
+    <p class="body-sm reveal d2" style="margin-top:16px;max-width:600px">Los planes se basan en el tamaño del equipo. Perfilar, re-perfilar y consultar la IA están incluidos. Cuanto más usa la plataforma, más valor obtiene.</p>
+    <div class="tw reveal d3">
+      <table>
+        <thead><tr><th>Plan</th><th>Precio</th><th>Equipo</th><th>Incluye</th></tr></thead>
+        <tbody>
+          <tr><td>Trial</td><td>Gratis (14 días)</td><td>8 jugadores</td><td>Dashboard limitado</td></tr>
+          <tr><td style="color:var(--violet)">PRO</td><td>$49/mes</td><td>50 jugadores</td><td>Dashboard completo, consultor IA, grupos</td></tr>
+          <tr><td style="color:var(--violet)">Academy</td><td>$89/mes</td><td>100 jugadores</td><td>Todo PRO + soporte prioritario + multi-usuario</td></tr>
+          <tr><td style="color:var(--violet)">Enterprise</td><td>Custom</td><td>Ilimitado</td><td>API, soporte dedicado, modelo IA premium</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:16px;border:1px solid var(--border);border-radius:14px;padding:18px 22px" class="reveal d4">
+      <p style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:6px">Argo One (padres)</p>
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div><span style="font-size:18px;font-weight:800;color:var(--navy)">$14.99</span> <span style="font-size:12px;color:var(--grey)">1 perfil</span></div>
+        <div><span style="font-size:18px;font-weight:800;color:var(--navy)">$34.99</span> <span style="font-size:12px;color:var(--grey)">3 perfiles</span></div>
+        <div><span style="font-size:18px;font-weight:800;color:var(--navy)">$49.99</span> <span style="font-size:12px;color:var(--grey)">5 perfiles</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 9. TRACCIÓN ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">Tracción</p>
+    <h2 class="reveal d1">Ya está en <strong>producción</strong></h2>
+    <div class="g g3 reveal d2">
+      <div class="card stat"><div class="sv" style="font-size:1.8rem">argomethod.com</div><div class="sl2">Producto live</div></div>
+      <div class="card stat"><div class="sv sv-violet">3</div><div class="sl2">Idiomas (ES, EN, PT)</div></div>
+      <div class="card stat"><div class="sv sv-violet">12</div><div class="sl2">Arquetipos conductuales</div></div>
+    </div>
+    <div class="g g4 reveal d3" style="margin-top:12px">
+      <div class="card stat" style="padding:18px"><div class="sv" style="font-size:1.4rem">~$0.02</div><div class="sl2">Costo por perfil</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv" style="font-size:1.4rem">30s</div><div class="sl2">Generación de reporte</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv" style="font-size:1.4rem">SaaS</div><div class="sl2">Multi-tenant listo</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv" style="font-size:1.4rem">Stripe</div><div class="sl2">Pagos integrados</div></div>
+    </div>
+    <div class="disc reveal d4">Métricas de usuarios y sesiones disponibles bajo NDA. El producto está operativo y procesando sesiones reales.</div>
+  </div>
+</section>
+
+<!-- ══════════ 10. TECNOLOGÍA ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">La tecnología</p>
+    <h2 class="reveal d1">Ligero, escalable, <strong>inteligente</strong></h2>
+    <div class="g g2 reveal d2">
+      <div class="card"><h3 style="font-size:14px;font-weight:700;margin-bottom:6px">Motor determinístico</h3><p style="font-size:13px;color:var(--secondary);line-height:1.6">El perfil se calcula con un algoritmo propio basado en DISC. No depende de IA para el diagnóstico. Es reproducible y auditable.</p></div>
+      <div class="card"><h3 style="font-size:14px;font-weight:700;margin-bottom:6px">IA generativa</h3><p style="font-size:13px;color:var(--secondary);line-height:1.6">Gemini personaliza cada reporte y alimenta el consultor de equipo. Pero no decide el perfil. Si cambia el modelo de IA, el perfil sigue intacto.</p></div>
+      <div class="card"><h3 style="font-size:14px;font-weight:700;margin-bottom:6px">Serverless</h3><p style="font-size:13px;color:var(--secondary);line-height:1.6">Infraestructura que escala a cero y escala a miles sin intervención. Costos proporcionales al uso real.</p></div>
+      <div class="card"><h3 style="font-size:14px;font-weight:700;margin-bottom:6px">Multi-idioma nativo</h3><p style="font-size:13px;color:var(--secondary);line-height:1.6">No es traducción automática. Es contenido diseñado por idioma. Español, inglés y portugués, con arquitectura lista para más.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 11. ROADMAP ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">Roadmap</p>
+    <h2 class="reveal d1">Cada interacción<br/><strong>enriquece el perfil</strong></h2>
+    <div class="tl reveal d2">
+      <div class="ti active"><div class="td pulse"></div><div class="tt" style="color:var(--violet)">Hoy (en producción)</div><div class="tdesc">Odisea gamificada, 12 arquetipos conductuales, reportes con IA generativa, dashboard multi-tenant, Argo One para padres, 3 idiomas, pagos con Stripe, consultor IA por equipo.</div></div>
+      <div class="ti"><div class="td"></div><div class="tt">Próxima fase (6-12 meses)</div>
+        <ul class="tf">
+          <li><strong>Perfil de sintonización adulto</strong>: el padre hace un cuestionario corto que se empareja con el perfil de su hijo en 3-4 vectores clave. Reporte de compatibilidad y comunicación.</li>
+          <li><strong>Nuevas aventuras</strong>: el jugador que vuelve no repite la misma historia. Nuevos escenarios narrativos, misma mecánica, nuevas dimensiones medidas.</li>
+          <li><strong>Más KPIs</strong>: cada aventura agrega vectores (resiliencia, liderazgo situacional, reacción al fracaso). El perfil se enriquece con cada interacción.</li>
+          <li><strong>API institucional</strong>: endpoints documentados, webhooks, integración con CRMs de clubes y academias.</li>
+        </ul>
+      </div>
+      <div class="ti"><div class="td"></div><div class="tt">Visión (12-24 meses)</div><div class="tdesc"><strong>Modelo predictivo.</strong> Con volumen de datos longitudinales, predecir evolución conductual. La base de perfiles juveniles más grande del mundo como activo de datos.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 12. POR QUÉ AHORA ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">Por qué ahora</p>
+    <h2 class="reveal d1">Tres cosas que <strong>no existían</strong><br/>hace tres años</h2>
+    <div class="g g3 reveal d2">
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="wn">1</div>
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">IA generativa accesible</h3>
+        <p style="font-size:13px;color:var(--secondary);line-height:1.5">Generar un reporte personalizado costaba cientos de dólares en horas profesionales. Hoy cuesta $0.02 y tarda 30 segundos.</p>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="wn">2</div>
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Salud mental juvenil</h3>
+        <p style="font-size:13px;color:var(--secondary);line-height:1.5">Post-pandemia, las instituciones deportivas están obligadas a mirar más allá de lo físico. Hay presión social y regulatoria.</p>
+      </div>
+      <div class="card" style="text-align:center;padding:28px 20px">
+        <div class="wn">3</div>
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Deporte base digital</h3>
+        <p style="font-size:13px;color:var(--secondary);line-height:1.5">Clubes y academias que nunca tuvieron software ahora usan apps para todo. Argo entra en ese momento de adopción.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 13. PROYECCIONES ══════════ -->
+<section class="s-neutral">
+  <div class="container">
+    <p class="sl reveal">Proyecciones</p>
+    <h2 class="reveal d1">Un negocio que <strong>escala</strong> desde el día 1</h2>
+    <div class="tg reveal d2">
+      <button class="tb active" data-scenario="moderate" onclick="setScenario('moderate')">Moderado</button>
+      <button class="tb" data-scenario="conservative" onclick="setScenario('conservative')">Conservador</button>
+      <button class="tb" data-scenario="optimistic" onclick="setScenario('optimistic')">Optimista</button>
+    </div>
+    <div class="g g4 reveal d3">
+      <div class="card stat" style="padding:18px"><div class="sv sv-violet" style="font-size:1.4rem" id="kpi-cac">$33</div><div class="sl2">CAC institucional</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv sv-violet" style="font-size:1.4rem" id="kpi-ltv">$540</div><div class="sl2">LTV institucional</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv sv-violet" style="font-size:1.4rem" id="kpi-ratio">16x</div><div class="sl2">LTV / CAC</div></div>
+      <div class="card stat" style="padding:18px"><div class="sv sv-violet" style="font-size:1.4rem" id="kpi-margin">&gt;85%</div><div class="sl2">Margen bruto</div></div>
+    </div>
+    <div class="tw reveal d4" style="margin-top:16px">
+      <table><thead><tr><th>Mes</th><th>Budget Ads</th><th>Clientes</th><th>MRR</th><th>Argo One</th><th>Revenue</th><th>Costos</th><th>Margen</th></tr></thead><tbody id="projBody"></tbody></table>
+    </div>
+    <div style="text-align:center;margin-top:16px" class="reveal d5">
+      <span class="badge bv" style="font-size:13px;padding:6px 16px" id="breakevenBadge">Break-even operativo: mes 3</span>
+    </div>
+    <div class="disc reveal d6">
+      <strong>Lo que no estamos contando:</strong> referrals orgánicos (en SaaS educativo, 20-40% de adquisición es orgánica después del mes 6), el upsell de Argo Family (sintonización adulto, CAC cero sobre usuarios existentes), ni el efecto boca a boca entre entrenadores.
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 14. UNIT ECONOMICS ══════════ -->
+<section class="s-alt">
+  <div class="container">
+    <p class="sl reveal">Unit economics</p>
+    <h2 class="reveal d1">Los números detrás<br/>del <strong>modelo</strong></h2>
+    <div class="two reveal d2">
+      <div>
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Supuestos de adquisición (Meta Ads, LATAM)</h3>
+        <div class="br"><div class="bl">CPC</div><div class="bt"><div class="bf" style="background:var(--violet);width:0%" id="bar-cpc"></div></div><div class="bval" id="val-cpc">$0.40</div></div>
+        <div class="br"><div class="bl">Click→Trial</div><div class="bt"><div class="bf" style="background:var(--axis-i);width:0%" id="bar-trial"></div></div><div class="bval" id="val-trial">12%</div></div>
+        <div class="br"><div class="bl">Trial→Pago</div><div class="bt"><div class="bf" style="background:var(--axis-s);width:0%" id="bar-pago"></div></div><div class="bval" id="val-pago">10%</div></div>
+        <div class="br"><div class="bl">Churn</div><div class="bt"><div class="bf" style="background:var(--axis-d);width:0%" id="bar-churn"></div></div><div class="bval" id="val-churn">5%</div></div>
+      </div>
+      <div>
+        <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">Costo por perfil generado</h3>
+        <div class="card" style="margin-bottom:10px;padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--secondary)">IA (Gemini)</span><span style="font-size:15px;font-weight:700">$0.019</span></div>
+        </div>
+        <div class="card" style="margin-bottom:10px;padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--secondary)">Email (Resend)</span><span style="font-size:15px;font-weight:700">$0.005</span></div>
+        </div>
+        <div style="background:rgba(149,95,181,0.06);border:1px solid rgba(149,95,181,0.15);border-radius:14px;padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600;color:var(--violet)">Total por perfil</span><span style="font-size:18px;font-weight:800;color:var(--violet)">$0.024</span></div>
+        </div>
+        <h3 style="font-size:14px;font-weight:700;margin:16px 0 10px">Infra fija mensual</h3>
+        <div class="card" style="padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--secondary)">Vercel + Supabase + Email</span><span style="font-size:15px;font-weight:700">~$150</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 15. VISIÓN ══════════ -->
+<section class="s-neutral">
+  <div class="container" style="max-width:720px">
+    <p class="sl reveal" style="color:var(--violet)">Visión</p>
+    <h2 class="reveal d1" style="font-size:clamp(1.6rem,3vw,2.2rem)">No hay jóvenes <strong>incorrectos.</strong></h2>
+    <div style="margin-top:28px">
+      <p class="vl reveal d2">Hoy, Argo le dice al entrenador <strong>dónde poner a cada niño</strong> para que rinda, disfrute y se quede.</p><br/>
+      <p class="vl reveal d3">Mañana, Argo le dice al padre <strong>cómo conectar mejor con su hijo.</strong></p><br/>
+      <p class="vl reveal d4">Con cada aventura, con cada vector, con cada perfil, Argo construye <strong>el mapa más completo del desarrollo conductual juvenil</strong> en el deporte.</p><br/>
+      <p class="vl reveal d5">Para que ningún niño abandone porque <strong>nadie supo dónde ponerlo.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 16. CIERRE ══════════ -->
+<section class="s-lavender" style="text-align:center">
+  <div class="container">
+    <h2 class="reveal"><strong>¿Hablamos?</strong></h2>
+    <p class="reveal d1" style="font-size:16px;color:var(--grey);margin-top:12px">argomethod.com</p>
+    <a href="https://argomethod.com" target="_blank" class="cl reveal d2">Ver el producto en vivo</a>
+  </div>
+</section>
+
+<script>
+// ── REVEAL ──
+const obs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) x.target.classList.add('visible'); }), { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// ── NAV ──
+const secs = document.querySelectorAll('section');
+const dots = document.getElementById('navDots');
+const prog = document.getElementById('navProgress');
+secs.forEach((s,i) => { const d = document.createElement('div'); d.className = 'nav-dot'; d.onclick = () => s.scrollIntoView({behavior:'smooth'}); dots.appendChild(d); });
+
+function upNav() {
+  const st = window.scrollY, dh = document.documentElement.scrollHeight - window.innerHeight;
+  prog.style.width = Math.min(st / dh * 100, 100) + '%';
+  let ai = 0;
+  secs.forEach((s,i) => { if (s.getBoundingClientRect().top < innerHeight * .5) ai = i; });
+  dots.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i === ai));
+}
+addEventListener('scroll', upNav, {passive:true}); upNav();
+
+// ── BARS ──
+const bObs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) { setTimeout(animBars, 300); bObs.unobserve(x.target); } }), {threshold:.3});
+const ue = document.getElementById('bar-cpc')?.closest('section');
+if (ue) bObs.observe(ue);
+
+function animBars() {
+  const s = scenarios[cur];
+  document.getElementById('bar-cpc').style.width = (s.cpc/.8*100)+'%';
+  document.getElementById('bar-trial').style.width = (s.trialRate*100)+'%';
+  document.getElementById('bar-pago').style.width = (s.payRate/.2*100)+'%';
+  document.getElementById('bar-churn').style.width = (s.churn/.1*100)+'%';
+}
+
+// ── SCENARIOS ──
+const scenarios = {
+  conservative: { cpc:.60, trialRate:.08, payRate:.05, churn:.07, cpcOne:.40, convOne:.015, ticketOne:24, breakeven:'mes 5', cac:150, ltv:380, ratio:'2.5x', budgets:[500,500,500,750,750,750,1000,1000,1000,1500,1500,1500] },
+  moderate:     { cpc:.40, trialRate:.12, payRate:.10, churn:.05, cpcOne:.25, convOne:.025, ticketOne:28, breakeven:'mes 3', cac:33, ltv:540, ratio:'16x', budgets:[500,500,500,1000,1000,1000,2000,2000,2000,2000,2000,2000] },
+  optimistic:   { cpc:.25, trialRate:.16, payRate:.15, churn:.03, cpcOne:.15, convOne:.04,  ticketOne:32, breakeven:'mes 1', cac:10, ltv:850, ratio:'85x', budgets:[500,750,1000,1500,1500,2000,2500,2500,3000,3000,3000,3000] }
+};
+let cur = 'moderate';
+
+function setScenario(k) {
+  cur = k;
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('active', b.dataset.scenario === k));
+  render(k); animBars();
+}
+
+function render(k) {
+  const s = scenarios[k];
+  document.getElementById('kpi-cac').textContent = '$'+s.cac;
+  document.getElementById('kpi-ltv').textContent = '$'+s.ltv;
+  document.getElementById('kpi-ratio').textContent = s.ratio;
+  document.getElementById('breakevenBadge').textContent = 'Break-even operativo: '+s.breakeven;
+  document.getElementById('val-cpc').textContent = '$'+s.cpc.toFixed(2);
+  document.getElementById('val-trial').textContent = (s.trialRate*100)+'%';
+  document.getElementById('val-pago').textContent = (s.payRate*100)+'%';
+  document.getElementById('val-churn').textContent = (s.churn*100)+'%';
+
+  const tb = document.getElementById('projBody'); tb.innerHTML = '';
+  let cl = 0; const arpu = 55;
+  for (let m=1;m<=12;m++) {
+    const bg = s.budgets[m-1], bi = bg*.6, bo = bg*.4;
+    const ck = Math.floor(bi/s.cpc), tr = Math.floor(ck*s.trialRate), np = Math.floor(tr*s.payRate);
+    cl = Math.max(0, cl + np - Math.floor(cl*s.churn));
+    const mrr = cl*arpu, co = Math.floor(bo/s.cpcOne), so = Math.floor(co*s.convOne), ro = so*s.ticketOne;
+    const rev = mrr+ro, ic = m<=6?150:240, ac = Math.round((cl*3+so)*.024), tc = bg+ic+ac, mg = rev-tc;
+    const mc = mg>=0 ? 'color:#22c55e;font-weight:700' : 'color:#ef4444;font-weight:700';
+    const r = document.createElement('tr');
+    r.innerHTML = `<td>Mes ${m}</td><td>$${bg.toLocaleString()}</td><td>${cl}</td><td>$${mrr.toLocaleString()}</td><td>$${ro.toLocaleString()}</td><td style="font-weight:700">$${rev.toLocaleString()}</td><td>$${tc.toLocaleString()}</td><td style="${mc}">${mg>=0?'+':''}$${mg.toLocaleString()}</td>`;
+    tb.appendChild(r);
+  }
+}
+render('moderate');
+
+// ── COUNTER ──
+const cObs = new IntersectionObserver(e => e.forEach(x => { if (x.isIntersecting) { const t=parseInt(x.target.dataset.target); if(!t)return; let c=0; const s=Math.ceil(t/40); const iv=setInterval(()=>{c+=s;if(c>=t){c=t;clearInterval(iv)}x.target.textContent='+'+c+'M';},30); cObs.unobserve(x.target); } }), {threshold:.5});
+document.querySelectorAll('.counter').forEach(el => cObs.observe(el));
+</script>
+</body>
+</html>
