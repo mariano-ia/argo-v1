@@ -6,6 +6,7 @@ import { InfoTip } from '../components/ui/Tooltip';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 import { AXIS_COLORS } from '../lib/designTokens';
+import DeckChat from '../components/DeckChat';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 // #1D1D1F  text-argo-navy
@@ -1536,6 +1537,9 @@ export const Landing: React.FC = () => {
                     </button>
                 </motion.div>
             </section>
+
+            {/* ── CHAT WIDGET ── */}
+            <DeckChat lang={lang} />
 
             {/* ── FOOTER ── */}
             <footer style={{ borderTop: '1px solid #D2D2D7', backgroundColor: '#E3E3FF' }} className="py-10">
