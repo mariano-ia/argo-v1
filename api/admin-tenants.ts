@@ -201,7 +201,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: existing } = await sb.from('tenants').select('id').eq('email', email).maybeSingle();
             if (existing) return res.status(400).json({ error: 'Tenant with this email already exists' });
 
-            // Create Supabase Auth user with invite (sends magic link email)
+            // Create Supabase Auth user with invite
+            let authUserId: string | undefined;
             const { data: authUser, error: authErr } = await sb.auth.admin.createUser({
                 email,
                 email_confirm: false,
@@ -210,18 +211,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (authErr) {
                 console.error('[admin-tenants] Auth user creation error:', authErr.message);
-                // If user already exists in auth, continue with tenant creation
-                if (!authErr.message.includes('already been registered')) {
+                if (authErr.message.includes('already') || authErr.message.includes('exists') || authErr.message.includes('registered')) {
+                    // User already exists in auth — look up their ID
+                    const { data: existingUsers } = await sb.auth.admin.listUsers({ filter: email });
+                    const found = (existingUsers?.users ?? []).find(u => u.email === email);
+                    if (found) authUserId = found.id;
+                }
+                if (!authUserId) {
                     return res.status(500).json({ error: `Failed to create auth user: ${authErr.message}` });
                 }
+            } else {
+                authUserId = authUser?.user?.id;
             }
-
-            const authUserId = authUser?.user?.id;
 
             // Generate slug
             const base = display_name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30);
             const suffix = Math.random().toString(36).slice(2, 10);
             const slug = `${base}-${suffix}`;
+
+            if (!authUserId) {
+                return res.status(500).json({ error: 'Could not resolve auth user ID for this email.' });
+            }
 
             const tenantInsert: Record<string, unknown> = {
                 email,
@@ -230,8 +240,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 plan: 'enterprise',
                 roster_limit: roster_limit || 500,
                 onboarding_completed: false,
+                auth_user_id: authUserId,
             };
-            if (authUserId) tenantInsert.auth_user_id = authUserId;
 
             const { data: tenant, error: insertErr } = await sb.from('tenants')
                 .insert(tenantInsert)
