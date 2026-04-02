@@ -13,7 +13,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const { id } = req.query;
+    const { id, token } = req.query;
     if (!id || typeof id !== 'string') {
         return res.status(400).json({ error: 'Missing session id' });
     }
@@ -24,17 +24,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(400).json({ error: 'Invalid session id format' });
     }
 
+    // Require share token for public access (prevents UUID brute-force)
+    if (!token || typeof token !== 'string' || token.length < 8) {
+        return res.status(403).json({ error: 'Missing or invalid access token' });
+    }
+
     const sb = createClient(supabaseUrl, serviceKey);
 
     const { data, error } = await sb
         .from('sessions')
-        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access')
+        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
         .single();
 
     if (error || !data) {
         return res.status(404).json({ error: 'Report not found' });
+    }
+
+    // Validate share token
+    if (data.share_token && data.share_token !== token) {
+        return res.status(403).json({ error: 'Invalid access token' });
     }
 
     // Resolve tenant plan — sessions without a tenant (legacy MVP) show full report

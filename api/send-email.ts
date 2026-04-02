@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 
@@ -13,12 +14,14 @@ function buildHtml(params: {
     perfil: string;
     palabrasPuente: string[];
     sessionId?: string;
+    shareToken?: string;
     lang?: string;
     resumenPerfil?: string;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = 'https://argomethod.com';
-    const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}` : baseUrl;
+    const tokenParam = params.shareToken ? `?token=${params.shareToken}` : '';
+    const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}${tokenParam}` : baseUrl;
 
     const AXIS_DOT: Record<string, string> = {
         D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1',
@@ -321,6 +324,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             perfil,
             palabrasPuente,
             sessionId,
+            shareToken,
             lang,
             emailSubject,
             resumenPerfil,
@@ -336,6 +340,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             perfil: string;
             palabrasPuente: string[];
             sessionId?: string;
+            shareToken?: string;
             lang?: string;
             emailSubject?: string;
             resumenPerfil?: string;
@@ -356,10 +361,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Missing required fields: toEmail, nombreNino' });
         }
 
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(toEmail)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        // Idempotency: skip if already sent for this session
+        if (sessionId) {
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const supabaseUrl = process.env.VITE_SUPABASE_URL;
+            if (serviceKey && supabaseUrl) {
+                const sb = createClient(supabaseUrl, serviceKey);
+                const { data: sess } = await sb.from('sessions').select('email_sent_at').eq('id', sessionId).maybeSingle();
+                if (sess?.email_sent_at) {
+                    console.log('[send-email] Already sent for session', sessionId);
+                    return res.status(200).json({ success: true, already_sent: true });
+                }
+            }
+        }
+
+        // If no shareToken provided but we have a sessionId, fetch it from DB
+        let finalShareToken = shareToken;
+        if (!finalShareToken && sessionId) {
+            const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const sUrl = process.env.VITE_SUPABASE_URL;
+            if (sKey && sUrl) {
+                const sbForToken = createClient(sUrl, sKey);
+                const { data: tokenData } = await sbForToken.from('sessions').select('share_token').eq('id', sessionId).maybeSingle();
+                finalShareToken = tokenData?.share_token || undefined;
+            }
+        }
+
         const html = buildHtml({
             nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
             palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
-            sessionId, lang, resumenPerfil,
+            sessionId, shareToken: finalShareToken, lang, resumenPerfil,
         });
 
         const langAttr = lang || 'es';
@@ -394,6 +431,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const resendData = await response.json().catch(() => ({}));
         console.log('[send-email] Success — Resend response:', JSON.stringify(resendData));
+
+        // Mark email as sent for idempotency
+        if (sessionId) {
+            const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            const supabaseUrl = process.env.VITE_SUPABASE_URL;
+            if (serviceKey && supabaseUrl) {
+                const sb = createClient(supabaseUrl, serviceKey);
+                await sb.from('sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId).catch(() => {});
+            }
+        }
+
         return res.status(200).json({ success: true });
 
     } catch (err) {

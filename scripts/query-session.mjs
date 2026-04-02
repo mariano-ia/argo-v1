@@ -1,9 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { config } from 'dotenv';
+config();
 
-const sb = createClient(
-  'https://luutdozbhinfiogugjbv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1dXRkb3piaGluZmlvZ3VnamJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE1NDYyMSwiZXhwIjoyMDg4NzMwNjIxfQ.nDv9zZuAIEfeUqCdVySlUgnbAnJD3TBiCEuyS9IHLm4'
-);
+const url = process.env.VITE_SUPABASE_URL;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!url || !key) { console.error('Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env'); process.exit(1); }
+const sb = createClient(url, key);
 
 const { data, error } = await sb
   .from('sessions')

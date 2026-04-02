@@ -123,7 +123,7 @@ interface OnboardingV2Props {
     oneLinkId?: string;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId: _oneLinkId }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -541,6 +541,35 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.log('[Argo] Report email sent to', adultData.email);
             } catch (err) {
                 console.error('[Argo] Email send failed:', err);
+            }
+
+            // Mark Argo One link as completed if applicable
+            if (oneLinkId && sessionIdRef.current) {
+                try {
+                    await fetch('/api/one-complete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            link_id: oneLinkId,
+                            session_data: {
+                                adult_name: adultData.nombreAdulto,
+                                adult_email: adultData.email,
+                                child_name: adultData.nombreNino,
+                                child_age: adultData.edad,
+                                sport: adultData.deporte,
+                                eje: profile.eje,
+                                motor: profile.motor,
+                                eje_secundario: profile.ejeSecundario,
+                                archetype_label: report.arquetipo.label,
+                                answers,
+                                ai_sections: finalSections,
+                                lang,
+                            },
+                        }),
+                    });
+                } catch (err) {
+                    console.error('[Argo] one-complete failed:', err);
+                }
             }
 
             if (!playCountedRef.current) {

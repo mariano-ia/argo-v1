@@ -322,9 +322,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const fairUseExceeded = fairUseData?.fair_use_exceeded === true;
 
-        // Trial plan: hard cap at 10 total user messages
-        const { data: tenantPlan } = await sb.from('tenants').select('plan').eq('id', tenant.id).maybeSingle();
+        // Trial plan: check expiration + hard cap at 10 total user messages
+        const { data: tenantPlan } = await sb.from('tenants').select('plan, trial_expires_at').eq('id', tenant.id).maybeSingle();
         if (tenantPlan?.plan === 'trial') {
+            // Check trial expiration
+            if (tenantPlan.trial_expires_at && new Date(tenantPlan.trial_expires_at) < new Date()) {
+                return res.status(403).json({ error: 'trial_expired', message: 'Tu periodo de prueba ha finalizado. Actualiza tu plan para seguir usando el asistente.' });
+            }
             const { count: totalMessages } = await sb
                 .from('chat_messages')
                 .select('id', { count: 'exact', head: true })

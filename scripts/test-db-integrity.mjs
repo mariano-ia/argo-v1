@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
-const sb = createClient(
-  'https://luutdozbhinfiogugjbv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1dXRkb3piaGluZmlvZ3VnamJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE1NDYyMSwiZXhwIjoyMDg4NzMwNjIxfQ.nDv9zZuAIEfeUqCdVySlUgnbAnJD3TBiCEuyS9IHLm4'
-);
+import { config } from 'dotenv';
+config();
+const url = process.env.VITE_SUPABASE_URL;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!url || !key) { console.error('Missing env vars'); process.exit(1); }
+const sb = createClient(url, key);
 
 const { count: total } = await sb.from('sessions').select('*', { count: 'exact', head: true });
 const { count: active } = await sb.from('sessions').select('*', { count: 'exact', head: true }).is('deleted_at', null);

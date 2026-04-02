@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
 
 /**
  * Unified session endpoint. Routes by `action` field in POST body:
@@ -32,6 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Missing required fields: adult_email, child_name' });
             }
 
+            const share_token = randomBytes(16).toString('hex');
             const { data, error } = await sb.from('sessions').insert({
                 adult_name,
                 adult_email,
@@ -44,14 +46,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 motor:           '_pending',
                 archetype_label: '_pending',
                 answers:         [],
-            }).select('id').single();
+                share_token,
+            }).select('id, share_token').single();
 
             if (error) {
                 console.error('[session:start] Insert error:', error.message, error.details);
                 return res.status(500).json({ error: error.message });
             }
 
-            return res.status(200).json({ ok: true, id: data.id });
+            return res.status(200).json({ ok: true, id: data.id, share_token: data.share_token });
         }
 
         // ── Update session ───────────────────────────────────────────────────
@@ -98,6 +101,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
 
+            const save_share_token = randomBytes(16).toString('hex');
             const { data: saveData, error } = await sb.from('sessions').insert({
                 adult_name,
                 adult_email,
@@ -114,7 +118,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_tokens_input:  ai_tokens_input ?? 0,
                 ai_tokens_output: ai_tokens_output ?? 0,
                 ai_cost_usd:      ai_cost_usd ?? 0,
-            }).select('id').single();
+                share_token:      save_share_token,
+            }).select('id, share_token').single();
 
             if (error) {
                 console.error('[session:save] Insert error:', error.message, error.details);

@@ -115,7 +115,9 @@ Basado en el modelo DISC, la metodología más validada de perfilamiento conduct
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    const allowedOrigins = ['https://argomethod.com', 'https://www.argomethod.com'];
+    const origin = req.headers.origin || '';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins.includes(origin) ? origin : allowedOrigins[0]);
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     if (req.method === 'OPTIONS') return res.status(200).end();

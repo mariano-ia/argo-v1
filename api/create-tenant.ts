@@ -46,23 +46,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Invalid auth_user_id' });
         }
 
-        // Check if tenant already exists for this auth user
-        const { data: existing } = await sb
-            .from('tenants')
-            .select('id, slug')
-            .eq('auth_user_id', auth_user_id)
-            .single();
-
-        if (existing) {
-            return res.status(200).json({ ok: true, tenant: existing, existing: true });
-        }
-
-        // Create new tenant with unique slug
+        // Upsert pattern: try insert, if auth_user_id conflict return existing
         const slug = generateSlug(display_name);
 
         const { data: tenant, error } = await sb
             .from('tenants')
-            .insert({
+            .upsert({
                 auth_user_id,
                 email,
                 display_name,
@@ -70,48 +59,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 plan: 'trial',
                 roster_limit: 8,
                 trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            })
+            }, { onConflict: 'auth_user_id', ignoreDuplicates: true })
             .select('id, slug')
             .single();
 
         if (error) {
-            // Slug collision — retry with different suffix
-            if (error.code === '23505' && error.message.includes('slug')) {
-                const retrySlug = generateSlug(display_name);
-                const { data: retryTenant, error: retryError } = await sb
+            // If upsert returned nothing (duplicate ignored), fetch existing
+            if (error.code === 'PGRST116') {
+                const { data: existing } = await sb
                     .from('tenants')
-                    .insert({
-                        auth_user_id,
-                        email,
-                        display_name,
-                        slug: retrySlug,
-                        plan: 'trial',
-                        roster_limit: 8,
-                        trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-                    })
                     .select('id, slug')
+                    .eq('auth_user_id', auth_user_id)
                     .single();
-
-                if (retryError) {
-                    console.error('[create-tenant] Retry insert error:', retryError.message);
-                    return res.status(500).json({ error: retryError.message });
+                if (existing) {
+                    return res.status(200).json({ ok: true, tenant: existing, existing: true });
                 }
-                await sb.from('tenant_members').upsert(
-                    { tenant_id: retryTenant!.id, auth_user_id, email, role: 'owner', status: 'active', full_name: full_name || null },
-                    { onConflict: 'tenant_id,email' },
-                );
-                return res.status(200).json({ ok: true, tenant: retryTenant, existing: false });
             }
-
             console.error('[create-tenant] Insert error:', error.message);
             return res.status(500).json({ error: error.message });
         }
 
-        // Also register owner in tenant_members
-        await sb.from('tenant_members').upsert(
+        // Register owner in tenant_members
+        const { error: memberErr } = await sb.from('tenant_members').upsert(
             { tenant_id: tenant!.id, auth_user_id, email, role: 'owner', status: 'active', full_name: full_name || null },
             { onConflict: 'tenant_id,email' },
         );
+        if (memberErr) {
+            console.error('[create-tenant] tenant_members upsert failed:', memberErr.message);
+        }
 
         return res.status(200).json({ ok: true, tenant, existing: false });
     } catch (err) {

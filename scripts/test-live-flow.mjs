@@ -3,11 +3,14 @@
  * Creates a test session, updates it, verifies in DB, then cleans up.
  */
 import { createClient } from '@supabase/supabase-js';
+import { config } from 'dotenv';
+config();
 
-const BASE_URL = 'https://argomethod.com'; // production
-const SB_URL = 'https://luutdozbhinfiogugjbv.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1dXRkb3piaGluZmlvZ3VnamJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MzE1NDYyMSwiZXhwIjoyMDg4NzMwNjIxfQ.nDv9zZuAIEfeUqCdVySlUgnbAnJD3TBiCEuyS9IHLm4';
-const sb = createClient(SB_URL, SB_KEY);
+const BASE_URL = 'https://argomethod.com';
+const url = process.env.VITE_SUPABASE_URL;
+const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!url || !key) { console.error('Missing env vars'); process.exit(1); }
+const sb = createClient(url, key);
 
 let ok = true;
 function check(name, cond) {

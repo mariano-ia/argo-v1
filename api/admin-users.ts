@@ -54,8 +54,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Email and password are required' });
             }
 
-            if (password.length < 6) {
-                return res.status(400).json({ error: 'Password must be at least 6 characters' });
+            if (password.length < 12) {
+                return res.status(400).json({ error: 'Password must be at least 12 characters' });
             }
 
             // Check if already admin
@@ -91,6 +91,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(500).json({ error: insertError.message });
             }
 
+            // Audit log
+            try { await sb.from('admin_audit_log').insert({ admin_email: user.email, action: 'create-admin', target_type: 'admin_user', target_id: email, details: { email } }); } catch { /* non-blocking */ }
+
             return res.status(201).json({ admin: newAdmin });
         }
 
@@ -112,6 +115,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .eq('email', email);
 
             if (error) return res.status(500).json({ error: error.message });
+
+            // Audit log
+            try { await sb.from('admin_audit_log').insert({ admin_email: user.email, action: 'delete-admin', target_type: 'admin_user', target_id: email, details: { email } }); } catch { /* non-blocking */ }
+
             return res.status(200).json({ ok: true });
         }
 

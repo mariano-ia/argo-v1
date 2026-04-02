@@ -26,7 +26,9 @@ export const TenantPlay: React.FC = () => {
                     setStatus('not_found');
                 } else if (res.status === 403) {
                     const errData = await res.json().catch(() => ({}));
-                    setStatus(errData.error === 'trial_expired' ? 'trial_expired' : 'roster_full');
+                    if (errData.error === 'trial_expired') setStatus('trial_expired');
+                    else if (errData.error === 'roster_full') setStatus('roster_full');
+                    else setStatus('error');
                 } else {
                     setStatus('error');
                 }

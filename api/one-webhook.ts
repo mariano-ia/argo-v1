@@ -1,6 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { createHmac } from 'crypto';
+import Stripe from 'stripe';
+import { buffer } from 'micro';
+
+// Disable Vercel's default body parsing for Stripe signature verification
+export const config = { api: { bodyParser: false } };
 
 /**
  * POST /api/one-webhook
@@ -136,17 +141,63 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 // ── Stripe handler ──────────────────────────────────────────────────────────
 
 async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
-    // TODO: Verify Stripe webhook signature with raw body (requires Vercel config for raw body parsing)
-    // For now, we validate via metadata.source === 'argo_one' + idempotency check
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!stripeKey || !webhookSecret) {
+        console.error('[one-webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
 
-    const event = req.body;
+    const stripe = new Stripe(stripeKey);
+
+    // Verify Stripe signature
+    let event: Stripe.Event;
+    try {
+        const rawBody = await buffer(req);
+        const signature = req.headers['stripe-signature'] as string;
+        event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        console.error('[one-webhook] Stripe signature verification failed:', msg);
+        return res.status(400).json({ error: 'Invalid signature' });
+    }
+
+    // Handle subscription cancellation
+    if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object as Stripe.Subscription;
+        const tenantId = subscription.metadata?.tenant_id;
+        if (tenantId) {
+            await sb.from('tenants').update({ plan: 'trial', roster_limit: 8 }).eq('id', tenantId);
+            console.info(`[one-webhook] Subscription cancelled: tenant ${tenantId} downgraded to trial`);
+        }
+        return res.status(200).json({ received: true, action: 'subscription_cancelled' });
+    }
+
+    // Handle refund
+    if (event.type === 'charge.refunded') {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntent = charge.payment_intent as string;
+        if (paymentIntent) {
+            // Try to find and mark Argo One purchase as refunded
+            const { data: purchase } = await sb
+                .from('one_purchases')
+                .select('id')
+                .eq('payment_id', paymentIntent)
+                .maybeSingle();
+            if (purchase) {
+                await sb.from('one_purchases').update({ payment_status: 'refunded' }).eq('id', purchase.id);
+                console.info(`[one-webhook] Refund processed for purchase ${purchase.id}`);
+            }
+        }
+        return res.status(200).json({ received: true, action: 'refund_processed' });
+    }
 
     if (event.type !== 'checkout.session.completed') {
         return res.status(200).json({ received: true, ignored: true });
     }
 
-    const session = event.data?.object;
-    const source = session?.metadata?.source;
+    const session = event.data.object as Stripe.Checkout.Session;
+    const source = session.metadata?.source;
 
     // Route to subscription handler if applicable
     if (source === 'argo_subscription') {
