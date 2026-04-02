@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { fetchPosts, BLOG_CATEGORIES, type BlogPost } from '../lib/blog';
@@ -12,43 +12,29 @@ const fadeUp = (delay = 0) => ({
     transition: { duration: 0.6, ease: [0.25, 0, 0, 1], delay },
 });
 
-const I18N: Record<string, { subtitle: string; empty: string; back: string; navCta: string; navLogin: string }> = {
-    es: { subtitle: 'Ciencia del comportamiento, deporte juvenil y herramientas para entrenadores.', empty: 'No hay articulos publicados aun.', back: 'Volver', navCta: '14 dias gratis', navLogin: 'Iniciar sesion' },
-    en: { subtitle: 'Behavioral science, youth sports and tools for coaches.', empty: 'No articles published yet.', back: 'Back', navCta: '14 days free', navLogin: 'Log in' },
-    pt: { subtitle: 'Ciencia do comportamento, esporte juvenil e ferramentas para treinadores.', empty: 'Nenhum artigo publicado ainda.', back: 'Voltar', navCta: '14 dias gratis', navLogin: 'Entrar' },
-};
-
-export const BlogIndex: React.FC = () => {
+export const BlogCategory: React.FC = () => {
+    const { category } = useParams<{ category: string }>();
     const { lang } = useLang();
     const navigate = useNavigate();
     const [posts, setPosts] = useState<Omit<BlogPost, 'content'>[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const t = I18N[lang] ?? I18N.es;
+    const catLabel = category && BLOG_CATEGORIES[category]
+        ? BLOG_CATEGORIES[category][lang] ?? BLOG_CATEGORIES[category].es
+        : category ?? '';
 
     useEffect(() => {
-        fetchPosts(lang).then(setPosts).finally(() => setLoading(false));
-    }, [lang]);
+        if (!category) return;
+        fetchPosts(lang, category).then(setPosts).finally(() => setLoading(false));
+    }, [lang, category]);
 
-    // SEO meta tags for blog listing
+    // SEO
     useEffect(() => {
-        const titles: Record<string, string> = {
-            es: 'Blog | Argo Method — Perfilamiento conductual DISC para deportistas',
-            en: 'Blog | Argo Method — DISC behavioral profiling for athletes',
-            pt: 'Blog | Argo Method — Perfil comportamental DISC para atletas',
-        };
-        const descriptions: Record<string, string> = {
-            es: 'Articulos sobre perfilamiento conductual DISC, coaching deportivo juvenil y herramientas para entrenadores y padres.',
-            en: 'Articles on DISC behavioral profiling, youth sports coaching and tools for coaches and parents.',
-            pt: 'Artigos sobre perfil comportamental DISC, coaching esportivo juvenil e ferramentas para treinadores e pais.',
-        };
-        document.title = titles[lang] ?? titles.es;
+        document.title = `${catLabel} | Blog — Argo Method`;
         const descEl = document.querySelector('meta[name="description"]');
-        if (descEl) descEl.setAttribute('content', descriptions[lang] ?? descriptions.es);
-        const canonicalEl = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-        if (canonicalEl) canonicalEl.href = 'https://argomethod.com/blog';
+        if (descEl) descEl.setAttribute('content', `Articulos sobre ${catLabel.toLowerCase()} en el blog de Argo Method.`);
         return () => { document.title = 'Argo Method'; };
-    }, [lang]);
+    }, [catLabel]);
 
     const formatDate = (date: string) =>
         new Date(date).toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'pt' ? 'pt-BR' : 'en-US', {
@@ -59,7 +45,6 @@ export const BlogIndex: React.FC = () => {
         <div style={{ backgroundColor: '#ffffff', color: '#1D1D1F', fontFamily: 'Inter, sans-serif' }}
              className="min-h-screen">
 
-            {/* Nav — matches Landing nav */}
             <nav style={{ borderBottom: '1px solid #D2D2D7' }}
                  className="sticky top-0 z-50 bg-white/95 backdrop-blur-md">
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
@@ -67,18 +52,12 @@ export const BlogIndex: React.FC = () => {
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                         </span>
-                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
-                            beta
-                        </span>
                     </Link>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate('/signup?login=1')}
-                            className="hidden sm:block text-argo-grey hover:text-argo-navy transition-colors"
-                            style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '-0.01em', background: 'none', border: 'none', cursor: 'pointer' }}
-                        >
-                            {t.navLogin}
-                        </button>
+                        <Link to="/blog" style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '-0.01em', textDecoration: 'none' }}
+                              className="text-argo-grey hover:text-argo-navy transition-colors">
+                            Blog
+                        </Link>
                         <button
                             onClick={() => navigate('/signup')}
                             style={{
@@ -88,52 +67,39 @@ export const BlogIndex: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {t.navCta}
+                            {lang === 'en' ? '14 days free' : lang === 'pt' ? '14 dias gratis' : '14 dias gratis'}
                         </button>
                     </div>
                 </div>
             </nav>
 
             <div className="max-w-3xl mx-auto px-4 md:px-6 pt-16 pb-24">
-                {/* Header */}
                 <motion.div {...fadeUp(0)}>
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate('/blog')}
                         className="flex items-center gap-1.5 text-argo-grey hover:text-argo-navy transition-colors mb-8"
                         style={{ fontSize: '13px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
                     >
-                        <ArrowLeft size={14} /> {t.back}
+                        <ArrowLeft size={14} /> Blog
                     </button>
 
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: '#86868B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                        {lang === 'en' ? 'Category' : lang === 'pt' ? 'Categoria' : 'Categoria'}
+                    </span>
                     <h1 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 4vw, 3rem)', lineHeight: 1.1, letterSpacing: '-0.03em' }}
-                        className="text-argo-navy mb-4">
-                        Blog
+                        className="text-argo-navy mb-12 mt-1">
+                        {catLabel}
                     </h1>
-                    <p style={{ fontSize: '16px', lineHeight: 1.7, color: '#86868B' }} className="mb-12">
-                        {t.subtitle}
-                    </p>
                 </motion.div>
 
-                {/* Category links */}
-                <div className="flex flex-wrap gap-2 mb-10">
-                    {Object.entries(BLOG_CATEGORIES).map(([key, labels]) => (
-                        <Link
-                            key={key}
-                            to={`/blog/category/${key}`}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg text-argo-grey hover:text-argo-navy hover:bg-argo-neutral transition-all no-underline"
-                        >
-                            {labels[lang] ?? labels.es}
-                        </Link>
-                    ))}
-                </div>
-
-                {/* Posts */}
                 {loading ? (
                     <div className="flex justify-center py-20">
                         <div className="w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
                     </div>
                 ) : posts.length === 0 ? (
-                    <p style={{ color: '#86868B', fontSize: '15px' }}>{t.empty}</p>
+                    <p style={{ color: '#86868B', fontSize: '15px' }}>
+                        {lang === 'en' ? 'No articles in this category yet.' : lang === 'pt' ? 'Nenhum artigo nesta categoria ainda.' : 'No hay articulos en esta categoria aun.'}
+                    </p>
                 ) : (
                     <div className="space-y-0">
                         {posts.map((post, i) => (
@@ -170,7 +136,6 @@ export const BlogIndex: React.FC = () => {
                 )}
             </div>
 
-            {/* Footer */}
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-8 px-4 text-center">
                 <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.05em' }}>
                     &copy; 2026 Argo Method

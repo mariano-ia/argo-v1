@@ -41,11 +41,13 @@ import { UserAuthGate }       from './components/onboarding/UserAuthGate';
 import { ResultRevealPreview } from './pages/ResultRevealPreview';
 import { BlogIndex }           from './pages/BlogIndex';
 import { BlogPost }            from './pages/BlogPost';
+import { BlogCategory }        from './pages/BlogCategory';
 import { BlogAdmin }           from './pages/dashboard/BlogAdmin';
 import { BlogEditor }          from './pages/dashboard/BlogEditor';
 import { TestIslas }           from './pages/TestIslas';
 import { TestEsquivar }       from './pages/TestEsquivar';
 import { TestTormenta }       from './pages/TestTormenta';
+import { NotFound }           from './pages/NotFound';
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -166,6 +168,7 @@ function App() {
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
             <Route path="/blog"       element={<BlogIndex />} />
+            <Route path="/blog/category/:category" element={<BlogCategory />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/test/islas" element={<TestIslas />} />
             <Route path="/test/esquivar" element={<TestEsquivar />} />
@@ -202,6 +205,7 @@ function App() {
                 <Route path="blog/new"      element={<BlogEditor />} />
                 <Route path="blog/edit/:id" element={<BlogEditor />} />
             </Route>
+            <Route path="*" element={<NotFound />} />
         </Routes>
     );
 }

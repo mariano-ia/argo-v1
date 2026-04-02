@@ -40,13 +40,26 @@ export interface BlogTopic {
 
 // ─── Public queries ──────────────────────────────────────────────────────────
 
-export async function fetchPosts(lang = 'es') {
-    const { data, error } = await supabase
+export const BLOG_CATEGORIES: Record<string, Record<string, string>> = {
+    arquetipos: { es: 'Arquetipos', en: 'Archetypes', pt: 'Arquetipos' },
+    coaching: { es: 'Coaching', en: 'Coaching', pt: 'Coaching' },
+    padres: { es: 'Padres', en: 'Parents', pt: 'Pais' },
+    disc: { es: 'DISC', en: 'DISC', pt: 'DISC' },
+    deporte: { es: 'Deporte', en: 'Sports', pt: 'Esporte' },
+    motivacion: { es: 'Motivacion', en: 'Motivation', pt: 'Motivacao' },
+};
+
+export async function fetchPosts(lang = 'es', category?: string) {
+    let query = supabase
         .from('blog_posts')
-        .select('id, slug, title, meta_description, lang, status, reading_time, published_at, created_at')
+        .select('id, slug, title, meta_description, lang, status, category, reading_time, published_at, created_at')
         .eq('status', 'published')
         .eq('lang', lang)
         .order('published_at', { ascending: false });
+
+    if (category) query = query.eq('category', category);
+
+    const { data, error } = await query;
 
     if (error) throw error;
     return data as Omit<BlogPost, 'content'>[];
@@ -62,6 +75,19 @@ export async function fetchPostBySlug(slug: string) {
 
     if (error) throw error;
     return data as BlogPost | null;
+}
+
+export async function fetchRelatedPosts(currentId: string, lang: string, limit = 3): Promise<Omit<BlogPost, 'content'>[]> {
+    const { data, error } = await supabase
+        .from('blog_posts')
+        .select('id, slug, title, meta_description, lang, status, reading_time, published_at, created_at')
+        .eq('status', 'published')
+        .eq('lang', lang)
+        .neq('id', currentId)
+        .order('published_at', { ascending: false })
+        .limit(limit);
+    if (error) throw error;
+    return (data ?? []) as Omit<BlogPost, 'content'>[];
 }
 
 export async function fetchAlternateLangs(langGroup: string): Promise<{ lang: string; slug: string }[]> {

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar } from 'lucide-react';
-import { fetchPostBySlug, fetchAlternateLangs, type BlogPost as BlogPostType } from '../lib/blog';
+import { fetchPostBySlug, fetchAlternateLangs, fetchRelatedPosts, type BlogPost as BlogPostType } from '../lib/blog';
 import { useLang } from '../context/LangContext';
 
 const I18N: Record<string, { ctaQuestion: string; ctaButton: string; navCta: string; navLogin: string }> = {
@@ -21,6 +21,7 @@ export const BlogPost: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [altLangs, setAltLangs] = useState<{ lang: string; slug: string }[]>([]);
+    const [relatedPosts, setRelatedPosts] = useState<{ id: string; slug: string; title: string; meta_description: string | null; reading_time: number | null; published_at: string }[]>([]);
 
     useEffect(() => {
         if (!slug) return;
@@ -32,6 +33,7 @@ export const BlogPost: React.FC = () => {
                     if (data.lang_group) {
                         fetchAlternateLangs(data.lang_group).then(setAltLangs).catch(() => {});
                     }
+                    fetchRelatedPosts(data.id, data.lang).then(setRelatedPosts).catch(() => {});
                 }
             })
             .catch(() => setNotFound(true))
@@ -61,6 +63,11 @@ export const BlogPost: React.FC = () => {
         setMeta('og:url', `https://argomethod.com/blog/${post.slug}`);
         setMeta('article:published_time', post.published_at);
         setMeta('og:locale', post.lang === 'pt' ? 'pt_BR' : post.lang === 'en' ? 'en_US' : 'es_ES');
+        setMeta('og:image', 'https://argomethod.com/og-cover.png');
+
+        // Canonical link
+        let canonicalEl = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+        if (canonicalEl) canonicalEl.href = `https://argomethod.com/blog/${post.slug}`;
 
         // Hreflang links for alternate languages
         const hreflangEls: HTMLLinkElement[] = [];
@@ -73,24 +80,37 @@ export const BlogPost: React.FC = () => {
             hreflangEls.push(link);
         }
 
-        // Article JSON-LD schema
-        const schema = {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            headline: seoTitle,
-            description: post.meta_description || '',
-            url: `https://argomethod.com/blog/${post.slug}`,
-            inLanguage: post.lang === 'pt' ? 'pt-BR' : post.lang === 'en' ? 'en-US' : 'es',
-            datePublished: post.published_at,
-            author: { '@type': 'Organization', name: 'Argo Method', url: 'https://argomethod.com' },
-            publisher: {
-                '@type': 'Organization',
-                name: 'Argo Method',
-                url: 'https://argomethod.com',
-                logo: { '@type': 'ImageObject', url: 'https://argomethod.com/favicon.svg' },
+        // Article + BreadcrumbList JSON-LD schemas
+        const schemas = [
+            {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                headline: seoTitle,
+                description: post.meta_description || '',
+                url: `https://argomethod.com/blog/${post.slug}`,
+                image: 'https://argomethod.com/og-cover.png',
+                inLanguage: post.lang === 'pt' ? 'pt-BR' : post.lang === 'en' ? 'en-US' : 'es',
+                datePublished: post.published_at,
+                dateModified: post.published_at,
+                author: { '@type': 'Organization', name: 'Argo Method', url: 'https://argomethod.com' },
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Argo Method',
+                    url: 'https://argomethod.com',
+                    logo: { '@type': 'ImageObject', url: 'https://argomethod.com/favicon.svg' },
+                },
+                mainEntityOfPage: { '@type': 'WebPage', '@id': `https://argomethod.com/blog/${post.slug}` },
             },
-            mainEntityOfPage: { '@type': 'WebPage', '@id': `https://argomethod.com/blog/${post.slug}` },
-        };
+            {
+                '@context': 'https://schema.org',
+                '@type': 'BreadcrumbList',
+                itemListElement: [
+                    { '@type': 'ListItem', position: 1, name: 'Argo Method', item: 'https://argomethod.com/' },
+                    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://argomethod.com/blog' },
+                    { '@type': 'ListItem', position: 3, name: post.title },
+                ],
+            },
+        ];
         let scriptEl = document.querySelector('script[data-blog-schema]');
         if (!scriptEl) {
             scriptEl = document.createElement('script');
@@ -98,7 +118,7 @@ export const BlogPost: React.FC = () => {
             scriptEl.setAttribute('data-blog-schema', 'true');
             document.head.appendChild(scriptEl);
         }
-        scriptEl.textContent = JSON.stringify(schema);
+        scriptEl.textContent = JSON.stringify(schemas);
 
         return () => {
             document.title = 'Argo Method';
@@ -252,6 +272,36 @@ export const BlogPost: React.FC = () => {
                         {t.ctaButton}
                     </button>
                 </div>
+
+                {/* Related Posts */}
+                {relatedPosts.length > 0 && (
+                    <div style={{ borderTop: '1px solid #D2D2D7' }} className="mt-12 pt-10">
+                        <p style={{ fontSize: '11px', fontWeight: 600, color: '#86868B', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '16px' }}>
+                            {postLang === 'en' ? 'More articles' : postLang === 'pt' ? 'Mais artigos' : 'Mas articulos'}
+                        </p>
+                        <div className="space-y-0">
+                            {relatedPosts.map(rp => (
+                                <a
+                                    key={rp.id}
+                                    href={`/blog/${rp.slug}`}
+                                    onClick={e => { e.preventDefault(); navigate(`/blog/${rp.slug}`); }}
+                                    className="block py-4 group"
+                                    style={{ borderBottom: '1px solid #E8E8ED', textDecoration: 'none' }}
+                                >
+                                    <h3 style={{ fontWeight: 600, fontSize: '16px', letterSpacing: '-0.02em', lineHeight: 1.3 }}
+                                        className="text-argo-navy group-hover:text-argo-indigo transition-colors mb-0.5">
+                                        {rp.title}
+                                    </h3>
+                                    {rp.meta_description && (
+                                        <p style={{ fontSize: '13px', lineHeight: 1.5, color: '#86868B' }} className="line-clamp-1">
+                                            {rp.meta_description}
+                                        </p>
+                                    )}
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </article>
 
             {/* Footer */}

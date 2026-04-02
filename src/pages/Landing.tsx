@@ -6,6 +6,7 @@ import { InfoTip } from '../components/ui/Tooltip';
 import { useLang, type Lang } from '../context/LangContext';
 import { APP_VERSION } from '../lib/version';
 import { AXIS_COLORS } from '../lib/designTokens';
+import { fetchPosts, type BlogPost } from '../lib/blog';
 import DeckChat from '../components/DeckChat';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
@@ -962,6 +963,11 @@ const PricingSection: React.FC<{
 export const Landing: React.FC = () => {
     const navigate = useNavigate();
     const { lang, setLang } = useLang();
+    const [latestPosts, setLatestPosts] = useState<Omit<BlogPost, 'content'>[]>([]);
+
+    useEffect(() => {
+        fetchPosts(lang).then(p => setLatestPosts(p.slice(0, 3))).catch(() => {});
+    }, [lang]);
 
     // Trilingual helper
     const L = (es: string, en: string, pt: string) =>
@@ -1074,6 +1080,18 @@ export const Landing: React.FC = () => {
                 </motion.h1>
 
                 <motion.p
+                    {...fadeUp(0.12)}
+                    style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '0.02em', color: '#86868B', maxWidth: '560px' }}
+                    className="mb-6"
+                >
+                    {L(
+                        'Perfilamiento conductual DISC para deportistas juveniles de 8 a 16 anos',
+                        'DISC behavioral profiling for youth athletes aged 8 to 16',
+                        'Perfil comportamental DISC para atletas juvenis de 8 a 16 anos',
+                    )}
+                </motion.p>
+
+                <motion.p
                     {...fadeUp(0.16)}
                     style={{ fontWeight: 400, fontSize: '17px', lineHeight: 1.65, color: '#424245', maxWidth: '560px' }}
                     className="mb-8"
@@ -1160,7 +1178,7 @@ export const Landing: React.FC = () => {
                             <div>
                                 <SectionLabel>La herramienta · Dos experiencias</SectionLabel>
                                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
-                                    Cómo funciona.
+                                    {L('Como funciona el perfilamiento Argo.', 'How Argo profiling works.', 'Como funciona o perfil Argo.')}
                                 </h2>
                                 <div className="mt-10 space-y-7">
                                     <div>
@@ -1253,7 +1271,7 @@ export const Landing: React.FC = () => {
                         {L('El sistema · Tres dimensiones', 'The system · Three dimensions', 'O sistema · Três dimensões')}
                     </SectionLabel>
                     <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('Conducta + Motor = Sintonía.', 'Behavior + Engine = Synergy.', 'Conduta + Motor = Sintonia.')}
+                        {L('Modelo DISC + Motor = Sintonia deportiva.', 'DISC Model + Engine = Sports synergy.', 'Modelo DISC + Motor = Sintonia esportiva.')}
                     </h2>
 
                     {/* Inline definitions */}
@@ -1537,6 +1555,57 @@ export const Landing: React.FC = () => {
                     </button>
                 </motion.div>
             </section>
+
+            {/* ── LATEST ARTICLES ── */}
+            {latestPosts.length > 0 && (
+                <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-24">
+                    <motion.div {...fadeUp(0)}>
+                        <SectionLabel>{L('Blog', 'Blog', 'Blog')}</SectionLabel>
+                        <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }} className="text-argo-navy mb-8">
+                            {L('Herramientas para entrenadores y padres.', 'Tools for coaches and parents.', 'Ferramentas para treinadores e pais.')}
+                        </h2>
+                    </motion.div>
+                    <div className="space-y-0">
+                        {latestPosts.map((post, i) => (
+                            <motion.article key={post.id} {...fadeUp(i * 0.06)}>
+                                <a
+                                    href={`/blog/${post.slug}`}
+                                    onClick={e => { e.preventDefault(); navigate(`/blog/${post.slug}`); }}
+                                    className="block py-6 group"
+                                    style={{ borderBottom: '1px solid #D2D2D7', textDecoration: 'none' }}
+                                >
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span style={{ fontSize: '11px', color: '#86868B', fontWeight: 500 }}>
+                                            {new Date(post.published_at).toLocaleDateString(lang === 'es' ? 'es-ES' : lang === 'pt' ? 'pt-BR' : 'en-US', { month: 'short', day: 'numeric' })}
+                                        </span>
+                                        {post.reading_time && (
+                                            <span style={{ fontSize: '11px', color: '#AEAEB2' }}>· {post.reading_time} min</span>
+                                        )}
+                                    </div>
+                                    <h3 style={{ fontWeight: 600, fontSize: '17px', letterSpacing: '-0.02em', lineHeight: 1.3 }}
+                                        className="text-argo-navy group-hover:text-argo-indigo transition-colors mb-1">
+                                        {post.title}
+                                    </h3>
+                                    {post.meta_description && (
+                                        <p style={{ fontSize: '14px', lineHeight: 1.5, color: '#86868B' }} className="line-clamp-2">
+                                            {post.meta_description}
+                                        </p>
+                                    )}
+                                </a>
+                            </motion.article>
+                        ))}
+                    </div>
+                    <motion.div {...fadeUp(0.2)} className="mt-6">
+                        <button
+                            onClick={() => navigate('/blog')}
+                            className="text-argo-indigo hover:underline transition-all"
+                            style={{ fontSize: '14px', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer' }}
+                        >
+                            {L('Ver todos los articulos', 'View all articles', 'Ver todos os artigos')} →
+                        </button>
+                    </motion.div>
+                </section>
+            )}
 
             {/* ── CHAT WIDGET ── */}
             <DeckChat lang={lang} />
