@@ -286,6 +286,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Step 2: Pick best topic and generate + publish
         const result = await pickAndGenerate();
 
+        // Step 3: Trigger Vercel redeploy so new posts get pre-rendered HTML
+        if (result.generated) {
+            const deployHook = process.env.VERCEL_DEPLOY_HOOK_URL;
+            if (deployHook) {
+                fetch(deployHook, { method: 'POST' }).catch(e => console.error('Deploy hook failed:', e));
+            }
+        }
+
         return res.status(200).json({
             ok: true,
             ...result,

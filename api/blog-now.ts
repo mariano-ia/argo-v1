@@ -76,6 +76,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        // Trigger Vercel redeploy so new posts get pre-rendered HTML
+        const deployHook = process.env.VERCEL_DEPLOY_HOOK_URL;
+        if (deployHook) {
+            fetch(deployHook, { method: 'POST' }).catch(e => console.error('Deploy hook failed:', e));
+        }
+
         return res.status(200).json({ lang_group: langGroup, results });
     } catch (err) {
         console.error('blog-now error:', err);
