@@ -115,9 +115,10 @@ ESTRUCTURA DEL CONTENIDO HTML:
 - Usa <blockquote> para frases destacadas o reflexiones
 - Usa <strong> para conceptos clave, no para decorar
 - Si hay lista, que sea con contenido sustancial por item
-- Cierra con una reflexion o invitacion a la accion (no un resumen)
+- Cierra con un parrafo de reflexion o invitacion a la accion (no un resumen). El ultimo parrafo debe ser una oracion COMPLETA, nunca dejes una idea a medias.
 - Entre 1200 y 2000 palabras. Ni mas ni menos.
-- NO incluyas el titulo (h1) en el contenido HTML, solo h2 en adelante`;
+- NO incluyas el titulo (h1) en el contenido HTML, solo h2 en adelante.
+- IMPORTANTE: Asegurate de que TODOS los tags HTML esten cerrados y que la ultima oracion este completa. Nunca cortes el texto a mitad de una idea.`;
 
 // ─── Anti-AI humanizer prompt ───────────────────────────────────────────────
 
@@ -262,7 +263,7 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
     const genResponse = await callAI([
         { role: 'system', content: BRAND_VOICE_SYSTEM },
         { role: 'user', content: userPrompt },
-    ], { temperature: 0.8, maxTokens: 8000 });
+    ], { temperature: 0.8, maxTokens: 16000 });
 
     // Parse JSON (with retry on failure)
     let article: {
@@ -284,16 +285,31 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
         const retryResponse = await callAI([
             { role: 'system', content: BRAND_VOICE_SYSTEM },
             { role: 'user', content: userPrompt + '\n\nIMPORTANTE: Devuelve JSON valido. Sin backticks, sin texto adicional.' },
-        ], { temperature: 0.6, maxTokens: 8000 });
+        ], { temperature: 0.6, maxTokens: 16000 });
         const cleaned = retryResponse.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         article = JSON.parse(cleaned);
+    }
+
+    // Step 1b: Validate content completeness — fix truncated endings
+    const content = article.content.trim();
+    const lastTag = content.lastIndexOf('</');
+    const lastClose = content.lastIndexOf('>');
+    const isTruncated = lastClose < lastTag || !content.endsWith('>');
+
+    if (isTruncated) {
+        // Content was cut off — ask AI to complete it
+        const completionResponse = await callAI([
+            { role: 'system', content: 'Eres un editor. Recibes un articulo HTML que fue cortado abruptamente. Completa SOLO la parte faltante (cierra la oracion, el parrafo y los tags HTML abiertos). Devuelve el articulo COMPLETO, no solo el fragmento faltante. Mantiene el mismo tono, idioma y estilo.' },
+            { role: 'user', content: content },
+        ], { temperature: 0.4, maxTokens: 4000 });
+        article.content = completionResponse.content.trim();
     }
 
     // Step 2: Humanize
     const humanizeResponse = await callAI([
         { role: 'system', content: HUMANIZER_SYSTEM },
         { role: 'user', content: article.content },
-    ], { temperature: 0.4, maxTokens: 8000 });
+    ], { temperature: 0.4, maxTokens: 16000 });
 
     const humanizedContent = humanizeResponse.content.trim();
 
