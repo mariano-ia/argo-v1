@@ -1,54 +1,72 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { useLang } from './context/LangContext';
+
+// ─── Public pages (loaded eagerly — part of initial bundle) ─────────────────
 import { Landing }            from './pages/Landing';
 import { Login }              from './pages/Login';
 import { TenantSignup }      from './pages/TenantSignup';
-import { TenantDashboard }   from './pages/TenantDashboard';
-import { TenantHome }        from './pages/tenant/TenantHome';
-import { TenantLink }        from './pages/tenant/TenantLink';
-import { TenantSettings }    from './pages/tenant/TenantSettings';
-import { TenantUsers }       from './pages/tenant/TenantUsers';
-import { SetPassword }       from './pages/SetPassword';
-import { TenantGroups }      from './pages/tenant/TenantGroups';
-import { TenantGuide }       from './pages/tenant/TenantGuide';
-import { TenantPlayers }    from './pages/tenant/TenantPlayers';
-import { TenantChat }       from './pages/tenant/TenantChat';
-import { TenantPricing }   from './pages/tenant/TenantPricing';
 import { TenantPlay }        from './pages/TenantPlay';
-import { Dashboard }          from './pages/Dashboard';
-import { Sessions }           from './pages/dashboard/Sessions';
-import { Metrics }            from './pages/dashboard/Metrics';
-import { QuestionsAdmin }     from './pages/dashboard/QuestionsAdmin';
-import { AdminUsers }         from './pages/dashboard/AdminUsers';
-import { AdminTenants }       from './pages/dashboard/AdminTenants';
-import { AdminAIUsage }       from './pages/dashboard/AdminAIUsage';
-import { AdminRevenue }       from './pages/dashboard/AdminRevenue';
-import { AdminArgoOne }       from './pages/dashboard/AdminArgoOne';
-import { AdminAuditLog }      from './pages/dashboard/AdminAuditLog';
-import { Feedback as AdminFeedback } from './pages/dashboard/Feedback';
-import { FeedbackForm }       from './pages/FeedbackForm';
-import { ReportPage }         from './pages/ReportPage';
-import { TermsPage }          from './pages/TermsPage';
-import { PrivacyPage }        from './pages/PrivacyPage';
-import { PricingPage }        from './pages/PricingPage';
-import { OnePlay }            from './pages/OnePlay';
-import { OnePanel }           from './pages/OnePanel';
-import { AdminRoute }         from './components/AdminRoute';
-import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
-import { UserAuthGate }       from './components/onboarding/UserAuthGate';
-import { ResultRevealPreview } from './pages/ResultRevealPreview';
 import { BlogIndex }           from './pages/BlogIndex';
 import { BlogPost }            from './pages/BlogPost';
 import { BlogCategory }        from './pages/BlogCategory';
-import { BlogAdmin }           from './pages/dashboard/BlogAdmin';
-import { BlogEditor }          from './pages/dashboard/BlogEditor';
-import { TestIslas }           from './pages/TestIslas';
-import { TestEsquivar }       from './pages/TestEsquivar';
-import { TestTormenta }       from './pages/TestTormenta';
 import { NotFound }           from './pages/NotFound';
+
+// ─── Lazy-loaded pages (separate chunks, loaded on demand) ──────────────────
+
+// Tenant dashboard (only loaded when authenticated tenant accesses /dashboard)
+const TenantDashboard = lazy(() => import('./pages/TenantDashboard').then(m => ({ default: m.TenantDashboard })));
+const TenantHome      = lazy(() => import('./pages/tenant/TenantHome').then(m => ({ default: m.TenantHome })));
+const TenantLink      = lazy(() => import('./pages/tenant/TenantLink').then(m => ({ default: m.TenantLink })));
+const TenantSettings  = lazy(() => import('./pages/tenant/TenantSettings').then(m => ({ default: m.TenantSettings })));
+const TenantUsers     = lazy(() => import('./pages/tenant/TenantUsers').then(m => ({ default: m.TenantUsers })));
+const TenantGroups    = lazy(() => import('./pages/tenant/TenantGroups').then(m => ({ default: m.TenantGroups })));
+const TenantGuide     = lazy(() => import('./pages/tenant/TenantGuide').then(m => ({ default: m.TenantGuide })));
+const TenantPlayers   = lazy(() => import('./pages/tenant/TenantPlayers').then(m => ({ default: m.TenantPlayers })));
+const TenantChat      = lazy(() => import('./pages/tenant/TenantChat').then(m => ({ default: m.TenantChat })));
+const TenantPricing   = lazy(() => import('./pages/tenant/TenantPricing').then(m => ({ default: m.TenantPricing })));
+
+// Admin dashboard (only loaded when admin accesses /admin)
+const Dashboard       = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
+const Sessions        = lazy(() => import('./pages/dashboard/Sessions').then(m => ({ default: m.Sessions })));
+const Metrics         = lazy(() => import('./pages/dashboard/Metrics').then(m => ({ default: m.Metrics })));
+const QuestionsAdmin  = lazy(() => import('./pages/dashboard/QuestionsAdmin').then(m => ({ default: m.QuestionsAdmin })));
+const AdminUsers      = lazy(() => import('./pages/dashboard/AdminUsers').then(m => ({ default: m.AdminUsers })));
+const AdminTenants    = lazy(() => import('./pages/dashboard/AdminTenants').then(m => ({ default: m.AdminTenants })));
+const AdminAIUsage    = lazy(() => import('./pages/dashboard/AdminAIUsage').then(m => ({ default: m.AdminAIUsage })));
+const AdminRevenue    = lazy(() => import('./pages/dashboard/AdminRevenue').then(m => ({ default: m.AdminRevenue })));
+const AdminArgoOne    = lazy(() => import('./pages/dashboard/AdminArgoOne').then(m => ({ default: m.AdminArgoOne })));
+const AdminAuditLog   = lazy(() => import('./pages/dashboard/AdminAuditLog').then(m => ({ default: m.AdminAuditLog })));
+const AdminFeedback   = lazy(() => import('./pages/dashboard/Feedback').then(m => ({ default: m.Feedback })));
+const BlogAdmin       = lazy(() => import('./pages/dashboard/BlogAdmin').then(m => ({ default: m.BlogAdmin })));
+const BlogEditor      = lazy(() => import('./pages/dashboard/BlogEditor').then(m => ({ default: m.BlogEditor })));
+
+// Other lazy pages (loaded on demand)
+const SetPassword       = lazy(() => import('./pages/SetPassword').then(m => ({ default: m.SetPassword })));
+const FeedbackForm      = lazy(() => import('./pages/FeedbackForm').then(m => ({ default: m.FeedbackForm })));
+const ReportPage        = lazy(() => import('./pages/ReportPage').then(m => ({ default: m.ReportPage })));
+const TermsPage         = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPage       = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const PricingPage       = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
+const OnePlay           = lazy(() => import('./pages/OnePlay').then(m => ({ default: m.OnePlay })));
+const OnePanel          = lazy(() => import('./pages/OnePanel').then(m => ({ default: m.OnePanel })));
+const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').then(m => ({ default: m.ResultRevealPreview })));
+const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
+const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
+const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({ default: m.TestTormenta })));
+
+import { AdminRoute }         from './components/AdminRoute';
+import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
+import { UserAuthGate }       from './components/onboarding/UserAuthGate';
+
+// ─── Lazy loading fallback ──────────────────────────────────────────────────
+const LazyFallback = () => (
+    <div className="min-h-screen flex items-center justify-center bg-argo-neutral">
+        <div className="w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin" />
+    </div>
+);
 
 const MAX_PLAYS = 3;
 const TEST_EMAILS = ['marianonoceti@gmail.com'];
@@ -163,6 +181,7 @@ const UserApp: React.FC = () => {
 
 function App() {
     return (
+        <Suspense fallback={<LazyFallback />}>
         <Routes>
             {/* Public */}
             <Route path="/"       element={<Landing />} />
@@ -218,6 +237,7 @@ function App() {
             </Route>
             <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
     );
 }
 

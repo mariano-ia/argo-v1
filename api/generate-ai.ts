@@ -242,7 +242,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'system', content: systemContent },
             { role: 'user', content: prompt },
         ];
-        const aiOpts = { temperature: 0.7, maxTokens: 8192 };
+        const aiOpts = { temperature: 0.7, maxTokens: 4096 };
 
         // Try with 1 retry (2 second delay) for resilience
         let aiResponse: AIResp;

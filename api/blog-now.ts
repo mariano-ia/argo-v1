@@ -1,13 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 
 /**
  * On-demand blog generation from natural language.
  * POST { idea: "Como un entrenador puede usar perfiles para armar equipos" }
  *
- * Generates 3 versions (es, en, pt) linked by lang_group, publishes all.
+ * Generates ES first, then translates to EN/PT (cheaper than regenerating).
  */
-
-const LANGS = ['es', 'en', 'pt'] as const;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -22,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? `https://${process.env.VERCEL_URL}`
             : process.env.SITE_URL ?? 'https://argomethod.com';
 
-        // Generate Spanish first to get the lang_group UUID
+        // Step 1: Generate Spanish (full generation + humanization)
         const esRes = await fetch(`${baseUrl}/api/blog-generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -43,8 +42,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const results = [{ lang: 'es', post_id: esResult.post_id, slug: esResult.slug, title: esResult.title }];
 
-        // Generate en and pt in parallel, sharing the same lang_group
-        const otherLangs = LANGS.filter(l => l !== 'es');
+        // Step 2: Fetch the Spanish post content for translation mode
+        const sb = createClient(
+            process.env.VITE_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        );
+        const { data: esPost } = await sb
+            .from('blog_posts')
+            .select('title, meta_description, content, category, tags')
+            .eq('id', esResult.post_id)
+            .single();
+
+        // Step 3: Translate to EN and PT in parallel (skips humanization, much cheaper)
+        const otherLangs = ['en', 'pt'] as const;
         const otherResults = await Promise.allSettled(
             otherLangs.map(async (lang) => {
                 const r = await fetch(`${baseUrl}/api/blog-generate`, {
@@ -55,6 +65,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         lang,
                         lang_group: langGroup,
                         auto_publish: true,
+                        // Translation mode: pass Spanish content to adapt
+                        source_content: esPost?.content,
+                        source_title: esPost?.title,
+                        source_meta: esPost?.meta_description,
+                        source_category: esPost?.category,
+                        source_tags: esPost?.tags,
                     }),
                 });
                 if (!r.ok) throw new Error(`${lang} generation failed: ${await r.text()}`);

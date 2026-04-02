@@ -82,6 +82,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const totalChatCost = Object.values(chatCosts).reduce((sum, c) => sum + c.est_cost, 0);
 
+        // Get blog generation costs
+        const { data: blogPosts } = await sb
+            .from('blog_posts')
+            .select('ai_tokens_input, ai_tokens_output, ai_cost_usd, generated_by, lang, created_at')
+            .not('ai_cost_usd', 'is', null)
+            .gt('ai_cost_usd', 0);
+
+        let totalBlogCost = 0;
+        let totalBlogTokensIn = 0;
+        let totalBlogTokensOut = 0;
+        let totalBlogPosts = 0;
+        const blogByType: Record<string, number> = { 'ai-cron': 0, 'ai-demand': 0, human: 0 };
+
+        for (const bp of blogPosts ?? []) {
+            totalBlogCost += bp.ai_cost_usd ?? 0;
+            totalBlogTokensIn += bp.ai_tokens_input ?? 0;
+            totalBlogTokensOut += bp.ai_tokens_output ?? 0;
+            totalBlogPosts++;
+            blogByType[bp.generated_by ?? 'human'] = (blogByType[bp.generated_by ?? 'human'] ?? 0) + 1;
+        }
+
         // Soft cap thresholds
         const SOFT_CAPS: Record<string, number> = { trial: 10, pro: 500, academy: 1000, enterprise: 999999 };
 
@@ -121,11 +142,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 total_tenants: (tenants ?? []).length,
                 total_report_cost: totalReportCost,
                 total_chat_est_cost: totalChatCost,
-                total_cost: totalReportCost + totalChatCost,
+                total_blog_cost: totalBlogCost,
+                total_cost: totalReportCost + totalChatCost + totalBlogCost,
                 total_report_tokens: totalReportTokensIn + totalReportTokensOut,
                 total_chat_tokens: totalChatTokensIn + totalChatTokensOut,
+                total_blog_tokens: totalBlogTokensIn + totalBlogTokensOut,
                 total_reports: Object.values(reportCosts).reduce((s, r) => s + r.count, 0),
                 total_chat_messages: Object.values(chatCosts).reduce((s, c) => s + c.count, 0),
+                total_blog_posts: totalBlogPosts,
+                blog_by_type: blogByType,
             },
         });
     } catch (err) {

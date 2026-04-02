@@ -212,6 +212,11 @@ interface GenerateInput {
     lang?: string;
     topic_id?: string;
     lang_group?: string;  // shared UUID linking translations
+    source_content?: string; // Spanish HTML for translation mode (avoids full regeneration)
+    source_title?: string;
+    source_meta?: string;
+    source_category?: string;
+    source_tags?: string[];
 }
 
 interface GenerateResult {
@@ -233,37 +238,83 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
     const lang = input.lang ?? 'es';
     const langGroup = input.lang_group ?? crypto.randomUUID();
 
+    // Track AI cost across all calls
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+
     // Fetch recent posts to avoid duplication and enable internal linking
     const existingPosts = await getExistingPosts();
     const recentTitles = existingPosts.map(p => p.title).join('\n- ');
 
-    // Build generation prompt
-    let userPrompt = `Escribe un articulo de blog para Argo Method sobre:\n\n"${input.prompt}"`;
+    // ── Translation mode: adapt existing Spanish content to target language ──
+    const isTranslation = lang !== 'es' && input.source_content;
 
-    if (input.pillar) userPrompt += `\n\nPilar tematico: ${input.pillar}`;
-    if (input.audience) userPrompt += `\nAudiencia principal: ${input.audience}`;
-    if (input.format) userPrompt += `\nFormato sugerido: ${input.format}`;
-    if (input.archetype_ref) {
-        const arch = ARGO_ARCHETYPES.find(a => a.id === input.archetype_ref);
-        if (arch) userPrompt += `\n\nArquetipo de referencia: ${arch.label} (Eje ${arch.eje}, Motor ${arch.motor}). ${arch.desc}`;
+    let genResponse;
+
+    if (isTranslation) {
+        // Translation is much cheaper: ~40% fewer tokens than full generation
+        const translatePrompt = `Adapta este articulo de blog de Argo Method al ${lang === 'en' ? 'ingles' : 'portugues brasileiro'}.
+
+NO es una traduccion literal. El articulo debe sentirse nativo en ${lang === 'en' ? 'ingles' : 'portugues'}. Adapta expresiones, ejemplos y tono cultural.
+
+${LANG_INSTRUCTIONS[lang]}
+
+Titulo original: "${input.source_title}"
+Meta description original: "${input.source_meta}"
+
+Contenido HTML original:
+${input.source_content}
+
+Devuelve un JSON con esta estructura exacta:
+{
+  "title": "titulo adaptado al idioma (50-70 chars)",
+  "seo_title": "titulo SEO si es diferente (max 60 chars)",
+  "slug": "slug-en-el-idioma-del-articulo",
+  "meta_description": "descripcion adaptada (150-160 chars)",
+  "category": "${input.source_category || 'coaching'}",
+  "tags": ${JSON.stringify(input.source_tags || [])},
+  "reading_time": ${estimateReadingTime(input.source_content)},
+  "content": "contenido HTML completo adaptado"
+}
+
+Devuelve SOLO el JSON, sin markdown ni backticks.`;
+
+        genResponse = await callAI([
+            { role: 'system', content: 'Eres un traductor y adaptador cultural experto para Argo Method (perfilamiento conductual DISC para deportistas juveniles). Mantiene la voz de marca, el lenguaje de probabilidad, y la terminologia Argo. Adapta nombres de arquetipos: en ingles usa traducciones entre parentesis en la primera mencion.' },
+            { role: 'user', content: translatePrompt },
+        ], { temperature: 0.5, maxTokens: 16000 });
+        totalInputTokens += genResponse.inputTokens;
+        totalOutputTokens += genResponse.outputTokens;
+    } else {
+        // Full generation mode (Spanish or no source content)
+        let userPrompt = `Escribe un articulo de blog para Argo Method sobre:\n\n"${input.prompt}"`;
+
+        if (input.pillar) userPrompt += `\n\nPilar tematico: ${input.pillar}`;
+        if (input.audience) userPrompt += `\nAudiencia principal: ${input.audience}`;
+        if (input.format) userPrompt += `\nFormato sugerido: ${input.format}`;
+        if (input.archetype_ref) {
+            const arch = ARGO_ARCHETYPES.find(a => a.id === input.archetype_ref);
+            if (arch) userPrompt += `\n\nArquetipo de referencia: ${arch.label} (Eje ${arch.eje}, Motor ${arch.motor}). ${arch.desc}`;
+        }
+
+        if (recentTitles) {
+            userPrompt += `\n\nARTICULOS YA PUBLICADOS (no repitas temas ni enfoques):\n- ${recentTitles}`;
+        }
+
+        userPrompt += `\n\nIdioma de escritura: ${LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.es}`;
+        userPrompt += `\n\nEl slug debe ser en el idioma del articulo.`;
+        if (lang !== 'es') {
+            userPrompt += `\nAdapta el contenido culturalmente, no hagas una traduccion literal. El articulo debe sentirse nativo en ${lang === 'en' ? 'ingles' : 'portugues'}.`;
+        }
+        userPrompt += `\n\nDevuelve SOLO el JSON, sin markdown ni backticks.`;
+
+        genResponse = await callAI([
+            { role: 'system', content: BRAND_VOICE_SYSTEM },
+            { role: 'user', content: userPrompt },
+        ], { temperature: 0.8, maxTokens: 16000 });
+        totalInputTokens += genResponse.inputTokens;
+        totalOutputTokens += genResponse.outputTokens;
     }
-
-    if (recentTitles) {
-        userPrompt += `\n\nARTICULOS YA PUBLICADOS (no repitas temas ni enfoques):\n- ${recentTitles}`;
-    }
-
-    userPrompt += `\n\nIdioma de escritura: ${LANG_INSTRUCTIONS[lang] || LANG_INSTRUCTIONS.es}`;
-    userPrompt += `\n\nEl slug debe ser en el idioma del articulo.`;
-    if (lang !== 'es') {
-        userPrompt += `\nAdapta el contenido culturalmente, no hagas una traduccion literal. El articulo debe sentirse nativo en ${lang === 'en' ? 'ingles' : 'portugues'}.`;
-    }
-    userPrompt += `\n\nDevuelve SOLO el JSON, sin markdown ni backticks.`;
-
-    // Step 1: Generate
-    const genResponse = await callAI([
-        { role: 'system', content: BRAND_VOICE_SYSTEM },
-        { role: 'user', content: userPrompt },
-    ], { temperature: 0.8, maxTokens: 16000 });
 
     // Parse JSON (with retry on failure)
     let article: {
@@ -302,16 +353,24 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
             { role: 'system', content: 'Eres un editor. Recibes un articulo HTML que fue cortado abruptamente. Completa SOLO la parte faltante (cierra la oracion, el parrafo y los tags HTML abiertos). Devuelve el articulo COMPLETO, no solo el fragmento faltante. Mantiene el mismo tono, idioma y estilo.' },
             { role: 'user', content: content },
         ], { temperature: 0.4, maxTokens: 4000 });
+        totalInputTokens += completionResponse.inputTokens;
+        totalOutputTokens += completionResponse.outputTokens;
         article.content = completionResponse.content.trim();
     }
 
-    // Step 2: Humanize
-    const humanizeResponse = await callAI([
-        { role: 'system', content: HUMANIZER_SYSTEM },
-        { role: 'user', content: article.content },
-    ], { temperature: 0.4, maxTokens: 16000 });
-
-    const humanizedContent = humanizeResponse.content.trim();
+    // Step 2: Humanize (skip for translations — source was already humanized)
+    let humanizedContent: string;
+    if (isTranslation) {
+        humanizedContent = article.content.trim();
+    } else {
+        const humanizeResponse = await callAI([
+            { role: 'system', content: HUMANIZER_SYSTEM },
+            { role: 'user', content: article.content },
+        ], { temperature: 0.4, maxTokens: 16000 });
+        totalInputTokens += humanizeResponse.inputTokens;
+        totalOutputTokens += humanizeResponse.outputTokens;
+        humanizedContent = humanizeResponse.content.trim();
+    }
 
     // Step 3: Internal links
     const slug = slugify(article.slug || article.title);
@@ -338,6 +397,9 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
             generated_by: input.topic_id ? 'ai-cron' : 'ai-demand',
             topic_id: input.topic_id || null,
             lang_group: langGroup,
+            ai_tokens_input: totalInputTokens,
+            ai_tokens_output: totalOutputTokens,
+            ai_cost_usd: totalInputTokens * (0.15 / 1_000_000) + totalOutputTokens * (0.60 / 1_000_000),
             published_at: status === 'published' ? now : null,
             created_at: now,
         })
@@ -365,12 +427,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
     try {
-        const { prompt, pillar, audience, format, archetype_ref, lang, topic_id, auto_publish } = req.body;
+        const { prompt, pillar, audience, format, archetype_ref, lang, topic_id, lang_group, auto_publish, source_content, source_title, source_meta, source_category, source_tags } = req.body;
 
         if (!prompt) return res.status(400).json({ error: 'prompt is required' });
 
         const result = await generateBlogPost(
-            { prompt, pillar, audience, format, archetype_ref, lang, topic_id },
+            { prompt, pillar, audience, format, archetype_ref, lang, topic_id, lang_group, source_content, source_title, source_meta, source_category, source_tags },
             auto_publish ?? false,
         );
 

@@ -234,7 +234,14 @@ async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; 
     const langGroup = esResult.lang_group;
     const results = [{ lang: 'es', post_id: esResult.post_id }];
 
-    // Generate en and pt in parallel with shared lang_group
+    // Fetch Spanish content for translation mode (cheaper than regenerating)
+    const { data: esPost } = await supabase
+        .from('blog_posts')
+        .select('title, meta_description, content, category, tags')
+        .eq('id', esResult.post_id)
+        .single();
+
+    // Translate to en and pt in parallel (skips humanization, ~40% cheaper)
     const otherLangs = ALL_LANGS.filter(l => l !== 'es');
     const otherResults = await Promise.allSettled(
         otherLangs.map(async (lang) => {
@@ -250,6 +257,11 @@ async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; 
                     lang,
                     lang_group: langGroup,
                     auto_publish: true,
+                    source_content: esPost?.content,
+                    source_title: esPost?.title,
+                    source_meta: esPost?.meta_description,
+                    source_category: esPost?.category,
+                    source_tags: esPost?.tags,
                 }),
             });
             if (!r.ok) throw new Error(`${lang}: ${await r.text()}`);
