@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get session data including AI sections
         const { data: session } = await sb
             .from('sessions')
-            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd')
+            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd, share_token')
             .eq('id', session_id)
             .single();
 
@@ -94,7 +94,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Send special email
         const resendKey = process.env.RESEND_API_KEY;
         const origin = process.env.SITE_URL || 'https://argomethod.com';
-        const reportUrl = `${origin}/report/${session_id}`;
+        const shareToken = session.share_token || '';
+        const reportUrl = shareToken
+            ? `${origin}/report/${session_id}?token=${shareToken}`
+            : `${origin}/report/${session_id}`;
 
         if (resendKey && session.adult_email) {
             const childName = session.child_name;

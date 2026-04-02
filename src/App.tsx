@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
+import { useLang } from './context/LangContext';
 import { Landing }            from './pages/Landing';
 import { Login }              from './pages/Login';
 import { TenantSignup }      from './pages/TenantSignup';
@@ -54,27 +55,37 @@ const TEST_EMAILS = ['marianonoceti@gmail.com'];
 
 // ─── Blocked screen ───────────────────────────────────────────────────────────
 
-const BlockedView: React.FC = () => (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
-         style={{ backgroundColor: '#F5F5F7', fontFamily: 'Inter, sans-serif' }}>
-        <div style={{ maxWidth: '360px' }}>
-            <div className="flex items-center justify-center gap-1.5 mb-8">
-                <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
-                </span>
-                <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
-                    beta
-                </span>
+const BLOCKED_I18N: Record<string, { title: string; message: string }> = {
+    es: { title: `Ya completaste tus ${MAX_PLAYS} experiencias`, message: `Cada cuenta puede usar Argo Method hasta ${MAX_PLAYS} veces. Si necesitas mas sesiones, contactanos.` },
+    en: { title: `You've completed your ${MAX_PLAYS} experiences`, message: `Each account can use Argo Method up to ${MAX_PLAYS} times. Contact us if you need more sessions.` },
+    pt: { title: `Voce completou suas ${MAX_PLAYS} experiencias`, message: `Cada conta pode usar o Argo Method ate ${MAX_PLAYS} vezes. Entre em contato se precisar de mais sessoes.` },
+};
+
+const BlockedView: React.FC = () => {
+    const { lang } = useLang();
+    const t = BLOCKED_I18N[lang] ?? BLOCKED_I18N.es;
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center"
+             style={{ backgroundColor: '#F5F5F7', fontFamily: 'Inter, sans-serif' }}>
+            <div style={{ maxWidth: '360px' }}>
+                <div className="flex items-center justify-center gap-1.5 mb-8">
+                    <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                    </span>
+                    <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                        beta
+                    </span>
+                </div>
+                <h2 style={{ fontWeight: 300, fontSize: '24px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+                    {t.title}
+                </h2>
+                <p style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.7 }}>
+                    {t.message}
+                </p>
             </div>
-            <h2 style={{ fontWeight: 300, fontSize: '24px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>
-                Ya completaste tus {MAX_PLAYS} experiencias
-            </h2>
-            <p style={{ fontWeight: 400, fontSize: '15px', color: '#86868B', lineHeight: 1.7 }}>
-                Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitas más sesiones, contáctanos.
-            </p>
         </div>
-    </div>
-);
+    );
+};
 
 // ─── User app wrapper (auth + play limit) ─────────────────────────────────────
 
