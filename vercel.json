@@ -3,8 +3,12 @@
   "outputDirectory": "dist",
   "installCommand": "npm install",
   "framework": "vite",
-  "cleanUrls": true,
   "rewrites": [
+    { "source": "/blog", "destination": "/blog/index.html" },
+    { "source": "/blog/category/:cat", "destination": "/blog/category/:cat/index.html" },
+    { "source": "/pricing", "destination": "/pricing/index.html" },
+    { "source": "/terms", "destination": "/terms/index.html" },
+    { "source": "/privacy", "destination": "/privacy/index.html" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
