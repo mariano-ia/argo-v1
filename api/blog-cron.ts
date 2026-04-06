@@ -81,23 +81,24 @@ async function generateTopicIdea(
 
     const prompt = `Genera UNA idea de articulo para el blog de Argo Method (perfilamiento conductual DISC para deportistas juveniles 8-16 anos).
 
-Pilar: ${pillar}
-Audiencia: ${audience}
-Formato: ${format}${archetypeContext}${recentList}
+Pilar: ${pillar}. Audiencia: ${audience}. Formato: ${format}.${archetypeContext}${recentList}
 
-Responde SOLO un JSON: {"title": "titulo concreto y atractivo", "description": "descripcion de 1-2 oraciones de que cubriria el articulo"}
-Sin backticks ni texto adicional.`;
+Responde un JSON con "title" (max 80 chars) y "description" (max 150 chars).`;
 
     const response = await callAI([
         { role: 'user', content: prompt },
-    ], { temperature: 0.9, maxTokens: 1500, jsonMode: true });
+    ], { temperature: 0.7, maxTokens: 2000, jsonMode: true });
 
     const cleaned = response.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     if (!cleaned) throw new Error('Empty response from AI');
     // Extract JSON object even if surrounded by extra text
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
     if (!jsonMatch) throw new Error(`No JSON found. Response (first 300 chars): ${cleaned.slice(0, 300)}`);
-    return JSON.parse(jsonMatch[0]);
+    try {
+        return JSON.parse(jsonMatch[0]);
+    } catch {
+        throw new Error(`Invalid JSON. Response (first 300 chars): ${cleaned.slice(0, 300)}`);
+    }
 }
 
 // ─── Seed topics into the queue ─────────────────────────────────────────────
