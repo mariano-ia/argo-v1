@@ -93,9 +93,10 @@ Sin backticks ni texto adicional.`;
     ], { temperature: 0.9, maxTokens: 1500, jsonMode: true });
 
     const cleaned = response.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    if (!cleaned) throw new Error('Empty response from AI');
     // Extract JSON object even if surrounded by extra text
     const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error('No JSON object found in response');
+    if (!jsonMatch) throw new Error(`No JSON found. Response (first 300 chars): ${cleaned.slice(0, 300)}`);
     return JSON.parse(jsonMatch[0]);
 }
 
