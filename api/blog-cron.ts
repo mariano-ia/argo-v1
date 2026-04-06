@@ -88,10 +88,13 @@ Sin backticks ni texto adicional.`;
 
     const response = await callAI([
         { role: 'user', content: prompt },
-    ], { temperature: 0.9, maxTokens: 500 });
+    ], { temperature: 0.9, maxTokens: 1500 });
 
     const cleaned = response.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    return JSON.parse(cleaned);
+    // Extract JSON object even if surrounded by extra text
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('No JSON object found in response');
+    return JSON.parse(jsonMatch[0]);
 }
 
 // ─── Seed topics into the queue ─────────────────────────────────────────────
