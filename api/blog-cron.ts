@@ -96,7 +96,8 @@ Sin backticks ni texto adicional.`;
 
 // ─── Seed topics into the queue ─────────────────────────────────────────────
 
-async function seedTopicsIfNeeded(): Promise<void> {
+async function seedTopicsIfNeeded(): Promise<{ seeded: number; errors: string[] }> {
+    const seedErrors: string[] = [];
     // Check how many pending topics exist
     const { count } = await supabase
         .from('blog_topics')
@@ -104,7 +105,7 @@ async function seedTopicsIfNeeded(): Promise<void> {
         .eq('status', 'pending');
 
     const pendingCount = count ?? 0;
-    if (pendingCount >= 10) return; // enough topics in queue
+    if (pendingCount >= 10) return { seeded: 0, errors: [] }; // enough topics in queue
 
     // Get recent posts to avoid duplication
     const { data: recentPosts } = await supabase
@@ -174,16 +175,39 @@ async function seedTopicsIfNeeded(): Promise<void> {
             recentPillars.push(selectedPillar.pillar);
             if (archetype) recentArchetypes.push(archetype);
         } catch (err) {
-            console.error(`Failed to seed topic ${i}:`, err);
+            const msg = err instanceof Error ? err.message : String(err);
+            console.error(`Failed to seed topic ${i}:`, msg);
+            seedErrors.push(`topic_${i}: ${msg.slice(0, 200)}`);
         }
     }
+
+    const { count: newCount } = await supabase
+        .from('blog_topics')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending');
+
+    return { seeded: (newCount ?? 0) - pendingCount, errors: seedErrors };
 }
 
 // ─── Pick the best topic and trigger generation ─────────────────────────────
 
 const ALL_LANGS = ['es', 'en', 'pt'] as const;
 
-async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; results?: { lang: string; post_id: string }[] }> {
+async function unstickGeneratingTopics(): Promise<number> {
+    // Reset topics stuck in "generating" from failed previous runs.
+    // Cron runs every 3-4 days, so any "generating" topic at start is definitely stuck.
+    const { data } = await supabase
+        .from('blog_topics')
+        .update({ status: 'pending' })
+        .eq('status', 'generating')
+        .select('id');
+    return data?.length ?? 0;
+}
+
+async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; results?: { lang: string; post_id: string }[]; unstuck?: number }> {
+    // First: unstick any topics from failed previous runs
+    const unstuck = await unstickGeneratingTopics();
+
     // Get highest-relevance pending topic
     const { data: topics } = await supabase
         .from('blog_topics')
@@ -193,7 +217,7 @@ async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; 
         .limit(1);
 
     if (!topics || topics.length === 0) {
-        return { generated: false };
+        return { generated: false, unstuck };
     }
 
     const topic = topics[0];
@@ -278,7 +302,7 @@ async function pickAndGenerate(): Promise<{ generated: boolean; topic?: string; 
         }
     }
 
-    return { generated: true, topic: topic.title, results };
+    return { generated: true, topic: topic.title, results, unstuck };
 }
 
 // ─── HTTP handler ───────────────────────────────────────────────────────────
@@ -293,7 +317,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         // Step 1: Ensure topic queue has ideas
-        await seedTopicsIfNeeded();
+        const seedResult = await seedTopicsIfNeeded();
 
         // Step 2: Pick best topic and generate + publish
         const result = await pickAndGenerate();
@@ -308,11 +332,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({
             ok: true,
+            seed: seedResult,
             ...result,
             timestamp: new Date().toISOString(),
         });
     } catch (err) {
         console.error('blog-cron error:', err);
+        // Safety net: reset any topics stuck in "generating" so next run can retry
+        await supabase.from('blog_topics').update({ status: 'pending' }).eq('status', 'generating');
         return res.status(500).json({ error: (err as Error).message });
     }
 }

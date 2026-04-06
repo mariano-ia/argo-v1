@@ -332,11 +332,19 @@ Devuelve SOLO el JSON, sin markdown ni backticks.`;
         const cleaned = genResponse.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         article = JSON.parse(cleaned);
     } catch {
-        // Retry once
-        const retryResponse = await callAI([
-            { role: 'system', content: BRAND_VOICE_SYSTEM },
-            { role: 'user', content: userPrompt + '\n\nIMPORTANTE: Devuelve JSON valido. Sin backticks, sin texto adicional.' },
-        ], { temperature: 0.6, maxTokens: 16000 });
+        // Retry once — re-send the same messages with stricter instruction
+        const retryMessages = isTranslation
+            ? [
+                { role: 'system' as const, content: 'Eres un traductor y adaptador cultural experto para Argo Method. Devuelve SOLO JSON valido.' },
+                { role: 'user' as const, content: genResponse.content + '\n\nEl texto anterior no es JSON valido. Extrae el contenido y devuelve SOLO un JSON valido con: title, seo_title, slug, meta_description, category, tags, reading_time, content. Sin backticks.' },
+              ]
+            : [
+                { role: 'system' as const, content: BRAND_VOICE_SYSTEM },
+                { role: 'user' as const, content: `Reescribe este articulo como JSON valido.\n\n${genResponse.content}\n\nIMPORTANTE: Devuelve JSON valido. Sin backticks, sin texto adicional.` },
+              ];
+        const retryResponse = await callAI(retryMessages, { temperature: 0.6, maxTokens: 16000 });
+        totalInputTokens += retryResponse.inputTokens;
+        totalOutputTokens += retryResponse.outputTokens;
         const cleaned = retryResponse.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         article = JSON.parse(cleaned);
     }
