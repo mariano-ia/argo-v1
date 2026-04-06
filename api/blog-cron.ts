@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 interface AIMessage { role: 'system' | 'user' | 'assistant'; content: string; }
 interface AIResponse { content: string; inputTokens: number; outputTokens: number; totalTokens: number; }
 
-async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTokens?: number; model?: string } = {}): Promise<AIResponse> {
+async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTokens?: number; model?: string; jsonMode?: boolean } = {}): Promise<AIResponse> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
     const temperature = opts.temperature ?? 0.7;
@@ -16,7 +16,9 @@ async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTo
     const systemMsg = messages.find(m => m.role === 'system');
     const conversationMsgs = messages.filter(m => m.role !== 'system');
     const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    const genConfig: Record<string, unknown> = { temperature, maxOutputTokens: maxTokens };
+    if (opts.jsonMode) genConfig.responseMimeType = 'application/json';
+    const body: Record<string, unknown> = { contents, generationConfig: genConfig };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
@@ -88,7 +90,7 @@ Sin backticks ni texto adicional.`;
 
     const response = await callAI([
         { role: 'user', content: prompt },
-    ], { temperature: 0.9, maxTokens: 1500 });
+    ], { temperature: 0.9, maxTokens: 1500, jsonMode: true });
 
     const cleaned = response.content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     // Extract JSON object even if surrounded by extra text
