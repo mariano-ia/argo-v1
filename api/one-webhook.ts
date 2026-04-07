@@ -3,6 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SB = ReturnType<typeof createClient>;
+
 // Disable Vercel's default body parsing for Stripe signature verification
 export const config = { api: { bodyParser: false } };
 
