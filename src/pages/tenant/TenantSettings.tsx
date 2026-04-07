@@ -350,10 +350,10 @@ export const TenantSettings: React.FC = () => {
                 </div>
 
                 {/* ── Danger zone ─────────────────────────────── */}
-                <div className="bg-white rounded-[14px] p-6 shadow-argo border border-red-100">
+                <div className="bg-white rounded-[14px] p-6 shadow-argo border border-argo-border">
                     <div className="flex items-center gap-2 mb-4">
-                        <AlertTriangle size={16} className="text-red-500" />
-                        <h2 className="text-[15px] font-semibold text-red-600">{lang === 'en' ? 'Danger zone' : lang === 'pt' ? 'Zona de perigo' : 'Zona de riesgo'}</h2>
+                        <AlertTriangle size={16} className="text-argo-light" />
+                        <h2 className="text-[15px] font-semibold text-argo-navy">{lang === 'en' ? 'Account management' : lang === 'pt' ? 'Gerenciamento da conta' : 'Gestión de cuenta'}</h2>
                     </div>
 
                     {/* Cancel subscription */}
