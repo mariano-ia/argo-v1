@@ -49,7 +49,7 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 1. Registers / logs in (Google or email) → 14-day trial (8 players)
 2. Accesses dashboard → sees unique link, sessions, roster usage
 3. Shares link with players
-4. Upgrades via Stripe when ready (PRO/Academy)
+4. Upgrades via Stripe (international) or MercadoPago (Latam) when ready (PRO/Academy)
 
 #### Player flow
 1. Receives link (`argomethod.com/play/:slug`)
@@ -76,7 +76,7 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 - All admin actions logged in audit_log table
 
 #### Data model
-- `tenants` table: plan, roster_limit, ai_queries_count, slug, auth user reference
+- `tenants` table: plan, roster_limit, ai_queries_count, slug, auth user reference, subscription_provider, subscription_id
 - `tenant_id` on `sessions` table to link each play to the tenant
 - `one_purchases` + `one_links` for Argo One standalone purchases
 - `admin_audit_log` for superadmin action tracking
@@ -97,9 +97,11 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `POST /api/create-tenant` — create tenant record on signup (idempotent)
 - `POST /api/start-play` — validate roster capacity + start play
 - `POST /api/archive-player` — archive/reactivate players
-- `POST /api/create-subscription` — Stripe subscription checkout (PRO/Academy)
-- `POST /api/one-checkout` — Argo One Stripe checkout
-- `POST /api/one-webhook` — Stripe webhook (Argo One + subscriptions)
+- `POST /api/create-subscription` — subscription checkout (Stripe or MercadoPago based on country)
+- `POST /api/cancel-subscription` — cancel active subscription (Stripe or MercadoPago)
+- `POST /api/delete-account` — delete tenant account (cancels subscription + removes auth user)
+- `POST /api/one-checkout` — Argo One checkout (Stripe USD or MercadoPago ARS, auto-detected)
+- `POST /api/one-webhook` — webhook for Stripe + MercadoPago (Argo One + subscriptions)
 - `GET/POST /api/one-panel` — Argo One mini-panel (magic link auth)
 - `POST /api/one-start-play` — validate Argo One link
 - `POST /api/one-complete` — save Argo One session
