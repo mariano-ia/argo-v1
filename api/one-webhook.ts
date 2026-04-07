@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { createHmac } from 'crypto';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SB = ReturnType<typeof createClient>;
 
 // Disable Vercel's default body parsing for Stripe signature verification
 export const config = { api: { bodyParser: false } };
@@ -11,11 +13,23 @@ export const config = { api: { bodyParser: false } };
  * POST /api/one-webhook
  * Handles payment confirmation from Stripe and MercadoPago.
  *
- * Stripe: sends checkout.session.completed event
- * MercadoPago: sends IPN notification (topic=payment)
+ * Stripe events:
+ *   - checkout.session.completed (Argo One + subscriptions)
+ *   - customer.subscription.deleted (subscription cancellation)
+ *   - charge.refunded (refund processing)
  *
- * On success: marks purchase as paid, sends confirmation email with panel link.
+ * MercadoPago events:
+ *   - payment / payment.created / payment.updated (Argo One payments)
+ *   - subscription_preapproval (subscription status changes)
+ *   - subscription_authorized_payment (recurring payment processed)
  */
+
+const PLAN_CONFIG: Record<string, { roster_limit: number }> = {
+    pro: { roster_limit: 50 },
+    academy: { roster_limit: 100 },
+};
+
+/* ── Email helpers ───────────────────────────────────────────────────────── */
 
 async function sendConfirmationEmail(
     email: string,
@@ -111,231 +125,6 @@ async function sendConfirmationEmail(
     });
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    const supabaseUrl = process.env.VITE_SUPABASE_URL;
-    if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server configuration error' });
-
-    const sb = createClient(supabaseUrl, serviceKey);
-
-    try {
-        // ── Detect provider from request ────────────────────────────────
-        const isStripe = req.headers['stripe-signature'];
-        const isMPTopic = req.query.topic || req.body?.topic || req.body?.type;
-
-        if (isStripe) {
-            return handleStripe(req, res, sb);
-        } else if (isMPTopic) {
-            return handleMercadoPago(req, res, sb);
-        }
-
-        return res.status(400).json({ error: 'Unknown webhook source' });
-    } catch (err) {
-        console.error('[one-webhook] Error:', err);
-        return res.status(500).json({ error: 'Webhook processing failed' });
-    }
-}
-
-// ── Stripe handler ──────────────────────────────────────────────────────────
-
-async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
-    const stripeKey = process.env.STRIPE_SECRET_KEY;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!stripeKey || !webhookSecret) {
-        console.error('[one-webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET');
-        return res.status(500).json({ error: 'Server configuration error' });
-    }
-
-    const stripe = new Stripe(stripeKey);
-
-    // Verify Stripe signature
-    let event: Stripe.Event;
-    try {
-        const rawBody = await buffer(req);
-        const signature = req.headers['stripe-signature'] as string;
-        event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
-    } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Unknown error';
-        console.error('[one-webhook] Stripe signature verification failed:', msg);
-        return res.status(400).json({ error: 'Invalid signature' });
-    }
-
-    // Handle subscription cancellation
-    if (event.type === 'customer.subscription.deleted') {
-        const subscription = event.data.object as Stripe.Subscription;
-        const tenantId = subscription.metadata?.tenant_id;
-        if (tenantId) {
-            await sb.from('tenants').update({ plan: 'trial', roster_limit: 8 }).eq('id', tenantId);
-            console.info(`[one-webhook] Subscription cancelled: tenant ${tenantId} downgraded to trial`);
-        }
-        return res.status(200).json({ received: true, action: 'subscription_cancelled' });
-    }
-
-    // Handle refund
-    if (event.type === 'charge.refunded') {
-        const charge = event.data.object as Stripe.Charge;
-        const paymentIntent = charge.payment_intent as string;
-        if (paymentIntent) {
-            // Try to find and mark Argo One purchase as refunded
-            const { data: purchase } = await sb
-                .from('one_purchases')
-                .select('id')
-                .eq('payment_id', paymentIntent)
-                .maybeSingle();
-            if (purchase) {
-                await sb.from('one_purchases').update({ payment_status: 'refunded' }).eq('id', purchase.id);
-                console.info(`[one-webhook] Refund processed for purchase ${purchase.id}`);
-            }
-        }
-        return res.status(200).json({ received: true, action: 'refund_processed' });
-    }
-
-    if (event.type !== 'checkout.session.completed') {
-        return res.status(200).json({ received: true, ignored: true });
-    }
-
-    const session = event.data.object as Stripe.Checkout.Session;
-    const source = session.metadata?.source;
-
-    // Route to subscription handler if applicable
-    if (source === 'argo_subscription') {
-        return handleSubscription(session, res, sb);
-    }
-
-    const purchaseId = session?.metadata?.purchase_id;
-    if (!purchaseId || source !== 'argo_one') {
-        return res.status(200).json({ received: true, ignored: true });
-    }
-
-    // Idempotency: check if already processed
-    const { data: existing } = await sb
-        .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token')
-        .eq('id', purchaseId)
-        .single();
-
-    if (!existing) return res.status(404).json({ error: 'Purchase not found' });
-    if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
-
-    // Mark as paid
-    await sb.from('one_purchases').update({
-        payment_status: 'paid',
-        payment_id: session.id,
-        paid_at: new Date().toISOString(),
-    }).eq('id', purchaseId);
-
-    // Send confirmation email
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
-
-    console.info(`[one-webhook] Stripe: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
-    return res.status(200).json({ received: true, purchase_id: purchaseId });
-}
-
-// ── MercadoPago handler ─────────────────────────────────────────────────────
-
-async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
-    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
-    if (!mpToken) return res.status(500).json({ error: 'Missing MP token' });
-
-    // MP sends different notification types
-    const topic = req.query.topic || req.body?.topic || req.body?.type;
-    const resourceId = req.query.id || req.body?.data?.id;
-
-    if (topic !== 'payment' && topic !== 'payment.created' && topic !== 'payment.updated') {
-        return res.status(200).json({ received: true, ignored: true });
-    }
-
-    if (!resourceId) return res.status(400).json({ error: 'Missing resource id' });
-
-    // Fetch payment details from MP API
-    const paymentRes = await fetch(`https://api.mercadopago.com/v1/payments/${resourceId}`, {
-        headers: { 'Authorization': `Bearer ${mpToken}` },
-    });
-
-    if (!paymentRes.ok) {
-        console.error('[one-webhook] MP payment fetch failed:', paymentRes.status);
-        return res.status(502).json({ error: 'Failed to fetch MP payment' });
-    }
-
-    const payment = await paymentRes.json();
-
-    if (payment.status !== 'approved') {
-        return res.status(200).json({ received: true, status: payment.status });
-    }
-
-    const purchaseId = payment.external_reference || payment.metadata?.purchase_id;
-    if (!purchaseId) return res.status(200).json({ received: true, ignored: true });
-
-    // Idempotency check
-    const { data: existing } = await sb
-        .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token')
-        .eq('id', purchaseId)
-        .single();
-
-    if (!existing) return res.status(404).json({ error: 'Purchase not found' });
-    if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
-
-    // Mark as paid
-    await sb.from('one_purchases').update({
-        payment_status: 'paid',
-        payment_id: String(resourceId),
-        paid_at: new Date().toISOString(),
-    }).eq('id', purchaseId);
-
-    // Send confirmation email
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
-
-    console.info(`[one-webhook] MP: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
-    return res.status(200).json({ received: true, purchase_id: purchaseId });
-}
-
-// ── Subscription handler ────────────────────────────────────────────────────
-
-const PLAN_CONFIG: Record<string, { roster_limit: number }> = {
-    pro: { roster_limit: 50 },
-    academy: { roster_limit: 100 },
-};
-
-async function handleSubscription(
-    session: { id: string; metadata: Record<string, string>; subscription?: string; customer_email?: string },
-    res: VercelResponse,
-    sb: ReturnType<typeof createClient>,
-) {
-    const tenantId = session.metadata?.tenant_id;
-    const plan = session.metadata?.plan;
-
-    if (!tenantId || !plan || !PLAN_CONFIG[plan]) {
-        return res.status(200).json({ received: true, ignored: true, reason: 'missing metadata' });
-    }
-
-    const config = PLAN_CONFIG[plan];
-
-    // Update tenant plan + roster
-    const { error } = await sb.from('tenants').update({
-        plan,
-        roster_limit: config.roster_limit,
-    }).eq('id', tenantId);
-
-    if (error) {
-        console.error('[one-webhook] Subscription update error:', error.message);
-        return res.status(500).json({ error: 'Failed to update tenant' });
-    }
-
-    // Send upgrade confirmation email
-    const email = session.customer_email;
-    if (email) {
-        await sendUpgradeEmail(email, plan, config.roster_limit);
-    }
-
-    console.info(`[one-webhook] Subscription: Tenant ${tenantId} upgraded to ${plan} (roster: ${config.roster_limit})`);
-    return res.status(200).json({ received: true, tenant_id: tenantId, plan });
-}
-
-// ── Upgrade email ───────────────────────────────────────────────────────────
-
 async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number): Promise<void> {
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) return;
@@ -410,4 +199,284 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
             html,
         }),
     });
+}
+
+/* ── Main handler ────────────────────────────────────────────────────────── */
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server configuration error' });
+
+    const sb = createClient(supabaseUrl, serviceKey);
+
+    try {
+        // Detect provider from request
+        const isStripe = req.headers['stripe-signature'];
+        const mpTopic = req.query.topic || req.body?.topic || req.body?.type;
+
+        if (isStripe) {
+            return handleStripe(req, res, sb);
+        } else if (mpTopic) {
+            return handleMercadoPago(req, res, sb, String(mpTopic));
+        }
+
+        return res.status(400).json({ error: 'Unknown webhook source' });
+    } catch (err) {
+        console.error('[one-webhook] Error:', err);
+        return res.status(500).json({ error: 'Webhook processing failed' });
+    }
+}
+
+/* ── Stripe handler ──────────────────────────────────────────────────────── */
+
+async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
+    const stripeKey = process.env.STRIPE_SECRET_KEY;
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!stripeKey || !webhookSecret) {
+        console.error('[one-webhook] Missing STRIPE_SECRET_KEY or STRIPE_WEBHOOK_SECRET');
+        return res.status(500).json({ error: 'Server configuration error' });
+    }
+
+    const stripe = new Stripe(stripeKey);
+
+    let event: Stripe.Event;
+    try {
+        const rawBody = await buffer(req);
+        const signature = req.headers['stripe-signature'] as string;
+        event = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+    } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Unknown error';
+        console.error('[one-webhook] Stripe signature verification failed:', msg);
+        return res.status(400).json({ error: 'Invalid signature' });
+    }
+
+    // Handle subscription cancellation
+    if (event.type === 'customer.subscription.deleted') {
+        const subscription = event.data.object as Stripe.Subscription;
+        const tenantId = subscription.metadata?.tenant_id;
+        if (tenantId) {
+            await sb.from('tenants').update({
+                plan: 'trial',
+                roster_limit: 8,
+                subscription_provider: null,
+                subscription_id: null,
+            }).eq('id', tenantId);
+            console.info(`[one-webhook] Subscription cancelled: tenant ${tenantId} downgraded to trial`);
+        }
+        return res.status(200).json({ received: true, action: 'subscription_cancelled' });
+    }
+
+    // Handle refund
+    if (event.type === 'charge.refunded') {
+        const charge = event.data.object as Stripe.Charge;
+        const paymentIntent = charge.payment_intent as string;
+        if (paymentIntent) {
+            const { data: purchase } = await sb
+                .from('one_purchases')
+                .select('id')
+                .eq('payment_id', paymentIntent)
+                .maybeSingle();
+            if (purchase) {
+                await sb.from('one_purchases').update({ payment_status: 'refunded' }).eq('id', purchase.id);
+                console.info(`[one-webhook] Refund processed for purchase ${purchase.id}`);
+            }
+        }
+        return res.status(200).json({ received: true, action: 'refund_processed' });
+    }
+
+    if (event.type !== 'checkout.session.completed') {
+        return res.status(200).json({ received: true, ignored: true });
+    }
+
+    const session = event.data.object as Stripe.Checkout.Session;
+    const source = session.metadata?.source;
+
+    // Route to subscription handler
+    if (source === 'argo_subscription') {
+        return handleSubscription(session, 'stripe', res, sb);
+    }
+
+    // Argo One payment
+    const purchaseId = session?.metadata?.purchase_id;
+    if (!purchaseId || source !== 'argo_one') {
+        return res.status(200).json({ received: true, ignored: true });
+    }
+
+    const { data: existing } = await sb
+        .from('one_purchases')
+        .select('id, payment_status, email, pack_size, access_token')
+        .eq('id', purchaseId)
+        .single();
+
+    if (!existing) return res.status(404).json({ error: 'Purchase not found' });
+    if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
+
+    await sb.from('one_purchases').update({
+        payment_status: 'paid',
+        payment_id: session.id,
+        paid_at: new Date().toISOString(),
+    }).eq('id', purchaseId);
+
+    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
+
+    console.info(`[one-webhook] Stripe: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
+    return res.status(200).json({ received: true, purchase_id: purchaseId });
+}
+
+/* ── MercadoPago handler ─────────────────────────────────────────────────── */
+
+async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>, topic: string) {
+    const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
+    if (!mpToken) return res.status(500).json({ error: 'Missing MP token' });
+
+    // ── Subscription preapproval events ──────────────────────────────────
+    if (topic === 'subscription_preapproval') {
+        const preapprovalId = req.query.id || req.body?.data?.id;
+        if (!preapprovalId) return res.status(200).json({ received: true, ignored: true });
+
+        const paRes = await fetch(`https://api.mercadopago.com/preapproval/${preapprovalId}`, {
+            headers: { 'Authorization': `Bearer ${mpToken}` },
+        });
+        if (!paRes.ok) {
+            console.error('[one-webhook] MP preapproval fetch failed:', paRes.status);
+            return res.status(502).json({ error: 'Failed to fetch MP preapproval' });
+        }
+
+        const preapproval = await paRes.json();
+        const tenantId = preapproval.external_reference;
+
+        if (!tenantId) return res.status(200).json({ received: true, ignored: true });
+
+        if (preapproval.status === 'authorized') {
+            // Subscription activated: determine plan from reason field
+            const reason = (preapproval.reason ?? '').toLowerCase();
+            const plan = reason.includes('academy') ? 'academy' : 'pro';
+            const config = PLAN_CONFIG[plan];
+
+            await sb.from('tenants').update({
+                plan,
+                roster_limit: config.roster_limit,
+                subscription_provider: 'mercadopago',
+                subscription_id: String(preapprovalId),
+            }).eq('id', tenantId);
+
+            // Fetch tenant email for upgrade email
+            const { data: tenant } = await sb.from('tenants').select('auth_user_id').eq('id', tenantId).maybeSingle();
+            if (tenant?.auth_user_id) {
+                const { data: { user } } = await sb.auth.admin.getUserById(tenant.auth_user_id);
+                if (user?.email) {
+                    await sendUpgradeEmail(user.email, plan, config.roster_limit);
+                }
+            }
+
+            console.info(`[one-webhook] MP subscription authorized: tenant ${tenantId} → ${plan}`);
+        } else if (preapproval.status === 'cancelled') {
+            await sb.from('tenants').update({
+                plan: 'trial',
+                roster_limit: 8,
+                subscription_provider: null,
+                subscription_id: null,
+            }).eq('id', tenantId);
+            console.info(`[one-webhook] MP subscription cancelled: tenant ${tenantId} → trial`);
+        } else if (preapproval.status === 'paused') {
+            console.info(`[one-webhook] MP subscription paused: tenant ${tenantId}`);
+        }
+
+        return res.status(200).json({ received: true, status: preapproval.status });
+    }
+
+    // ── Subscription authorized payment (recurring charge) ──────────────
+    if (topic === 'subscription_authorized_payment') {
+        const paymentId = req.query.id || req.body?.data?.id;
+        console.info(`[one-webhook] MP subscription payment received: ${paymentId}`);
+        // Recurring payments don't require action — tenant stays on current plan
+        return res.status(200).json({ received: true, action: 'subscription_payment_logged' });
+    }
+
+    // ── Argo One payment events ─────────────────────────────────────────
+    if (topic !== 'payment' && topic !== 'payment.created' && topic !== 'payment.updated') {
+        return res.status(200).json({ received: true, ignored: true });
+    }
+
+    const resourceId = req.query.id || req.body?.data?.id;
+    if (!resourceId) return res.status(400).json({ error: 'Missing resource id' });
+
+    const paymentRes = await fetch(`https://api.mercadopago.com/v1/payments/${resourceId}`, {
+        headers: { 'Authorization': `Bearer ${mpToken}` },
+    });
+
+    if (!paymentRes.ok) {
+        console.error('[one-webhook] MP payment fetch failed:', paymentRes.status);
+        return res.status(502).json({ error: 'Failed to fetch MP payment' });
+    }
+
+    const payment = await paymentRes.json();
+
+    if (payment.status !== 'approved') {
+        return res.status(200).json({ received: true, status: payment.status });
+    }
+
+    const purchaseId = payment.external_reference || payment.metadata?.purchase_id;
+    if (!purchaseId) return res.status(200).json({ received: true, ignored: true });
+
+    const { data: existing } = await sb
+        .from('one_purchases')
+        .select('id, payment_status, email, pack_size, access_token')
+        .eq('id', purchaseId)
+        .single();
+
+    if (!existing) return res.status(404).json({ error: 'Purchase not found' });
+    if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
+
+    await sb.from('one_purchases').update({
+        payment_status: 'paid',
+        payment_id: String(resourceId),
+        paid_at: new Date().toISOString(),
+    }).eq('id', purchaseId);
+
+    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
+
+    console.info(`[one-webhook] MP: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
+    return res.status(200).json({ received: true, purchase_id: purchaseId });
+}
+
+/* ── Subscription handler (shared for Stripe checkout.session.completed) ── */
+
+async function handleSubscription(
+    session: { id: string; metadata: Record<string, string>; subscription?: string; customer_email?: string },
+    provider: 'stripe' | 'mercadopago',
+    res: VercelResponse,
+    sb: ReturnType<typeof createClient>,
+) {
+    const tenantId = session.metadata?.tenant_id;
+    const plan = session.metadata?.plan;
+
+    if (!tenantId || !plan || !PLAN_CONFIG[plan]) {
+        return res.status(200).json({ received: true, ignored: true, reason: 'missing metadata' });
+    }
+
+    const config = PLAN_CONFIG[plan];
+
+    const { error } = await sb.from('tenants').update({
+        plan,
+        roster_limit: config.roster_limit,
+        subscription_provider: provider,
+        subscription_id: session.subscription ?? session.id,
+    }).eq('id', tenantId);
+
+    if (error) {
+        console.error('[one-webhook] Subscription update error:', error.message);
+        return res.status(500).json({ error: 'Failed to update tenant' });
+    }
+
+    const email = session.customer_email;
+    if (email) {
+        await sendUpgradeEmail(email, plan, config.roster_limit);
+    }
+
+    console.info(`[one-webhook] Subscription (${provider}): Tenant ${tenantId} upgraded to ${plan} (roster: ${config.roster_limit})`);
+    return res.status(200).json({ received: true, tenant_id: tenantId, plan });
 }

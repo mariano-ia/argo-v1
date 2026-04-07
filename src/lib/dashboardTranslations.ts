@@ -199,6 +199,19 @@ interface DashboardTexts {
         masOpciones: string;
         idioma: string;
         idiomaDesc: string;
+        cancelarSuscripcion: string;
+        cancelarSuscripcionDesc: string;
+        cancelarSuscripcionConfirm: string;
+        cancelarSuscripcionOk: string;
+        cancelarSuscripcionError: string;
+        cancelando: string;
+        eliminarCuenta: string;
+        eliminarCuentaDesc: string;
+        eliminarCuentaConfirm: string;
+        eliminarCuentaOk: string;
+        eliminarCuentaError: string;
+        eliminando: string;
+        sinSuscripcion: string;
     };
 
     // Onboarding
@@ -482,6 +495,19 @@ const es: DashboardTexts = {
         masOpciones: 'Más opciones de configuración próximamente.',
         idioma: 'Idioma del panel',
         idiomaDesc: 'Elige en qué idioma quieres ver el dashboard.',
+        cancelarSuscripcion: 'Cancelar suscripción',
+        cancelarSuscripcionDesc: 'Tu plan volverá a Trial (8 jugadores). Puedes volver a suscribirte en cualquier momento.',
+        cancelarSuscripcionConfirm: '¿Confirmas que quieres cancelar tu suscripción? Esta acción es inmediata.',
+        cancelarSuscripcionOk: 'Suscripción cancelada. Tu plan ahora es Trial.',
+        cancelarSuscripcionError: 'Error al cancelar la suscripción. Intenta de nuevo.',
+        cancelando: 'Cancelando...',
+        eliminarCuenta: 'Eliminar cuenta',
+        eliminarCuentaDesc: 'Se cancelará tu suscripción y se eliminarán tus datos de forma permanente.',
+        eliminarCuentaConfirm: '¿Estás seguro? Esta acción no se puede deshacer. Se cancelará tu suscripción y se eliminará tu cuenta.',
+        eliminarCuentaOk: 'Cuenta eliminada.',
+        eliminarCuentaError: 'Error al eliminar la cuenta. Intenta de nuevo.',
+        eliminando: 'Eliminando...',
+        sinSuscripcion: 'Sin suscripción activa',
     },
     homeExtra: {
         tuLinkInvitacion: 'Tu link de invitación',
@@ -766,6 +792,19 @@ const en: DashboardTexts = {
         masOpciones: 'More settings coming soon.',
         idioma: 'Dashboard language',
         idiomaDesc: 'Choose the language you want to see the dashboard in.',
+        cancelarSuscripcion: 'Cancel subscription',
+        cancelarSuscripcionDesc: 'Your plan will revert to Trial (8 players). You can subscribe again anytime.',
+        cancelarSuscripcionConfirm: 'Are you sure you want to cancel your subscription? This action is immediate.',
+        cancelarSuscripcionOk: 'Subscription cancelled. Your plan is now Trial.',
+        cancelarSuscripcionError: 'Failed to cancel subscription. Please try again.',
+        cancelando: 'Cancelling...',
+        eliminarCuenta: 'Delete account',
+        eliminarCuentaDesc: 'Your subscription will be cancelled and your data will be permanently deleted.',
+        eliminarCuentaConfirm: 'Are you sure? This action cannot be undone. Your subscription will be cancelled and your account deleted.',
+        eliminarCuentaOk: 'Account deleted.',
+        eliminarCuentaError: 'Failed to delete account. Please try again.',
+        eliminando: 'Deleting...',
+        sinSuscripcion: 'No active subscription',
     },
     homeExtra: {
         tuLinkInvitacion: 'Your invitation link',
@@ -1050,6 +1089,19 @@ const pt: DashboardTexts = {
         masOpciones: 'Mais opções de configuração em breve.',
         idioma: 'Idioma do painel',
         idiomaDesc: 'Escolha o idioma em que deseja ver o painel.',
+        cancelarSuscripcion: 'Cancelar assinatura',
+        cancelarSuscripcionDesc: 'Seu plano voltará para Trial (8 jogadores). Você pode assinar novamente a qualquer momento.',
+        cancelarSuscripcionConfirm: 'Tem certeza que deseja cancelar sua assinatura? Esta ação é imediata.',
+        cancelarSuscripcionOk: 'Assinatura cancelada. Seu plano agora é Trial.',
+        cancelarSuscripcionError: 'Erro ao cancelar assinatura. Tente novamente.',
+        cancelando: 'Cancelando...',
+        eliminarCuenta: 'Excluir conta',
+        eliminarCuentaDesc: 'Sua assinatura será cancelada e seus dados serão excluídos permanentemente.',
+        eliminarCuentaConfirm: 'Tem certeza? Esta ação não pode ser desfeita. Sua assinatura será cancelada e sua conta excluída.',
+        eliminarCuentaOk: 'Conta excluída.',
+        eliminarCuentaError: 'Erro ao excluir conta. Tente novamente.',
+        eliminando: 'Excluindo...',
+        sinSuscripcion: 'Sem assinatura ativa',
     },
     homeExtra: {
         tuLinkInvitacion: 'Seu link de convite',

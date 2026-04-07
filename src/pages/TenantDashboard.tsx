@@ -28,6 +28,8 @@ export interface TenantData {
     trial_expires_at?: string | null;
     ai_queries_count?: number;
     ai_queries_reset_at?: string | null;
+    subscription_provider?: string | null;
+    subscription_id?: string | null;
 }
 
 export interface MemberProfile {

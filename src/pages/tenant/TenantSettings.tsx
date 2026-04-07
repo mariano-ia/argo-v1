@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import type { Lang } from '../../context/LangContext';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui';
 import type { TenantData, MemberProfile } from '../TenantDashboard';
-import { Upload } from 'lucide-react';
+import { Upload, AlertTriangle } from 'lucide-react';
 
 /* ── Constants ─────────────────────────────────────────────────────────── */
 
@@ -58,7 +58,9 @@ export const TenantSettings: React.FC = () => {
     const { lang, setLang } = useLang();
     const dt = getDashboardT(lang);
     const o  = dt.onboarding;
+    const s  = dt.settings;
     const { toast } = useToast();
+    const navigate = useNavigate();
 
     /* ── All editable state ──────────────────────────────────────────── */
     const [displayName, setDisplayName] = useState('');
@@ -71,6 +73,8 @@ export const TenantSettings: React.FC = () => {
     const [fullName,    setFullName]    = useState('');
     const [role,        setRole]        = useState('');
     const [saving,      setSaving]      = useState(false);
+    const [cancelling,  setCancelling]  = useState(false);
+    const [deleting,    setDeleting]    = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
 
     /* ── Sync with context ──────────────────────────────────────────── */
@@ -153,6 +157,55 @@ export const TenantSettings: React.FC = () => {
         }
         setSaving(false);
     };
+
+    /* ── Cancel subscription ────────────────────────────────────────── */
+    const handleCancelSubscription = async () => {
+        if (!confirm(s.cancelarSuscripcionConfirm)) return;
+        setCancelling(true);
+        const token = await getToken();
+        if (!token) { setCancelling(false); return; }
+        try {
+            const res = await fetch('/api/cancel-subscription', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                toast('success', s.cancelarSuscripcionOk);
+                await refreshTenant();
+            } else {
+                toast('error', s.cancelarSuscripcionError);
+            }
+        } catch {
+            toast('error', s.cancelarSuscripcionError);
+        }
+        setCancelling(false);
+    };
+
+    /* ── Delete account ──────────────────────────────────────────── */
+    const handleDeleteAccount = async () => {
+        if (!confirm(s.eliminarCuentaConfirm)) return;
+        setDeleting(true);
+        const token = await getToken();
+        if (!token) { setDeleting(false); return; }
+        try {
+            const res = await fetch('/api/delete-account', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                toast('success', s.eliminarCuentaOk);
+                await supabase.auth.signOut();
+                navigate('/');
+            } else {
+                toast('error', s.eliminarCuentaError);
+            }
+        } catch {
+            toast('error', s.eliminarCuentaError);
+        }
+        setDeleting(false);
+    };
+
+    const hasPaidPlan = tenant?.plan === 'pro' || tenant?.plan === 'academy' || tenant?.plan === 'enterprise';
 
     if (!tenant) {
         return (
@@ -293,6 +346,48 @@ export const TenantSettings: React.FC = () => {
                                 </button>
                             ))}
                         </div>
+                    </div>
+                </div>
+
+                {/* ── Danger zone ─────────────────────────────── */}
+                <div className="bg-white rounded-[14px] p-6 shadow-argo border border-red-100">
+                    <div className="flex items-center gap-2 mb-4">
+                        <AlertTriangle size={16} className="text-red-500" />
+                        <h2 className="text-[15px] font-semibold text-red-600">{lang === 'en' ? 'Danger zone' : lang === 'pt' ? 'Zona de perigo' : 'Zona de riesgo'}</h2>
+                    </div>
+
+                    {/* Cancel subscription */}
+                    <div className="flex items-center justify-between py-3 border-b border-argo-border">
+                        <div>
+                            <p className="text-[13px] font-medium text-argo-navy">{s.cancelarSuscripcion}</p>
+                            <p className="text-[12px] text-argo-grey mt-0.5">
+                                {hasPaidPlan ? s.cancelarSuscripcionDesc : s.sinSuscripcion}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleCancelSubscription}
+                            disabled={!hasPaidPlan || cancelling}
+                            className="px-4 py-2 rounded-lg text-[12px] font-semibold border border-red-200 text-red-600 hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                            {cancelling ? s.cancelando : s.cancelarSuscripcion}
+                        </button>
+                    </div>
+
+                    {/* Delete account */}
+                    <div className="flex items-center justify-between py-3">
+                        <div>
+                            <p className="text-[13px] font-medium text-argo-navy">{s.eliminarCuenta}</p>
+                            <p className="text-[12px] text-argo-grey mt-0.5">{s.eliminarCuentaDesc}</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleDeleteAccount}
+                            disabled={deleting}
+                            className="px-4 py-2 rounded-lg text-[12px] font-semibold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-60"
+                        >
+                            {deleting ? s.eliminando : s.eliminarCuenta}
+                        </button>
                     </div>
                 </div>
 

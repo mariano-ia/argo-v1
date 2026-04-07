@@ -8,12 +8,14 @@ import { createClient } from '@supabase/supabase-js';
  *
  * Creates an Argo One purchase record (pending) and redirects to
  * Stripe or MercadoPago checkout based on country.
+ * Country auto-detected from Vercel x-vercel-ip-country header.
+ * ARS price calculated dynamically from official BCRA rate.
  */
 
-const PACKS: Record<number, { usd_cents: number; ars_cents: number; label_es: string; label_en: string }> = {
-    1: { usd_cents: 1499, ars_cents: 1499_00, label_es: 'Argo One — 1 informe',  label_en: 'Argo One — 1 report' },
-    3: { usd_cents: 3499, ars_cents: 3499_00, label_es: 'Argo One — 3 informes', label_en: 'Argo One — 3 reports' },
-    5: { usd_cents: 4999, ars_cents: 4999_00, label_es: 'Argo One — 5 informes', label_en: 'Argo One — 5 reports' },
+const PACKS: Record<number, { usd_cents: number; label_es: string; label_en: string }> = {
+    1: { usd_cents: 1499, label_es: 'Argo One — 1 informe',  label_en: 'Argo One — 1 report' },
+    3: { usd_cents: 3499, label_es: 'Argo One — 3 informes', label_en: 'Argo One — 3 reports' },
+    5: { usd_cents: 4999, label_es: 'Argo One — 5 informes', label_en: 'Argo One — 5 reports' },
 };
 
 // Countries that use MercadoPago (local currency)
@@ -23,6 +25,38 @@ function getProvider(country?: string): 'mercadopago' | 'stripe' {
     if (!country) return 'stripe';
     return MP_COUNTRIES.includes(country.toUpperCase()) ? 'mercadopago' : 'stripe';
 }
+
+/* ── ARS rate cache (1 hour TTL) ─────────────────────────────────────────── */
+
+let cachedArsRate: { venta: number; fetchedAt: number } | null = null;
+const ARS_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+async function getArsRate(): Promise<number> {
+    if (cachedArsRate && Date.now() - cachedArsRate.fetchedAt < ARS_CACHE_TTL) {
+        return cachedArsRate.venta;
+    }
+    try {
+        const res = await fetch('https://dolarapi.com/v1/dolares/oficial');
+        if (!res.ok) throw new Error(`dolarapi status ${res.status}`);
+        const data = await res.json();
+        const venta = data.venta;
+        if (typeof venta !== 'number' || venta <= 0) throw new Error(`Invalid rate: ${venta}`);
+        cachedArsRate = { venta, fetchedAt: Date.now() };
+        return venta;
+    } catch (err) {
+        console.error('[one-checkout] Failed to fetch ARS rate:', err);
+        // Fallback: if we have a stale cache, use it
+        if (cachedArsRate) return cachedArsRate.venta;
+        throw new Error('Cannot determine ARS exchange rate');
+    }
+}
+
+function usdCentsToArs(usdCents: number, arsRate: number): number {
+    // Convert USD cents to ARS (decimal, not cents — MP uses decimal)
+    return Math.ceil((usdCents / 100) * arsRate);
+}
+
+/* ── Stripe checkout ─────────────────────────────────────────────────────── */
 
 async function createStripeCheckout(pack: typeof PACKS[1], email: string, purchaseId: string, accessToken: string): Promise<string> {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
@@ -60,7 +94,9 @@ async function createStripeCheckout(pack: typeof PACKS[1], email: string, purcha
     return session.url;
 }
 
-async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId: string): Promise<string> {
+/* ── MercadoPago checkout ────────────────────────────────────────────────── */
+
+async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId: string, arsAmount: number): Promise<string> {
     const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!mpToken) throw new Error('Missing MERCADOPAGO_ACCESS_TOKEN');
 
@@ -76,8 +112,8 @@ async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId
             items: [{
                 title: pack.label_es,
                 quantity: 1,
-                unit_price: pack.usd_cents / 100, // MP uses decimal, not cents
-                currency_id: 'USD',
+                unit_price: arsAmount,
+                currency_id: 'ARS',
             }],
             payer: { email },
             metadata: { purchase_id: purchaseId, source: 'argo_one' },
@@ -97,9 +133,10 @@ async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId
     }
 
     const pref = await res.json();
-    // Use sandbox URL in dev, production URL in prod
     return pref.sandbox_init_point || pref.init_point;
 }
+
+/* ── Handler ─────────────────────────────────────────────────────────────── */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -111,14 +148,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { email, pack_size, country } = req.body as { email?: string; pack_size?: number; country?: string };
+        const { email, pack_size, country: bodyCountry } = req.body as { email?: string; pack_size?: number; country?: string };
 
         if (!email || !pack_size || !PACKS[pack_size]) {
             return res.status(400).json({ error: 'Missing or invalid email/pack_size. Valid packs: 1, 3, 5.' });
         }
 
+        // Auto-detect country: body param > Vercel geo header > fallback to US
+        const country = bodyCountry?.toUpperCase()
+            || (req.headers['x-vercel-ip-country'] as string)?.toUpperCase()
+            || 'US';
+
         const pack = PACKS[pack_size];
         const provider = getProvider(country);
+
+        let amountCents: number;
+        let currency: string;
+        let arsAmount = 0;
+
+        if (provider === 'mercadopago') {
+            const arsRate = await getArsRate();
+            arsAmount = usdCentsToArs(pack.usd_cents, arsRate);
+            amountCents = arsAmount * 100; // store in cents for DB consistency
+            currency = 'ars';
+            console.info(`[one-checkout] ARS conversion: $${pack.usd_cents / 100} USD x ${arsRate} = $${arsAmount} ARS`);
+        } else {
+            amountCents = pack.usd_cents;
+            currency = 'usd';
+        }
 
         // Create purchase record (pending)
         const { data: purchase, error: insertErr } = await sb
@@ -126,8 +183,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .insert({
                 email,
                 pack_size,
-                amount_cents: provider === 'mercadopago' ? pack.ars_cents : pack.usd_cents,
-                currency: provider === 'mercadopago' ? 'ars' : 'usd',
+                amount_cents: amountCents,
+                currency,
                 payment_provider: provider,
                 payment_status: 'pending',
             })
@@ -151,12 +208,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (provider === 'stripe') {
             checkoutUrl = await createStripeCheckout(pack, email, purchase.id, purchase.access_token);
         } else {
-            checkoutUrl = await createMPCheckout(pack, email, purchase.id);
+            checkoutUrl = await createMPCheckout(pack, email, purchase.id, arsAmount);
         }
 
         return res.status(200).json({
             checkout_url: checkoutUrl,
             purchase_id: purchase.id,
+            provider,
+            currency,
         });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
