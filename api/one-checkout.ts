@@ -133,7 +133,7 @@ async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId
     }
 
     const pref = await res.json();
-    return pref.sandbox_init_point || pref.init_point;
+    return pref.init_point || pref.sandbox_init_point;
 }
 
 /* ── Handler ─────────────────────────────────────────────────────────────── */
