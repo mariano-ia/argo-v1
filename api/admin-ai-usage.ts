@@ -26,6 +26,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!(await verifyAdmin(req, sb))) return res.status(403).json({ error: 'Admin access required' });
 
     try {
+        // ── Period filter (optional: ?period=YYYY-MM or ?period=all) ────
+        const period = (req.query.period as string) ?? 'all';
+        let periodStart: string | null = null;
+        let periodEnd: string | null = null;
+        if (period !== 'all' && /^\d{4}-\d{2}$/.test(period)) {
+            const [year, month] = period.split('-').map(Number);
+            periodStart = new Date(year, month - 1, 1).toISOString();
+            periodEnd = new Date(year, month, 1).toISOString(); // first day of next month
+        }
+
         // Get all tenants with AI data
         const { data: tenants } = await sb
             .from('tenants')
@@ -33,11 +43,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .order('ai_queries_count', { ascending: false });
 
         // Get AI costs from sessions (report generation) per tenant
-        const { data: sessions } = await sb
+        let sessionsQuery = sb
             .from('sessions')
             .select('tenant_id, ai_cost_usd, ai_tokens_input, ai_tokens_output, created_at')
             .is('deleted_at', null)
             .not('ai_cost_usd', 'is', null);
+        if (periodStart && periodEnd) {
+            sessionsQuery = sessionsQuery.gte('created_at', periodStart).lt('created_at', periodEnd);
+        }
+        const { data: sessions } = await sessionsQuery;
 
         // Aggregate report costs per tenant
         const reportCosts: Record<string, { cost: number; tokens_in: number; tokens_out: number; count: number }> = {};
@@ -58,10 +72,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Get chat token usage from chat_messages
-        const { data: chatStats } = await sb
+        let chatQuery = sb
             .from('chat_messages')
             .select('tenant_id, tokens_in, tokens_out')
             .eq('role', 'assistant');
+        if (periodStart && periodEnd) {
+            chatQuery = chatQuery.gte('created_at', periodStart).lt('created_at', periodEnd);
+        }
+        const { data: chatStats } = await chatQuery;
 
         const chatCosts: Record<string, { tokens_in: number; tokens_out: number; count: number; est_cost: number }> = {};
         let totalChatTokensIn = 0;
@@ -83,11 +101,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const totalChatCost = Object.values(chatCosts).reduce((sum, c) => sum + c.est_cost, 0);
 
         // Get blog generation costs
-        const { data: blogPosts } = await sb
+        let blogQuery = sb
             .from('blog_posts')
             .select('ai_tokens_input, ai_tokens_output, ai_cost_usd, generated_by, lang, created_at')
             .not('ai_cost_usd', 'is', null)
             .gt('ai_cost_usd', 0);
+        if (periodStart && periodEnd) {
+            blogQuery = blogQuery.gte('created_at', periodStart).lt('created_at', periodEnd);
+        }
+        const { data: blogPosts } = await blogQuery;
 
         let totalBlogCost = 0;
         let totalBlogTokensIn = 0;
@@ -137,6 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         return res.status(200).json({
+            period,
             tenants: perTenant,
             global: {
                 total_tenants: (tenants ?? []).length,

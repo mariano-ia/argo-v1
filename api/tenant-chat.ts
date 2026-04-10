@@ -4,38 +4,95 @@ import { createClient } from '@supabase/supabase-js';
 // ─── Inline AI provider (Vercel serverless can't import between api files) ──
 
 interface AIMessage { role: 'system' | 'user' | 'assistant'; content: string; }
-interface AIResponse { content: string; inputTokens: number; outputTokens: number; totalTokens: number; }
+interface AIResponse { content: string; inputTokens: number; outputTokens: number; totalTokens: number; provider: 'gemini' | 'openai'; }
 
 function getCostUsd(r: AIResponse): number {
-    const rate = 0.15 / 1_000_000; // gemini-2.5-flash input ≈ output
+    const rate = 0.15 / 1_000_000;
     return r.inputTokens * rate + r.outputTokens * (0.60 / 1_000_000);
 }
 
-async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTokens?: number; model?: string } = {}): Promise<AIResponse> {
+async function callGemini(messages: AIMessage[], opts: { temperature: number; maxTokens: number; model: string }): Promise<AIResponse> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
-    const temperature = opts.temperature ?? 0.7;
-    const maxTokens = opts.maxTokens ?? 3000;
-    const model = opts.model ?? 'gemini-2.5-flash';
 
     const systemMsg = messages.find(m => m.role === 'system');
     const conversationMsgs = messages.filter(m => m.role !== 'system');
     const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-    const body: Record<string, unknown> = { contents, generationConfig: { temperature, maxOutputTokens: maxTokens } };
+    const body: Record<string, unknown> = { contents, generationConfig: { temperature: opts.temperature, maxOutputTokens: opts.maxTokens, thinkingConfig: { thinkingBudget: 0 } } };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
 
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${opts.model}:generateContent?key=${apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     });
     if (!res.ok) { const err = await res.text(); throw new Error(`Gemini error ${res.status}: ${err}`); }
     const data = await res.json();
+
+    const candidate = data.candidates?.[0];
+    const finishReason = candidate?.finishReason;
+    if (finishReason && finishReason !== 'STOP' && finishReason !== 'MAX_TOKENS') {
+        console.warn(`[callGemini] Blocked. finishReason: ${finishReason}`, JSON.stringify(candidate?.safetyRatings ?? []));
+        throw new Error(`Gemini response blocked: ${finishReason}`);
+    }
+
+    const content = candidate?.content?.parts?.[0]?.text ?? '';
+    if (!content) {
+        console.warn('[callGemini] Empty content.', JSON.stringify({ finishReason, promptFeedback: data.promptFeedback }));
+        throw new Error('Gemini returned empty response');
+    }
+
     const usage = data.usageMetadata ?? {};
+    return { content, inputTokens: usage.promptTokenCount ?? 0, outputTokens: usage.candidatesTokenCount ?? 0, totalTokens: usage.totalTokenCount ?? 0, provider: 'gemini' };
+}
+
+async function callOpenAI(messages: AIMessage[], opts: { temperature: number; maxTokens: number }): Promise<AIResponse> {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
+            temperature: opts.temperature,
+            max_tokens: opts.maxTokens,
+        }),
+    });
+    if (!res.ok) { const err = await res.text(); throw new Error(`OpenAI error ${res.status}: ${err}`); }
+    const data = await res.json();
+
+    const content = data.choices?.[0]?.message?.content ?? '';
+    if (!content) throw new Error('OpenAI returned empty response');
+
     return {
-        content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '',
-        inputTokens: usage.promptTokenCount ?? 0,
-        outputTokens: usage.candidatesTokenCount ?? 0,
-        totalTokens: usage.totalTokenCount ?? 0,
+        content,
+        inputTokens: data.usage?.prompt_tokens ?? 0,
+        outputTokens: data.usage?.completion_tokens ?? 0,
+        totalTokens: data.usage?.total_tokens ?? 0,
+        provider: 'openai',
     };
+}
+
+async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTokens?: number; model?: string } = {}): Promise<AIResponse> {
+    const temperature = opts.temperature ?? 0.7;
+    const maxTokens = opts.maxTokens ?? 3000;
+    const model = opts.model ?? 'gemini-2.5-flash';
+
+    // Try Gemini first with 1 retry
+    try {
+        return await callGemini(messages, { temperature, maxTokens, model });
+    } catch (firstErr) {
+        console.warn('[callAI] Gemini attempt 1 failed:', firstErr instanceof Error ? firstErr.message : firstErr);
+        await new Promise(r => setTimeout(r, 1500));
+        try {
+            return await callGemini(messages, { temperature, maxTokens, model });
+        } catch (secondErr) {
+            console.warn('[callAI] Gemini attempt 2 failed, falling back to OpenAI:', secondErr instanceof Error ? secondErr.message : secondErr);
+        }
+    }
+
+    // Fallback to OpenAI
+    return callOpenAI(messages, { temperature, maxTokens });
 }
 
 // ─── End inline AI provider ─────────────────────────────────────────────────
@@ -221,6 +278,8 @@ const SITUATION_KEYWORDS: Record<string, string[]> = {
 };
 
 // ─── Handler ────────────────────────────────────────────────────────────────
+
+export const config = { maxDuration: 60 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET' && req.method !== 'POST') {
@@ -471,16 +530,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'user' as const, content: trimmedMsg },
         ];
 
-        // ── Call AI provider (enterprise gets premium model) ─────────────
+        // ── Call AI provider (Gemini → retry → OpenAI fallback) ─────────
         const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
-        const chatOpts = { temperature: 0.4, maxTokens: 800, model: aiModel };
-        let aiResult;
-        try {
-            aiResult = await callAI(aiMessages, chatOpts);
-        } catch (firstErr) {
-            console.warn('[tenant-chat] First attempt failed, retrying in 2s...', firstErr instanceof Error ? firstErr.message : firstErr);
-            await new Promise(r => setTimeout(r, 2000));
-            aiResult = await callAI(aiMessages, chatOpts);
+        const chatOpts = { temperature: 0.4, maxTokens: 2000, model: aiModel };
+        const aiResult = await callAI(aiMessages, chatOpts);
+        if (aiResult.provider === 'openai') {
+            console.info('[tenant-chat] Response served by OpenAI fallback');
         }
         let assistantContent = aiResult.content;
 

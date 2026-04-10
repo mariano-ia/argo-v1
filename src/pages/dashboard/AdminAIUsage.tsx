@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Calendar } from 'lucide-react';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -28,6 +28,20 @@ interface GlobalStats {
     total_chat_messages: number;
 }
 
+/* ── Helpers ───────────────────────────────────────────────────────────────── */
+
+function buildPeriodOptions(): { value: string; label: string }[] {
+    const options: { value: string; label: string }[] = [{ value: 'all', label: 'Todo el tiempo' }];
+    const now = new Date();
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        options.push({ value, label: `${months[d.getMonth()]} ${d.getFullYear()}` });
+    }
+    return options;
+}
+
 /* ── Component ──────────────────────────────────────────────────────────────── */
 
 export const AdminAIUsage: React.FC = () => {
@@ -35,12 +49,19 @@ export const AdminAIUsage: React.FC = () => {
     const [global, setGlobal] = useState<GlobalStats | null>(null);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState<'total_est_cost' | 'chat_queries_this_period' | 'report_count'>('total_est_cost');
+    const [period, setPeriod] = useState(() => {
+        const now = new Date();
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    });
 
-    const fetchData = useCallback(async () => {
+    const periodOptions = useMemo(() => buildPeriodOptions(), []);
+
+    const fetchData = useCallback(async (p: string) => {
+        setLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch('/api/admin-ai-usage', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const res = await fetch(`/api/admin-ai-usage?period=${p}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) {
                 const data = await res.json();
                 setTenants(data.tenants);
@@ -49,7 +70,7 @@ export const AdminAIUsage: React.FC = () => {
         } finally { setLoading(false); }
     }, []);
 
-    useEffect(() => { fetchData(); }, [fetchData]);
+    useEffect(() => { fetchData(period); }, [fetchData, period]);
 
     const sorted = [...tenants].sort((a, b) => (b[sortBy] ?? 0) - (a[sortBy] ?? 0));
     const nearCap = tenants.filter(t => t.chat_cap_percent >= 80 && t.plan !== 'enterprise');
@@ -60,16 +81,32 @@ export const AdminAIUsage: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="text-xl font-bold text-gray-900">Consumo IA</h1>
-                <p className="text-sm text-gray-500 mt-0.5">Desglose de costos por tenant y funcionalidad.</p>
+            <div className="flex items-start justify-between">
+                <div>
+                    <h1 className="text-xl font-bold text-gray-900">Consumo IA</h1>
+                    <p className="text-sm text-gray-500 mt-0.5">Desglose de costos por tenant y funcionalidad.</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Calendar size={14} className="text-gray-400" />
+                    <select
+                        value={period}
+                        onChange={e => setPeriod(e.target.value)}
+                        className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                    >
+                        {periodOptions.map(o => (
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Global stats */}
             {global && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">
-                        <p className="text-[11px] font-semibold text-gray-400 uppercase">Costo total IA</p>
+                        <p className="text-[11px] font-semibold text-gray-400 uppercase">
+                            {period === 'all' ? 'Costo total IA' : `Costo IA ${periodOptions.find(o => o.value === period)?.label ?? period}`}
+                        </p>
                         <p className="text-lg font-bold text-gray-900">${global.total_cost.toFixed(4)}</p>
                     </div>
                     <div className="bg-white rounded-lg border border-gray-200 px-4 py-3">

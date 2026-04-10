@@ -152,30 +152,45 @@ export const TenantChat: React.FC = () => {
         if (!token) { setSending(false); return; }
 
         try {
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 55_000); // 55s timeout
             const res = await fetch('/api/tenant-chat', {
                 method: 'POST',
                 headers: authHeaders(token),
                 body: JSON.stringify({ action: 'send', thread_id: activeThreadId, message: msg, lang }),
+                signal: controller.signal,
             });
+            clearTimeout(timeout);
             if (res.ok) {
                 const data = await res.json();
-                if (!activeThreadId && data.thread_id) setActiveThreadId(data.thread_id);
-                setMessages(prev => [...prev, { role: 'assistant', content: data.message.content }]);
-                setTotalUserMessages(prev => prev + 1);
+                const content = data.message?.content;
+                if (!content) {
+                    setMessages(prev => [...prev, { role: 'assistant', content: dt.chat.errorIA }]);
+                } else {
+                    if (!activeThreadId && data.thread_id) setActiveThreadId(data.thread_id);
+                    setMessages(prev => [...prev, { role: 'assistant', content }]);
+                    setTotalUserMessages(prev => prev + 1);
+                    fetchThreads();
+                }
                 scrollToBottom();
-                fetchThreads();
             } else {
                 const errData = await res.json().catch(() => ({}));
-                const errMsg = errData.error === 'AI service error'
-                    ? dt.chat.errorIA
+                const errMsg = errData.error === 'trial_expired'
+                    ? (lang === 'en' ? 'Your trial has expired. Upgrade your plan to continue.' : lang === 'pt' ? 'Seu período de teste expirou. Atualize seu plano.' : 'Tu periodo de prueba ha finalizado. Actualiza tu plan para continuar.')
                     : errData.error === 'Trial message limit reached'
                         ? (lang === 'en' ? 'You\'ve reached the 10-query trial limit.' : lang === 'pt' ? 'Você atingiu o limite de 10 consultas do trial.' : 'Alcanzaste el límite de 10 consultas del trial.')
-                        : dt.chat.errorGenerico;
+                        : errData.error === 'Rate limit exceeded. Try again later.'
+                            ? (lang === 'en' ? 'Too many messages. Please wait a moment.' : lang === 'pt' ? 'Muitas mensagens. Aguarde um momento.' : 'Demasiados mensajes. Espera un momento.')
+                            : dt.chat.errorIA;
                 setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
                 if (errData.error === 'Trial message limit reached') setTotalUserMessages(10);
             }
-        } catch {
-            setMessages(prev => [...prev, { role: 'assistant', content: dt.chat.errorConexion }]);
+        } catch (err) {
+            const isTimeout = err instanceof DOMException && err.name === 'AbortError';
+            const errMsg = isTimeout
+                ? (lang === 'en' ? 'The request timed out. Please try again.' : lang === 'pt' ? 'A solicitação expirou. Tente novamente.' : 'La solicitud tardó demasiado. Intenta de nuevo.')
+                : dt.chat.errorConexion;
+            setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
         } finally { setSending(false); inputRef.current?.focus(); }
     };
 
