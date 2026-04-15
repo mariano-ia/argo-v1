@@ -114,6 +114,11 @@ const LANG_LABELS: Record<string, string> = {
     pt: 'Portuguese (Brazilian, natural and warm)',
 };
 
+// Placeholder used in prompts + AI responses instead of the child's real name.
+// The real name never leaves our servers. We strip it before sending and
+// restore it in the response before saving/returning to the client.
+const NAME_PLACEHOLDER = '{{NOMBRE}}';
+
 function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const destinatarioLabel = ctx.destinatario === 'padre'
         ? 'el padre/madre del deportista (tono cálido, doméstico, empático)'
@@ -146,8 +151,20 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
 
 ${WRITING_RULES}
 
+PRIVACY INSTRUCTION (CRITICAL):
+- The athlete's real name is NEVER shared with you. Throughout the prompt below,
+  whenever you see the literal string ${NAME_PLACEHOLDER}, it is a placeholder
+  standing in for the athlete's name.
+- In your response, wherever you would normally write the athlete's name, you
+  MUST write ${NAME_PLACEHOLDER} instead. Do not invent a name. Do not use a
+  generic term like "el deportista" or "the athlete" unless it would read
+  naturally regardless of context — prefer ${NAME_PLACEHOLDER} for personal
+  references.
+- Our server will replace ${NAME_PLACEHOLDER} with the real name before
+  showing the text to the user, so the final output will read naturally.
+
 CONTEXTO DEL DEPORTISTA:
-- Nombre: ${ctx.nombre}
+- Nombre: ${NAME_PLACEHOLDER}
 - Deporte: ${ctx.deporte}
 - Edad: ${ctx.edad} años
 - Arquetipo: ${base.arquetipo.label} (Eje ${base.arquetipo.eje}, Motor ${base.arquetipo.motor})
@@ -169,18 +186,39 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.
 
 SECCIÓN ESPECIAL — "resumenPerfil" (Retrato de Sintonía):
-Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture la esencia de ${ctx.nombre} en el deporte. Debe ser:
+Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture la esencia de ${NAME_PLACEHOLDER} en el deporte. Debe ser:
 - Único e irrepetible (que un padre lea esto y sienta "esto ES mi hijo")
 - Usa **negritas** en las frases clave para que sea escaneable (2-3 frases en negrita por párrafo)
-- Abre con algo específico sobre cómo ${ctx.nombre} tiende a vivir ${ctx.deporte} (no genérico)
+- Abre con algo específico sobre cómo ${NAME_PLACEHOLDER} tiende a vivir ${ctx.deporte} (no genérico)
 - Nombra su fortaleza central, cómo se manifiesta en cancha, y qué lo hace especial en un equipo
 - Cierra con una invitación sutil al adulto a seguir leyendo el informe para sintonizar mejor con el deportista (adapta esta frase al idioma de salida)
 - NO repitas contenido del "wow" ni del "combustible", este es un retrato rápido y emocional
 - Tono: cálido, directo, que enganche desde la primera línea
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
-Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones):
+Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones). Recuerda: usa ${NAME_PLACEHOLDER} donde quieras mencionar al deportista por nombre.
 ${jsonSchema}`;
+}
+
+// Recursively walks an object and replaces {{NOMBRE}} with the real name in
+// every string value. Used to "rehydrate" the AI response before saving to DB
+// or returning to the client.
+function rehydrateName<T>(value: T, realName: string): T {
+    if (typeof value === 'string') {
+        // split/join avoids the ES2021 String.prototype.replaceAll requirement.
+        return value.split(NAME_PLACEHOLDER).join(realName) as unknown as T;
+    }
+    if (Array.isArray(value)) {
+        return value.map(v => rehydrateName(v, realName)) as unknown as T;
+    }
+    if (value !== null && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+            out[k] = rehydrateName(v, realName);
+        }
+        return out as T;
+    }
+    return value;
 }
 
 // ─── Inline AI provider (Vercel serverless can't import between api files) ──
@@ -272,6 +310,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error(`[generate-ai] Retry also failed. Original response:`, cleaned.slice(0, 200));
                 return res.status(502).json({ error: 'Invalid AI response format after retry' });
             }
+        }
+
+        // Rehydrate the placeholder with the real name. The real name was never
+        // sent to Gemini — it exists only on our server and in this response.
+        sections = rehydrateName(sections, context.nombre);
+
+        // Leak detection: the model might ignore the placeholder instruction and
+        // fabricate a different name (or, less likely, echo a name we didn't
+        // send). We can't detect invented names but we can detect the absence
+        // of {{NOMBRE}} when we expected to find it — that suggests the model
+        // wrote text without any name reference at all, which is acceptable
+        // but worth noting. Also warn if the response shape is wrong.
+        if (typeof sections.resumenPerfil !== 'string' || !sections.resumenPerfil.trim()) {
+            console.warn('[generate-ai] AI response missing resumenPerfil');
         }
 
         const usage: AIUsage = {

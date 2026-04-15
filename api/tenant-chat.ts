@@ -430,6 +430,48 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
         const allPlayers = sessions ?? [];
 
+        // ─── Anonymization (Gemini never sees real player names) ────────
+        // We build a bidirectional map between real names and {{Pn}} placeholders.
+        // All player-name text is scrubbed before being sent to Gemini; the
+        // assistant's response is then rehydrated with real names for display.
+        const nameToPlaceholder = new Map<string, string>();
+        const placeholderToName = new Map<string, string>();
+        allPlayers.forEach((p, i) => {
+            const placeholder = `{{P${i + 1}}}`;
+            const fullName = p.child_name.trim();
+            const firstName = fullName.split(/\s+/)[0];
+            // When rehydrating, we use the first name (matches the informal tone
+            // of the rest of the flow). Mapping multiple source variants lets
+            // us catch both "Mateo" and "Mateo Pérez" in the coach's message.
+            nameToPlaceholder.set(fullName.toLowerCase(), placeholder);
+            nameToPlaceholder.set(firstName.toLowerCase(), placeholder);
+            placeholderToName.set(placeholder, firstName);
+        });
+
+        const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const anonymize = (text: string): string => {
+            if (!text || nameToPlaceholder.size === 0) return text;
+            // Sort names by length desc so "Juan Pablo" is replaced before "Juan".
+            const names = [...nameToPlaceholder.keys()].sort((a, b) => b.length - a.length);
+            let result = text;
+            for (const name of names) {
+                const placeholder = nameToPlaceholder.get(name);
+                if (!placeholder) continue;
+                const pattern = new RegExp(`\\b${escapeRegex(name)}\\b`, 'gi');
+                result = result.replace(pattern, placeholder);
+            }
+            return result;
+        };
+        const rehydrate = (text: string): string => {
+            if (!text || placeholderToName.size === 0) return text;
+            let result = text;
+            for (const [placeholder, realName] of placeholderToName) {
+                // split/join avoids the ES2021 replaceAll requirement.
+                result = result.split(placeholder).join(realName);
+            }
+            return result;
+        };
+
         // ── OPT 2: Build compact team summary instead of full player list ──
         // Count players per axis for a compact overview
         const axisCounts: Record<string, number> = {};
@@ -441,8 +483,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const axisLabels: Record<string, string> = { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' };
         const axisSummary = Object.entries(axisCounts).map(([k, v]) => `${v} ${axisLabels[k] ?? k}`).join(', ');
         const motorSummary = Object.entries(motorCounts).map(([k, v]) => `${v} ${k}`).join(', ');
+        // Player list uses placeholders instead of real names. The mapping
+        // (${placeholder} → name) stays on our server and is applied only
+        // when rehydrating Gemini's response.
+        const playerListForPrompt = allPlayers
+            .map(s => nameToPlaceholder.get(s.child_name.trim().split(/\s+/)[0].toLowerCase()))
+            .filter(Boolean)
+            .join(', ');
         const teamSummary = allPlayers.length > 0
-            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nNombres: ${allPlayers.map(s => sanitize(s.child_name)).join(', ')}.`
+            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.`
             : '\n\nEl entrenador todavía no tiene jugadores registrados.';
 
         // ── Context injection based on message content ──────────────────
@@ -476,9 +525,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (ai.palabrasRuido) parts.push(`Palabras a evitar: ${(ai.palabrasRuido as string[]).join(', ')}`);
                 aiContext = '\n' + parts.join('\n');
             }
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${sanitize(mp.child_name)} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})${aiContext}`;
+            // Use the placeholder for the mentioned player. The AI sections
+            // may contain the real name embedded in narrative text — anonymize
+            // them before injecting.
+            const mentionedPlaceholder = nameToPlaceholder.get(mp.child_name.trim().split(/\s+/)[0].toLowerCase()) ?? '{{P?}}';
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})${anonymize(aiContext)}`;
         } else if (potentialNames.length > 0) {
-            extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${allPlayers.map(s => s.child_name).join(', ') || 'ninguno'}.`;
+            extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${playerListForPrompt || 'ninguno'}.`;
         }
 
         // Situation keyword injection
@@ -516,18 +569,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             historyMessages = allHistory;
         }
 
-        // ── OPT 4: Use cached system prompt (only send once per language) ──
-        // Gemini's systemInstruction is already separate from contents,
-        // so it gets cached internally by the API across requests.
-        // We optimize by keeping the system prompt as compact as possible.
+        // ── Privacy: append anonymization instruction to the system prompt ──
+        // This tells Gemini that player names have been replaced with {{P1}},
+        // {{P2}}, ... placeholders. The model must use the same placeholders
+        // in its response. We rehydrate them to real names after the call.
+        const privacyInstruction = allPlayers.length > 0
+            ? `\n\nPRIVACY NOTICE (critical): Player names in this conversation have been replaced with placeholders like {{P1}}, {{P2}}, etc. In your response, refer to players using the same placeholders — never invent a name. Our server will replace the placeholders with the real names before displaying your response, so the output will read naturally.`
+            : '';
+
         const systemPrompt = (SYSTEM_PROMPTS[promptLang] ?? SYSTEM_PROMPTS.es)
+            + privacyInstruction
             + teamSummary
             + extraContext;
 
+        // Anonymize conversation history and the current user message so
+        // no real player names are sent to Gemini.
+        const anonymizedHistory = historyMessages.map(m => ({
+            role: m.role,
+            content: anonymize(m.content),
+        }));
+        const anonymizedUserMsg = anonymize(trimmedMsg);
+
         const aiMessages = [
             { role: 'system' as const, content: systemPrompt },
-            ...historyMessages,
-            { role: 'user' as const, content: trimmedMsg },
+            ...anonymizedHistory,
+            { role: 'user' as const, content: anonymizedUserMsg },
         ];
 
         // ── Call AI provider (Gemini → retry → OpenAI fallback) ─────────
@@ -537,7 +603,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (aiResult.provider === 'openai') {
             console.info('[tenant-chat] Response served by OpenAI fallback');
         }
-        let assistantContent = aiResult.content;
+        // Rehydrate placeholders with real names for display + storage.
+        let assistantContent = rehydrate(aiResult.content);
 
         // ── Post-processing: scan for prohibited words ────────────────────
         // Mejora 3: expanded prohibited words (30+ terms)
@@ -563,14 +630,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (foundProhibited.length > 0) {
             console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
+            // The retry sends the original (still-anonymized) assistant content
+            // back to Gemini, not the rehydrated one. Use aiResult.content which
+            // still has placeholders.
             const retryMessages = [
                 ...aiMessages,
-                { role: 'assistant' as const, content: assistantContent },
+                { role: 'assistant' as const, content: aiResult.content },
                 { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
             ];
             try {
                 const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800 });
-                if (retryResult.content) assistantContent = retryResult.content;
+                if (retryResult.content) assistantContent = rehydrate(retryResult.content);
             } catch { /* keep original response */ }
         }
 
