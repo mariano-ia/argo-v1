@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useLang } from '../context/LangContext';
+import { useLang, type Lang } from '../context/LangContext';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="mb-8">
@@ -245,17 +245,31 @@ const BACK = {
 };
 
 export const PrivacyPage: React.FC = () => {
-    const { lang } = useLang();
+    const { lang, setLang } = useLang();
+    const LANGS: Lang[] = ['es', 'en', 'pt'];
 
     return (
         <div className="min-h-screen bg-argo-neutral">
             <div className="max-w-[720px] mx-auto px-6 py-16">
                 <div className="mb-12">
-                    <Link to="/" className="inline-flex items-center gap-1.5 mb-8">
-                        <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
-                        </span>
-                    </Link>
+                    <div className="flex items-center justify-between mb-8">
+                        <Link to="/" className="inline-flex items-center gap-1.5">
+                            <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                                <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                            </span>
+                        </Link>
+                        <div className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-argo-grey">
+                            {LANGS.map(l => (
+                                <button
+                                    key={l}
+                                    onClick={() => setLang(l)}
+                                    className={`px-2 py-1 rounded transition-colors ${l === lang ? 'text-argo-navy font-semibold' : 'hover:text-argo-navy'}`}
+                                >
+                                    {l.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                     <h1 className="text-2xl font-bold text-argo-navy tracking-tight">{TITLES[lang]}</h1>
                     <p className="text-sm text-argo-grey mt-2">{LAST_UPDATED[lang]}</p>
                 </div>
