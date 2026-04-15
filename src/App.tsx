@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
+import { Analytics } from '@vercel/analytics/react';
 import { supabase } from './lib/supabase';
 import { useLang } from './context/LangContext';
 
@@ -191,11 +192,27 @@ const UserApp: React.FC = () => {
     );
 };
 
+// ─── Analytics gate ──────────────────────────────────────────────────────────
+// Vercel Analytics is mounted only on non-game routes so we don't collect
+// any page views from children. The game flow (/play/:slug, /one/:slug,
+// /app, /one/panel, /consent/:token) is excluded to stay COPPA-safe.
+const AnalyticsGate: React.FC = () => {
+    const { pathname } = useLocation();
+    const isGameRoute =
+        pathname === '/app' ||
+        pathname.startsWith('/play/') ||
+        pathname.startsWith('/one/') ||
+        pathname.startsWith('/consent/');
+    if (isGameRoute) return null;
+    return <Analytics />;
+};
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
     return (
         <Suspense fallback={<LazyFallback />}>
+        <AnalyticsGate />
         <Routes>
             {/* Public */}
             <Route path="/"       element={<Landing />} />
