@@ -257,10 +257,22 @@ const AxisBars: React.FC<{
 
 export const ReportPage: React.FC = () => {
     const { sessionId } = useParams<{ sessionId: string }>();
+    // Read the share token from the URL query string. /api/report requires
+    // it to serve the session publicly (prevents UUID brute-force access).
+    const shareToken = new URLSearchParams(window.location.search).get('token') ?? '';
     const [session, setSession] = useState<SessionData | null>(null);
     const [loading, setLoading] = useState(true);
     const [notFound, setNotFound] = useState(false);
     const [copied, setCopied] = useState(false);
+    // Pick a fallback language for the loading/error states (before `session`
+    // is populated). Uses the browser language, falling back to Spanish.
+    const browserLang: 'es' | 'en' | 'pt' = (() => {
+        const nav = (typeof navigator !== 'undefined' ? navigator.language : 'es').slice(0, 2);
+        if (nav === 'en') return 'en';
+        if (nav === 'pt') return 'pt';
+        return 'es';
+    })();
+    const preSessionT = T[browserLang] ?? T.es;
 
     // noindex meta tag
     useEffect(() => {
@@ -299,7 +311,11 @@ export const ReportPage: React.FC = () => {
             return;
         }
 
-        fetch(`/api/report?id=${encodeURIComponent(sessionId)}`)
+        // Include the share token in the request so /api/report can serve
+        // this session publicly. Without it, the endpoint returns 403.
+        const qs = new URLSearchParams({ id: sessionId });
+        if (shareToken) qs.set('token', shareToken);
+        fetch(`/api/report?${qs.toString()}`)
             .then(r => {
                 if (!r.ok) { setNotFound(true); setLoading(false); return; }
                 return r.json();
@@ -309,7 +325,7 @@ export const ReportPage: React.FC = () => {
                 setLoading(false);
             })
             .catch(() => { setNotFound(true); setLoading(false); });
-    }, [sessionId]);
+    }, [sessionId, shareToken]);
 
 
     const handleCopy = () => {
@@ -322,7 +338,7 @@ export const ReportPage: React.FC = () => {
     if (loading) {
         return (
             <div className="min-h-screen bg-argo-neutral flex items-center justify-center">
-                <p className="text-argo-grey text-sm animate-pulse">{T.es.loading}</p>
+                <p className="text-argo-grey text-sm animate-pulse">{preSessionT.loading}</p>
             </div>
         );
     }
@@ -334,8 +350,8 @@ export const ReportPage: React.FC = () => {
                     <span className="font-[800] text-lg tracking-tight text-argo-navy">Argo</span>
                     <span className="font-[100] text-lg text-argo-grey"> Method</span>
                 </div>
-                <p className="text-base font-semibold text-argo-navy mb-2">{T.es.notFound}</p>
-                <p className="text-sm text-argo-grey">{T.es.notFoundSub}</p>
+                <p className="text-base font-semibold text-argo-navy mb-2">{preSessionT.notFound}</p>
+                <p className="text-sm text-argo-grey">{preSessionT.notFoundSub}</p>
             </div>
         );
     }
