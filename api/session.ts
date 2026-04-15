@@ -27,10 +27,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         // ── Start session ────────────────────────────────────────────────────
         if (action === 'start') {
-            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang } = fields;
+            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token } = fields;
 
             if (!adult_email || !child_name) {
                 return res.status(400).json({ error: 'Missing required fields: adult_email, child_name' });
+            }
+
+            // ── COPPA gate: children under 13 require a confirmed consent token ──
+            if (typeof child_age === 'number' && child_age < 13) {
+                if (typeof consent_token !== 'string' || !/^[a-f0-9]{32}$/.test(consent_token)) {
+                    return res.status(403).json({ error: 'consent_required' });
+                }
+
+                const { data: consent, error: consentErr } = await sb
+                    .from('parental_consents')
+                    .select('token, status, expires_at, child_name, child_age, consumed_at')
+                    .eq('token', consent_token)
+                    .maybeSingle();
+
+                if (consentErr) {
+                    console.error('[session:start] consent lookup error:', consentErr.message);
+                    return res.status(500).json({ error: 'consent_lookup_failed' });
+                }
+                if (!consent) {
+                    return res.status(403).json({ error: 'consent_invalid' });
+                }
+                if (consent.status !== 'confirmed') {
+                    return res.status(403).json({ error: 'consent_not_confirmed' });
+                }
+                if (consent.consumed_at) {
+                    return res.status(403).json({ error: 'consent_already_used' });
+                }
+                if (new Date(consent.expires_at) < new Date()) {
+                    return res.status(403).json({ error: 'consent_expired' });
+                }
+                // Validate consent matches the session payload (prevents token reuse for a different child)
+                if (
+                    consent.child_name !== child_name ||
+                    consent.child_age !== child_age
+                ) {
+                    return res.status(403).json({ error: 'consent_mismatch' });
+                }
             }
 
             const share_token = randomBytes(16).toString('hex');
@@ -52,6 +89,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (error) {
                 console.error('[session:start] Insert error:', error.message, error.details);
                 return res.status(500).json({ error: error.message });
+            }
+
+            // Burn the consent token so it can't be reused
+            if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
+                await sb.from('parental_consents')
+                    .update({ consumed_at: new Date().toISOString(), session_id: data.id })
+                    .eq('token', consent_token);
             }
 
             return res.status(200).json({ ok: true, id: data.id, share_token: data.share_token });
