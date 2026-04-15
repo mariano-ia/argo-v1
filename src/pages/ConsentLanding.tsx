@@ -5,7 +5,7 @@ import { confirmConsent, saveConsentResume } from '../lib/consentStore';
 import { useLang, type Lang } from '../context/LangContext';
 import { getOdysseyT } from '../lib/odysseyTranslations';
 
-type UiState = 'loading' | 'success' | 'expired' | 'invalid';
+type UiState = 'loading' | 'success' | 'redirecting' | 'expired' | 'invalid';
 
 export const ConsentLanding: React.FC = () => {
     const { token = '' } = useParams<{ token: string }>();
@@ -24,13 +24,13 @@ export const ConsentLanding: React.FC = () => {
                     setLang(result.lang as Lang);
                 }
                 setChildName(result.childName ?? '');
-                setUiState('success');
 
                 // Auto-resume the play flow in the same browser so the user
                 // doesn't have to hunt for the original tab. We stash the
                 // pre-filled adultData in sessionStorage and redirect to the
                 // appropriate play URL with ?consent=TOKEN.
                 const cd = result.consentData;
+                let target: string | null = null;
                 if (cd) {
                     saveConsentResume({
                         token,
@@ -45,7 +45,6 @@ export const ConsentLanding: React.FC = () => {
                         lang: cd.lang,
                     });
 
-                    let target: string | null = null;
                     if (cd.flow_type === 'tenant' && cd.tenant_slug) {
                         target = `/play/${cd.tenant_slug}?consent=${token}`;
                     } else if (cd.flow_type === 'one' && cd.one_link_slug) {
@@ -53,14 +52,18 @@ export const ConsentLanding: React.FC = () => {
                     } else if (cd.flow_type === 'auth') {
                         target = `/app?consent=${token}`;
                     }
+                }
 
-                    if (target) {
-                        // Small delay so the user sees the success state briefly,
-                        // then we continue the flow automatically.
-                        setTimeout(() => {
-                            window.location.href = target!;
-                        }, 1200);
-                    }
+                // Show 'redirecting' copy when we actually have a target to
+                // send the user to; otherwise fall back to 'success' which
+                // asks them to return to the original tab.
+                if (target) {
+                    setUiState('redirecting');
+                    setTimeout(() => {
+                        window.location.href = target!;
+                    }, 1200);
+                } else {
+                    setUiState('success');
                 }
             } else if (result.error === 'expired') {
                 setUiState('expired');
@@ -98,6 +101,18 @@ export const ConsentLanding: React.FC = () => {
                         <p className="text-argo-navy text-base leading-relaxed">
                             {ot.consentLandingSuccess(childName || '—')}
                         </p>
+                    </>
+                )}
+
+                {uiState === 'redirecting' && (
+                    <>
+                        <div className="mx-auto w-16 h-16 rounded-full bg-green-50 flex items-center justify-center">
+                            <CheckCircle2 className="w-10 h-10 text-green-500" />
+                        </div>
+                        <p className="text-argo-navy text-base leading-relaxed">
+                            {ot.consentLandingRedirecting(childName || '—')}
+                        </p>
+                        <div className="mx-auto w-6 h-6 rounded-full border-2 border-argo-indigo border-t-transparent animate-spin mt-4" />
                     </>
                 )}
 

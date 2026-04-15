@@ -50,6 +50,7 @@ export interface OdysseyTranslations {
     // Consent landing page (/consent/:token)
     consentLandingLoading: string;
     consentLandingSuccess: (name: string) => string;
+    consentLandingRedirecting: (name: string) => string;
     consentLandingExpired: string;
     consentLandingInvalid: string;
 
@@ -228,6 +229,7 @@ const es: OdysseyTranslations = {
     consentWaitingRestart: 'Empezar de nuevo',
     consentLandingLoading: 'Confirmando...',
     consentLandingSuccess: (name) => `¡Listo! Ya puedes volver a la pantalla donde ${name} está esperando para comenzar.`,
+    consentLandingRedirecting: (name) => `¡Listo! Llevando a ${name} al juego...`,
     consentLandingExpired: 'Este enlace expiró. Por seguridad, el adulto responsable debe empezar de nuevo.',
     consentLandingInvalid: 'Este enlace no es válido.',
     continue: 'Continuar',
@@ -399,6 +401,7 @@ const en: OdysseyTranslations = {
     consentWaitingRestart: 'Start over',
     consentLandingLoading: 'Confirming...',
     consentLandingSuccess: (name) => `Done! You can now return to the screen where ${name} is waiting to begin.`,
+    consentLandingRedirecting: (name) => `Done! Taking ${name} to the game...`,
     consentLandingExpired: 'This link has expired. For security, the responsible adult must start over.',
     consentLandingInvalid: 'This link is not valid.',
     continue: 'Continue',
@@ -570,6 +573,7 @@ const pt: OdysseyTranslations = {
     consentWaitingRestart: 'Começar de novo',
     consentLandingLoading: 'Confirmando...',
     consentLandingSuccess: (name) => `Pronto! Você já pode voltar à tela onde ${name} está esperando para começar.`,
+    consentLandingRedirecting: (name) => `Pronto! Levando ${name} ao jogo...`,
     consentLandingExpired: 'Este link expirou. Por segurança, o responsável deve começar de novo.',
     consentLandingInvalid: 'Este link não é válido.',
     continue: 'Continuar',
