@@ -73,7 +73,7 @@ const ContentES: React.FC = () => (
         <Section title="8. Derechos del adulto responsable y del menor">
             <p>Como adulto responsable de un menor perfilado con Argo Method, tienes derecho a:</p>
             <p><strong>Acceder</strong> a todos los datos que hemos recopilado sobre el menor. <strong>Corregir</strong> datos incorrectos. <strong>Eliminar</strong> permanentemente todos los datos del menor de nuestros sistemas. <strong>Exportar</strong> los datos en formato estándar legible. <strong>Retirar</strong> el consentimiento en cualquier momento, lo cual detiene inmediatamente cualquier recopilación futura.</p>
-            <p>Para ejercer cualquiera de estos derechos, escribe a <strong>hola@argomethod.com</strong> desde la dirección de email que usaste para registrarte, indicando el nombre del menor y la acción solicitada. Procesamos las solicitudes en un máximo de 10 días hábiles.</p>
+            <p><strong>Eliminación autoservicio:</strong> puedes solicitar la eliminación permanente desde <Link to="/delete" className="underline text-argo-indigo">esta página</Link>. Te enviaremos un email con un enlace de confirmación (válido por 1 hora) y al clickearlo eliminamos todos los datos asociados sin intervención manual. Para cualquier otro derecho, escribe a <strong>hola@argomethod.com</strong> desde la dirección de email que usaste para registrarte. Procesamos las solicitudes en un máximo de 10 días hábiles.</p>
             <p>Cuando solicitas la eliminación de los datos de un menor, eliminamos de forma permanente todos los registros asociados al perfil: respuestas, reporte generado, metadatos de IA, audit log de consentimiento, y cualquier dato derivado. La eliminación no es reversible.</p>
         </Section>
 
@@ -142,7 +142,7 @@ const ContentEN: React.FC = () => (
         <Section title="8. Rights of the responsible adult and the child">
             <p>As the adult responsible for a child profiled with Argo Method, you have the right to:</p>
             <p><strong>Access</strong> all data we have collected about the child. <strong>Correct</strong> inaccurate data. <strong>Delete</strong> all child data from our systems permanently. <strong>Export</strong> the data in a standard readable format. <strong>Withdraw</strong> consent at any time, which immediately stops any future collection.</p>
-            <p>To exercise any of these rights, email <strong>hola@argomethod.com</strong> from the email address you used to register, stating the child's name and the requested action. We process requests within a maximum of 10 business days.</p>
+            <p><strong>Self-service deletion:</strong> you can request permanent deletion from <Link to="/delete" className="underline text-argo-indigo">this page</Link>. We will email you a confirmation link (valid for 1 hour) and on click we delete all associated data without manual intervention. For any other right, email <strong>hola@argomethod.com</strong> from the email address you used to register. We process requests within a maximum of 10 business days.</p>
             <p>When you request deletion of a child's data, we permanently delete all records associated with the profile: answers, generated report, AI metadata, consent audit log, and any derived data. Deletion is not reversible.</p>
         </Section>
 
@@ -211,7 +211,7 @@ const ContentPT: React.FC = () => (
         <Section title="8. Direitos do adulto responsável e do menor">
             <p>Como adulto responsável por um menor perfilado com o Argo Method, você tem direito a:</p>
             <p><strong>Acessar</strong> todos os dados que coletamos sobre o menor. <strong>Corrigir</strong> dados incorretos. <strong>Eliminar</strong> permanentemente todos os dados do menor de nossos sistemas. <strong>Exportar</strong> os dados em formato padrão legível. <strong>Retirar</strong> o consentimento a qualquer momento, o que detém imediatamente qualquer coleta futura.</p>
-            <p>Para exercer qualquer um destes direitos, escreva para <strong>hola@argomethod.com</strong> a partir do email que você usou para registrar-se, indicando o nome do menor e a ação solicitada. Processamos as solicitações em no máximo 10 dias úteis.</p>
+            <p><strong>Exclusão em autoatendimento:</strong> você pode solicitar a exclusão permanente a partir <Link to="/delete" className="underline text-argo-indigo">desta página</Link>. Enviaremos um email com um link de confirmação (válido por 1 hora) e ao clicar excluímos todos os dados associados sem intervenção manual. Para qualquer outro direito, escreva para <strong>hola@argomethod.com</strong> a partir do email que você usou para registrar-se. Processamos as solicitações em no máximo 10 dias úteis.</p>
             <p>Quando você solicita a eliminação dos dados de um menor, eliminamos permanentemente todos os registros associados ao perfil: respostas, relatório gerado, metadados de IA, audit log de consentimento e qualquer dado derivado. A eliminação não é reversível.</p>
         </Section>
 
