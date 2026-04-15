@@ -6,11 +6,12 @@ import { createClient } from '@supabase/supabase-js';
  * Returns all Argo One purchases with their link statuses.
  */
 
-async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient>): Promise<boolean> {
+async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient<any, any>>): Promise<boolean> {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return false;
     const { data: { user }, error } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
     if (error || !user) return false;
+    if (!user.email) return false;
     const { data: admin } = await sb.from('admin_users').select('id').eq('email', user.email).maybeSingle();
     return !!admin;
 }

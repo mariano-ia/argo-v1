@@ -1,13 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { OnboardingFlowV2 } from '../components/onboarding/OnboardingFlowV2';
+import { takeConsentResume } from '../lib/consentStore';
+import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 
 type Status = 'loading' | 'ready' | 'not_found' | 'roster_full' | 'trial_expired' | 'error';
 
 export const TenantPlay: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
+    const [searchParams] = useSearchParams();
+    const consentTokenFromUrl = searchParams.get('consent');
     const [status, setStatus] = useState<Status>('loading');
     const [tenantId, setTenantId] = useState<string>('');
+    // If we're arriving from /consent/:token, pull the pre-populated adult data
+    // from sessionStorage so we can skip the form entirely.
+    const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
+        if (!consentTokenFromUrl) return null;
+        const resume = takeConsentResume(consentTokenFromUrl);
+        if (!resume) return null;
+        return { token: resume.token, adultData: resume.adultData };
+    });
 
     useEffect(() => {
         if (!slug) { setStatus('not_found'); return; }
@@ -81,7 +93,7 @@ export const TenantPlay: React.FC = () => {
     }
 
     // Ready — launch the onboarding flow without user auth
-    return <OnboardingFlowV2 tenantId={tenantId} />;
+    return <OnboardingFlowV2 tenantId={tenantId} initialConsent={initialConsent} />;
 };
 
 // ─── Status screen ───────────────────────────────────────────────────────────

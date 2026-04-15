@@ -86,16 +86,17 @@ function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string,
  *   - "extend-trial"   { tenant_id, days }
  */
 
-async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient>): Promise<string | null> {
+async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient<any, any>>): Promise<string | null> {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return null;
     const { data: { user }, error } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
     if (error || !user) return null;
+    if (!user.email) return null;
     const { data: admin } = await sb.from('admin_users').select('id').eq('email', user.email).maybeSingle();
     return admin ? (user.email ?? null) : null;
 }
 
-async function auditLog(sb: ReturnType<typeof createClient>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
+async function auditLog(sb: ReturnType<typeof createClient<any, any>>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
     try { await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }); } catch { /* non-blocking */ }
 }
 

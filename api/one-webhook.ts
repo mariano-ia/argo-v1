@@ -3,9 +3,6 @@ import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SB = ReturnType<typeof createClient>;
-
 // Disable Vercel's default body parsing for Stripe signature verification
 export const config = { api: { bodyParser: false } };
 
@@ -232,7 +229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 /* ── Stripe handler ──────────────────────────────────────────────────────── */
 
-async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>) {
+async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient<any, any>>) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!stripeKey || !webhookSecret) {
@@ -296,7 +293,8 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
 
     // Route to subscription handler
     if (source === 'argo_subscription') {
-        return handleSubscription(session, 'stripe', res, sb);
+        const subId = typeof session.subscription === 'string' ? session.subscription : undefined;
+        return handleSubscription({ id: session.id, metadata: session.metadata ?? {}, subscription: subId, customer_email: session.customer_email ?? undefined }, 'stripe', res, sb);
     }
 
     // Argo One payment
@@ -328,7 +326,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
 
 /* ── MercadoPago handler ─────────────────────────────────────────────────── */
 
-async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient>, topic: string) {
+async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient<any, any>>, topic: string) {
     const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!mpToken) return res.status(500).json({ error: 'Missing MP token' });
 
@@ -449,7 +447,7 @@ async function handleSubscription(
     session: { id: string; metadata: Record<string, string>; subscription?: string; customer_email?: string },
     provider: 'stripe' | 'mercadopago',
     res: VercelResponse,
-    sb: ReturnType<typeof createClient>,
+    sb: ReturnType<typeof createClient<any, any>>,
 ) {
     const tenantId = session.metadata?.tenant_id;
     const plan = session.metadata?.plan;

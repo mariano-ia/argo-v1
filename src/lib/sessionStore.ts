@@ -23,6 +23,7 @@ interface StartSessionPayload {
     adultData: AdultData;
     tenantId?: string;
     lang?: string;
+    consentToken?: string;
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -78,7 +79,7 @@ async function fetchWithRetry(
  * Returns the session ID for later updates.
  */
 export async function startSession(payload: StartSessionPayload): Promise<{ ok: boolean; id?: string; error?: string }> {
-    const body = {
+    const body: Record<string, unknown> = {
         adult_name:  payload.adultData.nombreAdulto,
         adult_email: payload.adultData.email,
         child_name:  payload.adultData.nombreNino,
@@ -87,6 +88,9 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
         tenant_id:   payload.tenantId ?? null,
         lang:        payload.lang ?? 'es',
     };
+    if (payload.consentToken) {
+        body.consent_token = payload.consentToken;
+    }
 
     if (import.meta.env.DEV) {
         const mockId = `dev-${Date.now()}`;

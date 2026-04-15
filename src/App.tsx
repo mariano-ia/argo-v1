@@ -1,6 +1,7 @@
 import { useEffect, useState, lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
+import { Analytics } from '@vercel/analytics/react';
 import { supabase } from './lib/supabase';
 import { useLang } from './context/LangContext';
 
@@ -52,6 +53,9 @@ const PrivacyPage       = lazy(() => import('./pages/PrivacyPage').then(m => ({ 
 const PricingPage       = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
 const OnePlay           = lazy(() => import('./pages/OnePlay').then(m => ({ default: m.OnePlay })));
 const OnePanel          = lazy(() => import('./pages/OnePanel').then(m => ({ default: m.OnePanel })));
+const ConsentLanding    = lazy(() => import('./pages/ConsentLanding').then(m => ({ default: m.ConsentLanding })));
+const DeleteMyData      = lazy(() => import('./pages/DeleteMyData').then(m => ({ default: m.DeleteMyData })));
+const DeleteLanding     = lazy(() => import('./pages/DeleteLanding').then(m => ({ default: m.DeleteLanding })));
 const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').then(m => ({ default: m.ResultRevealPreview })));
 const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
 const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
@@ -59,7 +63,9 @@ const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({
 
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
+import type { AdultData }     from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
+import { takeConsentResume }  from './lib/consentStore';
 
 // ─── Lazy loading fallback ──────────────────────────────────────────────────
 const LazyFallback = () => (
@@ -110,6 +116,16 @@ const BlockedView: React.FC = () => {
 const UserApp: React.FC = () => {
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [blocked, setBlocked] = useState(false);
+    // If we arrived from /consent/:token (auth flow), pull the resume payload
+    // from sessionStorage so we skip the form and jump to device-handoff.
+    const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('consent');
+        if (!token) return null;
+        const resume = takeConsentResume(token);
+        if (!resume) return null;
+        return { token: resume.token, adultData: resume.adultData };
+    });
 
     const checkBlocked = (s: Session) => {
         if (TEST_EMAILS.includes(s.user.email ?? '')) return;
@@ -173,8 +189,24 @@ const UserApp: React.FC = () => {
         <OnboardingFlowV2
             userEmail={session.user.email ?? ''}
             onPlayComplete={onPlayComplete}
+            initialConsent={initialConsent}
         />
     );
+};
+
+// ─── Analytics gate ──────────────────────────────────────────────────────────
+// Vercel Analytics is mounted only on non-game routes so we don't collect
+// any page views from children. The game flow (/play/:slug, /one/:slug,
+// /app, /one/panel, /consent/:token) is excluded to stay COPPA-safe.
+const AnalyticsGate: React.FC = () => {
+    const { pathname } = useLocation();
+    const isGameRoute =
+        pathname === '/app' ||
+        pathname.startsWith('/play/') ||
+        pathname.startsWith('/one/') ||
+        pathname.startsWith('/consent/');
+    if (isGameRoute) return null;
+    return <Analytics />;
 };
 
 // ─── App ──────────────────────────────────────────────────────────────────────
@@ -182,6 +214,7 @@ const UserApp: React.FC = () => {
 function App() {
     return (
         <Suspense fallback={<LazyFallback />}>
+        <AnalyticsGate />
         <Routes>
             {/* Public */}
             <Route path="/"       element={<Landing />} />
@@ -197,6 +230,9 @@ function App() {
             <Route path="/one/panel"  element={<OnePanel />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
+                <Route path="/consent/:token" element={<ConsentLanding />} />
+                <Route path="/delete" element={<DeleteMyData />} />
+                <Route path="/delete/:token" element={<DeleteLanding />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/category/:category" element={<BlogCategory />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

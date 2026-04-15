@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useLang } from '../../../context/LangContext';
 import { getOdysseyT } from '../../../lib/odysseyTranslations';
+import { requestConsent } from '../../../lib/consentStore';
 
 interface AdultData {
     nombreAdulto: string;
@@ -14,22 +15,35 @@ interface AdultData {
 
 interface Props {
     userEmail?: string;
+    flowType: 'auth' | 'tenant' | 'one';
+    tenantId?: string;
+    oneLinkId?: string;
     onComplete: (data: AdultData) => void;
+    onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
 
-export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete }) => {
+export const AdultRegistration: React.FC<Props> = ({
+    userEmail = '',
+    flowType,
+    tenantId,
+    oneLinkId,
+    onComplete,
+    onConsentRequired,
+}) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
-    const [nombreAdulto, setNombreAdulto] = useState('');
-    const [email, setEmail]               = useState(userEmail);
-    const [nombreNino, setNombreNino]     = useState('');
-    const [edad, setEdad]                 = useState(10);
-    const [deporte, setDeporte]           = useState('');
+    const [nombreAdulto, setNombreAdulto]   = useState('');
+    const [email, setEmail]                 = useState(userEmail);
+    const [nombreNino, setNombreNino]       = useState('');
+    const [edad, setEdad]                   = useState(10);
+    const [deporte, setDeporte]             = useState('');
     const [deporteCustom, setDeporteCustom] = useState('');
-    const [checks, setChecks]             = useState([false, false, false, false]);
+    const [accepted, setAccepted]           = useState(false);
+    const [submitting, setSubmitting]       = useState(false);
+    const [submitError, setSubmitError]     = useState<string | null>(null);
 
-    const lastSport = ot.sports[ot.sports.length - 1]; // "Otro" / "Other" / "Outro"
+    const lastSport = ot.sports[ot.sports.length - 1];
     const deporteFinal = deporte === lastSport ? deporteCustom : deporte;
     const emailFinal = userEmail || email.trim();
 
@@ -38,21 +52,39 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
         emailFinal &&
         nombreNino.trim() &&
         deporteFinal.trim() &&
-        checks.every(Boolean);
+        accepted &&
+        !submitting;
 
-    const toggleCheck = (i: number) => {
-        setChecks(prev => prev.map((v, idx) => idx === i ? !v : v));
-    };
-
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!isValid) return;
-        onComplete({
+        setSubmitError(null);
+
+        const adultData: AdultData = {
             nombreAdulto: nombreAdulto.trim(),
             email: emailFinal,
             nombreNino: nombreNino.trim(),
             edad,
             deporte: deporteFinal.trim(),
-        });
+        };
+
+        if (edad < 13) {
+            setSubmitting(true);
+            const result = await requestConsent({
+                adultData,
+                flowType,
+                tenantId,
+                oneLinkId,
+                lang,
+            });
+            setSubmitting(false);
+            if (result.ok && result.token) {
+                onConsentRequired({ token: result.token, adultData });
+            } else {
+                setSubmitError(result.error ?? 'unknown');
+            }
+        } else {
+            onComplete(adultData);
+        }
     };
 
     return (
@@ -142,34 +174,60 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                 </div>
             </div>
 
-            {/* Checkboxes */}
-            <div className="space-y-3">
+            {/* Consolidated consent block */}
+            <div className="space-y-4">
                 <div className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
                     {ot.philosophicalAgreement}
                 </div>
-                {ot.checks.map((textFn, i) => (
-                    <button
-                        key={i}
-                        onClick={() => toggleCheck(i)}
-                        className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
-                            checks[i]
-                                ? 'border-[#1D1D1F] bg-[#F5F5F7]'
-                                : 'border-[#D2D2D7] bg-white hover:border-[#424245]'
-                        }`}
-                    >
-                        <div className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
-                            checks[i] ? 'bg-[#1D1D1F] border-[#1D1D1F]' : 'border-[#D2D2D7]'
-                        }`}>
-                            {checks[i] && (
-                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                            )}
+
+                <div className="rounded-xl bg-[#F5F5F7] p-4 space-y-2">
+                    {ot.consentBullets.map((textFn, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm text-argo-navy leading-relaxed">
+                            <span className="text-argo-grey mt-0.5">•</span>
+                            <span>{textFn(nombreNino)}</span>
                         </div>
-                        <span className="text-sm text-argo-navy leading-relaxed">{textFn(nombreNino)}</span>
-                    </button>
-                ))}
+                    ))}
+                </div>
+
+                <button
+                    onClick={() => setAccepted(prev => !prev)}
+                    className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
+                        accepted
+                            ? 'border-[#1D1D1F] bg-white'
+                            : 'border-[#D2D2D7] bg-white hover:border-[#424245]'
+                    }`}
+                >
+                    <div className={`mt-0.5 w-5 h-5 rounded flex-shrink-0 border-2 flex items-center justify-center transition-all ${
+                        accepted ? 'bg-[#1D1D1F] border-[#1D1D1F]' : 'border-[#D2D2D7]'
+                    }`}>
+                        {accepted && (
+                            <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                        )}
+                    </div>
+                    <span className="text-sm text-argo-navy leading-relaxed">
+                        {ot.consentCheck(nombreNino)}{' '}
+                        <a href="/privacy" target="_blank" rel="noreferrer" className="underline text-argo-indigo">
+                            {lang === 'en' ? 'Privacy Policy' : lang === 'pt' ? 'Política de Privacidade' : 'Política de Privacidad'}
+                        </a>
+                        {' · '}
+                        <a href="/terms" target="_blank" rel="noreferrer" className="underline text-argo-indigo">
+                            {lang === 'en' ? 'Terms' : lang === 'pt' ? 'Termos' : 'Términos'}
+                        </a>
+                    </span>
+                </button>
             </div>
+
+            {submitError && (
+                <p className="text-sm text-red-500 text-center">
+                    {lang === 'en'
+                        ? 'Something went wrong. Please try again.'
+                        : lang === 'pt'
+                            ? 'Algo deu errado. Tente novamente.'
+                            : 'Algo salió mal. Inténtalo de nuevo.'}
+                </p>
+            )}
 
             <motion.button
                 whileHover={{ scale: 1.02 }}
@@ -178,7 +236,9 @@ export const AdultRegistration: React.FC<Props> = ({ userEmail = '', onComplete 
                 disabled={!isValid}
                 className="w-full bg-[#1D1D1F] text-white font-medium py-4 rounded-xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 transition-all"
             >
-                {ot.continue} <ChevronRight size={16} />
+                {submitting
+                    ? (lang === 'en' ? 'Sending...' : lang === 'pt' ? 'Enviando...' : 'Enviando...')
+                    : <>{ot.continue} <ChevronRight size={16} /></>}
             </motion.button>
         </motion.div>
     );

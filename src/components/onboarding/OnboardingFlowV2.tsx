@@ -16,6 +16,7 @@ import { LanguageSelect } from './screens/LanguageSelect';
 import { AdultIntroSlide } from './screens/AdultIntroSlide';
 import { AdultRegistration } from './screens/AdultRegistration';
 import { DeviceHandoff } from './screens/DeviceHandoff';
+import { ParentalConsentWaiting } from './screens/ParentalConsentWaiting';
 import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { ChildResultReveal } from './screens/ChildResultReveal';
@@ -42,6 +43,7 @@ type ScreenDef =
     | { type: 'language-select' }
     | { type: 'adult-intro'; slideIndex: number }
     | { type: 'adult-registration' }
+    | { type: 'parental-consent-waiting' }
     | { type: 'device-handoff' }
     | { type: 'story'; slideId: string; useContinueLabelFromT?: boolean }
     | { type: 'question'; questionIndex: number }
@@ -57,7 +59,8 @@ const SCREENS: ScreenDef[] = [
     { type: 'adult-intro', slideIndex: 1 },                        // 2
     { type: 'adult-intro', slideIndex: 2 },                        // 3
     { type: 'adult-registration' },                                 // 4
-    { type: 'device-handoff' },                                     // 5
+    { type: 'parental-consent-waiting' },                           // 5 (conditional; skipped when age >= 13)
+    { type: 'device-handoff' },                                     // 6
     // Child story intro
     { type: 'story', slideId: 'intro_a' },                         // 6
     { type: 'story', slideId: 'intro_b' },                         // 7
@@ -116,14 +119,25 @@ function getCurrentQuestionIndex(screenIndex: number): number {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+interface InitialConsent {
+    token: string;
+    adultData: AdultData;
+}
+
 interface OnboardingV2Props {
     userEmail?: string;
     onPlayComplete?: () => void;
     tenantId?: string;
     oneLinkId?: string;
+    /**
+     * When provided (via the /consent/:token landing redirect), the flow
+     * skips LanguageSelect → AdultIntros → AdultRegistration → WaitingScreen
+     * and jumps directly to DeviceHandoff with the pre-populated adult data.
+     */
+    initialConsent?: InitialConsent | null;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId, initialConsent }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -132,8 +146,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const storySlides = getStorySlides(lang);
     const questions = getQuestions(lang);
 
-    const [screenIndex, setScreenIndex] = useState(0);
-    const [adultData, setAdultData]     = useState<AdultData | null>(null);
+    // If we're resuming from a confirmed parental consent, pre-populate
+    // adultData and jump straight to the device-handoff screen (index 6).
+    // `device-handoff` is always the screen immediately after
+    // `parental-consent-waiting` in the SCREENS array.
+    const DEVICE_HANDOFF_INDEX = SCREENS.findIndex(s => s.type === 'device-handoff');
+    const [screenIndex, setScreenIndex] = useState(
+        initialConsent ? DEVICE_HANDOFF_INDEX : 0,
+    );
+    const [adultData, setAdultData]     = useState<AdultData | null>(
+        initialConsent ? initialConsent.adultData : null,
+    );
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [, setAiSections]   = useState<AISections | null>(null);
     const [, setAiLoading]     = useState(false);
@@ -150,6 +173,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // ── Session persistence (Options 1, 2, 3) ──────────────────────────────
     const sessionIdRef = useRef<string | null>(null);
     const [recoveryData, setRecoveryData] = useState<RecoverableSession | null>(null);
+
+    // ── Parental consent (VPC, COPPA) ──
+    // Initialize consentTokenRef from initialConsent so /api/session action=start
+    // receives the confirmed token when resuming via the /consent/:token landing.
+    const consentTokenRef = useRef<string | null>(initialConsent?.token ?? null);
+    const [consentCtx, setConsentCtx] = useState<{ token: string; adultData: AdultData } | null>(null);
 
     // Option 2: Check for recoverable session on mount
     useEffect(() => {
@@ -179,7 +208,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     useEffect(() => {
         if (screenIndex !== ODYSSEY_START || !adultData || sessionIdRef.current || startingSessionRef.current) return;
         startingSessionRef.current = true;
-        startSession({ adultData, tenantId, lang }).then(result => {
+        startSession({
+            adultData,
+            tenantId,
+            lang,
+            consentToken: consentTokenRef.current ?? undefined,
+        }).then(result => {
             if (result.ok && result.id) {
                 sessionIdRef.current = result.id;
                 console.info('[session] Started session created:', result.id);
@@ -205,8 +239,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const TARGET_VOL     = 0.18;
     const FADE_IN_MS     = 5000;
     const FADE_OUT_MS    = 3000;
-    const ODYSSEY_START  = 6;
-    const ODYSSEY_END    = 29;
+    const ODYSSEY_START  = 7;
+    const ODYSSEY_END    = 30;
 
 
     const EFFECT_VOL         = 0.25;
@@ -214,10 +248,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const EFFECT_FADE_OUT_MS = 1500;
 
     const getEffectSrc = (idx: number): string | null => {
-        if (idx >= 6 && idx <= 12)  return '/audio/effects_01.mp3'; // intro + minigame_a + puerto
-        if (idx >= 13 && idx <= 16) return '/audio/effects_02.mp3'; // mar abierto + minigame_b
-        if (idx >= 17 && idx <= 21) return '/audio/effects_03.mp3'; // tormenta + minigame_c
-        if (idx >= 22 && idx <= 29) return '/audio/effects_02.mp3'; // calma + isla + completion
+        if (idx >= 7 && idx <= 13)  return '/audio/effects_01.mp3'; // intro + minigame_a + puerto
+        if (idx >= 14 && idx <= 17) return '/audio/effects_02.mp3'; // mar abierto + minigame_b
+        if (idx >= 18 && idx <= 22) return '/audio/effects_03.mp3'; // tormenta + minigame_c
+        if (idx >= 23 && idx <= 30) return '/audio/effects_02.mp3'; // calma + isla + completion
         return null;
     };
 
@@ -357,7 +391,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         const nextIdx = screenIndex + 1;
         try { startAudioIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startAudio error:', e); }
         try { startEffectIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startEffect error:', e); }
-        setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+        setScreenIndex(i => {
+            let next = Math.min(i + 1, SCREENS.length - 1);
+            // Skip the parental-consent-waiting screen unless a token is pending
+            if (SCREENS[next]?.type === 'parental-consent-waiting' && !consentCtx) {
+                next = Math.min(next + 1, SCREENS.length - 1);
+            }
+            return next;
+        });
     };
 
     // Option 2: Save progress to localStorage on each answer
@@ -698,7 +739,45 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     <AdultRegistration
                         key="adult-reg"
                         userEmail={userEmail}
+                        flowType={tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth'}
+                        tenantId={tenantId}
+                        oneLinkId={oneLinkId}
                         onComplete={data => { setAdultData(data); advance(); }}
+                        onConsentRequired={({ token, adultData: data }) => {
+                            setAdultData(data);
+                            setConsentCtx({ token, adultData: data });
+                            // Direct setScreenIndex (not advance()) because advance() has a
+                            // stale closure over consentCtx: React has queued setConsentCtx
+                            // but hasn't applied it yet, so advance()'s skip-waiting-screen
+                            // check would see consentCtx as null and jump past the waiting
+                            // screen entirely. Jump straight to the next index.
+                            setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
+                        }}
+                    />
+                )}
+
+                {screen.type === 'parental-consent-waiting' && consentCtx && (
+                    <ParentalConsentWaiting
+                        key="consent-wait"
+                        token={consentCtx.token}
+                        childName={consentCtx.adultData.nombreNino}
+                        adultEmail={consentCtx.adultData.email}
+                        resendInput={{
+                            adultData: consentCtx.adultData,
+                            flowType: tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth',
+                            tenantId,
+                            oneLinkId,
+                            lang,
+                        }}
+                        onConfirmed={(tok) => {
+                            consentTokenRef.current = tok;
+                            advance();
+                        }}
+                        onCancel={() => {
+                            setConsentCtx(null);
+                            consentTokenRef.current = null;
+                            setScreenIndex(i => Math.max(0, i - 1));
+                        }}
                     />
                 )}
 

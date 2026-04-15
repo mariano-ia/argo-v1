@@ -1620,12 +1620,9 @@ export const Landing: React.FC = () => {
                         <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
                             beta
                         </span>
-                        <span style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', marginLeft: '4px' }}>
-                            {L('Cartografía de Sintonía Deportiva', 'Sports Behavioral Mapping', 'Cartografia de Sintonia Esportiva')}
-                        </span>
                     </div>
                     <div style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', letterSpacing: '0.06em' }}
-                         className="flex items-center gap-6 uppercase">
+                         className="flex items-center gap-6 uppercase flex-wrap justify-center md:justify-end">
                         <span>v{APP_VERSION}</span>
                         <a href="https://www.yacare.io" target="_blank" rel="noopener noreferrer"
                            className="hover:text-argo-navy transition-colors" style={{ textDecoration: 'none' }}>
@@ -1636,6 +1633,18 @@ export const Landing: React.FC = () => {
                             className="hover:text-argo-navy transition-colors"
                         >
                             Blog
+                        </button>
+                        <button
+                            onClick={() => navigate('/privacy')}
+                            className="hover:text-argo-navy transition-colors"
+                        >
+                            {L('Privacidad', 'Privacy', 'Privacidade')}
+                        </button>
+                        <button
+                            onClick={() => navigate('/terms')}
+                            className="hover:text-argo-navy transition-colors"
+                        >
+                            {L('Términos', 'Terms', 'Termos')}
                         </button>
                         <span>© 2026 Argo.</span>
                         {OTHER_LANGS[lang].map(l => (

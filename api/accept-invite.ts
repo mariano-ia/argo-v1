@@ -32,7 +32,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (tenantId) query = (query as typeof query).eq('tenant_id', tenantId);
 
-        const { data: pendingRow, error: lookupError } = await (query as ReturnType<typeof sb.from>).maybeSingle();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: pendingRow, error: lookupError } = await (query as any).maybeSingle();
 
         if (lookupError) {
             console.error('[accept-invite] Lookup error:', lookupError.message);

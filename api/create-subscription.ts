@@ -103,7 +103,7 @@ async function createStripeCheckout(
 /* ── MercadoPago preapproval (subscription) ──────────────────────────────── */
 
 async function createMPPreapproval(
-    plan: string,
+    _plan: string,
     planConfig: typeof PLANS['pro'],
     billing: string,
     tenantId: string,

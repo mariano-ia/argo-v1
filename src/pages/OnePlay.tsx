@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { OnboardingFlowV2 } from '../components/onboarding/OnboardingFlowV2';
+import { takeConsentResume } from '../lib/consentStore';
+import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 
 /**
  * /one/:slug — Argo One play page.
@@ -12,8 +14,16 @@ type Status = 'loading' | 'ready' | 'not_found' | 'already_used' | 'error';
 
 export const OnePlay: React.FC = () => {
     const { slug } = useParams<{ slug: string }>();
+    const [searchParams] = useSearchParams();
+    const consentTokenFromUrl = searchParams.get('consent');
     const [status, setStatus] = useState<Status>('loading');
     const [linkId, setLinkId] = useState<string>('');
+    const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
+        if (!consentTokenFromUrl) return null;
+        const resume = takeConsentResume(consentTokenFromUrl);
+        if (!resume) return null;
+        return { token: resume.token, adultData: resume.adultData };
+    });
 
     useEffect(() => {
         if (!slug) { setStatus('not_found'); return; }
@@ -61,7 +71,7 @@ export const OnePlay: React.FC = () => {
     }
 
     // Ready — launch onboarding without tenant, with oneLink context
-    return <OnboardingFlowV2 oneLinkId={linkId} />;
+    return <OnboardingFlowV2 oneLinkId={linkId} initialConsent={initialConsent} />;
 };
 
 const StatusScreen: React.FC<{ title: string; message: string }> = ({ title, message }) => (
