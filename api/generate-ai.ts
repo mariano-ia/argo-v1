@@ -212,6 +212,64 @@ function rehydrateName<T>(value: T, realName: string): T {
     return value;
 }
 
+// Prohibited vocabulary per the Argo writing rules. Listed across the three
+// supported languages because the report can be generated in any of them and
+// the model sometimes uses native synonyms of forbidden concepts.
+const PROHIBITED_WORDS: string[] = [
+    // Spanish — deficit/clinical framing
+    'error', 'errores', 'equivocación', 'equivocaciones', 'equivocarse',
+    'fallo', 'falla', 'fallas', 'fracaso', 'fracasos',
+    'déficit', 'problema', 'problemas', 'problemático', 'problemática',
+    'corregir', 'arreglar', 'solucionar',
+    'débil', 'debilidad', 'inseguro', 'incapaz',
+    'agresivo', 'violento', 'torpe',
+    // Spanish — clinical/diagnostic
+    'diagnóstico', 'diagnosticar', 'trastorno', 'patología', 'síndrome',
+    'tdah', 'autismo', 'terapia', 'tratamiento',
+    // Spanish — deterministic
+    'siempre será', 'nunca podrá', 'nació para', 'está destinado',
+    // English — deficit/clinical
+    'mistake', 'mistakes', 'failure', 'failures', 'deficit',
+    'fix', 'correct', 'weakness', 'weak',
+    'aggressive', 'violent', 'clumsy',
+    'diagnosis', 'disorder', 'pathology', 'syndrome',
+    'adhd', 'autism', 'therapy', 'treatment',
+    'will always be', 'will never', 'born to', 'is destined',
+    // Portuguese — deficit/clinical
+    'erro', 'erros', 'engano', 'enganos', 'falha', 'fracasso',
+    'déficit', 'problema', 'problemático',
+    'corrigir', 'consertar',
+    'fraco', 'fraqueza', 'incapaz',
+    'agressivo', 'violento', 'desajeitado',
+    'diagnóstico', 'transtorno', 'patologia', 'síndrome',
+    'tdah', 'autismo', 'terapia', 'tratamento',
+    'sempre será', 'nunca poderá', 'nasceu para',
+];
+
+// Returns a deduped list of prohibited words found in any string value of
+// the given sections object (case-insensitive, whole-word match).
+function findProhibitedWords(sections: Record<string, unknown>): string[] {
+    const found = new Set<string>();
+    const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const walk = (v: unknown): void => {
+        if (typeof v === 'string') {
+            for (const w of PROHIBITED_WORDS) {
+                // Use word boundary for single words; plain includes for multi-word phrases
+                const pattern = /\s/.test(w)
+                    ? new RegExp(escape(w), 'i')
+                    : new RegExp(`\\b${escape(w)}\\b`, 'i');
+                if (pattern.test(v)) found.add(w);
+            }
+        } else if (Array.isArray(v)) {
+            v.forEach(walk);
+        } else if (v !== null && typeof v === 'object') {
+            Object.values(v).forEach(walk);
+        }
+    };
+    walk(sections);
+    return [...found];
+}
+
 // ─── Inline AI provider (Vercel serverless can't import between api files) ──
 
 interface AIMsg { role: 'system' | 'user' | 'assistant'; content: string; }
@@ -318,16 +376,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        // Prohibited words check (post-generation enforcement of the writing
+        // rules). The prompt asks Gemini to avoid deficit/clinical language,
+        // but the model sometimes leaks them anyway. If we find any, ask it
+        // to rewrite the response without those words. One retry max.
+        const sectionsAsObj = sections as unknown as Record<string, unknown>;
+        const firstFound = findProhibitedWords(sectionsAsObj);
+        if (firstFound.length > 0) {
+            console.warn('[generate-ai] Prohibited words detected on first pass:', firstFound.join(', '));
+            const correctionMessages: AIMsg[] = [
+                ...messages,
+                { role: 'assistant', content: aiResponse.content },
+                {
+                    role: 'user',
+                    content: `Tu respuesta anterior contenía palabras prohibidas por las reglas de redacción de Argo: ${firstFound.join(', ')}. Reformula TODO el JSON sin usar esas palabras ni sus sinónimos (déficit, clínico, diagnóstico, determinista). Recuerda: siempre desde la fortaleza, nunca desde el déficit. Devuelve ÚNICAMENTE el JSON con la misma estructura.`,
+                },
+            ];
+            try {
+                const correctedResp = await callAI(correctionMessages, aiOpts);
+                const correctedCleaned = correctedResp.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+                const correctedSections = JSON.parse(correctedCleaned) as AISections;
+                const stillFound = findProhibitedWords(correctedSections as unknown as Record<string, unknown>);
+                if (stillFound.length === 0) {
+                    sections = correctedSections;
+                    aiResponse = correctedResp;
+                } else {
+                    console.warn('[generate-ai] Correction still had prohibited words:', stillFound.join(', '));
+                }
+            } catch (correctionErr) {
+                console.warn('[generate-ai] Correction pass failed, keeping original response:', correctionErr instanceof Error ? correctionErr.message : correctionErr);
+            }
+        }
+
         // Rehydrate the placeholder with the real name. The real name was never
         // sent to Gemini — it exists only on our server and in this response.
         sections = rehydrateName(sections, context.nombre);
 
-        // Leak detection: the model might ignore the placeholder instruction and
-        // fabricate a different name (or, less likely, echo a name we didn't
-        // send). We can't detect invented names but we can detect the absence
-        // of {{NOMBRE}} when we expected to find it — that suggests the model
-        // wrote text without any name reference at all, which is acceptable
-        // but worth noting. Also warn if the response shape is wrong.
         if (typeof sections.resumenPerfil !== 'string' || !sections.resumenPerfil.trim()) {
             console.warn('[generate-ai] AI response missing resumenPerfil');
         }
