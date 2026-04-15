@@ -52,6 +52,7 @@ const PrivacyPage       = lazy(() => import('./pages/PrivacyPage').then(m => ({ 
 const PricingPage       = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
 const OnePlay           = lazy(() => import('./pages/OnePlay').then(m => ({ default: m.OnePlay })));
 const OnePanel          = lazy(() => import('./pages/OnePanel').then(m => ({ default: m.OnePanel })));
+const ConsentLanding    = lazy(() => import('./pages/ConsentLanding').then(m => ({ default: m.ConsentLanding })));
 const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').then(m => ({ default: m.ResultRevealPreview })));
 const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
 const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
@@ -197,6 +198,7 @@ function App() {
             <Route path="/one/panel"  element={<OnePanel />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
+                <Route path="/consent/:token" element={<ConsentLanding />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/category/:category" element={<BlogCategory />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
