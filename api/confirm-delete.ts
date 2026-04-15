@@ -94,13 +94,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             })
             .eq('token', token);
 
-        // Find all matching sessions
+        // Find all matching sessions. Same matching policy as request-delete:
+        // exact email, substring child_name (case-insensitive).
         let sessionQuery = sb
             .from('sessions')
             .select('id')
             .ilike('adult_email', request.adult_email);
         if (request.child_name) {
-            sessionQuery = sessionQuery.ilike('child_name', request.child_name);
+            const safe = request.child_name.replace(/[%_]/g, '\\$&');
+            sessionQuery = sessionQuery.ilike('child_name', `%${safe}%`);
         }
         const { data: matchedSessions, error: matchErr } = await sessionQuery;
         if (matchErr) {

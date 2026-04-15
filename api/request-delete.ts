@@ -200,12 +200,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // to the caller (would leak whether an email is registered), but we
         // only send the email if there's something to delete — otherwise
         // attackers could use this endpoint to spam arbitrary emails.
+        //
+        // Matching policy:
+        //   - adult_email: case-insensitive exact match (trimmed, lowercased)
+        //   - child_name (optional): case-insensitive SUBSTRING match so
+        //     parents don't need to remember exactly how they typed the
+        //     name during onboarding. "Lucas" matches "Lucas Pérez", etc.
         let query = sb
             .from('sessions')
             .select('id', { count: 'exact', head: true })
             .ilike('adult_email', emailNorm);
         if (childNameClean) {
-            query = query.ilike('child_name', childNameClean);
+            // Escape any % / _ in user input so they're not interpreted as
+            // wildcards, then wrap in % for substring match.
+            const safe = childNameClean.replace(/[%_]/g, '\\$&');
+            query = query.ilike('child_name', `%${safe}%`);
         }
         const { count, error: countErr } = await query;
         if (countErr) {
