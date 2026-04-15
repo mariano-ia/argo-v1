@@ -17,6 +17,15 @@ interface EmailTemplate {
     text: string;
 }
 
+function escapeHtml(s: string): string {
+    return s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 const baseStyles = `
   body { margin: 0; padding: 0; background: #f5f5f7; font-family: -apple-system, system-ui, 'Segoe UI', Roboto, sans-serif; color: #1D1D1F; }
   .wrap { max-width: 560px; margin: 0 auto; padding: 32px 16px; }
@@ -35,19 +44,22 @@ const baseStyles = `
 
 export function consentEmailES(args: TemplateArgs): EmailTemplate {
     const { adultName, childName, confirmUrl } = args;
+    const aName = escapeHtml(adultName);
+    const cName = escapeHtml(childName);
+    const cUrl = escapeHtml(confirmUrl);
     return {
         subject: `Confirma que eres el adulto responsable de ${childName}`,
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirma tu identidad</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
-      <h1>Hola ${adultName},</h1>
-      <p>${childName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${childName}.</p>
-      <a class="cta" href="${confirmUrl}">Confirmar y continuar</a>
-      <p class="fallback">O copia este enlace en tu navegador:<br>${confirmUrl}</p>
+      <h1>Hola ${aName},</h1>
+      <p>${cName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${cName}.</p>
+      <a class="cta" href="${cUrl}">Confirmar y continuar</a>
+      <p class="fallback">O copia este enlace en tu navegador:<br>${cUrl}</p>
       <p class="note">⏱ Este enlace expira en 24 horas. Si no lo usas a tiempo, deberás empezar de nuevo.</p>
       <hr class="hr">
-      <p class="note"><b>¿Por qué te pedimos esto?</b><br>Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${childName}.</p>
+      <p class="note"><b>¿Por qué te pedimos esto?</b><br>Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${cName}.</p>
       <p class="note">Si no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.</p>
     </div>
     <div class="footer">
@@ -62,19 +74,22 @@ export function consentEmailES(args: TemplateArgs): EmailTemplate {
 
 export function consentEmailEN(args: TemplateArgs): EmailTemplate {
     const { adultName, childName, confirmUrl } = args;
+    const aName = escapeHtml(adultName);
+    const cName = escapeHtml(childName);
+    const cUrl = escapeHtml(confirmUrl);
     return {
         subject: `Confirm you're the responsible adult for ${childName}`,
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirm your identity</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
-      <h1>Hi ${adultName},</h1>
-      <p>${childName} is about to start their odyssey on Argo Method. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${childName}.</p>
-      <a class="cta" href="${confirmUrl}">Confirm and continue</a>
-      <p class="fallback">Or copy this link into your browser:<br>${confirmUrl}</p>
+      <h1>Hi ${aName},</h1>
+      <p>${cName} is about to start their odyssey on Argo Method. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${cName}.</p>
+      <a class="cta" href="${cUrl}">Confirm and continue</a>
+      <p class="fallback">Or copy this link into your browser:<br>${cUrl}</p>
       <p class="note">⏱ This link expires in 24 hours. If you don't use it in time, you'll need to start over.</p>
       <hr class="hr">
-      <p class="note"><b>Why are we asking this?</b><br>To comply with COPPA (the U.S. Children's Online Privacy Protection Act), we need to verify you are the responsible adult before collecting any data about ${childName}.</p>
+      <p class="note"><b>Why are we asking this?</b><br>To comply with COPPA (the U.S. Children's Online Privacy Protection Act), we need to verify you are the responsible adult before collecting any data about ${cName}.</p>
       <p class="note">If you don't recognize this email, you can ignore it. No data will be collected until you confirm.</p>
     </div>
     <div class="footer">
@@ -89,19 +104,22 @@ export function consentEmailEN(args: TemplateArgs): EmailTemplate {
 
 export function consentEmailPT(args: TemplateArgs): EmailTemplate {
     const { adultName, childName, confirmUrl } = args;
+    const aName = escapeHtml(adultName);
+    const cName = escapeHtml(childName);
+    const cUrl = escapeHtml(confirmUrl);
     return {
         subject: `Confirme que você é o responsável por ${childName}`,
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirme sua identidade</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
-      <h1>Olá ${adultName},</h1>
-      <p>${childName} está prestes a começar sua odisseia no Argo Method. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${childName}.</p>
-      <a class="cta" href="${confirmUrl}">Confirmar e continuar</a>
-      <p class="fallback">Ou copie este link no seu navegador:<br>${confirmUrl}</p>
+      <h1>Olá ${aName},</h1>
+      <p>${cName} está prestes a começar sua odisseia no Argo Method. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${cName}.</p>
+      <a class="cta" href="${cUrl}">Confirmar e continuar</a>
+      <p class="fallback">Ou copie este link no seu navegador:<br>${cUrl}</p>
       <p class="note">⏱ Este link expira em 24 horas. Se não for usado a tempo, será necessário começar de novo.</p>
       <hr class="hr">
-      <p class="note"><b>Por que pedimos isso?</b><br>Para proteger a privacidade dos menores, precisamos verificar que você é o responsável antes de coletar qualquer dado de ${childName}.</p>
+      <p class="note"><b>Por que pedimos isso?</b><br>Para proteger a privacidade dos menores, precisamos verificar que você é o responsável antes de coletar qualquer dado de ${cName}.</p>
       <p class="note">Se você não reconhece este email, pode ignorá-lo. Nenhum dado será coletado até sua confirmação.</p>
     </div>
     <div class="footer">
