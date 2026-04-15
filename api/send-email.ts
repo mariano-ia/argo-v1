@@ -17,9 +17,10 @@ function buildHtml(params: {
     shareToken?: string;
     lang?: string;
     resumenPerfil?: string;
+    siteUrl?: string;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
-    const baseUrl = 'https://argomethod.com';
+    const baseUrl = params.siteUrl || 'https://argomethod.com';
     const tokenParam = params.shareToken ? `?token=${params.shareToken}` : '';
     const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}${tokenParam}` : baseUrl;
 
@@ -393,10 +394,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        // Derive siteUrl from the request host so preview deploys receive
+        // emails that link back to the preview (not to argomethod.com which
+        // wouldn't have the session). Falls back to SITE_URL env and then
+        // to argomethod.com for production.
+        const hostHeader = (req.headers['x-forwarded-host'] ?? req.headers.host) as string | undefined;
+        const protoHeader = (req.headers['x-forwarded-proto'] as string | undefined) ?? 'https';
+        const derivedSiteUrl = hostHeader ? `${protoHeader}://${hostHeader}` : null;
+        const siteUrl = derivedSiteUrl || process.env.SITE_URL || 'https://argomethod.com';
+
         const html = buildHtml({
             nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
             palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
             sessionId, shareToken: finalShareToken, lang, resumenPerfil,
+            siteUrl,
         });
 
         const langAttr = lang || 'es';
