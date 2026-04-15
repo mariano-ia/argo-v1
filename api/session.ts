@@ -70,6 +70,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             }
 
+            // ── Atomic consent claim (race-safe) ──────────────────────────────
+            // For <13, we atomically set consumed_at=now WHERE it's still null.
+            // If the WHERE filter matches zero rows, another request already
+            // won the race and we return 403 without creating a session.
+            if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
+                const { data: claimed, error: claimErr } = await sb
+                    .from('parental_consents')
+                    .update({ consumed_at: new Date().toISOString() })
+                    .eq('token', consent_token)
+                    .is('consumed_at', null)
+                    .select('token')
+                    .maybeSingle();
+
+                if (claimErr) {
+                    console.error('[session:start] consent claim error:', claimErr.message);
+                    return res.status(500).json({ error: 'consent_claim_failed' });
+                }
+                if (!claimed) {
+                    return res.status(403).json({ error: 'consent_already_used' });
+                }
+            }
+
             const share_token = randomBytes(16).toString('hex');
             const { data, error } = await sb.from('sessions').insert({
                 adult_name,
@@ -88,13 +110,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (error) {
                 console.error('[session:start] Insert error:', error.message, error.details);
+                // Rollback the consent claim so the token can be retried
+                if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
+                    await sb.from('parental_consents')
+                        .update({ consumed_at: null })
+                        .eq('token', consent_token);
+                }
                 return res.status(500).json({ error: error.message });
             }
 
-            // Burn the consent token so it can't be reused
+            // Link the consent row to the new session for audit
             if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
                 await sb.from('parental_consents')
-                    .update({ consumed_at: new Date().toISOString(), session_id: data.id })
+                    .update({ session_id: data.id })
                     .eq('token', consent_token);
             }
 
