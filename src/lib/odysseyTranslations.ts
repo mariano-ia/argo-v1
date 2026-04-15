@@ -29,6 +29,30 @@ export interface OdysseyTranslations {
     sports: string[];
     philosophicalAgreement: string;
     checks: ((name: string) => string)[];
+
+    // Consolidated consent check (COPPA-anchored, replaces the 4 philosophical checks)
+    consentBullets: ((name: string) => string)[];
+    consentCheck: (name: string) => string;
+
+    // Parental consent waiting screen
+    consentWaitingTitle: string;
+    consentWaitingSubtitle: (maskedEmail: string) => string;
+    consentWaitingWhy: (name: string) => string;
+    consentWaitingExpiry: string;
+    consentWaitingStatus: string;
+    consentWaitingResend: string;
+    consentWaitingChangeEmail: string;
+    consentWaitingCoppaFooter: string; // shown only when lang === 'en'
+    consentWaitingExpired: string;
+    consentWaitingInvalid: string;
+    consentWaitingRestart: string;
+
+    // Consent landing page (/consent/:token)
+    consentLandingLoading: string;
+    consentLandingSuccess: (name: string) => string;
+    consentLandingExpired: string;
+    consentLandingInvalid: string;
+
     continue: string;
     reportWillBeSentTo: (email: string) => string;
     fillDataBefore: (name: string) => string;
@@ -185,6 +209,27 @@ const es: OdysseyTranslations = {
         () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
         () => 'Confirmo que soy mayor de 18 años.',
     ],
+    consentBullets: [
+        (name) => `Argo Method es una "fotografía del presente", no una etiqueta permanente para ${name || 'tu deportista'}.`,
+        (name) => `El objetivo es priorizar el disfrute y el bienestar de ${name || 'tu deportista'} sobre el rendimiento competitivo.`,
+        () => 'No es un diagnóstico clínico ni médico.',
+    ],
+    consentCheck: (name) => `Soy el padre, madre o tutor legal de ${name || 'este deportista'} y acepto la Política de Privacidad y los Términos.`,
+    consentWaitingTitle: 'Revisa tu email',
+    consentWaitingSubtitle: (masked) => `Te enviamos un enlace a ${masked}`,
+    consentWaitingWhy: (name) => `Para proteger la privacidad de ${name || 'tu deportista'}, necesitamos que confirmes que eres el adulto responsable.`,
+    consentWaitingExpiry: 'Este enlace expira en 24 horas.',
+    consentWaitingStatus: 'Esperando confirmación...',
+    consentWaitingResend: 'Reenviar email',
+    consentWaitingChangeEmail: 'Cambiar email',
+    consentWaitingCoppaFooter: '',
+    consentWaitingExpired: 'Este enlace expiró. Por seguridad, debes empezar de nuevo.',
+    consentWaitingInvalid: 'Este enlace no es válido.',
+    consentWaitingRestart: 'Empezar de nuevo',
+    consentLandingLoading: 'Confirmando...',
+    consentLandingSuccess: (name) => `¡Listo! Ya puedes volver a la pantalla donde ${name} está esperando para comenzar.`,
+    consentLandingExpired: 'Este enlace expiró. Por seguridad, el adulto responsable debe empezar de nuevo.',
+    consentLandingInvalid: 'Este enlace no es válido.',
     continue: 'Continuar',
     reportWillBeSentTo: (email) => `El informe llegará a ${email}.`,
     fillDataBefore: (name) => `Completa estos datos antes de pasarle el dispositivo a ${name || 'tu deportista'}.`,
@@ -335,6 +380,27 @@ const en: OdysseyTranslations = {
         () => 'I understand that this tool is not a clinical or medical diagnosis.',
         () => 'I confirm that I am over 18 years old.',
     ],
+    consentBullets: [
+        (name) => `Argo Method is a "snapshot of the present," not a permanent label for ${name || 'your athlete'}.`,
+        (name) => `The goal is to prioritize ${name || 'your athlete'}'s enjoyment and well-being over competitive performance.`,
+        () => 'This is not a clinical or medical diagnosis.',
+    ],
+    consentCheck: (name) => `I am the parent or legal guardian of ${name || 'this athlete'} and I accept the Privacy Policy and Terms of Service.`,
+    consentWaitingTitle: 'Check your email',
+    consentWaitingSubtitle: (masked) => `We sent a link to ${masked}`,
+    consentWaitingWhy: (name) => `To comply with COPPA (U.S. children's privacy law), we need you to confirm you are the responsible adult for ${name || 'your athlete'}.`,
+    consentWaitingExpiry: 'This link expires in 24 hours.',
+    consentWaitingStatus: 'Waiting for confirmation...',
+    consentWaitingResend: 'Resend email',
+    consentWaitingChangeEmail: 'Change email',
+    consentWaitingCoppaFooter: 'Argo Method complies with the Children\'s Online Privacy Protection Act (COPPA).',
+    consentWaitingExpired: 'This link has expired. For security, you must start over.',
+    consentWaitingInvalid: 'This link is not valid.',
+    consentWaitingRestart: 'Start over',
+    consentLandingLoading: 'Confirming...',
+    consentLandingSuccess: (name) => `Done! You can now return to the screen where ${name} is waiting to begin.`,
+    consentLandingExpired: 'This link has expired. For security, the responsible adult must start over.',
+    consentLandingInvalid: 'This link is not valid.',
     continue: 'Continue',
     reportWillBeSentTo: (email) => `The report will be sent to ${email}.`,
     fillDataBefore: (name) => `Fill in this information before handing the device to ${name || 'the athlete'}.`,
@@ -485,6 +551,27 @@ const pt: OdysseyTranslations = {
         () => 'Compreendo que esta ferramenta não é um diagnóstico clínico ou médico.',
         () => 'Confirmo que tenho mais de 18 anos.',
     ],
+    consentBullets: [
+        (name) => `Argo Method é uma "fotografia do presente", não um rótulo permanente para ${name || 'seu atleta'}.`,
+        (name) => `O objetivo é priorizar o prazer e bem-estar de ${name || 'seu atleta'} sobre o rendimento competitivo.`,
+        () => 'Não é um diagnóstico clínico nem médico.',
+    ],
+    consentCheck: (name) => `Sou o pai, mãe ou responsável legal por ${name || 'este atleta'} e aceito a Política de Privacidade e os Termos.`,
+    consentWaitingTitle: 'Verifique seu email',
+    consentWaitingSubtitle: (masked) => `Enviamos um link para ${masked}`,
+    consentWaitingWhy: (name) => `Para proteger a privacidade de ${name || 'seu atleta'}, precisamos que você confirme que é o responsável.`,
+    consentWaitingExpiry: 'Este link expira em 24 horas.',
+    consentWaitingStatus: 'Aguardando confirmação...',
+    consentWaitingResend: 'Reenviar email',
+    consentWaitingChangeEmail: 'Alterar email',
+    consentWaitingCoppaFooter: '',
+    consentWaitingExpired: 'Este link expirou. Por segurança, você precisa começar de novo.',
+    consentWaitingInvalid: 'Este link não é válido.',
+    consentWaitingRestart: 'Começar de novo',
+    consentLandingLoading: 'Confirmando...',
+    consentLandingSuccess: (name) => `Pronto! Você já pode voltar à tela onde ${name} está esperando para começar.`,
+    consentLandingExpired: 'Este link expirou. Por segurança, o responsável deve começar de novo.',
+    consentLandingInvalid: 'Este link não é válido.',
     continue: 'Continuar',
     reportWillBeSentTo: (email) => `O relatório será enviado para ${email}.`,
     fillDataBefore: (name) => `Preencha estes dados antes de entregar o dispositivo para ${name || 'o/a atleta'}.`,
