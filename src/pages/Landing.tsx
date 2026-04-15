@@ -8,6 +8,7 @@ import { APP_VERSION } from '../lib/version';
 import { AXIS_COLORS } from '../lib/designTokens';
 import { fetchPosts, type BlogPost } from '../lib/blog';
 import DeckChat from '../components/DeckChat';
+import { CoppaBadge } from '../components/CoppaBadge';
 
 // ─── Design tokens ───────────────────────────────────────────────────────────
 // #1D1D1F  text-argo-navy
@@ -1612,7 +1613,10 @@ export const Landing: React.FC = () => {
 
             {/* ── FOOTER ── */}
             <footer style={{ borderTop: '1px solid #D2D2D7', backgroundColor: '#E3E3FF' }} className="py-10">
-                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col items-center gap-5">
+                    <CoppaBadge />
+                </div>
+                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4 mt-5">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>

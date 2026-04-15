@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLang, type Lang } from '../context/LangContext';
+import { CoppaBadge } from '../components/CoppaBadge';
 
 type Status = 'idle' | 'submitting' | 'sent' | 'error';
 
@@ -119,7 +120,10 @@ export const DeleteMyData: React.FC = () => {
                 </div>
 
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight mb-3">{t.title}</h1>
-                <p className="text-sm text-argo-secondary leading-relaxed mb-5">{t.intro}</p>
+                <p className="text-sm text-argo-secondary leading-relaxed mb-4">{t.intro}</p>
+                <div className="mb-5">
+                    <CoppaBadge />
+                </div>
 
                 <div className="rounded-xl bg-red-50 border border-red-100 p-4 mb-8">
                     <p className="text-sm text-red-900 leading-relaxed">{t.warning}</p>
