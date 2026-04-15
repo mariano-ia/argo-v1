@@ -117,7 +117,8 @@ const LANG_LABELS: Record<string, string> = {
 // Placeholder used in prompts + AI responses instead of the child's real name.
 // The real name never leaves our servers. We strip it before sending and
 // restore it in the response before saving/returning to the client.
-const NAME_PLACEHOLDER = '{{NOMBRE}}';
+// Short and unique so it doesn't inflate the token count or confuse JSON.
+const NAME_PLACEHOLDER = '__NAME__';
 
 function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const destinatarioLabel = ctx.destinatario === 'padre'
@@ -151,17 +152,7 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
 
 ${WRITING_RULES}
 
-PRIVACY INSTRUCTION (CRITICAL):
-- The athlete's real name is NEVER shared with you. Throughout the prompt below,
-  whenever you see the literal string ${NAME_PLACEHOLDER}, it is a placeholder
-  standing in for the athlete's name.
-- In your response, wherever you would normally write the athlete's name, you
-  MUST write ${NAME_PLACEHOLDER} instead. Do not invent a name. Do not use a
-  generic term like "el deportista" or "the athlete" unless it would read
-  naturally regardless of context — prefer ${NAME_PLACEHOLDER} for personal
-  references.
-- Our server will replace ${NAME_PLACEHOLDER} with the real name before
-  showing the text to the user, so the final output will read naturally.
+PRIVACY: The athlete's real name is anonymized. Use ${NAME_PLACEHOLDER} as a placeholder wherever you refer to the athlete by name. Our server will replace it with the real name before display.
 
 CONTEXTO DEL DEPORTISTA:
 - Nombre: ${NAME_PLACEHOLDER}
@@ -196,7 +187,7 @@ Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture
 - Tono: cálido, directo, que enganche desde la primera línea
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
-Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones). Recuerda: usa ${NAME_PLACEHOLDER} donde quieras mencionar al deportista por nombre.
+Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones). Usa ${NAME_PLACEHOLDER} para mencionar al deportista.
 ${jsonSchema}`;
 }
 
@@ -278,7 +269,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'system', content: systemContent },
             { role: 'user', content: prompt },
         ];
-        const aiOpts = { temperature: 0.7, maxTokens: 4096 };
+        // 8192 tokens: gemini-2.5-flash uses 'thinking tokens' that count
+        // against this budget. With the long prompt + JSON schema + thinking,
+        // 4096 was getting truncated mid-JSON, causing parse failures.
+        const aiOpts = { temperature: 0.7, maxTokens: 8192 };
 
         // Try with 1 retry (2 second delay) for resilience
         let aiResponse: AIResp;
@@ -296,8 +290,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let sections: AISections;
         try {
             sections = JSON.parse(cleaned);
-        } catch {
-            console.warn(`[generate-ai] JSON parse failed, retrying AI call...`, cleaned.slice(0, 100));
+        } catch (parseErr) {
+            console.warn(
+                `[generate-ai] JSON parse failed, retrying AI call. Length: ${cleaned.length}, tokens: ${aiResponse.outputTokens}/${aiResponse.totalTokens}. First 200 chars:`,
+                cleaned.slice(0, 200),
+                'Last 200 chars:',
+                cleaned.slice(-200),
+                'Error:',
+                parseErr instanceof Error ? parseErr.message : String(parseErr),
+            );
             // Retry once — sometimes the model returns truncated JSON
             try {
                 await new Promise(r => setTimeout(r, 2000));
@@ -306,8 +307,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 sections = JSON.parse(retryCleaned);
                 // Update usage with retry totals
                 aiResponse = retryResponse;
-            } catch {
-                console.error(`[generate-ai] Retry also failed. Original response:`, cleaned.slice(0, 200));
+            } catch (retryErr) {
+                console.error(
+                    `[generate-ai] Retry also failed. Length: ${cleaned.length}, output tokens: ${aiResponse.outputTokens}. First 500 chars:`,
+                    cleaned.slice(0, 500),
+                    'Error:',
+                    retryErr instanceof Error ? retryErr.message : String(retryErr),
+                );
                 return res.status(502).json({ error: 'Invalid AI response format after retry' });
             }
         }
