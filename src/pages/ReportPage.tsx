@@ -153,53 +153,62 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
     <div className={`bg-white rounded-[14px] p-6 shadow-argo mb-4 ${className}`}>{children}</div>
 );
 
-// Renders body text with the first sentence bold for visual hierarchy
+// Parses **bold** markdown markers into React nodes. Shared helper used by
+// BodyText and RichBodyText so every AI-generated text block handles
+// **...** consistently.
+function parseBoldMarkdown(text: string): React.ReactNode[] {
+    return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) =>
+        part.startsWith('**') && part.endsWith('**')
+            ? <strong key={i} className="text-argo-navy font-semibold">{part.slice(2, -2)}</strong>
+            : <React.Fragment key={i}>{part}</React.Fragment>
+    );
+}
+
+// Renders body text with the first sentence bold for visual hierarchy.
+// Also parses inline **bold** markers inside the body so AI-generated text
+// with emphasis renders correctly.
 const BodyText: React.FC<{ children: string; leadBold?: boolean }> = ({ children, leadBold }) => {
     if (!leadBold) {
         return (
             <p className="text-sm text-argo-secondary leading-relaxed">
                 {children.split('\n').map((line, i, arr) => (
-                    <React.Fragment key={i}>{line}{i < arr.length - 1 && <br />}</React.Fragment>
+                    <React.Fragment key={i}>
+                        {parseBoldMarkdown(line)}
+                        {i < arr.length - 1 && <br />}
+                    </React.Fragment>
                 ))}
             </p>
         );
     }
     const dotIdx = children.indexOf('. ');
     if (dotIdx === -1 || dotIdx > 130) {
-        return <p className="text-sm text-argo-secondary leading-relaxed">{children}</p>;
+        return <p className="text-sm text-argo-secondary leading-relaxed">{parseBoldMarkdown(children)}</p>;
     }
     const lead = children.slice(0, dotIdx + 1);
     const rest = children.slice(dotIdx + 1);
     return (
         <p className="text-sm text-argo-secondary leading-relaxed">
-            <span className="font-semibold text-argo-navy">{lead}</span>{rest}
+            <span className="font-semibold text-argo-navy">{parseBoldMarkdown(lead)}</span>{parseBoldMarkdown(rest)}
         </p>
     );
 };
 
 const DigestBox: React.FC<{ children: string }> = ({ children }) => (
     <div className="bg-argo-bg border-l-2 border-argo-violet-100 rounded-r-xl pl-4 pr-3 py-3 mt-3">
-        <p className="text-sm text-argo-secondary leading-relaxed">{children}</p>
+        <p className="text-sm text-argo-secondary leading-relaxed">{parseBoldMarkdown(children)}</p>
     </div>
 );
 
-/** Renders text with **bold** markdown markers */
+/** Renders text with **bold** markdown markers and paragraph breaks */
 const RichBodyText: React.FC<{ children: string }> = ({ children }) => {
     const paragraphs = children.split(/\n\n+/).filter(Boolean);
     return (
         <div className="space-y-2.5">
-            {paragraphs.map((para, idx) => {
-                const parts = para.split(/(\*\*[^*]+\*\*)/g);
-                return (
-                    <p key={idx} className="text-sm text-argo-secondary leading-relaxed">
-                        {parts.map((part, i) =>
-                            part.startsWith('**') && part.endsWith('**')
-                                ? <strong key={i} className="text-argo-navy font-semibold">{part.slice(2, -2)}</strong>
-                                : <span key={i}>{part}</span>
-                        )}
-                    </p>
-                );
-            })}
+            {paragraphs.map((para, idx) => (
+                <p key={idx} className="text-sm text-argo-secondary leading-relaxed">
+                    {parseBoldMarkdown(para)}
+                </p>
+            ))}
         </div>
     );
 };
