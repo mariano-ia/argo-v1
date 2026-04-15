@@ -74,7 +74,25 @@ export async function checkConsentStatus(token: string): Promise<ConsentStatus> 
     }
 }
 
-export async function confirmConsent(token: string): Promise<{ ok: boolean; childName?: string; lang?: string; error?: string }> {
+export interface ConsentDataFromServer {
+    adult_name: string;
+    adult_email: string;
+    child_name: string;
+    child_age: number;
+    sport: string | null;
+    flow_type: 'auth' | 'tenant' | 'one';
+    lang: string;
+    tenant_slug: string | null;
+    one_link_slug: string | null;
+}
+
+export async function confirmConsent(token: string): Promise<{
+    ok: boolean;
+    childName?: string;
+    lang?: string;
+    consentData?: ConsentDataFromServer;
+    error?: string;
+}> {
     try {
         const res = await fetch('/api/confirm-consent', {
             method: 'POST',
@@ -85,10 +103,56 @@ export async function confirmConsent(token: string): Promise<{ ok: boolean; chil
         if (res.status === 410) return { ok: false, error: 'expired' };
         if (res.status === 404) return { ok: false, error: 'not_found' };
         if (!res.ok || !json?.ok) return { ok: false, error: json?.error || `http_${res.status}` };
-        return { ok: true, childName: json.child_name, lang: json.lang };
+        return {
+            ok: true,
+            childName: json.child_name,
+            lang: json.lang,
+            consentData: json.consent_data as ConsentDataFromServer | undefined,
+        };
     } catch (err) {
         const msg = err instanceof Error ? err.message : 'unexpected';
         return { ok: false, error: msg };
+    }
+}
+
+// ─── Resume helper (sessionStorage, survives the consent-landing redirect) ──
+
+const RESUME_KEY = 'argo_consent_resume';
+
+export interface ConsentResumePayload {
+    token: string;
+    adultData: AdultData;
+    flowType: 'auth' | 'tenant' | 'one';
+    lang: string;
+    timestamp: number;
+}
+
+export function saveConsentResume(data: Omit<ConsentResumePayload, 'timestamp'>): void {
+    try {
+        sessionStorage.setItem(RESUME_KEY, JSON.stringify({ ...data, timestamp: Date.now() }));
+    } catch {
+        // non-critical
+    }
+}
+
+export function takeConsentResume(expectedToken?: string): ConsentResumePayload | null {
+    try {
+        const raw = sessionStorage.getItem(RESUME_KEY);
+        if (!raw) return null;
+        const data: ConsentResumePayload = JSON.parse(raw);
+        // TTL: 10 minutes — keeps the resume window tight
+        if (Date.now() - data.timestamp > 10 * 60 * 1000) {
+            sessionStorage.removeItem(RESUME_KEY);
+            return null;
+        }
+        if (expectedToken && data.token !== expectedToken) {
+            return null;
+        }
+        // Consume on read so it can't be reused accidentally
+        sessionStorage.removeItem(RESUME_KEY);
+        return data;
+    } catch {
+        return null;
     }
 }
 

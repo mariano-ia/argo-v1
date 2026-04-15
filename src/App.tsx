@@ -60,7 +60,9 @@ const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({
 
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
+import type { AdultData }     from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
+import { takeConsentResume }  from './lib/consentStore';
 
 // ─── Lazy loading fallback ──────────────────────────────────────────────────
 const LazyFallback = () => (
@@ -111,6 +113,16 @@ const BlockedView: React.FC = () => {
 const UserApp: React.FC = () => {
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [blocked, setBlocked] = useState(false);
+    // If we arrived from /consent/:token (auth flow), pull the resume payload
+    // from sessionStorage so we skip the form and jump to device-handoff.
+    const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('consent');
+        if (!token) return null;
+        const resume = takeConsentResume(token);
+        if (!resume) return null;
+        return { token: resume.token, adultData: resume.adultData };
+    });
 
     const checkBlocked = (s: Session) => {
         if (TEST_EMAILS.includes(s.user.email ?? '')) return;
@@ -174,6 +186,7 @@ const UserApp: React.FC = () => {
         <OnboardingFlowV2
             userEmail={session.user.email ?? ''}
             onPlayComplete={onPlayComplete}
+            initialConsent={initialConsent}
         />
     );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
-import { confirmConsent } from '../lib/consentStore';
+import { confirmConsent, saveConsentResume } from '../lib/consentStore';
 import { useLang, type Lang } from '../context/LangContext';
 import { getOdysseyT } from '../lib/odysseyTranslations';
 
@@ -25,6 +25,43 @@ export const ConsentLanding: React.FC = () => {
                 }
                 setChildName(result.childName ?? '');
                 setUiState('success');
+
+                // Auto-resume the play flow in the same browser so the user
+                // doesn't have to hunt for the original tab. We stash the
+                // pre-filled adultData in sessionStorage and redirect to the
+                // appropriate play URL with ?consent=TOKEN.
+                const cd = result.consentData;
+                if (cd) {
+                    saveConsentResume({
+                        token,
+                        adultData: {
+                            nombreAdulto: cd.adult_name,
+                            email: cd.adult_email,
+                            nombreNino: cd.child_name,
+                            edad: cd.child_age,
+                            deporte: cd.sport ?? '',
+                        },
+                        flowType: cd.flow_type,
+                        lang: cd.lang,
+                    });
+
+                    let target: string | null = null;
+                    if (cd.flow_type === 'tenant' && cd.tenant_slug) {
+                        target = `/play/${cd.tenant_slug}?consent=${token}`;
+                    } else if (cd.flow_type === 'one' && cd.one_link_slug) {
+                        target = `/one/${cd.one_link_slug}?consent=${token}`;
+                    } else if (cd.flow_type === 'auth') {
+                        target = `/app?consent=${token}`;
+                    }
+
+                    if (target) {
+                        // Small delay so the user sees the success state briefly,
+                        // then we continue the flow automatically.
+                        setTimeout(() => {
+                            window.location.href = target!;
+                        }, 1200);
+                    }
+                }
             } else if (result.error === 'expired') {
                 setUiState('expired');
             } else {

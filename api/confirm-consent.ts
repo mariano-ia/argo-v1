@@ -7,6 +7,10 @@ import { createClient } from '@supabase/supabase-js';
  * Called by the landing page /consent/:token when the adult clicks
  * the email link. Captures IP and user-agent for the COPPA audit trail.
  * Idempotent — calling twice on a confirmed record returns the same success.
+ *
+ * On success returns the full consent_data (adult + child + flow context)
+ * so the frontend can resume the play flow directly in the same browser
+ * without forcing the user to switch tabs.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
@@ -27,12 +31,72 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sb = createClient(supabaseUrl, serviceKey);
 
+    // Helper: fetch slug info for tenant/one flows so the frontend can build
+    // the resume URL without a second round trip.
+    async function buildResume(data: {
+        adult_name: string;
+        adult_email: string;
+        child_name: string;
+        child_age: number;
+        sport: string | null;
+        flow_type: string;
+        tenant_id: string | null;
+        one_link_id: string | null;
+        lang: string;
+    }) {
+        let tenantSlug: string | null = null;
+        let oneLinkSlug: string | null = null;
+        if (data.flow_type === 'tenant' && data.tenant_id) {
+            const { data: tenant } = await sb
+                .from('tenants')
+                .select('slug')
+                .eq('id', data.tenant_id)
+                .maybeSingle() as { data: { slug: string | null } | null };
+            tenantSlug = tenant?.slug ?? null;
+        }
+        if (data.flow_type === 'one' && data.one_link_id) {
+            const { data: link } = await sb
+                .from('one_links')
+                .select('slug')
+                .eq('id', data.one_link_id)
+                .maybeSingle() as { data: { slug: string | null } | null };
+            oneLinkSlug = link?.slug ?? null;
+        }
+        return {
+            adult_name: data.adult_name,
+            adult_email: data.adult_email,
+            child_name: data.child_name,
+            child_age: data.child_age,
+            sport: data.sport,
+            flow_type: data.flow_type,
+            lang: data.lang,
+            tenant_slug: tenantSlug,
+            one_link_slug: oneLinkSlug,
+        };
+    }
+
     try {
         const { data, error } = await sb
             .from('parental_consents')
-            .select('token, status, expires_at, child_name, lang')
+            .select('token, status, expires_at, adult_name, adult_email, child_name, child_age, sport, flow_type, tenant_id, one_link_id, lang')
             .eq('token', token)
-            .maybeSingle();
+            .maybeSingle() as {
+                data: {
+                    token: string;
+                    status: string;
+                    expires_at: string;
+                    adult_name: string;
+                    adult_email: string;
+                    child_name: string;
+                    child_age: number;
+                    sport: string | null;
+                    flow_type: string;
+                    tenant_id: string | null;
+                    one_link_id: string | null;
+                    lang: string;
+                } | null;
+                error: { message: string } | null;
+            };
 
         if (error) {
             console.error('[confirm-consent] select error:', error.message);
@@ -52,7 +116,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Idempotent: already confirmed is success.
         if (data.status === 'confirmed') {
-            return res.status(200).json({ ok: true, child_name: data.child_name, lang: data.lang });
+            const consent_data = await buildResume(data);
+            return res.status(200).json({
+                ok: true,
+                child_name: data.child_name,
+                lang: data.lang,
+                consent_data,
+            });
         }
         if (data.status === 'expired') {
             return res.status(410).json({ ok: false, error: 'expired' });
@@ -78,8 +148,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ ok: false, error: 'db_error' });
         }
 
+        const consent_data = await buildResume(data);
         console.info('[confirm-consent] ok', { token_prefix: token.slice(0, 6) });
-        return res.status(200).json({ ok: true, child_name: data.child_name, lang: data.lang });
+        return res.status(200).json({
+            ok: true,
+            child_name: data.child_name,
+            lang: data.lang,
+            consent_data,
+        });
     } catch (err) {
         console.error('[confirm-consent] unexpected:', err);
         return res.status(500).json({ ok: false, error: 'internal' });

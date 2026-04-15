@@ -119,14 +119,25 @@ function getCurrentQuestionIndex(screenIndex: number): number {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+interface InitialConsent {
+    token: string;
+    adultData: AdultData;
+}
+
 interface OnboardingV2Props {
     userEmail?: string;
     onPlayComplete?: () => void;
     tenantId?: string;
     oneLinkId?: string;
+    /**
+     * When provided (via the /consent/:token landing redirect), the flow
+     * skips LanguageSelect → AdultIntros → AdultRegistration → WaitingScreen
+     * and jumps directly to DeviceHandoff with the pre-populated adult data.
+     */
+    initialConsent?: InitialConsent | null;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId, initialConsent }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -135,8 +146,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const storySlides = getStorySlides(lang);
     const questions = getQuestions(lang);
 
-    const [screenIndex, setScreenIndex] = useState(0);
-    const [adultData, setAdultData]     = useState<AdultData | null>(null);
+    // If we're resuming from a confirmed parental consent, pre-populate
+    // adultData and jump straight to the device-handoff screen (index 6).
+    // `device-handoff` is always the screen immediately after
+    // `parental-consent-waiting` in the SCREENS array.
+    const DEVICE_HANDOFF_INDEX = SCREENS.findIndex(s => s.type === 'device-handoff');
+    const [screenIndex, setScreenIndex] = useState(
+        initialConsent ? DEVICE_HANDOFF_INDEX : 0,
+    );
+    const [adultData, setAdultData]     = useState<AdultData | null>(
+        initialConsent ? initialConsent.adultData : null,
+    );
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [, setAiSections]   = useState<AISections | null>(null);
     const [, setAiLoading]     = useState(false);
@@ -155,7 +175,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const [recoveryData, setRecoveryData] = useState<RecoverableSession | null>(null);
 
     // ── Parental consent (VPC, COPPA) ──
-    const consentTokenRef = useRef<string | null>(null);
+    // Initialize consentTokenRef from initialConsent so /api/session action=start
+    // receives the confirmed token when resuming via the /consent/:token landing.
+    const consentTokenRef = useRef<string | null>(initialConsent?.token ?? null);
     const [consentCtx, setConsentCtx] = useState<{ token: string; adultData: AdultData } | null>(null);
 
     // Option 2: Check for recoverable session on mount
@@ -724,7 +746,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         onConsentRequired={({ token, adultData: data }) => {
                             setAdultData(data);
                             setConsentCtx({ token, adultData: data });
-                            advance();
+                            // Direct setScreenIndex (not advance()) because advance() has a
+                            // stale closure over consentCtx: React has queued setConsentCtx
+                            // but hasn't applied it yet, so advance()'s skip-waiting-screen
+                            // check would see consentCtx as null and jump past the waiting
+                            // screen entirely. Jump straight to the next index.
+                            setScreenIndex(i => Math.min(i + 1, SCREENS.length - 1));
                         }}
                     />
                 )}
