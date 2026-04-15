@@ -6,11 +6,12 @@ import { createClient } from '@supabase/supabase-js';
  * Returns revenue metrics: MRR from subscriptions + Argo One sales.
  */
 
-async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient>): Promise<boolean> {
+async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient<any, any>>): Promise<boolean> {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) return false;
     const { data: { user }, error } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
     if (error || !user) return false;
+    if (!user.email) return false;
     const { data: admin } = await sb.from('admin_users').select('id').eq('email', user.email).maybeSingle();
     return !!admin;
 }
@@ -21,11 +22,6 @@ const PLAN_MRR: Record<string, number> = {
     enterprise: 0, // custom, tracked separately
 };
 
-// Annual plan equivalent monthly (what we actually charge)
-const PLAN_ANNUAL_MONTHLY: Record<string, number> = {
-    pro: 40,
-    academy: 70,
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

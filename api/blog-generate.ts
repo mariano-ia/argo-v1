@@ -273,7 +273,7 @@ Devuelve un JSON con esta estructura exacta:
   "meta_description": "descripcion adaptada (150-160 chars)",
   "category": "${input.source_category || 'coaching'}",
   "tags": ${JSON.stringify(input.source_tags || [])},
-  "reading_time": ${estimateReadingTime(input.source_content)},
+  "reading_time": ${estimateReadingTime(input.source_content ?? '')},
   "content": "contenido HTML completo adaptado"
 }
 

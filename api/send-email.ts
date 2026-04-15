@@ -438,7 +438,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const supabaseUrl = process.env.VITE_SUPABASE_URL;
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
-                await sb.from('sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId).catch(() => {});
+                try { await sb.from('sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId); } catch { /* non-blocking */ }
             }
         }
 

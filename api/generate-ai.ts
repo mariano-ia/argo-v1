@@ -192,8 +192,6 @@ function getCostUsd(r: AIResp): number {
     return r.inputTokens * (0.15 / 1_000_000) + r.outputTokens * (0.60 / 1_000_000);
 }
 
-function getProvider(): string { return process.env.AI_PROVIDER?.toLowerCase() === 'openai' ? 'openai' : 'gemini'; }
-
 async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number } = {}): Promise<AIResp> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY');

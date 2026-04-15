@@ -578,7 +578,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // If a player was mentioned, verify the response doesn't contradict their real data
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
-            const respLower = assistantContent.toLowerCase();
             const wrongAxis: Record<string, string[]> = {
                 D: ['conector', 'connector', 'sostén', 'sustainer', 'estratega', 'strategist'],
                 I: ['impulsor', 'driver', 'sostén', 'sustainer', 'estratega', 'strategist'],
