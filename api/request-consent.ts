@@ -160,7 +160,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
     const resendKey = process.env.RESEND_API_KEY;
-    const siteUrl = process.env.SITE_URL || 'https://argomethod.com';
+
+    // Build siteUrl from the actual request host (Vercel sets x-forwarded-host
+    // with the domain the user hit — works for preview deploys without any env
+    // config). Fall back to SITE_URL env var, then to argomethod.com.
+    const hostHeader = (req.headers['x-forwarded-host'] ?? req.headers.host) as string | undefined;
+    const protoHeader = (req.headers['x-forwarded-proto'] as string | undefined) ?? 'https';
+    const derivedSiteUrl = hostHeader ? `${protoHeader}://${hostHeader}` : null;
+    const siteUrl = derivedSiteUrl || process.env.SITE_URL || 'https://argomethod.com';
 
     if (!serviceKey || !supabaseUrl) {
         console.error('[request-consent] Missing Supabase env');
