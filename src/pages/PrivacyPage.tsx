@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLang, type Lang } from '../context/LangContext';
+import { CoppaBadge } from '../components/CoppaBadge';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="mb-8">
@@ -272,6 +273,9 @@ export const PrivacyPage: React.FC = () => {
                     </div>
                     <h1 className="text-2xl font-bold text-argo-navy tracking-tight">{TITLES[lang]}</h1>
                     <p className="text-sm text-argo-grey mt-2">{LAST_UPDATED[lang]}</p>
+                    <div className="mt-4">
+                        <CoppaBadge />
+                    </div>
                 </div>
 
                 {lang === 'en' ? <ContentEN /> : lang === 'pt' ? <ContentPT /> : <ContentES />}

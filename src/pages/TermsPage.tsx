@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { CoppaBadge } from '../components/CoppaBadge';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div className="mb-8">
@@ -20,6 +21,9 @@ export const TermsPage: React.FC = () => (
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
                 <p className="text-sm text-argo-grey mt-2">Última actualización: 30 de marzo de 2026</p>
+                <div className="mt-4">
+                    <CoppaBadge />
+                </div>
             </div>
 
             <Section title="1. Aceptación de los términos">

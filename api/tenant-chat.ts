@@ -277,6 +277,166 @@ const SITUATION_KEYWORDS: Record<string, string[]> = {
     'cambio-repentino': ['cambió', 'changed', 'mudou', 'diferente', 'distinto', 'de un día para el otro'],
 };
 
+// ─── Group type texts (compact inline from src/lib/groupBalanceRules.ts) ────
+// Five base profile types. Vercel serverless can't import between files.
+interface GroupTypeText { identity: string; tools: string[]; }
+
+const GROUP_TYPE_TEXTS: Record<string, GroupTypeText> = {
+    Competitivo: {
+        identity: 'Un grupo que se enciende con los desafíos. La energía competitiva es su combustible natural y el ritmo lo marca quien toma la iniciativa.',
+        tools: [
+            'Asigna roles claros. Cuando cada jugador sabe cuál es su espacio de liderazgo, la energía competitiva se canaliza hacia afuera, no adentro.',
+            'Usa desafíos internos con estructura: competencias por tiempo, equipos rotativos, reglas claras. La competencia es el lenguaje natural del grupo.',
+        ],
+    },
+    Social: {
+        identity: 'Un grupo donde la conexión humana es protagonista. La energía viene del vínculo entre los jugadores y el clima emocional marca el ritmo.',
+        tools: [
+            'Incorpora rituales de inicio y cierre en cada sesión. Este grupo rinde mejor cuando siente que pertenece a algo.',
+            'Aprovecha la energía social como herramienta de enseñanza: ejercicios en grupo, explicaciones entre pares, liderazgo rotativo.',
+        ],
+    },
+    Cohesivo: {
+        identity: 'Un grupo con base sólida. La consistencia y la lealtad son el tejido que une a los jugadores, y el ritmo se construye desde la confianza.',
+        tools: [
+            'Introduce cambios de manera gradual y explica el porqué. Este grupo procesa mejor las novedades cuando entiende la razón.',
+            'Desafía con metas progresivas. El crecimiento incremental es el ritmo natural del grupo.',
+        ],
+    },
+    Metódico: {
+        identity: 'Un grupo que observa antes de actuar. La precisión y la comprensión profunda son su manera natural de abordar cualquier desafío.',
+        tools: [
+            'Explica el "para qué" de cada ejercicio. Este grupo se compromete más cuando entiende el propósito detrás de la actividad.',
+            'Intercala ejercicios analíticos con momentos de juego libre. La espontaneidad es un músculo que este grupo puede ejercitar.',
+        ],
+    },
+    Balanceado: {
+        identity: 'Un grupo diverso donde conviven diferentes estilos de comportamiento. La variedad es una fortaleza que permite adaptarse a múltiples situaciones.',
+        tools: [
+            'Alterna el estilo de los ejercicios: competitivos, colaborativos, técnicos, creativos. La diversidad responde bien a la variedad.',
+            'Usa la diversidad como recurso explícito: cada jugador aporta una perspectiva diferente al grupo.',
+        ],
+    },
+};
+
+// ─── Situation cards (compact inline from src/lib/situationalGuide.ts) ──────
+// 12 situations × 4 ejes = 48 cards. Each card condenses whatsHappeningForProfile
+// + primary howToAccompany tip + ifNotResponding fallback.
+const SITUATION_CARDS_DATA: Record<string, Record<string, string>> = {
+    'no-quiere-arrancar': {
+        D: 'El Impulsor necesita sentir que lo que viene vale la pena. Propónle un mini-desafío personal para los primeros 5 minutos o dale un rol activo desde el inicio (armar los conos, elegir el primer ejercicio). Si no arranca, déjalo mirar: su instinto competitivo se activa solo cuando ve al grupo en acción.',
+        I: 'El Conector necesita conexión social para activarse. Acércate y pregúntale algo personal (¿cómo estuvo el día?). Esa micro-conexión es su interruptor. Si no responde, súmalo a una actividad grupal divertida y no técnica; un juego donde se ría suele ser suficiente.',
+        S: 'El Sostén necesita previsibilidad. Mantenlo en la rutina (mismo calentamiento, mismos compañeros) y dile "Arrancamos cuando estés listo", sin presión. Si no responde, dale una tarea pequeña y predecible al costado para que entre en ritmo sin saltar al grupo.',
+        C: 'El Estratega necesita entender qué va a pasar antes de comprometerse. Cuéntale brevemente el plan del día (primero calentamiento, después táctico, después partido). Si cambió algo del plan habitual, explícale por qué. Si no entra, déjalo observar la primera actividad hasta que entienda la lógica.',
+    },
+    'se-frustra-cuando-pierde': {
+        D: 'Para el Impulsor, perder es personal: siente que el resultado define su valor. Primero valida (entiendo que estás enojado, es normal), después redirige la energía: "¿qué harías diferente si pudieras repetir?". Si no escucha, dale un momento a solas para procesar en privado antes de cualquier consejo.',
+        I: 'El Conector siente la derrota como un quiebre social (le fallé al grupo). Valida desde lo vincular (se nota que te importa el equipo) y sepáralo del "yo fallé" con datos: "mira todo lo que el equipo logró, tú fuiste parte". Si no se recupera, pídele a un compañero de confianza que le hable.',
+        S: 'El Sostén no explota con la derrota, la guarda en silencio y la arrastra varios días. Valida sin forzar (si necesitas hablar, aquí estoy). No le pidas que procese en el momento. En los entrenamientos siguientes observa si está más callado: un "¿cómo estás?" sin presión abre la puerta.',
+        C: 'El Estratega analiza la derrota en loop buscando el error exacto. Valida su análisis pero ponle límite (está bien pensarlo, elijamos una sola cosa para trabajar). Ofrécele datos concretos (en 10 jugadas acertaste 7): los números lo sacan del circuito emocional.',
+    },
+    'no-hace-lo-que-pido': {
+        D: 'El Impulsor escuchó la instrucción pero ya decidió hacerla a su manera: su motor lo lanza a la acción antes de que termines de hablar. Dale instrucciones cortas y directas, en una frase (pase al pivote, tiro al arco). Si hizo algo diferente pero funcionó, reconócelo. Si no, dale el "por qué" competitivo: "esto te da una herramienta más para ganar".',
+        I: 'El Conector probablemente estaba socializando cuando diste la instrucción. Asegúrate de tener su atención primero (contacto visual, nombre, después la consigna). Dale la instrucción en clave social: "tú y tu compañero van a hacer esto juntos". Si no, pídele que se la explique a otro compañero: al traducirla, la ejecuta.',
+        S: 'El Sostén escuchó todo, pero su motor necesita más tiempo para cerrar la lógica antes de arrancar. Dale la instrucción paso a paso, no todo junto. Dale unos segundos después de la consigna antes de esperar que arranque: ese silencio es su tiempo de procesamiento. Si no, haz una demostración rápida; procesa mejor viendo que escuchando.',
+        C: 'El Estratega está procesando la lógica de la instrucción. Si le dijiste algo que contradice lo anterior, se frena. Explica el "para qué" del ejercicio (trabaja la reacción lateral). Si pregunta "por qué", no lo tomes como cuestionamiento: es su forma de comprometerse. Si no arranca, dile "pruébalo una vez y después me dices".',
+    },
+    'raro-antes-del-partido': {
+        D: 'El Impulsor canaliza los nervios con hiperactividad: habla más, se mueve mucho, o se pone irritable. La incertidumbre le molesta porque quiere controlar el resultado. Dale una tarea concreta de control (calienta con 20 tiros). Háblale en clave de plan: "tu rol es X, si pasa Y haces Z". Si no, déjalo calentar solo.',
+        I: 'El Conector busca contención social: habla con todos, hace chistes. Si está más callado de lo normal, algo le pesa. Genera un momento grupal de conexión (ronda, grito de equipo). Si no, dale un rol social: "encárgate de que todos estén arriba"; transforma su ansiedad en energía positiva.',
+        S: 'El Sostén se cierra y se pega a la rutina. Mantén la rutina pre-partido lo más igual posible (mismo calentamiento, mismo lugar, mismos compañeros cerca). Dile algo que le dé seguridad: "hoy jugamos como en el entrenamiento, nada raro". No lo fuerces a estar animado: compite bien desde la calma.',
+        C: 'El Estratega piensa en todos los escenarios posibles. Dale información concreta (rival, plan de juego, su rol): los datos reemplazan la incertidumbre. Pregúntale "¿tienes alguna duda sobre lo que vamos a hacer?". Si sigue trabado, dile "pensaste mucho y eso está bien, ahora confía en lo que ya preparaste".',
+    },
+    'mira-desde-afuera': {
+        D: 'Raro en un Impulsor. Cuando pasa, es porque no se siente seguro de poder dominar la situación. Dale un rol desde el borde (mira y dime qué harías diferente). Propónle un desafío con puerta de salida: "¿te animas? Si no te convence, vuelves". Si no, invítalo directo después de que mire una ronda: "¿listo?".',
+        I: 'El Conector observa desde afuera hasta identificar a "su persona". Preséntale a alguien con afinidad (él está en tu misma posición, entrenen juntos). Inclúyelo en una dupla antes del grupo grande. Si no, dale un rol social desde afuera (ayúdame a contar los puntos): lo conecta sin forzar exposición.',
+        S: 'Es el comportamiento más natural del Sostén ante lo nuevo: está haciendo su lectura de seguridad. No lo apures. "Cuando estés listo, súmate" sin presión es lo que más funciona. Si puedes, ponlo a hacer la actividad al costado en paralelo, sin exposición grupal. Déjalo mirar toda la sesión si hace falta.',
+        C: 'El Estratega analiza las reglas del juego desde afuera. Explícale el ejercicio brevemente mientras observa (la idea es que hagas esto cuando pasa aquello). Pregúntale "¿quieres que te lo explique?". Si sigue afuera, dile "hazlo una vez de prueba, no cuenta": el primer intento sin evaluación lo desbloquea.',
+    },
+    'llora-o-se-enoja': {
+        D: 'El Impulsor se enoja más que llora: siente que perdió el control. No lo enfrentes en caliente; déjalo que se enfríe unos segundos y acércate con tono neutro: "cuando estés listo, hablamos". Cuando se calme, dale una vía de acción: "ahora volvamos y hagamos bien ese ejercicio". Necesita sentir que puede recuperar el control.',
+        I: 'El Conector se quiebra cuando siente que la corrección rompió el vínculo (¿me está retando porque no le caigo bien?). Repara primero: "no estoy enojado, quiero ayudarte a mejorar". Después conecta desde el afecto (una palmada, un "¿estamos bien?"). Si no se calma, pídele a un compañero de confianza que lo acompañe.',
+        S: 'El Sostén rara vez se desborda, así que si llora es que se saturó hace rato. Dale pausa sin obligarlo a explicar (siéntate aquí un momento, no pasa nada). No le preguntes "¿qué te pasa?" en el momento. Mantenlo cerca pero sin actividad: la cercanía sin demanda es su forma de recuperarse.',
+        C: 'El Estratega se frustra cuando algo no tiene lógica o la corrección se sintió injusta. Cuando se calme, dale una explicación clara (te corregí porque quiero que hagas esto mejor, y la forma es esta). Pregúntale qué lo frustró específicamente: el detonante no siempre es lo obvio. Si no, déjalo solo unos minutos para ordenar.',
+    },
+    'roce-con-companero': {
+        D: 'El Impulsor choca cuando siente que otro le saca protagonismo. Separa el conflicto de la persona (los dos quieren ganar y eso está bien). Asígnale un aspecto del ejercicio donde él sea el que decide: con su territorio, baja la necesidad de pelear por el del otro. Si no, cámbialos de dupla temporalmente.',
+        I: 'El Conector vive el roce como un quiebre en la relación. Habla con los dos juntos enfocándote en el vínculo (ustedes son compañeros, esto se resuelve hablando). Después del ejercicio, dale al Conector un momento de cierre: "¿estamos bien?". Necesita saber que la relación sigue. Si no, dale un rol de puente social.',
+        S: 'El Sostén evita el conflicto y si tuvo un roce está incomodísimo. No lo obligues a "hablar las cosas" frente al grupo. Acércate en privado: "vi que hubo algo ahí, ¿estás bien?". Ayúdalo a volver a su zona de confort (la rutina de siempre). Si no, deja que el tiempo haga su trabajo; no necesita resolver verbalmente.',
+        C: 'El Estratega choca cuando siente que el otro hace algo "mal" o sin lógica. Valida su perspectiva (tu forma de verlo tiene sentido) y amplía con la del otro (la de tu compañero también, viene de otro lugar). Propón un acuerdo de método: "primero a tu manera, después a la de él". Si no, dale una tarea individual breve.',
+    },
+    'se-castiga': {
+        D: 'El Impulsor se castiga desde la bronca (¡soy un desastre!): cada error amenaza su autoimagen de líder. Interrumpe el circuito con acción: "ok, fallaste. Ahora haz 3 repeticiones y listo". Usa su competitividad: "los mejores jugadores fallan, la diferencia es qué hacen después". Si no, sácalo del ejercicio y dale una tarea física simple.',
+        I: 'El Conector se castiga desde la vergüenza pública (todos me vieron fallar). Normaliza el error frente al grupo: "todos fallamos, así se aprende". En privado después: "a mí me importa que lo intentes, no que salga perfecto". Si no, ponlo en una actividad donde el error sea parte del juego: diluye la sensación de ser "el único".',
+        S: 'El Sostén se castiga en silencio: se queda callado, baja la cabeza, pierde energía. Acércate con calma y devuélvele perspectiva: "ese error no define cómo juegas, mira todo lo que vienes haciendo bien". En el siguiente ejercicio ponlo en algo que domine para recuperar confianza. Si no, no insistas: se recupera cuando siente que el entorno no cambió.',
+        C: 'El Estratega se castiga desde el análisis: repasa el error en loop. Dale datos que contrarresten: "fallaste esta, pero las 5 anteriores las hiciste perfecto". Los números lo sacan del loop. Propón que el error sea un dato, no un juicio: "¿qué información te da? ¿qué ajustarías?". Si no, dile "suficiente análisis por hoy".',
+    },
+    'se-distrae': {
+        D: 'El Impulsor se distrae cuando el ejercicio no tiene suficiente intensidad. Sube el ritmo: "ahora en la mitad del tiempo" o "el que llega primero elige el próximo". Dale responsabilidad dentro del ejercicio: que cuente, que arbitre, que lidere una variante. Si no, propón un desafío paralelo: "mientras esperas, haz esto otro". No tolera el vacío.',
+        I: 'El Conector se va hacia lo social porque su atención va primero a las personas. Convierte el ejercicio en algo social (en duplas con comunicación entre ellos). Usa su sociabilidad como herramienta: "explícale a tu compañero cómo se hace este ejercicio". Si no, ponlo de ayudante tuyo: la cercanía con el adulto recaptura su atención.',
+        S: 'El Sostén se desconecta por exceso de estímulo (mucho ruido, cambios constantes). Baja el ritmo de cambios: que haga el mismo ejercicio más tiempo antes de pasar al siguiente. Dale un espacio predecible: "tú siempre en esta posición, tu trabajo es este". Si no, acércate y reconéctalo con calma y contacto personal.',
+        C: 'El Estratega se distrae cuando el ejercicio le parece repetitivo o sin propósito. Dale una capa extra: "fíjate qué patrón se repite" o "qué compañero se mueve mejor y por qué". Explícale qué estás buscando con el ejercicio. Si no, propón que invente una variante: se concentra cuando puede diseñar.',
+    },
+    'quiere-dejar': {
+        D: 'El Impulsor quiere dejar cuando siente que no puede ganar, crecer o liderar. Pregúntale qué cambiaría: "si pudieras cambiar algo del entrenamiento, ¿qué sería?". Escucha la respuesta. Propón un objetivo concreto y medible a 3 semanas. Si no, no lo presiones: a veces necesita extrañar el desafío para volver con ganas.',
+        I: 'El Conector quiere dejar cuando se rompieron los vínculos. Explora: "¿hay algo del grupo que te hace ruido?". Muchas veces la razón no es el deporte, es una relación social que se rompió. Si es posible, reconéctalo con un compañero cercano o cámbialo a un grupo con más afinidad. Si no, habla con el adulto responsable.',
+        S: 'El Sostén quiere dejar cuando algo cambió demasiado del contexto. Identifica qué cambió: "¿hay algo que antes te gustaba y ahora no?". El Sostén puede señalar exactamente el punto de quiebre. Si puedes, restaura algo del contexto anterior. Si no, dale tiempo sin pedirle decisión definitiva: "no hace falta que decidas ahora".',
+        C: 'El Estratega quiere dejar cuando no aprende nada nuevo o el entrenamiento no tiene sentido. Muéstrale el progreso: "mira dónde estabas hace 3 meses y dónde estás ahora". Pregúntale qué le gustaría aprender. Si no, propón un desafío intelectual dentro del deporte (analizar video, planificar jugada).',
+    },
+    'se-congela': {
+        D: 'Raro en un Impulsor, pero cuando se congela es porque la presión lo abrumó. Dale una instrucción concreta y simple: "la próxima pelota, tira al arco". Una sola acción clara lo desbloquea. Desde afuera, dale confianza: "tú sabes hacer esto, confío en ti". Si no, cámbialo de rol temporalmente a algo menos expuesto.',
+        I: 'El Conector se congela por miedo a quedar mal frente al grupo: el bloqueo es social, no técnico. Quítale presión del resultado: "no importa si sale, quiero que lo intentes". Involucra a los compañeros (equipo, todos adentro). Si no, ponlo en una jugada grupal donde el éxito sea del equipo, no individual.',
+        S: 'El Sostén se congela porque la presión del partido rompe su base de seguridad. Baja la presión con info: "haz lo mismo que en el entrenamiento, nada diferente". Dale una instrucción repetitiva y predecible (cada vez que la pelota venga, pásala a X). Si no, sácalo unos minutos: "respira, mira, y cuando estés listo vuelves".',
+        C: 'El Estratega se congela por sobreanálisis: su mente trabaja más rápido que su cuerpo. Simplifica su toma de decisión: "si estás libre, tira. Si no, pasa". Reducir opciones lo desbloquea. Si sigue trabado, dile literal "no pienses, juega": necesita permiso explícito para apagar el análisis.',
+    },
+    'cambio-repentino': {
+        D: 'Un Impulsor que se apaga perdió algo que lo hacía sentir poderoso (un rol, una relación, una seguridad fuera de la cancha). Observa unos días. Si persiste, acércate con algo concreto: "te noto diferente, ¿puedo ayudar?". Si no quiere hablar, habla con el adulto responsable: suele ser señal de algo importante fuera de la cancha.',
+        I: 'Un Conector que se cierra es una señal fuerte. Algo le está doliendo en el plano vincular (familia, amigos, bullying). Acércate desde el vínculo: "te conozco y sé que algo te pasa. No hace falta que me cuentes, pero estoy aquí". Dale espacio a su ritmo. Si persiste, contacta al adulto responsable.',
+        S: 'El Sostén es el que más aguanta antes de mostrar malestar, así que si ya lo ves, viene acumulando hace rato. Mantenlo en rutina estable (el entrenamiento como refugio de normalidad). Acércate sin drama: "¿cómo estás hoy?", como parte natural de la rutina. Si no, contacta al adulto con delicadeza: rara vez pide ayuda, hay que ir a buscarla.',
+        C: 'Un Estratega que cambia puede estar procesando algo internamente que no logra resolver (un problema familiar, una injusticia percibida). Ofrécele espacio para ordenar: "¿quieres contarme qué está pasando por tu cabeza?". Si no quiere, respétalo: propón que lo escriba. Si persiste, contacta al adulto responsable.',
+    },
+};
+
+// ─── Deterministic helpers for group balance (inline from groupBalance.ts) ──
+function computeAxisDistribution(players: Array<{ eje: string }>): Record<string, number> {
+    const total = players.length;
+    if (total === 0) return { D: 0, I: 0, S: 0, C: 0 };
+    const counts: Record<string, number> = { D: 0, I: 0, S: 0, C: 0 };
+    for (const p of players) { if (counts[p.eje] !== undefined) counts[p.eje]++; }
+    return {
+        D: Math.round((counts.D / total) * 100),
+        I: Math.round((counts.I / total) * 100),
+        S: Math.round((counts.S / total) * 100),
+        C: Math.round((counts.C / total) * 100),
+    };
+}
+
+function computeMotorDistribution(players: Array<{ motor: string }>): Record<string, number> {
+    const total = players.length;
+    if (total === 0) return { Rápido: 0, Medio: 0, Lento: 0 };
+    const counts: Record<string, number> = { Rápido: 0, Medio: 0, Lento: 0 };
+    for (const p of players) {
+        if (p.motor === 'Rápido') counts['Rápido']++;
+        else if (p.motor === 'Lento') counts['Lento']++;
+        else counts['Medio']++;
+    }
+    return {
+        Rápido: Math.round((counts.Rápido / total) * 100),
+        Medio: Math.round((counts.Medio / total) * 100),
+        Lento: Math.round((counts.Lento / total) * 100),
+    };
+}
+
+function detectGroupTypes(dist: Record<string, number>): string[] {
+    const types: string[] = [];
+    if (dist.D > 35) types.push('Competitivo');
+    if (dist.I > 35) types.push('Social');
+    if (dist.S > 35) types.push('Cohesivo');
+    if (dist.C > 35) types.push('Metódico');
+    if (types.length === 0) types.push('Balanceado');
+    return types;
+}
+
 // ─── Handler ────────────────────────────────────────────────────────────────
 
 export const config = { maxDuration: 60 };
@@ -382,7 +542,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const fairUseExceeded = fairUseData?.fair_use_exceeded === true;
 
         // Trial plan: check expiration + hard cap at 10 total user messages
-        const { data: tenantPlan } = await sb.from('tenants').select('plan, trial_expires_at').eq('id', tenant.id).maybeSingle();
+        const { data: tenantPlan } = await sb.from('tenants').select('plan, trial_expires_at, roster_limit').eq('id', tenant.id).maybeSingle();
         if (tenantPlan?.plan === 'trial') {
             // Check trial expiration
             if (tenantPlan.trial_expires_at && new Date(tenantPlan.trial_expires_at) < new Date()) {
@@ -416,15 +576,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const promptLang = (['es', 'en', 'pt'].includes(lang) ? lang : 'es') as string;
 
         // ── Fetch tenant's players for context ────────────────────────────
-        // Mejora 2: fetch ai_sections for full report injection when player is mentioned
-        const { data: sessions } = await sb
-            .from('sessions')
-            .select('child_name, child_age, sport, eje, motor, eje_secundario, archetype_label, ai_sections')
-            .eq('tenant_id', tenant.id)
-            .is('deleted_at', null)
-            .not('eje', 'eq', '_pending')
-            .order('created_at', { ascending: false })
-            .limit(50);
+        // Use roster_limit from tenant (capped at 1000) instead of hardcoded 50,
+        // so Academy (100) and Enterprise (500+) see their full team in context.
+        // ai_sections is intentionally excluded here — it's a heavy JSONB blob
+        // and we only need it when a specific player is mentioned (re-fetched below).
+        const sessionLimit = Math.min(Math.max(tenantPlan?.roster_limit ?? 50, 50), 1000);
+        const [{ data: sessions }, { data: groupsData }] = await Promise.all([
+            sb.from('sessions')
+                .select('id, child_name, child_age, sport, eje, motor, eje_secundario, archetype_label')
+                .eq('tenant_id', tenant.id)
+                .is('deleted_at', null)
+                .not('eje', 'eq', '_pending')
+                .order('created_at', { ascending: false })
+                .limit(sessionLimit),
+            sb.from('groups')
+                .select('id, name, group_members(session_id)')
+                .eq('tenant_id', tenant.id)
+                .is('deleted_at', null),
+        ]);
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
@@ -512,8 +681,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
-            // Mejora 2: inject full AI-generated report if available
-            const ai = mp.ai_sections as Record<string, unknown> | null;
+            // Re-fetch ai_sections on-demand only for the mentioned player.
+            // Keeps the bulk sessions query light even for large rosters.
+            const { data: reportRow } = await sb
+                .from('sessions')
+                .select('ai_sections')
+                .eq('id', mp.id)
+                .maybeSingle();
+            const ai = reportRow?.ai_sections as Record<string, unknown> | null;
             let aiContext = '';
             if (ai) {
                 const parts: string[] = [];
@@ -534,12 +709,61 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${playerListForPrompt || 'ninguno'}.`;
         }
 
-        // Situation keyword injection
+        // ── Group mention detection + balance injection ────────────────────
+        // If the coach's message names a group (e.g. "Sub-14", "Mi grupo A"),
+        // compute its axis/motor distribution and inject the deterministic
+        // group profile text from GROUP_TYPE_TEXTS. This gives the AI a real
+        // picture of the group composition instead of guessing.
+        type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ session_id: string }> | null };
+        const groups = (groupsData ?? []) as GroupRowWithMembers[];
+        const playersById = new Map<string, typeof allPlayers[number]>();
+        for (const p of allPlayers) playersById.set(p.id, p);
+        const mentionedGroup = groups.find(g => {
+            const n = g.name?.trim();
+            if (!n || n.length < 2) return false;
+            return msgLower.includes(n.toLowerCase());
+        });
+        let groupDominantAxis: string | null = null;
+        if (mentionedGroup) {
+            const memberIds = (mentionedGroup.group_members ?? []).map(m => m.session_id);
+            const groupMembers = memberIds
+                .map(id => playersById.get(id))
+                .filter((p): p is typeof allPlayers[number] => !!p);
+            if (groupMembers.length > 0) {
+                const axisDist = computeAxisDistribution(groupMembers);
+                const motorDist = computeMotorDistribution(groupMembers);
+                const groupTypes = detectGroupTypes(axisDist);
+                const primaryType = groupTypes[0];
+                const typeText = GROUP_TYPE_TEXTS[primaryType];
+                // Pick the dominant axis (highest %) to bias situation card selection later.
+                const sortedAxes = Object.entries(axisDist).sort((a, b) => b[1] - a[1]);
+                groupDominantAxis = sortedAxes[0]?.[0] ?? null;
+                const distText = `D ${axisDist.D}% · I ${axisDist.I}% · S ${axisDist.S}% · C ${axisDist.C}%`;
+                const motorText = `Rápido ${motorDist.Rápido}% · Medio ${motorDist.Medio}% · Lento ${motorDist.Lento}%`;
+                extraContext += `\n\nGRUPO MENCIONADO: "${mentionedGroup.name}" (${groupMembers.length} jugadores)\n- Distribución por eje: ${distText}\n- Motores: ${motorText}\n- Perfil grupal: ${primaryType}${groupTypes.length > 1 ? ` (+${groupTypes.slice(1).join(', ')})` : ''}\n- ${typeText.identity}\n- Herramientas: ${typeText.tools.join(' ')}`;
+            }
+        }
+
+        // ── Situation card injection ────────────────────────────────────────
+        // Detect a situation by keyword match. When matched, inject the curated
+        // card content from SITUATION_CARDS_DATA instead of just a [Situación: "x"] tag.
+        // Priority for which eje to use: mentioned player → mentioned group dominant axis → all 4.
         for (const [sitId, keywords] of Object.entries(SITUATION_KEYWORDS)) {
-            if (keywords.some(k => msgLower.includes(k.toLowerCase()))) {
+            if (!keywords.some(k => msgLower.includes(k.toLowerCase()))) continue;
+            const cards = SITUATION_CARDS_DATA[sitId];
+            if (!cards) {
                 extraContext += `\n\n[Situación: "${sitId}"]`;
                 break;
             }
+            const targetEje = mentionedPlayer?.session.eje ?? groupDominantAxis ?? null;
+            if (targetEje && cards[targetEje]) {
+                extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}):\n${cards[targetEje]}`;
+            } else {
+                // No player/group context → give all 4 perspectives compactly.
+                const all = Object.entries(cards).map(([eje, text]) => `- ${eje}: ${text}`).join('\n');
+                extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}):\n${all}`;
+            }
+            break;
         }
 
         // ── OPT 1 + 3: Build conversation history (8 max, summarize older) ──
