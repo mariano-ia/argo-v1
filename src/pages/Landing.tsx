@@ -953,6 +953,16 @@ const PricingSection: React.FC<{
                         </div>
                     )}
                     {oneError && <p style={{ fontSize: '12px', color: '#DC2626', marginTop: '8px' }}>{oneError}</p>}
+                    <p style={{ fontSize: '12px', color: '#86868B', marginTop: '12px', textAlign: 'center' }}>
+                        {L(
+                            '¿Desde Argentina? ',
+                            'From Argentina? ',
+                            'Da Argentina? ',
+                        )}
+                        <a href="/one" style={{ color: '#955FB5', fontWeight: 500, textDecoration: 'none' }}>
+                            {L('Ver precios en pesos', 'See prices in ARS', 'Ver preços em pesos')}
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

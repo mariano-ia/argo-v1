@@ -18,6 +18,13 @@ const PACKS: Record<number, { usd_cents: number; label_es: string; label_en: str
     5: { usd_cents: 4999, label_es: 'Argo One — 5 informes', label_en: 'Argo One — 5 reports' },
 };
 
+// Fixed ARS prices for Argentina (instead of dynamic USD conversion)
+const ARS_PACKS: Record<number, number> = {
+    1: 9999,    // $9.999 ARS
+    3: 24999,   // $24.999 ARS ($8.333 per report)
+    5: 34999,   // $34.999 ARS ($7.000 per report)
+};
+
 // Countries that use MercadoPago (local currency)
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
@@ -167,11 +174,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let arsAmount = 0;
 
         if (provider === 'mercadopago') {
-            const arsRate = await getArsRate();
-            arsAmount = usdCentsToArs(pack.usd_cents, arsRate);
+            if (country === 'AR' && ARS_PACKS[pack_size]) {
+                // Fixed ARS price for Argentina
+                arsAmount = ARS_PACKS[pack_size];
+                console.info(`[one-checkout] AR fixed price: pack ${pack_size} = $${arsAmount} ARS`);
+            } else {
+                // Dynamic conversion for other Latam countries
+                const arsRate = await getArsRate();
+                arsAmount = usdCentsToArs(pack.usd_cents, arsRate);
+                console.info(`[one-checkout] ARS conversion: $${pack.usd_cents / 100} USD x ${arsRate} = $${arsAmount} ARS`);
+            }
             amountCents = arsAmount * 100; // store in cents for DB consistency
             currency = 'ars';
-            console.info(`[one-checkout] ARS conversion: $${pack.usd_cents / 100} USD x ${arsRate} = $${arsAmount} ARS`);
         } else {
             amountCents = pack.usd_cents;
             currency = 'usd';
