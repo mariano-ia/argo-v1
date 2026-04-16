@@ -659,8 +659,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .map(s => nameToPlaceholder.get(s.child_name.trim().split(/\s+/)[0].toLowerCase()))
             .filter(Boolean)
             .join(', ');
+        // Team-level group awareness: list all groups so Gemini can ask for
+        // clarification when the keyword matcher below doesn't fire.
+        type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ session_id: string }> | null };
+        const groups = (groupsData ?? []) as GroupRowWithMembers[];
+        const groupsList = groups.length > 0
+            ? `\nGrupos del equipo: ${groups.map(g => `"${g.name}" (${(g.group_members ?? []).length})`).join(', ')}.`
+            : '';
         const teamSummary = allPlayers.length > 0
-            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.`
+            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.${groupsList}`
             : '\n\nEl entrenador todavía no tiene jugadores registrados.';
 
         // ── Context injection based on message content ──────────────────
@@ -710,38 +717,97 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // ── Group mention detection + balance injection ────────────────────
-        // If the coach's message names a group (e.g. "Sub-14", "Mi grupo A"),
-        // compute its axis/motor distribution and inject the deterministic
-        // group profile text from GROUP_TYPE_TEXTS. This gives the AI a real
-        // picture of the group composition instead of guessing.
-        type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ session_id: string }> | null };
-        const groups = (groupsData ?? []) as GroupRowWithMembers[];
+        // Classification:
+        //   - STRONG match: min 3 chars + word-boundary AND either the name
+        //     contains a digit/hyphen (distinctive) OR a trigger word like
+        //     "grupo" / "equipo" / "plantel" appears within ~30 chars of the
+        //     name (proximity check, not global). This avoids false positives
+        //     like "el cielo está azul" matching a group called "Azul".
+        //   - WEAK match: word-boundary hit only. These are not injected but
+        //     the team summary lists all groups, so Gemini can ask for
+        //     clarification if the context suggests a real reference.
+        // Outcomes:
+        //   - 1 strong match → full injection (composition + profile text).
+        //   - 2+ strong matches → compact list of all + instruction to Gemini
+        //     to ask the coach which one before giving specific data.
+        //   - 0 strong matches → no injection; Gemini sees the global list.
         const playersById = new Map<string, typeof allPlayers[number]>();
         for (const p of allPlayers) playersById.set(p.id, p);
-        const mentionedGroup = groups.find(g => {
+        const escapeRegex2 = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const isDistinctiveGroupName = (n: string) => /\d/.test(n) || /-/.test(n);
+        const TRIGGER_WORDS = 'grupo|grupos|equipo|equipos|categor[íi]a|plantel|cuadro';
+        const hasProximityTrigger = (msg: string, name: string): boolean => {
+            const escaped = escapeRegex2(name);
+            // Trigger word within ~30 non-period chars before OR after the name.
+            const before = new RegExp(`\\b(?:${TRIGGER_WORDS})\\b[^.]{0,30}?\\b${escaped}\\b`, 'i');
+            const after = new RegExp(`\\b${escaped}\\b[^.]{0,30}?\\b(?:${TRIGGER_WORDS})\\b`, 'i');
+            return before.test(msg) || after.test(msg);
+        };
+        const strongGroupMatches: GroupRowWithMembers[] = [];
+        const weakGroupMatches: GroupRowWithMembers[] = [];
+        for (const g of groups) {
             const n = g.name?.trim();
-            if (!n || n.length < 2) return false;
-            return msgLower.includes(n.toLowerCase());
-        });
-        let groupDominantAxis: string | null = null;
-        if (mentionedGroup) {
-            const memberIds = (mentionedGroup.group_members ?? []).map(m => m.session_id);
+            if (!n || n.length < 3) continue;
+            const pattern = new RegExp(`\\b${escapeRegex2(n)}\\b`, 'i');
+            if (!pattern.test(trimmedMsg)) continue;
+            if (isDistinctiveGroupName(n) || hasProximityTrigger(trimmedMsg, n)) {
+                strongGroupMatches.push(g);
+            } else {
+                weakGroupMatches.push(g);
+            }
+        }
+        const buildGroupStats = (g: GroupRowWithMembers) => {
+            const memberIds = (g.group_members ?? []).map(m => m.session_id);
             const groupMembers = memberIds
                 .map(id => playersById.get(id))
                 .filter((p): p is typeof allPlayers[number] => !!p);
-            if (groupMembers.length > 0) {
-                const axisDist = computeAxisDistribution(groupMembers);
-                const motorDist = computeMotorDistribution(groupMembers);
-                const groupTypes = detectGroupTypes(axisDist);
-                const primaryType = groupTypes[0];
+            if (groupMembers.length === 0) return null;
+            const axisDist = computeAxisDistribution(groupMembers);
+            const motorDist = computeMotorDistribution(groupMembers);
+            const groupTypes = detectGroupTypes(axisDist);
+            const sortedAxes = Object.entries(axisDist).sort((a, b) => b[1] - a[1]);
+            return {
+                count: groupMembers.length,
+                axisDist,
+                motorDist,
+                groupTypes,
+                dominantAxis: sortedAxes[0]?.[0] ?? null,
+            };
+        };
+        let groupDominantAxis: string | null = null;
+        if (strongGroupMatches.length === 1) {
+            const mentionedGroup = strongGroupMatches[0];
+            const stats = buildGroupStats(mentionedGroup);
+            if (stats) {
+                const primaryType = stats.groupTypes[0];
                 const typeText = GROUP_TYPE_TEXTS[primaryType];
-                // Pick the dominant axis (highest %) to bias situation card selection later.
-                const sortedAxes = Object.entries(axisDist).sort((a, b) => b[1] - a[1]);
-                groupDominantAxis = sortedAxes[0]?.[0] ?? null;
-                const distText = `D ${axisDist.D}% · I ${axisDist.I}% · S ${axisDist.S}% · C ${axisDist.C}%`;
-                const motorText = `Rápido ${motorDist.Rápido}% · Medio ${motorDist.Medio}% · Lento ${motorDist.Lento}%`;
-                extraContext += `\n\nGRUPO MENCIONADO: "${mentionedGroup.name}" (${groupMembers.length} jugadores)\n- Distribución por eje: ${distText}\n- Motores: ${motorText}\n- Perfil grupal: ${primaryType}${groupTypes.length > 1 ? ` (+${groupTypes.slice(1).join(', ')})` : ''}\n- ${typeText.identity}\n- Herramientas: ${typeText.tools.join(' ')}`;
+                groupDominantAxis = stats.dominantAxis;
+                const distText = `D ${stats.axisDist.D}% · I ${stats.axisDist.I}% · S ${stats.axisDist.S}% · C ${stats.axisDist.C}%`;
+                const motorText = `Rápido ${stats.motorDist.Rápido}% · Medio ${stats.motorDist.Medio}% · Lento ${stats.motorDist.Lento}%`;
+                extraContext += `\n\nGRUPO MENCIONADO: "${mentionedGroup.name}" (${stats.count} jugadores)\n- Distribución por eje: ${distText}\n- Motores: ${motorText}\n- Perfil grupal: ${primaryType}${stats.groupTypes.length > 1 ? ` (+${stats.groupTypes.slice(1).join(', ')})` : ''}\n- ${typeText.identity}\n- Herramientas: ${typeText.tools.join(' ')}`;
             }
+        } else if (strongGroupMatches.length >= 2) {
+            // Multiple strong matches → give Gemini compact stats for each
+            // and tell it to ask the coach if the intent is unclear.
+            const lines: string[] = [];
+            for (const g of strongGroupMatches) {
+                const stats = buildGroupStats(g);
+                if (!stats) {
+                    lines.push(`- "${g.name}": sin jugadores asignados todavía`);
+                    continue;
+                }
+                const distText = `D ${stats.axisDist.D}% · I ${stats.axisDist.I}% · S ${stats.axisDist.S}% · C ${stats.axisDist.C}%`;
+                lines.push(`- "${g.name}" (${stats.count} jug., perfil ${stats.groupTypes[0]}, ${distText})`);
+            }
+            extraContext += `\n\nGRUPOS MENCIONADOS (varios en el mismo mensaje):\n${lines.join('\n')}\n\nCLARIFICACIÓN: el entrenador mencionó más de un grupo. Si su pregunta requiere datos específicos de un solo grupo, pregúntale explícitamente a cuál se refiere antes de responder (ej: "¿Te refieres a ${strongGroupMatches[0].name} o a ${strongGroupMatches[1].name}?"). Si el mensaje deja claro que quiere comparar o hablar de todos, responde directamente usando los datos de arriba.`;
+        } else if (weakGroupMatches.length >= 2) {
+            // 2+ weak matches: the message contains multiple group names but
+            // none with a proximity trigger. The coincidence of having two
+            // different group names in the same message suggests real intent,
+            // but we can't be sure. Tell Gemini to confirm before answering
+            // with specific group data.
+            const names = weakGroupMatches.map(g => `"${g.name}"`).join(', ');
+            extraContext += `\n\nPOSIBLE REFERENCIA A GRUPOS: el mensaje contiene los nombres de varios grupos del tenant (${names}) pero sin contexto claro ("grupo", "equipo", etc.). Puede ser una mención real o una coincidencia de palabras. Antes de dar una respuesta con datos específicos de alguno de ellos, pregúntale al entrenador si se está refiriendo a esos grupos y a cuál (ej: "¿Estás hablando del grupo ${weakGroupMatches[0].name}?"). Si la conversación sugiere que no, ignora esos nombres y responde normalmente.`;
         }
 
         // ── Situation card injection ────────────────────────────────────────
