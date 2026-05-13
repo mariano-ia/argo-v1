@@ -61,6 +61,8 @@ const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').the
 const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
 const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
 const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({ default: m.TestTormenta })));
+const PuentesFlow       = lazy(() => import('./pages/PuentesFlow'));
+const PuentesCheckout   = lazy(() => import('./pages/PuentesCheckout'));
 
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
@@ -230,6 +232,8 @@ function App() {
             <Route path="/one"        element={<ArgoOneLanding />} />
             <Route path="/one/:slug"  element={<OnePlay />} />
             <Route path="/one/panel"  element={<OnePanel />} />
+            <Route path="/puentes/checkout" element={<PuentesCheckout />} />
+            <Route path="/puentes/:token"   element={<PuentesFlow />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
                 <Route path="/consent/:token" element={<ConsentLanding />} />

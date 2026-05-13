@@ -111,6 +111,64 @@ function buildHtml(params: {
     };
     const c = copy[langAttr] ?? copy.es;
 
+    // Argo Puentes upsell CTA (shown only when we have a sessionId so the
+    // user can be tied back to their source child session).
+    const puentesCheckoutUrl = params.sessionId
+        ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${langAttr}`
+        : `${baseUrl}/puentes/checkout`;
+
+    const puentesCopy = {
+        es: {
+            eyebrow: 'Paso opcional · Argo Puentes',
+            title: `Descubre cómo te vinculas con ${params.nombreNino}`,
+            body: `Argo Puentes es un cuestionario corto (5 a 7 minutos) que revela tu propio estilo y propone 4 puentes para profundizar el vínculo con ${params.nombreNino} en el deporte. No es terapia. Es una invitación.`,
+            cta: 'Conocer Argo Puentes',
+            price: 'USD 9.99 / ARS 6.999',
+        },
+        en: {
+            eyebrow: 'Optional · Argo Puentes',
+            title: `Discover how you connect with ${params.nombreNino}`,
+            body: `Argo Puentes is a short questionnaire (5 to 7 min) that reveals your own style and proposes 4 bridges to deepen your bond with ${params.nombreNino} in sport. Not therapy. An invitation.`,
+            cta: 'Explore Argo Puentes',
+            price: 'USD 9.99',
+        },
+        pt: {
+            eyebrow: 'Opcional · Argo Puentes',
+            title: `Descubra como você se conecta com ${params.nombreNino}`,
+            body: `Argo Puentes é um questionário curto (5 a 7 min) que revela seu próprio estilo e propõe 4 pontes para aprofundar o vínculo com ${params.nombreNino} no esporte. Não é terapia. É um convite.`,
+            cta: 'Explorar Argo Puentes',
+            price: 'USD 9.99 / ARS 6.999',
+        },
+    };
+    const pc = puentesCopy[langAttr] ?? puentesCopy.es;
+
+    const puentesWidget = params.sessionId ? `
+  <!-- SEPARATOR -->
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
+
+  <!-- ARGO PUENTES UPSELL -->
+  <tr>
+    <td style="padding:24px 28px 8px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border-radius:14px;border-left:4px solid ${violet};">
+        <tr><td style="padding:22px 24px;">
+          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${pc.eyebrow}</p>
+          <h3 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;">${pc.title}</h3>
+          <p style="margin:0 0 18px;font-size:13px;color:#424245;line-height:1.6;">${pc.body}</p>
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="vertical-align:middle;">
+                <a href="${puentesCheckoutUrl}" style="display:inline-block;background:${violet};color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 22px;border-radius:10px;box-shadow:0 2px 8px ${violetShadow};">${pc.cta}</a>
+              </td>
+              <td style="vertical-align:middle;padding-left:14px;">
+                <span style="font-size:13px;color:#86868B;font-weight:500;">${pc.price}</span>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </td>
+  </tr>` : '';
+
     const reviewWidget = params.sessionId ? `
   <!-- SEPARATOR -->
   <tr><td style="padding:28px 28px 0;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
@@ -267,6 +325,7 @@ function buildHtml(params: {
 
     </td>
   </tr>
+  ${puentesWidget}
   ${reviewWidget}
 
   <!-- FOOTER -->

@@ -198,6 +198,123 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
     });
 }
 
+/* ── Argo Puentes helpers ────────────────────────────────────────────────── */
+
+async function sendPuentesMagicEmail(args: {
+    to: string;
+    recipientName: string | null;
+    childName: string | null;
+    magicLink: string;
+    lang: string;
+}): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) { console.warn('[one-webhook] Missing RESEND_API_KEY, skipping puentes email'); return; }
+
+    const violet = '#955FB5';
+    const child = args.childName || (args.lang === 'en' ? 'your child' : args.lang === 'pt' ? 'seu filho' : 'tu hijo');
+    const subject = args.lang === 'en'
+        ? `Your Argo Puentes is ready — bond with ${child}`
+        : args.lang === 'pt'
+            ? `Seu Argo Puentes está pronto — vínculo com ${child}`
+            : `Tu Argo Puentes está listo — vínculo con ${child}`;
+
+    const t = args.lang === 'en' ? {
+        headline: 'Your Argo Puentes is ready',
+        body: `You will answer 15 short questions (5 to 7 minutes) about your own style. We will then generate a personalized report with 4 bridges to deepen your bond with ${child} in sport.`,
+        cta: 'Start the questionnaire',
+        note: 'This link is personal and non-transferable. Save it to come back later.',
+    } : args.lang === 'pt' ? {
+        headline: 'Seu Argo Puentes está pronto',
+        body: `Você responderá 15 perguntas curtas (5 a 7 minutos) sobre seu próprio estilo. Em seguida geramos um relatório personalizado com 4 pontes para aprofundar o vínculo com ${child} no esporte.`,
+        cta: 'Começar o questionário',
+        note: 'Este link é pessoal e intransferível. Guarde-o para voltar depois.',
+    } : {
+        headline: 'Tu Argo Puentes está listo',
+        body: `Vas a responder 15 preguntas cortas (5 a 7 minutos) sobre tu propio estilo. Después generamos un informe personalizado con 4 puentes para profundizar el vínculo con ${child} en el deporte.`,
+        cta: 'Empezar el cuestionario',
+        note: 'Este link es personal e intransferible. Guárdalo para volver más tarde.',
+    };
+
+    const html = `<!DOCTYPE html><html lang="${args.lang}"><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+<tr><td style="background:#1D1D1F;padding:28px;">
+<span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTES</span>
+<p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${t.headline}</p>
+</td></tr>
+<tr><td style="padding:28px;">
+<p style="margin:0 0 22px;font-size:14px;color:#424245;line-height:1.7;">${t.body}</p>
+<div style="text-align:center;">
+<a href="${args.magicLink}" style="display:inline-block;background:${violet};color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.cta}</a>
+</div>
+<p style="margin:20px 0 0;font-size:11px;color:#AEAEB2;text-align:center;line-height:1.6;">${t.note}</p>
+</td></tr>
+<tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
+<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Carta de Navegación</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [args.to],
+            subject,
+            html,
+        }),
+    });
+}
+
+async function handlePuentesPaid(args: {
+    sb: ReturnType<typeof createClient<any, any>>;
+    purchaseId: string;
+    providerPaymentId: string;
+}): Promise<void> {
+    const { sb, purchaseId, providerPaymentId } = args;
+    const { data: purchase, error } = await sb
+        .from('puentes_purchases')
+        .select('*')
+        .eq('id', purchaseId)
+        .maybeSingle();
+    if (error || !purchase) {
+        console.error('[one-webhook] puentes purchase not found:', error?.message, purchaseId);
+        return;
+    }
+    if (purchase.status === 'paid') {
+        console.info('[one-webhook] puentes purchase already paid:', purchaseId);
+        return;
+    }
+
+    await sb.from('puentes_purchases').update({
+        status: 'paid',
+        paid_at: new Date().toISOString(),
+        provider_payment_id: providerPaymentId,
+    }).eq('id', purchaseId);
+
+    // Create the puentes_session shell so the adult can start
+    await sb.from('puentes_sessions').insert({
+        purchase_id: purchase.id,
+        source_session_id: purchase.source_session_id,
+        lang: purchase.lang,
+        status: 'created',
+    });
+
+    // Send the magic-link email
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
+    const magicLink = `${origin}/puentes/${purchase.magic_token}`;
+    await sendPuentesMagicEmail({
+        to: purchase.recipient_email,
+        recipientName: purchase.recipient_name,
+        childName: purchase.child_name,
+        magicLink,
+        lang: purchase.lang,
+    });
+
+    console.info(`[one-webhook] puentes purchase paid: ${purchaseId}`);
+}
+
 /* ── Main handler ────────────────────────────────────────────────────────── */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -295,6 +412,14 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     if (source === 'argo_subscription') {
         const subId = typeof session.subscription === 'string' ? session.subscription : undefined;
         return handleSubscription({ id: session.id, metadata: session.metadata ?? {}, subscription: subId, customer_email: session.customer_email ?? undefined }, 'stripe', res, sb);
+    }
+
+    // Argo Puentes payment
+    if (source === 'argo_puentes') {
+        const puentesPurchaseId = session.metadata?.purchase_id;
+        if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase_id' });
+        await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: session.id });
+        return res.status(200).json({ received: true, kind: 'puentes', purchase_id: puentesPurchaseId });
     }
 
     // Argo One payment
@@ -417,7 +542,18 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         return res.status(200).json({ received: true, status: payment.status });
     }
 
-    const purchaseId = payment.external_reference || payment.metadata?.purchase_id;
+    // Argo Puentes: external_reference prefixed with "puentes_"
+    const externalRef = payment.external_reference as string | undefined;
+    const isPuentes = payment.metadata?.source === 'argo_puentes' || externalRef?.startsWith('puentes_');
+    if (isPuentes) {
+        const puentesPurchaseId = (payment.metadata?.purchase_id as string)
+            || (externalRef?.startsWith('puentes_') ? externalRef.slice('puentes_'.length) : undefined);
+        if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase id' });
+        await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: String(resourceId) });
+        return res.status(200).json({ received: true, kind: 'puentes', purchase_id: puentesPurchaseId });
+    }
+
+    const purchaseId = externalRef || payment.metadata?.purchase_id;
     if (!purchaseId) return res.status(200).json({ received: true, ignored: true });
 
     const { data: existing } = await sb
