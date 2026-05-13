@@ -301,8 +301,12 @@ async function handlePuentesPaid(args: {
         status: 'created',
     });
 
-    // Send the magic-link email
-    const origin = process.env.SITE_URL || 'https://argomethod.com';
+    // Send the magic-link email. Use the preview's own URL when running on
+    // a Vercel preview deployment so the magic link lands on the preview
+    // host that has the /puentes routes (production may not have them yet).
+    const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.SITE_URL || 'https://argomethod.com');
     const magicLink = `${origin}/puentes/${purchase.magic_token}`;
     await sendPuentesMagicEmail({
         to: purchase.recipient_email,

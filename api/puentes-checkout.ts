@@ -64,7 +64,12 @@ async function createStripeCheckout(args: {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
 
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
+    // On Vercel previews, success/cancel URLs must redirect back to the
+    // preview deploy (which is the only place puentes routes exist outside
+    // of production). In production, use the public argomethod.com domain.
+    const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
         ? `Argo Puentes — bond with ${args.childName}`
         : args.lang === 'pt'
@@ -114,7 +119,10 @@ async function createMpCheckout(args: {
     const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!mpToken) throw new Error('Missing MERCADOPAGO_ACCESS_TOKEN');
 
-    const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
+    // Same preview-aware origin logic as the Stripe checkout.
+    const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
         ? `Argo Puentes — bond with ${args.childName}`
         : args.lang === 'pt'

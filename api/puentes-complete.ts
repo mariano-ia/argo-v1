@@ -134,8 +134,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Could not save answers' });
         }
 
-        // Trigger AI generation (synchronous so we know if it succeeded)
-        const origin = process.env.SITE_URL || 'https://argomethod.com';
+        // Internal endpoint calls must hit the SAME deployment running this
+        // function. On Vercel, VERCEL_URL is the unique deploy URL (preview
+        // or production). Falling back to SITE_URL is wrong for previews
+        // because SITE_URL points at argomethod.com and previews don't have
+        // production code yet.
+        const origin = process.env.VERCEL_URL
+            ? `https://${process.env.VERCEL_URL}`
+            : (process.env.SITE_URL || 'https://argomethod.com');
         const genRes = await fetch(`${origin}/api/generate-puentes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
