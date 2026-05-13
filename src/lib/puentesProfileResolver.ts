@@ -61,5 +61,6 @@ export function resolveAdultProfile(answers: PuentesAnswer[], lang: Lang): Adult
         pressure_style,
         history: (contextValues.history ?? 'none') as AdultHistory,
         dominant_emotion: (contextValues.dominant_emotion ?? 'mezcla') as AdultDominantEmotion,
+        axis_counts: { ...axisCounts },
     };
 }

@@ -19,6 +19,10 @@ export interface AdultProfile {
     pressure_style: AdultPressureStyle;
     history: AdultHistory;
     dominant_emotion: AdultDominantEmotion;
+    // Raw counts from the 8 DISC questions, used for the brújula axis bars.
+    // Optional for backwards compatibility with sessions resolved before this
+    // field existed.
+    axis_counts?: Record<AdultAxis, number>;
 }
 
 export interface PuentesAnswer {

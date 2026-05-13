@@ -8,7 +8,14 @@ import { PuentesGenerating } from '../components/puentes/PuentesGenerating';
 import { PuentesReport } from '../components/puentes/PuentesReport';
 import { getPuentesQuestions } from '../lib/puentesQuestions';
 import { getPuentesCopy } from '../lib/puentesTranslations';
-import type { Lang, PuentesAnswer, PuentesAiSections } from '../types/puentes';
+import type { AdultProfile, Lang, PuentesAnswer, PuentesAiSections } from '../types/puentes';
+
+interface ChildProfileSnapshot {
+    eje: string;
+    motor: string;
+    archetype_label: string;
+    sport: string;
+}
 
 type Stage = 'loading' | 'intro' | 'question' | 'generating' | 'report' | 'error' | 'pending_payment';
 
@@ -21,6 +28,9 @@ export default function PuentesFlow() {
     const [answers, setAnswers] = useState<PuentesAnswer[]>([]);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [aiSections, setAiSections] = useState<PuentesAiSections | null>(null);
+    const [adultProfile, setAdultProfile] = useState<AdultProfile | null>(null);
+    const [childProfile, setChildProfile] = useState<ChildProfileSnapshot | null>(null);
+    const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
@@ -49,6 +59,9 @@ export default function PuentesFlow() {
                 setPuentesSessionId(data.puentes_session_id);
                 setChildName(data.child_name || '');
                 setLang(data.lang || 'es');
+                if (data.adult_profile) setAdultProfile(data.adult_profile);
+                if (data.child_profile) setChildProfile(data.child_profile);
+                if (data.recipient_email) setRecipientEmail(data.recipient_email);
                 if (data.already_generated && data.ai_sections) {
                     setAiSections(data.ai_sections);
                     setStage('report');
@@ -94,6 +107,9 @@ export default function PuentesFlow() {
                 body: JSON.stringify({ magic_token: token }),
             });
             const data = await refresh.json();
+            if (data.adult_profile) setAdultProfile(data.adult_profile);
+            if (data.child_profile) setChildProfile(data.child_profile);
+            if (data.recipient_email) setRecipientEmail(data.recipient_email);
             if (data.ai_sections) {
                 setAiSections(data.ai_sections);
                 setStage('report');
@@ -139,7 +155,13 @@ export default function PuentesFlow() {
             )}
             {stage === 'generating' && <PuentesGenerating lang={lang} />}
             {stage === 'report' && aiSections && (
-                <PuentesReport aiSections={aiSections} lang={lang} />
+                <PuentesReport
+                    aiSections={aiSections}
+                    lang={lang}
+                    adultProfile={adultProfile}
+                    childProfile={childProfile}
+                    recipientEmail={recipientEmail}
+                />
             )}
         </div>
     );

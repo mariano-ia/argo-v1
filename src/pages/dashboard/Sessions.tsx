@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
-import { Search, Download, Trash2, Send, Loader2, Unlock } from 'lucide-react';
+import { Search, Download, Trash2, Send, Loader2, Unlock, HeartHandshake, Check, ShoppingBag } from 'lucide-react';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CHIP } from '../../lib/designTokens';
@@ -29,6 +29,9 @@ interface UnifiedRow {
     lang?: string | null;
     archetype_label?: string;
     ai_cost_usd?: number;
+    // Puentes upsell state, populated per row
+    puentes_state?: 'none' | 'invite_sent' | 'purchased';
+    puentes_invite_at?: string | null;
 }
 
 // Raw Supabase shapes
@@ -47,6 +50,12 @@ interface SessionRow {
     archetype_label: string;
     ai_cost_usd: number;
     tenant_id: string | null;
+    puentes_reminder_sent_at: string | null;
+}
+
+interface PuentesPurchaseLite {
+    source_session_id: string;
+    status: 'pending' | 'paid' | 'failed' | 'refunded';
 }
 
 interface LeadRow {
@@ -56,26 +65,37 @@ interface LeadRow {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function mergeRows(sessions: SessionRow[], leads: LeadRow[]): UnifiedRow[] {
+function mergeRows(sessions: SessionRow[], leads: LeadRow[], puentesPurchases: PuentesPurchaseLite[]): UnifiedRow[] {
     const sessionEmails = new Set(sessions.map(s => s.adult_email?.toLowerCase()));
+    const paidSet = new Set(puentesPurchases.filter(p => p.status === 'paid').map(p => p.source_session_id));
 
-    const completedRows: UnifiedRow[] = sessions.map(s => ({
-        id: s.id,
-        created_at: s.created_at,
-        email: s.adult_email,
-        status: 'completed',
-        tenant_id: s.tenant_id,
-        adult_name: s.adult_name,
-        child_name: s.child_name,
-        child_age: s.child_age,
-        sport: s.sport,
-        eje: s.eje,
-        motor: s.motor,
-        eje_secundario: s.eje_secundario,
-        lang: s.lang,
-        archetype_label: s.archetype_label,
-        ai_cost_usd: s.ai_cost_usd,
-    }));
+    const completedRows: UnifiedRow[] = sessions.map(s => {
+        const purchased = paidSet.has(s.id);
+        const puentesState: UnifiedRow['puentes_state'] = purchased
+            ? 'purchased'
+            : s.puentes_reminder_sent_at
+                ? 'invite_sent'
+                : 'none';
+        return {
+            id: s.id,
+            created_at: s.created_at,
+            email: s.adult_email,
+            status: 'completed',
+            tenant_id: s.tenant_id,
+            adult_name: s.adult_name,
+            child_name: s.child_name,
+            child_age: s.child_age,
+            sport: s.sport,
+            eje: s.eje,
+            motor: s.motor,
+            eje_secundario: s.eje_secundario,
+            lang: s.lang,
+            archetype_label: s.archetype_label,
+            ai_cost_usd: s.ai_cost_usd,
+            puentes_state: puentesState,
+            puentes_invite_at: s.puentes_reminder_sent_at,
+        };
+    });
 
     const registeredRows: UnifiedRow[] = leads
         .filter(l => !sessionEmails.has(l.email?.toLowerCase()))
@@ -102,6 +122,8 @@ export const Sessions: React.FC = () => {
     const [resendMsg, setResendMsg] = useState<{ ok: boolean } | null>(null);
     const [grantingId, setGrantingId] = useState<string | null>(null);
     const [grantMsg, setGrantMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
+    const [puentesInviteId, setPuentesInviteId] = useState<string | null>(null);
+    const [puentesInviteMsg, setPuentesInviteMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
     const PAGE_SIZE = 20;
 
     const [tenantMap, setTenantMap] = useState<Record<string, string>>({});
@@ -111,10 +133,10 @@ export const Sessions: React.FC = () => {
     useEffect(() => {
         const load = async () => {
             setLoading(true);
-            const [{ data: sessions }, { data: leads }, { data: tenants }] = await Promise.all([
+            const [{ data: sessions }, { data: leads }, { data: tenants }, { data: puentes }] = await Promise.all([
                 supabase
                     .from('sessions')
-                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id')
+                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id,puentes_reminder_sent_at')
                     .is('deleted_at', null)
                     .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false }),
@@ -126,6 +148,9 @@ export const Sessions: React.FC = () => {
                     .from('tenants')
                     .select('id,display_name')
                     .order('display_name'),
+                supabase
+                    .from('puentes_purchases')
+                    .select('source_session_id,status'),
             ]);
 
             // Build tenant name lookup
@@ -138,7 +163,7 @@ export const Sessions: React.FC = () => {
             setTenantMap(tMap);
             setTenantList(tList);
 
-            setRows(mergeRows(sessions ?? [], leads ?? []));
+            setRows(mergeRows(sessions ?? [], leads ?? [], puentes ?? []));
             setLoading(false);
         };
         load();
@@ -226,6 +251,38 @@ export const Sessions: React.FC = () => {
         }
     };
 
+    const handleSendPuentesInvite = async (row: UnifiedRow) => {
+        if (row.status !== 'completed' || row.puentes_state !== 'none') return;
+        setPuentesInviteId(row.id);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                setPuentesInviteMsg({ ok: false, detail: 'Not authenticated' });
+                return;
+            }
+            const res = await fetch('/api/admin-send-puentes-invite', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: row.id }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setPuentesInviteMsg({ ok: true });
+                // Reflect the new state locally without refetching everything
+                setRows(prev => prev.map(r => r.id === row.id
+                    ? { ...r, puentes_state: 'invite_sent', puentes_invite_at: data.sent_at ?? new Date().toISOString() }
+                    : r));
+            } else {
+                setPuentesInviteMsg({ ok: false, detail: data.error || 'Error' });
+            }
+        } catch (e) {
+            setPuentesInviteMsg({ ok: false, detail: String(e) });
+        } finally {
+            setPuentesInviteId(null);
+            setTimeout(() => setPuentesInviteMsg(null), 3000);
+        }
+    };
+
     const handleGrantAccess = async (row: UnifiedRow) => {
         if (row.status !== 'completed') return;
         setGrantingId(row.id);
@@ -292,6 +349,13 @@ export const Sessions: React.FC = () => {
                     grantMsg.ok ? 'bg-purple-600 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {grantMsg.ok ? 'Informe completo desbloqueado y enviado' : `Error: ${grantMsg.detail || 'desconocido'}`}
+                </div>
+            )}
+            {puentesInviteMsg && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                    puentesInviteMsg.ok ? 'bg-argo-violet-500 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    {puentesInviteMsg.ok ? 'Invitación a Argo Puentes enviada' : `Error: ${puentesInviteMsg.detail || 'desconocido'}`}
                 </div>
             )}
 
@@ -433,6 +497,33 @@ export const Sessions: React.FC = () => {
                                                             : <Send size={14} />
                                                         }
                                                     </button>
+                                                    {row.puentes_state === 'purchased' ? (
+                                                        <span
+                                                            title="Compró Argo Puentes"
+                                                            className="text-green-600 p-1 inline-flex items-center"
+                                                        >
+                                                            <ShoppingBag size={14} />
+                                                        </span>
+                                                    ) : row.puentes_state === 'invite_sent' ? (
+                                                        <span
+                                                            title={`Invitación a Puentes ya enviada${row.puentes_invite_at ? ` el ${new Date(row.puentes_invite_at).toLocaleDateString('es-AR')}` : ''}`}
+                                                            className="text-argo-violet-500/60 p-1 inline-flex items-center"
+                                                        >
+                                                            <Check size={14} />
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleSendPuentesInvite(row)}
+                                                            disabled={puentesInviteId === row.id || !row.email}
+                                                            title="Enviar invitación a Argo Puentes"
+                                                            className="text-argo-grey/40 hover:text-argo-violet-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        >
+                                                            {puentesInviteId === row.id
+                                                                ? <Loader2 size={14} className="animate-spin" />
+                                                                : <HeartHandshake size={14} />
+                                                            }
+                                                        </button>
+                                                    )}
                                                     </>
                                                 )}
                                                 {confirmingId === row.id ? (

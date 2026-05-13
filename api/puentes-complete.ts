@@ -93,6 +93,7 @@ function resolveAdultProfile(answers: { questionId: string; optionId: string }[]
         pressure_style: sortedPr[0][0],
         history: ctx.history ?? 'none',
         dominant_emotion: ctx.dominant_emotion ?? 'mezcla',
+        axis_counts: { ...axis },
     };
 }
 
