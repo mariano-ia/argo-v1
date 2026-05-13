@@ -80,6 +80,8 @@ async function createStripeCheckout(args: {
         body: new URLSearchParams({
             mode: 'payment',
             customer_email: args.email,
+            // Disable Stripe Link (the email-code auto-fill flow) — only card.
+            'payment_method_types[0]': 'card',
             'line_items[0][price_data][currency]': 'usd',
             'line_items[0][price_data][unit_amount]': String(PRICE_USD_CENTS),
             'line_items[0][price_data][product_data][name]': productLabel,
