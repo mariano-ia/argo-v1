@@ -9,14 +9,33 @@ import { createClient } from '@supabase/supabase-js';
  * purchased the upsell. Tracks via sessions.puentes_reminder_sent_at to
  * avoid double-sending.
  *
+ * Multi-child aware: groups all pending sessions by adult_email and sends
+ * a SINGLE reminder per parent that lists every child still without a
+ * Puentes purchase. Marks all included sessions as reminded so the cron
+ * never bothers the same parent twice.
+ *
  * Auth: optional CRON_SECRET, mirrors the blog-cron pattern.
  */
 
 const REMINDER_AGE_DAYS = 3;
-const BATCH_LIMIT = 100;
+const BATCH_LIMIT = 200;
+
+function formatNamesList(names: string[], lang: string): string {
+    const clean = names.filter(Boolean);
+    if (clean.length === 0) return '';
+    if (clean.length === 1) return clean[0];
+    if (clean.length === 2) {
+        const and = lang === 'en' ? 'and' : lang === 'pt' ? 'e' : 'y';
+        return `${clean[0]} ${and} ${clean[1]}`;
+    }
+    const last = clean[clean.length - 1];
+    const head = clean.slice(0, -1).join(', ');
+    const and = lang === 'en' ? 'and' : lang === 'pt' ? 'e' : (/^[ie]/i.test(last) ? 'e' : 'y');
+    return `${head} ${and} ${last}`;
+}
 
 function buildReminderHtml(args: {
-    childName: string;
+    childrenNames: string[];
     sourceSessionId: string;
     lang: string;
     preferredCurrency?: 'usd' | 'ars' | null;
@@ -30,27 +49,38 @@ function buildReminderHtml(args: {
             ? 'USD 9.99'
             : 'USD 9.99 / ARS 6.999';
 
+    const namesText = formatNamesList(args.childrenNames, args.lang);
+    const isMulti = args.childrenNames.length > 1;
+
     const t = args.lang === 'en' ? {
-        subject: `One more idea for accompanying ${args.childName}`,
+        subject: isMulti
+            ? `One more idea for accompanying ${namesText}`
+            : `One more idea for accompanying ${namesText}`,
         eyebrow: 'A follow-up · Argo Puentes',
-        title: `One more idea for accompanying ${args.childName}`,
-        body: `A few days ago you received ${args.childName}'s Argo report. Some parents and coaches have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements ${args.childName}'s.`,
+        title: `One more idea for accompanying ${namesText}`,
+        body: isMulti
+            ? `A few days ago you received the Argo reports of ${namesText}. Some parents have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements each of your children's. One purchase covers all of them.`
+            : `A few days ago you received ${namesText}'s Argo report. Some parents and coaches have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements ${namesText}'s.`,
         cta: 'Explore Argo Puentes',
         price: priceLine,
         footer: 'You can ignore this email. We will not send another reminder.',
     } : args.lang === 'pt' ? {
-        subject: `Mais uma ideia para acompanhar ${args.childName}`,
+        subject: `Mais uma ideia para acompanhar ${namesText}`,
         eyebrow: 'Continuação · Argo Puentes',
-        title: `Mais uma ideia para acompanhar ${args.childName}`,
-        body: `Alguns dias atrás você recebeu o relatório Argo de ${args.childName}. Alguns pais e treinadores acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${args.childName}.`,
+        title: `Mais uma ideia para acompanhar ${namesText}`,
+        body: isMulti
+            ? `Alguns dias atrás você recebeu os relatórios Argo de ${namesText}. Alguns pais acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de cada um dos seus filhos. Uma compra cobre todos eles.`
+            : `Alguns dias atrás você recebeu o relatório Argo de ${namesText}. Alguns pais e treinadores acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${namesText}.`,
         cta: 'Explorar Argo Puentes',
         price: priceLine,
         footer: 'Você pode ignorar este email. Não enviaremos outro lembrete.',
     } : {
-        subject: `Una idea más para acompañar a ${args.childName}`,
+        subject: `Una idea más para acompañar a ${namesText}`,
         eyebrow: 'Una continuación · Argo Puentes',
-        title: `Una idea más para acompañar a ${args.childName}`,
-        body: `Hace unos días recibiste el informe Argo de ${args.childName}. Algunos padres y entrenadores encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${args.childName}.`,
+        title: `Una idea más para acompañar a ${namesText}`,
+        body: isMulti
+            ? `Hace unos días recibiste los informes Argo de ${namesText}. Algunos padres encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de cada uno de tus hijos. Una compra cubre a todos.`
+            : `Hace unos días recibiste el informe Argo de ${namesText}. Algunos padres y entrenadores encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${namesText}.`,
         cta: 'Conocer Argo Puentes',
         price: priceLine,
         footer: 'Puedes ignorar este email. No enviaremos otro recordatorio.',
@@ -65,7 +95,7 @@ function buildReminderHtml(args: {
 </td></tr>
 <tr><td style="padding:28px;">
 <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${t.eyebrow}</p>
-<h2 style="margin:0 0 16px;font-size:22px;font-weight:300;color:#1D1D1F;letter-spacing:-0.02em;">${t.title}</h2>
+<h2 style="margin:0 0 16px;font-size:22px;font-weight:300;color:#1D1D1F;letter-spacing:-0.02em;line-height:1.3;">${t.title}</h2>
 <p style="margin:0 0 22px;font-size:14px;color:#424245;line-height:1.7;">${t.body}</p>
 <table cellpadding="0" cellspacing="0">
 <tr><td style="vertical-align:middle;"><a href="${url}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:11px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.cta}</a></td>
@@ -81,8 +111,16 @@ function buildReminderHtml(args: {
     return { subject: t.subject, html };
 }
 
+interface CandidateSession {
+    id: string;
+    adult_email: string;
+    adult_name: string | null;
+    child_name: string | null;
+    lang: string | null;
+    created_at: string;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-    // Optional auth: same pattern as blog-cron
     const cronSecret = process.env.CRON_SECRET;
     if (cronSecret && req.headers.authorization !== `Bearer ${cronSecret}`) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -98,13 +136,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const threshold = new Date(Date.now() - REMINDER_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
     try {
-        // Candidates: sessions created 3+ days ago, never reminded, with an adult_email
         const { data: candidates, error: candErr } = await sb
             .from('sessions')
-            .select('id, adult_email, adult_name, child_name, lang, created_at, puentes_reminder_sent_at')
+            .select('id, adult_email, adult_name, child_name, lang, created_at')
             .lt('created_at', threshold)
             .is('puentes_reminder_sent_at', null)
             .not('adult_email', 'is', null)
+            .order('created_at', { ascending: false })
             .limit(BATCH_LIMIT);
         if (candErr) {
             console.error('[puentes-reminder-cron] query error:', candErr.message);
@@ -114,33 +152,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ ok: true, sent: 0 });
         }
 
+        // Group candidates by adult_email (lowercased for safety)
+        const groups: Record<string, CandidateSession[]> = {};
+        for (const s of candidates as CandidateSession[]) {
+            if (!s.adult_email) continue;
+            const key = s.adult_email.toLowerCase();
+            if (!groups[key]) groups[key] = [];
+            groups[key].push(s);
+        }
+
         let sent = 0;
+        let skippedPaid = 0;
         const errors: string[] = [];
 
-        for (const s of candidates) {
+        for (const [, group] of Object.entries(groups)) {
+            const adultEmail = group[0].adult_email;
+            const sessionIds = group.map(s => s.id);
             try {
-                // Skip if any paid puentes purchase exists
+                // Skip the whole group if this email already has a paid puentes purchase
                 const { data: existing } = await sb
                     .from('puentes_purchases')
                     .select('id')
-                    .eq('source_session_id', s.id)
+                    .eq('recipient_email', adultEmail)
                     .eq('status', 'paid')
                     .maybeSingle();
                 if (existing) {
-                    // Mark as reminded anyway to avoid re-querying daily
-                    await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).eq('id', s.id);
+                    await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
+                    skippedPaid++;
                     continue;
                 }
 
-                // Look up parent's preferred currency from prior Argo One
-                // purchases (if any) so the price line mirrors what they
-                // already paid in.
+                // Preferred currency from prior Argo One purchases (if any)
                 let preferredCurrency: 'usd' | 'ars' | null = null;
                 try {
                     const { data: lastPurchase } = await sb
                         .from('one_purchases')
                         .select('currency')
-                        .eq('email', s.adult_email)
+                        .eq('email', adultEmail)
                         .eq('payment_status', 'paid')
                         .order('paid_at', { ascending: false })
                         .limit(1)
@@ -149,10 +197,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     else if (lastPurchase?.currency === 'usd') preferredCurrency = 'usd';
                 } catch { /* fall back to dual price */ }
 
+                // Unique child names preserving order (newest first)
+                const seen = new Set<string>();
+                const childrenNames: string[] = [];
+                for (const s of group) {
+                    const name = (s.child_name || '').trim();
+                    if (name && !seen.has(name.toLowerCase())) {
+                        seen.add(name.toLowerCase());
+                        childrenNames.push(name);
+                    }
+                }
+                const lang = group[0].lang || 'es';
+
                 const { subject, html } = buildReminderHtml({
-                    childName: s.child_name || '',
-                    sourceSessionId: s.id,
-                    lang: s.lang || 'es',
+                    childrenNames,
+                    sourceSessionId: group[0].id, // newest session id seeds the CTA URL
+                    lang,
                     preferredCurrency,
                 });
 
@@ -161,25 +221,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         from: 'Argo Method <hola@argomethod.com>',
-                        to: [s.adult_email],
+                        to: [adultEmail],
                         subject,
                         html,
                     }),
                 });
                 if (!r.ok) {
                     const err = await r.text();
-                    errors.push(`${s.id}: ${err}`);
+                    errors.push(`${adultEmail}: ${err}`);
                     continue;
                 }
 
-                await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).eq('id', s.id);
+                // Mark ALL of this parent's pending sessions as reminded
+                await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
                 sent++;
             } catch (e: any) {
-                errors.push(`${s.id}: ${e?.message || String(e)}`);
+                errors.push(`${adultEmail}: ${e?.message || String(e)}`);
             }
         }
 
-        return res.status(200).json({ ok: true, sent, candidates: candidates.length, errors });
+        return res.status(200).json({
+            ok: true,
+            parents_emailed: sent,
+            parents_skipped_already_paid: skippedPaid,
+            candidate_sessions: candidates.length,
+            errors,
+        });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error('[puentes-reminder-cron] Error:', msg);
