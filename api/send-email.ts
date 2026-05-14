@@ -508,72 +508,82 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Argo Puentes purchase, we replace the upsell with "included" copy
         // and AUTO-CREATE the puentes_session for this child + trigger
         // generation, so the parent gets the new bridges automatically.
+        //
+        // SAFETY: this whole block is wrapped in try/catch so any failure in
+        // the Puentes lookup or insert can never block the child report
+        // email itself. If it fails we just fall back to showing the
+        // standard upsell CTA.
         let existingPuentesMagicLink: string | undefined;
-        if (sessionId && toEmail) {
-            const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-            const sUrl = process.env.VITE_SUPABASE_URL;
-            if (sKey && sUrl) {
-                const sbForPuentes = createClient(sUrl, sKey);
-                const { data: paidPurchase } = await sbForPuentes
-                    .from('puentes_purchases')
-                    .select('id, magic_token, lang')
-                    .eq('recipient_email', toEmail)
-                    .eq('status', 'paid')
-                    .maybeSingle();
-                if (paidPurchase) {
-                    existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;
-
-                    // Ensure a puentes_session exists for this source_session
-                    const { data: existingSession } = await sbForPuentes
-                        .from('puentes_sessions')
-                        .select('id, status, ai_sections')
-                        .eq('purchase_id', paidPurchase.id)
-                        .eq('source_session_id', sessionId)
+        try {
+            if (sessionId && toEmail) {
+                const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const sUrl = process.env.VITE_SUPABASE_URL;
+                if (sKey && sUrl) {
+                    const sbForPuentes = createClient(sUrl, sKey);
+                    const { data: paidPurchase } = await sbForPuentes
+                        .from('puentes_purchases')
+                        .select('id, magic_token, lang')
+                        .eq('recipient_email', toEmail)
+                        .eq('status', 'paid')
                         .maybeSingle();
+                    if (paidPurchase) {
+                        existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;
 
-                    if (!existingSession) {
-                        // Get adult_profile from any sibling session of the
-                        // same purchase so the new bridge inherits the
-                        // already-resolved adult profile.
-                        const { data: sibling } = await sbForPuentes
+                        // Ensure a puentes_session exists for this source_session
+                        const { data: existingSession } = await sbForPuentes
                             .from('puentes_sessions')
-                            .select('adult_answers, adult_profile')
+                            .select('id, status, ai_sections')
                             .eq('purchase_id', paidPurchase.id)
-                            .not('adult_profile', 'is', null)
-                            .limit(1)
+                            .eq('source_session_id', sessionId)
                             .maybeSingle();
 
-                        const insertPayload: any = {
-                            purchase_id: paidPurchase.id,
-                            source_session_id: sessionId,
-                            lang: paidPurchase.lang,
-                            status: sibling ? 'answered' : 'created',
-                        };
-                        if (sibling) {
-                            insertPayload.adult_answers = sibling.adult_answers;
-                            insertPayload.adult_profile = sibling.adult_profile;
-                        }
-                        const { data: newSession } = await sbForPuentes
-                            .from('puentes_sessions')
-                            .insert(insertPayload)
-                            .select('id')
-                            .single();
+                        if (!existingSession) {
+                            // Get adult_profile from any sibling session of the
+                            // same purchase so the new bridge inherits the
+                            // already-resolved adult profile.
+                            const { data: sibling } = await sbForPuentes
+                                .from('puentes_sessions')
+                                .select('adult_answers, adult_profile')
+                                .eq('purchase_id', paidPurchase.id)
+                                .not('adult_profile', 'is', null)
+                                .limit(1)
+                                .maybeSingle();
 
-                        // Fire-and-forget generation if we already had an
-                        // adult profile (no need to wait for it here).
-                        if (newSession && sibling) {
-                            const internalOrigin = process.env.VERCEL_URL
-                                ? `https://${process.env.VERCEL_URL}`
-                                : siteUrl;
-                            fetch(`${internalOrigin}/api/generate-puentes`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ puentes_session_id: newSession.id }),
-                            }).catch(err => console.warn('[send-email] auto-generate-puentes failed:', err));
+                            const insertPayload: any = {
+                                purchase_id: paidPurchase.id,
+                                source_session_id: sessionId,
+                                lang: paidPurchase.lang,
+                                status: sibling ? 'answered' : 'created',
+                            };
+                            if (sibling) {
+                                insertPayload.adult_answers = sibling.adult_answers;
+                                insertPayload.adult_profile = sibling.adult_profile;
+                            }
+                            const { data: newSession } = await sbForPuentes
+                                .from('puentes_sessions')
+                                .insert(insertPayload)
+                                .select('id')
+                                .single();
+
+                            // Fire-and-forget generation if we already had an
+                            // adult profile (no need to wait for it here).
+                            if (newSession && sibling) {
+                                const internalOrigin = process.env.VERCEL_URL
+                                    ? `https://${process.env.VERCEL_URL}`
+                                    : siteUrl;
+                                fetch(`${internalOrigin}/api/generate-puentes`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ puentes_session_id: newSession.id }),
+                                }).catch(err => console.warn('[send-email] auto-generate-puentes failed:', err));
+                            }
                         }
                     }
                 }
             }
+        } catch (puentesErr) {
+            console.warn('[send-email] Puentes lookup failed, falling back to default upsell CTA:', puentesErr instanceof Error ? puentesErr.message : puentesErr);
+            existingPuentesMagicLink = undefined;
         }
 
         const html = buildHtml({
