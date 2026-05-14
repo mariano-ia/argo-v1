@@ -123,26 +123,31 @@ function buildHtml(params: {
 
     // Two copy variants: upsell (parent has not paid) vs included (parent
     // already has Argo Puentes, this child is now part of their bond report).
+    // The upsell copy follows Variant A: anchor on the moment, propose the
+    // next step, surface the "one purchase forever, all children" value.
     const upsellCopy = {
         es: {
-            eyebrow: 'Paso opcional · Argo Puentes',
-            title: `Descubre cómo te vinculas con ${params.nombreNino}`,
-            body: `Argo Puentes es un cuestionario corto (5 a 7 minutos) que revela tu propio estilo y propone 4 puentes para profundizar el vínculo con ${params.nombreNino} en el deporte. No es terapia. Es una invitación.`,
-            cta: 'Conocer Argo Puentes',
+            eyebrow: 'Argo Puentes · Tu complemento',
+            title: `Ahora que conoces a ${params.nombreNino}, conócete a ti.`,
+            body: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.`,
+            highlight: 'Una compra cubre a todos tus hijos, para siempre.',
+            cta: 'Empezar mi Argo Puentes',
             price: 'USD 9.99 / ARS 6.999',
         },
         en: {
-            eyebrow: 'Optional · Argo Puentes',
-            title: `Discover how you connect with ${params.nombreNino}`,
-            body: `Argo Puentes is a short questionnaire (5 to 7 min) that reveals your own style and proposes 4 bridges to deepen your bond with ${params.nombreNino} in sport. Not therapy. An invitation.`,
-            cta: 'Explore Argo Puentes',
+            eyebrow: 'Argo Puentes · Your companion piece',
+            title: `Now that you know ${params.nombreNino}, get to know yourself.`,
+            body: `A five-minute questionnaire. Your own profile, with four specific bridges to better accompany ${params.nombreNino} in sport.`,
+            highlight: 'One purchase covers all your children, forever.',
+            cta: 'Start my Argo Puentes',
             price: 'USD 9.99',
         },
         pt: {
-            eyebrow: 'Opcional · Argo Puentes',
-            title: `Descubra como você se conecta com ${params.nombreNino}`,
-            body: `Argo Puentes é um questionário curto (5 a 7 min) que revela seu próprio estilo e propõe 4 pontes para aprofundar o vínculo com ${params.nombreNino} no esporte. Não é terapia. É um convite.`,
-            cta: 'Explorar Argo Puentes',
+            eyebrow: 'Argo Puentes · Seu complemento',
+            title: `Agora que conhece ${params.nombreNino}, conheça a si.`,
+            body: `Cinco minutos de questionário. Seu próprio relatório, com quatro pontes específicas para acompanhar ${params.nombreNino} melhor no esporte.`,
+            highlight: 'Uma compra cobre todos os seus filhos, para sempre.',
+            cta: 'Começar meu Argo Puentes',
             price: 'USD 9.99 / ARS 6.999',
         },
     };
@@ -150,21 +155,24 @@ function buildHtml(params: {
         es: {
             eyebrow: 'Tu Argo Puentes ahora incluye más',
             title: `Sumamos a ${params.nombreNino} a tu informe`,
-            body: `Como ya tienes Argo Puentes activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora incluye a todos tus hijos en un solo lugar, sin volver a cobrarte.`,
+            body: `Como ya tienes Argo Puentes activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora los incluye a todos en un solo lugar, sin volver a cobrarte.`,
+            highlight: '',
             cta: 'Ver mi informe actualizado',
             price: '',
         },
         en: {
             eyebrow: 'Your Argo Puentes now includes more',
             title: `${params.nombreNino} has been added to your report`,
-            body: `Since you already have Argo Puentes active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers all your children in one place, with no extra charge.`,
+            body: `Since you already have Argo Puentes active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers all of your children in one place, with no extra charge.`,
+            highlight: '',
             cta: 'View my updated report',
             price: '',
         },
         pt: {
             eyebrow: 'Seu Argo Puentes agora inclui mais',
             title: `${params.nombreNino} foi adicionado(a) ao seu relatório`,
-            body: `Como você já tem Argo Puentes ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos os seus filhos em um só lugar, sem cobrança adicional.`,
+            body: `Como você já tem Argo Puentes ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos eles em um só lugar, sem cobrança adicional.`,
+            highlight: '',
             cta: 'Ver meu relatório atualizado',
             price: '',
         },
@@ -184,13 +192,14 @@ function buildHtml(params: {
     <td style="padding:24px 28px 8px;">
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border-radius:14px;border-left:4px solid ${violet};">
         <tr><td style="padding:22px 24px;">
-          <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${pc.eyebrow}</p>
-          <h3 style="margin:0 0 8px;font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;">${pc.title}</h3>
-          <p style="margin:0 0 18px;font-size:13px;color:#424245;line-height:1.6;">${pc.body}</p>
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${pc.eyebrow}</p>
+          <h3 style="margin:0 0 10px;font-size:19px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;line-height:1.3;">${pc.title}</h3>
+          <p style="margin:0 0 14px;font-size:14px;color:#424245;line-height:1.65;">${pc.body}</p>
+          ${pc.highlight ? `<p style="margin:0 0 20px;font-size:13px;color:${violet};font-weight:600;line-height:1.5;">${pc.highlight}</p>` : ''}
           <table cellpadding="0" cellspacing="0">
             <tr>
               <td style="vertical-align:middle;">
-                <a href="${puentesActionUrl}" style="display:inline-block;background:${violet};color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:11px 22px;border-radius:10px;box-shadow:0 2px 8px ${violetShadow};">${pc.cta}</a>
+                <a href="${puentesActionUrl}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;box-shadow:0 2px 8px ${violetShadow};">${pc.cta}</a>
               </td>
               ${pc.price ? `<td style="vertical-align:middle;padding-left:14px;">
                 <span style="font-size:13px;color:#86868B;font-weight:500;">${pc.price}</span>
