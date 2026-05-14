@@ -55,6 +55,7 @@ interface SessionRow {
 
 interface PuentesPurchaseLite {
     source_session_id: string;
+    recipient_email: string;
     status: 'pending' | 'paid' | 'failed' | 'refunded';
 }
 
@@ -67,10 +68,21 @@ interface LeadRow {
 
 function mergeRows(sessions: SessionRow[], leads: LeadRow[], puentesPurchases: PuentesPurchaseLite[]): UnifiedRow[] {
     const sessionEmails = new Set(sessions.map(s => s.adult_email?.toLowerCase()));
-    const paidSet = new Set(puentesPurchases.filter(p => p.status === 'paid').map(p => p.source_session_id));
+    // "Purchased" is keyed by the parent's email, not by source_session_id.
+    // Under the new model a single Argo Puentes purchase covers all the
+    // parent's children, and the source_session_id only flags which child
+    // session triggered the original CTA — it does NOT mean "this parent
+    // paid". Matching by recipient_email keeps the dashboard truthful even
+    // when QA / comp / multi-child rows point at someone else's session.
+    const paidEmails = new Set(
+        puentesPurchases
+            .filter(p => p.status === 'paid')
+            .map(p => p.recipient_email?.toLowerCase())
+            .filter((e): e is string => !!e),
+    );
 
     const completedRows: UnifiedRow[] = sessions.map(s => {
-        const purchased = paidSet.has(s.id);
+        const purchased = paidEmails.has(s.adult_email?.toLowerCase());
         const puentesState: UnifiedRow['puentes_state'] = purchased
             ? 'purchased'
             : s.puentes_reminder_sent_at
@@ -152,7 +164,7 @@ export const Sessions: React.FC = () => {
                     .order('display_name'),
                 supabase
                     .from('puentes_purchases')
-                    .select('source_session_id,status'),
+                    .select('source_session_id,recipient_email,status'),
             ]);
 
             // Build tenant name lookup
