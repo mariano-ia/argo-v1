@@ -18,6 +18,13 @@ function buildHtml(params: {
     lang?: string;
     resumenPerfil?: string;
     siteUrl?: string;
+    // If the parent already purchased Argo Puentes, we swap the upsell CTA
+    // for a "your bridges now include {nombre}" message linking to their
+    // existing report instead of charging them again.
+    existingPuentesMagicLink?: string;
+    // Renders the upsell price in the currency the parent previously paid
+    // in (Argo One). Undefined means "show both".
+    preferredCurrency?: 'usd' | 'ars' | null;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = params.siteUrl || 'https://argomethod.com';
@@ -110,6 +117,111 @@ function buildHtml(params: {
         },
     };
     const c = copy[langAttr] ?? copy.es;
+
+    // Argo Puentes upsell CTA (shown only when we have a sessionId so the
+    // user can be tied back to their source child session).
+    const puentesCheckoutUrl = params.sessionId
+        ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${langAttr}`
+        : `${baseUrl}/puentes/checkout`;
+
+    // Render the price in the currency the parent has previously paid in.
+    // Falls back to showing both when we have no signal.
+    const priceCurrency = params.preferredCurrency;
+    const priceLine = priceCurrency === 'ars'
+        ? 'ARS 6.999'
+        : priceCurrency === 'usd'
+            ? 'USD 9.99'
+            : 'USD 9.99 / ARS 6.999';
+
+    // Two copy variants: upsell (parent has not paid) vs included (parent
+    // already has Argo Puentes, this child is now part of their bond report).
+    // The upsell copy follows Variant A: anchor on the moment, propose the
+    // next step, surface the "one purchase forever, all children" value.
+    const upsellCopy = {
+        es: {
+            eyebrow: 'Argo Puentes · Tu complemento',
+            title: `Ahora que conoces a ${params.nombreNino}, conócete a ti.`,
+            body: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.`,
+            highlight: 'Una compra cubre a todos tus hijos, para siempre.',
+            cta: 'Empezar mi Argo Puentes',
+            price: priceLine,
+        },
+        en: {
+            eyebrow: 'Argo Puentes · Your companion piece',
+            title: `Now that you know ${params.nombreNino}, get to know yourself.`,
+            body: `A five-minute questionnaire. Your own profile, with four specific bridges to better accompany ${params.nombreNino} in sport.`,
+            highlight: 'One purchase covers all your children, forever.',
+            cta: 'Start my Argo Puentes',
+            price: priceLine,
+        },
+        pt: {
+            eyebrow: 'Argo Puentes · Seu complemento',
+            title: `Agora que conhece ${params.nombreNino}, conheça a si.`,
+            body: `Cinco minutos de questionário. Seu próprio relatório, com quatro pontes específicas para acompanhar ${params.nombreNino} melhor no esporte.`,
+            highlight: 'Uma compra cobre todos os seus filhos, para sempre.',
+            cta: 'Começar meu Argo Puentes',
+            price: priceLine,
+        },
+    };
+    const includedCopy = {
+        es: {
+            eyebrow: 'Tu Argo Puentes ahora incluye más',
+            title: `Sumamos a ${params.nombreNino} a tu informe`,
+            body: `Como ya tienes Argo Puentes activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora los incluye a todos en un solo lugar, sin volver a cobrarte.`,
+            highlight: '',
+            cta: 'Ver mi informe actualizado',
+            price: '',
+        },
+        en: {
+            eyebrow: 'Your Argo Puentes now includes more',
+            title: `${params.nombreNino} has been added to your report`,
+            body: `Since you already have Argo Puentes active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers all of your children in one place, with no extra charge.`,
+            highlight: '',
+            cta: 'View my updated report',
+            price: '',
+        },
+        pt: {
+            eyebrow: 'Seu Argo Puentes agora inclui mais',
+            title: `${params.nombreNino} foi adicionado(a) ao seu relatório`,
+            body: `Como você já tem Argo Puentes ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos eles em um só lugar, sem cobrança adicional.`,
+            highlight: '',
+            cta: 'Ver meu relatório atualizado',
+            price: '',
+        },
+    };
+
+    const isIncluded = Boolean(params.existingPuentesMagicLink);
+    const copy = isIncluded ? includedCopy : upsellCopy;
+    const pc = copy[langAttr] ?? copy.es;
+    const puentesActionUrl = isIncluded ? (params.existingPuentesMagicLink as string) : puentesCheckoutUrl;
+
+    const puentesWidget = params.sessionId ? `
+  <!-- SEPARATOR -->
+  <tr><td style="padding:0 28px;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
+
+  <!-- ARGO PUENTES UPSELL -->
+  <tr>
+    <td style="padding:24px 28px 8px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border-radius:14px;border-left:4px solid ${violet};">
+        <tr><td style="padding:22px 24px;">
+          <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${pc.eyebrow}</p>
+          <h3 style="margin:0 0 10px;font-size:19px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;line-height:1.3;">${pc.title}</h3>
+          <p style="margin:0 0 14px;font-size:14px;color:#424245;line-height:1.65;">${pc.body}</p>
+          ${pc.highlight ? `<p style="margin:0 0 20px;font-size:13px;color:${violet};font-weight:600;line-height:1.5;">${pc.highlight}</p>` : ''}
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="vertical-align:middle;">
+                <a href="${puentesActionUrl}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;box-shadow:0 2px 8px ${violetShadow};">${pc.cta}</a>
+              </td>
+              ${pc.price ? `<td style="vertical-align:middle;padding-left:14px;">
+                <span style="font-size:13px;color:#86868B;font-weight:500;">${pc.price}</span>
+              </td>` : ''}
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+    </td>
+  </tr>` : '';
 
     const reviewWidget = params.sessionId ? `
   <!-- SEPARATOR -->
@@ -267,6 +379,7 @@ function buildHtml(params: {
 
     </td>
   </tr>
+  ${puentesWidget}
   ${reviewWidget}
 
   <!-- FOOTER -->
@@ -403,11 +516,123 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const derivedSiteUrl = hostHeader ? `${protoHeader}://${hostHeader}` : null;
         const siteUrl = derivedSiteUrl || process.env.SITE_URL || 'https://argomethod.com';
 
+        // Look up the parent's preferred currency from their Argo One
+        // purchase history (if any). Lets the upsell CTA mirror the
+        // currency they have already paid in (ARS-only or USD-only).
+        // Safe wrapper: failure falls back to showing both currencies.
+        let preferredCurrency: 'usd' | 'ars' | null = null;
+        try {
+            if (toEmail) {
+                const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const sUrl = process.env.VITE_SUPABASE_URL;
+                if (sKey && sUrl) {
+                    const sbForCurrency = createClient(sUrl, sKey);
+                    const { data: lastPurchase } = await sbForCurrency
+                        .from('one_purchases')
+                        .select('currency, paid_at')
+                        .eq('email', toEmail)
+                        .eq('payment_status', 'paid')
+                        .order('paid_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    if (lastPurchase?.currency === 'ars') preferredCurrency = 'ars';
+                    else if (lastPurchase?.currency === 'usd') preferredCurrency = 'usd';
+                }
+            }
+        } catch (currErr) {
+            console.warn('[send-email] Currency lookup failed, falling back to dual price:', currErr instanceof Error ? currErr.message : currErr);
+            preferredCurrency = null;
+        }
+
+        // Argo Puentes multi-child: if this adult email already has a paid
+        // Argo Puentes purchase, we replace the upsell with "included" copy
+        // and AUTO-CREATE the puentes_session for this child + trigger
+        // generation, so the parent gets the new bridges automatically.
+        //
+        // SAFETY: this whole block is wrapped in try/catch so any failure in
+        // the Puentes lookup or insert can never block the child report
+        // email itself. If it fails we just fall back to showing the
+        // standard upsell CTA.
+        let existingPuentesMagicLink: string | undefined;
+        try {
+            if (sessionId && toEmail) {
+                const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const sUrl = process.env.VITE_SUPABASE_URL;
+                if (sKey && sUrl) {
+                    const sbForPuentes = createClient(sUrl, sKey);
+                    const { data: paidPurchase } = await sbForPuentes
+                        .from('puentes_purchases')
+                        .select('id, magic_token, lang')
+                        .eq('recipient_email', toEmail)
+                        .eq('status', 'paid')
+                        .maybeSingle();
+                    if (paidPurchase) {
+                        existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;
+
+                        // Ensure a puentes_session exists for this source_session
+                        const { data: existingSession } = await sbForPuentes
+                            .from('puentes_sessions')
+                            .select('id, status, ai_sections')
+                            .eq('purchase_id', paidPurchase.id)
+                            .eq('source_session_id', sessionId)
+                            .maybeSingle();
+
+                        if (!existingSession) {
+                            // Get adult_profile from any sibling session of the
+                            // same purchase so the new bridge inherits the
+                            // already-resolved adult profile.
+                            const { data: sibling } = await sbForPuentes
+                                .from('puentes_sessions')
+                                .select('adult_answers, adult_profile')
+                                .eq('purchase_id', paidPurchase.id)
+                                .not('adult_profile', 'is', null)
+                                .limit(1)
+                                .maybeSingle();
+
+                            const insertPayload: any = {
+                                purchase_id: paidPurchase.id,
+                                source_session_id: sessionId,
+                                lang: paidPurchase.lang,
+                                status: sibling ? 'answered' : 'created',
+                            };
+                            if (sibling) {
+                                insertPayload.adult_answers = sibling.adult_answers;
+                                insertPayload.adult_profile = sibling.adult_profile;
+                            }
+                            const { data: newSession } = await sbForPuentes
+                                .from('puentes_sessions')
+                                .insert(insertPayload)
+                                .select('id')
+                                .single();
+
+                            // Fire-and-forget generation if we already had an
+                            // adult profile (no need to wait for it here).
+                            if (newSession && sibling) {
+                                const internalOrigin = process.env.VERCEL_URL
+                                    ? `https://${process.env.VERCEL_URL}`
+                                    : siteUrl;
+                                fetch(`${internalOrigin}/api/generate-puentes`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ puentes_session_id: newSession.id }),
+                                }).catch(err => console.warn('[send-email] auto-generate-puentes failed:', err));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (puentesErr) {
+            console.warn('[send-email] Puentes lookup failed, falling back to default upsell CTA:', puentesErr instanceof Error ? puentesErr.message : puentesErr);
+            existingPuentesMagicLink = undefined;
+        }
+
         const html = buildHtml({
             nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
             palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
             sessionId, shareToken: finalShareToken, lang, resumenPerfil,
             siteUrl,
+            existingPuentesMagicLink,
+            preferredCurrency,
         });
 
         const langAttr = lang || 'es';

@@ -19,6 +19,14 @@
     {
       "path": "/api/retention-cron",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/puentes-reminder-cron",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/puentes-sync-cron",
+      "schedule": "30 8 * * *"
     }
   ]
 }

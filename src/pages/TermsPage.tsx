@@ -20,7 +20,7 @@ export const TermsPage: React.FC = () => (
                     </span>
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
-                <p className="text-sm text-argo-grey mt-2">Última actualización: 30 de marzo de 2026</p>
+                <p className="text-sm text-argo-grey mt-2">Última actualización: 14 de mayo de 2026</p>
                 <div className="mt-4">
                     <CoppaBadge />
                 </div>
@@ -52,29 +52,44 @@ export const TermsPage: React.FC = () => (
                 <p>El Consultor IA proporciona orientaciones basadas en la metodología Argo y los perfiles registrados. Las respuestas son orientativas y no reemplazan el criterio profesional del entrenador o adulto responsable.</p>
             </Section>
 
-            <Section title="6. Uso aceptable">
+            <Section title="6. Argo Puentes (servicio complementario)">
+                <p>Tras la entrega del informe del deportista, podemos ofrecerte el servicio complementario "Argo Puentes", que consiste en un cuestionario breve para el adulto responsable y un informe personalizado de cuatro puentes de vínculo entre tu estilo y el del deportista.</p>
+                <p>Argo Puentes:</p>
+                <p>(a) No constituye un servicio clínico, terapéutico ni de diagnóstico psicológico.</p>
+                <p>(b) Es un material de auto-conocimiento e invitación a la reflexión, basado en el modelo DISC.</p>
+                <p>(c) Reutiliza el perfil del deportista (ya recolectado al momento del informe del menor) para generar contenido específico.</p>
+                <p>(d) Puede ofrecerse en hasta dos comunicaciones por correo electrónico tras la entrega del informe principal: una en el propio email del informe y una segunda comunicación tres días más tarde si la propuesta no ha sido aceptada.</p>
+                <p>(e) Puedes solicitar dejar de recibir esta propuesta en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
+                <p>Las compras de Argo Puentes son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
+                <p><strong>Cobertura multi-hijo y conservación del perfil:</strong></p>
+                <p>(f) Una compra de Argo Puentes cubre a todos los hijos del adulto responsable identificados por el mismo correo electrónico, hasta un máximo de 5 niños por compra. Si tienes más hijos perfilados, escríbenos a hola@argomethod.com.</p>
+                <p>(g) El perfil del adulto generado por Argo Puentes se conserva indefinidamente, para poder generar puentes con futuros hijos perfilados con el mismo correo electrónico sin cobrarte nuevamente. Si un hijo ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, los puentes con el adulto se actualizan automáticamente.</p>
+                <p>(h) Para solicitar la eliminación del perfil del adulto y todos los puentes asociados, escríbenos a hola@argomethod.com. La eliminación es definitiva y no se puede revertir.</p>
+            </Section>
+
+            <Section title="7. Uso aceptable">
                 <p>Te comprometes a utilizar la Plataforma únicamente para fines legítimos relacionados con el perfilamiento conductual deportivo juvenil. Queda prohibido:</p>
                 <p>Utilizar los perfiles para discriminar, etiquetar negativamente o excluir a un deportista. Compartir informes con terceros sin consentimiento del adulto responsable. Intentar acceder a datos de otros tenants. Usar la Plataforma de forma automatizada (bots, scraping).</p>
             </Section>
 
-            <Section title="7. Propiedad intelectual">
+            <Section title="8. Propiedad intelectual">
                 <p>La metodología Argo, los arquetipos, el contenido de los informes, y el diseño de la Plataforma son propiedad de Argo Method. Los datos de los deportistas perfilados son propiedad del adulto responsable y del tenant que los registró.</p>
             </Section>
 
-            <Section title="8. Cancelación y reembolsos">
+            <Section title="9. Cancelación y reembolsos">
                 <p>Las suscripciones pueden cancelarse en cualquier momento. La cancelación toma efecto al final del periodo facturado. No se realizan reembolsos por periodos parciales.</p>
                 <p>Las compras de Argo One son finales y no reembolsables una vez que el link de juego ha sido utilizado.</p>
             </Section>
 
-            <Section title="9. Limitación de responsabilidad">
+            <Section title="10. Limitación de responsabilidad">
                 <p>Argo Method se proporciona "tal cual". No garantizamos que los informes serán exactos, completos o adecuados para decisiones específicas. El uso de los informes es responsabilidad del adulto que los recibe.</p>
             </Section>
 
-            <Section title="10. Modificaciones">
+            <Section title="11. Modificaciones">
                 <p>Podemos modificar estos términos en cualquier momento. Los cambios se comunicarán por email a los usuarios con suscripción activa y entrarán en vigencia 30 días después de la notificación.</p>
             </Section>
 
-            <Section title="11. Contacto">
+            <Section title="12. Contacto">
                 <p>Para consultas sobre estos términos: hola@argomethod.com</p>
             </Section>
 
