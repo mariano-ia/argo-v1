@@ -17,12 +17,18 @@ function buildHtml(args: {
     childName: string;
     sourceSessionId: string;
     lang: string;
+    preferredCurrency?: 'usd' | 'ars' | null;
 }): { subject: string; html: string } {
     const violet = '#955FB5';
     const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.SITE_URL || 'https://argomethod.com');
     const url = `${origin}/puentes/checkout?source_session_id=${args.sourceSessionId}&lang=${args.lang}`;
+    const priceLine = args.preferredCurrency === 'ars'
+        ? 'ARS 6.999'
+        : args.preferredCurrency === 'usd'
+            ? 'USD 9.99'
+            : 'USD 9.99 / ARS 6.999';
 
     const t = args.lang === 'en' ? {
         subject: `One more idea for accompanying ${args.childName}`,
@@ -30,7 +36,7 @@ function buildHtml(args: {
         title: `One more idea for accompanying ${args.childName}`,
         body: `A few days ago you received ${args.childName}'s Argo report. Some parents and coaches have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements ${args.childName}'s.`,
         cta: 'Explore Argo Puentes',
-        price: 'USD 9.99',
+        price: priceLine,
         footer: 'You can ignore this email. We will not send another reminder.',
     } : args.lang === 'pt' ? {
         subject: `Mais uma ideia para acompanhar ${args.childName}`,
@@ -38,7 +44,7 @@ function buildHtml(args: {
         title: `Mais uma ideia para acompanhar ${args.childName}`,
         body: `Alguns dias atrás você recebeu o relatório Argo de ${args.childName}. Alguns pais e treinadores acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${args.childName}.`,
         cta: 'Explorar Argo Puentes',
-        price: 'USD 9.99 / ARS 6.999',
+        price: priceLine,
         footer: 'Você pode ignorar este email. Não enviaremos outro lembrete.',
     } : {
         subject: `Una idea más para acompañar a ${args.childName}`,
@@ -46,7 +52,7 @@ function buildHtml(args: {
         title: `Una idea más para acompañar a ${args.childName}`,
         body: `Hace unos días recibiste el informe Argo de ${args.childName}. Algunos padres y entrenadores encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${args.childName}.`,
         cta: 'Conocer Argo Puentes',
-        price: 'USD 9.99 / ARS 6.999',
+        price: priceLine,
         footer: 'Puedes ignorar este email. No enviaremos otro recordatorio.',
     };
 
@@ -119,10 +125,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (existing) return res.status(409).json({ error: 'Already purchased' });
 
+        // Mirror the currency the parent already paid in (Argo One), so the
+        // upsell price line matches their previous experience.
+        let preferredCurrency: 'usd' | 'ars' | null = null;
+        try {
+            const { data: lastPurchase } = await sb
+                .from('one_purchases')
+                .select('currency')
+                .eq('email', session.adult_email)
+                .eq('payment_status', 'paid')
+                .order('paid_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (lastPurchase?.currency === 'ars') preferredCurrency = 'ars';
+            else if (lastPurchase?.currency === 'usd') preferredCurrency = 'usd';
+        } catch { /* fall back to dual price */ }
+
         const { subject, html } = buildHtml({
             childName: session.child_name || '',
             sourceSessionId: session.id,
             lang: session.lang || 'es',
+            preferredCurrency,
         });
 
         const r = await fetch('https://api.resend.com/emails', {

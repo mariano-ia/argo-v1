@@ -22,6 +22,9 @@ function buildHtml(params: {
     // for a "your bridges now include {nombre}" message linking to their
     // existing report instead of charging them again.
     existingPuentesMagicLink?: string;
+    // Renders the upsell price in the currency the parent previously paid
+    // in (Argo One). Undefined means "show both".
+    preferredCurrency?: 'usd' | 'ars' | null;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = params.siteUrl || 'https://argomethod.com';
@@ -121,6 +124,15 @@ function buildHtml(params: {
         ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${langAttr}`
         : `${baseUrl}/puentes/checkout`;
 
+    // Render the price in the currency the parent has previously paid in.
+    // Falls back to showing both when we have no signal.
+    const priceCurrency = params.preferredCurrency;
+    const priceLine = priceCurrency === 'ars'
+        ? 'ARS 6.999'
+        : priceCurrency === 'usd'
+            ? 'USD 9.99'
+            : 'USD 9.99 / ARS 6.999';
+
     // Two copy variants: upsell (parent has not paid) vs included (parent
     // already has Argo Puentes, this child is now part of their bond report).
     // The upsell copy follows Variant A: anchor on the moment, propose the
@@ -132,7 +144,7 @@ function buildHtml(params: {
             body: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.`,
             highlight: 'Una compra cubre a todos tus hijos, para siempre.',
             cta: 'Empezar mi Argo Puentes',
-            price: 'USD 9.99 / ARS 6.999',
+            price: priceLine,
         },
         en: {
             eyebrow: 'Argo Puentes · Your companion piece',
@@ -140,7 +152,7 @@ function buildHtml(params: {
             body: `A five-minute questionnaire. Your own profile, with four specific bridges to better accompany ${params.nombreNino} in sport.`,
             highlight: 'One purchase covers all your children, forever.',
             cta: 'Start my Argo Puentes',
-            price: 'USD 9.99',
+            price: priceLine,
         },
         pt: {
             eyebrow: 'Argo Puentes · Seu complemento',
@@ -148,7 +160,7 @@ function buildHtml(params: {
             body: `Cinco minutos de questionário. Seu próprio relatório, com quatro pontes específicas para acompanhar ${params.nombreNino} melhor no esporte.`,
             highlight: 'Uma compra cobre todos os seus filhos, para sempre.',
             cta: 'Começar meu Argo Puentes',
-            price: 'USD 9.99 / ARS 6.999',
+            price: priceLine,
         },
     };
     const includedCopy = {
@@ -504,6 +516,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const derivedSiteUrl = hostHeader ? `${protoHeader}://${hostHeader}` : null;
         const siteUrl = derivedSiteUrl || process.env.SITE_URL || 'https://argomethod.com';
 
+        // Look up the parent's preferred currency from their Argo One
+        // purchase history (if any). Lets the upsell CTA mirror the
+        // currency they have already paid in (ARS-only or USD-only).
+        // Safe wrapper: failure falls back to showing both currencies.
+        let preferredCurrency: 'usd' | 'ars' | null = null;
+        try {
+            if (toEmail) {
+                const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const sUrl = process.env.VITE_SUPABASE_URL;
+                if (sKey && sUrl) {
+                    const sbForCurrency = createClient(sUrl, sKey);
+                    const { data: lastPurchase } = await sbForCurrency
+                        .from('one_purchases')
+                        .select('currency, paid_at')
+                        .eq('email', toEmail)
+                        .eq('payment_status', 'paid')
+                        .order('paid_at', { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+                    if (lastPurchase?.currency === 'ars') preferredCurrency = 'ars';
+                    else if (lastPurchase?.currency === 'usd') preferredCurrency = 'usd';
+                }
+            }
+        } catch (currErr) {
+            console.warn('[send-email] Currency lookup failed, falling back to dual price:', currErr instanceof Error ? currErr.message : currErr);
+            preferredCurrency = null;
+        }
+
         // Argo Puentes multi-child: if this adult email already has a paid
         // Argo Puentes purchase, we replace the upsell with "included" copy
         // and AUTO-CREATE the puentes_session for this child + trigger
@@ -592,6 +632,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             sessionId, shareToken: finalShareToken, lang, resumenPerfil,
             siteUrl,
             existingPuentesMagicLink,
+            preferredCurrency,
         });
 
         const langAttr = lang || 'es';
