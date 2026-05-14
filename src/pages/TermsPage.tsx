@@ -20,7 +20,7 @@ export const TermsPage: React.FC = () => (
                     </span>
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
-                <p className="text-sm text-argo-grey mt-2">Última actualización: 13 de mayo de 2026</p>
+                <p className="text-sm text-argo-grey mt-2">Última actualización: 14 de mayo de 2026</p>
                 <div className="mt-4">
                     <CoppaBadge />
                 </div>
@@ -61,6 +61,10 @@ export const TermsPage: React.FC = () => (
                 <p>(d) Puede ofrecerse en hasta dos comunicaciones por correo electrónico tras la entrega del informe principal: una en el propio email del informe y una segunda comunicación tres días más tarde si la propuesta no ha sido aceptada.</p>
                 <p>(e) Puedes solicitar dejar de recibir esta propuesta en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
                 <p>Las compras de Argo Puentes son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
+                <p><strong>Cobertura multi-hijo y conservación del perfil:</strong></p>
+                <p>(f) Una compra de Argo Puentes cubre a todos los hijos del adulto responsable identificados por el mismo correo electrónico, hasta un máximo de 5 niños por compra. Si tienes más hijos perfilados, escríbenos a hola@argomethod.com.</p>
+                <p>(g) El perfil del adulto generado por Argo Puentes se conserva indefinidamente, para poder generar puentes con futuros hijos perfilados con el mismo correo electrónico sin cobrarte nuevamente. Si un hijo ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, los puentes con el adulto se actualizan automáticamente.</p>
+                <p>(h) Para solicitar la eliminación del perfil del adulto y todos los puentes asociados, escríbenos a hola@argomethod.com. La eliminación es definitiva y no se puede revertir.</p>
             </Section>
 
             <Section title="7. Uso aceptable">

@@ -210,6 +210,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (srcErr || !srcSession) return res.status(404).json({ error: 'Source session not found' });
 
+        // Block double-purchase: if this adult email already has a paid Argo
+        // Puentes purchase, redirect them to their existing report instead of
+        // charging them again. One purchase covers all their children.
+        const { data: existing } = await sb
+            .from('puentes_purchases')
+            .select('id, magic_token, source')
+            .eq('recipient_email', recipient_email)
+            .eq('status', 'paid')
+            .maybeSingle();
+        if (existing) {
+            const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
+                ? `https://${process.env.VERCEL_URL}`
+                : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
+            return res.status(409).json({
+                error: 'already_purchased',
+                detail: 'This email already has an active Argo Puentes account.',
+                existing_magic_link: `${origin}/puentes/${existing.magic_token}`,
+            });
+        }
+
         const childName = srcSession.child_name || '';
         const provider = getProvider(country);
         const magicToken = genMagicToken();

@@ -60,6 +60,13 @@ export default function PuentesCheckout() {
                 }),
             });
             const data = await res.json();
+
+            // If this email already has Argo Puentes, redirect to their
+            // existing report instead of charging them again.
+            if (res.status === 409 && data.existing_magic_link) {
+                window.location.href = data.existing_magic_link;
+                return;
+            }
             if (!res.ok || !data.checkout_url) {
                 setError(data.error || c.errors.generic);
                 setLoading(false);

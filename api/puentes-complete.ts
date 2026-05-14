@@ -122,6 +122,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: err.message || 'Invalid answers' });
         }
 
+        // Find the purchase from the session, then propagate the answers +
+        // adult profile to ALL puentes_sessions of that purchase (multi-child:
+        // one questionnaire, multiple bridges).
+        const { data: anchor } = await sb
+            .from('puentes_sessions')
+            .select('id, purchase_id')
+            .eq('id', puentes_session_id)
+            .maybeSingle();
+        if (!anchor) return res.status(404).json({ error: 'Puentes session not found' });
+
+        const { data: siblings } = await sb
+            .from('puentes_sessions')
+            .select('id')
+            .eq('purchase_id', anchor.purchase_id);
+
+        const siblingIds = (siblings ?? []).map(s => s.id);
+        if (siblingIds.length === 0) siblingIds.push(puentes_session_id);
+
         const { error: updErr } = await sb
             .from('puentes_sessions')
             .update({
@@ -129,39 +147,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 adult_profile: profile,
                 status: 'answered',
             })
-            .eq('id', puentes_session_id);
+            .in('id', siblingIds);
         if (updErr) {
             console.error('[puentes-complete] Update error:', updErr.message);
             return res.status(500).json({ error: 'Could not save answers' });
         }
 
         // Internal endpoint calls must hit the SAME deployment running this
-        // function. On Vercel, VERCEL_URL is the unique deploy URL (preview
-        // or production). Falling back to SITE_URL is wrong for previews
-        // because SITE_URL points at argomethod.com and previews don't have
-        // production code yet.
+        // function. On Vercel previews, VERCEL_URL is the unique deploy URL.
         const origin = process.env.VERCEL_URL
             ? `https://${process.env.VERCEL_URL}`
             : (process.env.SITE_URL || 'https://argomethod.com');
-        const genRes = await fetch(`${origin}/api/generate-puentes`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ puentes_session_id }),
-        });
-        if (!genRes.ok) {
-            const errText = await genRes.text();
-            console.error('[puentes-complete] generate-puentes failed:', errText);
-            return res.status(500).json({ error: 'Generation failed', detail: errText });
+
+        // Generate puentes for every child of this purchase, in parallel.
+        const genResults = await Promise.allSettled(siblingIds.map(sid =>
+            fetch(`${origin}/api/generate-puentes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puentes_session_id: sid }),
+            }).then(async r => ({ id: sid, ok: r.ok, body: r.ok ? null : await r.text() })),
+        ));
+
+        const failedGens = genResults
+            .map((r, i) => ({ r, sid: siblingIds[i] }))
+            .filter(({ r }) => r.status === 'rejected' || (r.status === 'fulfilled' && !r.value.ok));
+
+        if (failedGens.length > 0 && failedGens.length === siblingIds.length) {
+            console.error('[puentes-complete] all generate-puentes calls failed', failedGens);
+            return res.status(500).json({ error: 'Generation failed' });
+        }
+        if (failedGens.length > 0) {
+            console.warn(`[puentes-complete] ${failedGens.length}/${siblingIds.length} generations failed, continuing anyway`);
         }
 
-        // Fire-and-forget the email send (its handler updates status to 'sent')
+        // Fire-and-forget the email send (its handler waits for ai_sections).
+        // We use the anchor session id since the email aggregates all
+        // children of the purchase internally.
         fetch(`${origin}/api/send-puentes-email`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ puentes_session_id }),
         }).catch(err => console.warn('[puentes-complete] send-puentes-email fire-and-forget failed:', err));
 
-        return res.status(200).json({ ok: true, profile });
+        return res.status(200).json({
+            ok: true,
+            profile,
+            children_count: siblingIds.length,
+            failed_count: failedGens.length,
+        });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error('[puentes-complete] Error:', msg);

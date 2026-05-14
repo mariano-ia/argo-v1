@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { AXIS_COLORS, AXIS_LABELS } from '../../lib/designTokens';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
@@ -9,19 +9,27 @@ import type {
     PuentesAiSections,
 } from '../../types/puentes';
 
-interface ChildProfile {
+interface ChildProfileSnapshot {
     eje: string;
     motor: string;
     archetype_label: string;
     sport: string;
 }
 
+interface ChildEntry {
+    puentes_session_id: string;
+    source_session_id: string;
+    child_name: string | null;
+    child_profile: ChildProfileSnapshot | null;
+    status: string;
+    ai_sections: PuentesAiSections | null;
+}
+
 interface Props {
-    aiSections: PuentesAiSections;
     lang: Lang;
     adultProfile?: AdultProfile | null;
-    childProfile?: ChildProfile | null;
     recipientEmail?: string | null;
+    children: ChildEntry[];
 }
 
 const EJE_ORDER: AdultAxis[] = ['D', 'I', 'S', 'C'];
@@ -50,16 +58,28 @@ const ENCOUNTER_LABEL: Record<Lang, string> = {
     pt: 'Carta de Navegação',
 };
 
+const SWITCHER_LABEL: Record<Lang, string> = {
+    es: 'Los puentes con',
+    en: 'Bridges with',
+    pt: 'As pontes com',
+};
+
 const EMAIL_NOTE: Record<Lang, (email?: string) => string> = {
     es: (email) => email
-        ? `También te enviamos este informe a ${email}. Podés revisarlo cuando quieras.`
-        : 'También te enviamos este informe por email. Podés revisarlo cuando quieras.',
+        ? `También te enviamos este informe a ${email}. Puedes revisarlo cuando quieras.`
+        : 'También te enviamos este informe por email.',
     en: (email) => email
         ? `We also sent this report to ${email}. You can revisit it whenever you want.`
-        : 'We also sent this report by email. You can revisit it whenever you want.',
+        : 'We also sent this report by email.',
     pt: (email) => email
         ? `Também enviamos este relatório para ${email}. Você pode revisitá-lo quando quiser.`
-        : 'Também enviamos este relatório por email. Você pode revisitá-lo quando quiser.',
+        : 'Também enviamos este relatório por email.',
+};
+
+const FOREVER_NOTE: Record<Lang, string> = {
+    es: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
+    en: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
+    pt: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
 };
 
 const SectionIcons: Record<string, React.ReactNode> = {
@@ -117,6 +137,11 @@ const SectionIcons: Record<string, React.ReactNode> = {
     mail: (
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="M2.5 4.5l5.5 4 5.5-4"/>
+        </svg>
+    ),
+    pending: (
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="8" cy="8" r="6.5"/><polyline points="8 4 8 8 11 10"/>
         </svg>
     ),
 };
@@ -216,8 +241,8 @@ const PressureIndicator: React.FC<PressureIndicatorProps> = ({ pressure, lang })
 interface SubBlockProps {
     label: string;
     text: string;
-    color: string;        // hex of the stripe + label tint
-    labelColor?: string;  // optional override for the label tint (e.g. for violet bridge block)
+    color: string;
+    labelColor?: string;
 }
 
 const SubBlock: React.FC<SubBlockProps> = ({ label, text, color, labelColor }) => (
@@ -256,15 +281,28 @@ const BRIDGE_ICONS = [
     SectionIcons.bridge4,
 ];
 
-export function PuentesReport({ aiSections, lang, adultProfile, childProfile, recipientEmail }: Props) {
+export function PuentesReport({
+    lang,
+    adultProfile,
+    recipientEmail,
+    children,
+}: Props) {
     const c = getPuentesCopy(lang);
+    const [activeIdx, setActiveIdx] = useState(0);
+
+    // Filter children that have ai_sections — those that don't are still
+    // generating; we still show them in the switcher with a pending state.
+    const activeChild = children[activeIdx] ?? null;
+    const ai = activeChild?.ai_sections ?? null;
 
     const adultAxis = adultProfile?.eje_primary;
     const adultAxisColor = adultAxis ? AXIS_COLORS[adultAxis] : '#955FB5';
-    const childAxis = childProfile?.eje;
+    const childAxis = activeChild?.child_profile?.eje;
     const childAxisColor = childAxis && AXIS_COLORS[childAxis] ? AXIS_COLORS[childAxis] : '#86868B';
     const violet = '#955FB5';
     const motorDisplay = adultProfile ? (MOTOR_DISPLAY[lang]?.[adultProfile.motor] ?? adultProfile.motor) : '';
+
+    const showSwitcher = useMemo(() => children.length > 1, [children]);
 
     return (
         <motion.div
@@ -272,7 +310,7 @@ export function PuentesReport({ aiSections, lang, adultProfile, childProfile, re
             animate={{ opacity: 1, y: 0 }}
             className="space-y-3 max-w-lg mx-auto w-full pb-20"
         >
-            {/* ── 1. BRÚJULA: header with adult profile ────────────────────────── */}
+            {/* ── 1. BRÚJULA: shared adult header ─────────────────────────────── */}
             <div className="bg-[#E3E3FF] border border-[#C8C8F0] rounded-xl p-7">
                 <SectionTitle title={ENCOUNTER_LABEL[lang]} icon={SectionIcons.compass} />
 
@@ -281,7 +319,6 @@ export function PuentesReport({ aiSections, lang, adultProfile, childProfile, re
                 </h1>
                 <p className="text-sm text-argo-violet-500 italic mt-1">Argo Puentes</p>
 
-                {/* Profile tags */}
                 {adultProfile && (
                     <div className="flex flex-wrap gap-1.5 mt-3.5">
                         <span
@@ -308,43 +345,90 @@ export function PuentesReport({ aiSections, lang, adultProfile, childProfile, re
                     </div>
                 )}
 
-                {/* Axis bars (only when we have raw counts) */}
                 {adultProfile?.axis_counts && (
                     <AxisBars counts={adultProfile.axis_counts} dominant={adultProfile.eje_primary} />
                 )}
 
-                {/* Pressure indicator */}
                 {adultProfile && (
                     <PressureIndicator pressure={adultProfile.pressure_style} lang={lang} />
                 )}
             </div>
 
-            {/* ── 2. SALUDO ────────────────────────────────────────────────────── */}
-            <Card>
-                <SectionTitle title={c.report.greetingLabel} icon={SectionIcons.welcome} />
-                <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{aiSections.saludo}</p>
-                <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-[#F5F5F7] rounded-xl">
-                    <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-grey">{SectionIcons.info}</span>
-                    <p className="text-[11px] text-argo-grey leading-relaxed m-0">
-                        {lang === 'en'
-                            ? 'Argo Puentes is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
-                            : lang === 'pt'
-                                ? 'Argo Puentes não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
-                                : 'Argo Puentes no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con tu hijo en el deporte.'}
+            {/* ── 2. CHILD SWITCHER (only when >1 children) ───────────────────── */}
+            {showSwitcher && (
+                <Card>
+                    <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-argo-grey mb-3">
+                        {SWITCHER_LABEL[lang]}
                     </p>
-                </div>
-            </Card>
+                    <div className="flex flex-wrap gap-2">
+                        {children.map((entry, idx) => {
+                            const eje = entry.child_profile?.eje;
+                            const color = eje && AXIS_COLORS[eje] ? AXIS_COLORS[eje] : '#86868B';
+                            const isActive = idx === activeIdx;
+                            const isReady = !!entry.ai_sections;
+                            return (
+                                <button
+                                    key={entry.puentes_session_id}
+                                    type="button"
+                                    onClick={() => isReady && setActiveIdx(idx)}
+                                    disabled={!isReady}
+                                    className={[
+                                        'px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5',
+                                        isActive
+                                            ? 'text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                            : isReady
+                                                ? 'text-argo-navy bg-argo-bg hover:bg-argo-neutral border border-argo-border'
+                                                : 'text-argo-grey bg-argo-bg border border-argo-border cursor-not-allowed opacity-60',
+                                    ].join(' ')}
+                                    style={isActive ? { backgroundColor: color } : undefined}
+                                >
+                                    <span
+                                        className="w-1.5 h-1.5 rounded-full"
+                                        style={{ backgroundColor: isActive ? '#fff' : color }}
+                                    />
+                                    {entry.child_name || '—'}
+                                    {!isReady && (
+                                        <span className="ml-1 w-3 h-3 inline-block text-argo-grey">
+                                            {SectionIcons.pending}
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </Card>
+            )}
 
-            {/* ── 3. TU ESTILO NATURAL ────────────────────────────────────────── */}
-            <Card>
-                <SectionTitle title={c.report.adultProfileLabel} icon={SectionIcons.profile} />
-                <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{aiSections.perfil_adulto_breve}</p>
-            </Card>
+            {/* ── 3. SALUDO ────────────────────────────────────────────────────── */}
+            {ai && (
+                <Card>
+                    <SectionTitle title={c.report.greetingLabel} icon={SectionIcons.welcome} />
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.saludo}</p>
+                    <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-[#F5F5F7] rounded-xl">
+                        <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-grey">{SectionIcons.info}</span>
+                        <p className="text-[11px] text-argo-grey leading-relaxed m-0">
+                            {lang === 'en'
+                                ? 'Argo Puentes is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
+                                : lang === 'pt'
+                                    ? 'Argo Puentes não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
+                                    : 'Argo Puentes no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con tu hijo en el deporte.'}
+                        </p>
+                    </div>
+                </Card>
+            )}
 
-            {/* ── 4-7. LOS 4 PUENTES ──────────────────────────────────────────── */}
-            {aiSections.puentes.map((p, idx) => (
+            {/* ── 4. TU ESTILO NATURAL ────────────────────────────────────────── */}
+            {ai && (
+                <Card>
+                    <SectionTitle title={c.report.adultProfileLabel} icon={SectionIcons.profile} />
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.perfil_adulto_breve}</p>
+                </Card>
+            )}
+
+            {/* ── 5-8. LOS 4 PUENTES of the active child ──────────────────────── */}
+            {ai?.puentes.map((p, idx) => (
                 <motion.div
-                    key={idx}
+                    key={`${activeChild?.puentes_session_id}-${idx}`}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.06 }}
@@ -378,16 +462,40 @@ export function PuentesReport({ aiSections, lang, adultProfile, childProfile, re
                 </motion.div>
             ))}
 
-            {/* ── 8. CIERRE ───────────────────────────────────────────────────── */}
-            <Card>
-                <SectionTitle title={c.report.closingLabel} icon={SectionIcons.closing} />
-                <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{aiSections.cierre}</p>
-            </Card>
+            {/* ── 9. CIERRE ───────────────────────────────────────────────────── */}
+            {ai && (
+                <Card>
+                    <SectionTitle title={c.report.closingLabel} icon={SectionIcons.closing} />
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.cierre}</p>
+                </Card>
+            )}
 
-            {/* ── 9. EMAIL NOTE (footer mention) ──────────────────────────────── */}
-            <div className="flex items-center gap-2 px-7 py-3 text-argo-grey">
-                <span className="w-4 h-4 flex-shrink-0">{SectionIcons.mail}</span>
-                <p className="text-[12px] m-0 leading-relaxed">{EMAIL_NOTE[lang](recipientEmail ?? undefined)}</p>
+            {/* If the active child is still generating */}
+            {!ai && activeChild && (
+                <Card>
+                    <div className="text-center py-8">
+                        <div className="inline-block w-10 h-10 rounded-full border-4 border-argo-violet-100 border-t-argo-violet-500 animate-spin mb-4" />
+                        <p className="text-sm text-argo-secondary">
+                            {lang === 'en'
+                                ? `We are still generating the bridges with ${activeChild.child_name}. This usually takes a few seconds.`
+                                : lang === 'pt'
+                                    ? `Ainda estamos gerando as pontes com ${activeChild.child_name}. Geralmente leva alguns segundos.`
+                                    : `Todavía estamos generando los puentes con ${activeChild.child_name}. Esto suele tardar unos segundos.`}
+                        </p>
+                    </div>
+                </Card>
+            )}
+
+            {/* ── 10. EMAIL + FOREVER NOTES ───────────────────────────────────── */}
+            <div className="px-7 py-3 text-argo-grey space-y-2">
+                <div className="flex items-center gap-2">
+                    <span className="w-4 h-4 flex-shrink-0">{SectionIcons.mail}</span>
+                    <p className="text-[12px] m-0 leading-relaxed">{EMAIL_NOTE[lang](recipientEmail ?? undefined)}</p>
+                </div>
+                <div className="flex items-start gap-2">
+                    <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-light">{SectionIcons.info}</span>
+                    <p className="text-[11px] m-0 leading-relaxed text-argo-light">{FOREVER_NOTE[lang]}</p>
+                </div>
             </div>
         </motion.div>
     );

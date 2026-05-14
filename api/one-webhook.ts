@@ -293,13 +293,31 @@ async function handlePuentesPaid(args: {
         provider_payment_id: providerPaymentId,
     }).eq('id', purchaseId);
 
-    // Create the puentes_session shell so the adult can start
-    await sb.from('puentes_sessions').insert({
+    // Multi-child support: one Argo Puentes purchase covers every Argo session
+    // that this adult email already completed (up to MAX_CHILDREN_PER_PURCHASE).
+    // The originating source_session_id is included first, followed by any
+    // siblings ordered by most recent first.
+    const MAX_CHILDREN_PER_PURCHASE = 5;
+    const { data: siblings } = await sb
+        .from('sessions')
+        .select('id, child_name, created_at')
+        .eq('adult_email', purchase.recipient_email)
+        .is('deleted_at', null)
+        .not('eje', 'eq', '_pending')
+        .order('created_at', { ascending: false });
+    const siblingIds = (siblings ?? []).map((s: any) => s.id);
+    const uniqueIds = Array.from(new Set([purchase.source_session_id, ...siblingIds])).slice(0, MAX_CHILDREN_PER_PURCHASE);
+
+    const sessionRows = uniqueIds.map(sid => ({
         purchase_id: purchase.id,
-        source_session_id: purchase.source_session_id,
+        source_session_id: sid,
         lang: purchase.lang,
-        status: 'created',
-    });
+        status: 'created' as const,
+    }));
+    if (sessionRows.length > 0) {
+        await sb.from('puentes_sessions').insert(sessionRows);
+    }
+    console.info(`[one-webhook] puentes purchase ${purchase.id} created ${sessionRows.length} sessions (multi-child)`);
 
     // Send the magic-link email. Use the preview's own URL when running on
     // a Vercel preview deployment so the magic link lands on the preview

@@ -76,6 +76,8 @@ function getCopy(lang: string) {
         pressure: 'Style under pressure',
         viewOnline: 'View report online',
         emailNote: (email: string) => `This report has also been sent to ${email}. You can revisit it at the link above whenever you want.`,
+        siblingsLabel: 'This Argo Puentes also includes',
+        foreverNote: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
         footer: 'Argo Method · Navigation Chart',
         disclaimer: 'This report is not a clinical or therapeutic service. It is an invitation to reflect.',
     };
@@ -94,6 +96,8 @@ function getCopy(lang: string) {
         pressure: 'Estilo sob pressão',
         viewOnline: 'Ver relatório online',
         emailNote: (email: string) => `Este relatório também foi enviado para ${email}. Você pode revisitá-lo no link acima quando quiser.`,
+        siblingsLabel: 'Este Argo Puentes também inclui',
+        foreverNote: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
         footer: 'Argo Method · Carta de Navegação',
         disclaimer: 'Este relatório não é um serviço clínico nem terapêutico. É um convite à reflexão.',
     };
@@ -111,7 +115,9 @@ function getCopy(lang: string) {
         closing: 'Para llevar',
         pressure: 'Estilo bajo presión',
         viewOnline: 'Ver informe en línea',
-        emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Podés volver al enlace de arriba cuando quieras.`,
+        emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Puedes volver al enlace de arriba cuando quieras.`,
+        siblingsLabel: 'Este Argo Puentes también incluye a',
+        foreverNote: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
         footer: 'Argo Method · Carta de Navegación',
         disclaimer: 'Este informe no es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
     };
@@ -225,6 +231,7 @@ function buildHtml(args: {
     magicLink: string;
     recipientEmail: string;
     lang: string;
+    siblings?: Array<{ child_name: string; child_axis?: string }>;
 }): string {
     const t = getCopy(args.lang);
     const violet = '#955FB5';
@@ -347,10 +354,28 @@ function buildHtml(args: {
         </table>
     </td></tr>
 
+    ${args.siblings && args.siblings.length > 0 ? `
+    <!-- SIBLINGS LIST (other children also covered) -->
+    <tr><td style="padding-bottom:12px;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border:1px solid #E8D9F2;border-radius:12px;">
+            <tr><td style="padding:18px 24px;">
+                <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${violet};">${t.siblingsLabel}</p>
+                <div>${args.siblings.map(s => {
+                    const color = s.child_axis && AXIS_COLOR[s.child_axis] ? AXIS_COLOR[s.child_axis] : '#86868B';
+                    return `<span style="display:inline-block;margin:0 8px 6px 0;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#fff;border:1px solid ${color}40;color:#1D1D1F;">
+                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};vertical-align:middle;margin-right:6px;"></span>
+                        ${s.child_name}
+                    </span>`;
+                }).join('')}</div>
+            </td></tr>
+        </table>
+    </td></tr>` : ''}
+
     <!-- CTA + EMAIL NOTE -->
     <tr><td style="padding-bottom:12px;text-align:center;">
         <a href="${args.magicLink}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.viewOnline}</a>
         <p style="margin:14px auto 0;max-width:420px;font-size:11px;color:#86868B;line-height:1.6;">${t.emailNote(args.recipientEmail)}</p>
+        <p style="margin:8px auto 0;max-width:440px;font-size:10px;color:#AEAEB2;line-height:1.6;">${t.foreverNote}</p>
     </td></tr>
 
     <!-- FOOTER -->
@@ -379,46 +404,83 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { puentes_session_id } = req.body as { puentes_session_id?: string };
         if (!puentes_session_id) return res.status(400).json({ error: 'Missing puentes_session_id' });
 
-        const { data: pSession, error } = await sb
+        const { data: anchor, error } = await sb
             .from('puentes_sessions')
-            .select('id, status, ai_sections, adult_profile, lang, source_session_id, purchase:puentes_purchases!purchase_id(id, magic_token, recipient_email, recipient_name, child_name, lang)')
+            .select('id, purchase_id, lang')
             .eq('id', puentes_session_id)
             .maybeSingle();
-        if (error || !pSession) return res.status(404).json({ error: 'Puentes session not found' });
-        if (!pSession.ai_sections) return res.status(400).json({ error: 'No ai_sections to send' });
+        if (error || !anchor) return res.status(404).json({ error: 'Puentes session not found' });
 
-        const purchase: any = Array.isArray(pSession.purchase) ? pSession.purchase[0] : pSession.purchase;
+        // Multi-child: send a single email covering ALL children of the
+        // same purchase. We use the "anchor" puentes_session as the email
+        // trigger, but the report covers everyone.
+        const { data: purchase } = await sb
+            .from('puentes_purchases')
+            .select('id, magic_token, recipient_email, child_name, lang')
+            .eq('id', anchor.purchase_id)
+            .maybeSingle();
         if (!purchase) return res.status(404).json({ error: 'Purchase not found' });
 
-        // Fetch child eje for the visual stripes (kept lazy since not critical)
-        let childAxis: string | undefined;
-        if (pSession.source_session_id) {
-            const { data: childSession } = await sb
+        const { data: allSessions } = await sb
+            .from('puentes_sessions')
+            .select('id, status, ai_sections, adult_profile, source_session_id, created_at')
+            .eq('purchase_id', anchor.purchase_id)
+            .order('created_at', { ascending: true });
+        const sessions = (allSessions ?? []).filter(s => !!s.ai_sections);
+        if (sessions.length === 0) return res.status(400).json({ error: 'No ai_sections to send' });
+
+        const adultProfile: AdultProfile | null = (sessions[0].adult_profile as AdultProfile | null) ?? null;
+
+        // Lookup child eje + name for each session
+        const sourceIds = sessions.map(s => s.source_session_id).filter(Boolean) as string[];
+        let childMap: Record<string, { eje?: string; child_name?: string }> = {};
+        if (sourceIds.length > 0) {
+            const { data: childRows } = await sb
                 .from('sessions')
-                .select('eje')
-                .eq('id', pSession.source_session_id)
-                .maybeSingle();
-            childAxis = childSession?.eje;
+                .select('id, eje, child_name')
+                .in('id', sourceIds);
+            for (const c of childRows ?? []) {
+                childMap[c.id] = { eje: c.eje, child_name: c.child_name };
+            }
         }
 
-        const lang = pSession.lang || purchase.lang || 'es';
+        const lang = anchor.lang || purchase.lang || 'es';
         const t = getCopy(lang);
         const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
             ? `https://${process.env.VERCEL_URL}`
             : (process.env.SITE_URL || 'https://argomethod.com');
         const magicLink = `${origin}/puentes/${purchase.magic_token}`;
 
+        // Choose which child's content goes in the email body. For
+        // multi-child, pick the anchor (the one that triggered this email
+        // send), or fall back to the most recent. The full report on the
+        // web has the switcher; the email is a digest of the anchor child.
+        const anchorSession = sessions.find(s => s.id === puentes_session_id) ?? sessions[sessions.length - 1];
+        const anchorChildName = anchorSession.source_session_id
+            ? childMap[anchorSession.source_session_id]?.child_name ?? purchase.child_name ?? ''
+            : purchase.child_name ?? '';
+        const anchorChildAxis = anchorSession.source_session_id
+            ? childMap[anchorSession.source_session_id]?.eje
+            : undefined;
+
         const html = buildHtml({
-            aiSections: pSession.ai_sections as AiSections,
-            childName: purchase.child_name || '',
-            childAxis,
-            adultProfile: (pSession.adult_profile as AdultProfile | null) ?? null,
+            aiSections: anchorSession.ai_sections as AiSections,
+            childName: anchorChildName,
+            childAxis: anchorChildAxis,
+            adultProfile,
             magicLink,
             recipientEmail: purchase.recipient_email || '',
             lang,
+            siblings: sessions
+                .filter(s => s.id !== anchorSession.id)
+                .map(s => ({
+                    child_name: s.source_session_id ? childMap[s.source_session_id]?.child_name ?? '' : '',
+                    child_axis: s.source_session_id ? childMap[s.source_session_id]?.eje : undefined,
+                }))
+                .filter(s => s.child_name),
         });
 
-        const subject = `${t.subjectPrefix} ${purchase.child_name}`;
+        const subject = `${t.subjectPrefix} ${anchorChildName}`;
 
         const sendRes = await fetch('https://api.resend.com/emails', {
             method: 'POST',
@@ -440,12 +502,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(502).json({ error: 'Resend failed', detail: err });
         }
 
+        // Mark all generated children as 'sent' (since the email aggregates them)
+        const idsToMark = sessions.map(s => s.id);
         await sb.from('puentes_sessions').update({
             status: 'sent',
             sent_at: new Date().toISOString(),
-        }).eq('id', puentes_session_id);
+        }).in('id', idsToMark);
 
-        return res.status(200).json({ ok: true });
+        return res.status(200).json({ ok: true, children_sent: idsToMark.length });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error('[send-puentes-email] Error:', msg);

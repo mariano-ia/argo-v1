@@ -5,10 +5,34 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/puentes-start
  * Body: { magic_token }
  *
- * Validates the magic link token, returns the puentes_session shell for the
- * adult to begin the questionnaire. If the report is already generated,
- * returns the ai_sections so the page can render the report directly.
+ * Validates the magic link token and returns the full purchase state with
+ * all children's puentes_sessions. One Argo Puentes purchase covers every
+ * child of the same adult (multi-child support).
+ *
+ * Response shape:
+ *   {
+ *     purchase_id, lang, recipient_email, recipient_name,
+ *     adult_profile: AdultProfile | null,  // shared across all children
+ *     overall_status: 'created' | 'answered' | 'generating' | 'generated' | 'sent',
+ *     children: [
+ *       { puentes_session_id, child_name, child_profile, status, ai_sections }
+ *     ]
+ *   }
+ *
+ * overall_status reflects the most advanced status across all children
+ * (e.g. if any child has ai_sections we consider it "generated").
  */
+
+type SessionStatus = 'created' | 'answered' | 'generating' | 'generated' | 'sent' | 'failed';
+
+const STATUS_RANK: Record<SessionStatus, number> = {
+    created: 0,
+    answered: 1,
+    generating: 2,
+    failed: 2,
+    generated: 3,
+    sent: 4,
+};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -31,38 +55,79 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (error || !purchase) return res.status(404).json({ error: 'Invalid token' });
         if (purchase.status !== 'paid') return res.status(402).json({ error: 'Purchase not paid yet' });
 
-        // Find the matching puentes_session (created on webhook confirm)
-        const { data: pSession } = await sb
+        // All puentes_sessions for this purchase (one per child)
+        const { data: pSessions } = await sb
             .from('puentes_sessions')
-            .select('id, status, ai_sections, adult_profile')
+            .select('id, status, ai_sections, adult_profile, source_session_id, created_at')
             .eq('purchase_id', purchase.id)
-            .maybeSingle();
+            .order('created_at', { ascending: true });
 
-        // Fetch the source child session for cross-profile context in the report
-        // (axis colors of the child, sport, archetype label).
-        const { data: childSession } = await sb
-            .from('sessions')
-            .select('eje, motor, archetype_label, sport, child_name')
-            .eq('id', purchase.source_session_id)
-            .maybeSingle();
+        const sessions = pSessions ?? [];
+
+        // Fetch all referenced source sessions in one query
+        const sourceIds = sessions.map(s => s.source_session_id).filter(Boolean) as string[];
+        const childMap: Record<string, any> = {};
+        if (sourceIds.length > 0) {
+            const { data: childRows } = await sb
+                .from('sessions')
+                .select('id, child_name, eje, motor, archetype_label, sport, lang')
+                .in('id', sourceIds);
+            for (const c of childRows ?? []) {
+                childMap[c.id] = c;
+            }
+        }
+
+        const children = sessions.map(s => {
+            const child = s.source_session_id ? childMap[s.source_session_id] : null;
+            return {
+                puentes_session_id: s.id,
+                source_session_id: s.source_session_id,
+                child_name: child?.child_name ?? null,
+                child_profile: child ? {
+                    eje: child.eje,
+                    motor: child.motor,
+                    archetype_label: child.archetype_label,
+                    sport: child.sport,
+                } : null,
+                status: s.status,
+                ai_sections: s.ai_sections ?? null,
+            };
+        });
+
+        // The adult_profile is the same for all children of a purchase. Use
+        // whichever has it (the questionnaire writes it to all sessions).
+        const adultProfile = sessions.find(s => !!s.adult_profile)?.adult_profile ?? null;
+
+        // Overall status: the lowest rank wins (we need ALL children
+        // generated before we declare 'generated'), but if at least one
+        // child has 'sent' that beats nothing.
+        let overall: SessionStatus = 'created';
+        if (sessions.length > 0) {
+            const ranks = sessions.map(s => STATUS_RANK[s.status as SessionStatus] ?? 0);
+            const minRank = Math.min(...ranks);
+            const rankToStatus: Record<number, SessionStatus> = {
+                0: 'created',
+                1: 'answered',
+                2: 'generating',
+                3: 'generated',
+                4: 'sent',
+            };
+            overall = rankToStatus[minRank] ?? 'created';
+        }
+
+        const alreadyAnswered = overall !== 'created';
+        const allGenerated = sessions.length > 0 && sessions.every(s => !!s.ai_sections);
 
         return res.status(200).json({
             purchase_id: purchase.id,
-            puentes_session_id: pSession?.id ?? null,
-            status: pSession?.status || 'created',
             recipient_email: purchase.recipient_email,
             recipient_name: purchase.recipient_name,
-            child_name: purchase.child_name,
             lang: purchase.lang,
-            already_generated: pSession?.status === 'generated' || pSession?.status === 'sent',
-            ai_sections: pSession?.ai_sections ?? null,
-            adult_profile: pSession?.adult_profile ?? null,
-            child_profile: childSession ? {
-                eje: childSession.eje,
-                motor: childSession.motor,
-                archetype_label: childSession.archetype_label,
-                sport: childSession.sport,
-            } : null,
+            adult_profile: adultProfile,
+            overall_status: overall,
+            already_answered: alreadyAnswered,
+            all_generated: allGenerated,
+            children,
         });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
