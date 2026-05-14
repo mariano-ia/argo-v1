@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../lib/supabase';
 import { fadeUp } from '../../lib/animations';
-import { Search, Download, Trash2, Send, Loader2, Unlock, HeartHandshake, Check, ShoppingBag } from 'lucide-react';
+import { Search, Download, Trash2, Send, Loader2, Unlock, HeartHandshake, Check, ShoppingBag, Gift } from 'lucide-react';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CHIP } from '../../lib/designTokens';
@@ -124,6 +124,8 @@ export const Sessions: React.FC = () => {
     const [grantMsg, setGrantMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
     const [puentesInviteId, setPuentesInviteId] = useState<string | null>(null);
     const [puentesInviteMsg, setPuentesInviteMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
+    const [puentesFreeId, setPuentesFreeId] = useState<string | null>(null);
+    const [puentesFreeMsg, setPuentesFreeMsg] = useState<{ ok: boolean; detail?: string } | null>(null);
     const PAGE_SIZE = 20;
 
     const [tenantMap, setTenantMap] = useState<Record<string, string>>({});
@@ -251,6 +253,44 @@ export const Sessions: React.FC = () => {
         }
     };
 
+    const handleGrantPuentesFree = async (row: UnifiedRow) => {
+        if (row.status !== 'completed' || row.puentes_state === 'purchased') return;
+        const confirm = window.confirm(`¿Invitar gratis a Argo Puentes a ${row.email}? Se le enviará un email con acceso completo sin pago.`);
+        if (!confirm) return;
+        setPuentesFreeId(row.id);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                setPuentesFreeMsg({ ok: false, detail: 'Not authenticated' });
+                return;
+            }
+            const res = await fetch('/api/admin-grant-puentes-free', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: row.id }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok) {
+                setPuentesFreeMsg({ ok: true, detail: `${data.children_included} hijo(s) incluido(s)` });
+                setRows(prev => prev.map(r => r.email?.toLowerCase() === row.email?.toLowerCase()
+                    ? { ...r, puentes_state: 'purchased' }
+                    : r));
+            } else if (res.status === 409 && data.magic_link) {
+                setPuentesFreeMsg({ ok: true, detail: 'Ya tenía Argo Puentes activo' });
+                setRows(prev => prev.map(r => r.email?.toLowerCase() === row.email?.toLowerCase()
+                    ? { ...r, puentes_state: 'purchased' }
+                    : r));
+            } else {
+                setPuentesFreeMsg({ ok: false, detail: data.error || 'Error' });
+            }
+        } catch (e) {
+            setPuentesFreeMsg({ ok: false, detail: String(e) });
+        } finally {
+            setPuentesFreeId(null);
+            setTimeout(() => setPuentesFreeMsg(null), 3500);
+        }
+    };
+
     const handleSendPuentesInvite = async (row: UnifiedRow) => {
         if (row.status !== 'completed' || row.puentes_state !== 'none') return;
         setPuentesInviteId(row.id);
@@ -356,6 +396,15 @@ export const Sessions: React.FC = () => {
                     puentesInviteMsg.ok ? 'bg-argo-violet-500 text-white' : 'bg-red-600 text-white'
                 }`}>
                     {puentesInviteMsg.ok ? 'Invitación a Argo Puentes enviada' : `Error: ${puentesInviteMsg.detail || 'desconocido'}`}
+                </div>
+            )}
+            {puentesFreeMsg && (
+                <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
+                    puentesFreeMsg.ok ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'
+                }`}>
+                    {puentesFreeMsg.ok
+                        ? `Invitación free enviada${puentesFreeMsg.detail ? ` · ${puentesFreeMsg.detail}` : ''}`
+                        : `Error: ${puentesFreeMsg.detail || 'desconocido'}`}
                 </div>
             )}
 
@@ -499,30 +548,45 @@ export const Sessions: React.FC = () => {
                                                     </button>
                                                     {row.puentes_state === 'purchased' ? (
                                                         <span
-                                                            title="Compró Argo Puentes"
+                                                            title="Argo Puentes activo (compró o invitado free)"
                                                             className="text-green-600 p-1 inline-flex items-center"
                                                         >
                                                             <ShoppingBag size={14} />
                                                         </span>
-                                                    ) : row.puentes_state === 'invite_sent' ? (
-                                                        <span
-                                                            title={`Invitación a Puentes ya enviada${row.puentes_invite_at ? ` el ${new Date(row.puentes_invite_at).toLocaleDateString('es-AR')}` : ''}`}
-                                                            className="text-argo-violet-500/60 p-1 inline-flex items-center"
-                                                        >
-                                                            <Check size={14} />
-                                                        </span>
                                                     ) : (
+                                                        <>
+                                                        {row.puentes_state === 'invite_sent' ? (
+                                                            <span
+                                                                title={`Invitación a Puentes ya enviada${row.puentes_invite_at ? ` el ${new Date(row.puentes_invite_at).toLocaleDateString('es-AR')}` : ''}`}
+                                                                className="text-argo-violet-500/60 p-1 inline-flex items-center"
+                                                            >
+                                                                <Check size={14} />
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleSendPuentesInvite(row)}
+                                                                disabled={puentesInviteId === row.id || !row.email}
+                                                                title="Enviar invitación a Argo Puentes (con pago)"
+                                                                className="text-argo-grey/40 hover:text-argo-violet-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            >
+                                                                {puentesInviteId === row.id
+                                                                    ? <Loader2 size={14} className="animate-spin" />
+                                                                    : <HeartHandshake size={14} />
+                                                                }
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => handleSendPuentesInvite(row)}
-                                                            disabled={puentesInviteId === row.id || !row.email}
-                                                            title="Enviar invitación a Argo Puentes"
-                                                            className="text-argo-grey/40 hover:text-argo-violet-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onClick={() => handleGrantPuentesFree(row)}
+                                                            disabled={puentesFreeId === row.id || !row.email}
+                                                            title="Invitar free a Argo Puentes (sin pago)"
+                                                            className="text-argo-grey/40 hover:text-emerald-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
-                                                            {puentesInviteId === row.id
+                                                            {puentesFreeId === row.id
                                                                 ? <Loader2 size={14} className="animate-spin" />
-                                                                : <HeartHandshake size={14} />
+                                                                : <Gift size={14} />
                                                             }
                                                         </button>
+                                                        </>
                                                     )}
                                                     </>
                                                 )}
