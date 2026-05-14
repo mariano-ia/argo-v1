@@ -64,6 +64,7 @@ const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({
 const PuentesFlow         = lazy(() => import('./pages/PuentesFlow'));
 const PuentesCheckout     = lazy(() => import('./pages/PuentesCheckout'));
 const PuentesCheckoutSuccess = lazy(() => import('./pages/PuentesCheckoutSuccess'));
+const Deck                = lazy(() => import('./pages/Deck').then(m => ({ default: m.Deck })));
 
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
@@ -237,6 +238,7 @@ function App() {
             <Route path="/puentes/checkout/success" element={<PuentesCheckoutSuccess />} />
             <Route path="/puentes/checkout/cancel"  element={<PuentesCheckout />} />
             <Route path="/puentes/:token"           element={<PuentesFlow />} />
+            <Route path="/deck"       element={<Deck />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
                 <Route path="/consent/:token" element={<ConsentLanding />} />
