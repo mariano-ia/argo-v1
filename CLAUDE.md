@@ -172,6 +172,12 @@ Admin can grant `full_access` on any session — regenerates AI if missing befor
 ### Status colors (semantic)
 Use standard Tailwind for status: `red-*` (error), `green-*` (success), `amber-*` (warning), `blue-*` (info). Do NOT create argo-* tokens for these.
 
+### Hover and touch behavior
+Tailwind `hover:` utilities are gated by `@media (hover: hover) and (pointer: fine)` via `future.hoverOnlyWhenSupported: true` in `tailwind.config.js`. Hover styles fire on desktop (mouse) but **never on touch devices**. This prevents iOS Safari sticky `:hover` from making the previously tapped button position look "pre-selected" when a new screen mounts.
+- For touch feedback on press, use `active:*` (fires only during tap, releases on touchend).
+- Do not rely on `hover:` for any state that must be visible on mobile.
+- Never disable this flag without a deliberate UX decision and re-testing the questionnaire flows.
+
 ### What NOT to do
 - Do not define `EJE_COLORS`, `EJE_COLOR`, `AXIS_DOT` locally — use `designTokens.ts`
 - Do not use `style={{ color: '#1D1D1F' }}` — use `text-argo-navy`
