@@ -4,6 +4,13 @@ export default {
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
+    future: {
+        // Prevents iOS Safari sticky :hover after tap. Without this, hover
+        // styles fire on touch and persist until the next tap elsewhere,
+        // which makes the same option position look "pre-selected" when
+        // the next question mounts.
+        hoverOnlyWhenSupported: true,
+    },
     theme: {
         extend: {
             colors: {
