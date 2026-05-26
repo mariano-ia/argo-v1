@@ -41,6 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: tenants } = await sb
             .from('tenants')
             .select('id, display_name, email, plan, ai_queries_count, ai_queries_reset_at')
+            .neq('is_synthetic', true) // exclude synthetic QA tenant from AI usage
             .order('ai_queries_count', { ascending: false });
 
         // Get AI costs from sessions (report generation) per tenant
