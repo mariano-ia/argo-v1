@@ -1,0 +1,43 @@
+name: QA Robots
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+jobs:
+  content-lint:
+    runs-on: ubuntu-latest
+    # Non-blocking for now: the repo has a known backlog of Spanish copy with em dashes (see
+    # docs/qa/README.md). The per-edit hook (.claude/scripts/check-voseo.sh) is the hard gate for
+    # new code. Flip continue-on-error to false once the backlog is cleared.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npm run lint:content
+
+  e2e:
+    runs-on: ubuntu-latest
+    env:
+      QA_BASE_URL: ${{ secrets.QA_PREVIEW_URL }}
+      QA_TENANT_SLUG: qa-robot
+      QA_TENANT_EMAIL: ${{ secrets.QA_TENANT_EMAIL }}
+      QA_TENANT_PASSWORD: ${{ secrets.QA_TENANT_PASSWORD }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: MONKEY_RUNS=3 npm run test:monkey
+      - name: Cleanup synthetic sessions
+        if: always()
+        run: node -e "import('./scripts/qa/lib/qa-env.mjs').then(async m=>{const sb=m.supabaseAdmin();const id=await m.getQaTenantId(sb);await m.cleanupSyntheticSessions(sb,id);console.log('cleaned');})"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: playwright-report/ }
