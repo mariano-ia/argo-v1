@@ -13,7 +13,7 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         {
             id: 'adult_intro_2',
             title: '12 decisiones. Una aventura.',
-            body: 'El deportista navega una historia ambientada en el mundo del Argo —la nave legendaria— y toma 12 decisiones que, sin saberlo, revelan su perfil comportamental. No hay respuestas correctas ni incorrectas. Solo elecciones auténticas.',
+            body: 'El deportista navega una historia ambientada en el mundo del Argo (la nave legendaria) y toma 12 decisiones que, sin saberlo, revelan su perfil comportamental. No hay respuestas correctas ni incorrectas. Solo elecciones auténticas.',
         },
         {
             id: 'adult_intro_3',

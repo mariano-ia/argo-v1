@@ -277,7 +277,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 
                 {/* Re-profile badge */}
                 {needsReprofile && (
-                    <Tooltip text={lang === 'en' ? `${months} months since last profile — we recommend a new session` : lang === 'pt' ? `${months} meses desde o último perfil — recomendamos uma nova sessão` : `${months} meses desde el último perfil — recomendamos una nueva sesión`} maxWidth={220}>
+                    <Tooltip text={lang === 'en' ? `${months} months since last profile — we recommend a new session` : lang === 'pt' ? `${months} meses desde o último perfil — recomendamos uma nova sessão` : `${months} meses desde el último perfil, recomendamos una nueva sesión`} maxWidth={220}>
                         <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0 hidden sm:flex">
                             <AlertCircle size={10} />
                             {dt.players.rePerfilar}
