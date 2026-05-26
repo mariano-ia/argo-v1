@@ -1,8 +1,8 @@
 // scripts/qa/lint-content.mjs
 // Repo-wide content linter: scans src/ for voseo + dashes in Spanish string/JSX text.
 // Run: npm run lint:content  (exits non-zero on findings)
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, extname } from 'node:path';
+import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { join, extname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { hasVoseo, hasDash } from './lib/scoring.mjs';
 
@@ -56,6 +56,21 @@ function walk(dir, acc = []) {
 // Only run the scan when executed directly (not when imported by the test).
 // Use fileURLToPath so paths with spaces (e.g. "Argo Project") compare correctly.
 if (process.argv[1] && process.argv[1] === fileURLToPath(import.meta.url)) {
+  const fileArgIdx = process.argv.indexOf('--file');
+  if (fileArgIdx !== -1) {
+    // Single-file mode: used by the per-edit hook. Exits 2 (block) on findings, 0 otherwise.
+    const target = process.argv[fileArgIdx + 1];
+    if (!target || !existsSync(target)) process.exit(0);
+    const findings = scanContent(readFileSync(target, 'utf8'), target);
+    if (findings.length) {
+      console.error(`CONTENT LINT en ${basename(target)} (voseo/guiones en copy en español):`);
+      for (const x of findings) console.error(`  L${x.line} [${x.type}] ${x.text}`);
+      console.error('Usar tuteo (no voseo) y evitar em/en dash (—/–) en copy ES. Usar punto, coma o parentesis.');
+      process.exit(2);
+    }
+    process.exit(0);
+  }
+  // Repo-wide mode (CI). Exits 1 on findings.
   const files = walk('src');
   let all = [];
   for (const f of files) all = all.concat(scanContent(readFileSync(f, 'utf8'), f));

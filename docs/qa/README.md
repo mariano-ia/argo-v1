@@ -39,16 +39,21 @@ QA_ALERT_EMAIL=marianonoceti@gmail.com
 ```
 Reutiliza: `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `GEMINI_API_KEY`, `RESEND_API_KEY`, `CRON_SECRET`.
 
-## Estado de activación (pendiente de infraestructura)
+## Estado de activación
 
-Estas tareas requieren acción humana (tocan prod / servicios externos):
+**Hecho (2026-05-26):**
+- ✅ Migración Supabase: columna `is_synthetic` en `tenants` + tenant `qa-robot` (is_synthetic=true, trial 100 años, roster 50) + usuario auth `qa-robot@argomethod.test` (credenciales en `.env`).
+- ✅ AI eval corrido contra prod: 7/7 PASS (4 reportes + 3 chat).
+- ✅ Health checks contra prod: 3/3 PASS.
+- ✅ Linter de contenido limpio (0 hallazgos). Hook + CI bloqueantes.
 
-1. **Migración Supabase**: agregar columna `is_synthetic` a `tenants` + crear tenant `qa-robot` + usuario auth de prueba (Task 0.2).
-2. **Task 0.4**: filtrar `is_synthetic` en `admin-tenants.ts`, `admin-revenue.ts`, `admin-ai-usage.ts`. NO deployar antes de la migración (rompería el admin por columna faltante).
-3. **Vercel env vars**: cargar las `QA_*` en el proyecto.
-4. **GitHub secrets**: `QA_PREVIEW_URL`, `QA_TENANT_EMAIL`, `QA_TENANT_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`.
-5. **Selectores E2E**: confirmar con `npx playwright codegen <preview>/play/qa-robot` y ajustar los `getByLabel`/`getByRole` de los specs.
+**Pendiente de acción humana (servicios externos):**
+1. **Task 0.4**: filtrar `is_synthetic` en `admin-tenants.ts`, `admin-revenue.ts`, `admin-ai-usage.ts` para que `qa-robot` no aparezca en métricas. (La columna ya existe, así que es seguro hacerlo cuando quieras.)
+2. **Vercel env vars**: cargar las `QA_*` en el proyecto (para que el cron `qa-monitor` use el tenant de prueba y alerte).
+3. **GitHub secrets**: `QA_PREVIEW_URL`, `QA_TENANT_EMAIL`, `QA_TENANT_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`.
+4. **Selectores E2E**: confirmar con `npx playwright codegen <preview>/play/qa-robot` y ajustar los `getByLabel`/`getByRole` de los specs antes de confiar en los E2E de navegador.
+5. **Vercel**: confirmar que el plan permite el 5º cron.
 
-## Linter de contenido: backlog conocido
+## Linter de contenido
 
-`npm run lint:content` reporta hoy **8 hallazgos reales** (em dash en copy en español). El job de CI `content-lint` está en `continue-on-error: true` hasta limpiar ese backlog. El hook por-edición (`.claude/scripts/check-voseo.sh`) es el gate duro para código nuevo (voseo + guiones).
+`npm run lint:content` está **limpio** (0 hallazgos). El job de CI `content-lint` es **bloqueante**. El hook por-edición (`.claude/scripts/check-voseo.sh`) delega en `scripts/qa/lint-content.mjs` (misma lógica), así que es language-aware: bloquea voseo y em/en dash en copy **español**, pero ignora EN/PT y strings de debug.

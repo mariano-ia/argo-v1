@@ -7,10 +7,9 @@ on:
 jobs:
   content-lint:
     runs-on: ubuntu-latest
-    # Non-blocking for now: the repo has a known backlog of Spanish copy with em dashes (see
-    # docs/qa/README.md). The per-edit hook (.claude/scripts/check-voseo.sh) is the hard gate for
-    # new code. Flip continue-on-error to false once the backlog is cleared.
-    continue-on-error: true
+    # Blocking gate: the repo is clean of voseo/dash violations (backlog cleared 2026-05-26).
+    # The per-edit hook (.claude/scripts/check-voseo.sh) catches new violations before commit;
+    # this job is the CI backstop. Both share scripts/qa/lint-content.mjs as source of truth.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

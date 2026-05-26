@@ -51,7 +51,8 @@ export async function runEval(): Promise<number> {
 
   // ── Chat eval ──────────────────────────────────────────────────────────
   lines.push('\n## Chat (tenant-chat)\n');
-  const sb = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  // signInWithPassword uses the anon (publishable) key, not the service role key.
+  const sb = createClient(process.env.VITE_SUPABASE_URL!, process.env.VITE_SUPABASE_ANON_KEY!);
   const { data: auth } = await sb.auth.signInWithPassword({
     email: process.env.QA_TENANT_EMAIL!, password: process.env.QA_TENANT_PASSWORD!,
   });
@@ -66,9 +67,12 @@ export async function runEval(): Promise<number> {
           method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ message: c.message, lang: 'es' }),
         });
-        const body = await r.json() as Record<string, unknown>;
-        // tenant-chat returns the assistant text; key confirmed against api/tenant-chat.ts.
-        const answer = String(body.reply ?? body.message ?? body.content ?? JSON.stringify(body));
+        const body = await r.json() as { message?: unknown; reply?: unknown; content?: unknown };
+        // tenant-chat returns { thread_id, message: { role, content }, usage }. Extract the text.
+        const m = body.message;
+        const answer = typeof m === 'string'
+          ? m
+          : String((m as { content?: unknown })?.content ?? body.reply ?? body.content ?? '');
         const s = scoreText(answer, { requireProbabilistic: c.requireProbabilistic });
         if (r.status !== 200) issues.push(`status ${r.status}`);
         if (!s.ok) issues.push(...s.issues);
