@@ -51,4 +51,14 @@ if [ -n "$MATCHES" ]; then
   exit 2
 fi
 
+# Em dash (—) / en dash (–) detection in Spanish string literals.
+DASH_MATCHES=$(grep -n -E "['\"][^'\"]*[—–]" "$FILE" 2>/dev/null | head -5)
+if [ -n "$DASH_MATCHES" ]; then
+  echo "GUION LARGO DETECTADO en $(basename "$FILE")"
+  echo "No usar em dash (—) ni en dash (–) en copy. Usar puntos, comas o parentesis."
+  echo ""
+  echo "$DASH_MATCHES"
+  exit 2
+fi
+
 exit 0

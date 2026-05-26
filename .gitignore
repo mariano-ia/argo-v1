@@ -38,3 +38,12 @@ design-system/assets/
 
 # Local previews (email templates, etc.)
 preview/
+
+# Playwright (QA robots)
+test-results/
+playwright-report/
+playwright/.cache/
+/blob-report/
+
+# QA eval output (regenerated each run)
+docs/qa/ai-eval-report.md
