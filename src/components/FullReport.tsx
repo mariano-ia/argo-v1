@@ -641,10 +641,6 @@ export const FullReport: React.FC<FullReportProps> = ({ report, aiActive, aiLoad
                 <p className="text-[11px] text-[#86868B] leading-relaxed">
                     <span className="font-extrabold">Argo</span>
                     <span className="font-thin"> Method</span>
-                    {' '}
-                    <span className="inline-block bg-[#BBBCFF] text-[#1D1D1F] text-[8px] font-semibold px-1.5 py-0.5 rounded align-middle ml-0.5 tracking-wide">
-                        beta
-                    </span>
                 </p>
                 <p className="text-[11px] text-[#86868B] mt-0.5">{ot.designedBy}</p>
             </div>

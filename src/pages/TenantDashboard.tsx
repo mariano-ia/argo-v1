@@ -243,8 +243,7 @@ export const TenantDashboard: React.FC = () => {
                                 <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                                     <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
                                 </span>
-                                <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
-                            </div>
+                                                            </div>
                             {!mobile && (
                                 <Tooltip text={lang === 'en' ? 'Collapse' : lang === 'pt' ? 'Recolher' : 'Colapsar'}>
                                     <button onClick={() => setCollapsed(true)} className="text-argo-light hover:text-argo-grey transition-colors p-1 rounded-lg hover:bg-argo-bg">
@@ -405,8 +404,7 @@ export const TenantDashboard: React.FC = () => {
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
                     </span>
-                    <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
-                </div>
+                                    </div>
 
                 <main className="flex-1 overflow-y-auto p-6 md:px-12 md:py-10">
                     {tenant && !tenant.onboarding_completed ? (

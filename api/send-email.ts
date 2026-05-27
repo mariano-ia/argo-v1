@@ -275,7 +275,6 @@ function buildHtml(params: {
         <tr>
           <td>
             <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;"> Method</span>
-            <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:0.05em;margin-left:8px;vertical-align:middle;">beta</span>
           </td>
         </tr>
         <tr>

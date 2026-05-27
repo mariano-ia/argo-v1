@@ -440,8 +440,7 @@ export const ReportPage: React.FC = () => {
                 <div className="flex items-center gap-1.5">
                     <span className="font-[800] text-base tracking-tight text-argo-navy">Argo</span>
                     <span className="font-[100] text-base text-argo-grey"> Method</span>
-                    <span className="ml-1.5 bg-[#BBBCFF] text-argo-navy text-[9px] font-semibold px-1.5 py-0.5 rounded tracking-[0.05em]">beta</span>
-                </div>
+                                    </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleCopy}
