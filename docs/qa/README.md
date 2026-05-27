@@ -41,18 +41,19 @@ Reutiliza: `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`, `GEMINI_API_KEY`, `
 
 ## Estado de activación
 
-**Hecho (2026-05-26):**
-- ✅ Migración Supabase: columna `is_synthetic` en `tenants` + tenant `qa-robot` (is_synthetic=true, trial 100 años, roster 50) + usuario auth `qa-robot@argomethod.test` (credenciales en `.env`).
-- ✅ AI eval corrido contra prod: 7/7 PASS (4 reportes + 3 chat).
-- ✅ Health checks contra prod: 3/3 PASS.
+**Hecho:**
+- ✅ Migración Supabase: columna `is_synthetic` + tenant `qa-robot` (is_synthetic=true, plan pro, roster 50) + usuario auth `qa-robot@argomethod.test` (credenciales en `.env`).
+- ✅ Task 0.4: `qa-robot` excluido de métricas del admin (tenants/revenue/ai-usage).
+- ✅ AI eval contra prod: 7/7 PASS. Health checks: 3/3 PASS.
+- ✅ E2E validado contra prod: 10 passed / 3 skipped / 0 failed.
 - ✅ Linter de contenido limpio (0 hallazgos). Hook + CI bloqueantes.
+- ✅ CI de GitHub Actions configurado para correr **verde sin ningún secreto** (los tests con login se saltean solos hasta cargar credenciales).
 
-**Pendiente de acción humana (servicios externos):**
-1. **Task 0.4**: filtrar `is_synthetic` en `admin-tenants.ts`, `admin-revenue.ts`, `admin-ai-usage.ts` para que `qa-robot` no aparezca en métricas. (La columna ya existe, así que es seguro hacerlo cuando quieras.)
-2. **Vercel env vars**: cargar las `QA_*` en el proyecto (para que el cron `qa-monitor` use el tenant de prueba y alerte).
-3. **GitHub secrets**: `QA_PREVIEW_URL`, `QA_TENANT_EMAIL`, `QA_TENANT_PASSWORD`, `SUPABASE_SERVICE_ROLE_KEY`, `VITE_SUPABASE_URL`.
-4. **Selectores E2E**: confirmar con `npx playwright codegen <preview>/play/qa-robot` y ajustar los `getByLabel`/`getByRole` de los specs antes de confiar en los E2E de navegador.
-5. **Vercel**: confirmar que el plan permite el 5º cron.
+**Opcional (mejora la cobertura, no es bloqueante):**
+1. **Secretos en GitHub** (Settings → Secrets and variables → Actions → New repository secret) para activar el test de login del tenant: `QA_TENANT_EMAIL` y `QA_TENANT_PASSWORD` (ambos en `.env`). Sin ellos, ese test aparece como "skipped" y el resto corre igual.
+2. **Variable en GitHub** `QA_BASE_URL` (pestaña Variables, no Secrets) apuntando a la preview de develop (`https://v0-argo-v1-git-develop-marianonoceti-gmailcoms-projects.vercel.app`) para testear el código pusheado en vez de prod. Requiere que la protección de preview de Vercel esté off o un bypass.
+3. **Vercel**: confirmar que el plan permite el 5º cron (`qa-monitor`). Las env vars `QA_*` ya están cargadas en Vercel.
+4. **Ganchos de test** para automatizar la odisea completa + chat por navegador: un `data-testid` en el checkbox de consentimiento y un modo demo que saltee los mini-juegos.
 
 ## Linter de contenido
 

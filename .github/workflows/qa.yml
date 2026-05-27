@@ -8,8 +8,7 @@ jobs:
   content-lint:
     runs-on: ubuntu-latest
     # Blocking gate: the repo is clean of voseo/dash violations (backlog cleared 2026-05-26).
-    # The per-edit hook (.claude/scripts/check-voseo.sh) catches new violations before commit;
-    # this job is the CI backstop. Both share scripts/qa/lint-content.mjs as source of truth.
+    # Runs on the checked-out code, so it always tests the pushed branch. Needs no secrets.
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,13 +18,18 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    # Green with ZERO secrets: the credentialed tests (login, parked chat) auto-skip unless the
+    # QA_TENANT_* secrets are set; the rest (player entry, signup gate, API/cron health, form fuzz)
+    # run against QA_BASE_URL. Defaults to prod (public + reliable). To test the pushed code instead,
+    # set the repo VARIABLE QA_BASE_URL to the develop preview:
+    #   https://v0-argo-v1-git-develop-marianonoceti-gmailcoms-projects.vercel.app
+    # (requires Vercel preview protection to be off or a bypass). The specs are non-mutating
+    # (no sessions created), so no DB cleanup step / service-role key is needed.
     env:
-      QA_BASE_URL: ${{ secrets.QA_PREVIEW_URL }}
-      QA_TENANT_SLUG: qa-robot
+      QA_BASE_URL: ${{ vars.QA_BASE_URL || 'https://www.argomethod.com' }}
+      QA_TENANT_SLUG: ${{ vars.QA_TENANT_SLUG || 'qa-robot' }}
       QA_TENANT_EMAIL: ${{ secrets.QA_TENANT_EMAIL }}
       QA_TENANT_PASSWORD: ${{ secrets.QA_TENANT_PASSWORD }}
-      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,9 +38,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: MONKEY_RUNS=3 npm run test:monkey
-      - name: Cleanup synthetic sessions
-        if: always()
-        run: node -e "import('./scripts/qa/lib/qa-env.mjs').then(async m=>{const sb=m.supabaseAdmin();const id=await m.getQaTenantId(sb);await m.cleanupSyntheticSessions(sb,id);console.log('cleaned');})"
       - uses: actions/upload-artifact@v4
         if: failure()
         with: { name: playwright-report, path: playwright-report/ }
