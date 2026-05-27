@@ -1620,15 +1620,13 @@ export const Landing: React.FC = () => {
 
             {/* ── FOOTER ── */}
             <footer style={{ borderTop: '1px solid #D2D2D7', backgroundColor: '#E3E3FF' }} className="py-10">
-                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col items-center gap-5">
-                    <CoppaBadge />
-                </div>
-                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4 mt-5">
+                <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                         </span>
-                                            </div>
+                        <CoppaBadge />
+                    </div>
                     <div style={{ fontWeight: 400, fontSize: '11px', color: '#86868B', letterSpacing: '0.06em' }}
                          className="flex items-center gap-6 uppercase flex-wrap justify-center md:justify-end">
                         <span>v{APP_VERSION}</span>
