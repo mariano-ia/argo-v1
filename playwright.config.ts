@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import 'dotenv/config'; // load QA_* + QA_BASE_URL from .env for local runs (no-op in CI)
 
 const BASE_URL = process.env.QA_BASE_URL || 'http://localhost:4173';
 
