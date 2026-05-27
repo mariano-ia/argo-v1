@@ -109,7 +109,6 @@ const html = `<!DOCTYPE html>
             <span style="font-size:18px;letter-spacing:-0.02em;color:#ffffff;">
                 <span style="font-weight:800;">Argo</span><span style="font-weight:100;"> Method</span>
             </span>
-            <span style="background:#BBBCFF;color:#1D1D1F;font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;margin-left:6px;">beta</span>
         </div>
         <h1 style="margin:0;font-size:24px;font-weight:300;color:#ffffff;letter-spacing:-0.5px;">
             Informe de Sintonía

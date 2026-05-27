@@ -67,10 +67,7 @@ export const BlogIndex: React.FC = () => {
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
                         </span>
-                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>
-                            beta
-                        </span>
-                    </Link>
+                                            </Link>
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => navigate('/signup?login=1')}

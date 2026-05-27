@@ -133,8 +133,7 @@ export const SetPassword: React.FC = () => {
                         <span style={{ fontWeight: 800 }}>Argo</span>
                         <span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
                     </span>
-                    <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">beta</span>
-                </div>
+                                    </div>
 
                 <div>
                     <h1 className="text-xl font-bold text-argo-navy">{c.title}</h1>

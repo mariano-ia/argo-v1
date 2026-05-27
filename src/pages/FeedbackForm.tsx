@@ -137,8 +137,7 @@ export const FeedbackForm: React.FC = () => {
                             <span className="font-extrabold">Argo</span>
                             <span className="font-extralight"> Method</span>
                         </span>
-                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
-                    </div>
+                                            </div>
                     <h1 className="font-quest text-2xl font-bold text-gray-900 mb-2">
                         {t.thankTitle}
                     </h1>
@@ -167,8 +166,7 @@ export const FeedbackForm: React.FC = () => {
                             <span className="font-extrabold">Argo</span>
                             <span className="font-extralight"> Method</span>
                         </span>
-                        <span style={{ background: '#BBBCFF', color: '#1D1D1F', fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>beta</span>
-                    </div>
+                                            </div>
                     <h1 className="font-quest text-xl font-bold text-gray-900 mt-4">
                         {t.pageTitle}
                     </h1>

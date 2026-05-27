@@ -35,20 +35,7 @@ export const LanguageSelect: React.FC<Props> = ({ onContinue }) => {
                     <span style={{ fontWeight: 800 }}>Argo</span>
                     <span style={{ fontWeight: 100 }}> Method</span>
                 </span>
-                <span
-                    style={{
-                        background: '#BBBCFF',
-                        color: '#1D1D1F',
-                        fontSize: '9px',
-                        fontWeight: 600,
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        letterSpacing: '0.05em',
-                    }}
-                >
-                    beta
-                </span>
-            </div>
+                            </div>
 
             {/* Center: Prompt — trilingual since no language chosen yet */}
             <div className="flex flex-col gap-5">
