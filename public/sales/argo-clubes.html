@@ -291,13 +291,190 @@ strong { color: var(--text-primary); font-weight: 600; }
 .qr-box i { color: var(--accent); }
 .qr-box span { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; }
 
+.img-placeholder {
+  background: #F0F0F2;
+  border: 1.5px dashed #D2D2D7;
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; padding: 18px;
+  text-align: center; color: var(--text-muted);
+  width: 100%;
+}
+.img-placeholder i { color: var(--text-light); width: 26px; height: 26px; }
+.img-placeholder .ip-label {
+  font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em;
+  font-weight: 600; color: var(--text-light);
+}
+.img-placeholder .ip-desc {
+  font-size: 0.78rem; color: var(--text-muted); line-height: 1.4;
+  max-width: 320px; margin: 0;
+}
+.img-placeholder--sq { aspect-ratio: 1; padding: 10px; }
+.img-placeholder--sq .ip-desc { font-size: 0.68rem; }
+.img-placeholder--hero { aspect-ratio: 4/3; padding: 24px; }
+.img-placeholder--banner { aspect-ratio: 16/7; padding: 22px; }
+
+/* Blob organic shape (slide 3) */
+.img-placeholder--blob {
+  aspect-ratio: 4/5;
+  border-radius: 62% 38% 70% 30% / 48% 62% 38% 52%;
+  padding: 38px;
+  background: linear-gradient(140deg, #F2EAFB 0%, #E8F0FC 100%);
+  border: 1.5px dashed #C8B6DC;
+  box-shadow: 0 24px 60px rgba(122, 77, 150, 0.12);
+}
+.img-placeholder--blob .ip-desc { max-width: 240px; font-size: 0.82rem; }
+
+/* Circle */
+.img-placeholder--circle {
+  aspect-ratio: 1; border-radius: 50%;
+  padding: 36px;
+  background: linear-gradient(150deg, #F9F5FC 0%, #EDE5F5 100%);
+  border: 1.5px dashed #C8B6DC;
+  box-shadow: 0 20px 50px rgba(122, 77, 150, 0.14);
+}
+
+/* Polaroid (tilted, white frame) */
+.img-placeholder--polaroid {
+  aspect-ratio: 4/5;
+  background: #fff;
+  border: 1.5px dashed #D2D2D7;
+  padding: 14px 14px 32px;
+  border-radius: 4px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.14);
+  transform: rotate(-6deg);
+  transition: transform 0.4s var(--ease-out);
+  position: relative;
+}
+.img-placeholder--polaroid .ip-desc { font-size: 0.7rem; max-width: 140px; }
+.img-placeholder--polaroid::after {
+  content: ''; position: absolute; left: 14px; right: 14px; top: 14px; bottom: 38px;
+  border: 1.5px dashed #E8E8ED; border-radius: 2px;
+  pointer-events: none;
+}
+
+/* Full-bleed background placeholder (cover) */
+.img-placeholder--bg {
+  position: absolute;
+  inset: 28px;
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(122,77,150,0.06), transparent 60%),
+    repeating-linear-gradient(45deg, #F0F0F2 0px, #F0F0F2 8px, #F5F5F7 8px, #F5F5F7 16px);
+  border: 1.5px dashed #C8C8CD;
+  z-index: 0;
+  padding: 0;
+  display: flex; align-items: flex-start; justify-content: flex-start;
+}
+.img-placeholder--bg .ip-floating {
+  margin: 24px;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex; align-items: flex-start; gap: 10px;
+  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.img-placeholder--bg .ip-floating i { color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.img-placeholder--bg .ip-floating .ip-desc {
+  font-size: 0.78rem; color: var(--text-secondary); text-align: left; max-width: none;
+}
+.img-placeholder--bg .ip-floating .ip-label {
+  display: block; margin-bottom: 4px; color: var(--accent);
+}
+
+.img-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: #F0F0F2;
+  border: 1.5px dashed #D2D2D7;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--text-light); flex-shrink: 0;
+}
+.img-avatar i { width: 18px; height: 18px; }
+.img-avatar--sm { width: 32px; height: 32px; }
+.img-avatar--sm i { width: 14px; height: 14px; }
+.img-avatar--ring-orange { border-style: solid; border-color: var(--axis-impulsor); border-width: 2px; box-shadow: 0 0 0 2px #FFF7ED; }
+.img-avatar--ring-green { border-style: solid; border-color: var(--axis-sosten); border-width: 2px; box-shadow: 0 0 0 2px #F0FDF4; }
+
+/* ─── Editorial full-bleed (cover background photo) ─── */
+.img-placeholder--editorial-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    linear-gradient(170deg, rgba(122,77,150,0.22) 0%, rgba(29,29,31,0.55) 100%),
+    repeating-linear-gradient(45deg, #DCD7E4 0px, #DCD7E4 12px, #E8E3F0 12px, #E8E3F0 24px);
+  padding: 0; border: none; border-radius: 0;
+  display: block;
+}
+.img-placeholder--editorial-bg .ip-floating {
+  position: absolute; bottom: 28px; right: 28px;
+  background: rgba(255,255,255,0.94); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; max-width: 320px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+}
+.img-placeholder--editorial-bg .ip-floating i { color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.img-placeholder--editorial-bg .ip-floating .ip-label { display: block; margin-bottom: 3px; color: var(--accent); }
+.img-placeholder--editorial-bg .ip-floating .ip-desc { font-size: 0.72rem; color: var(--text-secondary); text-align: left; max-width: none; line-height: 1.45; }
+
+/* ─── Editorial side (photo breaks out of column, sharp edges) ─── */
+.img-placeholder--editorial-side {
+  width: calc(100% + 90px);
+  margin-left: -90px;
+  aspect-ratio: 5/6;
+  border-radius: 4px;
+  background:
+    linear-gradient(135deg, rgba(122,77,150,0.14) 0%, rgba(29,29,31,0.35) 100%),
+    repeating-linear-gradient(45deg, #E2DCEC 0px, #E2DCEC 10px, #ECE7F2 10px, #ECE7F2 20px);
+  border: 1.5px dashed #B8A8CC;
+  padding: 24px;
+  position: relative;
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.10);
+}
+.img-placeholder--editorial-side .ip-floating {
+  background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; max-width: 260px;
+  display: flex; gap: 10px; align-items: flex-start;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.10);
+}
+.img-placeholder--editorial-side .ip-floating i { color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; margin-top: 2px; }
+.img-placeholder--editorial-side .ip-floating .ip-label { display: block; margin-bottom: 3px; color: var(--accent); }
+.img-placeholder--editorial-side .ip-floating .ip-desc { font-size: 0.72rem; color: var(--text-secondary); text-align: left; max-width: none; line-height: 1.45; }
+
+/* ─── Bento grid (closing collage, asymmetric tiles) ─── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(4, 76px);
+  gap: 10px;
+  max-width: 540px;
+  margin: 0 auto 36px;
+}
+.bento-grid .img-placeholder {
+  padding: 12px; border-radius: 10px; gap: 4px;
+  border-width: 1px; aspect-ratio: auto;
+}
+.bento-grid .img-placeholder i { width: 18px; height: 18px; }
+.bento-grid .img-placeholder .ip-desc { font-size: 0.62rem; max-width: none; line-height: 1.3; }
+.bento-grid .bt-1 { grid-column: 1 / 4; grid-row: 1 / 4; background: linear-gradient(135deg, #F2EAFB 0%, #E8F0FC 100%); }
+.bento-grid .bt-2 { grid-column: 4 / 7; grid-row: 1 / 3; background: linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%); }
+.bento-grid .bt-3 { grid-column: 4 / 6; grid-row: 3 / 5; background: linear-gradient(135deg, #F0FDF4 0%, #ECFEFF 100%); }
+.bento-grid .bt-4 { grid-column: 1 / 4; grid-row: 4 / 5; background: linear-gradient(135deg, #EEF2FF 0%, #F9F5FC 100%); }
+.bento-grid .bt-5 { grid-column: 6 / 7; grid-row: 3 / 5; background: linear-gradient(160deg, #F5F5F7 0%, #EDE5F5 100%); }
+
 .section-num {
   font-family: var(--font-body);
-  font-size: 11rem; font-weight: 800;
+  font-size: 7.5rem; font-weight: 800;
   line-height: 0.85; letter-spacing: -0.06em;
-  color: var(--text-primary); opacity: 0.035;
-  position: absolute; right: 70px; top: 50%; transform: translateY(-50%);
+  color: var(--text-primary); opacity: 0.08;
+  position: absolute; right: 50px; top: 80px;
   z-index: 0;
+  pointer-events: none;
 }
 
 .brand-bar {
@@ -322,6 +499,244 @@ strong { color: var(--text-primary); font-weight: 600; }
   text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
 }
 .cover-logo { margin-bottom: 38px; font-size: 1.7rem; }
+
+/* ─── Cover with full-bleed background photo ─── */
+.cover-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+  display: block;
+}
+.cover-bg-overlay {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 75% 55%, rgba(29,29,31,0.18) 0%, rgba(29,29,31,0.0) 55%),
+    linear-gradient(180deg, rgba(29,29,31,0.12) 0%, rgba(29,29,31,0.0) 28%, rgba(29,29,31,0.0) 65%, rgba(29,29,31,0.32) 100%);
+  pointer-events: none;
+}
+.slide--cover-photo { background: #1D1D1F; }
+.slide--cover-photo h1 { color: #fff; text-shadow: 0 1px 16px rgba(0,0,0,0.35); }
+.slide--cover-photo .subtitle { color: rgba(255,255,255,0.92); text-shadow: 0 1px 12px rgba(0,0,0,0.35); }
+.slide--cover-photo .meta { color: rgba(255,255,255,0.7); }
+.slide--cover-photo .deck-logo { color: #fff; }
+.slide--cover-photo .deck-logo .l-method { opacity: 0.75; }
+
+/* ─── Side editorial image (slide 3, breaks out left) ─── */
+.side-img {
+  width: calc(100% + 90px);
+  margin-left: -90px;
+  aspect-ratio: 5/6;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  display: block;
+}
+
+/* Avatar with real photo (circular) */
+.avatar-img {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; display: block; flex-shrink: 0;
+}
+.avatar-img--ring-orange { box-shadow: 0 0 0 2px var(--axis-impulsor), 0 0 0 4px #FFF7ED; }
+.avatar-img--ring-green { box-shadow: 0 0 0 2px var(--axis-sosten), 0 0 0 4px #F0FDF4; }
+.avatar-img--sm { width: 32px; height: 32px; }
+
+/* Closing wide image (slide 12) */
+.closing-img {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.20);
+}
+
+/* Feature chips (slide 5 — cómo funciona) */
+.feature-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; color: var(--text-secondary);
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 14px;
+  font-weight: 500; line-height: 1;
+}
+.step-eyebrow {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+/* "Cómo funciona" landing-style card */
+.howit-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 44px 48px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.09), 0 4px 20px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+.howit-card .feature-chip { font-size: 0.78rem; padding: 5px 12px; }
+
+/* Flow mock (3 stacked phases — game / analysis / profile) */
+.flow-mock { display: flex; flex-direction: column; gap: 10px; }
+.flow-phase {
+  border-radius: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+  position: relative;
+}
+.flow-phase__num {
+  font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--accent);
+  margin-bottom: 4px;
+}
+.flow-phase__title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin: 0 0 6px; }
+.flow-phase__body { font-size: 0.78rem; color: var(--text-secondary); margin: 0; line-height: 1.45; }
+.flow-phase--game {
+  background: linear-gradient(165deg, #0E1424 0%, #1A2238 100%);
+  border-color: rgba(255,255,255,0.08);
+}
+.flow-phase--game .flow-phase__num { color: rgba(255,255,255,0.5); }
+.flow-phase--game .flow-phase__title { color: #fff; }
+.flow-phase--game .flow-phase__body { color: rgba(255,255,255,0.7); }
+.flow-bars { display: flex; flex-direction: column; gap: 5px; margin-top: 8px; }
+.flow-bar { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-muted); }
+.flow-bar__label { width: 60px; flex-shrink: 0; }
+.flow-bar__track { flex: 1; height: 5px; border-radius: 3px; background: #EDEDED; overflow: hidden; }
+.flow-bar__fill { height: 100%; border-radius: 3px; }
+.flow-chips { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.flow-chip {
+  font-size: 0.66rem; font-weight: 600;
+  padding: 3px 9px; border-radius: 999px;
+  background: #FFF7ED; color: #C2410C; border: 1px solid #FED7AA;
+}
+.flow-arrow {
+  text-align: center; color: var(--text-light); font-size: 0.7rem;
+  margin: 0; line-height: 1;
+}
+
+/* ═══════════════════════════════════════
+   FLIPCARD — 3D animated (literal port from landing)
+   ═══════════════════════════════════════ */
+.flipcard { width: 100%; max-width: 380px; margin: 0 auto; }
+.flipcard__inner { position: relative; height: 440px; perspective: 1200px; }
+.flipcard__face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transform: rotateY(90deg);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0, 0, 1);
+  transform-origin: center;
+  overflow: hidden;
+}
+.flipcard__face.is-active { opacity: 1; transform: rotateY(0deg); pointer-events: auto; z-index: 2; }
+.flipcard__face.is-leaving { opacity: 0; transform: rotateY(-90deg); z-index: 1; }
+
+/* Game face */
+.fc-game {
+  background:
+    linear-gradient(165deg, rgba(5,10,20,0.78) 0%, rgba(5,15,30,0.88) 100%),
+    url('../scenes/storm.png') center/cover;
+  color: #fff;
+  box-shadow: 0 12px 52px rgba(0,0,0,0.22);
+}
+.fc-game__header { padding: 14px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: space-between; align-items: center; }
+.fc-game__chapter { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.14em; text-transform: uppercase; }
+.fc-game__dots { display: flex; gap: 6px; align-items: center; }
+.fc-game__dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+.fc-game__dot--done { background: rgba(34,211,238,0.6); }
+.fc-game__dot--current { background: #fff; width: 9px; height: 9px; }
+.fc-game__intro { padding: 16px 18px 4px; font-size: 11px; font-style: italic; color: rgba(255,255,255,0.32); line-height: 1.55; margin: 0; }
+.fc-game__text { padding: 10px 18px 16px; font-size: 16px; font-weight: 500; color: #fff; line-height: 1.4; letter-spacing: -0.01em; margin: 0; }
+.fc-game__options { padding: 0 14px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fc-game__option { border: 1px solid rgba(255,255,255,0.1); border-radius: 13px; padding: 11px; background: rgba(255,255,255,0.05); }
+.fc-game__option-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 9px; font-size: 11px; font-weight: 800; color: #fff; }
+.fc-game__option-text { font-size: 11px; color: rgba(255,255,255,0.82); line-height: 1.48; margin: 0; }
+
+/* Analysis face */
+.fc-analysis {
+  background: #F8F8FA; border: 1px solid #E8E8ED;
+  padding: 28px 24px; box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+}
+.fc-analysis__header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.fc-analysis__pulse { width: 8px; height: 8px; border-radius: 50%; background: #955FB5; animation: fc-pulse 1.1s ease-in-out infinite; }
+@keyframes fc-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+.fc-analysis__title { font-size: 11px; font-weight: 700; color: #1D1D1F; letter-spacing: 0.1em; text-transform: uppercase; }
+.fc-analysis__desc { font-size: 13px; color: #424245; line-height: 1.65; margin: 0 0 20px; }
+.fc-analysis__bars { display: flex; flex-direction: column; gap: 14px; flex: 1; }
+.fc-analysis__bar-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.fc-analysis__bar-name, .fc-analysis__bar-pct { font-size: 10px; font-weight: 600; color: #86868B; }
+.fc-analysis__bar-pct { opacity: 0; transition: opacity 0.4s; }
+.fc-analysis.is-active .fc-analysis__bar-pct { opacity: 1; }
+.fc-analysis__bar { height: 5px; background: #E8E8ED; border-radius: 3px; overflow: hidden; }
+.fc-analysis__bar-fill { height: 100%; border-radius: 3px; width: 3%; transition: width 0.7s cubic-bezier(0.25, 0, 0, 1); }
+.fc-analysis.is-active .fc-analysis__bar-fill { width: var(--target-width, 50%); }
+.fc-analysis__motor { margin-top: 16px; padding-top: 14px; border-top: 1px solid #E8E8ED; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; opacity: 0; transition: opacity 0.4s; }
+.fc-analysis.is-active .fc-analysis__motor { opacity: 1; transition-delay: 0.7s; }
+.fc-analysis__motor-bars { display: flex; gap: 4px; }
+.fc-analysis__motor-bar { height: 3px; width: 12px; border-radius: 2px; background: #D2D2D7; }
+.fc-analysis__motor-bar.is-on { background: #1D1D1F; }
+.fc-analysis__motor-name { font-size: 10px; font-weight: 700; color: #1D1D1F; }
+.fc-analysis__motor-sep { font-size: 10px; color: #AEAEB2; }
+.fc-analysis__motor-desc { font-size: 10px; color: #86868B; line-height: 1.4; }
+
+/* Profile face */
+.fc-profile {
+  background: #fff; border: 1px solid #E8E8ED;
+  padding: 28px 24px; box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+}
+.fc-profile__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+.fc-profile__axis { display: flex; align-items: center; gap: 8px; }
+.fc-profile__axis-dot { width: 9px; height: 9px; border-radius: 50%; }
+.fc-profile__axis-name { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.fc-profile__motor-chip { font-size: 10px; font-weight: 500; color: #86868B; background: #F5F5F7; border-radius: 20px; padding: 3px 10px; }
+.fc-profile__name { font-weight: 300; font-size: 24px; letter-spacing: -0.025em; color: #1D1D1F; line-height: 1.15; margin: 0 0 12px; }
+.fc-profile__behaviors { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.fc-profile__behavior { font-size: 11px; font-weight: 500; border-radius: 20px; padding: 3px 10px; }
+.fc-profile__motor-bars { display: flex; gap: 8px; margin-bottom: 16px; }
+.fc-profile__motor-bar { height: 3px; width: 20px; border-radius: 2px; background: #D2D2D7; }
+.fc-profile__motor-bar.is-on { background: #1D1D1F; }
+.fc-profile__desc { font-size: 12px; color: #424245; line-height: 1.6; margin: 0 0 14px; }
+.fc-profile__words { margin-top: auto; padding-top: 12px; border-top: 1px solid #F5F5F7; }
+.fc-profile__word-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.fc-profile__word-label { font-size: 9px; font-weight: 700; color: #86868B; letter-spacing: 0.1em; text-transform: uppercase; padding-top: 3px; flex-shrink: 0; white-space: nowrap; }
+.fc-profile__word-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.fc-profile__word { font-size: 10px; font-weight: 500; border-radius: 20px; padding: 2px 9px; }
+.fc-profile__word--avoid { color: #86868B; background: #F5F5F7; }
+
+/* Step indicator */
+.flipcard__steps { display: flex; align-items: center; justify-content: center; margin-top: 20px; }
+.flipcard__step { background: none; border: none; padding: 4px 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: inherit; }
+.flipcard__step-dot { width: 7px; height: 7px; border-radius: 50%; background: #D2D2D7; transition: background 0.3s; }
+.flipcard__step-label { font-size: 10px; font-weight: 400; color: #AEAEB2; white-space: nowrap; transition: color 0.3s; }
+.flipcard__step.is-active .flipcard__step-dot { background: #955FB5; }
+.flipcard__step.is-active .flipcard__step-label { color: #955FB5; font-weight: 600; }
+.flipcard__step-sep { width: 28px; height: 1px; background: #E8E8ED; margin: 0 8px 20px; }
+.closing-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 32px 36px 28px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.72) 100%);
+  border-radius: 0 0 12px 12px;
+  text-align: center;
+}
+.closing-overlay h2 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 300; letter-spacing: -0.03em; line-height: 1.1;
+  text-shadow: 0 2px 14px rgba(0,0,0,0.45);
+}
+.closing-overlay p {
+  margin: 0 auto; max-width: 540px;
+  color: rgba(255,255,255,0.94);
+  font-size: 0.98rem; line-height: 1.5;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.45);
+}
+@media (max-width: 768px) {
+  .closing-overlay { padding: 18px 18px 16px; }
+  .closing-overlay h2 { font-size: 1.3rem; margin-bottom: 6px; }
+  .closing-overlay p { font-size: 0.85rem; }
+}
 
 .slide--thanks { text-align: center; background: linear-gradient(190deg, #FFFFFF 0%, var(--accent-wash) 100%); }
 .slide--thanks h2 { font-size: clamp(2.6rem, 5vw, 4rem); margin-bottom: 16px; }
@@ -415,6 +830,15 @@ strong { color: var(--text-primary); font-weight: 600; }
   .split { grid-template-columns: 1fr; gap: 26px; }
   .grid-2x2 { grid-template-columns: 1fr; gap: 14px; }
   .grid-3 { grid-template-columns: 1fr; gap: 16px; }
+  .img-placeholder--editorial-side { width: 100%; margin-left: 0; aspect-ratio: 4/5; }
+  .side-img { width: 100%; margin-left: 0; aspect-ratio: 4/5; }
+  .img-placeholder--editorial-bg .ip-floating { bottom: 14px; right: 14px; max-width: 240px; padding: 10px 12px; }
+  .bento-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(5, 70px); max-width: 100%; gap: 8px; }
+  .bento-grid .bt-1 { grid-column: 1 / 3; grid-row: 1 / 3; }
+  .bento-grid .bt-2 { grid-column: 1 / 2; grid-row: 3 / 4; }
+  .bento-grid .bt-3 { grid-column: 2 / 3; grid-row: 3 / 4; }
+  .bento-grid .bt-4 { grid-column: 1 / 2; grid-row: 4 / 5; }
+  .bento-grid .bt-5 { grid-column: 2 / 3; grid-row: 4 / 5; }
   .steps { flex-direction: column; gap: 18px; }
   .steps::before { display: none; }
   .step { text-align: left; display: flex; gap: 16px; align-items: flex-start; }
@@ -472,12 +896,8 @@ strong { color: var(--text-primary); font-weight: 600; }
 <body>
 
 <!-- Toolbar -->
-<div class="deck-toolbar">
-  <button class="toolbar-btn" onclick="printPDF()"><i data-lucide="download"></i> PDF</button>
-</div>
-
 <!-- Slide counter (desktop only) -->
-<div class="slide-counter" id="slide-counter">1 / 12</div>
+<div class="slide-counter" id="slide-counter">1 / 11</div>
 
 <div class="scroll-hint" id="scroll-hint">
   <span>Desliza</span>
@@ -487,16 +907,15 @@ strong { color: var(--text-primary); font-weight: 600; }
 <div class="deck" id="deck">
 
 <!-- ══════════════ 1. COVER ══════════════ -->
-<section class="slide slide--cover" data-slide="1">
-  <div class="glow glow--violet" style="top:-180px; right:-120px;"></div>
-  <div class="glow glow--indigo" style="bottom:-160px; left:-100px;"></div>
+<section class="slide slide--cover slide--cover-photo" data-slide="1">
+  <img src="sales_hero.png" alt="" class="cover-bg-img" />
+  <div class="cover-bg-overlay"></div>
   <div class="slide-content">
     <div class="deck-logo cover-logo anim"><span class="l-argo">Argo</span><span class="l-method">Method</span></div>
     <h1 class="anim">Todos entrenan igual.<br>Ninguno juega igual.</h1>
     <p class="subtitle anim">Argo ayuda a tu institución a entender cómo vive el deporte cada niño, para que lo disfruten más y se queden en él.</p>
     <p class="meta anim">Perfil conductual para deportistas de 8 a 16 años</p>
   </div>
-  <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C320,80 480,0 720,30 C960,60 1200,10 1440,40 L1440,80 L0,80 Z" fill="#7A4D96" opacity="0.06"/></svg>
 </section>
 
 <!-- ══════════════ 2. LA ESCENA ══════════════ -->
@@ -527,14 +946,21 @@ strong { color: var(--text-primary); font-weight: 600; }
 <section class="slide slide--tint" data-slide="3">
   <div class="section-num">02</div>
   <div class="slide-content">
-    <div class="label anim">Por qué importa</div>
-    <h2 class="anim" style="font-size:2.4rem; margin-bottom:16px; max-width:780px;">Que ningún niño se pierda lo lindo del deporte</h2>
-    <p class="anim" style="max-width:780px; margin-bottom:32px;">Cuando un niño se siente comprendido, disfruta más, se queda en el deporte y vive una experiencia más feliz. Entenderlo a tiempo cambia su historia con el juego.</p>
-    <ul class="icon-list anim" style="max-width:840px;">
-      <li><i data-lucide="heart" style="width:24px;height:24px;"></i><div>Muchos <strong>dejan el deporte</strong> cuando todavía tenían mucho por disfrutar.</div></li>
-      <li><i data-lucide="messages-square" style="width:24px;height:24px;"></i><div><strong>Familias que ven a su hijo desconectarse</strong> y no saben bien cómo acompañarlo.</div></li>
-      <li><i data-lucide="sprout" style="width:24px;height:24px;"></i><div><strong>Cada niño necesita algo distinto para sentirse parte.</strong> Lo que entusiasma a uno, puede abrumar a otro.</div></li>
-    </ul>
+    <div class="split" style="gap:56px; align-items:center;">
+      <div class="anim" style="position:relative;">
+        <img src="side.png" alt="" class="side-img" />
+      </div>
+      <div>
+        <div class="label anim">Por qué importa</div>
+        <h2 class="anim" style="font-size:2.1rem; margin-bottom:14px;">Que ningún niño se pierda lo lindo del deporte</h2>
+        <p class="anim" style="margin-bottom:24px;">Cuando un niño se siente comprendido, disfruta más, se queda en el deporte y vive una experiencia más feliz. Entenderlo a tiempo cambia su historia con el juego.</p>
+        <ul class="icon-list anim" style="gap:14px;">
+          <li><i data-lucide="heart" style="width:22px;height:22px;"></i><div>Muchos <strong>dejan el deporte</strong> cuando todavía tenían mucho por disfrutar.</div></li>
+          <li><i data-lucide="messages-square" style="width:22px;height:22px;"></i><div><strong>Familias que ven a su hijo desconectarse</strong> y no saben bien cómo acompañarlo.</div></li>
+          <li><i data-lucide="sprout" style="width:22px;height:22px;"></i><div><strong>Cada niño necesita algo distinto para sentirse parte.</strong> Lo que entusiasma a uno, puede abrumar a otro.</div></li>
+        </ul>
+      </div>
+    </div>
   </div>
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
@@ -564,67 +990,108 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 5. LA CIENCIA / MÉTODO ARGO ══════════════ -->
+<!-- ══════════════ 5. CÓMO FUNCIONA EL PERFILAMIENTO ══════════════ -->
 <section class="slide" data-slide="5">
   <div class="section-num">04</div>
   <div class="slide-content">
-    <div class="label anim">La ciencia detrás de Argo</div>
-    <h2 class="anim" style="font-size:2.3rem; margin-bottom:14px;">Un juego por fuera. Un método serio por dentro.</h2>
-    <p class="anim" style="max-width:840px; margin-bottom:36px;">El Método Argo convierte 10 minutos de juego en un perfil conductual. Está construido sobre DISC, el modelo creado por el psicólogo William Moulton Marston en 1928 y usado en comunicación desde hace casi un siglo. Estamos basados en DISC. No somos DISC: lo adaptamos al deporte y a la forma de jugar de cada niño.</p>
-    <div class="grid-3 anim">
-      <div class="card card--sm card--accent-4">
-        <h4 style="font-size:1.1rem; margin-bottom:8px;">La base: DISC</h4>
-        <p style="font-size:0.92rem; margin:0;">El marco conductual de William Moulton Marston (1928). Casi 100 años de uso en comunicación y trabajo en equipo.</p>
+    <div class="howit-card anim">
+      <div class="split" style="gap:56px; align-items:center;">
+        <div>
+          <div class="label" style="margin-bottom:10px;">La herramienta · Dos experiencias</div>
+          <h2 style="font-size:clamp(1.8rem, 2.6vw, 2.4rem); line-height:1.1; margin-bottom:28px;">Cómo funciona el perfilamiento Argo.</h2>
+          <div style="margin-bottom:22px;">
+            <p class="step-eyebrow" style="margin-bottom:6px;">01 — El juego</p>
+            <p style="font-size:0.98rem; color:var(--text-secondary); line-height:1.65; max-width:420px; margin:0;">Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones revelan su perfil conductual de forma natural, sin preguntas directas.</p>
+          </div>
+          <div style="margin-bottom:24px;">
+            <p class="step-eyebrow" style="margin-bottom:6px;">02 — La plataforma</p>
+            <p style="font-size:0.98rem; color:var(--text-secondary); line-height:1.65; max-width:420px; margin:0;">La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte desde su naturaleza.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <span class="feature-chip" title="El perfil conductual de cada deportista y su historial de informes.">Mi equipo</span>
+            <span class="feature-chip" title="Agrupa deportistas y entiende la dinámica colectiva de cada equipo.">Grupos de sintonía</span>
+            <span class="feature-chip" title="Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.">Brújula situacional</span>
+            <span class="feature-chip" title="Hazle consultas sobre tus deportistas y recibe consejos personalizados.">Consultor IA</span>
+          </div>
+        </div>
+        <div class="flipcard">
+          <div class="flipcard__inner">
+            <div class="flipcard__face fc-game is-active" data-face="game">
+              <div class="fc-game__header">
+                <span class="fc-game__chapter">La Tormenta</span>
+                <div class="fc-game__dots">
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--current"></div>
+                  <div class="fc-game__dot"></div>
+                  <div class="fc-game__dot"></div>
+                </div>
+              </div>
+              <p class="fc-game__intro" id="fc-intro"></p>
+              <p class="fc-game__text" id="fc-text"></p>
+              <div class="fc-game__options" id="fc-options"></div>
+            </div>
+            <div class="flipcard__face fc-analysis" data-face="analysis">
+              <div class="fc-analysis__header">
+                <div class="fc-analysis__pulse"></div>
+                <span class="fc-analysis__title">Argo analiza</span>
+              </div>
+              <p class="fc-analysis__desc">Argo cruza las 12 respuestas del juego con patrones conductuales para construir el perfil único de este deportista.</p>
+              <div class="fc-analysis__bars" id="fc-bars"></div>
+              <div class="fc-analysis__motor">
+                <div class="fc-analysis__motor-bars" id="fc-am-bars"></div>
+                <span class="fc-analysis__motor-name" id="fc-am-name"></span>
+                <span class="fc-analysis__motor-sep">·</span>
+                <span class="fc-analysis__motor-desc" id="fc-am-desc"></span>
+              </div>
+            </div>
+            <div class="flipcard__face fc-profile" data-face="profile">
+              <div class="fc-profile__top">
+                <div class="fc-profile__axis">
+                  <div class="fc-profile__axis-dot" id="fc-axis-dot"></div>
+                  <span class="fc-profile__axis-name" id="fc-axis-name"></span>
+                </div>
+                <span class="fc-profile__motor-chip" id="fc-motor-chip"></span>
+              </div>
+              <p class="fc-profile__name" id="fc-arch-name"></p>
+              <div class="fc-profile__behaviors" id="fc-behaviors"></div>
+              <div class="fc-profile__motor-bars" id="fc-motor-bars"></div>
+              <p class="fc-profile__desc" id="fc-desc"></p>
+              <div class="fc-profile__words">
+                <div class="fc-profile__word-row">
+                  <span class="fc-profile__word-label">Palabras puente</span>
+                  <div class="fc-profile__word-chips" id="fc-bridge"></div>
+                </div>
+                <div class="fc-profile__word-row">
+                  <span class="fc-profile__word-label">Palabras a evitar</span>
+                  <div class="fc-profile__word-chips" id="fc-avoid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flipcard__steps">
+            <button class="flipcard__step is-active" data-step="0"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">El niño juega</span></button>
+            <div class="flipcard__step-sep"></div>
+            <button class="flipcard__step" data-step="1"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">Argo procesa</span></button>
+            <div class="flipcard__step-sep"></div>
+            <button class="flipcard__step" data-step="2"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">El perfil</span></button>
+          </div>
+        </div>
       </div>
-      <div class="card card--sm card--accent-1">
-        <h4 style="font-size:1.1rem; margin-bottom:8px;">La adaptación: el deporte</h4>
-        <p style="font-size:0.92rem; margin:0;">Lo llevamos al lenguaje y las situaciones reales del deporte infantil, de 8 a 16 años.</p>
-      </div>
-      <div class="card card--sm card--accent-3">
-        <h4 style="font-size:1.1rem; margin-bottom:8px;">El Método Argo</h4>
-        <p style="font-size:0.92rem; margin:0;">Cruza 4 formas de jugar con 3 tempos de procesamiento: 12 arquetipos. Lenguaje probabilístico y basado en fortalezas.</p>
-      </div>
+      <p style="margin:32px 0 0; padding-top:22px; border-top:1px solid var(--border); font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:14px;height:14px;color:var(--accent); flex-shrink:0;"></i>
+        Construido sobre el modelo DISC de William Moulton Marston (1928), adaptado al deporte infantil. No predice el futuro deportivo de ningún niño.
+      </p>
     </div>
-    <p class="anim" style="font-size:0.85rem; color:var(--text-muted); margin-top:24px; display:flex; align-items:center; gap:8px;"><i data-lucide="shield-check" style="width:16px;height:16px;color:var(--accent);"></i> No predice el futuro deportivo de ningún niño. Describe cómo vive el deporte hoy, desde sus fortalezas.</p>
   </div>
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 6. EL SISTEMA / TRES SUPERFICIES ══════════════ -->
+<!-- ══════════════ 6. EL INFORME ══════════════ -->
 <section class="slide slide--tint" data-slide="6">
   <div class="section-num">05</div>
-  <div class="slide-content">
-    <div class="label anim">El sistema Argo</div>
-    <h2 class="anim" style="font-size:2.3rem; margin-bottom:8px;">El niño juega una vez. El valor llega a todos.</h2>
-    <p class="anim" style="max-width:780px; margin-bottom:36px;">Con esos 10 minutos de juego, Argo genera todo lo demás. Cada uno recibe lo que necesita.</p>
-    <div class="grid-3 anim">
-      <div class="card card--sm">
-        <i data-lucide="sailboat" style="width:26px;height:26px;color:var(--accent);margin-bottom:14px;"></i>
-        <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-light); font-weight:600; margin-bottom:6px;">Para el niño</p>
-        <h4 style="font-size:1.15rem; margin-bottom:8px;">La odisea</h4>
-        <p style="font-size:0.92rem; margin:0;">Una aventura de 10 minutos. Es lo único que hace, y la vive como un juego.</p>
-      </div>
-      <div class="card card--sm">
-        <i data-lucide="mail" style="width:26px;height:26px;color:var(--accent);margin-bottom:14px;"></i>
-        <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-light); font-weight:600; margin-bottom:6px;">Para la familia</p>
-        <h4 style="font-size:1.15rem; margin-bottom:8px;">El reporte</h4>
-        <p style="font-size:0.92rem; margin:0;">Llega por email al adulto responsable: el perfil del niño y cómo acompañarlo, con lenguaje cercano y basado en fortalezas.</p>
-      </div>
-      <div class="card card--sm">
-        <i data-lucide="layout-dashboard" style="width:26px;height:26px;color:var(--accent);margin-bottom:14px;"></i>
-        <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-light); font-weight:600; margin-bottom:6px;">Para la institución</p>
-        <h4 style="font-size:1.15rem; margin-bottom:8px;">El dashboard</h4>
-        <p style="font-size:0.92rem; margin:0;">Un panel con el perfil de cada niño, el equipo completo y el consultor IA. Donde el entrenador encuentra todo.</p>
-      </div>
-    </div>
-    <p class="anim" style="font-size:0.85rem; color:var(--text-muted); margin-top:24px; text-align:center;">Cada niño tiene un lugar en la nave. Argo lo ayuda a encontrarlo.</p>
-  </div>
-  <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
-</section>
-
-<!-- ══════════════ 7. EL INFORME ══════════════ -->
-<section class="slide slide--tint" data-slide="7">
-  <div class="section-num">06</div>
   <div class="slide-content">
     <div class="label anim">El informe</div>
     <h2 class="anim" style="font-size:2.3rem; margin-bottom:8px;">No te dice qué hacer. Te ayuda a entender a cada niño.</h2>
@@ -633,12 +1100,15 @@ strong { color: var(--text-primary); font-weight: 600; }
       <div class="anim">
         <div class="card card--accent-1" style="max-height:340px; overflow:hidden;">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
-            <h4 style="font-size:1.15rem; margin:0;">El perfil de Joaquín</h4>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <img src="proflie.png" alt="Camila" class="avatar-img avatar-img--ring-orange" />
+              <h4 style="font-size:1.15rem; margin:0;">El perfil de Camila</h4>
+            </div>
             <span class="chip chip--impulsor"><span class="chip-dot"></span>Impulsor Dinámico</span>
           </div>
           <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">Cómo vive el deporte</p>
-          <p style="font-size:0.95rem; margin-bottom:18px;">Vive el deporte desde la acción. Necesita movimiento para sentirse en su lugar. El desafío y la autonomía lo encienden.</p>
-          <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">Lo que lo enciende</p>
+          <p style="font-size:0.95rem; margin-bottom:18px;">Vive el deporte desde la acción. Necesita movimiento para sentirse en su lugar. El desafío y la autonomía la encienden.</p>
+          <p style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">Lo que la enciende</p>
           <p style="font-size:0.95rem; margin-bottom:18px;">Los retos a su medida, la autonomía y sentir que avanza con sus propios tiempos.</p>
           <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
             <span class="chip chip--motor" style="background:#EAF7EE; color:#1A7F37; border-color:#C7EBD3;">Reto</span>
@@ -669,9 +1139,9 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 8. EL DASHBOARD ══════════════ -->
-<section class="slide" data-slide="8">
-  <div class="section-num">07</div>
+<!-- ══════════════ 7. EL DASHBOARD ══════════════ -->
+<section class="slide" data-slide="7">
+  <div class="section-num">06</div>
   <div class="slide-content">
     <div class="label anim">El dashboard de tu institución</div>
     <h2 class="anim" style="font-size:2.3rem; margin-bottom:8px;">El informe es solo el comienzo</h2>
@@ -713,9 +1183,9 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 9. LO QUE CAMBIA ══════════════ -->
-<section class="slide slide--tint" data-slide="9">
-  <div class="section-num">08</div>
+<!-- ══════════════ 8. LO QUE CAMBIA ══════════════ -->
+<section class="slide slide--tint" data-slide="8">
+  <div class="section-num">07</div>
   <div class="slide-content">
     <div class="label anim">Lo que cambia</div>
     <h2 class="anim" style="font-size:2.3rem; margin-bottom:32px; max-width:820px;">Una institución que conoce a cada niño deja huella</h2>
@@ -741,9 +1211,9 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 10. QUÉ NO ES ══════════════ -->
-<section class="slide" data-slide="10">
-  <div class="section-num">09</div>
+<!-- ══════════════ 9. QUÉ NO ES ══════════════ -->
+<section class="slide" data-slide="9">
+  <div class="section-num">08</div>
   <div class="slide-content">
     <div class="split">
       <div>
@@ -764,9 +1234,9 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 11. VÍVELO (QR DEMO) ══════════════ -->
+<!-- ══════════════ 10. VÍVELO (QR DEMO) ══════════════ -->
 <!-- PLACEHOLDER QR: reemplazar la .qr-box por un <img> del QR real cuando exista el flujo de demo sin login (/demo). Ver plan: public/sales no toca ese flujo todavía. -->
-<section class="slide slide--tint" data-slide="11">
+<section class="slide slide--tint" data-slide="10">
   <div class="glow glow--violet" style="top:-140px; left:-120px;"></div>
   <div class="slide-content" style="text-align:center;">
     <div class="label anim" style="justify-content:center;">Vívelo</div>
@@ -780,19 +1250,24 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>
 
-<!-- ══════════════ 12. PRÓXIMO PASO ══════════════ -->
-<section class="slide slide--thanks" data-slide="12">
+<!-- ══════════════ 11. PRÓXIMO PASO ══════════════ -->
+<section class="slide slide--thanks" data-slide="11">
   <div class="glow glow--violet" style="top:-150px; right:-110px;"></div>
   <div class="glow glow--indigo" style="bottom:-150px; left:-100px;"></div>
   <div class="slide-content">
-    <div class="deck-logo cover-logo anim" style="font-size:1.4rem;"><span class="l-argo">Argo</span><span class="l-method">Method</span></div>
-    <h2 class="anim">Pruébalo con un grupo. Gratis.</h2>
-    <p class="anim" style="color:var(--text-secondary); font-size:1.1rem; margin:0 auto 22px; max-width:600px;">Activa la prueba de 14 días con un grupo de tus niños y velo funcionar con tu propio plantel. Sin tarjeta. Sin compromiso.</p>
-    <div class="anim" style="max-width:440px; margin:0 auto;">
-      <ul class="checklist" style="text-align:left;">
-        <li><i data-lucide="gift" style="width:18px;height:18px;"></i> 14 días gratis, sin tarjeta</li>
-        <li><i data-lucide="users" style="width:18px;height:18px;"></i> Hasta 8 niños de tu institución</li>
-        <li><i data-lucide="zap" style="width:18px;height:18px;"></i> Listo para usar el mismo día</li>
+    <div class="deck-logo cover-logo anim" style="font-size:1.4rem; margin-bottom:24px;"><span class="l-argo">Argo</span><span class="l-method">Method</span></div>
+    <div class="anim" style="position:relative; max-width:880px; margin:0 auto 28px;">
+      <img src="closing-group.png" alt="" class="closing-img" />
+      <div class="closing-overlay">
+        <h2>Pruébalo con un grupo. Gratis.</h2>
+        <p>Activa la prueba de 14 días con un grupo de tus niños y velo funcionar con tu propio plantel. Sin tarjeta. Sin compromiso.</p>
+      </div>
+    </div>
+    <div class="anim" style="max-width:880px; margin:0 auto;">
+      <ul class="checklist" style="flex-direction:row; gap:32px; justify-content:center; flex-wrap:wrap;">
+        <li style="border-bottom:none; padding:0;"><i data-lucide="gift" style="width:18px;height:18px;"></i> 14 días gratis, sin tarjeta</li>
+        <li style="border-bottom:none; padding:0;"><i data-lucide="users" style="width:18px;height:18px;"></i> Hasta 8 niños de tu institución</li>
+        <li style="border-bottom:none; padding:0;"><i data-lucide="zap" style="width:18px;height:18px;"></i> Listo para usar el mismo día</li>
       </ul>
     </div>
     <div class="contact-row anim">
@@ -818,7 +1293,8 @@ document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
 const hint = document.getElementById('scroll-hint');
 let hintHidden = false;
 deck.addEventListener('scroll', () => {
-  if (!hintHidden && deck.scrollTop > 50) { hintHidden = true; hint.classList.add('hidden'); }
+  const onLast = deck.scrollTop >= (totalSlides - 1) * deck.clientHeight - 80;
+  if (!hintHidden && (deck.scrollTop > 50 || onLast)) { hintHidden = true; hint.classList.add('hidden'); }
 }, { passive: true });
 
 // ═══════════════════════════════════════ SLIDE COUNTER
@@ -988,6 +1464,173 @@ function escapeHtml(text) {
     }, 2000);
   }
   cycle();
+})();
+
+// ═══════════════════════════════════════ FLIPCARD — 3D animated (slide 5)
+(function() {
+  const flip = document.querySelector('.flipcard');
+  if (!flip) return;
+
+  const PROFILES = [
+    {
+      eje: 'D', ejeLabel: 'Impulsor', color: '#f97316',
+      bars: { D: 88, I: 34, S: 22, C: 45 },
+      motor: 'Dinámico', motorBars: 3,
+      motorDesc: 'Responde en segundos. Necesita acción constante.',
+      archetype: 'Impulsor Dinámico',
+      behaviors: ['Domina', 'Decide', 'Compite'],
+      desc: 'Vive el deporte desde la acción. Necesita movimiento constante para estar en su zona. Bajo presión, acelera. El reto permanente y la autonomía son su combustible.',
+      bridge: ['Reto', 'Directo', 'Logra'],
+      avoid: ['Espera', 'Sin razón'],
+    },
+    {
+      eje: 'S', ejeLabel: 'Sostenedor', color: '#22c55e',
+      bars: { D: 25, I: 55, S: 90, C: 40 },
+      motor: 'Sereno', motorBars: 1,
+      motorDesc: 'Procesa en profundidad antes de actuar.',
+      archetype: 'Sostenedor Sereno',
+      behaviors: ['Estabiliza', 'Cuida', 'Persiste'],
+      desc: 'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. Necesita tiempo y confianza.',
+      bridge: ['Seguro', 'Paso a paso', 'Juntos'],
+      avoid: ['De repente', 'Sin avisar'],
+    },
+    {
+      eje: 'I', ejeLabel: 'Conector', color: '#f59e0b',
+      bars: { D: 42, I: 85, S: 38, C: 28 },
+      motor: 'Rítmico', motorBars: 2,
+      motorDesc: 'Equilibra impulso y reflexión.',
+      archetype: 'Conector Rítmico',
+      behaviors: ['Influye', 'Entusiasma', 'Conecta'],
+      desc: 'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. Selecciona los momentos para brillar.',
+      bridge: ['Equipo', 'Juntos', 'Genial'],
+      avoid: ['Solo', 'Aburrido'],
+    },
+    {
+      eje: 'C', ejeLabel: 'Estratega', color: '#6366f1',
+      bars: { D: 38, I: 22, S: 45, C: 88 },
+      motor: 'Dinámico', motorBars: 3,
+      motorDesc: 'Responde en segundos. Actúa con precisión.',
+      archetype: 'Estratega Dinámico',
+      behaviors: ['Analiza', 'Planifica', 'Precisa'],
+      desc: 'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica.',
+      bridge: ['¿Por qué?', 'Exacto', 'Con calma'],
+      avoid: ['Apresúrate', 'Sin datos'],
+    },
+  ];
+
+  const QUESTIONS = [
+    {
+      intro: 'Una tormenta inesperada sacude el Argo. El equipo te necesita.',
+      text: 'En medio del lío de la tormenta...',
+      options: [
+        'Me agarro y sigo haciendo mi tarea',
+        'Me muevo rápido a donde me necesiten',
+        'Pausa breve: busco el orden en el caos',
+        'Busco la mirada de mis compañeros',
+      ],
+    },
+    {
+      intro: 'El barco se inclina de golpe. Todo se sacude a tu alrededor.',
+      text: '¿Qué te sale hacer en ese segundo?',
+      options: [
+        '¡Vamos equipo! para que el ánimo no caiga',
+        'Agarro lo primero para enderezar el barco',
+        'Busco qué cambió para saber cómo arreglarlo',
+        'Me quedo firme para dar equilibrio al grupo',
+      ],
+    },
+  ];
+
+  const OPT_COLORS = ['#3B82F6', '#F59E0B', '#8B5CF6', '#10B981'];
+  const AXIS_LABELS_FULL = { D: 'Respuesta ante el reto', I: 'Vínculo con el equipo', S: 'Constancia y sostén', C: 'Análisis y precisión' };
+  const AXIS_COLORS_MAP = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
+
+  const FACE_ORDER = ['game', 'analysis', 'profile'];
+  const DURATIONS = { game: 5500, analysis: 4500, profile: 6000 };
+
+  let currentIdx = 0;
+  let qIdx = 0;
+  let fpIdx = 0;
+  let paused = false;
+  let timer;
+
+  const faces = flip.querySelectorAll('.flipcard__face');
+  const steps = flip.querySelectorAll('.flipcard__step');
+
+  function renderGame(q) {
+    document.getElementById('fc-intro').textContent = q.intro;
+    document.getElementById('fc-text').textContent = q.text;
+    const opts = document.getElementById('fc-options');
+    opts.innerHTML = q.options.map(function(opt, i) {
+      return '<div class="fc-game__option"><div class="fc-game__option-num" style="background:' + OPT_COLORS[i] + ';">' + String.fromCharCode(65+i) + '</div><p class="fc-game__option-text">' + opt + '</p></div>';
+    }).join('');
+  }
+
+  function renderAnalysis(p) {
+    const bars = document.getElementById('fc-bars');
+    bars.innerHTML = ['D','I','S','C'].map(function(ax) {
+      return '<div><div class="fc-analysis__bar-label"><span class="fc-analysis__bar-name">' + AXIS_LABELS_FULL[ax] + '</span><span class="fc-analysis__bar-pct">' + p.bars[ax] + '%</span></div><div class="fc-analysis__bar"><div class="fc-analysis__bar-fill" style="--target-width:' + p.bars[ax] + '%; background:' + AXIS_COLORS_MAP[ax] + ';"></div></div></div>';
+    }).join('');
+    const amBars = document.getElementById('fc-am-bars');
+    amBars.innerHTML = [1,2,3].map(function(b) { return '<div class="fc-analysis__motor-bar ' + (b<=p.motorBars?'is-on':'') + '"></div>'; }).join('');
+    document.getElementById('fc-am-name').textContent = p.motor;
+    document.getElementById('fc-am-desc').textContent = p.motorDesc;
+  }
+
+  function renderProfile(p) {
+    document.getElementById('fc-axis-dot').style.background = p.color;
+    const axisName = document.getElementById('fc-axis-name');
+    axisName.textContent = p.ejeLabel;
+    axisName.style.color = p.color;
+    document.getElementById('fc-motor-chip').textContent = p.motor;
+    document.getElementById('fc-arch-name').textContent = p.archetype;
+    const behaviors = document.getElementById('fc-behaviors');
+    behaviors.innerHTML = p.behaviors.map(function(b) { return '<span class="fc-profile__behavior" style="color:' + p.color + '; background:' + p.color + '14;">' + b + '</span>'; }).join('');
+    const mb = document.getElementById('fc-motor-bars');
+    mb.innerHTML = [1,2,3].map(function(b) { return '<div class="fc-profile__motor-bar ' + (b<=p.motorBars?'is-on':'') + '"></div>'; }).join('');
+    document.getElementById('fc-desc').textContent = p.desc;
+    const bridge = document.getElementById('fc-bridge');
+    bridge.innerHTML = p.bridge.map(function(w) { return '<span class="fc-profile__word" style="color:' + p.color + '; background:' + p.color + '12;">' + w + '</span>'; }).join('');
+    const avoid = document.getElementById('fc-avoid');
+    avoid.innerHTML = p.avoid.map(function(w) { return '<span class="fc-profile__word fc-profile__word--avoid">' + w + '</span>'; }).join('');
+  }
+
+  function setFace(idx) {
+    const newName = FACE_ORDER[idx];
+    if (newName === 'game') renderGame(QUESTIONS[qIdx]);
+    if (newName === 'analysis') renderAnalysis(PROFILES[fpIdx]);
+    if (newName === 'profile') renderProfile(PROFILES[fpIdx]);
+
+    faces.forEach(function(f) {
+      const fn = f.dataset.face;
+      f.classList.remove('is-active', 'is-leaving');
+      if (fn === newName) f.classList.add('is-active');
+      else if (fn === FACE_ORDER[currentIdx]) f.classList.add('is-leaving');
+    });
+    steps.forEach(function(s, i) { s.classList.toggle('is-active', i === idx); });
+    currentIdx = idx;
+  }
+
+  function tick() {
+    clearTimeout(timer);
+    if (paused) { timer = setTimeout(tick, 300); return; }
+    const next = (currentIdx + 1) % 3;
+    if (next === 0) {
+      qIdx = (qIdx + 1) % QUESTIONS.length;
+      fpIdx = (fpIdx + 1) % PROFILES.length;
+    }
+    setFace(next);
+    timer = setTimeout(tick, DURATIONS[FACE_ORDER[next]]);
+  }
+
+  flip.addEventListener('mouseenter', function() { paused = true; });
+  flip.addEventListener('mouseleave', function() { paused = false; });
+  steps.forEach(function(s, i) {
+    s.addEventListener('click', function() { clearTimeout(timer); setFace(i); timer = setTimeout(tick, DURATIONS[FACE_ORDER[i]]); });
+  });
+
+  setFace(0);
+  timer = setTimeout(tick, DURATIONS.game);
 })();
 </script>
 </body>
