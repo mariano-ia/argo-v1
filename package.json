@@ -26,6 +26,7 @@
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.323.0",
     "micro": "^10.0.1",
+    "posthog-js": "^1.378.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.1",

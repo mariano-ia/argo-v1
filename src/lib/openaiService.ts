@@ -45,8 +45,9 @@ export interface AIResult {
 }
 
 /**
- * Calls the server-side /api/generate-ai endpoint which handles
- * the OpenAI call securely (API key never leaves the server).
+ * Calls the server-side /api/generate-ai endpoint, which generates the report
+ * with Gemini (primary) and falls back to OpenAI if Gemini fails. All AI keys
+ * stay on the server. (This file's name is legacy — it is provider-agnostic.)
  */
 export async function generateAISections(
     base: ReportData,

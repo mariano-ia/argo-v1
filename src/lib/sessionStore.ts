@@ -12,6 +12,9 @@ interface SessionPayload {
     answers: QuestionAnswer[];
     tenantId?: string;
     lang?: string;
+    // Short-lived token issued by /api/start-play. Required to attach a session
+    // to a tenant — prevents creating sessions in an arbitrary tenant (IDOR).
+    playToken?: string;
     aiUsage?: {
         tokensInput: number;
         tokensOutput: number;
@@ -24,6 +27,8 @@ interface StartSessionPayload {
     tenantId?: string;
     lang?: string;
     consentToken?: string;
+    // Short-lived token issued by /api/start-play (tenant play only).
+    playToken?: string;
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -31,7 +36,7 @@ interface StartSessionPayload {
 async function fetchWithRetry(
     url: string,
     body: Record<string, unknown>,
-): Promise<{ ok: boolean; id?: string; error?: string }> {
+): Promise<{ ok: boolean; id?: string; share_token?: string; error?: string }> {
     try {
         const res = await fetch(url, {
             method: 'POST',
@@ -41,7 +46,7 @@ async function fetchWithRetry(
 
         if (res.ok) {
             const data = await res.json().catch(() => ({}));
-            return { ok: true, id: data.id };
+            return { ok: true, id: data.id, share_token: data.share_token };
         }
 
         const errData = await res.json().catch(() => ({ error: res.statusText }));
@@ -58,7 +63,7 @@ async function fetchWithRetry(
 
         if (retry.ok) {
             const data = await retry.json().catch(() => ({}));
-            return { ok: true, id: data.id };
+            return { ok: true, id: data.id, share_token: data.share_token };
         }
 
         const retryData = await retry.json().catch(() => ({ error: retry.statusText }));
@@ -78,7 +83,7 @@ async function fetchWithRetry(
  * Creates a "started" session when the child enters the odyssey.
  * Returns the session ID for later updates.
  */
-export async function startSession(payload: StartSessionPayload): Promise<{ ok: boolean; id?: string; error?: string }> {
+export async function startSession(payload: StartSessionPayload): Promise<{ ok: boolean; id?: string; share_token?: string; error?: string }> {
     const body: Record<string, unknown> = {
         adult_name:  payload.adultData.nombreAdulto,
         adult_email: payload.adultData.email,
@@ -90,6 +95,9 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
     };
     if (payload.consentToken) {
         body.consent_token = payload.consentToken;
+    }
+    if (payload.playToken) {
+        body.play_token = payload.playToken;
     }
 
     if (import.meta.env.DEV) {
@@ -110,13 +118,15 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
 export async function updateSession(
     id: string,
     fields: Record<string, unknown>,
+    shareToken?: string,
 ): Promise<{ ok: boolean; error?: string }> {
     if (import.meta.env.DEV) {
         console.info('[sessionStore] DEV — would update session:', id, fields);
         return { ok: true };
     }
 
-    return fetchWithRetry('/api/session', { action: 'update', id, ...fields });
+    // share_token proves ownership of this session (returned by start/save).
+    return fetchWithRetry('/api/session', { action: 'update', id, share_token: shareToken, ...fields });
 }
 
 // ─── Save session (legacy fallback) ─────────────────────────────────────────
@@ -125,7 +135,7 @@ export async function updateSession(
  * Creates a complete session in one call (legacy path).
  * Used as fallback when startSession failed and we have no session ID.
  */
-export async function saveSession(payload: SessionPayload): Promise<{ ok: boolean; id?: string; error?: string }> {
+export async function saveSession(payload: SessionPayload): Promise<{ ok: boolean; id?: string; share_token?: string; error?: string }> {
     const body = {
         adult_name:       payload.adultData.nombreAdulto,
         adult_email:      payload.adultData.email,
@@ -137,6 +147,7 @@ export async function saveSession(payload: SessionPayload): Promise<{ ok: boolea
         archetype_label:  payload.archetypeLabel,
         eje_secundario:   payload.ejeSecundario ?? null,
         tenant_id:        payload.tenantId ?? null,
+        play_token:       payload.playToken ?? null,
         lang:             payload.lang ?? 'es',
         answers:          payload.answers,
         ai_tokens_input:  payload.aiUsage?.tokensInput  ?? 0,
@@ -161,6 +172,7 @@ export interface RecoverableSession {
     answers: QuestionAnswer[];
     screenIndex: number;
     sessionId?: string;
+    shareToken?: string;
     tenantId?: string;
     lang?: string;
     timestamp: number;

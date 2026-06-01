@@ -92,6 +92,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     add('blog-cron protected', r.status === 401 || r.status === 403, `status=${r.status}`);
   } catch (e) { add('blog-cron reachable', false, String(e)); }
 
+  // CHECK 5: AI-failed reports — sessions that finished profiling (real eje)
+  // but have no ai_sections in the last 24h. With the "never email a report
+  // without AI" change, these are real plays whose report was NOT delivered
+  // and must be regenerated. Any such session should page ops.
+  try {
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { count } = await sb.from('sessions').select('*', { count: 'exact', head: true })
+      .neq('eje', '_pending')
+      .is('ai_sections', null)
+      .gte('created_at', cutoff);
+    add('no AI-failed reports (24h)', (count ?? 0) === 0, `undelivered=${count}`);
+  } catch (e) { add('AI-failure check reachable', false, String(e)); }
+
   const failures = checks.filter(c => !c.ok);
   if (failures.length) await sendAlert(failures);
   return res.status(failures.length ? 500 : 200).json({ ok: failures.length === 0, checks });

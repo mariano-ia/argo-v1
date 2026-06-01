@@ -2,6 +2,35 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
+import { createHmac, timingSafeEqual } from 'crypto';
+
+// Verifies a MercadoPago webhook signature (x-signature: "ts=...,v1=...").
+// MP signs the manifest `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
+// with the webhook secret from the MP dashboard. Returns true if valid.
+function verifyMpSignature(req: VercelRequest, secret: string): boolean {
+    const xSignature = req.headers['x-signature'];
+    const xRequestId = req.headers['x-request-id'];
+    if (typeof xSignature !== 'string') return false;
+
+    const parts: Record<string, string> = {};
+    for (const kv of xSignature.split(',')) {
+        const [k, v] = kv.split('=').map(s => s.trim());
+        if (k && v) parts[k] = v;
+    }
+    const ts = parts.ts;
+    const v1 = parts.v1;
+    if (!ts || !v1) return false;
+
+    const rawId = String(req.query['data.id'] ?? req.query.id ?? '');
+    // MP lowercases the id in the manifest when it contains letters.
+    const idPart = /[a-zA-Z]/.test(rawId) ? rawId.toLowerCase() : rawId;
+    const manifest = `id:${idPart};request-id:${xRequestId ?? ''};ts:${ts};`;
+    const expected = createHmac('sha256', secret).update(manifest).digest('hex');
+
+    const a = Buffer.from(v1);
+    const b = Buffer.from(expected);
+    return a.length === b.length && timingSafeEqual(a, b);
+}
 
 // Disable Vercel's default body parsing for Stripe signature verification
 export const config = { api: { bodyParser: false } };
@@ -216,7 +245,7 @@ async function sendPuentesMagicEmail(args: {
         ? `Your Argo Puentes is ready — bond with ${child}`
         : args.lang === 'pt'
             ? `Seu Argo Puentes está pronto — vínculo com ${child}`
-            : `Tu Argo Puentes está listo — vínculo con ${child}`;
+            : `Tu Argo Puentes está listo. Vínculo con ${child}`;
 
     const t = args.lang === 'en' ? {
         headline: 'Your Argo Puentes is ready',
@@ -389,6 +418,40 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         return res.status(400).json({ error: 'Invalid signature' });
     }
 
+    // ── Idempotency ──────────────────────────────────────────────────────
+    // Stripe retries deliver the same event many times. Record event.id; if
+    // we've already processed it, skip. Fails open (logs + continues) if the
+    // webhook_events table is missing, so the webhook keeps working until the
+    // migration is applied.
+    {
+        const { error: dupErr } = await sb
+            .from('webhook_events')
+            .insert({ event_id: event.id, provider: 'stripe' });
+        if (dupErr) {
+            if (dupErr.code === '23505') {
+                console.info(`[one-webhook] Stripe event ${event.id} already processed, skipping`);
+                return res.status(200).json({ received: true, duplicate: true });
+            }
+            console.warn('[one-webhook] webhook_events insert issue (continuing):', dupErr.code, dupErr.message);
+        }
+    }
+
+    // Handle a failed recurring charge. We don't downgrade on the first
+    // failure — Stripe runs its own retry/dunning schedule, and when it
+    // finally gives up it emits customer.subscription.deleted (handled below,
+    // which downgrades to trial). Here we log loudly for visibility/alerting.
+    if (event.type === 'invoice.payment_failed') {
+        const invoice = event.data.object as Stripe.Invoice;
+        const sub = typeof invoice.subscription === 'string' ? invoice.subscription : undefined;
+        let failedTenantId: string | undefined;
+        if (sub) {
+            const { data: t } = await sb.from('tenants').select('id').eq('subscription_id', sub).maybeSingle();
+            failedTenantId = t?.id;
+        }
+        console.error(`[one-webhook] PAYMENT FAILED — subscription ${sub ?? '?'}, tenant ${failedTenantId ?? 'unknown'}, invoice ${invoice.id}`);
+        return res.status(200).json({ received: true, action: 'payment_failed_logged' });
+    }
+
     // Handle subscription cancellation
     if (event.type === 'customer.subscription.deleted') {
         const subscription = event.data.object as Stripe.Subscription;
@@ -476,6 +539,20 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
 async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient<any, any>>, topic: string) {
     const mpToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
     if (!mpToken) return res.status(500).json({ error: 'Missing MP token' });
+
+    // ── Signature verification ───────────────────────────────────────────
+    // When MERCADOPAGO_WEBHOOK_SECRET is set, every MP notification must carry
+    // a valid signature. Without the secret we log loudly but still process,
+    // so the webhook keeps working until the secret is configured in Vercel.
+    const mpSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
+    if (mpSecret) {
+        if (!verifyMpSignature(req, mpSecret)) {
+            console.error('[one-webhook] MP signature verification failed — rejecting');
+            return res.status(401).json({ error: 'Invalid signature' });
+        }
+    } else {
+        console.warn('[one-webhook] MERCADOPAGO_WEBHOOK_SECRET not set — MP signature verification DISABLED (insecure)');
+    }
 
     // ── Subscription preapproval events ──────────────────────────────────
     if (topic === 'subscription_preapproval') {
