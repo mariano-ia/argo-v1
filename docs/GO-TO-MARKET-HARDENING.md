@@ -1,96 +1,120 @@
-# Go-To-Market Hardening — Estado
+# Go-To-Market Hardening — Bitácora
 
-Trabajo de preparación para comercialización (rama `develop`). Generado a partir
-de la auditoría profunda de readiness comercial.
-
-> **TODO LO DE ABAJO DEBE PROBARSE EN EL PREVIEW DE VERCEL** antes de ir a
-> producción. En desarrollo local el modo DEV "simula" guardados de sesión y
-> webhooks, así que los tokens, firmas y flujos reales no se ejercitan en local.
-
-## Alcance de mercado (decidido)
-US + Latam (sin Brasil, sin Europa por ahora). Se mantiene COPPA (US). No se
-invierte en GDPR-K ni LGPD en esta etapa.
+Trabajo de preparación para comercialización (junio 2026). Producción =
+`argomethod.com` (Vercel project `v0-argo-v1`, Supabase project **"Argo"**
+`luutdozbhinfiogugjbv`). Branches: `develop` (staging/preview) → `main` (prod).
 
 ---
 
-## Hecho (código en `develop`, sin commitear aún)
+## 1. El problema más grande: los informes nunca se enviaban
 
-### 1. Fallback de IA (Gemini → OpenAI)
-- `api/generate-ai.ts`: Gemini primario; si falla (API o JSON inválido), reintenta
-  con OpenAI (gpt-4o). Si ambos fallan tras el reintento → 502 (no entrega nada
-  degradado).
-- `src/lib/openaiService.ts`: comentario corregido (era engañoso, decía "OpenAI";
-  el endpoint es multi-proveedor). No se renombró el archivo (lo importan 5 sitios).
+**Síntoma:** un usuario completaba la odisea y no recibía el email del informe.
+**Investigación (con datos de prod):** 78 de 78 sesiones con perfil resuelto
+tenían `email_sent_at = NULL` y casi todas `ai_sections = NULL`. O sea, la
+entrega de informes **nunca funcionó de forma confiable**.
 
-### 2. Nunca enviar informe sin IA
-- `OnboardingFlowV2.tsx`: si la IA falla tras reintentos, NO se envía el email.
-  La sesión queda con `ai_sections=null` (señal de regeneración del admin).
-  Cubre flujo de tenant y de Argo One.
+**Causa raíz (la bala de plata):** `api/send-email.ts` tenía una variable
+`copy` **declarada dos veces** en `buildHtml` → `SyntaxError: Identifier 'copy'
+has already been declared`. Eso hace que la función **crashee en cada
+invocación** (`FUNCTION_INVOCATION_FAILED` → 500). Confirmado con esbuild: la
+versión vieja falla, la corregida pasa. Renombrada a `puentesCopy`.
 
-### 3. IDOR de sesiones (seguridad — bloqueador #1)
-- `api/start-play.ts`: emite un `play_token` firmado (HMAC, 1h) tras validar cupo.
-- `api/session.ts`: para atar sesión a un tenant exige `play_token` válido y usa
-  el tenant del token, no el del body. Para modificar una sesión exige su
-  `share_token`. Cierra la creación/modificación cruzada entre tenants.
-- Clientes actualizados: `TenantPlay.tsx`, `OnboardingFlowV2.tsx`, `sessionStore.ts`
-  (incluye recovery de localStorage).
-- Argo One y auto-play autenticado no afectados (no usan tenant).
+**Por qué se nos escapó:** el `build` y el `tsc` del proyecto **no type-checkean
+la carpeta `api/`**, así que un error de sintaxis en una función serverless
+llega a producción sin que nada lo detecte. → **Acción pendiente recomendada:
+agregar un gate de sintaxis de `api/` al CI** (p.ej. `esbuild` sobre cada
+`api/*.ts`).
 
-### 4. Firma de webhook de MercadoPago
-- `api/one-webhook.ts`: verifica `x-signature` cuando `MERCADOPAGO_WEBHOOK_SECRET`
-  está configurado. Sin el secreto: procesa pero loguea advertencia (no rompe).
+### Garantía de entrega: el cron de recuperación
+Aunque `send-email` ya funciona, la generación de IA en vivo (en el navegador,
+al final de la odisea) es frágil: tarda ~20s y depende de que no se cierre la
+pestaña. **La pantalla del niño es determinística y NO depende de la IA** — la
+IA es solo para el informe del adulto que va por email.
 
-### 5. Idempotencia de webhooks + pago fallido
-- `api/one-webhook.ts`: deduplica eventos de Stripe por `event.id` (tabla
-  `webhook_events`). Maneja `invoice.payment_failed` (log para visibilidad; el
-  downgrade real lo hace `customer.subscription.deleted` tras el dunning de Stripe).
-- **Requiere aplicar migración**: `supabase/migrations/20260601_webhook_events.sql`.
-  El código falla-abierto si la tabla no existe (sigue funcionando sin idempotencia
-  hasta aplicarla).
+`api/report-recovery-cron.ts` (cron cada 5 min) garantiza la entrega:
+- Busca sesiones con perfil resuelto y `email_sent_at = NULL`.
+- Si falta `ai_sections`, las regenera (Gemini→OpenAI) y persiste.
+- Manda el email vía `/api/send-email` (idempotente por `email_sent_at`).
+- Reintenta en cada corrida hasta lograrlo.
+- **Scope: solo de "ahora en adelante"** — piso duro `2026-06-01T22:35:00Z` +
+  ventana de 6h. NUNCA re-emaila el lote histórico.
 
-### 6. Analytics de conversión (PostHog)
-- `src/lib/analytics.ts` + `src/App.tsx`: pageviews del funnel (landing → pricing →
-  signup → dashboard). COPPA-safe (excluye rutas de juego). No-op sin
-  `VITE_POSTHOG_KEY`. Autocapture y pageview automático desactivados.
-- Follow-up: eventos explícitos (signup_completed, subscription_upgraded).
+**Lote histórico (NO se toca):** ~53 emails, casi todos del 13-27 de marzo
+(demo/beta) + cuentas internas (yacare, vixon, noceti). Son pruebas; decisión
+explícita de no backfillear.
 
 ---
 
-## Pendiente
+## 2. Seguridad
 
-### Rate limiting (Vercel KV) — con matiz a decidir
-Frenar abuso/costos de IA en endpoints públicos. **Tensión real**: limitar por IP
-puede bloquear a un club que corre 30 niños detrás de una misma IP (NAT). Hay que
-elegir umbrales generosos. Requiere provisionar Vercel KV.
+- **IDOR de sesiones** (`api/session.ts`): `start-play` emite un `play_token`
+  firmado (HMAC); atar una sesión a un tenant exige ese token (no se confía en
+  el `tenant_id` del body), y modificar una sesión exige su `share_token`.
+- **RLS de tablas expuestas (aplicado en prod):** `puentes_purchases`,
+  `puentes_sessions` (datos de niños), `credit_transactions` tenían RLS apagado
+  → cualquiera con la anon key podía leerlas. Migración
+  `20260601_enable_rls_exposed_tables.sql` activó RLS (+ política admin-read para
+  `puentes_purchases`). Las 23 tablas ahora con RLS.
+- **Firma de webhook MercadoPago** (`api/one-webhook.ts`): verifica `x-signature`
+  cuando `MERCADOPAGO_WEBHOOK_SECRET` está seteado.
+- **Rate limiting** (Vercel KV / Upstash): 80/min por IP en `start-play` y
+  `generate-ai`. Umbral alto para no bloquear clubes detrás de NAT. Acepta
+  nombres `KV_REST_API_*` o `UPSTASH_REDIS_REST_*`.
 
-### Alerting de pagos / IA fallida
-Extender `api/qa-monitor.ts` para detectar sesiones con `ai_sections=null` y
-anomalías de pago, y correrlo en cron real con alerta por email/Slack.
+## 3. Pagos
+- **Idempotencia de webhooks Stripe** por `event.id` (tabla `webhook_events`,
+  migración `20260601_webhook_events.sql`). Maneja `invoice.payment_failed`.
+
+## 4. IA
+- **Fallback OpenAI (gpt-4o)** en `api/generate-ai.ts` si Gemini falla.
+  `maxDuration=60` para no cortar por timeout.
+- **Nunca informe sin IA**: si la IA falla, no se manda email degradado; el cron
+  lo reintenta.
+
+## 5. Email — fix del link de calificar
+Los links de "¿fue claro?" generaban `${reportUrl}?feedback=...` y `reportUrl`
+ya tenía `?token=...` → **doble `?`** corrompía el token → `/report` daba 403
+("Informe no encontrado"). Arreglado con separador correcto (`&`).
+
+## 6. Informe de Argo Puentes — alineación de estilo
+`PuentesReport.tsx` ahora matchea el informe del niño (sin cambiar contenido):
+- Barras de composición de ejes con el estilo del niño (rótulo "Composición del
+  perfil", separador, nombres en gris, barras píldora, dominante a color pleno y
+  resto atenuado, sin dots ni %).
+- Sacado el "Carta de Navegación".
+- Topbar (logo Argo Method + Imprimir).
+- Encabezado con el nombre del adulto (`recipient_name`).
+- `PuentesFlow` renderiza el informe como página completa.
+
+## 7. Analytics
+- **PostHog** (`src/lib/analytics.ts`): funnel de conversión, COPPA-safe (excluye
+  rutas de juego), no-op sin `VITE_POSTHOG_KEY`. **Opcional**, no bloquea nada.
 
 ---
 
-## QUÉ NECESITO QUE HAGAS VOS (provisioning) — para el informe final
+## Provisioning (estado)
+| Qué | Estado |
+|---|---|
+| Migración `webhook_events` | ✅ aplicada en prod |
+| Migración `enable_rls_exposed_tables` | ✅ aplicada en prod |
+| `MERCADOPAGO_WEBHOOK_SECRET` | ✅ cargado en Vercel |
+| Vercel KV (`upstash-kv-carmine-brush`) | ✅ creado + conectado (KV_REST_API_*) |
+| `VITE_POSTHOG_KEY` | ⬜ opcional, sin configurar |
 
-Yo dejo el código y la configuración lista; estos pasos requieren tus cuentas/paneles:
+## Gaps / acciones pendientes
+- **`api/` no entra en el type-check** → agregar gate de sintaxis al CI (esto
+  dejó pasar el crash de `send-email`). **Prioridad alta de proceso.**
+- Backfill del lote histórico de marzo: decisión abierta (son pruebas; no urgente).
+- `ELEVENLABS_API_KEY` local se borró de `.env.local` (env-pull del `vercel
+  install`); restaurar desde elevenlabs.io si se usan scripts locales.
+- PostHog cuando se quiera medir conversión.
+- Smoke en EN/PT (no bloqueante; los fixes fueron estructurales).
+- Legal: scope US+Latam (sin Brasil/EU). COPPA cubierto. GDPR/LGPD fuera de scope.
 
-| # | Acción | Dónde / cómo | Activa |
-|---|---|---|---|
-| A | **Crear `MERCADOPAGO_WEBHOOK_SECRET`** | Panel de MercadoPago → tu integración → Webhooks → copiar la "clave secreta" → pegarla como env var en Vercel | Verificación de firma del webhook MP |
-| B | **Crear `VITE_POSTHOG_KEY`** (+ opcional `VITE_POSTHOG_HOST`) | Crear cuenta en posthog.com → Project Settings → Project API Key → pegarla en Vercel | Analytics de conversión (funnel) |
-| C | **Crear el store Vercel KV** | Vercel → tu proyecto → Storage → Create → KV. Genera solo `KV_REST_API_URL` y `KV_REST_API_TOKEN` (se inyectan automáticamente) | Rate limiting (anti-abuso/costos IA) |
-| D | **Probar TODO en el preview de Vercel** | Push a `develop` → abrir el preview → jugar una odisea de tenant completa + un Argo One | Validar tokens/firmas/flujos reales (en local el modo DEV los simula) |
-
-Notas:
-- Ya está en Vercel: `OPENAI_API_KEY` (el fallback de IA funciona al desplegar), `MERCADOPAGO_ACCESS_TOKEN`, Stripe, Gemini, Resend, Supabase.
-- Hasta que A/B/C estén configuradas, esas funciones **no rompen nada**: simplemente quedan inactivas (la firma MP se saltea con warning, PostHog no envía, el rate limit no cuenta).
-
-## Estado de migraciones (yo las puedo aplicar con tu OK)
-- `20260601_webhook_events.sql` — **APLICADA en prod** ("Argo", `luutdozbhinfiogugjbv`). Idempotencia lista al desplegar.
-- `20260601_enable_rls_exposed_tables.sql` — **PENDIENTE de tu OK.** Cierra exposición de datos de menores (ver abajo).
-
-## 🔴 Hallazgo crítico: RLS apagado en 3 tablas (prod)
-`puentes_sessions` (datos de niños), `puentes_purchases` (emails + pagos) y
-`credit_transactions` estaban abiertas a cualquiera con la anon key (que viaja
-en el frontend). Fix preparado en `20260601_enable_rls_exposed_tables.sql`:
-activa RLS (service-role la bypassa, los `/api` siguen igual) + política de
-lectura admin para `puentes_purchases` (el dashboard la usa). Reversible.
+## Verificación end-to-end
+- Jugar una odisea de tenant nueva → el informe llega por email (en vivo, o vía
+  el cron de recuperación en ≤5 min si el vivo falla).
+- Comprar/abrir Argo Puentes → informe con el nuevo estilo (topbar, nombre del
+  adulto, composición de ejes).
+- Dashboard superadmin → la columna de Puentes carga (valida la política RLS).
+</content>
