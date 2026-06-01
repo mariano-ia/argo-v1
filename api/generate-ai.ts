@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Report generation (Gemini + OpenAI fallback) can take 20-40s. Without this,
+// a slower model response would hit the platform's default timeout and fail.
+export const maxDuration = 60;
+
 // ─── Types (mirrored from client) ────────────────────────────────────────────
 
 interface Archetype {
