@@ -191,8 +191,8 @@ function buildHtml(params: {
     };
 
     const isIncluded = Boolean(params.existingPuentesMagicLink);
-    const copy = isIncluded ? includedCopy : upsellCopy;
-    const pc = copy[langAttr] ?? copy.es;
+    const puentesCopy = isIncluded ? includedCopy : upsellCopy;
+    const pc = puentesCopy[langAttr] ?? puentesCopy.es;
     const puentesActionUrl = isIncluded ? (params.existingPuentesMagicLink as string) : puentesCheckoutUrl;
 
     const puentesWidget = params.sessionId ? `
