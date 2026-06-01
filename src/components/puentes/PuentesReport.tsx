@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { Printer } from 'lucide-react';
 import { AXIS_COLORS, AXIS_LABELS } from '../../lib/designTokens';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
 import type {
@@ -29,6 +30,7 @@ interface Props {
     lang: Lang;
     adultProfile?: AdultProfile | null;
     recipientEmail?: string | null;
+    recipientName?: string | null;
     children: ChildEntry[];
 }
 
@@ -52,10 +54,22 @@ const PRESSURE_LABEL: Record<Lang, string> = {
     pt: 'Estilo sob pressão',
 };
 
-const ENCOUNTER_LABEL: Record<Lang, string> = {
-    es: 'Carta de Navegación',
-    en: 'Navigation Chart',
-    pt: 'Carta de Navegação',
+const PRINT_LABEL: Record<Lang, string> = {
+    es: 'Imprimir',
+    en: 'Print',
+    pt: 'Imprimir',
+};
+
+const COMPOSITION_LABEL: Record<Lang, string> = {
+    es: 'Composición del perfil',
+    en: 'Profile composition',
+    pt: 'Composição do perfil',
+};
+
+const PAGE_EYEBROW: Record<Lang, string> = {
+    es: 'Informe para el adulto',
+    en: 'Report for the adult',
+    pt: 'Relatório para o adulto',
 };
 
 const SWITCHER_LABEL: Record<Lang, string> = {
@@ -166,39 +180,39 @@ const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ chi
 interface AxisBarsProps {
     counts: Record<AdultAxis, number>;
     dominant: AdultAxis;
+    label: string;
 }
 
-const AxisBars: React.FC<AxisBarsProps> = ({ counts, dominant }) => {
-    const total = EJE_ORDER.reduce((s, a) => s + (counts[a] || 0), 0) || 1;
+// Styled to match the child's report composition (ReportPage AxisBars): a
+// labelled section with a top separator, gray axis names, pill tracks, the
+// dominant axis at full color and the rest faded — no dots, no % numbers.
+const AxisBars: React.FC<AxisBarsProps> = ({ counts, dominant, label }) => {
+    const maxCount = Math.max(...EJE_ORDER.map(a => counts[a] || 0), 1);
     return (
-        <div className="flex flex-col gap-3 mt-5 mb-1">
-            {EJE_ORDER.map(axis => {
-                const pct = Math.round(((counts[axis] || 0) / total) * 100);
-                const isDominant = axis === dominant;
-                return (
-                    <div key={axis} className="flex items-center gap-2.5">
-                        <span
-                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            style={{ backgroundColor: AXIS_COLORS[axis] }}
-                        />
-                        <span className={`text-xs w-[90px] flex-shrink-0 ${isDominant ? 'font-extrabold text-argo-navy' : 'font-semibold text-argo-navy'}`}>
-                            {AXIS_LABELS[axis]}
-                        </span>
-                        <div className="flex-1 h-2 bg-black/[0.06] rounded overflow-hidden">
-                            <motion.div
-                                className="h-full rounded"
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0, 0, 1] }}
-                                style={{ backgroundColor: AXIS_COLORS[axis] }}
-                            />
+        <div className="mt-4 pt-4 border-t border-argo-border">
+            <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-argo-light mb-3">{label}</p>
+            <div className="space-y-2">
+                {EJE_ORDER.map(axis => {
+                    const pct = ((counts[axis] || 0) / maxCount) * 100;
+                    const isDominant = axis === dominant;
+                    return (
+                        <div key={axis} className="flex items-center gap-3">
+                            <span className="text-[11px] font-medium text-argo-grey w-20 flex-shrink-0">
+                                {AXIS_LABELS[axis]}
+                            </span>
+                            <div className="flex-1 bg-argo-bg rounded-full h-2 overflow-hidden">
+                                <motion.div
+                                    className="h-full rounded-full"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${pct}%` }}
+                                    transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0, 0, 1] }}
+                                    style={{ background: AXIS_COLORS[axis], opacity: isDominant ? 1 : 0.35 }}
+                                />
+                            </div>
                         </div>
-                        <span className={`text-[11px] w-8 text-right flex-shrink-0 ${isDominant ? 'font-bold text-argo-navy' : 'font-semibold text-argo-grey'}`}>
-                            {pct}%
-                        </span>
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 };
@@ -285,6 +299,7 @@ export function PuentesReport({
     lang,
     adultProfile,
     recipientEmail,
+    recipientName,
     children,
 }: Props) {
     const c = getPuentesCopy(lang);
@@ -305,16 +320,41 @@ export function PuentesReport({
     const showSwitcher = useMemo(() => children.length > 1, [children]);
 
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-3 max-w-lg mx-auto w-full pb-20"
-        >
-            {/* ── 1. BRÚJULA: shared adult header ─────────────────────────────── */}
-            <div className="bg-[#E3E3FF] border border-[#C8C8F0] rounded-xl p-7">
-                <SectionTitle title={ENCOUNTER_LABEL[lang]} icon={SectionIcons.compass} />
+        <div className="min-h-screen bg-argo-neutral">
+            {/* Top bar (matches the child report) */}
+            <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                    <span className="font-[800] text-base tracking-tight text-argo-navy">Argo</span>
+                    <span className="font-[100] text-base text-argo-grey"> Method</span>
+                </div>
+                <button
+                    onClick={() => window.print()}
+                    className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
+                >
+                    <Printer size={13} />{PRINT_LABEL[lang]}
+                </button>
+            </div>
 
-                <h1 className="text-[28px] font-light tracking-tight leading-tight text-argo-navy">
+            <div className="max-w-lg mx-auto px-4 py-8">
+                {/* Page header — the adult this report is for */}
+                <div className="mb-6">
+                    <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-argo-light mb-1.5">{PAGE_EYEBROW[lang]}</p>
+                    {recipientName && (
+                        <h1 className="text-2xl font-bold text-argo-navy tracking-tight">{recipientName}</h1>
+                    )}
+                    {recipientEmail && (
+                        <p className="text-xs text-argo-light mt-0.5">{recipientEmail}</p>
+                    )}
+                </div>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3 pb-20"
+                >
+                    {/* ── 1. BRÚJULA: shared adult header ─────────────────────────────── */}
+                    <div className="bg-[#E3E3FF] border border-[#C8C8F0] rounded-xl p-7">
+                        <h1 className="text-[28px] font-light tracking-tight leading-tight text-argo-navy">
                     {lang === 'en' ? 'Your bond' : lang === 'pt' ? 'Seu vínculo' : 'Tu vínculo'}
                 </h1>
                 <p className="text-sm text-argo-violet-500 italic mt-1">Argo Puentes</p>
@@ -346,7 +386,7 @@ export function PuentesReport({
                 )}
 
                 {adultProfile?.axis_counts && (
-                    <AxisBars counts={adultProfile.axis_counts} dominant={adultProfile.eje_primary} />
+                    <AxisBars counts={adultProfile.axis_counts} dominant={adultProfile.eje_primary} label={COMPOSITION_LABEL[lang]} />
                 )}
 
                 {adultProfile && (
@@ -497,6 +537,8 @@ export function PuentesReport({
                     <p className="text-[11px] m-0 leading-relaxed text-argo-light">{FOREVER_NOTE[lang]}</p>
                 </div>
             </div>
-        </motion.div>
+                </motion.div>
+            </div>
+        </div>
     );
 }
