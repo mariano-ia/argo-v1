@@ -1,5 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+// Report generation (Gemini + OpenAI fallback) can take 20-40s. Without this,
+// a slower model response would hit the platform's default timeout and fail.
+export const maxDuration = 60;
+
 // ─── Types (mirrored from client) ────────────────────────────────────────────
 
 interface Archetype {
@@ -360,8 +364,10 @@ function clientIp(req: VercelRequest): string {
 }
 
 async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
-    const url = process.env.KV_REST_API_URL;
-    const token = process.env.KV_REST_API_TOKEN;
+    // Accept either the Vercel KV or the Upstash Redis env var names, depending
+    // on which Marketplace integration provisions the store.
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
     if (!url || !token) return false;
     try {
         const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, {

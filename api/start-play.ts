@@ -24,8 +24,10 @@ function clientIp(req: VercelRequest): string {
 // HIGH so a club running many kids behind one NAT IP isn't blocked, while
 // runaway automated abuse (hundreds/thousands per minute) is still capped.
 async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
-    const url = process.env.KV_REST_API_URL;
-    const token = process.env.KV_REST_API_TOKEN;
+    // Accept either the Vercel KV or the Upstash Redis env var names, depending
+    // on which Marketplace integration provisions the store.
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
     if (!url || !token) return false;
     try {
         const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, {
