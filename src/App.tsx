@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
 import { Analytics } from '@vercel/analytics/react';
 import { supabase } from './lib/supabase';
+import { trackPageview } from './lib/analytics';
 import { useLang } from './context/LangContext';
 
 // ─── Public pages (loaded eagerly — part of initial bundle) ─────────────────
@@ -207,6 +208,13 @@ const AnalyticsGate: React.FC = () => {
         pathname.startsWith('/play/') ||
         pathname.startsWith('/one/') ||
         pathname.startsWith('/consent/');
+
+    // PostHog conversion funnel — only on non-game routes (COPPA-safe), and
+    // only when VITE_POSTHOG_KEY is configured (otherwise a no-op).
+    useEffect(() => {
+        if (!isGameRoute) trackPageview(pathname);
+    }, [pathname, isGameRoute]);
+
     if (isGameRoute) return null;
     return <Analytics />;
 };

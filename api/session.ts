@@ -1,13 +1,37 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { randomBytes } from 'crypto';
+import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
 
 /**
  * Unified session endpoint. Routes by `action` field in POST body:
  *   - "start"  → create a started session (returns id)
  *   - "update" → update an existing session by id
  *   - "save"   → create a complete session in one call (legacy fallback)
+ *
+ * Tenant attribution is protected: attaching a session to a tenant requires a
+ * valid play_token issued by /api/start-play (verified below). Updating a
+ * session requires its share_token. Together these close the IDOR where a
+ * spoofed tenant_id / session id could create or mutate another tenant's data.
  */
+
+// Verifies a play_token signed by /api/start-play. Returns the tenant_id it
+// authorizes, or null if the token is missing, tampered, or expired.
+function verifyPlayToken(token: unknown, secret: string): string | null {
+    if (typeof token !== 'string' || !token.includes('.')) return null;
+    const [payload, sig] = token.split('.');
+    if (!payload || !sig) return null;
+    const expected = createHmac('sha256', secret).update(payload).digest('base64url');
+    const a = Buffer.from(sig);
+    const b = Buffer.from(expected);
+    if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+    try {
+        const { t, exp } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+        if (typeof t !== 'string' || typeof exp !== 'number' || Date.now() > exp) return null;
+        return t;
+    } catch {
+        return null;
+    }
+}
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -27,10 +51,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         // ── Start session ────────────────────────────────────────────────────
         if (action === 'start') {
-            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token } = fields;
+            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token, play_token } = fields;
 
             if (!adult_email || !child_name) {
                 return res.status(400).json({ error: 'Missing required fields: adult_email, child_name' });
+            }
+
+            // ── Tenant attribution gate ──────────────────────────────────────
+            // To attach this session to a tenant, the caller must present a
+            // valid play_token (issued by /api/start-play, which enforces
+            // roster capacity + trial). We trust the tenant_id from the token,
+            // not the body. Sessions with no tenant (Argo One / self-play) are
+            // allowed without a token — there is no tenant roster to abuse.
+            let effectiveTenantId: string | null = null;
+            if (tenant_id) {
+                const verifiedTenant = verifyPlayToken(play_token, serviceKey);
+                if (!verifiedTenant || verifiedTenant !== tenant_id) {
+                    console.warn('[session:start] Rejected tenant attribution — invalid play_token for tenant', tenant_id);
+                    return res.status(403).json({ error: 'invalid_play_token' });
+                }
+                effectiveTenantId = verifiedTenant;
             }
 
             // ── COPPA gate: children under 13 require a confirmed consent token ──
@@ -99,7 +139,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 child_name,
                 child_age,
                 sport:           sport || null,
-                tenant_id:       tenant_id ?? null,
+                tenant_id:       effectiveTenantId,
                 lang:            lang ?? 'es',
                 eje:             '_pending',
                 motor:           '_pending',
@@ -131,10 +171,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ── Update session ───────────────────────────────────────────────────
         if (action === 'update') {
-            const { id, ...rest } = fields;
+            const { id, share_token, ...rest } = fields;
 
             if (!id) {
                 return res.status(400).json({ error: 'Missing required field: id' });
+            }
+
+            // ── Ownership gate ───────────────────────────────────────────────
+            // Only the client that started this session (and holds its
+            // share_token) may update it. Prevents mutating another session by
+            // guessing its id.
+            if (typeof share_token !== 'string' || !share_token) {
+                return res.status(403).json({ error: 'missing_session_token' });
+            }
+            const { data: ownRow, error: ownErr } = await sb
+                .from('sessions')
+                .select('id, share_token')
+                .eq('id', id)
+                .maybeSingle();
+            if (ownErr) {
+                console.error('[session:update] ownership lookup error:', ownErr.message);
+                return res.status(500).json({ error: 'update_lookup_failed' });
+            }
+            if (!ownRow || ownRow.share_token !== share_token) {
+                console.warn('[session:update] Rejected update — share_token mismatch for session', id);
+                return res.status(403).json({ error: 'invalid_session_token' });
             }
 
             const allowed: Record<string, unknown> = {};
@@ -165,12 +226,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const {
                 adult_name, adult_email, child_name, child_age, sport,
                 eje, motor, archetype_label, eje_secundario,
-                answers, tenant_id, lang,
+                answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd,
             } = fields;
 
             if (!adult_email || !eje || !motor) {
                 return res.status(400).json({ error: 'Missing required fields' });
+            }
+
+            // Same tenant attribution gate as "start".
+            let saveTenantId: string | null = null;
+            if (tenant_id) {
+                const verifiedTenant = verifyPlayToken(play_token, serviceKey);
+                if (!verifiedTenant || verifiedTenant !== tenant_id) {
+                    console.warn('[session:save] Rejected tenant attribution — invalid play_token for tenant', tenant_id);
+                    return res.status(403).json({ error: 'invalid_play_token' });
+                }
+                saveTenantId = verifiedTenant;
             }
 
             const save_share_token = randomBytes(16).toString('hex');
@@ -184,7 +256,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 motor,
                 archetype_label,
                 eje_secundario:   eje_secundario ?? null,
-                tenant_id:        tenant_id ?? null,
+                tenant_id:        saveTenantId,
                 lang:             lang ?? 'es',
                 answers:          answers ?? [],
                 ai_tokens_input:  ai_tokens_input ?? 0,
@@ -198,7 +270,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(500).json({ error: error.message });
             }
 
-            return res.status(200).json({ ok: true, id: saveData.id });
+            return res.status(200).json({ ok: true, id: saveData.id, share_token: saveData.share_token });
         }
 
         return res.status(400).json({ error: `Unknown action: ${action}` });

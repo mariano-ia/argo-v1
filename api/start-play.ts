@@ -1,5 +1,47 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { createHmac } from 'crypto';
+
+// Issues a short-lived, signed token that authorizes creating ONE tenant
+// session. /api/session verifies it before attaching a session to a tenant,
+// so a session can't be created in an arbitrary tenant by spoofing tenant_id.
+// HMAC key = service role key (server-only secret; avoids a new env var).
+function signPlayToken(tenantId: string, secret: string): string {
+    const exp = Date.now() + 60 * 60 * 1000; // 1 hour — long enough to play
+    const payload = Buffer.from(JSON.stringify({ t: tenantId, exp })).toString('base64url');
+    const sig = createHmac('sha256', secret).update(payload).digest('base64url');
+    return `${payload}.${sig}`;
+}
+
+function clientIp(req: VercelRequest): string {
+    const fwd = req.headers['x-forwarded-for'];
+    const raw = Array.isArray(fwd) ? fwd[0] : (fwd ?? '');
+    return raw.split(',')[0].trim() || 'unknown';
+}
+
+// Fixed-window rate limit via Vercel KV (Upstash REST). No-ops if KV isn't
+// configured (KV_REST_API_URL / KV_REST_API_TOKEN). The limit is intentionally
+// HIGH so a club running many kids behind one NAT IP isn't blocked, while
+// runaway automated abuse (hundreds/thousands per minute) is still capped.
+async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
+    const url = process.env.KV_REST_API_URL;
+    const token = process.env.KV_REST_API_TOKEN;
+    if (!url || !token) return false;
+    try {
+        const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const { result } = await incr.json();
+        if (result === 1) {
+            await fetch(`${url}/expire/${encodeURIComponent(key)}/${windowSec}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        }
+        return typeof result === 'number' && result > limit;
+    } catch {
+        return false; // fail open — never block legit traffic on a KV hiccup
+    }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
@@ -16,6 +58,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
+        // 80 plays/min per IP — generous for a club event, caps abuse.
+        if (await rateLimited(`rl:start-play:${clientIp(req)}`, 80, 60)) {
+            return res.status(429).json({ error: 'rate_limited' });
+        }
+
         const { slug } = req.body;
 
         if (!slug || typeof slug !== 'string') {
@@ -64,6 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             roster_limit: data.roster_limit,
             active_count: data.active_count,
             available: data.available,
+            play_token: signPlayToken(tenant.id, serviceKey),
         });
     } catch (err) {
         console.error('[start-play] Unexpected error:', err);

@@ -118,6 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: tenants } = await sb
                 .from('tenants')
                 .select('id, email, display_name, slug, plan, roster_limit, ai_queries_count, ai_queries_reset_at, trial_expires_at, onboarding_completed, created_at, institution_type, sport, country')
+                .neq('is_synthetic', true) // exclude synthetic QA tenant from admin
                 .order('created_at', { ascending: false });
 
             // Get session counts per tenant

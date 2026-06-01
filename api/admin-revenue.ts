@@ -37,7 +37,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get tenant plan distribution
         const { data: tenants } = await sb
             .from('tenants')
-            .select('id, plan, display_name, created_at');
+            .select('id, plan, display_name, created_at')
+            .neq('is_synthetic', true); // exclude synthetic QA tenant from revenue
 
         const planCounts: Record<string, number> = {};
         let mrrEstimate = 0;

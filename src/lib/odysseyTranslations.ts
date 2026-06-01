@@ -198,7 +198,7 @@ const es: OdysseyTranslations = {
     yourEmailPlaceholder: 'ejemplo@mail.com',
     athleteName: 'Nombre del deportista',
     athleteNamePlaceholder: 'Ej: Kevin',
-    athleteAge: (age) => `Edad del deportista — ${age} años`,
+    athleteAge: (age) => `Edad del deportista: ${age} años`,
     sport: 'Deporte',
     sportOther: 'Otro',
     sportOtherPlaceholder: 'Escribe el deporte...',

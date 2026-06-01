@@ -7,7 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build && node scripts/prerender-meta.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test e2e/odyssey.spec.ts e2e/auth-dashboard.spec.ts e2e/argo-one.spec.ts e2e/report.spec.ts e2e/chat.spec.ts e2e/health.spec.ts",
+    "test:monkey": "playwright test e2e/monkey-odyssey.spec.ts e2e/monkey-signup.spec.ts",
+    "qa:monitor": "node scripts/qa/lib/run-monitor.mjs",
+    "qa:ai-eval": "tsx scripts/qa/ai-eval.ts",
+    "qa:unit": "node scripts/qa/lib/scoring.test.mjs && node scripts/qa/lib/qa-env.test.mjs && node scripts/qa/lint-content.test.mjs",
+    "lint:content": "node scripts/qa/lint-content.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "^8.18.0",
@@ -20,6 +26,7 @@
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.323.0",
     "micro": "^10.0.1",
+    "posthog-js": "^1.378.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.13.1",
@@ -29,6 +36,7 @@
     "three": "^0.183.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/node": "^20.11.16",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",
@@ -44,6 +52,7 @@
     "postcss": "^8.4.35",
     "sharp": "^0.34.5",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.22.3",
     "typescript": "^5.2.2",
     "vercel": "^54.0.0",
     "vite": "^5.1.0"

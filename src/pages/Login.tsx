@@ -49,7 +49,7 @@ export const Login: React.FC = () => {
         if (authError) {
             setError(authError.message);
         } else {
-            setInfo('Revisa tu email — te enviamos un link para ingresar directamente.');
+            setInfo('Revisa tu email. Te enviamos un link para ingresar directamente.');
         }
     };
 

@@ -270,16 +270,28 @@ function findProhibitedWords(sections: Record<string, unknown>): string[] {
     return [...found];
 }
 
-// ─── Inline AI provider (Vercel serverless can't import between api files) ──
+// ─── Inline AI providers (Vercel serverless can't import between api files) ──
+// Primary: Gemini 2.5 Flash. Fallback: OpenAI (gpt-4o) when Gemini fails — so a
+// report is never blocked by a single provider's outage. A personalized report
+// is only ever produced when one of these succeeds; we never fall back to
+// un-personalized base content.
 
+type AIProvider = 'gemini' | 'openai';
 interface AIMsg { role: 'system' | 'user' | 'assistant'; content: string; }
-interface AIResp { content: string; inputTokens: number; outputTokens: number; totalTokens: number; }
+interface AIResp { content: string; inputTokens: number; outputTokens: number; totalTokens: number; provider: AIProvider; }
+
+// Per-provider pricing (USD per token), used for usage cost reporting.
+const PRICING: Record<AIProvider, { in: number; out: number }> = {
+    gemini: { in: 0.15 / 1_000_000, out: 0.60 / 1_000_000 },  // gemini-2.5-flash
+    openai: { in: 2.50 / 1_000_000, out: 10.0 / 1_000_000 },  // gpt-4o
+};
 
 function getCostUsd(r: AIResp): number {
-    return r.inputTokens * (0.15 / 1_000_000) + r.outputTokens * (0.60 / 1_000_000);
+    const p = PRICING[r.provider];
+    return r.inputTokens * p.in + r.outputTokens * p.out;
 }
 
-async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number } = {}): Promise<AIResp> {
+async function callGemini(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number } = {}): Promise<AIResp> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) throw new Error('Missing GEMINI_API_KEY');
     const temperature = opts.temperature ?? 0.7;
@@ -298,7 +310,73 @@ async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens
     if (!res.ok) { const err = await res.text(); throw new Error(`Gemini error ${res.status}: ${err}`); }
     const data = await res.json();
     const usage = data.usageMetadata ?? {};
-    return { content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '', inputTokens: usage.promptTokenCount ?? 0, outputTokens: usage.candidatesTokenCount ?? 0, totalTokens: usage.totalTokenCount ?? 0 };
+    return { content: data.candidates?.[0]?.content?.parts?.[0]?.text ?? '', inputTokens: usage.promptTokenCount ?? 0, outputTokens: usage.candidatesTokenCount ?? 0, totalTokens: usage.totalTokenCount ?? 0, provider: 'gemini' };
+}
+
+async function callOpenAI(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number } = {}): Promise<AIResp> {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) throw new Error('Missing OPENAI_API_KEY');
+    const temperature = opts.temperature ?? 0.7;
+    const maxTokens = opts.maxTokens ?? 3000;
+    // OpenAI's chat API uses the system/user/assistant roles as-is.
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: messages.map(m => ({ role: m.role, content: m.content })),
+            temperature,
+            max_tokens: maxTokens,
+            response_format: { type: 'json_object' },
+        }),
+    });
+    if (!res.ok) { const err = await res.text(); throw new Error(`OpenAI error ${res.status}: ${err}`); }
+    const data = await res.json();
+    const usage = data.usage ?? {};
+    return { content: data.choices?.[0]?.message?.content ?? '', inputTokens: usage.prompt_tokens ?? 0, outputTokens: usage.completion_tokens ?? 0, totalTokens: usage.total_tokens ?? 0, provider: 'openai' };
+}
+
+// Orchestrator: try the preferred provider, fall back to the other on any error.
+async function callAI(messages: AIMsg[], opts: { temperature?: number; maxTokens?: number; provider?: AIProvider } = {}): Promise<AIResp> {
+    const preferred: AIProvider = opts.provider ?? 'gemini';
+    const primary = preferred === 'gemini' ? callGemini : callOpenAI;
+    const fallback = preferred === 'gemini' ? callOpenAI : callGemini;
+    try {
+        return await primary(messages, opts);
+    } catch (primaryErr) {
+        const other: AIProvider = preferred === 'gemini' ? 'openai' : 'gemini';
+        console.warn(`[generate-ai] ${preferred} failed, falling back to ${other}:`, primaryErr instanceof Error ? primaryErr.message : primaryErr);
+        return await fallback(messages, opts);
+    }
+}
+
+// ─── Rate limit (Vercel KV / Upstash REST) ──────────────────────────────────
+// Protects this expensive (paid AI) endpoint from abuse. No-ops if KV isn't
+// configured. High limit so a club running many kids at once isn't blocked.
+function clientIp(req: VercelRequest): string {
+    const fwd = req.headers['x-forwarded-for'];
+    const raw = Array.isArray(fwd) ? fwd[0] : (fwd ?? '');
+    return raw.split(',')[0].trim() || 'unknown';
+}
+
+async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
+    const url = process.env.KV_REST_API_URL;
+    const token = process.env.KV_REST_API_TOKEN;
+    if (!url || !token) return false;
+    try {
+        const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        const { result } = await incr.json();
+        if (result === 1) {
+            await fetch(`${url}/expire/${encodeURIComponent(key)}/${windowSec}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+        }
+        return typeof result === 'number' && result > limit;
+    } catch {
+        return false; // fail open
+    }
 }
 
 // ─── Handler ─────────────────────────────────────────────────────────────────
@@ -309,6 +387,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        // 80 report generations/min per IP — generous for a club, caps abuse.
+        if (await rateLimited(`rl:generate-ai:${clientIp(req)}`, 80, 60)) {
+            return res.status(429).json({ error: 'rate_limited' });
+        }
+
         const { report, context } = req.body as { report: ReportData; context: ReportContext };
 
         if (!report?.arquetipo || !context?.nombre) {
@@ -332,47 +415,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // 4096 was getting truncated mid-JSON, causing parse failures.
         const aiOpts = { temperature: 0.7, maxTokens: 8192 };
 
-        // Try with 1 retry (2 second delay) for resilience
-        let aiResponse: AIResp;
-        try {
-            aiResponse = await callAI(messages, aiOpts);
-        } catch (firstErr) {
-            console.warn('[generate-ai] First attempt failed, retrying in 2s...', firstErr instanceof Error ? firstErr.message : firstErr);
-            await new Promise(r => setTimeout(r, 2000));
-            aiResponse = await callAI(messages, aiOpts);
-        }
-
-        // Strip potential markdown code fences
-        const cleaned = aiResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+        // Generate + parse in one shot. callAI already falls back Gemini→OpenAI
+        // on an API error; this helper lets us also recover from a JSON parse
+        // error by forcing a clean second attempt on the other provider.
+        const generateOnce = async (provider?: AIProvider): Promise<{ sections: AISections; resp: AIResp }> => {
+            const resp = await callAI(messages, { ...aiOpts, provider });
+            const cleaned = resp.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
+            const parsed = JSON.parse(cleaned) as AISections;
+            return { sections: parsed, resp };
+        };
 
         let sections: AISections;
+        let aiResponse: AIResp;
         try {
-            sections = JSON.parse(cleaned);
-        } catch (parseErr) {
-            console.warn(
-                `[generate-ai] JSON parse failed, retrying AI call. Length: ${cleaned.length}, tokens: ${aiResponse.outputTokens}/${aiResponse.totalTokens}. First 200 chars:`,
-                cleaned.slice(0, 200),
-                'Last 200 chars:',
-                cleaned.slice(-200),
-                'Error:',
-                parseErr instanceof Error ? parseErr.message : String(parseErr),
-            );
-            // Retry once — sometimes the model returns truncated JSON
+            ({ sections, resp: aiResponse } = await generateOnce());
+        } catch (firstErr) {
+            // First pass failed: either both providers errored, or the response
+            // was not valid JSON. Wait briefly and force OpenAI for a clean retry.
+            console.warn('[generate-ai] First generation failed (API or JSON parse), forcing OpenAI retry:', firstErr instanceof Error ? firstErr.message : String(firstErr));
+            await new Promise(r => setTimeout(r, 1500));
             try {
-                await new Promise(r => setTimeout(r, 2000));
-                const retryResponse = await callAI(messages, aiOpts);
-                const retryCleaned = retryResponse.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
-                sections = JSON.parse(retryCleaned);
-                // Update usage with retry totals
-                aiResponse = retryResponse;
-            } catch (retryErr) {
-                console.error(
-                    `[generate-ai] Retry also failed. Length: ${cleaned.length}, output tokens: ${aiResponse.outputTokens}. First 500 chars:`,
-                    cleaned.slice(0, 500),
-                    'Error:',
-                    retryErr instanceof Error ? retryErr.message : String(retryErr),
-                );
-                return res.status(502).json({ error: 'Invalid AI response format after retry' });
+                ({ sections, resp: aiResponse } = await generateOnce('openai'));
+            } catch (secondErr) {
+                console.error('[generate-ai] All providers failed after retry:', secondErr instanceof Error ? secondErr.message : String(secondErr));
+                return res.status(502).json({ error: 'AI generation failed on all providers' });
             }
         }
 
@@ -393,7 +459,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 },
             ];
             try {
-                const correctedResp = await callAI(correctionMessages, aiOpts);
+                const correctedResp = await callAI(correctionMessages, { ...aiOpts, provider: aiResponse.provider });
                 const correctedCleaned = correctedResp.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
                 const correctedSections = JSON.parse(correctedCleaned) as AISections;
                 const stillFound = findProhibitedWords(correctedSections as unknown as Record<string, unknown>);

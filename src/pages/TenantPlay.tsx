@@ -12,6 +12,7 @@ export const TenantPlay: React.FC = () => {
     const consentTokenFromUrl = searchParams.get('consent');
     const [status, setStatus] = useState<Status>('loading');
     const [tenantId, setTenantId] = useState<string>('');
+    const [playToken, setPlayToken] = useState<string>('');
     // If we're arriving from /consent/:token, pull the pre-populated adult data
     // from sessionStorage so we can skip the form entirely.
     const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
@@ -33,6 +34,7 @@ export const TenantPlay: React.FC = () => {
                 if (res.ok) {
                     const data = await res.json();
                     setTenantId(data.tenant_id);
+                    setPlayToken(data.play_token ?? '');
                     setStatus('ready');
                 } else if (res.status === 404) {
                     setStatus('not_found');
@@ -93,7 +95,7 @@ export const TenantPlay: React.FC = () => {
     }
 
     // Ready — launch the onboarding flow without user auth
-    return <OnboardingFlowV2 tenantId={tenantId} initialConsent={initialConsent} />;
+    return <OnboardingFlowV2 tenantId={tenantId} playToken={playToken} initialConsent={initialConsent} />;
 };
 
 // ─── Status screen ───────────────────────────────────────────────────────────

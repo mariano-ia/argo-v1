@@ -128,6 +128,8 @@ interface OnboardingV2Props {
     userEmail?: string;
     onPlayComplete?: () => void;
     tenantId?: string;
+    /** Short-lived token from /api/start-play, required to attach to a tenant. */
+    playToken?: string;
     oneLinkId?: string;
     /**
      * When provided (via the /consent/:token landing redirect), the flow
@@ -137,7 +139,7 @@ interface OnboardingV2Props {
     initialConsent?: InitialConsent | null;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, oneLinkId, initialConsent }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, initialConsent }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -172,6 +174,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
     // ── Session persistence (Options 1, 2, 3) ──────────────────────────────
     const sessionIdRef = useRef<string | null>(null);
+    // share_token returned by start/save — proves ownership on later updates.
+    const shareTokenRef = useRef<string | null>(null);
     const [recoveryData, setRecoveryData] = useState<RecoverableSession | null>(null);
 
     // ── Parental consent (VPC, COPPA) ──
@@ -194,6 +198,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         setAnswers(data.answers);
         setScreenIndex(safeScreenIndex);
         if (data.sessionId) sessionIdRef.current = data.sessionId;
+        if (data.shareToken) shareTokenRef.current = data.shareToken;
         setRecoveryData(null);
     }, []);
 
@@ -211,11 +216,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         startSession({
             adultData,
             tenantId,
+            playToken,
             lang,
             consentToken: consentTokenRef.current ?? undefined,
         }).then(result => {
             if (result.ok && result.id) {
                 sessionIdRef.current = result.id;
+                shareTokenRef.current = result.share_token ?? null;
                 console.info('[session] Started session created:', result.id);
             } else {
                 console.warn('[session] Failed to create started session:', result.error);
@@ -411,6 +418,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 answers: nextAnswers,
                 screenIndex: screenIndex + 1,
                 sessionId: sessionIdRef.current ?? undefined,
+                shareToken: shareTokenRef.current ?? undefined,
                 tenantId,
                 lang,
                 timestamp: Date.now(),
@@ -496,7 +504,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
             if (sessionIdRef.current) {
                 // Update the "started" session with real profile data
-                const earlyResult = await updateSession(sessionIdRef.current, profileFields);
+                const earlyResult = await updateSession(sessionIdRef.current, profileFields, shareTokenRef.current ?? undefined);
                 if (!earlyResult.ok) {
                     console.warn('[session] Early update failed:', earlyResult.error);
                 }
@@ -508,10 +516,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     motor:          profile.motor,
                     archetypeLabel: report.arquetipo.label,
                     ejeSecundario:  profile.ejeSecundario,
-                    answers, tenantId, lang,
+                    answers, tenantId, playToken, lang,
                 });
                 if (fallback.ok && fallback.id) {
                     sessionIdRef.current = fallback.id;
+                    shareTokenRef.current = fallback.share_token ?? null;
                 }
                 if (!fallback.ok) {
                     console.warn('[session] Fallback save failed:', fallback.error);
@@ -533,55 +542,67 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             };
 
             let finalSections: AISections | null = null;
-            try {
-                const { sections, usage }: { sections: AISections; usage: AIUsage } =
-                    await generateAISections(report, ctx);
-                finalSections = sections;
-                setAiSections(sections);
+            // The server already falls back Gemini→OpenAI, so reaching here is
+            // rare. We add one client-side retry because the adult is not at the
+            // screen (the child is) — automatic recovery matters more than UI.
+            for (let attempt = 1; attempt <= 2 && !finalSections; attempt++) {
+                try {
+                    const { sections, usage }: { sections: AISections; usage: AIUsage } =
+                        await generateAISections(report, ctx);
+                    finalSections = sections;
+                    setAiSections(sections);
 
-                // Option 1: Update session with AI usage + persist sections
-                if (sessionIdRef.current) {
-                    await updateSession(sessionIdRef.current, {
-                        ai_tokens_input:  usage.inputTokens,
-                        ai_tokens_output: usage.outputTokens,
-                        ai_cost_usd:      usage.costUsd,
-                        ai_sections:      sections,
-                    });
+                    // Persist AI usage + sections on the session
+                    if (sessionIdRef.current) {
+                        await updateSession(sessionIdRef.current, {
+                            ai_tokens_input:  usage.inputTokens,
+                            ai_tokens_output: usage.outputTokens,
+                            ai_cost_usd:      usage.costUsd,
+                            ai_sections:      sections,
+                        }, shareTokenRef.current ?? undefined);
+                    }
+                } catch (err) {
+                    console.warn(`[Argo] AI generation attempt ${attempt} failed:`, err);
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 2500));
                 }
-            } catch (err) {
-                console.warn('[Argo] AI generation failed:', err);
-                // Session already saved with profile data — email will send with base report
-            } finally {
-                setAiLoading(false);
             }
+            setAiLoading(false);
 
             // ── Send report email ────────────────────────────────────────────
-            // Use AI-translated labels for non-es languages
-            const translatedLabel = finalSections?.label ?? report.arquetipo.label;
-            const translatedTendencia = finalSections?.tendenciaLabel ?? report.tendenciaLabel;
-            const arquetipoFull = translatedTendencia
-                ? `${translatedLabel}, ${translatedTendencia}`
-                : translatedLabel;
+            // Only ever send a fully personalized (AI-generated) report. If AI
+            // generation failed, we deliberately do NOT email a base/generic
+            // report. The session is left with ai_sections=null, which the
+            // admin regeneration flow detects to rebuild + send it later.
+            if (finalSections) {
+                // Use AI-translated labels for non-es languages
+                const translatedLabel = finalSections.label ?? report.arquetipo.label;
+                const translatedTendencia = finalSections.tendenciaLabel ?? report.tendenciaLabel;
+                const arquetipoFull = translatedTendencia
+                    ? `${translatedLabel}, ${translatedTendencia}`
+                    : translatedLabel;
 
-            console.log('[Argo] Attempting email send to:', adultData.email, '— sessionId:', sessionIdRef.current);
-            try {
-                await sendReport({
-                    toEmail:        adultData.email,
-                    nombreAdulto:   adultData.nombreAdulto,
-                    nombreNino:     adultData.nombreNino,
-                    deporte:        adultData.deporte,
-                    edad:           adultData.edad,
-                    eje:            profile.eje,
-                    motor:          profile.motor,
-                    arquetipo:      arquetipoFull,
-                    perfil:         lang === 'es' ? report.perfil : '',
-                    palabrasPuente: finalSections?.palabrasPuente ?? report.palabrasPuente,
-                    sessionId:      sessionIdRef.current ?? undefined,
-                    lang,
-                });
-                console.log('[Argo] Report email sent to', adultData.email);
-            } catch (err) {
-                console.error('[Argo] Email send failed:', err);
+                console.log('[Argo] Attempting email send to:', adultData.email, '— sessionId:', sessionIdRef.current);
+                try {
+                    await sendReport({
+                        toEmail:        adultData.email,
+                        nombreAdulto:   adultData.nombreAdulto,
+                        nombreNino:     adultData.nombreNino,
+                        deporte:        adultData.deporte,
+                        edad:           adultData.edad,
+                        eje:            profile.eje,
+                        motor:          profile.motor,
+                        arquetipo:      arquetipoFull,
+                        perfil:         lang === 'es' ? report.perfil : '',
+                        palabrasPuente: finalSections.palabrasPuente ?? report.palabrasPuente,
+                        sessionId:      sessionIdRef.current ?? undefined,
+                        lang,
+                    });
+                    console.log('[Argo] Report email sent to', adultData.email);
+                } catch (err) {
+                    console.error('[Argo] Email send failed:', err);
+                }
+            } else {
+                console.error('[Argo] AI generation failed after retries — NOT sending report email (would be non-personalized). Session left with ai_sections=null for regeneration. sessionId:', sessionIdRef.current);
             }
 
             // Mark Argo One link as completed if applicable

@@ -14,7 +14,7 @@ export const translations = {
             eyebrow: 'Método Argo · Perfilamiento Deportivo',
             headline: 'Tu atleta tiene un código.',
             headlineAccent: 'Aprende a leerlo.',
-            sub: 'Argo revela el perfil de comportamiento de cada deportista para que el adulto — entrenador o padre — sepa exactamente cómo comunicar, motivar y acompañar.',
+            sub: 'Argo revela el perfil de comportamiento de cada deportista para que el adulto (entrenador o padre) sepa exactamente cómo comunicar, motivar y acompañar.',
             cta: 'Comenzar la Odisea',
             ctaSub: '10 minutos · Gratis · Sin registro previo',
         },
