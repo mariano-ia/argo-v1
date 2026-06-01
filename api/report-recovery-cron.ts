@@ -50,7 +50,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Resolved sessions (real profile) that were never emailed, within the window.
     const { data: sessions, error } = await sb
         .from('sessions')
-        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections')
+        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token')
         .neq('eje', '_pending')
         .is('email_sent_at', null)
         .gte('created_at', cutoff)
@@ -130,6 +130,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     perfil: '',
                     palabrasPuente: aiSections?.palabrasPuente ?? [],
                     sessionId: s.id,
+                    shareToken: s.share_token,
                     lang: s.lang || 'es',
                 }),
             });
