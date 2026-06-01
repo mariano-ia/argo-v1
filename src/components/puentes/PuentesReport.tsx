@@ -172,7 +172,7 @@ const SectionTitle: React.FC<{ title: string; icon: React.ReactNode }> = ({ titl
 );
 
 const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-    <div className={`bg-white border border-[#D2D2D7] rounded-xl p-7 ${className}`}>
+    <div className={`bg-white rounded-[14px] p-7 shadow-argo ${className}`}>
         {children}
     </div>
 );
@@ -352,8 +352,8 @@ export function PuentesReport({
                     animate={{ opacity: 1, y: 0 }}
                     className="space-y-3 pb-20"
                 >
-                    {/* ── 1. BRÚJULA: shared adult header ─────────────────────────────── */}
-                    <div className="bg-[#E3E3FF] border border-[#C8C8F0] rounded-xl p-7">
+                    {/* ── 1. BRÚJULA: shared adult header (white card, like the child report) ── */}
+                    <div className="bg-white rounded-[14px] shadow-argo p-7">
                         <h1 className="text-[28px] font-light tracking-tight leading-tight text-argo-navy">
                     {lang === 'en' ? 'Your bond' : lang === 'pt' ? 'Seu vínculo' : 'Tu vínculo'}
                 </h1>
