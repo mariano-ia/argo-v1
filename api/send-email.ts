@@ -30,6 +30,9 @@ function buildHtml(params: {
     const baseUrl = params.siteUrl || 'https://argomethod.com';
     const tokenParam = params.shareToken ? `?token=${params.shareToken}` : '';
     const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}${tokenParam}` : baseUrl;
+    // reportUrl already carries ?token=…, so extra query params must use & (a
+    // second ? would corrupt the token and make the report 403 / "not found").
+    const fbSep = reportUrl.includes('?') ? '&' : '?';
 
     const AXIS_DOT: Record<string, string> = {
         D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1',
@@ -234,17 +237,17 @@ function buildHtml(params: {
         <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#1D1D1F;letter-spacing:-0.01em;">${c.reviewTitle}</p>
         <p style="margin:0 0 18px;font-size:13px;color:#86868B;">${c.reviewQ}</p>
         <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}?feedback=muy_claro"
+        <a href="${reportUrl}${fbSep}feedback=muy_claro"
            style="display:inline-block;background:${violet};color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;box-shadow:0 2px 8px ${violetShadow};">
           ${c.chips[0]}
         </a>
         <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}?feedback=algo_claro"
+        <a href="${reportUrl}${fbSep}feedback=algo_claro"
            style="display:inline-block;background:#ffffff;color:#424245;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
           ${c.chips[1]}
         </a>
         <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}?feedback=confuso"
+        <a href="${reportUrl}${fbSep}feedback=confuso"
            style="display:inline-block;background:#ffffff;color:#86868B;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
           ${c.chips[2]}
         </a>

@@ -43,6 +43,7 @@ export default function PuentesFlow() {
     const [currentIdx, setCurrentIdx] = useState(0);
     const [adultProfile, setAdultProfile] = useState<AdultProfile | null>(null);
     const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
+    const [recipientName, setRecipientName] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
@@ -70,6 +71,7 @@ export default function PuentesFlow() {
                 const data = await res.json();
                 setLang(data.lang || 'es');
                 if (data.recipient_email) setRecipientEmail(data.recipient_email);
+                if (data.recipient_name) setRecipientName(data.recipient_name);
                 if (data.adult_profile) setAdultProfile(data.adult_profile);
 
                 const list: ChildEntry[] = data.children ?? [];
@@ -165,6 +167,18 @@ export default function PuentesFlow() {
     if (stage === 'pending_payment') {
         return <CenterScreen><p className="text-argo-secondary">{lang === 'en' ? 'Your purchase is still being processed. Please try again in a few minutes.' : lang === 'pt' ? 'Sua compra ainda está sendo processada. Tente novamente em alguns minutos.' : 'Tu compra todavía se está procesando. Intenta de nuevo en unos minutos.'}</p></CenterScreen>;
     }
+    // The report owns its full page (topbar + content), like the child report.
+    if (stage === 'report' && children.length > 0) {
+        return (
+            <PuentesReport
+                lang={lang}
+                adultProfile={adultProfile}
+                recipientEmail={recipientEmail}
+                recipientName={recipientName}
+                children={children}
+            />
+        );
+    }
 
     return (
         <div className="min-h-screen bg-argo-neutral py-12 px-4">
@@ -194,14 +208,6 @@ export default function PuentesFlow() {
                 </div>
             )}
             {stage === 'generating' && <PuentesGenerating lang={lang} />}
-            {stage === 'report' && children.length > 0 && (
-                <PuentesReport
-                    lang={lang}
-                    adultProfile={adultProfile}
-                    recipientEmail={recipientEmail}
-                    children={children}
-                />
-            )}
         </div>
     );
 }
