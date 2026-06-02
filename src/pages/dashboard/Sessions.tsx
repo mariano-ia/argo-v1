@@ -18,6 +18,7 @@ interface UnifiedRow {
     status: RowStatus;
     tenant_id?: string | null;
     tenant_name?: string;
+    is_demo?: boolean;
     // completed-only fields
     adult_name?: string;
     child_name?: string;
@@ -50,6 +51,7 @@ interface SessionRow {
     archetype_label: string;
     ai_cost_usd: number;
     tenant_id: string | null;
+    is_demo: boolean | null;
     puentes_reminder_sent_at: string | null;
 }
 
@@ -94,6 +96,7 @@ function mergeRows(sessions: SessionRow[], leads: LeadRow[], puentesPurchases: P
             email: s.adult_email,
             status: 'completed',
             tenant_id: s.tenant_id,
+            is_demo: s.is_demo === true,
             adult_name: s.adult_name,
             child_name: s.child_name,
             child_age: s.child_age,
@@ -150,7 +153,7 @@ export const Sessions: React.FC = () => {
             const [{ data: sessions }, { data: leads }, { data: tenants }, { data: puentes }] = await Promise.all([
                 supabase
                     .from('sessions')
-                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id,puentes_reminder_sent_at')
+                    .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id,is_demo,puentes_reminder_sent_at')
                     .is('deleted_at', null)
                     .not('eje', 'eq', '_pending')
                     .order('created_at', { ascending: false }),
@@ -498,7 +501,11 @@ export const Sessions: React.FC = () => {
                                         >
                                             <td className="px-5 py-3 text-argo-grey whitespace-nowrap">{fmt(row.created_at)}</td>
                                             <td className="px-5 py-3">
-                                                {row.tenant_id ? (
+                                                {row.is_demo ? (
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-argo-violet-50 text-argo-violet-600 border border-argo-violet-100">
+                                                        Demo
+                                                    </span>
+                                                ) : row.tenant_id ? (
                                                     <span className="text-xs font-medium text-gray-700 truncate max-w-[120px] block">{tenantMap[row.tenant_id] ?? '—'}</span>
                                                 ) : (
                                                     <span className="text-[10px] text-gray-400">Argo One</span>

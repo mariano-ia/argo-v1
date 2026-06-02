@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         // ── Start session ────────────────────────────────────────────────────
         if (action === 'start') {
-            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token, play_token } = fields;
+            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token, play_token, is_demo } = fields;
 
             if (!adult_email || !child_name) {
                 return res.status(400).json({ error: 'Missing required fields: adult_email, child_name' });
@@ -146,6 +146,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 archetype_label: '_pending',
                 answers:         [],
                 share_token,
+                is_demo:         is_demo === true,
             }).select('id, share_token').single();
 
             if (error) {
@@ -228,6 +229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 eje, motor, archetype_label, eje_secundario,
                 answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd,
+                is_demo,
             } = fields;
 
             if (!adult_email || !eje || !motor) {
@@ -263,6 +265,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_tokens_output: ai_tokens_output ?? 0,
                 ai_cost_usd:      ai_cost_usd ?? 0,
                 share_token:      save_share_token,
+                is_demo:          is_demo === true,
             }).select('id, share_token').single();
 
             if (error) {

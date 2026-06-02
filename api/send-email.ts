@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { getReportData } from '../src/lib/argosEngine';
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 
@@ -205,7 +206,7 @@ function buildHtml(params: {
   <!-- ARGO PUENTES UPSELL -->
   <tr>
     <td style="padding:24px 28px 8px;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border-radius:14px;border-left:4px solid ${violet};">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border-radius:14px;border:1px solid #ECE3F3;">
         <tr><td style="padding:22px 24px;">
           <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${pc.eyebrow}</p>
           <h3 style="margin:0 0 10px;font-size:19px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;line-height:1.3;">${pc.title}</h3>
@@ -226,34 +227,27 @@ function buildHtml(params: {
     </td>
   </tr>` : '';
 
+    const reviewChip = (feedback: string, label: string, selected = false) =>
+        selected
+            ? `<a href="${reportUrl}${fbSep}feedback=${feedback}" style="display:inline-block;background:#1D1D1F;color:#ffffff;font-size:12px;font-weight:600;text-decoration:none;padding:8px 18px;border-radius:24px;margin:0 3px 8px;border:1px solid #1D1D1F;">✓ ${label}</a>`
+            : `<a href="${reportUrl}${fbSep}feedback=${feedback}" style="display:inline-block;background:#ffffff;color:#86868B;font-size:12px;font-weight:500;text-decoration:none;padding:8px 18px;border-radius:24px;margin:0 3px 8px;border:1px solid #E8E8ED;">${label}</a>`;
+
     const reviewWidget = params.sessionId ? `
   <!-- SEPARATOR -->
-  <tr><td style="padding:28px 28px 0;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
+  <tr><td style="padding:30px 28px 0;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
 
-  <!-- REVIEW WIDGET -->
+  <!-- REVIEW (lightweight, footer-style — must not compete with the CTA/upsell above) -->
   <tr>
-    <td style="padding:24px 28px;">
-      <div style="background:#F5F5F7;border-radius:14px;padding:22px 20px;text-align:center;">
-        <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#1D1D1F;letter-spacing:-0.01em;">${c.reviewTitle}</p>
-        <p style="margin:0 0 18px;font-size:13px;color:#86868B;">${c.reviewQ}</p>
-        <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}${fbSep}feedback=muy_claro"
-           style="display:inline-block;background:${violet};color:#fff;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;box-shadow:0 2px 8px ${violetShadow};">
-          ${c.chips[0]}
-        </a>
-        <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}${fbSep}feedback=algo_claro"
-           style="display:inline-block;background:#ffffff;color:#424245;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
-          ${c.chips[1]}
-        </a>
-        <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
-        <a href="${reportUrl}${fbSep}feedback=confuso"
-           style="display:inline-block;background:#ffffff;color:#86868B;font-size:13px;font-weight:600;text-decoration:none;padding:10px 22px;border-radius:24px;margin:0 3px 8px;border:1px solid #D2D2D7;">
-          ${c.chips[2]}
-        </a>
-        <!--[if mso]></td></tr></table><![endif]-->
-        <p style="margin:12px 0 0;font-size:11px;color:#AEAEB2;">${c.reviewSub}</p>
-      </div>
+    <td style="padding:22px 28px 4px;text-align:center;">
+      <p style="margin:0 0 13px;font-size:12px;color:#86868B;">${c.reviewQ}</p>
+      <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="padding:0 4px;"><![endif]-->
+      ${reviewChip('muy_claro', c.chips[0], true)}
+      <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
+      ${reviewChip('algo_claro', c.chips[1])}
+      <!--[if mso]></td><td style="padding:0 4px;"><![endif]-->
+      ${reviewChip('confuso', c.chips[2])}
+      <!--[if mso]></td></tr></table><![endif]-->
+      <p style="margin:10px 0 0;font-size:11px;color:#AEAEB2;">${c.reviewSub}</p>
     </td>
   </tr>` : '';
 
@@ -483,31 +477,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Invalid email format' });
         }
 
-        // Idempotency: skip if already sent for this session
+        // Single session fetch reused for idempotency, share_token, and
+        // report-content hydration below. Pulls the deterministic inputs
+        // (eje/motor/lang/child_name) + stored ai_sections so we can rebuild
+        // the full report regardless of what the caller passed.
+        type SessionRow = {
+            email_sent_at?: string | null;
+            share_token?: string | null;
+            eje?: string | null;
+            motor?: string | null;
+            eje_secundario?: string | null;
+            child_name?: string | null;
+            lang?: string | null;
+            ai_sections?: { resumenPerfil?: string; palabrasPuente?: string[] } | null;
+        };
+        let sessionRow: SessionRow | null = null;
         if (sessionId) {
             const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
             const supabaseUrl = process.env.VITE_SUPABASE_URL;
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
-                const { data: sess } = await sb.from('sessions').select('email_sent_at').eq('id', sessionId).maybeSingle();
-                if (sess?.email_sent_at) {
+                const { data } = await sb
+                    .from('sessions')
+                    .select('email_sent_at, share_token, eje, motor, eje_secundario, child_name, lang, ai_sections')
+                    .eq('id', sessionId)
+                    .maybeSingle();
+                sessionRow = (data as SessionRow) ?? null;
+
+                // Idempotency: skip if already sent for this session
+                if (sessionRow?.email_sent_at) {
                     console.log('[send-email] Already sent for session', sessionId);
                     return res.status(200).json({ success: true, already_sent: true });
                 }
             }
         }
 
-        // If no shareToken provided but we have a sessionId, fetch it from DB
-        let finalShareToken = shareToken;
-        if (!finalShareToken && sessionId) {
-            const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-            const sUrl = process.env.VITE_SUPABASE_URL;
-            if (sKey && sUrl) {
-                const sbForToken = createClient(sUrl, sKey);
-                const { data: tokenData } = await sbForToken.from('sessions').select('share_token').eq('id', sessionId).maybeSingle();
-                finalShareToken = tokenData?.share_token || undefined;
-            }
-        }
+        // If no shareToken provided but we have one on the session, use it
+        const finalShareToken = shareToken || sessionRow?.share_token || undefined;
 
         // Derive siteUrl from the request host so preview deploys receive
         // emails that link back to the preview (not to argomethod.com which
@@ -628,10 +634,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             existingPuentesMagicLink = undefined;
         }
 
+        // ── Hydrate report content so EVERY send path emails the full
+        // template ───────────────────────────────────────────────────────────
+        // The auto-send after play and both dashboard "resend" buttons used to
+        // pass partial data (e.g. no resumenPerfil, empty perfil on non-es),
+        // so the Contrato de Sintonía + hero copy silently dropped out of the
+        // delivered email. We backfill any missing field from the session's
+        // stored ai_sections + the deterministic engine. Caller-provided
+        // values always win; we only fill gaps.
+        let finalPerfil = perfil;
+        let finalPalabrasPuente = Array.isArray(palabrasPuente) ? palabrasPuente : [];
+        let finalResumenPerfil = resumenPerfil;
+        if (sessionRow && (sessionRow.eje && sessionRow.motor)) {
+            const ai = sessionRow.ai_sections ?? {};
+            const det = getReportData(
+                sessionRow.eje,
+                sessionRow.motor,
+                sessionRow.eje_secundario ?? '',
+                sessionRow.child_name ?? nombreNino,
+                sessionRow.lang ?? lang ?? 'es',
+            );
+            if (!finalPerfil || !finalPerfil.trim()) finalPerfil = det.perfil;
+            if (!finalPalabrasPuente.length) {
+                finalPalabrasPuente = (ai.palabrasPuente && ai.palabrasPuente.length)
+                    ? ai.palabrasPuente
+                    : det.palabrasPuente;
+            }
+            if (!finalResumenPerfil || !finalResumenPerfil.trim()) finalResumenPerfil = ai.resumenPerfil;
+        }
+
         const html = buildHtml({
-            nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo, perfil,
-            palabrasPuente: Array.isArray(palabrasPuente) ? palabrasPuente : [],
-            sessionId, shareToken: finalShareToken, lang, resumenPerfil,
+            nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo,
+            perfil: finalPerfil,
+            palabrasPuente: finalPalabrasPuente,
+            sessionId, shareToken: finalShareToken, lang, resumenPerfil: finalResumenPerfil,
             siteUrl,
             existingPuentesMagicLink,
             preferredCurrency,

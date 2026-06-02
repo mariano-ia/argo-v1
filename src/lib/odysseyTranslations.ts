@@ -78,7 +78,7 @@ export interface OdysseyTranslations {
     continueDefault: string;
     aboard: string;
 
-    // AdultReport
+    // Adult-facing report copy
     archetypeOf: (name: string) => string;
     preparingReport: string;
     reportSentTo: string;
@@ -92,7 +92,7 @@ export interface OdysseyTranslations {
     fullReport: string;
     saveErrorTitle: string;
 
-    // FullReport misc
+    // Report misc
     reportHeader: string;
     motorTag: string;
     generatingAI: string;
@@ -115,7 +115,7 @@ export interface OdysseyTranslations {
     reviewChips: [string, string, string];
     reviewSub: string;
 
-    // FullReport section titles
+    // Report section titles
     reportSections: {
         contract: string;
         disclaimer: string;
