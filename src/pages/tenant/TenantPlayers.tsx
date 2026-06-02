@@ -546,9 +546,9 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
 /* ── Main Component ────────────────────────────────────────────────────────── */
 
 const DEV_SESSIONS: SessionRow[] = [
-    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'D', responseTimeMs: 3200 }), ai_sections: null },
-    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 30 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'I', responseTimeMs: 7500 }), ai_sections: null },
-    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 210 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'C', responseTimeMs: 14000 }), ai_sections: null },
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'Impulsor Dinámico', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'D', responseTimeMs: 3200 }), ai_sections: null },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'Conector Rítmico', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 30 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'I', responseTimeMs: 7500 }), ai_sections: null },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'Estratega Observador', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 210 * 86400000).toISOString(), answers: Array(12).fill({ axis: 'C', responseTimeMs: 14000 }), ai_sections: null },
 ];
 
 export const TenantPlayers: React.FC = () => {

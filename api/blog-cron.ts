@@ -61,10 +61,10 @@ const ARCHETYPES = [
 ];
 
 const ARCHETYPE_LABELS: Record<string, string> = {
-    impulsor_dinamico: 'Impulsor Dinamico', impulsor_decidido: 'Impulsor Decidido', impulsor_persistente: 'Impulsor Persistente',
-    conector_expresivo: 'Conector Expresivo', conector_armonico: 'Conector Armonico', conector_profundo: 'Conector Profundo',
-    sosten_adaptable: 'Sosten Adaptable', sosten_estable: 'Sosten Estable', sosten_reflexivo: 'Sosten Reflexivo',
-    estratega_agil: 'Estratega Agil', estratega_preciso: 'Estratega Preciso', estratega_cauteloso: 'Estratega Cauteloso',
+    impulsor_dinamico: 'Impulsor Dinámico', impulsor_decidido: 'Impulsor Rítmico', impulsor_persistente: 'Impulsor Sereno',
+    conector_expresivo: 'Conector Dinámico', conector_armonico: 'Conector Rítmico', conector_profundo: 'Conector Sereno',
+    sosten_adaptable: 'Sostenedor Dinámico', sosten_estable: 'Sostenedor Rítmico', sosten_reflexivo: 'Sostenedor Sereno',
+    estratega_agil: 'Estratega Dinámico', estratega_preciso: 'Estratega Rítmico', estratega_cauteloso: 'Estratega Observador',
 };
 
 // ─── Topic idea generation ──────────────────────────────────────────────────

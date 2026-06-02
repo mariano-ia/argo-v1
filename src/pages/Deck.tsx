@@ -123,7 +123,7 @@ const T = {
             sub:
                 'Tres capas conectadas, entrenadas sobre los doce arquetipos, las doce tendencias secundarias y cincuenta y siete situaciones reales de coaching infantil.',
             layer1: 'Capa 1',
-            layer1Title: 'Argo Consultor',
+            layer1Title: 'Argo Coach',
             layer1Body:
                 'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA conoce el perfil real de cada niño del equipo y responde con lenguaje concreto, probabilístico, libre de jerga clínica.',
             layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere arrancar el entrenamiento?"',
@@ -149,7 +149,7 @@ const T = {
             s2Caption: 'Para el club',
             s2Title: 'El dashboard',
             s2Body:
-                'Equipo completo, perfiles por jugador, balance grupal, consultor IA entrenado con los doce arquetipos.',
+                'Equipo completo, perfiles por jugador, balance grupal, Argo Coach entrenado con los doce arquetipos.',
             s3Caption: 'Para la familia',
             s3Title: 'El reporte',
             s3Body:
@@ -293,7 +293,7 @@ const T = {
             sub:
                 'Three connected layers, trained on the twelve archetypes, the twelve secondary tendencies, and fifty-seven real situations from youth coaching.',
             layer1: 'Layer 1',
-            layer1Title: 'Argo Advisor',
+            layer1Title: 'Argo Coach',
             layer1Body:
                 'A conversational assistant the coach can ask anything about any player. The AI knows the real profile of every child on the team and answers in concrete, probabilistic language, free of clinical jargon.',
             layer1Quote: '"How do I motivate a Rhythmic Sustainer who doesn\'t want to start training?"',
@@ -319,7 +319,7 @@ const T = {
             s2Caption: 'For the club',
             s2Title: 'The dashboard',
             s2Body:
-                'The full team, profiles per player, group balance, AI advisor trained on the twelve archetypes.',
+                'The full team, profiles per player, group balance, Argo Coach trained on the twelve archetypes.',
             s3Caption: 'For the family',
             s3Title: 'The report',
             s3Body:

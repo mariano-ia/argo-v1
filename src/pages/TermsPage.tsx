@@ -37,7 +37,7 @@ export const TermsPage: React.FC = () => (
 
             <Section title="3. Planes y suscripciones">
                 <p><strong>Argo One:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
-                <p><strong>Planes institucionales (PRO, Academy, Enterprise):</strong> suscripciones mensuales o anuales que incluyen acceso al dashboard, jugadores activos según el plan contratado, y consultor IA incluido.</p>
+                <p><strong>Planes institucionales (PRO, Academy, Enterprise):</strong> suscripciones mensuales o anuales que incluyen acceso al dashboard, jugadores activos según el plan contratado, y Argo Coach incluido.</p>
                 <p><strong>Trial:</strong> periodo de prueba gratuito de 14 días con hasta 8 jugadores activos y funcionalidades limitadas. Al vencer el trial, el dashboard pasa a solo lectura. Los perfiles no se eliminan.</p>
             </Section>
 
@@ -46,10 +46,10 @@ export const TermsPage: React.FC = () => (
                 <p>El re-perfilamiento de un jugador está disponible cada 6 meses desde su último perfilamiento. Los jugadores pueden ser archivados para liberar lugar en el equipo, sin perder sus datos.</p>
             </Section>
 
-            <Section title="5. Consultor IA y política de uso justo">
-                <p>El Consultor IA está incluido en todos los planes institucionales. Su uso está sujeto a una política de uso justo que contempla hasta 500 consultas mensuales en el plan PRO y hasta 1000 en el plan Academy.</p>
+            <Section title="5. Argo Coach y política de uso justo">
+                <p>El Argo Coach está incluido en todos los planes institucionales. Su uso está sujeto a una política de uso justo que contempla hasta 500 consultas mensuales en el plan PRO y hasta 1000 en el plan Academy.</p>
                 <p>Argo Method se reserva el derecho de contactar a usuarios que excedan consistentemente estos límites para ofrecerles un plan más adecuado a su volumen de uso.</p>
-                <p>El Consultor IA proporciona orientaciones basadas en la metodología Argo y los perfiles registrados. Las respuestas son orientativas y no reemplazan el criterio profesional del entrenador o adulto responsable.</p>
+                <p>El Argo Coach proporciona orientaciones basadas en la metodología Argo y los perfiles registrados. Las respuestas son orientativas y no reemplazan el criterio profesional del entrenador o adulto responsable.</p>
             </Section>
 
             <Section title="6. Argo Puentes (servicio complementario)">

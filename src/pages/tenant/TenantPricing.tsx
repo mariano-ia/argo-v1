@@ -21,7 +21,7 @@ const T = {
         month: 'mes',
         billedAnnually: 'facturado anualmente',
         trialTitle: 'Comienza con 14 días gratis',
-        trialDesc: 'Dashboard completo, 8 deportistas, consultor IA. Sin tarjeta de crédito.',
+        trialDesc: 'Dashboard completo, 8 deportistas, Argo Coach. Sin tarjeta de crédito.',
         startTrial: 'Comenzar trial gratuito',
         currentPlan: 'Tu plan actual',
         contactSales: 'Contactar ventas',
@@ -38,8 +38,8 @@ const T = {
             included: 'incluido',
             unlimited: 'ilimitado',
             groups: 'Grupos ilimitados',
-            ai: 'Consultor IA',
-            guide: 'Guía situacional completa',
+            ai: 'Argo Coach',
+            guide: 'Predictor Conductual completo',
             words: 'Palabras puente y checklist',
             dashboard: 'Dashboard completo',
             dashboardApi: 'Dashboard completo + API',
@@ -76,8 +76,8 @@ const T = {
             included: 'included',
             unlimited: 'unlimited',
             groups: 'Unlimited groups',
-            ai: 'AI Consultant',
-            guide: 'Full situational guide',
+            ai: 'Argo Coach',
+            guide: 'Full Behavioral Predictor',
             words: 'Bridge words & checklist',
             dashboard: 'Full dashboard',
             dashboardApi: 'Full dashboard + API',
@@ -97,7 +97,7 @@ const T = {
         month: 'mês',
         billedAnnually: 'cobrado anualmente',
         trialTitle: 'Comece com 14 dias grátis',
-        trialDesc: 'Dashboard completo, 8 atletas, consultor IA. Sem cartão de crédito.',
+        trialDesc: 'Dashboard completo, 8 atletas, Argo Coach. Sem cartão de crédito.',
         startTrial: 'Começar trial gratuito',
         currentPlan: 'Seu plano atual',
         contactSales: 'Contatar vendas',
@@ -114,8 +114,8 @@ const T = {
             included: 'incluído',
             unlimited: 'ilimitado',
             groups: 'Grupos ilimitados',
-            ai: 'Consultor IA',
-            guide: 'Guia situacional completo',
+            ai: 'Argo Coach',
+            guide: 'Preditor Comportamental completo',
             words: 'Palavras-ponte e checklist',
             dashboard: 'Dashboard completo',
             dashboardApi: 'Dashboard completo + API',
@@ -302,7 +302,7 @@ export const TenantPricing: React.FC = () => {
                         </span>
                     </div>
                     <ul className="flex-1 mb-6">
-                        <FeatureRow label={lang === 'en' ? 'Premium AI Consultant' : lang === 'pt' ? 'Consultor IA premium' : 'Consultor IA premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
+                        <FeatureRow label={lang === 'en' ? 'Argo Coach Premium' : lang === 'pt' ? 'Argo Coach Premium' : 'Argo Coach Premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
                         <FeatureRow label={f.playersUnlimited} />
                         <FeatureRow label={f.reprofile} sub={f.included} />
                         <FeatureRow label={f.groups} />

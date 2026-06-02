@@ -65,15 +65,15 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 - Factor Wow (cualidad única)
 - Combustible (qué lo motiva)
 - Reseteo (cómo se recupera del estrés)
-- Guía situacional (qué hacer antes/durante/después del entrenamiento)
+- Predictor Conductual (qué hacer antes/durante/después del entrenamiento)
 - Palabras puente (cómo hablarle) y palabras ruido (qué evitar)
 - Checklist para el entrenador
 
 ## Dashboard (para instituciones)
 - Equipo: todos los jugadores con su perfil
-- Grupos: composición conductual del equipo, detectar desbalances
-- Consultor IA: preguntas libres sobre cualquier jugador ("¿Cómo motivo a Mateo?")
-- Guía situacional: base de datos de escenarios por arquetipo
+- Dinámica Grupal: composición conductual del equipo, detectar desbalances
+- Argo Coach: preguntas libres sobre cualquier jugador ("¿Cómo motivo a Mateo?")
+- Predictor Conductual: base de datos de escenarios por arquetipo
 - Link único: cada institución tiene su link para compartir
 - Multi-usuario: varios coaches, una cuenta
 
@@ -87,7 +87,7 @@ Compra única, sin suscripción. El padre compra un pack (1, 3 o 5 perfiles), re
 - Enterprise: precio custom, jugadores ilimitados, API, soporte dedicado
 - Argo One: $14.99 (1 perfil), $34.99 (3 perfiles), $49.99 (5 perfiles)
 
-El re-perfilado cada 6 meses está incluido en todos los planes. No hay costos adicionales por usar el consultor IA ni por generar reportes.
+El re-perfilado cada 6 meses está incluido en todos los planes. No hay costos adicionales por usar Argo Coach ni por generar reportes.
 
 ## Idiomas
 Español (latinoamérica), inglés y portugués (Brasil). Tanto la odisea como los reportes y el dashboard.

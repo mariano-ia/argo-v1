@@ -136,16 +136,16 @@ CONOCIMIENTO BASE DEL MÉTODO ARGO:
 - Motor (tempo de decisión): Rápido (Dinámico), Medio (Rítmico), Lento (Sereno). No hay motor mejor ni peor.
 - 12 arquetipos (eje + motor):
   D+Rápido: Impulsor Dinámico (acción directa, resolución inmediata)
-  D+Medio: Impulsor Decidido (iniciativa estratégica, ejecución con propósito)
-  D+Lento: Impulsor Persistente (determinación constante, resiliencia)
-  I+Rápido: Conector Vibrante (entusiasmo contagioso, cohesión por energía)
-  I+Medio: Conector Relacional (vínculo equilibrado, cohesión a ritmo firme)
-  I+Lento: Conector Reflexivo (cohesión profunda, observación del clima grupal)
-  S+Rápido: Sostén Ágil (auxilio veloz, apoyo dinámico)
-  S+Medio: Sostén Confiable (consistencia serena, apoyo estructurado)
-  S+Lento: Sostén Sereno (resistencia imperturbable, calma estructural)
-  C+Rápido: Estratega Reactivo (precisión instantánea, ajuste táctico veloz)
-  C+Medio: Estratega Analítico (procesamiento técnico, ejecución con propósito)
+  D+Medio: Impulsor Rítmico (iniciativa estratégica, ejecución con propósito)
+  D+Lento: Impulsor Sereno (determinación constante, resiliencia)
+  I+Rápido: Conector Dinámico (entusiasmo contagioso, cohesión por energía)
+  I+Medio: Conector Rítmico (vínculo equilibrado, cohesión a ritmo firme)
+  I+Lento: Conector Sereno (cohesión profunda, observación del clima grupal)
+  S+Rápido: Sostenedor Dinámico (auxilio veloz, apoyo dinámico)
+  S+Medio: Sostenedor Rítmico (consistencia serena, apoyo estructurado)
+  S+Lento: Sostenedor Sereno (resistencia imperturbable, calma estructural)
+  C+Rápido: Estratega Dinámico (precisión instantánea, ajuste táctico veloz)
+  C+Medio: Estratega Rítmico (procesamiento técnico, ejecución con propósito)
   C+Lento: Estratega Observador (análisis profundo, precisión lógica)
 - Brújula secundaria: el segundo eje más fuerte matiza el perfil principal (ej: Impulsor con brújula social = lidera pero busca consenso)
 - No hay niños incorrectos, hay adultos que todavía no encontraron la sintonía
@@ -155,8 +155,8 @@ EJEMPLOS DE RESPUESTAS CORRECTAS:
 Pregunta: "¿Cómo motivo a un Impulsor Dinámico en fútbol?"
 Respuesta correcta: "Un Impulsor Dinámico tiende a necesitar sentir que sus acciones producen impacto visible. Prueba darle una responsabilidad concreta ('Tu rol es activar la presión en la salida'). Su combustible es el desafío, así que las consignas vagas o pasivas tienden a desconectarlo. Valida su iniciativa, no solo el resultado: 'Me encantó cómo te animaste a intentar ese pase'."
 
-Pregunta: "Tengo un Sostén Sereno que no participa en los ejercicios."
-Respuesta correcta: "Un Sostén Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Prueba anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo."
+Pregunta: "Tengo un Sostenedor Sereno que no participa en los ejercicios."
+Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Prueba anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo."
 
 Pregunta: "¿Quién debería ser capitán?"
 Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."`,
@@ -190,17 +190,17 @@ ARGO METHOD KNOWLEDGE BASE:
 - Engine (decision tempo): Fast (Dynamic), Medium (Rhythmic), Slow (Serene). No engine is better or worse.
 - 12 archetypes (axis + engine):
   D+Fast: Dynamic Driver (direct action, immediate resolution)
-  D+Medium: Decisive Driver (strategic initiative, purposeful execution)
-  D+Slow: Persistent Driver (constant determination, resilience)
-  I+Fast: Vibrant Connector (contagious enthusiasm, energy-driven cohesion)
-  I+Medium: Relational Connector (balanced bonds, steady cohesion)
-  I+Slow: Reflective Connector (deep cohesion, group climate awareness)
-  S+Fast: Agile Sustainer (swift support, dynamic aid)
-  S+Medium: Reliable Sustainer (serene consistency, structured support)
+  D+Medium: Rhythmic Driver (strategic initiative, purposeful execution)
+  D+Slow: Serene Driver (constant determination, resilience)
+  I+Fast: Dynamic Connector (contagious enthusiasm, energy-driven cohesion)
+  I+Medium: Rhythmic Connector (balanced bonds, steady cohesion)
+  I+Slow: Serene Connector (deep cohesion, group climate awareness)
+  S+Fast: Dynamic Sustainer (swift support, dynamic aid)
+  S+Medium: Rhythmic Sustainer (serene consistency, structured support)
   S+Slow: Serene Sustainer (imperturbable resistance, structural calm)
-  C+Fast: Reactive Strategist (instant precision, swift tactical adjustment)
-  C+Medium: Analytical Strategist (technical processing, purposeful execution)
-  C+Slow: Observer Strategist (deep analysis, logical precision)
+  C+Fast: Dynamic Strategist (instant precision, swift tactical adjustment)
+  C+Medium: Rhythmic Strategist (technical processing, purposeful execution)
+  C+Slow: Observant Strategist (deep analysis, logical precision)
 - Secondary compass: the second strongest axis nuances the main profile
 - There are no incorrect children, only adults who haven't found the right attunement yet
 
@@ -939,10 +939,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const wrongAxis: Record<string, string[]> = {
-                D: ['conector', 'connector', 'sostén', 'sustainer', 'estratega', 'strategist'],
-                I: ['impulsor', 'driver', 'sostén', 'sustainer', 'estratega', 'strategist'],
+                D: ['conector', 'connector', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
+                I: ['impulsor', 'driver', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
                 S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
-                C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sustainer'],
+                C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
             const wrongLabels = wrongAxis[mp.eje] ?? [];
             // Check if the response calls this player by the wrong archetype

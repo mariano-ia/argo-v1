@@ -66,10 +66,10 @@ export const translations = {
             headline: '12 perfiles. Cada deportista en uno.',
             sub: 'Combinando eje dominante y motor de ritmo, Argo mapea 12 arquetipos únicos de comportamiento deportivo.',
             profiles: [
-                'Impulsor Dinámico', 'Impulsor Decidido', 'Impulsor Persistente',
-                'Conector Dinámico', 'Conector Decidido', 'Conector Persistente',
-                'Sostenedor Dinámico', 'Sostenedor Decidido', 'Sostenedor Persistente',
-                'Estratega Dinámico', 'Estratega Decidido', 'Estratega Persistente',
+                'Impulsor Dinámico', 'Impulsor Rítmico', 'Impulsor Sereno',
+                'Conector Dinámico', 'Conector Rítmico', 'Conector Sereno',
+                'Sostenedor Dinámico', 'Sostenedor Rítmico', 'Sostenedor Sereno',
+                'Estratega Dinámico', 'Estratega Rítmico', 'Estratega Observador',
             ],
         },
         audience: {
@@ -165,10 +165,10 @@ export const translations = {
             headline: '12 profiles. Every athlete fits one.',
             sub: 'By combining dominant axis and rhythm engine, Argo maps 12 unique sports behavioral archetypes.',
             profiles: [
-                'Dynamic Driver', 'Decisive Driver', 'Persistent Driver',
-                'Dynamic Connector', 'Decisive Connector', 'Persistent Connector',
-                'Dynamic Sustainer', 'Decisive Sustainer', 'Persistent Sustainer',
-                'Dynamic Strategist', 'Decisive Strategist', 'Persistent Strategist',
+                'Dynamic Driver', 'Rhythmic Driver', 'Serene Driver',
+                'Dynamic Connector', 'Rhythmic Connector', 'Serene Connector',
+                'Dynamic Sustainer', 'Rhythmic Sustainer', 'Serene Sustainer',
+                'Dynamic Strategist', 'Rhythmic Strategist', 'Observant Strategist',
             ],
         },
         audience: {
@@ -264,10 +264,10 @@ export const translations = {
             headline: '12 perfis. Cada atleta em um.',
             sub: 'Combinando eixo dominante e motor de ritmo, Argo mapeia 12 arquétipos únicos de comportamento esportivo.',
             profiles: [
-                'Impulsionador Dinâmico', 'Impulsionador Decidido', 'Impulsionador Persistente',
-                'Conector Dinâmico', 'Conector Decidido', 'Conector Persistente',
-                'Sustentador Dinâmico', 'Sustentador Decidido', 'Sustentador Persistente',
-                'Estrategista Dinâmico', 'Estrategista Decidido', 'Estrategista Persistente',
+                'Impulsionador Dinâmico', 'Impulsionador Rítmico', 'Impulsionador Sereno',
+                'Conector Dinâmico', 'Conector Rítmico', 'Conector Sereno',
+                'Sustentador Dinâmico', 'Sustentador Rítmico', 'Sustentador Sereno',
+                'Estrategista Dinâmico', 'Estrategista Rítmico', 'Estrategista Observador',
             ],
         },
         audience: {

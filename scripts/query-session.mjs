@@ -19,17 +19,17 @@ if (data.length === 0) { console.log('No sessions found'); process.exit(0); }
 
 const ARQUETIPOS = {
   'D-Rápido': 'Impulsor Dinámico',
-  'D-Medio': 'Impulsor Decidido',
-  'D-Lento': 'Impulsor Persistente',
+  'D-Medio': 'Impulsor Rítmico',
+  'D-Lento': 'Impulsor Sereno',
   'I-Rápido': 'Conector Dinámico',
-  'I-Medio': 'Conector Decidido',
-  'I-Lento': 'Conector Persistente',
+  'I-Medio': 'Conector Rítmico',
+  'I-Lento': 'Conector Sereno',
   'S-Rápido': 'Sostenedor Dinámico',
-  'S-Medio': 'Sostenedor Decidido',
-  'S-Lento': 'Sostenedor Persistente',
+  'S-Medio': 'Sostenedor Rítmico',
+  'S-Lento': 'Sostenedor Sereno',
   'C-Rápido': 'Estratega Dinámico',
-  'C-Medio': 'Estratega Decidido',
-  'C-Lento': 'Estratega Persistente',
+  'C-Medio': 'Estratega Rítmico',
+  'C-Lento': 'Estratega Observador',
 };
 
 for (const s of data) {

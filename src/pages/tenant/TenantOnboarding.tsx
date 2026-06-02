@@ -27,9 +27,9 @@ const SLIDE_TEXT = {
             title: 'Qué encontrarás en tu dashboard',
             items: [
                 { label: 'Jugadores', desc: 'Todos los perfiles generados. Accede al informe completo de cada deportista.' },
-                { label: 'Grupos',    desc: 'Crea equipos y analiza su dinámica conductual. Cómo se complementan o tensionan los perfiles.' },
-                { label: 'Guía',      desc: 'Situaciones habituales del entrenamiento, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.' },
-                { label: 'Consultor IA', desc: 'Hazle preguntas por nombre: "¿Cómo motivo a Mateo?". Tiene acceso a todos los perfiles de tu plataforma.' },
+                { label: 'Dinámica Grupal', desc: 'Crea equipos y analiza su dinámica conductual. Cómo se complementan o tensionan los perfiles.' },
+                { label: 'Predictor Conductual', desc: 'Situaciones habituales del entrenamiento, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.' },
+                { label: 'Argo Coach', desc: 'Hazle preguntas por nombre: "¿Cómo motivo a Mateo?". Tiene acceso a todos los perfiles de tu plataforma.' },
             ],
         },
         s3: {
@@ -61,9 +61,9 @@ const SLIDE_TEXT = {
             title: "What you'll find in your dashboard",
             items: [
                 { label: 'Players',      desc: 'All generated profiles. Access the full report of each athlete.' },
-                { label: 'Groups',       desc: 'Create teams and analyze their behavioral dynamics. How profiles complement or tension each other.' },
-                { label: 'Guide',        desc: 'Common training situations, organized by category. Guidance based on the athlete\'s profile.' },
-                { label: 'AI Consultant', desc: 'Ask by name: "How do I motivate Mateo?". Has access to all profiles on your platform.' },
+                { label: 'Group Dynamics', desc: 'Create teams and analyze their behavioral dynamics. How profiles complement or tension each other.' },
+                { label: 'Behavioral Predictor', desc: 'Common training situations, organized by category. Guidance based on the athlete\'s profile.' },
+                { label: 'Argo Coach', desc: 'Ask by name: "How do I motivate Mateo?". Has access to all profiles on your platform.' },
             ],
         },
         s3: {
@@ -95,9 +95,9 @@ const SLIDE_TEXT = {
             title: 'O que você encontrará no seu dashboard',
             items: [
                 { label: 'Jogadores',    desc: 'Todos os perfis gerados. Acesse o relatório completo de cada atleta.' },
-                { label: 'Grupos',       desc: 'Crie equipes e analise sua dinâmica comportamental. Como os perfis se complementam ou tensionam.' },
-                { label: 'Guia',         desc: 'Situações comuns do treino, organizadas por categoria. Orientações com base no perfil do atleta.' },
-                { label: 'Consultor IA', desc: 'Faça perguntas por nome: "Como motivo o Mateo?". Tem acesso a todos os perfis da sua plataforma.' },
+                { label: 'Dinâmica de Grupo', desc: 'Crie equipes e analise sua dinâmica comportamental. Como os perfis se complementam ou tensionam.' },
+                { label: 'Preditor Comportamental', desc: 'Situações comuns do treino, organizadas por categoria. Orientações com base no perfil do atleta.' },
+                { label: 'Argo Coach', desc: 'Faça perguntas por nome: "Como motivo o Mateo?". Tem acesso a todos os perfis da sua plataforma.' },
             ],
         },
         s3: {
