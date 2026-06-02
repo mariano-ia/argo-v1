@@ -22,8 +22,20 @@ function useTypewriter(text: string, speed = 30): { displayed: string; done: boo
 
     useEffect(() => {
         if (index >= text.length) return;
-        const t = setTimeout(() => setIndex(i => i + 1), speed);
-        return () => clearTimeout(t);
+        // Defer the tick behind a requestAnimationFrame so the slide's first
+        // paint + the scene crossfade settle before we start piling 28ms
+        // setTimeouts on the same task queue the AudioContext is using.
+        // Without this, slide_3 mount (storm→calm crossfade + ~55 new motion
+        // animations) starves the audio graph on iOS Safari and the storm
+        // effect goes silent.
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        const raf = requestAnimationFrame(() => {
+            timer = setTimeout(() => setIndex(i => i + 1), speed);
+        });
+        return () => {
+            cancelAnimationFrame(raf);
+            if (timer) clearTimeout(timer);
+        };
     }, [index, text, speed]);
 
     return { displayed: text.slice(0, index), done: index >= text.length };
