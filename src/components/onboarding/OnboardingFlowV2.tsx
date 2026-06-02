@@ -20,6 +20,7 @@ import { ParentalConsentWaiting } from './screens/ParentalConsentWaiting';
 import { StorySlideV2 } from './screens/StorySlideV2';
 import { QuestionScreenV2 } from './screens/QuestionScreenV2';
 import { ChildResultReveal } from './screens/ChildResultReveal';
+import { DemoEndScreen } from './screens/DemoEndScreen';
 import { sendReport } from '../../lib/emailService';
 import { CHILD_REVEAL_TEXTS, CHILD_REVEAL_TEXTS_EN, CHILD_REVEAL_TEXTS_PT } from '../../lib/childRevealTexts';
 import { AnimatedScene } from './scenes/AnimatedScene';
@@ -137,9 +138,16 @@ interface OnboardingV2Props {
      * and jumps directly to DeviceHandoff with the pre-populated adult data.
      */
     initialConsent?: InitialConsent | null;
+    /**
+     * When true (used by /demo), the flow skips ALL onboarding screens, runs
+     * the game with adult data provided via initialConsent, never writes to
+     * the DB (no startSession/saveSession/updateSession), and renders
+     * DemoEndScreen instead of ChildResultReveal at completion.
+     */
+    demoMode?: boolean;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, initialConsent }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, initialConsent, demoMode = false }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -153,16 +161,20 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // `device-handoff` is always the screen immediately after
     // `parental-consent-waiting` in the SCREENS array.
     const DEVICE_HANDOFF_INDEX = SCREENS.findIndex(s => s.type === 'device-handoff');
+    // Demo: jump straight to the first story slide (skips all adult onboarding screens)
+    const DEMO_START_INDEX = SCREENS.findIndex(
+        (s): s is Extract<ScreenDef, { type: 'story' }> => s.type === 'story' && s.slideId === 'intro_a',
+    );
     const [screenIndex, setScreenIndex] = useState(
-        initialConsent ? DEVICE_HANDOFF_INDEX : 0,
+        demoMode ? DEMO_START_INDEX : initialConsent ? DEVICE_HANDOFF_INDEX : 0,
     );
     const [adultData, setAdultData]     = useState<AdultData | null>(
         initialConsent ? initialConsent.adultData : null,
     );
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
-    const [, setAiSections]   = useState<AISections | null>(null);
-    const [, setAiLoading]     = useState(false);
-    const [, setSaveError]     = useState<string | null>(null);
+    const [aiSections, setAiSections]   = useState<AISections | null>(null);
+    const [aiLoading, setAiLoading]     = useState(false);
+    const [saveError, setSaveError]     = useState<string | null>(null);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
@@ -219,6 +231,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             playToken,
             lang,
             consentToken: consentTokenRef.current ?? undefined,
+            isDemo: demoMode,
         }).then(result => {
             if (result.ok && result.id) {
                 sessionIdRef.current = result.id;
@@ -517,6 +530,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     archetypeLabel: report.arquetipo.label,
                     ejeSecundario:  profile.ejeSecundario,
                     answers, tenantId, playToken, lang,
+                    isDemo:         demoMode,
                 });
                 if (fallback.ok && fallback.id) {
                     sessionIdRef.current = fallback.id;
@@ -858,7 +872,24 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     />
                 )}
 
-                {screen.type === 'child-result' && reportRef.current && adultData && (
+                {screen.type === 'child-result' && demoMode && adultData && (
+                    <DemoEndScreen
+                        key="demo-end"
+                        email={adultData.email}
+                        nombre={adultData.nombreNino}
+                        report={reportRef.current}
+                        aiSections={aiSections}
+                        aiPending={aiLoading}
+                        error={saveError}
+                        deporte={adultData.deporte}
+                        edad={adultData.edad}
+                        answers={answers}
+                        sessionId={sessionIdRef.current}
+                        shareToken={shareTokenRef.current}
+                    />
+                )}
+
+                {screen.type === 'child-result' && !demoMode && reportRef.current && adultData && (
                     <ChildResultReveal
                         key="child-result"
                         nombreNino={nombre}

@@ -13,7 +13,7 @@ import { AXIS_COLORS, AXIS_CHIP, MOTOR_CHIP } from '../lib/designTokens';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface SessionData {
+export interface SessionData {
     id: string;
     child_name: string;
     child_age: number;
@@ -264,13 +264,20 @@ const AxisBars: React.FC<{
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
-export const ReportPage: React.FC = () => {
+interface ReportPageProps {
+    /** When provided, skips the /api/report fetch and renders this session
+     *  directly. Used by the /demo flow to show the same report layout
+     *  without persisting a session in the DB. */
+    mockSession?: SessionData;
+}
+
+export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     const { sessionId } = useParams<{ sessionId: string }>();
     // Read the share token from the URL query string. /api/report requires
     // it to serve the session publicly (prevents UUID brute-force access).
     const shareToken = new URLSearchParams(window.location.search).get('token') ?? '';
-    const [session, setSession] = useState<SessionData | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [session, setSession] = useState<SessionData | null>(mockSession ?? null);
+    const [loading, setLoading] = useState(!mockSession);
     const [notFound, setNotFound] = useState(false);
     const [copied, setCopied] = useState(false);
     // Pick a fallback language for the loading/error states (before `session`
@@ -293,6 +300,12 @@ export const ReportPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
+        // Short-circuit when caller provides session directly (demo flow)
+        if (mockSession) {
+            setSession(mockSession);
+            setLoading(false);
+            return;
+        }
         if (!sessionId) { setNotFound(true); setLoading(false); return; }
 
         // DEV mock — API not available locally

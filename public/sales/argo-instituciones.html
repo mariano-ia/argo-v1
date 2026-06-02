@@ -290,6 +290,13 @@ strong { color: var(--text-primary); font-weight: 600; }
 }
 .qr-box i { color: var(--accent); }
 .qr-box span { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.04em; }
+.qr-box--active {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.qr-box--active img { width: 100%; height: 100%; display: block; }
 
 .img-placeholder {
   background: #F0F0F2;
@@ -1270,7 +1277,6 @@ strong { color: var(--text-primary); font-weight: 600; }
 </section>
 
 <!-- ══════════════ 9. VÍVELO (QR DEMO) ══════════════ -->
-<!-- PLACEHOLDER QR: reemplazar la .qr-box por un <img> del QR real cuando exista el flujo de demo sin login (/demo). Ver plan: public/sales no toca ese flujo todavía. -->
 <section class="slide slide--tint" data-slide="9">
   <div class="section-num">08</div>
   <div class="glow glow--violet" style="top:-140px; left:-120px;"></div>
@@ -1278,11 +1284,11 @@ strong { color: var(--text-primary); font-weight: 600; }
     <div class="label anim" style="justify-content:center;">Vívelo</div>
     <h2 class="anim" style="font-size:2.6rem; margin-bottom:14px;">Experiméntalo en primera persona.</h2>
     <p class="anim" style="max-width:560px; margin:0 auto 32px;">Escanea el código y juega la odisea ahora mismo. En 10 minutos vas a tener tu propio informe en la mano.</p>
-    <div class="anim qr-box">
-      <i data-lucide="qr-code" style="width:64px;height:64px;"></i>
-      <span>Escanea y juega</span>
+    <div class="anim qr-box qr-box--active">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fargomethod.com%2Fdemo&size=320x320&color=1D1D1F&bgcolor=ffffff&qzone=2&format=png&margin=0" alt="QR a argomethod.com/demo" />
     </div>
-    <p class="anim" style="max-width:560px; margin:32px auto 0; font-size:0.72rem; color:var(--text-light); line-height:1.5;">Argo describe tendencias, no diagnostica. Una herramienta de comunicación, no clínica.</p>
+    <a class="anim" href="https://argomethod.com/demo" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:14px; font-size:0.78rem; font-weight:600; color:var(--accent); text-decoration:none; letter-spacing:0.02em;">argomethod.com/demo</a>
+    <p class="anim" style="max-width:560px; margin:24px auto 0; font-size:0.72rem; color:var(--text-light); line-height:1.5;">Argo describe tendencias, no diagnostica. Una herramienta de comunicación, no clínica.</p>
   </div>
   <div class="brand-bar"><span>argomethod.com</span><span>Para instituciones deportivas</span></div>
 </section>

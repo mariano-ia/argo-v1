@@ -66,6 +66,7 @@ const PuentesFlow         = lazy(() => import('./pages/PuentesFlow'));
 const PuentesCheckout     = lazy(() => import('./pages/PuentesCheckout'));
 const PuentesCheckoutSuccess = lazy(() => import('./pages/PuentesCheckoutSuccess'));
 const Deck                = lazy(() => import('./pages/Deck').then(m => ({ default: m.Deck })));
+const Demo                = lazy(() => import('./pages/Demo').then(m => ({ default: m.Demo })));
 
 import { AdminRoute }         from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
@@ -244,6 +245,7 @@ function App() {
             <Route path="/puentes/checkout/cancel"  element={<PuentesCheckout />} />
             <Route path="/puentes/:token"           element={<PuentesFlow />} />
             <Route path="/deck"       element={<Deck />} />
+            <Route path="/demo"       element={<Demo />} />
             <Route path="/terms"      element={<TermsPage />} />
             <Route path="/privacy"    element={<PrivacyPage />} />
                 <Route path="/consent/:token" element={<ConsentLanding />} />

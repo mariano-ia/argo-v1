@@ -15,6 +15,7 @@ interface SessionPayload {
     // Short-lived token issued by /api/start-play. Required to attach a session
     // to a tenant — prevents creating sessions in an arbitrary tenant (IDOR).
     playToken?: string;
+    isDemo?: boolean;
     aiUsage?: {
         tokensInput: number;
         tokensOutput: number;
@@ -29,6 +30,7 @@ interface StartSessionPayload {
     consentToken?: string;
     // Short-lived token issued by /api/start-play (tenant play only).
     playToken?: string;
+    isDemo?: boolean;
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -92,6 +94,7 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
         sport:       payload.adultData.deporte || null,
         tenant_id:   payload.tenantId ?? null,
         lang:        payload.lang ?? 'es',
+        is_demo:     payload.isDemo === true,
     };
     if (payload.consentToken) {
         body.consent_token = payload.consentToken;
@@ -153,6 +156,7 @@ export async function saveSession(payload: SessionPayload): Promise<{ ok: boolea
         ai_tokens_input:  payload.aiUsage?.tokensInput  ?? 0,
         ai_tokens_output: payload.aiUsage?.tokensOutput ?? 0,
         ai_cost_usd:      payload.aiUsage?.costUsd      ?? 0,
+        is_demo:          payload.isDemo === true,
     };
 
     if (import.meta.env.DEV) {
