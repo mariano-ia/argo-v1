@@ -31,7 +31,7 @@ const PREVIEW_MOCK_ANSWERS: QuestionAnswer[] = [
  * envía el informe al email del prospecto. No persiste sesión en DB.
  */
 export const Demo: React.FC = () => {
-    const { lang } = useLang();
+    const { lang, setLang } = useLang();
     const L = (es: string, en: string, pt: string) =>
         lang === 'es' ? es : lang === 'pt' ? pt : en;
 
@@ -172,6 +172,32 @@ export const Demo: React.FC = () => {
                                 'Enviamos o relatório aqui. Sem assinatura.',
                             )}
                         </p>
+                    </div>
+
+                    <div>
+                        <label className="block text-[11px] font-semibold text-argo-grey uppercase tracking-widest mb-1.5">
+                            {L('Idioma', 'Language', 'Idioma')}
+                        </label>
+                        <div className="flex gap-1.5">
+                            {([
+                                { code: 'es' as const, label: 'Español' },
+                                { code: 'en' as const, label: 'English' },
+                                { code: 'pt' as const, label: 'Português' },
+                            ]).map(opt => (
+                                <button
+                                    key={opt.code}
+                                    type="button"
+                                    onClick={() => setLang(opt.code)}
+                                    className={`flex-1 text-xs font-medium py-2 rounded-lg border transition-colors ${
+                                        lang === opt.code
+                                            ? 'bg-argo-navy text-white border-argo-navy'
+                                            : 'bg-white text-argo-grey border-argo-border hover:border-argo-secondary'
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
                     {error && (

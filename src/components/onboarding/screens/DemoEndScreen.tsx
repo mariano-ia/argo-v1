@@ -50,7 +50,12 @@ export const DemoEndScreen: React.FC<DemoEndScreenProps> = ({
 
     // Real session ID = saved in Supabase (not the DEV "dev-..." placeholder).
     const hasRealSession = !!sessionId && !sessionId.startsWith('dev-');
-    const readyToNavigate = hasRealSession && !aiPending && !error;
+    // Gate on aiSections being set — that signals the completion pipeline
+    // ran end-to-end: profile updateSession + AI generation + ai_sections
+    // updateSession all succeeded. Navigating before this races against the
+    // profile update and hits /api/report's `.not('eje','eq','_pending')`
+    // filter, which returns 404 → "Report not found".
+    const readyToNavigate = hasRealSession && !!aiSections && !aiPending && !error;
 
     useEffect(() => {
         if (readyToNavigate && sessionId && shareToken) {
