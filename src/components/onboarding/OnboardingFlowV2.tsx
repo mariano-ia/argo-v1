@@ -256,6 +256,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const musicGainRef   = useRef<GainNode | null>(null);
     const effectGainRef  = useRef<GainNode | null>(null);
 
+    // Audio recovery state — `recoverAudioIfNeeded` reads these to decide
+    // whether to restart paused audio. Refs (not state) so the recovery
+    // function can read the latest value without re-subscribing listeners.
+    const screenIndexRef = useRef(0);
+    const musicEndedRef  = useRef(false);
+
     const TARGET_VOL     = 0.18;
     const FADE_IN_MS     = 5000;
     const FADE_OUT_MS    = 3000;
@@ -284,6 +290,50 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             audioCtxRef.current.resume();
         }
         return audioCtxRef.current;
+    };
+
+    /** Promise-returning ctx ready signal — await before calling .play() on
+     *  audios that go through the AudioContext. Resolves immediately if the
+     *  context is already running. Used to avoid the iOS race where the ctx
+     *  was suspended at click time and play() succeeds silently. */
+    const awaitCtxRunning = (): Promise<void> => {
+        const ctx = audioCtxRef.current;
+        if (!ctx || ctx.state !== 'suspended') return Promise.resolve();
+        return ctx.resume().catch(err => {
+            // iOS rare-case rejection — log so we can spot if it ever surfaces.
+            console.warn('[audio] ctx.resume rejected:', err);
+        });
+    };
+
+    /** Recover audio after a likely browser/OS suspension. iOS Safari suspends
+     *  the AudioContext (and silently pauses HTMLAudioElements) on notifications,
+     *  app switches, screen lock, AirPods change, etc. Called from `advance()`
+     *  and on `visibilitychange`. Safe to call when no recovery is needed —
+     *  every branch is gated on a "should be playing" check. */
+    const recoverAudioIfNeeded = () => {
+        // 1. Resume the context if the OS suspended it.
+        const ctx = audioCtxRef.current;
+        const ctxReady = ctx && ctx.state === 'suspended'
+            ? ctx.resume().catch(() => {})
+            : Promise.resolve();
+
+        ctxReady.then(() => {
+            // 2. Music should be playing whenever we are inside the odyssey
+            //    range and haven't fired the deliberate fade-out at ODYSSEY_END.
+            const idx = screenIndexRef.current;
+            const music = audioRef.current;
+            if (music && music.paused && idx >= ODYSSEY_START && idx < ODYSSEY_END && !musicEndedRef.current) {
+                music.play().catch(() => {});
+            }
+
+            // 3. Effect should be playing whenever a current source is set.
+            //    Fades nullify currentEffectSrc when ramping out, so this won't
+            //    fire mid-fade.
+            const effect = effectRef.current;
+            if (effect && effect.paused && currentEffectSrc.current) {
+                effect.play().catch(() => {});
+            }
+        });
     };
 
     /** Route audio element through a GainNode (works on iOS unlike audio.volume) */
@@ -329,9 +379,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             const a = audioRef.current;
             const gain = musicGainRef.current!;
             gain.gain.setValueAtTime(0, gain.context.currentTime);
-            a.play().then(() => {
-                if (!mutedRef.current) doGainFade(gain, TARGET_VOL, FADE_IN_MS);
-            }).catch(e => console.warn('[audio] autoplay blocked:', e));
+            awaitCtxRunning()
+                .then(() => {
+                    // Bail if this audio was replaced while we waited for ctx.resume.
+                    if (audioRef.current !== a) return;
+                    return a.play();
+                })
+                .then(() => {
+                    if (audioRef.current !== a) return;
+                    if (!mutedRef.current) doGainFade(gain, TARGET_VOL, FADE_IN_MS);
+                })
+                .catch(e => console.warn('[audio] autoplay blocked:', e));
         }
     };
 
@@ -359,9 +417,19 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             effectRef.current = a;
             effectGainRef.current = gain;
             currentEffectSrc.current = wantedSrc;
-            a.play().then(() => {
-                if (!mutedRef.current) doGainFade(gain, EFFECT_VOL, EFFECT_FADE_IN_MS);
-            }).catch(e => console.warn('[audio] effect autoplay blocked:', e));
+            awaitCtxRunning()
+                .then(() => {
+                    // Bail if this audio was replaced while we waited for ctx.resume.
+                    // Prevents the stale-closure double-play race where two effects
+                    // could overlap if a second transition fires before play() resolves.
+                    if (effectRef.current !== a) return;
+                    return a.play();
+                })
+                .then(() => {
+                    if (effectRef.current !== a) return;
+                    if (!mutedRef.current) doGainFade(gain, EFFECT_VOL, EFFECT_FADE_IN_MS);
+                })
+                .catch(e => console.warn('[audio] effect autoplay blocked:', e));
         }
     };
 
@@ -370,9 +438,28 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         if (screenIndex === ODYSSEY_END && audioRef.current && musicGainRef.current) {
             doGainFade(musicGainRef.current, 0, FADE_OUT_MS, () => {
                 audioRef.current?.pause();
+                // Signal to recoverAudioIfNeeded that music shouldn't be
+                // auto-resumed anymore — the odyssey is over.
+                musicEndedRef.current = true;
             });
         }
     }, [screenIndex]);
+
+    // Mirror screenIndex into a ref so recoverAudioIfNeeded reads the
+    // latest value without re-subscribing the visibilitychange listener.
+    useEffect(() => { screenIndexRef.current = screenIndex; }, [screenIndex]);
+
+    // Recover audio when the tab comes back to foreground. iOS Safari
+    // routinely suspends the AudioContext on app switch / notification /
+    // lock — without this, audio stays silent for the rest of the session.
+    useEffect(() => {
+        const onVis = () => {
+            if (document.visibilityState === 'visible') recoverAudioIfNeeded();
+        };
+        document.addEventListener('visibilitychange', onVis);
+        return () => document.removeEventListener('visibilitychange', onVis);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Preload all audio files into browser cache during adult screens
     useEffect(() => {
@@ -408,6 +495,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     };
 
     const advance = () => {
+        // Recover any audio that the OS silently suspended since the last
+        // user gesture. Runs every advance() — this is the "retry on next
+        // click" path the user explicitly asked for.
+        try { recoverAudioIfNeeded(); } catch (e) { console.warn('[audio] recover error:', e); }
         const nextIdx = screenIndex + 1;
         try { startAudioIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startAudio error:', e); }
         try { startEffectIfNeeded(nextIdx); } catch (e) { console.warn('[audio] startEffect error:', e); }
