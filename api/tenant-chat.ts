@@ -938,6 +938,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // If a player was mentioned, verify the response doesn't contradict their real data
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
+            // wrongAxis: tokens that, if they appear near a player's name in the AI
+            // response, signal the wrong axis was attributed. Substring-matched
+            // (includes) against the response, so it must track the CURRENT archetype
+            // labels. Keep BOTH 'sostén' (axis word) and 'sostenedor' (archetype prefix):
+            // the rename Sostén→Sostenedor silently broke detection because 'sostén' is
+            // not a substring of 'Sostenedor'. See docs/archetype-naming.md (gotchas).
             const wrongAxis: Record<string, string[]> = {
                 D: ['conector', 'connector', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
                 I: ['impulsor', 'driver', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],

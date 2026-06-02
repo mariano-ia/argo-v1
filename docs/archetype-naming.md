@@ -80,3 +80,22 @@ Si aparecen en código, copy, mock data, tests o memoria, **eliminar**:
 
 Los informes ya generados guardan `archetype_label` como copia estática. Por decisión del 2026-06-02,
 **no se migran**: los informes viejos conservan su nombre anterior y solo los nuevos usan esta nomenclatura.
+
+## Gotchas al renombrar (LEER antes de tocar labels)
+
+1. **Validador anti-alucinación por substring** (`api/tenant-chat.ts`, mapa `wrongAxis`):
+   la capa 5 de anti-hallucination detecta si la IA atribuye el eje equivocado a un jugador
+   haciendo `includes()` de tokens de eje contra el texto de la respuesta. Si renombras un
+   label, **agrega el token nuevo a las filas D/I/C correspondientes** o el validador deja de
+   detectar el error en silencio. Caso real: el rename `Sostén → Sostenedor` rompió la
+   detección porque `'sostén'` no es substring de `'Sostenedor'`; se arregló agregando
+   `'sostenedor'`. Mantené también el token EN (`'sustainer'`).
+2. **No derivar el label del id.** Nunca construyas el nombre visible title-casing el id
+   snake_case (mostraría nombres viejos: `impulsor_decidido` → "Impulsor Decidido"). Usá
+   `ARCHETYPE_DATA[id].label`. (Bug real corregido en `ResultRevealPreview.tsx`.)
+3. **Sincronizá TODOS los mapas espejo** de la sección anterior en el mismo cambio, en es/en/pt,
+   y barré `api/` además de `src/` (los emails y prompts de IA viven ahí: `one-webhook`,
+   `deck-chat`, `admin-tenants`).
+4. **El motor visible se mapea aparte** (Rápido→Dinámico). No muestres el valor interno crudo.
+5. **Eje ≠ arquetipo.** El eje S es "Sostén" (ES) / "Supporter" (EN); el arquetipo es
+   "Sostenedor" / "Sustainer". Es intencional: no los unifiques.
