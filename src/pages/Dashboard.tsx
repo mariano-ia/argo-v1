@@ -13,7 +13,7 @@ const NAV_ITEMS = [
     { to: '/admin/revenue',   label: 'Revenue',   icon: DollarSign },
     { to: '/admin/argo-one',  label: 'Argo One',  icon: ShoppingBag },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
-    { to: '/admin/audio-health', label: 'Audio health', icon: Activity },
+    { to: '/admin/health',    label: 'Health',    icon: Activity },
     { to: '/admin/feedback',  label: 'Feedback',  icon: MessageCircle },
     { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
     { to: '/admin/audit',     label: 'Audit log',  icon: ClipboardList },
