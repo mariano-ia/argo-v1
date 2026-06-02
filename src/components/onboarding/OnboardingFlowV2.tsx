@@ -509,7 +509,23 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         const wantedSrc = getEffectSrc(nextIdx);
         const activeSrc = currentEffectSrc.current;
 
-        if (wantedSrc === activeSrc) return;
+        if (wantedSrc === activeSrc) {
+            // Same track expected — but iOS may have silently suspended the
+            // element during the prior screen's heavy mount (e.g. slide_3 at
+            // idx 22 inheriting effects_03 from minigame_c). Defensive revive.
+            const e = effectRef.current;
+            const g = effectGainRef.current;
+            if (e && e.paused) {
+                console.warn('[audio] same-src revive: effect was paused', { src: activeSrc, idx: nextIdx });
+                e.play().catch(err => console.warn('[audio] same-src revive play failed:', err));
+            }
+            if (e && !e.paused && g && !mutedRef.current && g.gain.value < 0.01) {
+                console.warn('[audio] same-src revive: gain stuck at 0', { src: activeSrc, idx: nextIdx });
+                g.gain.cancelScheduledValues(g.context.currentTime);
+                g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+            }
+            return;
+        }
 
         // Fade out current effect (each effect has its own GainNode — independent)
         if (effectRef.current && activeSrc && effectGainRef.current) {
