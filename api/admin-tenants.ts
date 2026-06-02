@@ -24,7 +24,7 @@ function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string,
 <tr><td style="padding:28px;">
     <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:18px 20px;margin-bottom:24px;">
         <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#16a34a;">Plan Enterprise activo</p>
-        <p style="margin:0;font-size:13px;color:#86868B;">Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas. Consultor IA con modelo premium.</p>
+        <p style="margin:0;font-size:13px;color:#86868B;">Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas. Argo Coach con modelo premium.</p>
     </div>
 
     <p style="margin:0 0 14px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">Tu plataforma incluye</p>
@@ -33,7 +33,7 @@ function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string,
     <tr><td width="28" style="vertical-align:top;padding-bottom:12px;">
         <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
     </td><td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
-        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Consultor IA premium</p>
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Argo Coach Premium</p>
         <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Modelo avanzado, consultas ilimitadas. Pregunta sobre cualquier jugador por nombre.</p>
     </td></tr>
     <tr><td width="28" style="vertical-align:top;padding-bottom:12px;">

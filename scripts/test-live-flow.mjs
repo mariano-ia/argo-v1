@@ -60,7 +60,7 @@ try {
             id: sessionId,
             eje: 'D',
             motor: 'Medio',
-            archetype_label: 'Impulsor Decidido',
+            archetype_label: 'Impulsor Rítmico',
             eje_secundario: 'I',
             answers: [{ axis: 'D', responseTimeMs: 5000 }],
         }),
@@ -76,7 +76,7 @@ try {
     console.log('  DB record:', JSON.stringify(updated));
     check('DB eje updated to D', updated?.eje === 'D');
     check('DB motor updated to Medio', updated?.motor === 'Medio');
-    check('DB archetype updated', updated?.archetype_label === 'Impulsor Decidido');
+    check('DB archetype updated', updated?.archetype_label === 'Impulsor Rítmico');
     check('DB eje_secundario updated', updated?.eje_secundario === 'I');
     check('DB answers updated', Array.isArray(updated?.answers) && updated.answers.length === 1);
 

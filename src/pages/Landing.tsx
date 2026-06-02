@@ -785,7 +785,7 @@ const PricingSection: React.FC<{
                         <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 50 jugadores activos', 'Up to 50 active players', 'Até 50 jogadores ativos')} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
-                        <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
+                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
                         <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
                         <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
@@ -834,7 +834,7 @@ const PricingSection: React.FC<{
                         <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 100 jugadores activos', 'Up to 100 active players', 'Até 100 jogadores ativos')} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
-                        <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
+                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
                         <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
                         <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />

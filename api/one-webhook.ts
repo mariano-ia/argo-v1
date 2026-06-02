@@ -162,8 +162,8 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
         { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
         { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después del entrenamiento.' },
         { label: `Hasta ${rosterLimit} jugadores activos`, desc: 'Perfila y re-perfila cada 6 meses. Sin créditos, sin límites de uso.' },
-        { label: 'Formaciones ilimitadas con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
-        { label: 'Guía situacional personalizada', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },
+        { label: 'Dinámica Grupal ilimitada con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
+        { label: 'Predictor Conductual personalizado', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },
     ];
 
     const featureRows = features.map(f => `

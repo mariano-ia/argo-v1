@@ -939,10 +939,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (mentionedPlayer) {
             const mp = mentionedPlayer.session;
             const wrongAxis: Record<string, string[]> = {
-                D: ['conector', 'connector', 'sostén', 'sustainer', 'estratega', 'strategist'],
-                I: ['impulsor', 'driver', 'sostén', 'sustainer', 'estratega', 'strategist'],
+                D: ['conector', 'connector', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
+                I: ['impulsor', 'driver', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
                 S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
-                C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sustainer'],
+                C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
             const wrongLabels = wrongAxis[mp.eje] ?? [];
             // Check if the response calls this player by the wrong archetype

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChildResultReveal } from '../components/onboarding/screens/ChildResultReveal';
 import { CHILD_REVEAL_TEXTS } from '../lib/childRevealTexts';
+import { ARCHETYPE_DATA } from '../lib/archetypeData';
 
 const ARCHETYPES = Object.keys(CHILD_REVEAL_TEXTS);
 
@@ -9,7 +10,7 @@ export const ResultRevealPreview: React.FC = () => {
 
     const id = ARCHETYPES[idx];
     const text = CHILD_REVEAL_TEXTS[id];
-    const label = id.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const label = ARCHETYPE_DATA[id]?.label ?? id;
 
     return (
         <>

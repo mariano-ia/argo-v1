@@ -417,7 +417,7 @@ const es: DashboardTexts = {
         sinResultados: 'No se encontraron jugadores con esos filtros.',
     },
     groups: {
-        titulo: 'Grupos',
+        titulo: 'Dinámica Grupal',
         subtitulo: 'Organiza a tus deportistas en grupos para analizar el equilibrio del equipo.',
         crearGrupo: 'Crear grupo',
         nombrePlaceholder: 'Nombre del grupo (ej: Sub-15 Femenino)',
@@ -439,7 +439,7 @@ const es: DashboardTexts = {
         noSePudoQuitar: 'No se pudo quitar al jugador',
     },
     guide: {
-        titulo: 'Guía situacional',
+        titulo: 'Predictor Conductual',
         subtitulo: 'Selecciona una situación que estés viviendo con un jugador o con el grupo. Te damos herramientas concretas según su perfil.',
         buscarPlaceholder: 'Buscar situación...',
         tusJugadores: 'Tus jugadores',
@@ -714,7 +714,7 @@ const en: DashboardTexts = {
         sinResultados: 'No players found with those filters.',
     },
     groups: {
-        titulo: 'Groups',
+        titulo: 'Group Dynamics',
         subtitulo: 'Organize your athletes into groups to analyze team balance.',
         crearGrupo: 'Create group',
         nombrePlaceholder: 'Group name (e.g.: U-15 Girls)',
@@ -736,7 +736,7 @@ const en: DashboardTexts = {
         noSePudoQuitar: 'Could not remove the player',
     },
     guide: {
-        titulo: 'Situational guide',
+        titulo: 'Behavioral Predictor',
         subtitulo: 'Select a situation you\'re experiencing with a player or the team. We\'ll give you concrete tools based on their profile.',
         buscarPlaceholder: 'Search situation...',
         tusJugadores: 'Your players',
@@ -1011,7 +1011,7 @@ const pt: DashboardTexts = {
         sinResultados: 'Nenhum jogador encontrado com esses filtros.',
     },
     groups: {
-        titulo: 'Grupos',
+        titulo: 'Dinâmica de Grupo',
         subtitulo: 'Organize seus atletas em grupos para analisar o equilíbrio da equipe.',
         crearGrupo: 'Criar grupo',
         nombrePlaceholder: 'Nome do grupo (ex: Sub-15 Feminino)',
@@ -1033,7 +1033,7 @@ const pt: DashboardTexts = {
         noSePudoQuitar: 'Não foi possível remover o jogador',
     },
     guide: {
-        titulo: 'Guia situacional',
+        titulo: 'Preditor Comportamental',
         subtitulo: 'Selecione uma situação que você está vivenciando com um jogador ou com o grupo. Damos ferramentas concretas de acordo com o perfil.',
         buscarPlaceholder: 'Buscar situação...',
         tusJugadores: 'Seus jogadores',
