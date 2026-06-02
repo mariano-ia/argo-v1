@@ -168,7 +168,7 @@ export const TenantGuide: React.FC = () => {
             <SectionIntro
                 storageKey="argo_intro_guide_v1"
                 icon={<Compass size={16} />}
-                title={lang === 'en' ? 'Guide' : lang === 'pt' ? 'Guia' : 'Guía'}
+                title={lang === 'en' ? 'Behavioral Predictor' : lang === 'pt' ? 'Preditor Comportamental' : 'Predictor Conductual'}
                 body={guideIntroBody}
             />
             {/* Header */}
@@ -445,7 +445,7 @@ export const TenantGuide: React.FC = () => {
                                                                 onChange={e => { setPlayerGroupFilter(e.target.value || null); setPlayerShowAll(false); }}
                                                                 className="px-2 py-1.5 rounded-md border border-argo-border text-[11px] text-argo-secondary outline-none focus:border-argo-violet-200 transition-colors bg-white"
                                                             >
-                                                                <option value="">{lang === 'en' ? 'All formations' : lang === 'pt' ? 'Todas as formações' : 'Todas las formaciones'}</option>
+                                                                <option value="">{lang === 'en' ? 'All group dynamics' : lang === 'pt' ? 'Todas as dinâmicas' : 'Todas las dinámicas'}</option>
                                                                 {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
                                                             </select>
                                                         )}

@@ -43,18 +43,18 @@ const supabase = createClient(
 // ─── Argo domain knowledge ──────────────────────────────────────────────────
 
 const ARGO_ARCHETYPES = [
-    { id: 'impulsor_dinamico', eje: 'D', motor: 'Rapido', label: 'Impulsor Dinamico', desc: 'Accion directa, resolucion inmediata. Chispa que inicia el movimiento.' },
-    { id: 'impulsor_decidido', eje: 'D', motor: 'Medio', label: 'Impulsor Decidido', desc: 'Iniciativa estrategica, ejecucion con proposito.' },
-    { id: 'impulsor_persistente', eje: 'D', motor: 'Lento', label: 'Impulsor Persistente', desc: 'Determinacion constante, resiliencia en el esfuerzo.' },
-    { id: 'conector_expresivo', eje: 'I', motor: 'Rapido', label: 'Conector Expresivo', desc: 'Energia social contagiosa, comunicacion espontanea.' },
-    { id: 'conector_armonico', eje: 'I', motor: 'Medio', label: 'Conector Armonico', desc: 'Puente entre personas, equilibrio emocional del grupo.' },
-    { id: 'conector_profundo', eje: 'I', motor: 'Lento', label: 'Conector Profundo', desc: 'Vinculos selectivos y duraderos, empatia silenciosa.' },
-    { id: 'sosten_adaptable', eje: 'S', motor: 'Rapido', label: 'Sosten Adaptable', desc: 'Flexibilidad con base firme, rapida lectura del entorno.' },
-    { id: 'sosten_estable', eje: 'S', motor: 'Medio', label: 'Sosten Estable', desc: 'Pilar del equipo, consistencia y confianza.' },
-    { id: 'sosten_reflexivo', eje: 'S', motor: 'Lento', label: 'Sosten Reflexivo', desc: 'Observador profundo, sostiene desde la calma.' },
-    { id: 'estratega_agil', eje: 'C', motor: 'Rapido', label: 'Estratega Agil', desc: 'Analisis rapido, pensamiento tactico en tiempo real.' },
-    { id: 'estratega_preciso', eje: 'C', motor: 'Medio', label: 'Estratega Preciso', desc: 'Metodico, busca la excelencia en cada detalle.' },
-    { id: 'estratega_cauteloso', eje: 'C', motor: 'Lento', label: 'Estratega Cauteloso', desc: 'Planificacion profunda, calidad sobre velocidad.' },
+    { id: 'impulsor_dinamico', eje: 'D', motor: 'Rapido', label: 'Impulsor Dinámico', desc: 'Accion directa, resolucion inmediata. Chispa que inicia el movimiento.' },
+    { id: 'impulsor_decidido', eje: 'D', motor: 'Medio', label: 'Impulsor Rítmico', desc: 'Iniciativa estrategica, ejecucion con proposito.' },
+    { id: 'impulsor_persistente', eje: 'D', motor: 'Lento', label: 'Impulsor Sereno', desc: 'Determinacion constante, resiliencia en el esfuerzo.' },
+    { id: 'conector_expresivo', eje: 'I', motor: 'Rapido', label: 'Conector Dinámico', desc: 'Energia social contagiosa, comunicacion espontanea.' },
+    { id: 'conector_armonico', eje: 'I', motor: 'Medio', label: 'Conector Rítmico', desc: 'Puente entre personas, equilibrio emocional del grupo.' },
+    { id: 'conector_profundo', eje: 'I', motor: 'Lento', label: 'Conector Sereno', desc: 'Vinculos selectivos y duraderos, empatia silenciosa.' },
+    { id: 'sosten_adaptable', eje: 'S', motor: 'Rapido', label: 'Sostenedor Dinámico', desc: 'Flexibilidad con base firme, rapida lectura del entorno.' },
+    { id: 'sosten_estable', eje: 'S', motor: 'Medio', label: 'Sostenedor Rítmico', desc: 'Pilar del equipo, consistencia y confianza.' },
+    { id: 'sosten_reflexivo', eje: 'S', motor: 'Lento', label: 'Sostenedor Sereno', desc: 'Observador profundo, sostiene desde la calma.' },
+    { id: 'estratega_agil', eje: 'C', motor: 'Rapido', label: 'Estratega Dinámico', desc: 'Analisis rapido, pensamiento tactico en tiempo real.' },
+    { id: 'estratega_preciso', eje: 'C', motor: 'Medio', label: 'Estratega Rítmico', desc: 'Metodico, busca la excelencia en cada detalle.' },
+    { id: 'estratega_cauteloso', eje: 'C', motor: 'Lento', label: 'Estratega Observador', desc: 'Planificacion profunda, calidad sobre velocidad.' },
 ];
 
 const DISC_AXES = {

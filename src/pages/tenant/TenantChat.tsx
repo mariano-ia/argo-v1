@@ -286,7 +286,7 @@ export const TenantChat: React.FC = () => {
                             </div>
                             <div className="text-center max-w-sm">
                                 <h2 className="text-base font-semibold text-argo-navy">
-                                    {lang === 'en' ? 'Argo Consultant' : 'Consultor Argo'}
+                                    {'Argo Coach'}
                                 </h2>
                                 <p className="text-xs text-argo-grey mt-1.5 leading-relaxed">
                                     {dt.chat.consultaDesc}

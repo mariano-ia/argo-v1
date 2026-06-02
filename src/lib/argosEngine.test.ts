@@ -7,8 +7,8 @@ describe('Argos Engine Logic', () => {
         const result = getReportData('D', 'Lento', 'Mantenga su interés', 'Mariano');
 
         // Arquetipo
-        expect(result.arquetipo.id).toBe('tanque');
-        expect(result.arquetipo.label).toBe('Impulsor Persistente');
+        expect(result.arquetipo.id).toBe('impulsor_persistente');
+        expect(result.arquetipo.label).toBe('Impulsor Sereno');
 
         // Bienvenida (personalizada)
         expect(result.bienvenida).toContain('manera en que Mariano vive');

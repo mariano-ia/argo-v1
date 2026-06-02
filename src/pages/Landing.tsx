@@ -745,9 +745,9 @@ const PricingSection: React.FC<{
                 </p>
                 <p style={{ fontSize: '12px', color: '#86868B' }}>
                     {L(
-                        'Dashboard completo, 8 deportistas, consultor IA. Sin tarjeta de crédito.',
+                        'Dashboard completo, 8 deportistas, Argo Coach. Sin tarjeta de crédito.',
                         'Full dashboard, 8 athletes, AI consultant. No credit card required.',
-                        'Dashboard completo, 8 atletas, consultor IA. Sem cartão de crédito.',
+                        'Dashboard completo, 8 atletas, Argo Coach. Sem cartão de crédito.',
                     )}
                 </p>
             </div>
@@ -782,7 +782,7 @@ const PricingSection: React.FC<{
                         </p>
                     )}
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={included} />
+                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 50 jugadores activos', 'Up to 50 active players', 'Até 50 jogadores ativos')} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
                         <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
@@ -831,7 +831,7 @@ const PricingSection: React.FC<{
                         </p>
                     )}
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Consultor IA', 'AI Consultant', 'Consultor IA')} sub={included} />
+                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 100 jugadores activos', 'Up to 100 active players', 'Até 100 jogadores ativos')} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
                         <PricingFeature label={L('Guía situacional completa', 'Full situational guide', 'Guia situacional completo')} />
@@ -862,7 +862,7 @@ const PricingSection: React.FC<{
                         {L('A partir de 150 jugadores', 'From 150 players', 'A partir de 150 jogadores')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Consultor IA premium', 'Premium AI Consultant', 'Consultor IA premium')} sub={L('modelo avanzado', 'advanced model', 'modelo avançado')} />
+                        <PricingFeature label={L('Argo Coach Premium', 'Argo Coach Premium', 'Argo Coach Premium')} sub={L('modelo avanzado', 'advanced model', 'modelo avançado')} />
                         <PricingFeature label={L('Jugadores ilimitados', 'Unlimited players', 'Jogadores ilimitados')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
                         <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
@@ -1209,9 +1209,9 @@ export const Landing: React.FC = () => {
                                 <div className="mt-8 flex flex-wrap gap-2">
                                     {[
                                         { label: 'Mi equipo',           tip: 'El perfil conductual de cada deportista y su historial de informes.' },
-                                        { label: 'Grupos de sintonía',  tip: 'Agrupa deportistas y entiende la dinámica colectiva de cada equipo.' },
-                                        { label: 'Brújula situacional', tip: 'Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.' },
-                                        { label: 'Consultor IA',        tip: 'Hazle consultas sobre tus deportistas y recibe consejos personalizados.' },
+                                        { label: 'Dinámica Grupal',      tip: 'Agrupa deportistas y entiende la dinámica colectiva de cada equipo.' },
+                                        { label: 'Predictor Conductual', tip: 'Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.' },
+                                        { label: 'Argo Coach',        tip: 'Hazle consultas sobre tus deportistas y recibe consejos personalizados.' },
                                     ].map(({ label, tip }) => (
                                         <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#424245', background: '#F5F5F7', border: '1px solid #E8E8ED', borderRadius: '20px', padding: '3px 8px 3px 11px' }}>
                                             {label}

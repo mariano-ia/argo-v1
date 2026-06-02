@@ -123,7 +123,7 @@ const T = {
             sub:
                 'Tres capas conectadas, entrenadas sobre los doce arquetipos, las doce tendencias secundarias y cincuenta y siete situaciones reales de coaching infantil.',
             layer1: 'Capa 1',
-            layer1Title: 'Argo Consultor',
+            layer1Title: 'Argo Coach',
             layer1Body:
                 'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA conoce el perfil real de cada niño del equipo y responde con lenguaje concreto, probabilístico, libre de jerga clínica.',
             layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere arrancar el entrenamiento?"',
@@ -149,7 +149,7 @@ const T = {
             s2Caption: 'Para el club',
             s2Title: 'El dashboard',
             s2Body:
-                'Equipo completo, perfiles por jugador, balance grupal, consultor IA entrenado con los doce arquetipos.',
+                'Equipo completo, perfiles por jugador, balance grupal, Argo Coach entrenado con los doce arquetipos.',
             s3Caption: 'Para la familia',
             s3Title: 'El reporte',
             s3Body:

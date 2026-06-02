@@ -46,9 +46,9 @@ export const TenantDashboard: React.FC = () => {
     const NAV_MAIN = [
         { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
         { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
+        { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
         { to: '/dashboard/groups',   label: dt.nav.grupos,    icon: Layers,          end: false },
         { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
-        { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
     ];
     const NAV_CONFIG = [
         { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,        end: false },

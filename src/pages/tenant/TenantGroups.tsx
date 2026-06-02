@@ -31,13 +31,13 @@ const DEV_GROUPS: GroupRow[] = [
 ];
 const DEV_MEMBERS: Record<string, MemberRow[]> = {
     'dev-g1': [
-        { id: 'dm-1', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
-        { id: 'dm-2', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
-        { id: 'dm-3', session_id: 'dev-3', added_at: new Date().toISOString(), child_name: 'Sofía Martínez', child_age: 13, sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S' },
+        { id: 'dm-1', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'Impulsor Dinámico', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
+        { id: 'dm-2', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'Conector Rítmico', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
+        { id: 'dm-3', session_id: 'dev-3', added_at: new Date().toISOString(), child_name: 'Sofía Martínez', child_age: 13, sport: 'Natación', archetype_label: 'Estratega Observador', eje: 'C', motor: 'Lento', eje_secundario: 'S' },
     ],
     'dev-g2': [
-        { id: 'dm-4', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
-        { id: 'dm-5', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
+        { id: 'dm-4', session_id: 'dev-1', added_at: new Date().toISOString(), child_name: 'Valentina López', child_age: 11, sport: 'Fútbol', archetype_label: 'Impulsor Dinámico', eje: 'D', motor: 'Rápido', eje_secundario: 'I' },
+        { id: 'dm-5', session_id: 'dev-2', added_at: new Date().toISOString(), child_name: 'Tomás Herrera', child_age: 9, sport: 'Básquet', archetype_label: 'Conector Rítmico', eje: 'I', motor: 'Medio', eje_secundario: 'S' },
     ],
 };
 
@@ -215,7 +215,7 @@ export const TenantGroups: React.FC = () => {
             <SectionIntro
                 storageKey="argo_intro_groups_v1"
                 icon={<Layers size={16} />}
-                title={lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos'}
+                title={lang === 'en' ? 'Group Dynamics' : lang === 'pt' ? 'Dinâmica de Grupo' : 'Dinámica Grupal'}
                 body={groupIntroBody}
             />
             {/* Header */}
@@ -253,7 +253,7 @@ export const TenantGroups: React.FC = () => {
                     ) : (() => {
                         const trialLimitReached = tenant?.plan === 'trial' && groups.length >= 1;
                         return trialLimitReached ? (
-                            <Tooltip text={lang === 'en' ? 'Trial plan allows 1 formation. Upgrade to create more.' : lang === 'pt' ? 'O plano de teste permite 1 formação. Faça upgrade para criar mais.' : 'El plan de prueba permite 1 formación. Mejora tu plan para crear más.'} maxWidth={220}>
+                            <Tooltip text={lang === 'en' ? 'Trial plan allows 1 group dynamic. Upgrade to create more.' : lang === 'pt' ? 'O plano de teste permite 1 dinâmica de grupo. Faça upgrade para criar mais.' : 'El plan de prueba permite 1 dinámica grupal. Mejora tu plan para crear más.'} maxWidth={220}>
                                 <span className="flex items-center gap-2 text-[13px] font-medium text-argo-light px-3 py-2.5 rounded-lg cursor-not-allowed">
                                     <Plus size={16} strokeWidth={1.5} />
                                     {dt.groups.crearGrupo}
@@ -311,10 +311,10 @@ export const TenantGroups: React.FC = () => {
                                 <div className="text-center max-w-sm">
                                     <Layers size={28} className="text-argo-border mx-auto mb-4" />
                                     <p className="text-[15px] font-semibold text-argo-navy mb-2">
-                                        {lang === 'en' ? 'Select a formation' : lang === 'pt' ? 'Selecione uma formação' : 'Selecciona una formación'}
+                                        {lang === 'en' ? 'Select a group dynamic' : lang === 'pt' ? 'Selecione uma dinâmica de grupo' : 'Selecciona una dinámica grupal'}
                                     </p>
                                     <p className="text-xs text-argo-light leading-relaxed">
-                                        {lang === 'en' ? 'Choose a formation from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma formação da lista para ver seus membros, análise de equilíbrio e ferramentas.' : 'Elige una formación de la lista para ver sus miembros, análisis de equilibrio y herramientas.'}
+                                        {lang === 'en' ? 'Choose a group dynamic from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma dinâmica de grupo da lista para ver seus membros, análise de equilíbrio e ferramentas.' : 'Elige una dinámica grupal de la lista para ver sus miembros, análisis de equilibrio y herramientas.'}
                                     </p>
                                 </div>
                             </motion.div>

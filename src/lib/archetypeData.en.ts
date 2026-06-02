@@ -65,7 +65,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   impulsor_decidido: {
-    label: `Decisive Driver`,
+    label: `Rhythmic Driver`,
     perfil: `Strategic Initiative and Purposeful Execution`,
     perfilExtended: `{nombre} combines the drive to act with the clarity of knowing where they are going. They tend to take initiative when the objective is defined, with a focus and energy that turns intention into tangible results. Their strength lies in the consistency of execution, not in impulsiveness.`,
     bienvenida: `This map is an invitation to understand how {nombre} connects with sport at this stage of their life. It is not a definition of their personality forever, but a "snapshot of the present" that helps us fine-tune our communication. Safety note: This report does not evaluate talent. Its only purpose is for {nombre} to feel understood and to enjoy each match more, reducing the emotional friction between their needs and our expectations.`,
@@ -103,7 +103,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   impulsor_persistente: {
-    label: `Persistent Driver`,
+    label: `Serene Driver`,
     perfil: `Steady Determination and Resilient Effort`,
     perfilExtended: `{nombre}'s strength is not speed but endurance. They tend to sustain effort when others stop, with a determination that grows stronger the more demanding the path becomes. The team can count on their resolve in moments that require staying power more than velocity.`,
     bienvenida: `This map is an invitation to understand how {nombre} processes and inhabits sport today. In the Argo we know that every athlete has their own compass. This report does not seek to "speed up" {nombre}, but to identify the conditions under which their natural persistence becomes their greatest source of enjoyment. Safety note: The data here is a "snapshot of the present." Child development is fluid; these tendencies describe their current comfort zone so we can offer accompaniment without adding pressure.`,
@@ -141,7 +141,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   conector_vibrante: {
-    label: `Vibrant Connector`,
+    label: `Dynamic Connector`,
     perfil: `Contagious Enthusiasm and Energy-Driven Cohesion`,
     perfilExtended: `{nombre}'s presence activates the environment almost immediately. They tend to be the one who lifts the group's energy when it drops, celebrating a teammate's achievement with more force than their own. Their most valuable contribution tends to be the emotional climate they create around them.`,
     bienvenida: `This map is an invitation to see sport through {nombre}'s eyes. It is not a verdict on who they are, but a "snapshot of the present" that shows us the conditions under which they tend to flow with the most joy. Safety note: At Argo Method we do not evaluate talent or diagnose personality. Child development is dynamic; this report simply helps us ensure the sports environment is a place where {nombre} feels safe, seen, and motivated to keep playing.`,
@@ -179,7 +179,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   conector_relacional: {
-    label: `Relational Connector`,
+    label: `Rhythmic Connector`,
     perfil: `Balanced Connection and Steady Cohesion`,
     perfilExtended: `{nombre} tends to know when to encourage and when to listen, and makes that reading intuitively. Their ability to read teammates' moods makes them the bridge between the most intense and the most reserved profiles. Their presence brings calm and cohesion without taking joy away from the group.`,
     bienvenida: `This map is a window into how {nombre} inhabits the world of sport today. In the Argo, every rhythm is vital. This report is not a definitive label, but a "snapshot of the present" designed so that adults can attune to their nature, always protecting their enjoyment and self-esteem. Safety note: We do not evaluate technical ability or mental health. This document is a tool for reducing friction and increasing the wellbeing of {nombre} on their team.`,
@@ -217,7 +217,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   conector_reflexivo: {
-    label: `Reflective Connector`,
+    label: `Serene Connector`,
     perfil: `Deep Cohesion and Group Climate Awareness`,
     perfilExtended: `{nombre} perceives the emotional state of the team with an uncommon sensitivity. They tend to be the quiet glue that makes everyone feel part of something larger, without needing to be the center of attention. Their strength lies in social wisdom: they detect when someone needs support before the rest of the group notices.`,
     bienvenida: `This map is an invitation to understand how {nombre} perceives and feels sport right now. In the Argo, strength lies not only in the oar, but in the ability to read the wind and the sea. This report is a "snapshot of the present" designed so that adults can attune to their natural rhythm, protecting their wellbeing and ensuring that sport remains their safe place. Safety note: We do not make diagnoses or evaluate performance. Our goal is to identify the context where {nombre} flows with the least emotional friction to support their continued participation in sport.`,
@@ -248,14 +248,14 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
     reseteo: `When {nombre} makes a mistake, their system tends to emotionally "freeze." They may feel disconnected from the group by what happened. Suggested accompaniment: Offer them an exit that uses their strength: observation. Say: "Don't worry about that play — now watch how they're moving so you'll know where to be next time." This gives them a processing task that can lift them out of the emotion and return them to the game through their comfort zone: reading the climate.`,
     ecos: `At home: They tend to need "decompression time" when arriving from school. It is likely better not to ask "how was your day?" right away — let their rhythm settle, and they will come and share things on their own when they feel attuned. At school: They tend to be an excellent classmate — someone who listens and prefers calm learning environments. They may need more time to submit creative assignments because they tend to invest a great deal of emotional care and detail in them.`,
     checklist: {
-      antes: `Arrive with extra time so they can take in the environment. The chaos of arriving late tends to throw off their Reflective Connector rhythm for the whole match.`,
+      antes: `Arrive with extra time so they can take in the environment. The chaos of arriving late tends to throw off their Serene Connector rhythm for the whole match.`,
       durante: `Avoid loud instructions. Your quiet presence and an occasional approving gesture tend to be enough.`,
       despues: `Value their wellbeing. Ask: "How did you feel today with your friends?", "Was there a moment that made you smile?"`,
     },
   },
 
   sosten_agil: {
-    label: `Agile Supporter`,
+    label: `Dynamic Sustainer`,
     perfil: `Swift Assistance and Dynamic Support`,
     perfilExtended: `{nombre} has a special radar for detecting when a teammate needs help or when a space has opened up on the field. They combine a natural disposition toward supporting others with an agile response time, acting before they are asked. Their presence brings reactive security without slowing the team's movement.`,
     bienvenida: `This map invites us to understand how {nombre} chooses to inhabit sport today. In the Argo, the safety of the journey depends on those who make sure every piece is in its right place. This report is not a fixed label, but a "snapshot of the present" designed so that adults can attune to their nature, protecting their self-esteem and their desire to keep playing. Safety note: We do not evaluate talent or make diagnoses. Our goal is to identify the context where {nombre} flows with the most comfort and the least stress.`,
@@ -293,7 +293,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   sosten_confiable: {
-    label: `Reliable Supporter`,
+    label: `Rhythmic Sustainer`,
     perfil: `Calm Consistency and Structured Support`,
     perfilExtended: `{nombre}'s greatest strength is positive predictability: the team can count on them to always be where they need to be. They tend to maintain calm and order when others start to lose their composure, being the stable foundation of the group. They do not seek the spotlight, but their absence would be felt immediately.`,
     bienvenida: `This map is an invitation to understand how {nombre} chooses to inhabit sport today. In the Argo, the safety of the journey depends not only on speed, but on the solidity of those who hold the course without wavering. This report is a "snapshot of the present" designed so that adults can attune to their rhythm, protecting their wellbeing and ensuring that sport is their place of trust. Safety note: We do not evaluate talent or make mental health diagnoses. Our goal is to identify the context where {nombre} flows with the most comfort to avoid unnecessary stress.`,
@@ -331,7 +331,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   sosten_sereno: {
-    label: `Serene Supporter`,
+    label: `Serene Sustainer`,
     perfil: `Unshakeable Composure and Structural Calm`,
     perfilExtended: `{nombre} tends to maintain calm as pressure builds, transmitting a stability that brings order to those around them. Their deep rhythm is not slowness — it is their way of being the team's emotional anchor when the match becomes disorganized. Their best version tends to appear when fatigue begins to affect everyone else.`,
     bienvenida: `This map is an invitation to understand how {nombre} chooses to inhabit sport today. In the Argo, the safety of the mission depends on those who maintain calm when the rest of the crew enters a state of alert. This report is a "snapshot of the present" designed so that adults can attune to their rhythm, protecting their wellbeing and ensuring that sport is their place of trust. Safety note: We do not evaluate talent or make mental health diagnoses. Our goal is to identify the context where {nombre} flows with the most comfort to avoid unnecessary stress and support their enjoyment.`,
@@ -369,7 +369,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_reactivo: {
-    label: `Reactive Strategist`,
+    label: `Dynamic Strategist`,
     perfil: `Instant Precision and Swift Tactical Adjustment`,
     perfilExtended: `{nombre} reads the game quickly and acts on what they analyze without delay. They tend to detect when a teammate is out of position or when an agreement is not being honored, before others even notice. Their combination of analysis and immediacy makes them the coach's eye on the field.`,
     bienvenida: `This map is an invitation to understand how {nombre} processes sport today. In the Argo, victory depends on those who know how to read the stars and adjust the sails in an instant. This report is a "snapshot of the present" designed so that adults can accompany their analytical nature, protecting their self-esteem and ensuring that their pursuit of precision is a source of enjoyment. Safety note: This is not a clinical diagnosis. It is a tool for identifying the context where {nombre} flows with the least emotional friction.`,
@@ -407,7 +407,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_analitico: {
-    label: `Analytical Strategist`,
+    label: `Rhythmic Strategist`,
     perfil: `Technical Processing and Purposeful Execution`,
     perfilExtended: `{nombre} processes information before activating a response, which gives them a precision in execution that stands out within the team. They tend to need to understand the purpose of what they are doing, and once they do, they apply the plan with a faithfulness that brings collective order. Their strength lies in the quality of their decisions, not in their speed.`,
     bienvenida: `This map is an invitation to understand how {nombre} processes and inhabits sport today. In the Argo, the success of the mission depends not only on strength, but on the accuracy of the calculations. This report is a "snapshot of the present" designed so that adults can attune to their analytical rhythm, protecting their self-esteem and ensuring that sport is a space of learning and enjoyment. Safety note: We do not evaluate talent or make diagnoses. Our goal is to identify the context where {nombre} flows with the most comfort and the least stress.`,
@@ -445,7 +445,7 @@ export const ARCHETYPE_DATA_EN: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_observador: {
-    label: `Observer Strategist`,
+    label: `Observant Strategist`,
     perfil: `Deep Environment Reading and Logical Precision`,
     perfilExtended: `{nombre} processes information with an uncommon depth, analyzing positions, spaces, and patterns before acting. They tend to observe the match even while playing, with a strategic clarity that makes them the team's intelligent anchor. What may look like a deliberate pace tends to be rigor: when they decide, they do so from a very complete understanding of the situation.`,
     bienvenida: `This map is an invitation to discover how {nombre} processes the world of sport today. In the Argo, success depended not only on the strength of the rowers, but on the lookout's ability to read invisible currents. This report is a "snapshot of the present" designed so that adults can attune to their analytical rhythm, protecting their self-esteem and ensuring that their intelligence is their greatest source of enjoyment. Safety note: We do not evaluate talent or make diagnoses. Our goal is to identify the context where {nombre} flows with the least emotional friction so they never want to stop playing.`,

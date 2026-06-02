@@ -4,6 +4,9 @@
 Behavioral profiling tool for young athletes (8-16 years) based on the DISC model.
 A gamified "odyssey" with nautical theme generates a personalized report for the responsible adult (coach, parent, institution).
 
+## Archetype naming (SINGLE source of truth)
+The 12 profile names follow **`[Eje] [Motor]`**: D=Impulsor, I=Conector, S=Sostenedor, C=Estratega × Dinámico/Rítmico/Sereno (C+Lento = "Observador"). This is the ONLY valid naming. Old metaphor names (El Tanque, La Brújula, El Capitán) and old adjective schemes (Impulsor Decidido, Conector Vibrante, Estratega Reactivo, etc.) are **forbidden** — remove on sight. Full canonical table (es/en/pt) + every mirror map that must stay in sync: `docs/archetype-naming.md`. Naming aligned forward-only 2026-06-02 (stored DB reports keep old labels).
+
 ## Stack
 React + TypeScript + Vite + TailwindCSS + Framer Motion + Google Gemini AI
 Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (PostgreSQL). Auth: Supabase Auth (email/password + Google OAuth). Payments: Stripe.

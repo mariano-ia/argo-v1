@@ -33,18 +33,18 @@ const MICRO_DESC: Record<string, Record<string, string>> = {
 };
 
 const ARCHETYPE_LABELS: Record<string, Record<string, string>> = {
-    'D-Rápido': { es: 'Impulsor Dinámico',    en: 'Dynamic Driver',        pt: 'Impulsor Dinâmico' },
-    'D-Medio':  { es: 'Impulsor Decidido',     en: 'Decisive Driver',       pt: 'Impulsor Decidido' },
-    'D-Lento':  { es: 'Impulsor Persistente',  en: 'Persistent Driver',     pt: 'Impulsor Persistente' },
-    'I-Rápido': { es: 'Conector Vibrante',     en: 'Vibrant Connector',     pt: 'Conector Vibrante' },
-    'I-Medio':  { es: 'Conector Relacional',   en: 'Relational Connector',  pt: 'Conector Relacional' },
-    'I-Lento':  { es: 'Conector Reflexivo',    en: 'Reflective Connector',  pt: 'Conector Reflexivo' },
-    'S-Rápido': { es: 'Sostén Ágil',           en: 'Agile Supporter',       pt: 'Sustento Ágil' },
-    'S-Medio':  { es: 'Sostén Confiable',      en: 'Reliable Supporter',    pt: 'Sustento Confiável' },
-    'S-Lento':  { es: 'Sostén Sereno',         en: 'Serene Supporter',      pt: 'Sustento Sereno' },
-    'C-Rápido': { es: 'Estratega Reactivo',    en: 'Reactive Strategist',   pt: 'Estrategista Reativo' },
-    'C-Medio':  { es: 'Estratega Analítico',   en: 'Analytical Strategist', pt: 'Estrategista Analítico' },
-    'C-Lento':  { es: 'Estratega Observador',  en: 'Observer Strategist',   pt: 'Estrategista Observador' },
+    'D-Rápido': { es: 'Impulsor Dinámico',    en: 'Dynamic Driver',        pt: 'Impulsionador Dinâmico' },
+    'D-Medio':  { es: 'Impulsor Rítmico',      en: 'Rhythmic Driver',       pt: 'Impulsionador Rítmico' },
+    'D-Lento':  { es: 'Impulsor Sereno',       en: 'Serene Driver',         pt: 'Impulsionador Sereno' },
+    'I-Rápido': { es: 'Conector Dinámico',     en: 'Dynamic Connector',     pt: 'Conector Dinâmico' },
+    'I-Medio':  { es: 'Conector Rítmico',      en: 'Rhythmic Connector',    pt: 'Conector Rítmico' },
+    'I-Lento':  { es: 'Conector Sereno',       en: 'Serene Connector',      pt: 'Conector Sereno' },
+    'S-Rápido': { es: 'Sostenedor Dinámico',   en: 'Dynamic Sustainer',     pt: 'Sustentador Dinâmico' },
+    'S-Medio':  { es: 'Sostenedor Rítmico',    en: 'Rhythmic Sustainer',    pt: 'Sustentador Rítmico' },
+    'S-Lento':  { es: 'Sostenedor Sereno',     en: 'Serene Sustainer',      pt: 'Sustentador Sereno' },
+    'C-Rápido': { es: 'Estratega Dinámico',    en: 'Dynamic Strategist',    pt: 'Estrategista Dinâmico' },
+    'C-Medio':  { es: 'Estratega Rítmico',     en: 'Rhythmic Strategist',   pt: 'Estrategista Rítmico' },
+    'C-Lento':  { es: 'Estratega Observador',  en: 'Observant Strategist',  pt: 'Estrategista Observador' },
 };
 
 /* ── Activity digest. 5 cases ───────────────────────────────────────────── */
@@ -137,9 +137,9 @@ function getDistributionDigest(sessions: SessionRow[], lang: string): string {
 
 /* ── Dev mock data ───────────────────────────────────────────────────────── */
 const DEV_SESSIONS: SessionRow[] = [
-    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'El Capitán', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
-    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'El Explorador', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
-    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'La Brújula', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 21 * 86400000).toISOString() },
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'Impulsor Dinámico', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'Conector Rítmico', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'Estratega Observador', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 21 * 86400000).toISOString() },
 ];
 
 /* ── Component ───────────────────────────────────────────────────────────── */
@@ -314,7 +314,7 @@ export const TenantHome: React.FC = () => {
                 {/* Mini chat widget */}
                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 flex flex-col">
                     <h2 className="text-[15px] font-semibold text-argo-navy mb-1">
-                        {lang === 'en' ? 'Argo Consultant' : 'Consultor Argo'}
+                        {'Argo Coach'}
                     </h2>
                     <p className="text-[11px] text-argo-light mb-3">
                         {lang === 'en' ? 'Ask anything about your athletes' : lang === 'pt' ? 'Pergunte qualquer coisa sobre seus atletas' : 'Consulta lo que necesites sobre tus deportistas'}

@@ -16,7 +16,7 @@ const T = {
         month: 'mes',
         billedAnnually: 'facturado anualmente',
         trialTitle: 'Comienza con 14 días gratis',
-        trialDesc: 'Dashboard completo, 8 deportistas, consultor IA. Sin tarjeta de crédito.',
+        trialDesc: 'Dashboard completo, 8 deportistas, Argo Coach. Sin tarjeta de crédito.',
         startTrial: 'Comenzar trial gratuito',
         contactSales: 'Contactar ventas',
         familiesLabel: 'Padres y familias',
@@ -33,7 +33,7 @@ const T = {
             included: 'incluido',
             unlimited: 'ilimitado',
             groups: 'Grupos ilimitados',
-            ai: 'Consultor IA',
+            ai: 'Argo Coach',
             guide: 'Guía situacional completa',
             words: 'Palabras puente y checklist',
             dashboard: 'Dashboard completo',
@@ -71,7 +71,7 @@ const T = {
             included: 'included',
             unlimited: 'unlimited',
             groups: 'Unlimited groups',
-            ai: 'AI Consultant',
+            ai: 'Argo Coach',
             guide: 'Full situational guide',
             words: 'Bridge words & checklist',
             dashboard: 'Full dashboard',
@@ -92,7 +92,7 @@ const T = {
         month: 'mês',
         billedAnnually: 'cobrado anualmente',
         trialTitle: 'Comece com 14 dias grátis',
-        trialDesc: 'Dashboard completo, 8 atletas, consultor IA. Sem cartão de crédito.',
+        trialDesc: 'Dashboard completo, 8 atletas, Argo Coach. Sem cartão de crédito.',
         startTrial: 'Começar trial gratuito',
         contactSales: 'Contatar vendas',
         familiesLabel: 'Pais e famílias',
@@ -109,7 +109,7 @@ const T = {
             included: 'incluído',
             unlimited: 'ilimitado',
             groups: 'Grupos ilimitados',
-            ai: 'Consultor IA',
+            ai: 'Argo Coach',
             guide: 'Guia situacional completo',
             words: 'Palavras-ponte e checklist',
             dashboard: 'Dashboard completo',
@@ -264,7 +264,7 @@ export const PricingPage: React.FC = () => {
                             <FeatureRow label={f.playersUnlimited} />
                             <FeatureRow label={f.reprofile} sub={f.included} />
                             <FeatureRow label={f.groups} />
-                            <FeatureRow label={lang === 'en' ? 'Premium AI Consultant' : lang === 'pt' ? 'Consultor IA premium' : 'Consultor IA premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
+                            <FeatureRow label={lang === 'en' ? 'Argo Coach Premium' : lang === 'pt' ? 'Argo Coach Premium' : 'Argo Coach Premium'} sub={lang === 'en' ? 'advanced model' : lang === 'pt' ? 'modelo avançado' : 'modelo avanzado'} />
                             <FeatureRow label={f.dashboardApi} />
                             <FeatureRow label={f.custom} />
                             <FeatureRow label={f.onboarding} />
