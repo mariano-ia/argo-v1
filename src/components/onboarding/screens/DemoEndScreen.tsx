@@ -120,14 +120,14 @@ export const DemoEndScreen: React.FC<DemoEndScreenProps> = ({
                             </div>
                             <h2 style={{ fontWeight: 300, fontSize: '1.6rem', letterSpacing: '-0.02em', lineHeight: 1.2, color: '#1D1D1F', marginBottom: '10px' }}>
                                 {L(
-                                    `Estamos generando tu informe, ${nombre}.`,
-                                    `Generating your report, ${nombre}.`,
-                                    `Estamos gerando seu relatório, ${nombre}.`,
+                                    `Argo Engine está generando tu informe, ${nombre}.`,
+                                    `Argo Engine is generating your report, ${nombre}.`,
+                                    `Argo Engine está gerando seu relatório, ${nombre}.`,
                                 )}
                             </h2>
                             <p style={{ fontSize: '14px', color: '#86868B', lineHeight: 1.55, margin: 0 }}>
                                 {L(
-                                    'Esto puede tardar unos segundos.',
+                                    'Esto puede tardar algunos segundos.',
                                     'This may take a few seconds.',
                                     'Isso pode levar alguns segundos.',
                                 )}
