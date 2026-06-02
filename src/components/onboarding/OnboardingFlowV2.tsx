@@ -323,7 +323,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             const idx = screenIndexRef.current;
             const music = audioRef.current;
             if (music && music.paused && idx >= ODYSSEY_START && idx < ODYSSEY_END && !musicEndedRef.current) {
-                music.play().catch(() => {});
+                console.info('[audio] recover: resuming music', { state: ctx?.state });
+                music.play().catch(e => console.warn('[audio] recover music.play failed:', e));
             }
 
             // 3. Effect should be playing whenever a current source is set.
@@ -331,10 +332,103 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             //    fire mid-fade.
             const effect = effectRef.current;
             if (effect && effect.paused && currentEffectSrc.current) {
-                effect.play().catch(() => {});
+                console.info('[audio] recover: resuming effect', { src: currentEffectSrc.current, state: ctx?.state });
+                effect.play().catch(e => console.warn('[audio] recover effect.play failed:', e));
+                // If gain is silenced (failed fade-in), force it to target.
+                const g = effectGainRef.current;
+                if (g && !mutedRef.current && g.gain.value < 0.01) {
+                    g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+                }
             }
         });
     };
+
+    /** Watchdog — runs every 500ms during the odyssey. iOS Safari can starve
+     *  the AudioContext silently during heavy scene crossfades (e.g. the
+     *  ~122 concurrent framer-motion animations at the storm→calm boundary
+     *  on slide_3). When that happens nothing fires visibilitychange and the
+     *  user doesn't click for several seconds. The watchdog detects three
+     *  failure modes and self-heals: ctx suspended, effect paused, effect
+     *  currentTime not advancing (decoder stall). */
+    const watchdogTickRef = useRef({ lastEffectTime: 0, stallCount: 0 });
+    useEffect(() => {
+        if (screenIndex < ODYSSEY_START || screenIndex > ODYSSEY_END) return;
+        const interval = window.setInterval(() => {
+            const ctx = audioCtxRef.current;
+            const effect = effectRef.current;
+            const w = watchdogTickRef.current;
+            // Heartbeat — surfaces on window.__argoAudio.lastTick so devtools can
+            // detect a frozen main thread (lastTick stale > 2s = stall window).
+            const dbg = (window as unknown as { __argoAudio?: { lastTick?: number; ctxState?: string; effectPaused?: boolean; effectTime?: number } }).__argoAudio;
+            if (dbg) {
+                dbg.lastTick = Date.now();
+                dbg.ctxState = ctx?.state;
+                dbg.effectPaused = effect?.paused;
+                dbg.effectTime = effect?.currentTime;
+            }
+
+            // (a) Context suspended → resume.
+            if (ctx && ctx.state === 'suspended') {
+                console.info('[audio:watchdog] ctx suspended, resuming');
+                ctx.resume().catch(() => {});
+            }
+
+            // (b) Effect paused but should play → restart, AND re-arm gain.
+            //     If a prior play() resolved while a transition was in flight,
+            //     the fade-in was skipped and gain is stuck at 0 — audio is
+            //     "playing" silently. Forcing gain to EFFECT_VOL here heals it.
+            if (effect && effect.paused && currentEffectSrc.current) {
+                console.info('[audio:watchdog] effect paused, restarting');
+                effect.play().catch(() => {});
+            }
+            const g = effectGainRef.current;
+            if (effect && !effect.paused && g && !mutedRef.current && g.gain.value < 0.01 && currentEffectSrc.current) {
+                console.warn('[audio:watchdog] effect playing at gain≈0, re-arming', { src: currentEffectSrc.current });
+                g.gain.cancelScheduledValues(g.context.currentTime);
+                g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+            }
+
+            // (c) Effect "playing" but currentTime not advancing → decoder
+            //     stall. Nudge currentTime forward and re-issue play. iOS
+            //     occasionally stalls VBR MP3 mid-stream during heavy CPU.
+            if (effect && !effect.paused) {
+                const t = effect.currentTime;
+                if (t === w.lastEffectTime) {
+                    w.stallCount++;
+                    if (w.stallCount >= 2) { // ~1s of no advance
+                        console.warn('[audio:watchdog] effect stalled, nudging', { t });
+                        try {
+                            effect.currentTime = t + 0.01;
+                            effect.play().catch(() => {});
+                        } catch { /* ignore */ }
+                        w.stallCount = 0;
+                    }
+                } else {
+                    w.stallCount = 0;
+                    w.lastEffectTime = t;
+                }
+            }
+        }, 500);
+        return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screenIndex]);
+
+    /** Expose audio state on window for devtools / Playwright inspection.
+     *  No production behavior depends on this; it's read-only debug surface. */
+    useEffect(() => {
+        const w = window as unknown as { __argoAudio?: unknown };
+        w.__argoAudio = {
+            get effect() { return effectRef.current; },
+            get music() { return audioRef.current; },
+            get ctx() { return audioCtxRef.current; },
+            get currentSrc() { return currentEffectSrc.current; },
+            get screenIndex() { return screenIndexRef.current; },
+            get muted() { return mutedRef.current; },
+            recover: recoverAudioIfNeeded,
+        };
+        return () => { delete (window as unknown as { __argoAudio?: unknown }).__argoAudio; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     /** Route audio element through a GainNode (works on iOS unlike audio.volume) */
     const connectWithGain = (audio: HTMLAudioElement, initialGain: number): GainNode => {
@@ -356,13 +450,31 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         if (then) setTimeout(then, ms);
     };
 
-    /** Enable seamless loop — use native loop (avoids rAF glitches during heavy interaction) */
+    /** Enable seamless loop — use native loop (avoids rAF glitches during heavy interaction).
+     *  Also wires `stalled`, `waiting`, and `pause` event listeners that trigger
+     *  proactive recovery. effects_03.mp3 is VBR-encoded with LAME gapless
+     *  tags, which iOS Safari occasionally mishandles (firing `ended` despite
+     *  loop=true, or stalling the decoder mid-stream). These listeners catch
+     *  the symptom early. */
     const setupSeamlessLoop = (audio: HTMLAudioElement) => {
         audio.loop = true;
-        // Fallback: if 'ended' fires despite loop=true (some older iOS), restart manually
         audio.addEventListener('ended', () => {
+            console.info('[audio] ended fired despite loop=true, restarting');
             audio.currentTime = 0;
-            audio.play().catch(() => {});
+            audio.play().catch(e => console.warn('[audio] ended-restart play failed:', e));
+        });
+        audio.addEventListener('stalled', () => {
+            console.warn('[audio] stalled event, attempting recovery');
+            recoverAudioIfNeeded();
+        });
+        audio.addEventListener('waiting', () => {
+            console.info('[audio] waiting event (buffering)');
+        });
+        audio.addEventListener('pause', () => {
+            // Programmatic pauses (fade-out before transition) are expected;
+            // unexpected pauses (iOS revoking audio focus) are not. The
+            // watchdog will catch the latter within 500ms.
+            console.info('[audio] pause event', { src: audio.src.split('/').pop() });
         });
     };
 
@@ -416,20 +528,30 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             const gain = connectWithGain(a, 0);
             effectRef.current = a;
             effectGainRef.current = gain;
-            currentEffectSrc.current = wantedSrc;
+            // NOTE: currentEffectSrc is set only AFTER play() resolves. If play()
+            // rejects, src stays null so the next startEffectIfNeeded call can
+            // retry instead of early-returning at the same-src check above.
+            console.info('[audio] effect transition start', { wantedSrc, idx: nextIdx });
             awaitCtxRunning()
                 .then(() => {
-                    // Bail if this audio was replaced while we waited for ctx.resume.
-                    // Prevents the stale-closure double-play race where two effects
-                    // could overlap if a second transition fires before play() resolves.
                     if (effectRef.current !== a) return;
                     return a.play();
                 })
                 .then(() => {
                     if (effectRef.current !== a) return;
-                    if (!mutedRef.current) doGainFade(gain, EFFECT_VOL, EFFECT_FADE_IN_MS);
+                    currentEffectSrc.current = wantedSrc;
+                    console.info('[audio] effect play resolved', { wantedSrc });
+                    if (!mutedRef.current) {
+                        doGainFade(gain, EFFECT_VOL, EFFECT_FADE_IN_MS, () => {
+                            console.info('[audio] effect fade-in done', { wantedSrc, gain: gain.gain.value });
+                        });
+                    }
                 })
-                .catch(e => console.warn('[audio] effect autoplay blocked:', e));
+                .catch(e => {
+                    console.warn('[audio] effect autoplay blocked:', e);
+                    (window as unknown as { __argoAudio?: { lastError?: unknown } }).__argoAudio &&
+                        ((window as unknown as { __argoAudio: { lastError?: unknown } }).__argoAudio.lastError = { src: wantedSrc, err: String(e), at: Date.now() });
+                });
         }
     };
 
