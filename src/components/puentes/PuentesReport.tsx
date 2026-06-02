@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Printer } from 'lucide-react';
-import { AXIS_COLORS, AXIS_LABELS } from '../../lib/designTokens';
+import { AXIS_COLORS, AXIS_LABELS, AXIS_CHIP } from '../../lib/designTokens';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
 import type {
     AdultAxis,
@@ -323,8 +323,8 @@ export function PuentesReport({
         <div className="min-h-screen bg-argo-neutral">
             {/* Top bar (matches the child report) */}
             <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                    <span className="font-[800] text-base tracking-tight text-argo-navy">Argo</span>
+                <div className="flex items-center tracking-tight">
+                    <span className="font-[800] text-base text-argo-navy">Argo</span>
                     <span className="font-[100] text-base text-argo-grey"> Method</span>
                 </div>
                 <button
@@ -354,34 +354,27 @@ export function PuentesReport({
                 >
                     {/* ── 1. BRÚJULA: shared adult header (white card, like the child report) ── */}
                     <div className="bg-white rounded-[14px] shadow-argo p-7">
-                        <h1 className="text-[28px] font-light tracking-tight leading-tight text-argo-navy">
-                    {lang === 'en' ? 'Your bond' : lang === 'pt' ? 'Seu vínculo' : 'Tu vínculo'}
-                </h1>
-                <p className="text-sm text-argo-violet-500 italic mt-1">Argo Puentes</p>
+                        <div className="text-[28px] tracking-tight leading-tight">
+                            <span className="font-[800] text-argo-navy">Argo</span><span className="font-[100] text-argo-grey">Puentes</span>
+                        </div>
 
                 {adultProfile && (
-                    <div className="flex flex-wrap gap-1.5 mt-3.5">
+                    <div className="flex items-center gap-2.5 mt-3.5 flex-wrap">
                         <span
-                            className="px-3 py-1 rounded-full text-[11px] font-semibold text-white"
-                            style={{ backgroundColor: adultAxisColor }}
-                        >
+                            className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ background: adultAxisColor }}
+                        />
+                        <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${AXIS_CHIP[adultProfile.eje_primary] ?? 'bg-violet-50 text-violet-700 border-violet-200'}`}>
                             {AXIS_LABELS[adultProfile.eje_primary]}
                         </span>
-                        <span className="px-3 py-1 bg-argo-navy text-white rounded-full text-[11px] font-semibold">
-                            {motorDisplay}
-                        </span>
                         {adultProfile.eje_secondary && (
-                            <span
-                                className="px-3 py-1 rounded-full text-[11px] font-semibold border"
-                                style={{
-                                    borderColor: AXIS_COLORS[adultProfile.eje_secondary],
-                                    color: AXIS_COLORS[adultProfile.eje_secondary],
-                                    backgroundColor: '#fff',
-                                }}
-                            >
+                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${AXIS_CHIP[adultProfile.eje_secondary] ?? 'bg-violet-50 text-violet-700 border-violet-200'}`}>
                                 +{AXIS_LABELS[adultProfile.eje_secondary]}
                             </span>
                         )}
+                        <span className="ml-auto text-xs font-semibold px-3 py-1 rounded-full border bg-argo-violet-50 text-argo-violet-600 border-argo-violet-100">
+                            {motorDisplay}
+                        </span>
                     </div>
                 )}
 
