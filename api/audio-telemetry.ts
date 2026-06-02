@@ -32,6 +32,9 @@ function trunc(value: unknown, max: number): string | null {
     return value.length > max ? value.slice(0, max) : value;
 }
 
+// Cheap DoS cap. Real telemetry payloads are <500 bytes; 8KB is huge slack.
+const MAX_BODY_BYTES = 8192;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Always answer fast — telemetry must never block the page.
     if (req.method !== 'POST') {
@@ -39,8 +42,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return;
     }
 
+    const contentLength = Number(req.headers['content-length'] ?? 0);
+    if (contentLength > MAX_BODY_BYTES) {
+        res.status(413).end();
+        return;
+    }
+
     try {
-        const body = req.body && typeof req.body === 'object' ? req.body : {};
+        // sendBeacon delivers Blob(application/json) which Vercel sometimes
+        // hands us as a string rather than auto-parsing. Tolerate both.
+        let body: Record<string, unknown> = {};
+        if (typeof req.body === 'string') {
+            try { body = JSON.parse(req.body); } catch { body = {}; }
+        } else if (req.body && typeof req.body === 'object' && !Array.isArray(req.body)) {
+            body = req.body as Record<string, unknown>;
+        }
         const recovery_type = typeof body.recovery_type === 'string' ? body.recovery_type : null;
         if (!recovery_type || !KNOWN_RECOVERY_TYPES.has(recovery_type)) {
             res.status(204).end();
@@ -71,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ctx_state:    trunc(body.ctx_state, 32),
             effect_src:   trunc(body.effect_src, 128),
             ua:           trunc(body.ua, 500),
-            is_demo:      body.is_demo === true,
+            is_demo:      body.is_demo === true || body.is_demo === 'true' || body.is_demo === 1,
         });
 
         res.status(204).end();

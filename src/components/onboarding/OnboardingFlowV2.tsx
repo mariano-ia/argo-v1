@@ -321,8 +321,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
      *  real-world recovery-rate signal (by screen / device / type).
      *  Uses sendBeacon when available — survives page navigation,
      *  doesn't block. Failures are swallowed silently. */
+    // Per-recovery-type cooldown so a persistent fault doesn't spam 120 rows
+    // per minute. 5s window — long enough to dedupe but short enough that a
+    // genuine intermittent issue still gets multiple data points.
+    const beamCooldownRef = useRef<Record<string, number>>({});
     const beamAudioEvent = (recovery_type: string) => {
         try {
+            const now = Date.now();
+            const last = beamCooldownRef.current[recovery_type] ?? 0;
+            if (now - last < 5000) return;
+            beamCooldownRef.current[recovery_type] = now;
+
             const ctx = audioCtxRef.current;
             const body = JSON.stringify({
                 session_id: sessionIdRef.current,
@@ -333,10 +342,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 ua: typeof navigator !== 'undefined' ? navigator.userAgent : null,
                 is_demo: demoMode === true,
             });
+            let sent = false;
             if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
                 const blob = new Blob([body], { type: 'application/json' });
-                navigator.sendBeacon('/api/audio-telemetry', blob);
-            } else if (typeof fetch !== 'undefined') {
+                sent = navigator.sendBeacon('/api/audio-telemetry', blob);
+            }
+            if (!sent && typeof fetch !== 'undefined') {
                 fetch('/api/audio-telemetry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -400,6 +411,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const watchdogTickRef = useRef({ lastEffectTime: 0, stallCount: 0 });
     useEffect(() => {
         if (screenIndex < ODYSSEY_START || screenIndex > ODYSSEY_END) return;
+        // Reset stall tracker on screen change — different screens may pick
+        // up a fresh audio element, and an old `lastEffectTime` from another
+        // src would falsely trigger `effect_stall_nudge` on the new one.
+        watchdogTickRef.current = { lastEffectTime: 0, stallCount: 0 };
         const interval = window.setInterval(() => {
             const ctx = audioCtxRef.current;
             const effect = effectRef.current;
