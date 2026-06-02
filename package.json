@@ -8,7 +8,7 @@
     "build": "tsc && vite build && node scripts/prerender-meta.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test:e2e": "playwright test e2e/odyssey.spec.ts e2e/auth-dashboard.spec.ts e2e/argo-one.spec.ts e2e/report.spec.ts e2e/chat.spec.ts e2e/health.spec.ts",
+    "test:e2e": "playwright test e2e/odyssey.spec.ts e2e/auth-dashboard.spec.ts e2e/argo-one.spec.ts e2e/report.spec.ts e2e/chat.spec.ts e2e/health.spec.ts e2e/audio-health.spec.ts",
     "test:monkey": "playwright test e2e/monkey-odyssey.spec.ts e2e/monkey-signup.spec.ts",
     "qa:monitor": "node scripts/qa/lib/run-monitor.mjs",
     "qa:ai-eval": "tsx scripts/qa/ai-eval.ts",

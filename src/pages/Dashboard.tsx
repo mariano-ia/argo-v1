@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList,
+    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
     { to: '/admin/revenue',   label: 'Revenue',   icon: DollarSign },
     { to: '/admin/argo-one',  label: 'Argo One',  icon: ShoppingBag },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
+    { to: '/admin/health',    label: 'Health',    icon: Activity },
     { to: '/admin/feedback',  label: 'Feedback',  icon: MessageCircle },
     { to: '/admin/questions', label: 'Preguntas', icon: HelpCircle },
     { to: '/admin/audit',     label: 'Audit log',  icon: ClipboardList },

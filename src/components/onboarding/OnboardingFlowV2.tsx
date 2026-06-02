@@ -184,6 +184,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const gameBMetricsRef  = useRef<RhythmMetrics | null>(null);
     const gameCMetricsRef  = useRef<AdaptationMetrics | null>(null);
 
+    // ── QA test seam (?qa=fastplay) ──────────────────────────────────────────
+    // Only active when the build has VITE_QA_SEAMS_ENABLED=1 (preview / CI only,
+    // never prod). Lets Playwright drive past the canvas mini-games by feeding
+    // synthetic metrics + auto-advancing. Dead code in prod bundles.
+    const fastplayRef = useRef<boolean>(false);
+    if (typeof window !== 'undefined' && fastplayRef.current === false) {
+        const seamsEnabled = import.meta.env.VITE_QA_SEAMS_ENABLED === '1';
+        const param = new URLSearchParams(window.location.search).get('qa');
+        fastplayRef.current = seamsEnabled && param === 'fastplay';
+    }
+
     // ── Session persistence (Options 1, 2, 3) ──────────────────────────────
     const sessionIdRef = useRef<string | null>(null);
     // share_token returned by start/save — proves ownership on later updates.
@@ -305,6 +316,48 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         });
     };
 
+    /** Fire-and-forget telemetry beam. Every audio self-heal pings
+     *  /api/audio-telemetry so the superadmin dashboard can show a
+     *  real-world recovery-rate signal (by screen / device / type).
+     *  Uses sendBeacon when available — survives page navigation,
+     *  doesn't block. Failures are swallowed silently. */
+    // Per-recovery-type cooldown so a persistent fault doesn't spam 120 rows
+    // per minute. 5s window — long enough to dedupe but short enough that a
+    // genuine intermittent issue still gets multiple data points.
+    const beamCooldownRef = useRef<Record<string, number>>({});
+    const beamAudioEvent = (recovery_type: string) => {
+        try {
+            const now = Date.now();
+            const last = beamCooldownRef.current[recovery_type] ?? 0;
+            if (now - last < 5000) return;
+            beamCooldownRef.current[recovery_type] = now;
+
+            const ctx = audioCtxRef.current;
+            const body = JSON.stringify({
+                session_id: sessionIdRef.current,
+                screen_index: screenIndexRef.current,
+                recovery_type,
+                ctx_state: ctx?.state ?? null,
+                effect_src: currentEffectSrc.current,
+                ua: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+                is_demo: demoMode === true,
+            });
+            let sent = false;
+            if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                const blob = new Blob([body], { type: 'application/json' });
+                sent = navigator.sendBeacon('/api/audio-telemetry', blob);
+            }
+            if (!sent && typeof fetch !== 'undefined') {
+                fetch('/api/audio-telemetry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body,
+                    keepalive: true,
+                }).catch(() => {});
+            }
+        } catch { /* never block on telemetry */ }
+    };
+
     /** Recover audio after a likely browser/OS suspension. iOS Safari suspends
      *  the AudioContext (and silently pauses HTMLAudioElements) on notifications,
      *  app switches, screen lock, AirPods change, etc. Called from `advance()`
@@ -316,6 +369,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         const ctxReady = ctx && ctx.state === 'suspended'
             ? ctx.resume().catch(() => {})
             : Promise.resolve();
+
+        // 1b. If the ctx WAS suspended and we resumed it, beam telemetry.
+        if (ctx && ctx.state === 'suspended') beamAudioEvent('ctx_resume');
 
         ctxReady.then(() => {
             // 2. Music should be playing whenever we are inside the odyssey
@@ -334,10 +390,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             if (effect && effect.paused && currentEffectSrc.current) {
                 console.info('[audio] recover: resuming effect', { src: currentEffectSrc.current, state: ctx?.state });
                 effect.play().catch(e => console.warn('[audio] recover effect.play failed:', e));
+                beamAudioEvent('effect_replay');
                 // If gain is silenced (failed fade-in), force it to target.
                 const g = effectGainRef.current;
                 if (g && !mutedRef.current && g.gain.value < 0.01) {
                     g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+                    beamAudioEvent('gain_rescue');
                 }
             }
         });
@@ -353,6 +411,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const watchdogTickRef = useRef({ lastEffectTime: 0, stallCount: 0 });
     useEffect(() => {
         if (screenIndex < ODYSSEY_START || screenIndex > ODYSSEY_END) return;
+        // Reset stall tracker on screen change — different screens may pick
+        // up a fresh audio element, and an old `lastEffectTime` from another
+        // src would falsely trigger `effect_stall_nudge` on the new one.
+        watchdogTickRef.current = { lastEffectTime: 0, stallCount: 0 };
         const interval = window.setInterval(() => {
             const ctx = audioCtxRef.current;
             const effect = effectRef.current;
@@ -371,6 +433,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             if (ctx && ctx.state === 'suspended') {
                 console.info('[audio:watchdog] ctx suspended, resuming');
                 ctx.resume().catch(() => {});
+                beamAudioEvent('ctx_resume');
             }
 
             // (b) Effect paused but should play → restart, AND re-arm gain.
@@ -380,12 +443,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             if (effect && effect.paused && currentEffectSrc.current) {
                 console.info('[audio:watchdog] effect paused, restarting');
                 effect.play().catch(() => {});
+                beamAudioEvent('effect_replay');
             }
             const g = effectGainRef.current;
             if (effect && !effect.paused && g && !mutedRef.current && g.gain.value < 0.01 && currentEffectSrc.current) {
                 console.warn('[audio:watchdog] effect playing at gain≈0, re-arming', { src: currentEffectSrc.current });
                 g.gain.cancelScheduledValues(g.context.currentTime);
                 g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+                beamAudioEvent('gain_rescue');
             }
 
             // (c) Effect "playing" but currentTime not advancing → decoder
@@ -401,6 +466,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                             effect.currentTime = t + 0.01;
                             effect.play().catch(() => {});
                         } catch { /* ignore */ }
+                        beamAudioEvent('effect_stall_nudge');
                         w.stallCount = 0;
                     }
                 } else {
@@ -462,6 +528,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             console.info('[audio] ended fired despite loop=true, restarting');
             audio.currentTime = 0;
             audio.play().catch(e => console.warn('[audio] ended-restart play failed:', e));
+            beamAudioEvent('ended_restart');
         });
         audio.addEventListener('stalled', () => {
             console.warn('[audio] stalled event, attempting recovery');
@@ -518,11 +585,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             if (e && e.paused) {
                 console.warn('[audio] same-src revive: effect was paused', { src: activeSrc, idx: nextIdx });
                 e.play().catch(err => console.warn('[audio] same-src revive play failed:', err));
+                beamAudioEvent('same_src_revive');
             }
             if (e && !e.paused && g && !mutedRef.current && g.gain.value < 0.01) {
                 console.warn('[audio] same-src revive: gain stuck at 0', { src: activeSrc, idx: nextIdx });
                 g.gain.cancelScheduledValues(g.context.currentTime);
                 g.gain.setValueAtTime(EFFECT_VOL, g.context.currentTime);
+                beamAudioEvent('gain_rescue');
             }
             return;
         }
@@ -592,7 +661,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // lock — without this, audio stays silent for the rest of the session.
     useEffect(() => {
         const onVis = () => {
-            if (document.visibilityState === 'visible') recoverAudioIfNeeded();
+            if (document.visibilityState === 'visible') {
+                beamAudioEvent('visibility_recover');
+                recoverAudioIfNeeded();
+            }
         };
         document.addEventListener('visibilitychange', onVis);
         return () => document.removeEventListener('visibilitychange', onVis);
@@ -660,6 +732,27 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             return next;
         });
     };
+
+    // QA fastplay: when ?qa=fastplay is set AND seams are enabled in this
+    // build, mini-game screens auto-advance with synthetic metrics so
+    // Playwright can drive past the canvas screens. No-op in prod bundles.
+    useEffect(() => {
+        if (!fastplayRef.current) return;
+        const s = SCREENS[screenIndex];
+        if (s?.type !== 'minigame') return;
+        const t = setTimeout(() => {
+            if (s.gameId === 'minigame_a') {
+                gameAMetricsRef.current = { latencies: [800, 850, 900], avgLatency: 850, stdDevLatency: 50, totalTimeMs: 2550, trend: 0 };
+            } else if (s.gameId === 'minigame_b') {
+                gameBMetricsRef.current = { reactionTimes: [400, 420, 410], avgReaction: 410, totalTaps: 10, extraTaps: 1, avgCadence: 500, trend: 0, totalTimeMs: 5000 };
+            } else if (s.gameId === 'minigame_c') {
+                gameCMetricsRef.current = { adaptationTimes: [600, 650, 620], avgAdaptation: 623, inertiaErrors: 1, correctTaps: 12, wrongTaps: 2, totalTimeMs: 8000 };
+            }
+            advance();
+        }, 300);
+        return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screenIndex]);
 
     // Option 2: Save progress to localStorage on each answer
     const handleAnswer = (answer: QuestionAnswer) => {

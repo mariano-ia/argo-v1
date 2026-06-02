@@ -41,6 +41,7 @@ const AdminAIUsage    = lazy(() => import('./pages/dashboard/AdminAIUsage').then
 const AdminRevenue    = lazy(() => import('./pages/dashboard/AdminRevenue').then(m => ({ default: m.AdminRevenue })));
 const AdminArgoOne    = lazy(() => import('./pages/dashboard/AdminArgoOne').then(m => ({ default: m.AdminArgoOne })));
 const AdminAuditLog   = lazy(() => import('./pages/dashboard/AdminAuditLog').then(m => ({ default: m.AdminAuditLog })));
+const AdminHealth = lazy(() => import('./pages/dashboard/AdminHealth').then(m => ({ default: m.AdminHealth })));
 const AdminFeedback   = lazy(() => import('./pages/dashboard/Feedback').then(m => ({ default: m.Feedback })));
 const BlogAdmin       = lazy(() => import('./pages/dashboard/BlogAdmin').then(m => ({ default: m.BlogAdmin })));
 const BlogEditor      = lazy(() => import('./pages/dashboard/BlogEditor').then(m => ({ default: m.BlogEditor })));
@@ -282,6 +283,7 @@ function App() {
                 <Route path="revenue"   element={<AdminRevenue />} />
                 <Route path="argo-one"  element={<AdminArgoOne />} />
                 <Route path="audit"     element={<AdminAuditLog />} />
+                <Route path="health" element={<AdminHealth />} />
                 <Route path="feedback"  element={<AdminFeedback />} />
                 <Route path="questions" element={<QuestionsAdmin />} />
                 <Route path="users"     element={<AdminUsers />} />
