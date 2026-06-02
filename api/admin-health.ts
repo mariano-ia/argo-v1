@@ -10,8 +10,8 @@ import { createClient } from '@supabase/supabase-js';
  *
  * Returns 30-day aggregates by day / type / screen / device for audio,
  * and 30-day aggregates by day / message-prefix / browser for errors,
- * plus the 50 most recent raw rows of each. Bearer-token auth via the
- * standard is_admin gate.
+ * plus the 50 most recent raw rows of each. Bearer-token gated via the
+ * admin_users.email allowlist (same pattern as admin-tenants etc.).
  */
 
 interface AudioRaw {
@@ -62,14 +62,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sb = createClient(supabaseUrl, serviceKey);
     const { data: userData, error: userErr } = await sb.auth.getUser(accessToken);
-    if (userErr || !userData?.user) return res.status(401).json({ error: 'Invalid token' });
+    if (userErr || !userData?.user || !userData.user.email) {
+        return res.status(401).json({ error: 'Invalid token' });
+    }
 
-    const { data: adminCheck } = await sb
-        .from('users')
-        .select('is_admin')
-        .eq('id', userData.user.id)
+    const { data: admin } = await sb
+        .from('admin_users')
+        .select('id')
+        .eq('email', userData.user.email)
         .maybeSingle();
-    if (!adminCheck?.is_admin) return res.status(403).json({ error: 'Not authorized' });
+    if (!admin) return res.status(403).json({ error: 'Not authorized' });
 
     const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
