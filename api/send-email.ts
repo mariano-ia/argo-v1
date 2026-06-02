@@ -42,10 +42,14 @@ function buildHtml(params: {
     };
     const axisColor = AXIS_DOT[params.eje] ?? '#955FB5';
 
+    // Canonical motor labels — mirror of docs/archetype-naming.md (kept in
+    // sync with src/lib/dashboardTranslations.ts + odysseyTranslations.ts).
+    // Rápido→Dinámico · Medio→Rítmico · Lento→Sereno (NOT the old
+    // Decidido/Persistente adjective scheme).
     const MOTOR_LABELS: Record<string, Record<string, string>> = {
-        es: { Rápido: 'Dinámico',  Medio: 'Decidido', Lento: 'Persistente' },
-        en: { Rápido: 'Dynamic',   Medio: 'Decisive',  Lento: 'Persistent'  },
-        pt: { Rápido: 'Dinâmico',  Medio: 'Decidido',  Lento: 'Persistente' },
+        es: { Rápido: 'Dinámico',  Medio: 'Rítmico',  Lento: 'Sereno' },
+        en: { Rápido: 'Dynamic',   Medio: 'Rhythmic', Lento: 'Serene' },
+        pt: { Rápido: 'Dinâmico',  Medio: 'Rítmico',  Lento: 'Sereno' },
     };
     const MOTOR_STYLE: Record<string, { bg: string; text: string }> = {
         Rápido: { bg: 'rgba(245,158,11,0.13)', text: '#b45309' },
@@ -53,7 +57,12 @@ function buildHtml(params: {
         Lento:  { bg: 'rgba(59,130,246,0.1)',  text: '#1d4ed8' },
     };
     const motorLabelMap = MOTOR_LABELS[langAttr] ?? MOTOR_LABELS.es;
-    const motorLabel = motorLabelMap[params.motor] ?? params.motor;
+    // Exception: on axis C + Lento the visible motor name is "Observador"
+    // (per docs/archetype-naming.md), not "Sereno".
+    const isObservador = params.eje === 'C' && params.motor === 'Lento';
+    const motorLabel = isObservador
+        ? ({ es: 'Observador', en: 'Observant', pt: 'Observador' } as Record<string, string>)[langAttr] ?? 'Observador'
+        : motorLabelMap[params.motor] ?? params.motor;
     const motorStyle = MOTOR_STYLE[params.motor] ?? MOTOR_STYLE.Medio;
     const motorPrefix = langAttr === 'en' ? 'Engine' : 'Motor';
 
@@ -480,17 +489,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Single session fetch reused for idempotency, share_token, and
-        // report-content hydration below. Pulls the deterministic inputs
-        // (eje/motor/lang/child_name) + stored ai_sections so we can rebuild
-        // the full report regardless of what the caller passed.
+        // report-content hydration below. Pulls the stored ai_sections so we
+        // can backfill the full report regardless of what the caller passed.
         type SessionRow = {
             email_sent_at?: string | null;
             share_token?: string | null;
-            eje?: string | null;
-            motor?: string | null;
-            eje_secundario?: string | null;
-            child_name?: string | null;
-            lang?: string | null;
             ai_sections?: { resumenPerfil?: string; palabrasPuente?: string[] } | null;
         };
         let sessionRow: SessionRow | null = null;
@@ -501,7 +504,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 const { data } = await sb
                     .from('sessions')
-                    .select('email_sent_at, share_token, eje, motor, eje_secundario, child_name, lang, ai_sections')
+                    .select('email_sent_at, share_token, ai_sections')
                     .eq('id', sessionId)
                     .maybeSingle();
                 sessionRow = (data as SessionRow) ?? null;
@@ -642,8 +645,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // pass partial data (e.g. no resumenPerfil, empty perfil on non-es),
         // so the Contrato de Sintonía + hero copy silently dropped out of the
         // delivered email. We backfill any missing field from the session's
-        // stored ai_sections + the deterministic engine. Caller-provided
-        // values always win; we only fill gaps.
+        // stored ai_sections. Caller-provided values always win; we only fill
+        // gaps.
         let finalPerfil = perfil;
         let finalPalabrasPuente = Array.isArray(palabrasPuente) ? palabrasPuente : [];
         let finalResumenPerfil = resumenPerfil;
