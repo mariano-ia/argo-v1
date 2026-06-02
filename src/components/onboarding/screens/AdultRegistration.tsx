@@ -191,6 +191,9 @@ export const AdultRegistration: React.FC<Props> = ({
 
                 <button
                     onClick={() => setAccepted(prev => !prev)}
+                    data-testid="consent-checkbox"
+                    aria-pressed={accepted}
+                    aria-label="consent"
                     className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
                         accepted
                             ? 'border-[#1D1D1F] bg-white'
