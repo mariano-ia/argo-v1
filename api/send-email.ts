@@ -1,6 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { getReportData } from '../src/lib/argosEngine';
+// NOTE: Vercel serverless functions in /api CANNOT import from /src.
+// Cross-bundle imports cause ERR_MODULE_NOT_FOUND at runtime. Inline any
+// shared logic here instead. (See CLAUDE.md.)
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 
@@ -645,22 +647,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let finalPerfil = perfil;
         let finalPalabrasPuente = Array.isArray(palabrasPuente) ? palabrasPuente : [];
         let finalResumenPerfil = resumenPerfil;
-        if (sessionRow && (sessionRow.eje && sessionRow.motor)) {
-            const ai = sessionRow.ai_sections ?? {};
-            const det = getReportData(
-                sessionRow.eje,
-                sessionRow.motor,
-                sessionRow.eje_secundario ?? '',
-                sessionRow.child_name ?? nombreNino,
-                sessionRow.lang ?? lang ?? 'es',
-            );
-            if (!finalPerfil || !finalPerfil.trim()) finalPerfil = det.perfil;
-            if (!finalPalabrasPuente.length) {
-                finalPalabrasPuente = (ai.palabrasPuente && ai.palabrasPuente.length)
-                    ? ai.palabrasPuente
-                    : det.palabrasPuente;
+        // Backfill from the session's ai_sections if the caller passed gaps.
+        // (We can't pull the deterministic-engine perfil here without an
+        // /src import, which breaks Vercel's serverless bundle.)
+        if (sessionRow?.ai_sections) {
+            const ai = sessionRow.ai_sections;
+            if (!finalPalabrasPuente.length && ai.palabrasPuente?.length) {
+                finalPalabrasPuente = ai.palabrasPuente;
             }
-            if (!finalResumenPerfil || !finalResumenPerfil.trim()) finalResumenPerfil = ai.resumenPerfil;
+            if ((!finalResumenPerfil || !finalResumenPerfil.trim()) && ai.resumenPerfil) {
+                finalResumenPerfil = ai.resumenPerfil;
+            }
         }
 
         const html = buildHtml({
