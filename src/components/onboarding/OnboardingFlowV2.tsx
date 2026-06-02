@@ -270,8 +270,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const getEffectSrc = (idx: number): string | null => {
         if (idx >= 7 && idx <= 13)  return '/audio/effects_01.mp3'; // intro + minigame_a + puerto
         if (idx >= 14 && idx <= 17) return '/audio/effects_02.mp3'; // mar abierto + minigame_b
-        if (idx >= 18 && idx <= 21) return '/audio/effects_03.mp3'; // tormenta (Q4-Q6 + minigame_c)
-        if (idx >= 22 && idx <= 30) return '/audio/effects_02.mp3'; // calma + isla + completion (slide_3 is the calma intro)
+        if (idx >= 18 && idx <= 22) return '/audio/effects_03.mp3'; // tormenta (Q4-Q6 + minigame_c + slide_3 "Después de la Tormenta")
+        if (idx >= 23 && idx <= 30) return '/audio/effects_02.mp3'; // calma (Q7+) + isla + completion
         return null;
     };
 
