@@ -461,10 +461,21 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Preload all audio files into browser cache during adult screens
+    // Preload audio + scene images during adult screens. Decoding the scene
+    // image inline at first paint (e.g. calm-2.png on slide_3 entry) was
+    // saturating the main thread and starving the AudioContext on iOS
+    // Safari, causing the storm effect to go silent mid-screen. `new Image()`
+    // here primes the browser cache + decode for every scene image up front.
     useEffect(() => {
         ['/audio/argo_background.mp3', '/audio/effects_01.mp3', '/audio/effects_02.mp3', '/audio/effects_03.mp3']
             .forEach(src => { fetch(src).catch(() => {}); });
+        [
+            '/scenes/port.png', '/scenes/port-2.png',
+            '/scenes/open-sea.png', '/scenes/open-sea-2.png', '/scenes/open-sea-3.png',
+            '/scenes/storm.png', '/scenes/storm-2.png', '/scenes/storm-3.png',
+            '/scenes/calm.png', '/scenes/calm-2.png',
+            '/scenes/island.png',
+        ].forEach(src => { const img = new Image(); img.src = src; });
     }, []);
 
     // Cleanup audio on unmount
