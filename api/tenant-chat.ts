@@ -18,7 +18,11 @@ async function callGemini(messages: AIMessage[], opts: { temperature: number; ma
     const systemMsg = messages.find(m => m.role === 'system');
     const conversationMsgs = messages.filter(m => m.role !== 'system');
     const contents = conversationMsgs.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
-    const body: Record<string, unknown> = { contents, generationConfig: { temperature: opts.temperature, maxOutputTokens: opts.maxTokens, thinkingConfig: { thinkingBudget: 0 } } };
+    // Enterprise (Gemini Pro) gets a modest thinking budget for quality; Flash
+    // stays at 0 to keep latency/cost down and stop thinking tokens from eating
+    // into maxOutputTokens (R11).
+    const thinkingBudget = opts.model.includes('pro') ? 1024 : 0;
+    const body: Record<string, unknown> = { contents, generationConfig: { temperature: opts.temperature, maxOutputTokens: opts.maxTokens, thinkingConfig: { thinkingBudget } } };
     if (systemMsg) body.systemInstruction = { parts: [{ text: systemMsg.content }] };
 
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${opts.model}:generateContent?key=${apiKey}`, {
@@ -78,21 +82,41 @@ async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTo
     const maxTokens = opts.maxTokens ?? 3000;
     const model = opts.model ?? 'gemini-2.5-flash';
 
-    // Try Gemini first with 1 retry
+    let lastErr: unknown;
     try {
         return await callGemini(messages, { temperature, maxTokens, model });
     } catch (firstErr) {
+        lastErr = firstErr;
+        // A safety "blocked" finishReason is deterministic — retrying the same
+        // call just burns latency. Skip the Gemini retry and go to fallback (R13).
+        const blocked = firstErr instanceof Error && /blocked/i.test(firstErr.message);
         console.warn('[callAI] Gemini attempt 1 failed:', firstErr instanceof Error ? firstErr.message : firstErr);
-        await new Promise(r => setTimeout(r, 1500));
-        try {
-            return await callGemini(messages, { temperature, maxTokens, model });
-        } catch (secondErr) {
-            console.warn('[callAI] Gemini attempt 2 failed, falling back to OpenAI:', secondErr instanceof Error ? secondErr.message : secondErr);
+        if (!blocked) {
+            await new Promise(r => setTimeout(r, 1500));
+            try {
+                return await callGemini(messages, { temperature, maxTokens, model });
+            } catch (secondErr) {
+                lastErr = secondErr;
+                console.warn('[callAI] Gemini attempt 2 failed, falling back to OpenAI:', secondErr instanceof Error ? secondErr.message : secondErr);
+            }
         }
     }
 
-    // Fallback to OpenAI
-    return callOpenAI(messages, { temperature, maxTokens });
+    // Fallback to OpenAI, wrapped with its own 1 retry (R3). Surface a clear
+    // error if the key is missing so the outage isn't silently fatal.
+    if (!process.env.OPENAI_API_KEY) {
+        console.error('[callAI] OpenAI fallback unavailable: OPENAI_API_KEY not set');
+        throw lastErr instanceof Error ? lastErr : new Error('AI provider unavailable');
+    }
+    try {
+        const r = await callOpenAI(messages, { temperature, maxTokens });
+        console.info('[callAI] Served by OpenAI fallback');
+        return r;
+    } catch (openaiErr) {
+        console.warn('[callAI] OpenAI fallback attempt 1 failed, retrying once:', openaiErr instanceof Error ? openaiErr.message : openaiErr);
+        await new Promise(r => setTimeout(r, 1000));
+        return await callOpenAI(messages, { temperature, maxTokens });
+    }
 }
 
 // ─── End inline AI provider ─────────────────────────────────────────────────
@@ -637,12 +661,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Message required' });
         }
 
-        // Fair use: increment AI query counter and check soft cap
+        // Fair use: increment AI query counter and check soft cap.
+        // Intentionally non-blocking (the soft cap is invisible to the user by
+        // design) and fail-open: a telemetry hiccup must never block a paying
+        // coach. We surface the signal to ops instead of enforcing here (R4/E14).
         const { data: fairUseData, error: fairUseErr } = await sb.rpc('increment_ai_queries', { p_tenant_id: tenant.id });
         if (fairUseErr) {
-            console.error('[tenant-chat] Fair use check error:', fairUseErr.message);
+            console.error('[tenant-chat] Fair use check error (failing open):', fairUseErr.message);
         }
         const fairUseExceeded = fairUseData?.fair_use_exceeded === true;
+        if (fairUseExceeded) {
+            console.info(`[tenant-chat] Fair-use soft cap exceeded for tenant ${tenant.id} (non-blocking by design)`);
+        }
 
         // Trial plan: check expiration + hard cap at 10 total user messages
         const { data: tenantPlan } = await sb.from('tenants').select('plan, trial_expires_at, roster_limit').eq('id', tenant.id).maybeSingle();
@@ -1032,13 +1062,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'user' as const, content: anonymizedUserMsg },
         ];
 
+        // Persist the coach's message BEFORE calling the AI so it's never lost
+        // if both providers are down (E11). The assistant turn is saved after.
+        await sb.from('chat_messages').insert({
+            tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0,
+        });
+
         // ── Call AI provider (Gemini → retry → OpenAI fallback) ─────────
         const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
-        const chatOpts = { temperature: 0.4, maxTokens: 2000, model: aiModel };
-        const aiResult = await callAI(aiMessages, chatOpts);
-        if (aiResult.provider === 'openai') {
-            console.info('[tenant-chat] Response served by OpenAI fallback');
+        let aiResult: AIResponse;
+        try {
+            aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 2000, model: aiModel });
+        } catch (aiErr) {
+            // Both providers failed. The user message is already saved, so the
+            // thread keeps the question; return a friendly degraded message (R3).
+            console.error('[tenant-chat] AI providers unavailable:', aiErr instanceof Error ? aiErr.message : aiErr);
+            const DEGRADED: Record<string, string> = {
+                es: 'El asistente está teniendo problemas para responder en este momento. Tu mensaje se guardó; vuelve a intentarlo en unos segundos.',
+                en: 'The assistant is having trouble responding right now. Your message was saved; please try again in a few seconds.',
+                pt: 'O assistente está com dificuldades para responder agora. Sua mensagem foi salva; tente novamente em alguns segundos.',
+            };
+            return res.status(503).json({ thread_id: threadId, error: 'ai_unavailable', message: DEGRADED[safeLang(promptLang)] });
         }
+        // Accumulate tokens across all AI calls in this request (incl. retry) so
+        // cost/usage isn't under-counted (E13).
+        let totalInputTokens = aiResult.inputTokens;
+        let totalOutputTokens = aiResult.outputTokens;
         // Rehydrate placeholders with real names for display + storage.
         let assistantContent = rehydrate(aiResult.content);
 
@@ -1074,10 +1123,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 { role: 'assistant' as const, content: aiResult.content },
                 { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
             ];
+            let cleaned: string | null = null;
             try {
                 const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800 });
-                if (retryResult.content) assistantContent = rehydrate(retryResult.content);
-            } catch { /* keep original response */ }
+                totalInputTokens += retryResult.inputTokens;
+                totalOutputTokens += retryResult.outputTokens;
+                const candidate = rehydrate(retryResult.content);
+                // Re-scan the retried text; only accept it if it's actually clean (R5).
+                if (candidate && !PROHIBITED_WORDS.some(w => candidate.toLowerCase().includes(w))) {
+                    cleaned = candidate;
+                }
+            } catch (retryErr) {
+                console.warn('[tenant-chat] Prohibited-words retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
+            }
+            if (cleaned) {
+                assistantContent = cleaned;
+            } else {
+                // Retry failed or still contained prohibited language. Never serve
+                // clinical/negative copy about a child — use a safe neutral message (R6).
+                console.warn('[tenant-chat] Prohibited words persisted after retry; serving safe fallback');
+                const SAFE_FALLBACK: Record<string, string> = {
+                    es: 'Prefiero reformular esto con más cuidado. ¿Puedes contarme un poco más sobre la situación para darte una respuesta enfocada en cómo acompañar mejor al niño?',
+                    en: 'Let me rephrase this more carefully. Could you tell me a bit more about the situation so I can focus on how to best support the child?',
+                    pt: 'Prefiro reformular isso com mais cuidado. Você pode me contar um pouco mais sobre a situação para eu focar em como acompanhar melhor a criança?',
+                };
+                assistantContent = SAFE_FALLBACK[safeLang(promptLang)];
+            }
         }
 
         // ── Ground truth validation (axis + forbidden old labels) ──────────
@@ -1117,16 +1188,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // ── Save messages to DB ───────────────────────────────────────────
-        await sb.from('chat_messages').insert([
-            { tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
-            { tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: aiResult.inputTokens, tokens_out: aiResult.outputTokens },
-        ]);
+        // ── Save the assistant turn (the user turn was saved before the AI call) ──
+        await sb.from('chat_messages').insert({
+            tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent,
+            tokens_in: totalInputTokens, tokens_out: totalOutputTokens,
+        });
 
         return res.status(200).json({
             thread_id: threadId,
             message: { role: 'assistant', content: assistantContent },
-            usage: { tokensIn: aiResult.inputTokens, tokensOut: aiResult.outputTokens, costUsd: getCostUsd(aiResult) },
+            usage: {
+                tokensIn: totalInputTokens,
+                tokensOut: totalOutputTokens,
+                costUsd: getCostUsd({ ...aiResult, inputTokens: totalInputTokens, outputTokens: totalOutputTokens }),
+            },
             fair_use_exceeded: fairUseExceeded,
         });
 
