@@ -890,6 +890,56 @@ strong { color: var(--text-primary); font-weight: 600; }
   .slide-content { max-width: 100%; width: 100%; }
   h1 { font-size: 1.9rem; } h2 { font-size: 1.55rem; } h4 { font-size: 1rem; }
   p, li { font-size: 0.92rem; }
+
+  /* Override inline font-sizes on slide h2s (they were ignoring the rule above) */
+  .slide h2 { font-size: 1.45rem !important; line-height: 1.2 !important; max-width: 100% !important; margin-bottom: 14px !important; }
+  .slide--cover h1 { font-size: 1.85rem !important; line-height: 1.15 !important; }
+  .slide--cover .subtitle { font-size: 0.9rem !important; line-height: 1.5 !important; }
+  .slide--cover .meta { font-size: 0.6rem !important; }
+  .closing-overlay h2 { font-size: 1.25rem !important; margin-bottom: 6px !important; }
+  .closing-overlay p { font-size: 0.78rem !important; }
+  .lqc-content h2 { font-size: 1.3rem !important; max-width: 100% !important; margin-bottom: 16px !important; }
+  .lqc-content { padding: 0 18px 36px !important; }
+  .lqc-chip { padding: 11px 12px !important; }
+  .lqc-chip h4 { font-size: 0.78rem !important; }
+  .lqc-chip p { font-size: 0.66rem !important; }
+
+  /* Howit-card (slide 5) — much tighter on mobile */
+  .howit-card { padding: 22px 18px !important; border-radius: 18px !important; }
+  .howit-card .step-eyebrow { font-size: 0.62rem !important; margin-bottom: 4px !important; }
+  .howit-card .feature-chip { font-size: 0.7rem !important; padding: 5px 10px !important; }
+
+  /* FlipCard — fits on mobile screens (was 440px tall) */
+  .flipcard { max-width: 100% !important; }
+  .flipcard__inner { height: 360px !important; perspective: 900px !important; }
+  .fc-game__header { padding: 11px 14px 9px !important; }
+  .fc-game__intro { padding: 10px 14px 4px !important; font-size: 10px !important; }
+  .fc-game__text { padding: 8px 14px 12px !important; font-size: 13px !important; }
+  .fc-game__options { padding: 0 12px 14px !important; gap: 6px !important; }
+  .fc-game__option { padding: 8px !important; }
+  .fc-game__option-num { width: 22px !important; height: 22px !important; font-size: 10px !important; margin-bottom: 6px !important; }
+  .fc-game__option-text { font-size: 10px !important; }
+  .fc-analysis, .fc-profile { padding: 20px 16px !important; }
+  .fc-analysis__bars { gap: 10px !important; }
+  .fc-profile__name { font-size: 18px !important; margin-bottom: 8px !important; }
+  .fc-profile__desc { font-size: 11px !important; line-height: 1.5 !important; }
+  .flipcard__step-label { font-size: 9px !important; }
+  .flipcard__step-sep { width: 18px !important; margin: 0 5px 18px !important; }
+
+  /* Slide 6 informe — tighter report card */
+  .card.card--accent-1[style*="340px"] { max-height: 260px !important; padding: 20px !important; }
+  .card.card--wash { padding: 18px !important; }
+
+  /* Slide 7 dashboard chat + features — tighter */
+  .bubble { padding: 10px 14px !important; font-size: 0.85rem !important; }
+  .bubble-tag { font-size: 0.6rem !important; }
+
+  /* QR slide */
+  .qr-box { width: 160px !important; height: 160px !important; }
+
+  /* DESLIZA hint smaller & out of the way on mobile */
+  .scroll-hint { bottom: 14px !important; font-size: 0.55rem !important; opacity: 0.35 !important; }
+  .scroll-hint i { width: 14px !important; height: 14px !important; }
   .split { grid-template-columns: 1fr; gap: 26px; }
   .grid-2x2 { grid-template-columns: 1fr; gap: 14px; }
   .grid-3 { grid-template-columns: 1fr; gap: 16px; }
