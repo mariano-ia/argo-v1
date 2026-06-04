@@ -1,7 +1,7 @@
 # Sistema de Checks y Monitoreo — Argo
 
 > Fuente única de verdad del sistema de "cómo sabemos si algo se rompe y cómo lo recuperamos".
-> Última actualización: 2026-06-04. Docs relacionados: [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md).
+> Última actualización: 2026-06-04. Docs relacionados: [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md) (cómo funciona el Coach), [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md).
 
 ## Filosofía: defensa en profundidad (3 anillos)
 
@@ -128,7 +128,7 @@ Consumo de IA por tenant: `/api/admin-ai-usage` (costos + soft caps del chat). T
 
 ## 6) Monitoreo del Coach (las 3 capas, en detalle)
 
-El Coach (consultor IA, `api/tenant-chat.ts`) es la pieza con más superficie de fallo silencioso, así que tiene su propio triple anillo. Detalle completo de la auditoría y los fixes: [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md).
+El Coach (consultor IA, `api/tenant-chat.ts`) es la pieza con más superficie de fallo silencioso, así que tiene su propio triple anillo. Cómo funciona (teoría DISC, datos, flujo): [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md). Auditoría y fixes: [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md).
 
 1. **Telemetría** (`ai_events`): cada respuesta deja una fila con flags de calidad. Mide tasa de alucinación, palabras prohibidas, provider, latencia, costo.
 2. **Checks de tasa** (qa-monitor CHECK 6): lee la telemetría diaria y alerta si una tasa cruza el umbral.
