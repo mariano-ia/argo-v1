@@ -139,8 +139,9 @@ Todo en `develop` (sin tocar `main`). 5 commits, verificados con typecheck (`tsc
 - ~~Aplicar la migración `ai_events`~~ **HECHO**: aplicada a `luutdozbhinfiogugjbv`, tabla verificada (19 columnas). La telemetría ya captura en prod.
 - ~~Verificar `OPENAI_API_KEY`~~ **HECHO**: confirmada en Production/Preview/Development (el fallback a OpenAI no está muerto, R3).
 
-### Pendiente (opcional)
-- **Provisionar `QA_COACH_TOKEN`** (Bearer de un usuario QA) para activar el canary HTTP en vivo del Coach en qa-monitor. Sin él, el monitoreo igual funciona por telemetría (`ai_events`).
+### Canary en vivo (hecho)
+- El canary HTTP del Coach está activo en producción. El cron `qa-monitor` se loguea como el usuario QA (`qa-robot@argomethod.test`) en cada corrida (credenciales en `QA_COACH_EMAIL`/`QA_COACH_PASSWORD` en Vercel; token fresco al vuelo porque los JWT de Supabase expiran en ~1h) y verifica que S+Medio resuelve a "Sostenedor Rítmico" sin labels viejos prohibidos. Validado end-to-end contra prod.
+- Capas de monitoreo activas: (1) telemetría `ai_events` por cada respuesta, (2) checks de tasa en qa-monitor, (3) canary diario end-to-end.
 
 ### Deferidos (bajo impacto, fuera del scope inmediato)
 - **O9** (idioma del Coach persistente por usuario/thread): requiere store de preferencias; el fallback a `es` es seguro mientras tanto.
