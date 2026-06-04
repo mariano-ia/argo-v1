@@ -97,6 +97,109 @@ async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTo
 
 // ─── End inline AI provider ─────────────────────────────────────────────────
 
+// ─── Canonical naming + name-matching helpers (pure, exported for tests) ─────
+// Single source of truth, mirrors src/lib/dashboardTranslations.ts. Vercel
+// serverless can't import across files, so these are inlined here. Stored DB
+// reports keep frozen labels (pre-2026-06-02); ALWAYS derive the display name
+// from the stable eje+motor keys instead of trusting archetype_label.
+
+export const AXIS_DISPLAY: Record<string, Record<string, string>> = {
+    es: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' },
+    en: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' },
+    pt: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
+};
+const MOTOR_DISPLAY: Record<string, Record<string, string>> = {
+    es: { 'Rápido': 'Dinámico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+    en: { 'Rápido': 'Dynamic', 'Medio': 'Rhythmic', 'Lento': 'Serene' },
+    pt: { 'Rápido': 'Dinâmico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
+};
+const C_LENTO_MOTOR: Record<string, string> = { es: 'Observador', en: 'Observant', pt: 'Observador' };
+
+function safeLang(lang: string): string {
+    return AXIS_DISPLAY[lang] ? lang : 'es';
+}
+
+/** Canonical motor display name derived from the stable eje+motor keys. */
+export function canonicalMotorDisplay(eje: string, motor: string, lang = 'es'): string {
+    const l = safeLang(lang);
+    if (eje === 'C' && motor === 'Lento') return C_LENTO_MOTOR[l];
+    return MOTOR_DISPLAY[l][motor] ?? motor;
+}
+
+/** Canonical archetype name ("[Eje] [Motor]"; EN reverses to "[Motor] [Eje]"). */
+export function canonicalArchetype(eje: string, motor: string, lang = 'es'): string {
+    const l = safeLang(lang);
+    const axis = AXIS_DISPLAY[l][eje] ?? eje;
+    const mot = canonicalMotorDisplay(eje, motor, l);
+    return l === 'en' ? `${mot} ${axis}` : `${axis} ${mot}`;
+}
+
+/** Old forbidden labels (pre-rename) that must never reach the user. */
+export const FORBIDDEN_OLD_LABELS = [
+    'el tanque', 'la brújula', 'la brujula', 'el capitán', 'el capitan',
+    'impulsor decidido', 'impulsor persistente', 'impulsor reactivo',
+    'conector vibrante', 'conector relacional', 'conector reflexivo',
+    'sostén confiable', 'sosten confiable', 'sostén ágil', 'sosten agil', 'sostén sereno', 'sosten sereno',
+    'estratega reactivo', 'estratega analítico', 'estratega analitico',
+    'sustento confiável', 'dynamic sustainer',
+];
+
+const escapeRegexStr = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Remove diacritics + lowercase for accent-insensitive comparisons. */
+export function normalizeName(s: string): string {
+    return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+}
+
+/** Unicode-aware whole-word boundary test (accent-safe; plain \b breaks on á/ñ/ü). */
+function wordBoundaryTest(haystack: string, needle: string, caseSensitive = false): boolean {
+    if (!needle) return false;
+    const flags = caseSensitive ? 'u' : 'iu';
+    return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegexStr(needle)}(?![\\p{L}\\p{N}])`, flags).test(haystack);
+}
+
+/** First names that are also everyday es/pt words; these require a capitalized
+ *  proper-noun form so "hace mucho sol" doesn't trigger a player named "Sol". */
+export const COMMON_WORD_NAMES = new Set([
+    'sol', 'luna', 'leon', 'rosa', 'mar', 'cruz', 'pilar', 'angel', 'luz', 'paz',
+    'cielo', 'flor', 'vida', 'alba', 'nieve', 'estrella', 'azul', 'blanca', 'gloria',
+    'victoria', 'esperanza', 'consuelo', 'soledad', 'rocio', 'perla', 'salvador',
+    'jesus', 'milagros', 'dolores', 'remedios', 'abril', 'mayo', 'olivia', 'aurora',
+]);
+
+/**
+ * Whether `name` (a player's first or full name, original casing) is mentioned
+ * in `message`. Accent-insensitive. Single-word names that collide with common
+ * words require the capitalized (proper-noun) form to avoid false positives.
+ */
+export function nameIsMentioned(name: string, message: string): boolean {
+    if (!name || !message) return false;
+    const trimmed = name.trim();
+    const norm = normalizeName(trimmed);
+    const isSingle = !/\s/.test(trimmed);
+    if (isSingle && COMMON_WORD_NAMES.has(norm)) {
+        // Require the capitalized stored form in the original (un-normalized) text.
+        return wordBoundaryTest(message, trimmed, true);
+    }
+    return wordBoundaryTest(normalizeName(message), norm, true);
+}
+
+// Vocabulary that must NOT be treated as an "unknown player name" by the
+// anti-hallucination NOTE heuristic (axes, motors, brand, archetype words).
+const KNOWN_VOCAB = new Set([
+    'impulsor', 'conector', 'sostenedor', 'sosten', 'estratega', 'driver', 'connector',
+    'sustainer', 'strategist', 'impulsionador', 'estrategista', 'sustentador',
+    'dinamico', 'ritmico', 'sereno', 'observador', 'dynamic', 'rhythmic', 'serene',
+    'observant', 'dinamo', 'argo', 'coach', 'disc', 'method', 'capitan', 'capitão',
+]);
+
+/** Capitalized tokens in `message` that look like an unknown proper noun
+ *  (not roster vocabulary) — used only to warn the model not to invent data. */
+export function unknownNameTokens(message: string): string[] {
+    const caps = message.match(/[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/g) ?? [];
+    return caps.filter(t => !KNOWN_VOCAB.has(normalizeName(t)));
+}
+
 /**
  * Chat DISC endpoint.
  * GET ?action=threads              → list threads
@@ -597,39 +700,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
-        const allPlayers = sessions ?? [];
+        // Filter out sessions without a usable name so one corrupt row can't
+        // crash the matcher/anonymizer (E16).
+        const allPlayers = (sessions ?? []).filter(s => typeof s.child_name === 'string' && s.child_name.trim().length > 0);
 
         // ─── Anonymization (Gemini never sees real player names) ────────
-        // We build a bidirectional map between real names and {{Pn}} placeholders.
-        // All player-name text is scrubbed before being sent to Gemini; the
-        // assistant's response is then rehydrated with real names for display.
-        const nameToPlaceholder = new Map<string, string>();
+        // Each session gets a stable per-index placeholder {{Pn}}. We scrub all
+        // player-name text before sending to Gemini and rehydrate afterwards.
+        // The boundary uses Unicode lookarounds (accent-safe; plain \b leaks
+        // names like "José"/"Ángel" — R1). A single precompiled alternation
+        // replaces ~1000 per-name regex passes (O2).
+        const idToIndex = new Map<string, number>();
+        allPlayers.forEach((p, i) => idToIndex.set(p.id, i));
+        const placeholderForId = (id: string): string => `{{P${(idToIndex.get(id) ?? 0) + 1}}}`;
+
         const placeholderToName = new Map<string, string>();
+        const variantToPlaceholder = new Map<string, string>();
+        const nameVariants: string[] = [];
         allPlayers.forEach((p, i) => {
             const placeholder = `{{P${i + 1}}}`;
             const fullName = p.child_name.trim();
             const firstName = fullName.split(/\s+/)[0];
-            // When rehydrating, we use the first name (matches the informal tone
-            // of the rest of the flow). Mapping multiple source variants lets
-            // us catch both "Mateo" and "Mateo Pérez" in the coach's message.
-            nameToPlaceholder.set(fullName.toLowerCase(), placeholder);
-            nameToPlaceholder.set(firstName.toLowerCase(), placeholder);
             placeholderToName.set(placeholder, firstName);
-        });
-
-        const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const anonymize = (text: string): string => {
-            if (!text || nameToPlaceholder.size === 0) return text;
-            // Sort names by length desc so "Juan Pablo" is replaced before "Juan".
-            const names = [...nameToPlaceholder.keys()].sort((a, b) => b.length - a.length);
-            let result = text;
-            for (const name of names) {
-                const placeholder = nameToPlaceholder.get(name);
-                if (!placeholder) continue;
-                const pattern = new RegExp(`\\b${escapeRegex(name)}\\b`, 'gi');
-                result = result.replace(pattern, placeholder);
+            // First-name keys can collide across homonyms; first writer wins.
+            // Display stays correct (same first name) and the mentioned-player
+            // path below scrubs each player's own name to ITS placeholder (E5).
+            for (const v of [fullName, firstName]) {
+                const key = v.toLowerCase();
+                if (!variantToPlaceholder.has(key)) { variantToPlaceholder.set(key, placeholder); nameVariants.push(v); }
             }
-            return result;
+        });
+        // Longest names first so "Juan Pablo" is consumed before "Juan".
+        nameVariants.sort((a, b) => b.length - a.length);
+        const anonRe = nameVariants.length
+            ? new RegExp(`(?<![\\p{L}\\p{N}])(${nameVariants.map(escapeRegexStr).join('|')})(?![\\p{L}\\p{N}])`, 'giu')
+            : null;
+        const anonymize = (text: string): string => {
+            if (!text || !anonRe) return text;
+            return text.replace(anonRe, (m) => variantToPlaceholder.get(m.toLowerCase()) ?? m);
+        };
+        // Scrub a specific player's own name to a chosen placeholder, so a
+        // mentioned player's report can never be tagged with a homonym's tag.
+        const anonymizeAs = (text: string, fullName: string, placeholder: string): string => {
+            if (!text) return text;
+            const variants = [fullName.trim(), fullName.trim().split(/\s+/)[0]]
+                .filter((v, i, a) => v && a.indexOf(v) === i)
+                .sort((a, b) => b.length - a.length);
+            let out = text;
+            for (const v of variants) {
+                out = out.replace(new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegexStr(v)}(?![\\p{L}\\p{N}])`, 'giu'), placeholder);
+            }
+            return out;
         };
         const rehydrate = (text: string): string => {
             if (!text || placeholderToName.size === 0) return text;
@@ -649,16 +770,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             axisCounts[s.eje] = (axisCounts[s.eje] ?? 0) + 1;
             motorCounts[s.motor] = (motorCounts[s.motor] ?? 0) + 1;
         }
-        const axisLabels: Record<string, string> = { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' };
+        const axisLabels = AXIS_DISPLAY[safeLang(promptLang)];
         const axisSummary = Object.entries(axisCounts).map(([k, v]) => `${v} ${axisLabels[k] ?? k}`).join(', ');
-        const motorSummary = Object.entries(motorCounts).map(([k, v]) => `${v} ${k}`).join(', ');
-        // Player list uses placeholders instead of real names. The mapping
-        // (${placeholder} → name) stays on our server and is applied only
-        // when rehydrating Gemini's response.
-        const playerListForPrompt = allPlayers
-            .map(s => nameToPlaceholder.get(s.child_name.trim().split(/\s+/)[0].toLowerCase()))
-            .filter(Boolean)
-            .join(', ');
+        // Canonical motor display names (Dinámico/Rítmico/Sereno), not internal
+        // keys (Rápido/Medio/Lento) which are jargon the user never sees.
+        const motorSummary = Object.entries(motorCounts).map(([k, v]) => `${v} ${canonicalMotorDisplay('D', k, promptLang)}`).join(', ');
+        // Player list uses per-session placeholders instead of real names.
+        const playerListForPrompt = allPlayers.map(p => placeholderForId(p.id)).join(', ');
         // Team-level group awareness: list all groups so Gemini can ask for
         // clarification when the keyword matcher below doesn't fire.
         type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ session_id: string }> | null };
@@ -674,45 +792,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let extraContext = '';
         const msgLower = trimmedMsg.toLowerCase();
 
-        // Check if user mentions a player by name → inject only that player's full profile
-        const playerNames = allPlayers.map(s => ({
-            firstName: s.child_name.toLowerCase().split(' ')[0],
-            fullName: s.child_name.toLowerCase(),
-            session: s,
-        }));
-        const potentialNames = trimmedMsg.match(/[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/g) ?? [];
-        const mentionedPlayer = playerNames.find(p =>
-            potentialNames.some(n => n.toLowerCase() === p.firstName || p.fullName.includes(n.toLowerCase()))
-        );
+        // ── Player mention detection (accent-insensitive, homonym-safe) ─────
+        // Prefer explicit full-name matches; only fall back to first names when
+        // no full name was written. A first name shared by 2+ players is treated
+        // as ambiguous (ask) rather than guessing the wrong child (E2/E3/E6).
+        const fullNameMatches = allPlayers.filter(p => {
+            const full = p.child_name.trim();
+            return /\s/.test(full) && nameIsMentioned(full, trimmedMsg);
+        });
+        const firstNameMatches = allPlayers.filter(p => nameIsMentioned(p.child_name.trim().split(/\s+/)[0], trimmedMsg));
+        const mentionedSet = fullNameMatches.length > 0 ? fullNameMatches : firstNameMatches;
+        const mentionedPlayers = mentionedSet.filter((p, i, a) => a.findIndex(q => q.id === p.id) === i);
+        const mentionedPlayer = mentionedPlayers.length === 1 ? mentionedPlayers[0] : null;
+        // Capitalized tokens that aren't roster vocabulary ⇒ unknown proper noun.
+        const unknownTokens = unknownNameTokens(trimmedMsg);
 
         if (mentionedPlayer) {
-            const mp = mentionedPlayer.session;
+            const mp = mentionedPlayer;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
-            // Re-fetch ai_sections on-demand only for the mentioned player.
-            // Keeps the bulk sessions query light even for large rosters.
+            const mentionedPlaceholder = placeholderForId(mp.id);
+            // Re-fetch ai_sections on-demand (tenant-scoped: defense in depth, R12).
             const { data: reportRow } = await sb
                 .from('sessions')
                 .select('ai_sections')
                 .eq('id', mp.id)
+                .eq('tenant_id', tenant.id)
+                .is('deleted_at', null)
                 .maybeSingle();
-            const ai = reportRow?.ai_sections as Record<string, unknown> | null;
+            const ai = reportRow?.ai_sections;
             let aiContext = '';
-            if (ai) {
+            if (ai && typeof ai === 'object') {
+                // Tolerant extraction: a malformed field is skipped, never thrown (E12).
+                const a = ai as Record<string, unknown>;
                 const parts: string[] = [];
-                if (ai.resumenPerfil) parts.push(`Resumen: ${String(ai.resumenPerfil).slice(0, 200)}`);
-                if (ai.combustible) parts.push(`Combustible: ${String(ai.combustible).slice(0, 150)}`);
-                if (ai.corazon) parts.push(`Lenguaje de intención: ${String(ai.corazon).slice(0, 150)}`);
-                if (ai.reseteo) parts.push(`Gestión del desajuste: ${String(ai.reseteo).slice(0, 150)}`);
-                if (ai.palabrasPuente) parts.push(`Palabras puente: ${(ai.palabrasPuente as string[]).join(', ')}`);
-                if (ai.palabrasRuido) parts.push(`Palabras a evitar: ${(ai.palabrasRuido as string[]).join(', ')}`);
-                aiContext = '\n' + parts.join('\n');
+                const pushStr = (label: string, v: unknown, n: number) => {
+                    if (typeof v === 'string' && v.trim()) parts.push(`${label}: ${v.trim().slice(0, n)}`);
+                };
+                const pushArr = (label: string, v: unknown) => {
+                    if (Array.isArray(v)) {
+                        const items = v.filter((x): x is string => typeof x === 'string' && x.trim().length > 0);
+                        if (items.length) parts.push(`${label}: ${items.join(', ')}`);
+                    }
+                };
+                pushStr('Resumen', a.resumenPerfil, 200);
+                pushStr('Combustible', a.combustible, 150);
+                pushStr('Lenguaje de intención', a.corazon, 150);
+                pushStr('Gestión del desajuste', a.reseteo, 150);
+                pushArr('Palabras puente', a.palabrasPuente);
+                pushArr('Palabras a evitar', a.palabrasRuido);
+                aiContext = parts.length ? '\n' + parts.join('\n') : '';
             }
-            // Use the placeholder for the mentioned player. The AI sections
-            // may contain the real name embedded in narrative text — anonymize
-            // them before injecting.
-            const mentionedPlaceholder = nameToPlaceholder.get(mp.child_name.trim().split(/\s+/)[0].toLowerCase()) ?? '{{P?}}';
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${mp.archetype_label}, Eje: ${mp.eje}, Motor: ${mp.motor}, Secundario: ${mp.eje_secundario ?? 'N/A'} (${tend})${anonymize(aiContext)}`;
-        } else if (potentialNames.length > 0) {
+            // Scrub THIS player's own name to THEIR placeholder first (E5), then
+            // anonymize any other names that appear in the narrative text.
+            const ownScrubbed = anonymizeAs(aiContext, mp.child_name, mentionedPlaceholder);
+            // Derive canonical archetype/motor from eje+motor — never the frozen
+            // archetype_label, which is stale for pre-2026-06-02 sessions and
+            // contradicts the system-prompt knowledge base (E10).
+            const lang = safeLang(promptLang);
+            const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
+            const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
+            const axisDisp = AXIS_DISPLAY[lang][mp.eje] ?? mp.eje;
+            const secDisp = mp.eje_secundario ? (AXIS_DISPLAY[lang][mp.eje_secundario] ?? mp.eje_secundario) : 'N/A';
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${anonymize(ownScrubbed)}`;
+        } else if (mentionedPlayers.length >= 2) {
+            // Ambiguous: the message matches several players (e.g. two "Juan").
+            const names = mentionedPlayers.map(p => placeholderForId(p.id)).join(', ');
+            extraContext += `\n\nVARIOS JUGADORES MENCIONADOS: el mensaje coincide con más de un jugador (${names}). Si la pregunta necesita datos de uno solo, pregúntale al entrenador a cuál se refiere antes de dar datos específicos.`;
+        } else if (unknownTokens.length > 0) {
             extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${playerListForPrompt || 'ninguno'}.`;
         }
 
@@ -821,7 +967,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 extraContext += `\n\n[Situación: "${sitId}"]`;
                 break;
             }
-            const targetEje = mentionedPlayer?.session.eje ?? groupDominantAxis ?? null;
+            const targetEje = mentionedPlayer?.eje ?? groupDominantAxis ?? null;
             if (targetEje && cards[targetEje]) {
                 extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}):\n${cards[targetEje]}`;
             } else {
@@ -934,16 +1080,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } catch { /* keep original response */ }
         }
 
-        // ── Mejora 5: Ground truth validation ─────────────────────────────
-        // If a player was mentioned, verify the response doesn't contradict their real data
+        // ── Ground truth validation (axis + forbidden old labels) ──────────
+        // Verify the response doesn't attribute the wrong axis to a named player,
+        // and never surfaces an old forbidden archetype label (E4 / naming
+        // forward-only). Motor-level validation lives in the daily canary, where
+        // controlled fixtures avoid the false positives that motor words
+        // ("dinámico", "rítmico") would cause in free-form advice.
         if (mentionedPlayer) {
-            const mp = mentionedPlayer.session;
-            // wrongAxis: tokens that, if they appear near a player's name in the AI
-            // response, signal the wrong axis was attributed. Substring-matched
-            // (includes) against the response, so it must track the CURRENT archetype
-            // labels. Keep BOTH 'sostén' (axis word) and 'sostenedor' (archetype prefix):
-            // the rename Sostén→Sostenedor silently broke detection because 'sostén' is
-            // not a substring of 'Sostenedor'. See docs/archetype-naming.md (gotchas).
+            const mp = mentionedPlayer;
             const wrongAxis: Record<string, string[]> = {
                 D: ['conector', 'connector', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
                 I: ['impulsor', 'driver', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
@@ -951,26 +1095,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
             const wrongLabels = wrongAxis[mp.eje] ?? [];
-            // Check if the response calls this player by the wrong archetype
             const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
             const sentences = assistantContent.split(/[.!?]+/);
             let factualError = false;
             for (const sentence of sentences) {
                 const sLower = sentence.toLowerCase();
-                if (sLower.includes(playerNameLower)) {
-                    for (const wrong of wrongLabels) {
-                        if (sLower.includes(wrong)) {
-                            factualError = true;
-                            break;
-                        }
-                    }
+                if (sLower.includes(playerNameLower) && wrongLabels.some(w => sLower.includes(w))) {
+                    factualError = true;
+                    break;
                 }
-                if (factualError) break;
             }
-            if (factualError) {
-                console.warn(`[tenant-chat] Ground truth violation: response attributed wrong axis to ${mp.child_name} (${mp.eje})`);
-                // Append a correction note
-                assistantContent += `\n\n_Nota: ${mp.child_name} es un ${mp.archetype_label} (eje ${mp.eje}, motor ${mp.motor}). Las recomendaciones están basadas en su perfil real._`;
+            const forbiddenLabel = FORBIDDEN_OLD_LABELS.find(l => assistantContent.toLowerCase().includes(l));
+            if (factualError || forbiddenLabel) {
+                // Log the placeholder, never the child's real name (R2 — no PII in logs).
+                console.warn(`[tenant-chat] Ground truth violation for ${placeholderForId(mp.id)} (eje=${mp.eje}, motor=${mp.motor})${forbiddenLabel ? ` forbidden-label="${forbiddenLabel}"` : ''}`);
+                const lang = safeLang(promptLang);
+                const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
+                const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
+                // The note IS shown to the coach, so the real name is fine here.
+                assistantContent += `\n\n_Nota: ${mp.child_name} es ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones están basadas en su perfil real._`;
             }
         }
 
