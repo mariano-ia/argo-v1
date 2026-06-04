@@ -820,7 +820,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ── Context injection based on message content ──────────────────
         let extraContext = '';
-        const msgLower = trimmedMsg.toLowerCase();
 
         // ── Player mention detection (accent-insensitive, homonym-safe) ─────
         // Prefer explicit full-name matches; only fall back to first names when
@@ -909,24 +908,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         //   - 0 strong matches → no injection; Gemini sees the global list.
         const playersById = new Map<string, typeof allPlayers[number]>();
         for (const p of allPlayers) playersById.set(p.id, p);
-        const escapeRegex2 = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Group matching runs on an accent-normalized copy of the message with
+        // the same Unicode boundary as the player matcher, so "Águilas"/"Ñandú"
+        // are detected consistently (E7).
+        const normGroupMsg = normalizeName(trimmedMsg);
         const isDistinctiveGroupName = (n: string) => /\d/.test(n) || /-/.test(n);
-        const TRIGGER_WORDS = 'grupo|grupos|equipo|equipos|categor[íi]a|plantel|cuadro';
-        const hasProximityTrigger = (msg: string, name: string): boolean => {
-            const escaped = escapeRegex2(name);
+        const TRIGGER_WORDS = 'grupo|grupos|equipo|equipos|categoria|categorias|plantel|cuadro';
+        const groupNameInMsg = (name: string): boolean => wordBoundaryTest(normGroupMsg, normalizeName(name), true);
+        const hasProximityTrigger = (name: string): boolean => {
+            const escaped = escapeRegexStr(normalizeName(name));
             // Trigger word within ~30 non-period chars before OR after the name.
-            const before = new RegExp(`\\b(?:${TRIGGER_WORDS})\\b[^.]{0,30}?\\b${escaped}\\b`, 'i');
-            const after = new RegExp(`\\b${escaped}\\b[^.]{0,30}?\\b(?:${TRIGGER_WORDS})\\b`, 'i');
-            return before.test(msg) || after.test(msg);
+            const before = new RegExp(`(?<![\\p{L}\\p{N}])(?:${TRIGGER_WORDS})(?![\\p{L}\\p{N}])[^.]{0,30}?(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])`, 'u');
+            const after = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])[^.]{0,30}?(?<![\\p{L}\\p{N}])(?:${TRIGGER_WORDS})(?![\\p{L}\\p{N}])`, 'u');
+            return before.test(normGroupMsg) || after.test(normGroupMsg);
         };
         const strongGroupMatches: GroupRowWithMembers[] = [];
         const weakGroupMatches: GroupRowWithMembers[] = [];
         for (const g of groups) {
             const n = g.name?.trim();
             if (!n || n.length < 3) continue;
-            const pattern = new RegExp(`\\b${escapeRegex2(n)}\\b`, 'i');
-            if (!pattern.test(trimmedMsg)) continue;
-            if (isDistinctiveGroupName(n) || hasProximityTrigger(trimmedMsg, n)) {
+            if (!groupNameInMsg(n)) continue;
+            if (isDistinctiveGroupName(n) || hasProximityTrigger(n)) {
                 strongGroupMatches.push(g);
             } else {
                 weakGroupMatches.push(g);
@@ -990,35 +992,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Detect a situation by keyword match. When matched, inject the curated
         // card content from SITUATION_CARDS_DATA instead of just a [Situación: "x"] tag.
         // Priority for which eje to use: mentioned player → mentioned group dominant axis → all 4.
+        // Pick the situation with the STRONGEST keyword signal (most boundary
+        // matches), not just the first declared, and use word boundaries instead
+        // of raw substring to avoid noise like "pierde" matching inside a word (E8).
+        const normSitMsg = normalizeName(trimmedMsg);
+        let bestSituation: { id: string; hits: number } | null = null;
         for (const [sitId, keywords] of Object.entries(SITUATION_KEYWORDS)) {
-            if (!keywords.some(k => msgLower.includes(k.toLowerCase()))) continue;
+            let hits = 0;
+            for (const k of keywords) {
+                if (wordBoundaryTest(normSitMsg, normalizeName(k), true)) hits++;
+            }
+            if (hits > 0 && (!bestSituation || hits > bestSituation.hits)) bestSituation = { id: sitId, hits };
+        }
+        if (bestSituation) {
+            const sitId = bestSituation.id;
             const cards = SITUATION_CARDS_DATA[sitId];
             if (!cards) {
                 extraContext += `\n\n[Situación: "${sitId}"]`;
-                break;
-            }
-            const targetEje = mentionedPlayer?.eje ?? groupDominantAxis ?? null;
-            if (targetEje && cards[targetEje]) {
-                extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}):\n${cards[targetEje]}`;
             } else {
-                // No player/group context → give all 4 perspectives compactly.
-                const all = Object.entries(cards).map(([eje, text]) => `- ${eje}: ${text}`).join('\n');
-                extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}):\n${all}`;
+                const targetEje = mentionedPlayer?.eje ?? groupDominantAxis ?? null;
+                if (targetEje && cards[targetEje]) {
+                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}):\n${cards[targetEje]}`;
+                } else {
+                    // No player/group context → give all 4 perspectives compactly.
+                    const all = Object.entries(cards).map(([eje, text]) => `- ${eje}: ${text}`).join('\n');
+                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}):\n${all}`;
+                }
             }
-            break;
         }
 
         // ── OPT 1 + 3: Build conversation history (8 max, summarize older) ──
+        // Fetch the most RECENT messages (descending + limit) then restore
+        // chronological order. ascending + limit returned the OLDEST messages,
+        // so long threads silently lost all recent context (E1).
         const { data: history } = await sb
             .from('chat_messages')
             .select('role, content')
             .eq('tenant_id', tenant.id)
             .eq('thread_id', threadId)
             .in('role', ['user', 'assistant'])
-            .order('created_at', { ascending: true })
-            .limit(12); // Fetch 12, use last 8 full + summarize first 4
+            .order('created_at', { ascending: false })
+            .limit(12);
 
-        const allHistory = (history ?? []).map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+        const allHistory = (history ?? [])
+            .slice()
+            .reverse() // back to chronological (oldest → newest)
+            .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
         let historyMessages: { role: 'user' | 'assistant'; content: string }[];
 
         if (allHistory.length > 8) {
