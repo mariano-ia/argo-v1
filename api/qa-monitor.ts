@@ -141,27 +141,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   } catch (e) { add('coach telemetry reachable', false, String(e)); }
 
-  // CHECK 7: Argo Coach live canary (only if a QA auth token is provisioned).
-  // Asks a canonical-naming question end-to-end and asserts the answer uses the
-  // new name and never an old forbidden label — catches bug #2 / KB regressions
-  // that the wrong-axis telemetry alone cannot. Needs QA_COACH_TOKEN (a Bearer
-  // token for a real QA tenant user); skipped silently when absent.
-  const coachToken = process.env.QA_COACH_TOKEN;
-  if (coachToken) {
+  // CHECK 7: Argo Coach live canary (end-to-end). Logs in at runtime as the QA
+  // tenant user (Supabase access tokens expire in ~1h, so a static token would
+  // be stale by the time the daily cron runs), then asks a canonical-naming
+  // question and asserts the answer uses the new name and never an old forbidden
+  // label — catches bug #2 / KB regressions the wrong-axis telemetry can't.
+  // Needs QA_COACH_EMAIL + QA_COACH_PASSWORD; skipped silently when absent.
+  const qaEmail = process.env.QA_COACH_EMAIL;
+  const qaPassword = process.env.QA_COACH_PASSWORD;
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const supaUrl = process.env.VITE_SUPABASE_URL;
+  if (qaEmail && qaPassword && anonKey && supaUrl) {
     try {
-      const r = await fetch(`${base}/api/tenant-chat`, {
+      const tokenRes = await fetch(`${supaUrl}/auth/v1/token?grant_type=password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${coachToken}` },
-        body: JSON.stringify({ message: 'En una frase, ¿cómo se llama el perfil de eje S con motor Medio?', lang: 'es' }),
+        headers: { apikey: anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: qaEmail, password: qaPassword }),
       });
-      const b = await r.json().catch(() => ({} as Record<string, unknown>));
-      const text = String((b as { message?: { content?: string } }).message?.content ?? '').toLowerCase();
-      // Accent-insensitive so a valid "ritmico" (no accent) doesn't false-page.
-      const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
-      const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
-      add('coach canary: responds 200', r.status === 200 && text.length > 0, `status=${r.status}`);
-      add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
-      add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
+      const access = ((await tokenRes.json().catch(() => ({}))) as { access_token?: string }).access_token;
+      if (!access) {
+        add('coach canary: QA login', false, `login status=${tokenRes.status}`);
+      } else {
+        const r = await fetch(`${base}/api/tenant-chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access}` },
+          body: JSON.stringify({ message: 'En una frase, ¿cómo se llama el perfil de eje S con motor Medio?', lang: 'es' }),
+        });
+        const b = await r.json().catch(() => ({} as Record<string, unknown>));
+        const text = String((b as { message?: { content?: string } }).message?.content ?? '').toLowerCase();
+        // Accent-insensitive so a valid "ritmico" (no accent) doesn't false-page.
+        const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+        const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
+        add('coach canary: responds 200', r.status === 200 && text.length > 0, `status=${r.status}`);
+        add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
+        add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
+      }
     } catch (e) { add('coach canary reachable', false, String(e)); }
   }
 
