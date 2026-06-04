@@ -656,6 +656,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // POST: Send message
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+        const t0 = Date.now(); // for latency telemetry
         const { thread_id, message, lang = 'es' } = req.body ?? {};
         if (!message || typeof message !== 'string' || message.trim().length === 0) {
             return res.status(400).json({ error: 'Message required' });
@@ -820,6 +821,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ── Context injection based on message content ──────────────────
         let extraContext = '';
+        // Quality signals captured through the flow for best-effort telemetry (Wave E).
+        const qa = { contextMiss: false, groundtruthViolation: false, labelViolation: false, prohibitedHit: false, prohibitedAfterRetry: false };
 
         // ── Player mention detection (accent-insensitive, homonym-safe) ─────
         // Prefer explicit full-name matches; only fall back to first names when
@@ -888,6 +891,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const names = mentionedPlayers.map(p => placeholderForId(p.id)).join(', ');
             extraContext += `\n\nVARIOS JUGADORES MENCIONADOS: el mensaje coincide con más de un jugador (${names}). Si la pregunta necesita datos de uno solo, pregúntale al entrenador a cuál se refiere antes de dar datos específicos.`;
         } else if (unknownTokens.length > 0) {
+            qa.contextMiss = true;
             extraContext += `\n\nNOTA: El nombre mencionado no coincide con ningún jugador registrado. NO inventes datos sobre ese jugador. Jugadores disponibles: ${playerListForPrompt || 'ninguno'}.`;
         }
 
@@ -1133,6 +1137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
 
         if (foundProhibited.length > 0) {
+            qa.prohibitedHit = true;
             console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
             // The retry sends the original (still-anonymized) assistant content
             // back to Gemini, not the rehydrated one. Use aiResult.content which
@@ -1160,6 +1165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } else {
                 // Retry failed or still contained prohibited language. Never serve
                 // clinical/negative copy about a child — use a safe neutral message (R6).
+                qa.prohibitedAfterRetry = true;
                 console.warn('[tenant-chat] Prohibited words persisted after retry; serving safe fallback');
                 const SAFE_FALLBACK: Record<string, string> = {
                     es: 'Prefiero reformular esto con más cuidado. ¿Puedes contarme un poco más sobre la situación para darte una respuesta enfocada en cómo acompañar mejor al niño?',
@@ -1197,6 +1203,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
             const forbiddenLabel = FORBIDDEN_OLD_LABELS.find(l => assistantContent.toLowerCase().includes(l));
             if (factualError || forbiddenLabel) {
+                qa.groundtruthViolation = factualError;
+                qa.labelViolation = !!forbiddenLabel;
                 // Log the placeholder, never the child's real name (R2 — no PII in logs).
                 console.warn(`[tenant-chat] Ground truth violation for ${placeholderForId(mp.id)} (eje=${mp.eje}, motor=${mp.motor})${forbiddenLabel ? ` forbidden-label="${forbiddenLabel}"` : ''}`);
                 const lang = safeLang(promptLang);
@@ -1212,6 +1220,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent,
             tokens_in: totalInputTokens, tokens_out: totalOutputTokens,
         });
+
+        // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
+        // Stores only non-PII signals (placeholders/flags), never the child name.
+        // If the ai_events table isn't migrated yet, the insert simply no-ops.
+        try {
+            await sb.from('ai_events').insert({
+                tenant_id: tenant.id,
+                thread_id: threadId,
+                source: 'tenant-chat',
+                provider: aiResult.provider,
+                model: aiModel,
+                lang: promptLang,
+                tokens_in: totalInputTokens,
+                tokens_out: totalOutputTokens,
+                cost_usd: getCostUsd({ ...aiResult, inputTokens: totalInputTokens, outputTokens: totalOutputTokens }),
+                latency_ms: Date.now() - t0,
+                mentioned_player: !!mentionedPlayer,
+                groundtruth_violation: qa.groundtruthViolation,
+                label_violation: qa.labelViolation,
+                prohibited_hit: qa.prohibitedHit,
+                prohibited_after_retry: qa.prohibitedAfterRetry,
+                context_miss: qa.contextMiss,
+                fair_use_exceeded: fairUseExceeded,
+            });
+        } catch (telemetryErr) {
+            console.warn('[tenant-chat] ai_events telemetry insert failed (non-fatal):', telemetryErr instanceof Error ? telemetryErr.message : telemetryErr);
+        }
 
         return res.status(200).json({
             thread_id: threadId,
