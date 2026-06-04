@@ -134,11 +134,13 @@ Todo en `develop` (sin tocar `main`). 5 commits, verificados con typecheck (`tsc
 - **Mayúsculas**: el matcher es case-insensitive y acento-insensitive. `keven`, `Keven`, `iván`/`ivan` resuelven igual.
 - **Nombre de perfil viejo (Keven → "Sostén Confiable")**: la inyección ahora deriva el canónico de eje+motor (`Sostenedor Rítmico`), nunca el `archetype_label` congelado. La nota correctiva y la base de conocimiento hablan el mismo vocabulario. El canary lo verifica a diario.
 
-### Pendiente de TU acción (no lo puedo hacer yo)
-1. **Aplicar la migración `ai_events` a producción** (`supabase/migrations/20260604_ai_events.sql`). El clasificador me bloqueó tocar la DB de prod sin tu OK explícito. Hasta aplicarla, la telemetría hace no-op (el chat funciona igual). Decime "aplicá la migración" y la corro.
-2. **Verificar `OPENAI_API_KEY` en Vercel** (prod + preview) para que el fallback a OpenAI no esté muerto (R3). Agregarla a la lista canónica de env vars.
-3. **(Opcional) Provisionar `QA_COACH_TOKEN`** (Bearer de un usuario QA) para activar el canary HTTP en vivo del Coach en qa-monitor.
-4. **Probar en el preview de `develop`** antes de mandar a `main`.
+### Estado de despliegue (2026-06-04)
+- **Aplicado a producción.** Mergeado `develop` → `main` (commit `808306e`) y deploy de Vercel en estado Ready en argomethod.com.
+- ~~Aplicar la migración `ai_events`~~ **HECHO**: aplicada a `luutdozbhinfiogugjbv`, tabla verificada (19 columnas). La telemetría ya captura en prod.
+- ~~Verificar `OPENAI_API_KEY`~~ **HECHO**: confirmada en Production/Preview/Development (el fallback a OpenAI no está muerto, R3).
+
+### Pendiente (opcional)
+- **Provisionar `QA_COACH_TOKEN`** (Bearer de un usuario QA) para activar el canary HTTP en vivo del Coach en qa-monitor. Sin él, el monitoreo igual funciona por telemetría (`ai_events`).
 
 ### Deferidos (bajo impacto, fuera del scope inmediato)
 - **O9** (idioma del Coach persistente por usuario/thread): requiere store de preferencias; el fallback a `es` es seguro mientras tanto.
