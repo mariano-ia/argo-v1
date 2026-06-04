@@ -156,10 +156,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
       const b = await r.json().catch(() => ({} as Record<string, unknown>));
       const text = String((b as { message?: { content?: string } }).message?.content ?? '').toLowerCase();
-      const FORBIDDEN = ['sostén confiable', 'sosten confiable', 'el tanque', 'la brújula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
+      // Accent-insensitive so a valid "ritmico" (no accent) doesn't false-page.
+      const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+      const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
       add('coach canary: responds 200', r.status === 200 && text.length > 0, `status=${r.status}`);
-      add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', text.includes('sostenedor') && text.includes('rítmico'), text.slice(0, 80));
-      add('coach canary: no forbidden old label', !FORBIDDEN.some(f => text.includes(f)));
+      add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
+      add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
     } catch (e) { add('coach canary reachable', false, String(e)); }
   }
 

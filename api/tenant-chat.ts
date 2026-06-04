@@ -1050,7 +1050,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const recent = allHistory.slice(allHistory.length - 8);
             const olderTopics = older
                 .filter(m => m.role === 'user')
-                .map(m => m.content.slice(0, 60))
+                .map(m => anonymize(m.content).slice(0, 60)) // anonymize BEFORE truncating, else a name split at 60 chars leaks
                 .join('; ');
             const summaryMsg = { role: 'user' as const, content: `[Resumen de la conversación anterior: el usuario preguntó sobre: ${olderTopics}]` };
             historyMessages = [summaryMsg, ...recent];
@@ -1108,6 +1108,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // cost/usage isn't under-counted (E13).
         let totalInputTokens = aiResult.inputTokens;
         let totalOutputTokens = aiResult.outputTokens;
+        let servedProvider = aiResult.provider; // tracks which provider produced the SERVED content (may change on retry)
         // Rehydrate placeholders with real names for display + storage.
         let assistantContent = rehydrate(aiResult.content);
 
@@ -1146,13 +1147,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ];
             let cleaned: string | null = null;
             try {
-                const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800 });
+                const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800, model: aiModel });
                 totalInputTokens += retryResult.inputTokens;
                 totalOutputTokens += retryResult.outputTokens;
                 const candidate = rehydrate(retryResult.content);
                 // Re-scan the retried text; only accept it if it's actually clean (R5).
                 if (candidate && !PROHIBITED_WORDS.some(w => candidate.toLowerCase().includes(w))) {
                     cleaned = candidate;
+                    servedProvider = retryResult.provider;
                 }
             } catch (retryErr) {
                 console.warn('[tenant-chat] Prohibited-words retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
@@ -1227,7 +1229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 tenant_id: tenant.id,
                 thread_id: threadId,
                 source: 'tenant-chat',
-                provider: aiResult.provider,
+                provider: servedProvider,
                 model: aiModel,
                 lang: promptLang,
                 tokens_in: totalInputTokens,

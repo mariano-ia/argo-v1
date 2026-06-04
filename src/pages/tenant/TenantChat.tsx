@@ -119,9 +119,11 @@ export const TenantChat: React.FC = () => {
     useEffect(() => { if (tenant) fetchThreads(); }, [tenant, fetchThreads]);
 
     // Auto-send from query param (e.g. ?q=How+do+I+motivate...)
+    const cameFromDeepLink = useRef(false);
     useEffect(() => {
         const q = searchParams.get('q');
         if (q && tenant && !autoSent) {
+            cameFromDeepLink.current = true; // capture before clearing q, so the restore effect can defer
             setAutoSent(true);
             setSearchParams({}, { replace: true });
             // Small delay to let the component mount
@@ -150,7 +152,9 @@ export const TenantChat: React.FC = () => {
     useEffect(() => {
         if (restored || !tenant || threadsLoading) return;
         setRestored(true);
-        if (searchParams.get('q')) return;
+        // A ?q= deep-link owns the screen (it auto-sends into a fresh chat). The
+        // ref survives the param being cleared, unlike searchParams.get('q').
+        if (cameFromDeepLink.current) return;
         let stored: string | null = null;
         try { stored = threadStorageKey ? localStorage.getItem(threadStorageKey) : null; } catch { stored = null; }
         if (stored && threads.some(t => t.thread_id === stored)) openThread(stored);
