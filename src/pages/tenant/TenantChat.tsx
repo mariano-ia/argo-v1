@@ -32,9 +32,9 @@ function renderMd(text: string): React.ReactNode {
 }
 
 const SUGGESTED_PROMPTS = {
-    es: ['¿Como motivo a un jugador que no quiere entrenar?', 'Explicame el perfil de Mateo y Allegra', '¿Que hago si un jugador se frustra cuando pierde?'],
-    en: ['How do I motivate a player who doesn\'t want to train?', 'Explain the profiles of Mateo and Allegra', 'What do I do if a player gets frustrated when they lose?'],
-    pt: ['Como motivo um jogador que nao quer treinar?', 'Me explique o perfil de Mateo e Allegra', 'O que faco se um jogador fica frustrado quando perde?'],
+    es: ['¿Cómo motivo a un jugador que no quiere entrenar?', '¿Cómo equilibro un equipo con perfiles muy distintos?', '¿Qué hago si un jugador se frustra cuando pierde?'],
+    en: ['How do I motivate a player who doesn\'t want to train?', 'How do I balance a team with very different profiles?', 'What do I do if a player gets frustrated when they lose?'],
+    pt: ['Como motivo um jogador que não quer treinar?', 'Como equilibro uma equipe com perfis bem diferentes?', 'O que faço se um jogador fica frustrado quando perde?'],
 };
 
 function groupThreadsByDate(threads: Thread[], lang: string): { label: string; items: Thread[] }[] {
@@ -83,6 +83,8 @@ export const TenantChat: React.FC = () => {
     const [panelOpen, setPanelOpen] = useState(true);
     const [searchParams, setSearchParams] = useSearchParams();
     const [autoSent, setAutoSent] = useState(false);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
+    const [restored, setRestored] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -91,6 +93,13 @@ export const TenantChat: React.FC = () => {
     const groupedThreads = useMemo(() => groupThreadsByDate(threads, lang), [threads, lang]);
 
     const scrollToBottom = () => setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+
+    // Persist the active conversation so a reload reopens it (O4).
+    const threadStorageKey = tenant ? `argo-coach-thread-${tenant.id}` : null;
+    const persistThread = useCallback((id: string | null) => {
+        if (!threadStorageKey) return;
+        try { if (id) localStorage.setItem(threadStorageKey, id); else localStorage.removeItem(threadStorageKey); } catch { /* ignore */ }
+    }, [threadStorageKey]);
 
     /* ── Fetch threads ────────────────────────────────────────────────────── */
 
@@ -124,6 +133,8 @@ export const TenantChat: React.FC = () => {
 
     const openThread = async (threadId: string) => {
         setActiveThreadId(threadId);
+        setErrorMsg(null);
+        persistThread(threadId);
         setMessages([]);
         setMessagesLoading(true);
         const token = await getToken();
@@ -134,15 +145,27 @@ export const TenantChat: React.FC = () => {
         } finally { setMessagesLoading(false); }
     };
 
+    // Reopen the last conversation on reload, unless a ?q= deep-link starts a
+    // fresh chat (O4). Runs once after the thread list has loaded.
+    useEffect(() => {
+        if (restored || !tenant || threadsLoading) return;
+        setRestored(true);
+        if (searchParams.get('q')) return;
+        let stored: string | null = null;
+        try { stored = threadStorageKey ? localStorage.getItem(threadStorageKey) : null; } catch { stored = null; }
+        if (stored && threads.some(t => t.thread_id === stored)) openThread(stored);
+    }, [tenant, threadsLoading, threads, restored, searchParams, threadStorageKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
     /* ── New thread ───────────────────────────────────────────────────────── */
 
-    const startNewThread = () => { setActiveThreadId(null); setMessages([]); setInput(''); inputRef.current?.focus(); };
+    const startNewThread = () => { setActiveThreadId(null); setMessages([]); setInput(''); setErrorMsg(null); persistThread(null); inputRef.current?.focus(); };
 
     /* ── Send message ─────────────────────────────────────────────────────── */
 
     const sendMessage = async (text?: string) => {
         const msg = (text ?? input).trim();
         if (!msg || sending) return;
+        setErrorMsg(null);
         setSending(true);
         setInput('');
         setMessages(prev => [...prev, { role: 'user', content: msg }]);
@@ -150,6 +173,16 @@ export const TenantChat: React.FC = () => {
 
         const token = await getToken();
         if (!token) { setSending(false); return; }
+
+        // On any failure: drop the optimistic user bubble, restore the text, and
+        // surface an error banner with retry — never fake an assistant reply and
+        // never lose the question (O6). The server saved nothing on failure, so
+        // no trial query was consumed (O5/E11).
+        const fail = (friendly: string) => {
+            setMessages(prev => prev.slice(0, -1));
+            setInput(msg);
+            setErrorMsg(friendly);
+        };
 
         try {
             const controller = new AbortController();
@@ -165,32 +198,34 @@ export const TenantChat: React.FC = () => {
                 const data = await res.json();
                 const content = data.message?.content;
                 if (!content) {
-                    setMessages(prev => [...prev, { role: 'assistant', content: dt.chat.errorIA }]);
+                    fail(dt.chat.errorIA);
                 } else {
-                    if (!activeThreadId && data.thread_id) setActiveThreadId(data.thread_id);
+                    if (!activeThreadId && data.thread_id) { setActiveThreadId(data.thread_id); persistThread(data.thread_id); }
                     setMessages(prev => [...prev, { role: 'assistant', content }]);
                     setTotalUserMessages(prev => prev + 1);
                     fetchThreads();
+                    scrollToBottom();
                 }
-                scrollToBottom();
             } else {
                 const errData = await res.json().catch(() => ({}));
-                const errMsg = errData.error === 'trial_expired'
+                if (errData.error === 'Trial message limit reached') {
+                    // Hard cap — keep the lock UX (handled by the counter), not a banner.
+                    setMessages(prev => prev.slice(0, -1));
+                    setTotalUserMessages(10);
+                    return;
+                }
+                const errText = errData.error === 'trial_expired'
                     ? (lang === 'en' ? 'Your trial has expired. Upgrade your plan to continue.' : lang === 'pt' ? 'Seu período de teste expirou. Atualize seu plano.' : 'Tu periodo de prueba ha finalizado. Actualiza tu plan para continuar.')
-                    : errData.error === 'Trial message limit reached'
-                        ? (lang === 'en' ? 'You\'ve reached the 10-query trial limit.' : lang === 'pt' ? 'Você atingiu o limite de 10 consultas do trial.' : 'Alcanzaste el límite de 10 consultas del trial.')
-                        : errData.error === 'Rate limit exceeded. Try again later.'
-                            ? (lang === 'en' ? 'Too many messages. Please wait a moment.' : lang === 'pt' ? 'Muitas mensagens. Aguarde um momento.' : 'Demasiados mensajes. Espera un momento.')
-                            : dt.chat.errorIA;
-                setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
-                if (errData.error === 'Trial message limit reached') setTotalUserMessages(10);
+                    : errData.error === 'Rate limit exceeded. Try again later.'
+                        ? (lang === 'en' ? 'Too many messages. Please wait a moment.' : lang === 'pt' ? 'Muitas mensagens. Aguarde um momento.' : 'Demasiados mensajes. Espera un momento.')
+                        : (errData.message || dt.chat.errorIA);
+                fail(errText);
             }
         } catch (err) {
             const isTimeout = err instanceof DOMException && err.name === 'AbortError';
-            const errMsg = isTimeout
+            fail(isTimeout
                 ? (lang === 'en' ? 'The request timed out. Please try again.' : lang === 'pt' ? 'A solicitação expirou. Tente novamente.' : 'La solicitud tardó demasiado. Intenta de nuevo.')
-                : dt.chat.errorConexion;
-            setMessages(prev => [...prev, { role: 'assistant', content: errMsg }]);
+                : dt.chat.errorConexion);
         } finally { setSending(false); inputRef.current?.focus(); }
     };
 
@@ -294,12 +329,14 @@ export const TenantChat: React.FC = () => {
                             </div>
                             <div className="space-y-2 w-full max-w-sm">
                                 {prompts.map((p, i) => (
-                                    <div
+                                    <button
                                         key={i}
-                                        className="px-4 py-3 rounded-xl border border-argo-border text-[13px] text-left text-argo-light cursor-default"
+                                        onClick={() => sendMessage(p)}
+                                        disabled={sending}
+                                        className="block w-full px-4 py-3 rounded-xl border border-argo-border text-[13px] text-left text-argo-secondary hover:border-argo-violet-200 hover:bg-argo-bg active:bg-argo-bg transition-colors disabled:opacity-50"
                                     >
                                         {p}
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         </div>
@@ -335,6 +372,19 @@ export const TenantChat: React.FC = () => {
 
                 {/* Input */}
                 <div className="flex-shrink-0 border-t border-argo-border px-5 py-3 space-y-1.5">
+                    {/* Error banner with retry — keeps the question, no fake assistant reply */}
+                    {errorMsg && (
+                        <div className="flex items-center justify-between gap-3 bg-red-50 border border-red-100 rounded-xl px-3.5 py-2.5 mb-1">
+                            <p className="text-[12px] text-red-600">{errorMsg}</p>
+                            <button
+                                onClick={() => sendMessage()}
+                                disabled={sending || !input.trim()}
+                                className="text-[12px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-40 flex-shrink-0"
+                            >
+                                {lang === 'en' ? 'Retry' : lang === 'pt' ? 'Tentar de novo' : 'Reintentar'}
+                            </button>
+                        </div>
+                    )}
                     {/* Trial query counter */}
                     {tenant?.plan === 'trial' && (
                         <div className="flex justify-end mb-1">

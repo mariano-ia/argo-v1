@@ -1085,12 +1085,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             { role: 'user' as const, content: anonymizedUserMsg },
         ];
 
-        // Persist the coach's message BEFORE calling the AI so it's never lost
-        // if both providers are down (E11). The assistant turn is saved after.
-        await sb.from('chat_messages').insert({
-            tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0,
-        });
-
         // ── Call AI provider (Gemini → retry → OpenAI fallback) ─────────
         const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
         let aiResult: AIResponse;
@@ -1099,6 +1093,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } catch (aiErr) {
             // Both providers failed. The user message is already saved, so the
             // thread keeps the question; return a friendly degraded message (R3).
+            // Nothing is saved on failure, so a trial query isn't consumed and
+            // the thread has no dangling question; the frontend keeps the text
+            // for retry (E11 via the frontend path).
             console.error('[tenant-chat] AI providers unavailable:', aiErr instanceof Error ? aiErr.message : aiErr);
             const DEGRADED: Record<string, string> = {
                 es: 'El asistente está teniendo problemas para responder en este momento. Tu mensaje se guardó; vuelve a intentarlo en unos segundos.',
@@ -1215,11 +1212,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // ── Save the assistant turn (the user turn was saved before the AI call) ──
-        await sb.from('chat_messages').insert({
-            tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent,
-            tokens_in: totalInputTokens, tokens_out: totalOutputTokens,
-        });
+        // ── Save both turns (only on success, so a failed AI call doesn't
+        // consume a trial query and leaves no dangling question in the thread) ──
+        await sb.from('chat_messages').insert([
+            { tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
+            { tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens },
+        ]);
 
         // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
         // Stores only non-PII signals (placeholders/flags), never the child name.
