@@ -105,6 +105,66 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     add('no AI-failed reports (24h)', (count ?? 0) === 0, `undelivered=${count}`);
   } catch (e) { add('AI-failure check reachable', false, String(e)); }
 
+  // CHECK 6: Argo Coach quality telemetry (ai_events, last 24h). This is the
+  // production signal for hallucination / bug #2 / provider outages / latency.
+  try {
+    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: events, error } = await sb.from('ai_events')
+      .select('provider, groundtruth_violation, label_violation, prohibited_after_retry, latency_ms')
+      .eq('source', 'tenant-chat')
+      .gte('created_at', cutoff);
+    if (error) {
+      // Table not migrated yet → skip rather than page.
+      add('coach telemetry', true, `skipped: ${error.message}`);
+    } else {
+      const ev = events ?? [];
+      const total = ev.length;
+      if (total === 0) {
+        add('coach telemetry present', true, 'no chat traffic in 24h');
+      } else {
+        const gt = ev.filter(e => e.groundtruth_violation).length;
+        const lbl = ev.filter(e => e.label_violation).length;
+        const leaked = ev.filter(e => e.prohibited_after_retry).length;
+        const openai = ev.filter(e => e.provider === 'openai').length;
+        const lat = ev.map(e => e.latency_ms ?? 0).sort((a, b) => a - b);
+        const p95 = lat[Math.min(lat.length - 1, Math.floor(lat.length * 0.95))] ?? 0;
+        // P0: a forbidden label or prohibited copy reached a coach.
+        add('coach: no forbidden-label served', lbl === 0, `label_violations=${lbl}/${total}`);
+        add('coach: no prohibited copy served', leaked === 0, `prohibited_after_retry=${leaked}/${total}`);
+        // P0: ground-truth (wrong-axis) violation rate under 2%.
+        add('coach: ground-truth violation rate < 2%', gt / total < 0.02, `gt=${gt}/${total}`);
+        // P0: Gemini health — OpenAI fallback share under 10%.
+        add('coach: OpenAI fallback share < 10%', openai / total < 0.10, `openai=${openai}/${total}`);
+        // P1: p95 latency under 15s.
+        add('coach: p95 latency < 15s', p95 < 15000, `p95=${p95}ms`);
+      }
+    }
+  } catch (e) { add('coach telemetry reachable', false, String(e)); }
+
+  // CHECK 7: Argo Coach live canary (only if a QA auth token is provisioned).
+  // Asks a canonical-naming question end-to-end and asserts the answer uses the
+  // new name and never an old forbidden label — catches bug #2 / KB regressions
+  // that the wrong-axis telemetry alone cannot. Needs QA_COACH_TOKEN (a Bearer
+  // token for a real QA tenant user); skipped silently when absent.
+  const coachToken = process.env.QA_COACH_TOKEN;
+  if (coachToken) {
+    try {
+      const r = await fetch(`${base}/api/tenant-chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${coachToken}` },
+        body: JSON.stringify({ message: 'En una frase, ¿cómo se llama el perfil de eje S con motor Medio?', lang: 'es' }),
+      });
+      const b = await r.json().catch(() => ({} as Record<string, unknown>));
+      const text = String((b as { message?: { content?: string } }).message?.content ?? '').toLowerCase();
+      // Accent-insensitive so a valid "ritmico" (no accent) doesn't false-page.
+      const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+      const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
+      add('coach canary: responds 200', r.status === 200 && text.length > 0, `status=${r.status}`);
+      add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
+      add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
+    } catch (e) { add('coach canary reachable', false, String(e)); }
+  }
+
   const failures = checks.filter(c => !c.ok);
   if (failures.length) await sendAlert(failures);
   return res.status(failures.length ? 500 : 200).json({ ok: failures.length === 0, checks });

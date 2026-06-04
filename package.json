@@ -12,7 +12,7 @@
     "test:monkey": "playwright test e2e/monkey-odyssey.spec.ts e2e/monkey-signup.spec.ts",
     "qa:monitor": "node scripts/qa/lib/run-monitor.mjs",
     "qa:ai-eval": "tsx scripts/qa/ai-eval.ts",
-    "qa:unit": "node scripts/qa/lib/scoring.test.mjs && node scripts/qa/lib/qa-env.test.mjs && node scripts/qa/lint-content.test.mjs",
+    "qa:unit": "node scripts/qa/lib/scoring.test.mjs && node scripts/qa/lib/qa-env.test.mjs && node scripts/qa/lint-content.test.mjs && tsx --test scripts/qa/coach-helpers.test.ts",
     "lint:content": "node scripts/qa/lint-content.mjs"
   },
   "dependencies": {
