@@ -120,4 +120,29 @@ El check hace un POST real, verifica eje + motor + label canónico + rehidrataci
 
 ## Changelog de implementación
 
-_(se completa a medida que se ejecutan las olas)_
+Todo en `develop` (sin tocar `main`). 5 commits, verificados con typecheck (`tsconfig.api.json` + `tsconfig.json`) y `npm run qa:unit` (9 tests nuevos de helpers + los preexistentes).
+
+| Commit | Wave | Items resueltos |
+|--------|------|-----------------|
+| `710e2cd` | A — Naming + matcher + privacidad | E2, E3, E4 (parcial), E5, E6, E9, E10, E12, E16, R1, R12, O2 |
+| `6442af2` | B — Resiliencia + costo | R3, R5, R6, R11, R13, E13, R4/E14 (observabilidad) |
+| `69b8f68` | C — Historial + grupos + situaciones | E1, E7, E8 |
+| `66bcb82` | E — Monitoreo + canary | tabla `ai_events`, instrumentación best-effort, qa-monitor checks + canary |
+| `6ba5c04` | D — UX frontend | O4, O5, O6, O10, E17, R2 (note visible) |
+
+### Cómo quedó cada bug que viste vos
+- **Mayúsculas**: el matcher es case-insensitive y acento-insensitive. `keven`, `Keven`, `iván`/`ivan` resuelven igual.
+- **Nombre de perfil viejo (Keven → "Sostén Confiable")**: la inyección ahora deriva el canónico de eje+motor (`Sostenedor Rítmico`), nunca el `archetype_label` congelado. La nota correctiva y la base de conocimiento hablan el mismo vocabulario. El canary lo verifica a diario.
+
+### Pendiente de TU acción (no lo puedo hacer yo)
+1. **Aplicar la migración `ai_events` a producción** (`supabase/migrations/20260604_ai_events.sql`). El clasificador me bloqueó tocar la DB de prod sin tu OK explícito. Hasta aplicarla, la telemetría hace no-op (el chat funciona igual). Decime "aplicá la migración" y la corro.
+2. **Verificar `OPENAI_API_KEY` en Vercel** (prod + preview) para que el fallback a OpenAI no esté muerto (R3). Agregarla a la lista canónica de env vars.
+3. **(Opcional) Provisionar `QA_COACH_TOKEN`** (Bearer de un usuario QA) para activar el canary HTTP en vivo del Coach en qa-monitor.
+4. **Probar en el preview de `develop`** antes de mandar a `main`.
+
+### Deferidos (bajo impacto, fuera del scope inmediato)
+- **O9** (idioma del Coach persistente por usuario/thread): requiere store de preferencias; el fallback a `es` es seguro mientras tanto.
+- **O7** (cache de roster para Enterprise): solo relevante a gran escala; reclasificado a baja prioridad.
+- **Personalización total de O10** con nombres reales del roster: hecho parcial (prompts clickeables + sin nombres falsos); el onboarding/nombres reales queda para una iteración de producto.
+- **Regenerar/normalizar `ai_sections` viejos** (prose con nombres viejos): mitigado (priorizamos el dato canónico estructurado + detección de labels prohibidos), pero la normalización de datos históricos es un trabajo aparte.
+- **R7** (contar la query antes de responder): impacto nulo hoy porque el cap es no-bloqueante; documentado.
