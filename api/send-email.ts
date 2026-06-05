@@ -1,9 +1,20 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { logActivity } from '../src/lib/principia/activityLog';
-// NOTE: Vercel serverless functions in /api CANNOT import between api/ files.
-// activityLog is imported from src/lib (a pure TS module with no browser deps)
-// which Vercel's esbuild bundler resolves correctly. (See CLAUDE.md.)
+// Inlined Principia activity logger (best-effort, never throws). Vercel serverless
+// functions here do NOT bundle cross-directory imports — importing ../src/lib
+// throws ERR_MODULE_NOT_FOUND at runtime (this previously broke this function).
+type ActivityInput = { area: string; action: string; sourceType?: string; eventType?: string; actor?: string; resourceType?: string; resourceId?: string; severity?: string; status?: string; reason?: Record<string, unknown>; result?: Record<string, unknown>; relatedLogs?: string[]; incidentId?: number; occurredAt?: string };
+async function logActivity(sb: { from: (table: string) => { insert: (values: unknown) => unknown } }, input: ActivityInput): Promise<void> {
+    try {
+        await sb.from('system_activity_log').insert({
+            area: input.area, source_type: input.sourceType ?? 'system', event_type: input.eventType ?? null,
+            actor: input.actor ?? null, action: input.action, resource_type: input.resourceType ?? null,
+            resource_id: input.resourceId ?? null, severity: input.severity ?? 'info', status: input.status ?? null,
+            reason: input.reason ?? null, result: input.result ?? null, related_logs: input.relatedLogs ?? [],
+            incident_id: input.incidentId ?? null, occurred_at: input.occurredAt ?? null,
+        });
+    } catch (err) { console.warn('[principia:logActivity] non-blocking write failed:', err); }
+}
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 

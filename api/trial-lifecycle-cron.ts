@@ -1,6 +1,33 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { trialExpiringEmail, trialExpiredEmail, sendTenantEmail } from '../src/lib/tenantEmails';
+// Inlined emails (best-effort). Serverless functions here don't bundle
+// cross-directory imports — importing ../src/lib throws ERR_MODULE_NOT_FOUND.
+function lifecycleShell(heading: string, body: string, cta: string, url: string): string {
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);"><tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span></td></tr><tr><td style="padding:28px;"><h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 12px;">${heading}</h2><p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${body}</p><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;margin-top:4px;">${cta}</a></td></tr><tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p></td></tr></table></td></tr></table></body></html>`;
+}
+function trialExpiringEmail(lang: string, displayName: string, daysLeft: number): { subject: string; html: string } {
+    const url = `${process.env.SITE_URL || 'https://argomethod.com'}/dashboard/pricing`;
+    const days = lang === 'en' ? `${daysLeft} day${daysLeft === 1 ? '' : 's'}` : lang === 'pt' ? `${daysLeft} dia${daysLeft === 1 ? '' : 's'}` : `${daysLeft} día${daysLeft === 1 ? '' : 's'}`;
+    const c = lang === 'en' ? { s: `Your Argo trial ends in ${days}`, h: 'Your trial is about to end', b: `Hi ${displayName}, your trial has ${days} left. To keep access to your team and keep adding athletes, choose a plan whenever you are ready.`, cta: 'See plans' }
+        : lang === 'pt' ? { s: `Seu teste do Argo termina em ${days}`, h: 'Seu teste está terminando', b: `Olá ${displayName}, faltam ${days} para o fim do seu teste. Para manter o acesso ao seu time e continuar adicionando atletas, escolha um plano quando quiser.`, cta: 'Ver planos' }
+        : { s: `Tu prueba de Argo vence en ${days}`, h: 'Tu prueba está por terminar', b: `Hola ${displayName}, a tu periodo de prueba le quedan ${days}. Para no perder acceso a tu equipo y seguir sumando deportistas, elige un plan cuando quieras.`, cta: 'Ver planes' };
+    return { subject: c.s, html: lifecycleShell(c.h, c.b, c.cta, url) };
+}
+function trialExpiredEmail(lang: string, displayName: string): { subject: string; html: string } {
+    const url = `${process.env.SITE_URL || 'https://argomethod.com'}/dashboard/pricing`;
+    const c = lang === 'en' ? { s: 'Your Argo trial has ended', h: 'Your trial has ended', b: `Hi ${displayName}, your trial period ended. Your profiles and reports are still saved. To add athletes again and use every feature, choose a plan.`, cta: 'Choose a plan' }
+        : lang === 'pt' ? { s: 'Seu teste do Argo terminou', h: 'Seu teste terminou', b: `Olá ${displayName}, seu período de teste terminou. Seus perfis e relatórios continuam salvos. Para adicionar atletas novamente e usar todas as funções, escolha um plano.`, cta: 'Escolher um plano' }
+        : { s: 'Tu prueba de Argo terminó', h: 'Tu prueba terminó', b: `Hola ${displayName}, tu periodo de prueba finalizó. Tus perfiles y reportes siguen guardados. Para volver a sumar deportistas y usar todas las funciones, elige un plan.`, cta: 'Elegir un plan' };
+    return { subject: c.s, html: lifecycleShell(c.h, c.b, c.cta, url) };
+}
+async function sendTenantEmail(to: string, subject: string, html: string): Promise<void> {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) { console.warn('[trial-lifecycle-cron] RESEND_API_KEY not set'); return; }
+    try {
+        const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [to], subject, html }) });
+        if (!r.ok) console.error('[trial-lifecycle-cron] resend error:', r.status);
+    } catch (e) { console.error('[trial-lifecycle-cron] email failed:', e); }
+}
 
 /**
  * GET /api/trial-lifecycle-cron

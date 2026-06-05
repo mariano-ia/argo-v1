@@ -3,12 +3,51 @@ import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { createHmac, timingSafeEqual } from 'crypto';
-import { logActivity } from '../src/lib/principia/activityLog';
-import { paymentFailedEmail, subscriptionEndedEmail, sendTenantEmail } from '../src/lib/tenantEmails';
+// Inlined Principia activity logger + lifecycle emails (best-effort). Serverless
+// functions here do NOT bundle cross-directory imports — importing ../src/lib
+// throws ERR_MODULE_NOT_FOUND at runtime.
+type ActivityInput = { area: string; action: string; sourceType?: string; eventType?: string; actor?: string; resourceType?: string; resourceId?: string; severity?: string; status?: string; reason?: Record<string, unknown>; result?: Record<string, unknown>; relatedLogs?: string[]; incidentId?: number; occurredAt?: string };
+async function logActivity(sb: { from: (table: string) => { insert: (values: unknown) => unknown } }, input: ActivityInput): Promise<void> {
+    try {
+        await sb.from('system_activity_log').insert({
+            area: input.area, source_type: input.sourceType ?? 'system', event_type: input.eventType ?? null,
+            actor: input.actor ?? null, action: input.action, resource_type: input.resourceType ?? null,
+            resource_id: input.resourceId ?? null, severity: input.severity ?? 'info', status: input.status ?? null,
+            reason: input.reason ?? null, result: input.result ?? null, related_logs: input.relatedLogs ?? [],
+            incident_id: input.incidentId ?? null, occurred_at: input.occurredAt ?? null,
+        });
+    } catch (err) { console.warn('[principia:logActivity] non-blocking write failed:', err); }
+}
+
+function lifecycleShell(heading: string, body: string, cta: string, url: string): string {
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);"><tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span></td></tr><tr><td style="padding:28px;"><h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 12px;">${heading}</h2><p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${body}</p><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;margin-top:4px;">${cta}</a></td></tr><tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p></td></tr></table></td></tr></table></body></html>`;
+}
+function paymentFailedEmail(lang: string): { subject: string; html: string } {
+    const url = `${process.env.SITE_URL || 'https://argomethod.com'}/dashboard`;
+    const c = lang === 'en' ? { s: 'We could not process your payment', h: 'There was a problem with your payment', b: 'We could not process your subscription charge. We will retry automatically, but you may want to review your payment method to avoid interruptions.', cta: 'Review my account' }
+        : lang === 'pt' ? { s: 'Não conseguimos processar seu pagamento', h: 'Houve um problema com seu pagamento', b: 'Não conseguimos processar a cobrança da sua assinatura. Vamos tentar de novo automaticamente, mas você pode revisar seu meio de pagamento para evitar interrupções.', cta: 'Revisar minha conta' }
+        : { s: 'No pudimos procesar tu pago', h: 'Hubo un problema con tu pago', b: 'No pudimos procesar el cobro de tu suscripción. Lo intentaremos de nuevo automáticamente, pero puedes revisar tu medio de pago para evitar interrupciones.', cta: 'Revisar mi cuenta' };
+    return { subject: c.s, html: lifecycleShell(c.h, c.b, c.cta, url) };
+}
+function subscriptionEndedEmail(lang: string): { subject: string; html: string } {
+    const url = `${process.env.SITE_URL || 'https://argomethod.com'}/dashboard/pricing`;
+    const c = lang === 'en' ? { s: 'Your Argo subscription has ended', h: 'Your subscription has ended', b: 'Your plan returned to the trial state. Your profiles and reports are still saved. Whenever you want to resume, you can activate a plan again at any time.', cta: 'See plans' }
+        : lang === 'pt' ? { s: 'Sua assinatura do Argo terminou', h: 'Sua assinatura terminou', b: 'Seu plano voltou ao estado de teste. Seus perfis e relatórios continuam salvos. Quando quiser retomar, você pode ativar um plano novamente a qualquer momento.', cta: 'Ver planos' }
+        : { s: 'Tu suscripción a Argo finalizó', h: 'Tu suscripción finalizó', b: 'Tu plan volvió al estado de prueba. Tus perfiles y reportes siguen guardados. Cuando quieras retomar, puedes activar un plan de nuevo en cualquier momento.', cta: 'Ver planes' };
+    return { subject: c.s, html: lifecycleShell(c.h, c.b, c.cta, url) };
+}
+async function sendTenantEmail(to: string, subject: string, html: string): Promise<void> {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) return;
+    try {
+        const r = await fetch('https://api.resend.com/emails', { method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [to], subject, html }) });
+        if (!r.ok) console.error('[one-webhook] lifecycle email resend error:', r.status);
+    } catch (e) { console.error('[one-webhook] lifecycle email failed:', e); }
+}
 
 // Look up a tenant's email and send a lifecycle email (best-effort).
 async function emailTenant(
-    sb: ReturnType<typeof createClient>,
+    sb: { from: (table: string) => any },
     tenantId: string | undefined,
     build: () => { subject: string; html: string },
 ): Promise<void> {
