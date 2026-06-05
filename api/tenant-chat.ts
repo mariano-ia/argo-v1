@@ -160,7 +160,10 @@ export function canonicalArchetype(eje: string, motor: string, lang = 'es'): str
 
 /** Old forbidden labels (pre-rename) that must never reach the user. */
 export const FORBIDDEN_OLD_LABELS = [
-    'el tanque', 'la brújula', 'la brujula', 'el capitán', 'el capitan',
+    // Old ADJECTIVE-based labels only (unambiguous). The old METAPHOR names
+    // (El Tanque, La Brújula, El Capitán) are deliberately excluded: they collide
+    // with everyday sport words ("el capitán del equipo") and the model never emits
+    // them, so scanning for them only produced false-positive correction notes.
     'impulsor decidido', 'impulsor persistente', 'impulsor reactivo',
     'conector vibrante', 'conector relacional', 'conector reflexivo',
     'sostén confiable', 'sosten confiable', 'sostén ágil', 'sosten agil', 'sostén sereno', 'sosten sereno',
@@ -1204,7 +1207,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
                 C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
-            const wrongLabels = wrongAxis[mp.eje] ?? [];
+            // A player's SECONDARY axis (brújula) is legitimate to mention, so don't
+            // flag it as a wrong-axis attribution (e.g. an S player with a D compass
+            // discussed as "su brújula de Impulsor").
+            const axisWords: Record<string, string[]> = {
+                D: ['impulsor', 'driver'], I: ['conector', 'connector'],
+                S: ['sostén', 'sostenedor', 'sustainer'], C: ['estratega', 'strategist'],
+            };
+            const secondaryWords = mp.eje_secundario ? (axisWords[mp.eje_secundario] ?? []) : [];
+            const wrongLabels = (wrongAxis[mp.eje] ?? []).filter(w => !secondaryWords.includes(w));
             const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
             const sentences = assistantContent.split(/[.!?]+/);
             let factualError = false;
@@ -1225,7 +1236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
                 const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
                 // The note IS shown to the coach, so the real name is fine here.
-                assistantContent += `\n\n_Nota: ${mp.child_name} es ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones están basadas en su perfil real._`;
+                assistantContent += `\n\n_Nota: el perfil registrado de ${mp.child_name} corresponde a un patrón ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones se basan en ese perfil._`;
             }
         }
 
