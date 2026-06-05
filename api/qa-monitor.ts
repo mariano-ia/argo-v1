@@ -248,7 +248,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const failures = checks.filter(c => !c.ok);
-  if (failures.length) await sendAlert(failures);
+
+  // Alert only when the failing set CHANGES (a check NEWLY fails vs the previous run).
+  // Avoids hourly eco of a known/stale issue (e.g. a one-off Coach slip lingering in a
+  // 24h window). The activity row below still records ALL current failures, so the
+  // dashboard view stays complete; this only gates the email.
+  let prevFailing: string[] = [];
+  try {
+    const { data: prev } = await sb.from('system_activity_log')
+      .select('result').eq('action', 'synthetic_monitor_run')
+      .order('occurred_at', { ascending: false }).limit(1).maybeSingle();
+    prevFailing = ((prev?.result as { failing?: string[] } | null)?.failing) ?? [];
+  } catch { /* unreadable → fall through and alert on any failure */ }
+  const newlyFailing = failures.filter(f => !prevFailing.includes(f.name));
+  if (newlyFailing.length) await sendAlert(failures);
 
   // Principia ingestion: record the synthetic monitor run as a health_check row.
   try {

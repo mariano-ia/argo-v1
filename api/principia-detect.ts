@@ -95,9 +95,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // SIGNAL 3: sessions with ai_sections null > 4h (delivery loop).
     {
         const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+        // Only flag RECENT stalls (last 72h). A months-old session without a report is
+        // legacy backlog, not an actionable delivery stall — baseline it out so the
+        // monitor analyses from now on instead of re-alerting on an old, settled pile.
+        const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
         const { data } = await sb.from('sessions')
             .select('id, created_at').is('ai_sections', null).neq('eje', '_pending')
-            .lt('created_at', cutoff).is('deleted_at', null).limit(50);
+            .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const stalled = data ?? [];
         await writeHealthCheck(sb, 'entrega', 'sessions_without_report', 'sessions', stalled.length, 1, '<', stalled.length > 0);
         if (stalled.length > 0) breaches.push({
@@ -114,9 +118,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // SIGNAL 4: report email unsent after generation (delivery loop).
     {
         const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
+        // Same baseline as SIGNAL 3: only recent (last 72h) unsent reports are actionable.
+        const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
         const { data } = await sb.from('sessions')
             .select('id').not('ai_sections', 'is', null).is('email_sent_at', null)
-            .lt('created_at', cutoff).is('deleted_at', null).limit(50);
+            .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const unsent = data ?? [];
         await writeHealthCheck(sb, 'entrega', 'report_email_unsent', 'sessions', unsent.length, 1, '<', unsent.length > 0);
         if (unsent.length > 0) breaches.push({
