@@ -608,20 +608,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id, full_name').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
+        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
         let tenantId: string | null = memberRow?.tenant_id ?? null;
-        let coachName: string | null = memberRow?.full_name ?? null;
 
         if (!tenantId) {
             // Fallback: owner who predates the tenant_members table
-            const { data: tenantRow } = await sb.from('tenants').select('id, display_name').eq('auth_user_id', user.id).maybeSingle();
-            if (tenantRow) { tenantId = tenantRow.id; coachName = coachName ?? tenantRow.display_name ?? null; }
+            const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
+            if (tenantRow) tenantId = tenantRow.id;
         }
 
         if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
         const tenant = { id: tenantId };
-        // First name for an occasional, natural greeting (never a generic one).
-        const coachFirstName = coachName && coachName.trim() ? coachName.trim().split(/\s+/)[0] : null;
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GET: List threads or messages
@@ -1087,23 +1084,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? `\n\nPRIVACY NOTICE (critical): Player names in this conversation have been replaced with placeholders like {{P1}}, {{P2}}, etc. In your response, refer to players using the same placeholders — never invent a name. Our server will replace the placeholders with the real names before displaying your response, so the output will read naturally.`
             : '';
 
-        // Greeting: greet by first name occasionally at the START of a
-        // conversation, never every message, never a generic "Hola Entrenador".
-        // The coach's own name (sanitized) is fine to send — only children's
-        // names are anonymized.
-        const greetLang = safeLang(promptLang);
-        const safeCoachName = coachFirstName ? sanitize(coachFirstName, 40).trim() : '';
-        const greetWithName: Record<string, string> = {
-            es: `\n\nEl entrenador se llama ${safeCoachName}. Puedes saludarlo por su nombre, de forma cálida y natural, al comenzar una conversación, pero no en cada mensaje ni siempre. Nunca uses saludos genéricos como "Hola Entrenador".`,
-            en: `\n\nThe coach's name is ${safeCoachName}. You may greet them by name, warmly and naturally, at the start of a conversation, but not in every message and not always. Never use generic greetings like "Hi Coach".`,
-            pt: `\n\nO treinador se chama ${safeCoachName}. Você pode cumprimentá-lo pelo nome, de forma calorosa e natural, ao começar uma conversa, mas não em cada mensagem nem sempre. Nunca use saudações genéricas como "Olá Treinador".`,
+        // No greetings: don't open with "Hola Entrenador" or by name; answer directly.
+        const noGreeting: Record<string, string> = {
+            es: `\n\nNo abras con saludos (ni "Hola Entrenador" ni por nombre). Responde directo a la consulta.`,
+            en: `\n\nDo not open with greetings (neither "Hi Coach" nor by name). Answer the question directly.`,
+            pt: `\n\nNão abra com saudações (nem "Olá Treinador" nem pelo nome). Responda diretamente à consulta.`,
         };
-        const greetNoName: Record<string, string> = {
-            es: `\n\nNo uses saludos genéricos como "Hola Entrenador"; ve directo a la respuesta.`,
-            en: `\n\nDo not use generic greetings like "Hi Coach"; go straight to the answer.`,
-            pt: `\n\nNão use saudações genéricas como "Olá Treinador"; vá direto à resposta.`,
-        };
-        const coachInstruction = safeCoachName ? greetWithName[greetLang] : greetNoName[greetLang];
+        const coachInstruction = noGreeting[safeLang(promptLang)];
 
         const systemPrompt = (SYSTEM_PROMPTS[promptLang] ?? SYSTEM_PROMPTS.es)
             + coachInstruction
