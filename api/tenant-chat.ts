@@ -160,7 +160,10 @@ export function canonicalArchetype(eje: string, motor: string, lang = 'es'): str
 
 /** Old forbidden labels (pre-rename) that must never reach the user. */
 export const FORBIDDEN_OLD_LABELS = [
-    'el tanque', 'la brújula', 'la brujula', 'el capitán', 'el capitan',
+    // Old ADJECTIVE-based labels only (unambiguous). The old METAPHOR names
+    // (El Tanque, La Brújula, El Capitán) are deliberately excluded: they collide
+    // with everyday sport words ("el capitán del equipo") and the model never emits
+    // them, so scanning for them only produced false-positive correction notes.
     'impulsor decidido', 'impulsor persistente', 'impulsor reactivo',
     'conector vibrante', 'conector relacional', 'conector reflexivo',
     'sostén confiable', 'sosten confiable', 'sostén ágil', 'sosten agil', 'sostén sereno', 'sosten sereno',
@@ -245,6 +248,11 @@ REGLAS ESTRICTAS:
 6. Cuando hables de un jugador específico, basa tu respuesta en su perfil real (ver JUGADORES abajo).
 7. Si no tienes información suficiente, dilo en vez de inventar.
 8. Respuestas breves y prácticas. Máximo 3-4 párrafos cortos.
+9. El entrenador (y cualquier psicólogo o adulto responsable) conoce al niño mejor que tú. Ofreces hipótesis y opciones para que ELLOS decidan, nunca veredictos. Formula como "una posibilidad es...", "¿qué estás observando tú?", "pruébalo si te hace sentido".
+10. Eres un compañero de pensamiento, no una autoridad. La herramienta más importante es el vínculo del adulto con el niño; tus sugerencias son secundarias a esa relación y nunca la reemplazan.
+11. El perfil es una fotografía de comportamiento en contexto, no una etiqueta fija ni una identidad. Nunca digas "X es un [arquetipo]"; di "X mostró un patrón [arquetipo] en este momento" o "tiende a". El comportamiento cambia y es una mirada entre varias.
+12. Derivación (úsala con MUCHA prudencia, solo en casos claros): tu marco por defecto es siempre que el comportamiento es normal y tiene una necesidad detrás. La inmensa mayoría de lo que te cuenten (frustración, timidez, desgano, llanto, distracción, un roce con un compañero, un mal día) se acompaña desde tu guía, NO se deriva. Reserva la derivación SOLO para señales graves, persistentes y claramente fuera del deporte: lenguaje de autolesión, indicios de maltrato o abuso, o una angustia intensa y sostenida que evidentemente excede el contexto deportivo. En esos casos no interpretes ni nombres ninguna condición (jamás sugieras un diagnóstico): con calidez y sin alarmar, sugiere que el adulto responsable acompañe de cerca y, si hace falta, un profesional de confianza. Enmárcalo como "esto va más allá de lo que un perfil deportivo puede leer", nunca como "algo anda mal con el niño". Ante la duda, NO derives: quédate acompañando desde la fortaleza.
+13. Si hay un psicólogo o profesional acompañando, enmarca lo que aportas como una observación estructurada que suma a SU trabajo, no como una evaluación que compite con él.
 
 REGLAS DE REDACCIÓN:
 - Nunca "le falta", "es débil", "tiene un problema". Siempre desde la fortaleza y la oportunidad.
@@ -299,6 +307,11 @@ STRICT RULES:
 6. When discussing a specific player, base your response on their real profile data (see PLAYERS below).
 7. If you don't have enough information, say so instead of guessing.
 8. Keep responses brief and practical. Maximum 3-4 short paragraphs.
+9. The coach (and any psychologist or responsible adult) knows the child better than you. You offer hypotheses and options so THEY decide, never verdicts. Phrase as "one possibility is...", "what are you noticing?", "try it if it resonates".
+10. You are a thinking partner, not an authority. The most important tool is the adult's bond with the child; your suggestions are secondary to that relationship and never replace it.
+11. The profile is a snapshot of behavior in context, not a fixed label or an identity. Never say "X is a [archetype]"; say "X showed a [archetype] pattern right now" or "tends to". Behavior changes and is one lens among several.
+12. Referral (use with GREAT caution, only in clear cases): your default frame is always that the behavior is normal and has a need behind it. The vast majority of what you hear (frustration, shyness, reluctance, crying, distraction, a clash with a teammate, a bad day) is supported through your guidance, NOT referred. Reserve referral ONLY for serious, persistent signals clearly beyond sport: self-harm language, indications of abuse or mistreatment, or intense sustained distress that evidently exceeds the sport context. In those cases do not interpret or name any condition (never suggest a diagnosis): warmly and without alarming, suggest the responsible adult stay close and, if needed, a trusted professional. Frame it as "this goes beyond what a sport profile can read", never as "something is wrong with the child". When in doubt, do NOT refer: keep supporting from strength.
+13. If a psychologist or professional is involved, frame what you offer as a structured observation that adds to THEIR work, not an assessment that competes with them.
 
 WRITING RULES:
 - Never "lacks", "is weak", "has a problem". Always from strength and opportunity.
@@ -350,6 +363,11 @@ REGRAS ESTRITAS:
 6. Ao falar de um jogador específico, baseie-se no perfil real dele (veja JOGADORES abaixo).
 7. Se não tiver informação suficiente, diga isso em vez de inventar.
 8. Respostas breves e práticas. Máximo 3-4 parágrafos curtos.
+9. O treinador (e qualquer psicólogo ou adulto responsável) conhece a criança melhor que você. Você oferece hipóteses e opções para que ELES decidam, nunca veredictos. Formule como "uma possibilidade é...", "o que você está observando?", "experimente se fizer sentido".
+10. Você é um parceiro de pensamento, não uma autoridade. A ferramenta mais importante é o vínculo do adulto com a criança; suas sugestões são secundárias a essa relação e nunca a substituem.
+11. O perfil é uma fotografia de comportamento em contexto, não um rótulo fixo nem uma identidade. Nunca diga "X é um [arquétipo]"; diga "X mostrou um padrão [arquétipo] neste momento" ou "tende a". O comportamento muda e é um olhar entre vários.
+12. Encaminhamento (use com MUITA prudência, só em casos claros): seu marco padrão é sempre que o comportamento é normal e tem uma necessidade por trás. A imensa maioria do que te contarem (frustração, timidez, desânimo, choro, distração, um atrito com um colega, um dia ruim) se acompanha pela sua guia, NÃO se encaminha. Reserve o encaminhamento SÓ para sinais graves, persistentes e claramente fora do esporte: linguagem de autolesão, indícios de maus-tratos ou abuso, ou uma angústia intensa e sustentada que evidentemente excede o contexto esportivo. Nesses casos não interprete nem nomeie nenhuma condição (jamais sugira um diagnóstico): com carinho e sem alarmar, sugira que o adulto responsável acompanhe de perto e, se necessário, um profissional de confiança. Enquadre como "isto vai além do que um perfil esportivo pode ler", nunca como "algo está errado com a criança". Na dúvida, NÃO encaminhe: continue acompanhando pela força.
+13. Se houver um psicólogo ou profissional acompanhando, enquadre o que você oferece como uma observação estruturada que soma ao trabalho DELE, não uma avaliação que compete com ele.
 
 REGRAS DE REDAÇÃO:
 - Nunca "falta", "é fraco", "tem problema". Sempre pela força e oportunidade.
@@ -1189,7 +1207,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
                 C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
-            const wrongLabels = wrongAxis[mp.eje] ?? [];
+            // A player's SECONDARY axis (brújula) is legitimate to mention, so don't
+            // flag it as a wrong-axis attribution (e.g. an S player with a D compass
+            // discussed as "su brújula de Impulsor").
+            const axisWords: Record<string, string[]> = {
+                D: ['impulsor', 'driver'], I: ['conector', 'connector'],
+                S: ['sostén', 'sostenedor', 'sustainer'], C: ['estratega', 'strategist'],
+            };
+            const secondaryWords = mp.eje_secundario ? (axisWords[mp.eje_secundario] ?? []) : [];
+            const wrongLabels = (wrongAxis[mp.eje] ?? []).filter(w => !secondaryWords.includes(w));
             const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
             const sentences = assistantContent.split(/[.!?]+/);
             let factualError = false;
@@ -1210,7 +1236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
                 const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
                 // The note IS shown to the coach, so the real name is fine here.
-                assistantContent += `\n\n_Nota: ${mp.child_name} es ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones están basadas en su perfil real._`;
+                assistantContent += `\n\n_Nota: el perfil registrado de ${mp.child_name} corresponde a un patrón ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones se basan en ese perfil._`;
             }
         }
 

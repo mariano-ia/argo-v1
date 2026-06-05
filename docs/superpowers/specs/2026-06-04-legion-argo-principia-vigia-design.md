@@ -4,6 +4,7 @@
 
 - **Fecha:** 2026-06-04
 - **Estado:** aprobado por el Imperator (luz verde). Listo para plan de implementación.
+- **Actualización 2026-06-05:** el bucle Calidad IA usa `ai_events` (telemetría por respuesta del Coach, en prod desde 2026-06-04) + qa-monitor CHECK 6 (tasas) y CHECK 7 (canary), no solo `ai-eval.ts`. Monitoreo as-is documentado en `docs/CHECK-SYSTEM.md`, que Vigía/Principia evoluciona a un loop cerrado con push + incidentes.
 - **Alcance del build v1:** Producto / Vigía en vivo + la columna vertebral de datos + la Principia. Las otras 4 cohortes, como módulos "próximamente".
 - **Capas de lenguaje:** el producto que ve el niño sigue siendo náutico (Argo, la odisea, los Argonautas). La **legión romana** es el lenguaje interno de la organización de IA. Dos capas, dos públicos, sin choque.
 
@@ -53,7 +54,7 @@ Cada área es una cohorte con su centurión. Los nombres son secundarios (provis
 
 | Cohorte · Centurión | Registros clave (existe hoy → pendiente) | Señales de salud (el rumbo) | Acciones IA (N2) | Preparación |
 |---|---|---|---|---|
-| **Producto / Salud · Vigía** `EN VIVO` | `client_errors`, `audio_events`, `sessions` (eje/ai_sections/email_sent_at), qa-monitor synthetic ✅ → historial de crons, ledger de dependencias, webhook de Resend ❌ | errores/día < 5; audio recoveries < 10/día; entrega de reporte > 99%; 6/6 crons OK; sin `_pending` > 2 h; latencia Gemini < 5 s | reintentar generación, reenviar email, disparar report-recovery *(ejecuta)* · proponer PR / rollback / feature-flag *(propone)* | **~80%** |
+| **Producto / Salud · Vigía** `EN VIVO` | `client_errors`, `audio_events`, `sessions` (eje/ai_sections/email_sent_at), `ai_events` (calidad del Coach), qa-monitor synthetic ✅ → historial de crons, ledger de dependencias, webhook de Resend ❌ | errores/día < 5; audio recoveries < 10/día; entrega de reporte > 99%; 6/6 crons OK; sin `_pending` > 2 h; latencia Gemini < 5 s; alucinación del Coach (ground-truth) < 2% | reintentar generación, reenviar email, disparar report-recovery *(ejecuta)* · proponer PR / rollback / feature-flag *(propone)* | **~80%** |
 | **Marketing · Praeco** `próximamente` | `blog_posts`, `blog_topics`, `blog_posts.ai_cost_usd` ✅ → GA4/GSC/Ads (Windsor MCP), leads Apollo, eventos de email Resend ❌ | cadencia 2 posts/semana; 6 pilares cubiertos; sin pilar sin post en 30 días *(entity)*; ROAS > 3.0; backlog 5-10 | generar tema de pilar con gap, refrescar contenido por caída de keyword, pausar placement de bajo ROAS | **~50%** |
 | **Ventas · Mercator** `próximamente` | `tenants`, `one_purchases`, `puentes_purchases`, admin-revenue ✅ → log de churn, pipeline Apollo, CAC, contratos enterprise ❌ | signups > 5/mes; trial→paid > 15%; MRR MoM > 5%; churn < 5%; ACV pipeline > $5k | outreach por churn, avisar lead de alto valor *(entity)*, prompt de upgrade en trial por expirar | **~60%** |
 | **Personas · Tribunus** `próximamente` | `tenant_members`, `admin_audit_log` ✅ → telemetría de login/engagement, estado de onboarding, soporte ❌ | tenants activos > 60%; usuarios/tenant ≥ 2; onboarding completo > 80%; adopción chat > 70% | re-enganche a tenant dormido, escalar dropout de onboarding, bienvenida a coach nuevo | **~40%** |
@@ -386,7 +387,7 @@ CREATE TABLE weekly_reviews (
 |---|---|---|
 | Salud técnica | `client_errors` + `audio_events` | **VIVO** |
 | Entrega | `sessions` (ai_sections + email_sent_at) + report-recovery-cron | **VIVO** |
-| Calidad IA | `scripts/qa/ai-eval.ts` | **PARCIAL** (cablear el eval para que escriba `health_checks`) |
+| Calidad IA | `ai_events` (telemetría del Coach) + qa-monitor CHECK 6/7 + `scripts/qa/ai-eval.ts` | **Sensor VIVO** (en prod desde 2026-06-04); falta proyectar a `health_checks`/`incidents` |
 | Dashboards / Herramientas | qa-monitor synthetic checks | **VIVO** |
 
 ---
@@ -399,7 +400,7 @@ CREATE TABLE weekly_reviews (
 - **Pagos:** `webhook_events` + `one-webhook` como sensores; idempotencia de pagos vigilada (duplicados).
 - **Dependencias:** Stripe/MercadoPago (webhook > 99.5%), Resend (entrega > 99%), Gemini (latencia < 5 s). Hoy como stubs "sensor pendiente" hasta materializar el ledger de dependencias.
 - **Crons:** las 6 de `vercel.json` ejecutan sin fallos. Hoy stub hasta tener tabla de historial de crons.
-- **Calidad IA:** `scripts/qa/ai-eval.ts` cableado a `health_checks` (PARCIAL).
+- **Calidad IA:** `ai_events` (1 fila por respuesta del Coach: provider, latencia, costo, flags de calidad como `groundtruth_violation`/`label_violation`/`prohibited_hit`) + qa-monitor CHECK 6 (alerta por tasas) y CHECK 7 (canary diario end-to-end), ya en prod. Falta proyectar esas señales a `health_checks`/`incidents` de Vigía. `ai-eval.ts` queda como gate de CI.
 - **Costo de Vigía mismo:** cada diagnóstico es una llamada Gemini. A cadencia de cron es gasto recurrente y debe ser **una señal de Finanzas/health_checks** (`signal_key='vigia_ai_cost_per_day'`). Irónicamente, lo que Vigía debería vigilar.
 
 ---
@@ -438,7 +439,7 @@ CREATE TABLE weekly_reviews (
 ### Fase 2 — Señales de dependencias y crons; Calidad IA completa
 - Tablas de historial de crons + ledger de errores de dependencias (Gemini/Stripe/Resend).
 - Listener de webhook de Resend para confirmación de entrega.
-- Cablear `ai-eval.ts` a `health_checks`.
+- Proyectar `ai_events` + qa-monitor CHECK 6/7 a `health_checks`/`incidents` (el bucle Calidad IA). `ai-eval.ts` como gate de CI.
 - Primera patrulla de Exploratores (tendencia simple) alimentando el resumen del Consilium.
 
 ### Fase 3 — Primera cohorte no-Producto end-to-end (valida la generalización)
