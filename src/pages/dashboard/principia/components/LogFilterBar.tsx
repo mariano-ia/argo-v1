@@ -3,7 +3,7 @@ import React from 'react';
 export interface LogFilters { area: string; severity: string; eventType: string; }
 
 const AREAS = ['all', 'producto', 'marketing', 'ventas', 'personas', 'finanzas', 'sistema'];
-const SEVERITIES = ['all', 'alto', 'medio', 'sano', 'offline'];
+const SEVERITIES = ['all', 'alto', 'medio', 'sano', 'offline', 'info'];
 const EVENT_TYPES = ['all', 'user_action', 'ai_decision', 'health_check', 'delivery', 'audit'];
 
 export const LogFilterBar: React.FC<{ value: LogFilters; onChange: (f: LogFilters) => void }> = ({ value, onChange }) => {
