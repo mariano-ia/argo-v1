@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '../src/lib/principia/activityLog';
 
 /**
  * GET/POST /api/report-recovery-cron
@@ -140,6 +141,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 continue; // retry on next run
             }
             r.emailed = true;
+            // Principia ingestion (area=producto): a stuck report was auto-recovered.
+            await logActivity(sb, {
+                area: 'producto',
+                action: 'report_recovered',
+                sourceType: 'cron',
+                severity: 'sano',
+                resourceType: 'session',
+                resourceId: String(s.id),
+                reason: { session_id: s.id, ai_generated: r.aiGenerated },
+                relatedLogs: [`sessions.${s.id}`],
+            });
         } catch (err) {
             r.error = err instanceof Error ? err.message : String(err);
         }
