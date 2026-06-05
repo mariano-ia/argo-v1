@@ -14,7 +14,9 @@ for (let run = 1; run <= RUNS; run++) {
     if (await texts.count()) await texts.nth(0).fill(rnd(['', '  ', 'José Müller', "O'Brien", '🚀🚀🚀', 'x'.repeat(120)]));
     if (await texts.count() > 1) await texts.nth(1).fill(rnd(['a', 'Pipe', '<script>alert(1)</script>']));
     await page.locator('input[type=email]:visible').first().fill(rnd(['not-an-email', 'a@b', 'qa-robot@argomethod.test']));
-    await page.getByRole('button', { name: rnd(['Fútbol', 'Tenis', 'Otro']) }).first().click().catch(() => {});
+    // The club flow no longer shows a sport selector (the institution defines the
+    // sport, shown read-only), so we don't click one. Clicking a now-missing button
+    // would hang until the test timeout and tear the page down.
 
     // Without consent, the submit must stay disabled (the gate holds).
     await expect(page.getByRole('button', { name: /continuar/i }).first()).toBeDisabled();
