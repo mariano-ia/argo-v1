@@ -131,7 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Dedupe into incidents + emit activity rows + alert. The partial unique index
-    // uniq_inc_open_action_key (area, action_key) WHERE status NOT IN (resolved, snoozed)
+    // uniq_incident_open_per_action (area, action_key) WHERE status NOT IN (resolved, snoozed)
     // is the real guard: an INSERT of an already-open breach collides instead of relying
     // only on the SELECT-then-INSERT below. The SELECT increments signal_count when present.
     let opened = 0;

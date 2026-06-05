@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS incidents (
     resolved_at         TIMESTAMPTZ,
     verified_at         TIMESTAMPTZ,                          -- verify-loop: when the fix was confirmed
     verification_result JSONB,                                -- { signal_back_under_setpoint, ... }
+    resolution          JSONB,                                -- { decision, by } on reject/snooze (governance also lives in admin_audit_log)
     metadata            JSONB       NOT NULL DEFAULT '{}'::jsonb
 );
 
