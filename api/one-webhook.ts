@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { logActivity } from '../src/lib/principia/activityLog';
 
 // Verifies a MercadoPago webhook signature (x-signature: "ts=...,v1=...").
 // MP signs the manifest `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
@@ -528,6 +529,19 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         paid_at: new Date().toISOString(),
     }).eq('id', purchaseId);
 
+    // Principia ingestion (area=ventas). event.id is NOT in scope inside this
+    // helper — it receives `session`, not the outer Stripe `event`. Use session.id.
+    await logActivity(sb, {
+        area: 'ventas',
+        action: 'payment_received',
+        sourceType: 'webhook',
+        severity: 'sano',
+        resourceType: 'one_purchase',
+        resourceId: String(purchaseId),
+        reason: { provider: 'stripe', pack_size: existing.pack_size, payment_id: session.id },
+        relatedLogs: [`one_purchases.${purchaseId}`],
+    });
+
     await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
 
     console.info(`[one-webhook] Stripe: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
@@ -669,6 +683,19 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         payment_id: String(resourceId),
         paid_at: new Date().toISOString(),
     }).eq('id', purchaseId);
+
+    // Principia ingestion (area=ventas). Latam path — without this, MercadoPago
+    // payments are never logged. resourceId is the MP payment id in scope here.
+    await logActivity(sb, {
+        area: 'ventas',
+        action: 'payment_received',
+        sourceType: 'webhook',
+        severity: 'sano',
+        resourceType: 'one_purchase',
+        resourceId: String(purchaseId),
+        reason: { provider: 'mercadopago', pack_size: existing.pack_size, payment_id: String(resourceId) },
+        relatedLogs: [`one_purchases.${purchaseId}`],
+    });
 
     await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
 
