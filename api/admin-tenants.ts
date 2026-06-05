@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { logActivity } from '../src/lib/principia/activityLog';
 
 // ─── Enterprise welcome email ───────────────────────────────────────────────
 
@@ -98,6 +99,18 @@ async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClien
 
 async function auditLog(sb: ReturnType<typeof createClient<any, any>>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
     try { await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }); } catch { /* non-blocking */ }
+    // Principia governance double-write: every admin action is also an
+    // area=sistema, source_type=human row on the activity timeline.
+    await logActivity(sb, {
+        area: 'sistema',
+        action: `admin:${action}`,
+        sourceType: 'human',
+        actor: adminEmail,
+        severity: 'info',
+        resourceType: targetType,
+        resourceId: targetId,
+        reason: { admin_email: adminEmail, ...(details ?? {}) },
+    });
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
