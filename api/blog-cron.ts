@@ -323,6 +323,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     try {
+        // Liveness heartbeat for qa-monitor's dead-man's-switch (best-effort, never throws).
+        try {
+            const _hbAt = new Date().toISOString();
+            await supabase.from('health_checks').insert({
+                area: 'sistema', signal_key: 'blog-cron_heartbeat', source_type: 'cron', source_ref: 'blog-cron',
+                shape: 'threshold', measured_value: 0, setpoint_value: 0, comparator: '>=', unit: 'runs',
+                breached: false, severity: 'sano', checked_at: _hbAt, last_successful_check_at: _hbAt,
+            });
+        } catch (e) { console.warn('[blog-cron] heartbeat failed:', e); }
+
         // Step 1: Ensure topic queue has ideas
         const seedResult = await seedTopicsIfNeeded();
 

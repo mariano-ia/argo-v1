@@ -52,6 +52,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server configuration error' });
 
     const sb = createClient(supabaseUrl, serviceKey);
+
+    // Liveness heartbeat for qa-monitor's dead-man's-switch (best-effort, never throws).
+    try {
+        const _hbAt = new Date().toISOString();
+        await sb.from('health_checks').insert({
+            area: 'sistema', signal_key: 'report-recovery-cron_heartbeat', source_type: 'cron', source_ref: 'report-recovery-cron',
+            shape: 'threshold', measured_value: 0, setpoint_value: 0, comparator: '>=', unit: 'runs',
+            breached: false, severity: 'sano', checked_at: _hbAt, last_successful_check_at: _hbAt,
+        });
+    } catch (e) { console.warn('[report-recovery-cron] heartbeat failed:', e); }
     const origin = process.env.SITE_URL || 'https://www.argomethod.com';
 
     // Hard floor: never recover any session created before this fix shipped.

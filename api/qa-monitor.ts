@@ -191,6 +191,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         hb ? `last heartbeat ${hb.checked_at}` : 'no heartbeat row');
   } catch (e) { add('principia detector reachable', false, String(e)); }
 
+  // CHECK 9: cron liveness dead-man's-switch. Each functional cron writes a
+  // health_checks heartbeat per run (source_ref=<cron>). If a heartbeat exists
+  // but is older than ~2.5x the cron's cadence, that cron silently stopped or
+  // died after boot — page ops. No heartbeat row yet (just deployed / not run
+  // since) is grace, not an alarm, so this never false-fires on rollout.
+  const CRON_MAX_STALE_MIN: Record<string, number> = {
+    'report-recovery-cron': 30,     // runs every 5 min
+    'retention-cron': 2880,         // daily
+    'puentes-reminder-cron': 2880,  // daily
+    'puentes-sync-cron': 2880,      // daily
+    'trial-lifecycle-cron': 2880,   // daily
+    'blog-cron': 11520,             // Mon/Thu
+  };
+  for (const [ref, maxMin] of Object.entries(CRON_MAX_STALE_MIN)) {
+    try {
+      const { data: chb } = await sb.from('health_checks')
+        .select('checked_at').eq('source_ref', ref)
+        .order('checked_at', { ascending: false }).limit(1).maybeSingle();
+      const cutoff = new Date(Date.now() - maxMin * 60 * 1000).toISOString();
+      const ok = !chb || (chb.checked_at as string) >= cutoff;
+      add(`cron alive: ${ref}`, ok, chb ? `last heartbeat ${chb.checked_at}` : 'no heartbeat yet (grace)');
+    } catch (e) { add(`cron heartbeat readable: ${ref}`, false, String(e)); }
+  }
+
   // CHECK 8: no critical api endpoint returns a 5xx on boot. An import/boot crash
   // (e.g. ERR_MODULE_NOT_FOUND from a cross-directory import) makes a function 500
   // BEFORE its handler runs, leaving zero DB rows — invisible to every passive check
@@ -208,6 +232,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     { path: '/api/tenant-info', method: 'GET' },
     { path: '/api/report-recovery-cron', method: 'GET' },
     { path: '/api/trial-lifecycle-cron', method: 'GET' },
+    { path: '/api/blog-cron', method: 'GET' },
+    { path: '/api/retention-cron', method: 'GET' },
+    { path: '/api/puentes-reminder-cron', method: 'GET' },
+    { path: '/api/puentes-sync-cron', method: 'GET' },
     { path: '/api/admin-tenants', method: 'GET' },
   ];
   for (const ep of bootProbes) {

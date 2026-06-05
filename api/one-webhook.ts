@@ -60,6 +60,21 @@ async function emailTenant(
     }
 }
 
+// Owner-facing revenue alert to QA_ALERT_EMAIL (payment failed / subscription
+// cancelled or paused). Best-effort; mirrors qa-monitor's sendAlert pattern.
+async function alertOwner(subject: string, text: string): Promise<void> {
+    const key = process.env.RESEND_API_KEY;
+    const to = process.env.QA_ALERT_EMAIL || 'marianonoceti@gmail.com';
+    if (!key) return;
+    try {
+        await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [to], subject, text }),
+        });
+    } catch (e) { console.error('[one-webhook] owner alert failed:', e); }
+}
+
 // Verifies a MercadoPago webhook signature (x-signature: "ts=...,v1=...").
 // MP signs the manifest `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
 // with the webhook secret from the MP dashboard. Returns true if valid.
@@ -506,6 +521,8 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         }
         console.error(`[one-webhook] PAYMENT FAILED — subscription ${sub ?? '?'}, tenant ${failedTenantId ?? 'unknown'}, invoice ${invoice.id}`);
         await emailTenant(sb, failedTenantId, () => paymentFailedEmail('es'));
+        await logActivity(sb, { area: 'ventas', sourceType: 'webhook', action: 'payment_failed', severity: 'medio', resourceType: 'tenant', resourceId: failedTenantId, reason: { provider: 'stripe', subscription: sub, invoice: invoice.id } });
+        await alertOwner('[Argo Ventas] Pago fallido (Stripe)', `Falló el cobro de la suscripción ${sub ?? '?'} (tenant ${failedTenantId ?? 'desconocido'}, invoice ${invoice.id}). Stripe reintenta solo; si agota los reintentos, la suscripción se cancela y la cuenta baja a trial.`);
         return res.status(200).json({ received: true, action: 'payment_failed_logged' });
     }
 
@@ -522,6 +539,8 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
             }).eq('id', tenantId);
             console.info(`[one-webhook] Subscription cancelled: tenant ${tenantId} downgraded to trial`);
             await emailTenant(sb, tenantId, () => subscriptionEndedEmail('es'));
+            await logActivity(sb, { area: 'ventas', sourceType: 'webhook', action: 'subscription_cancelled', severity: 'alto', resourceType: 'tenant', resourceId: tenantId, reason: { provider: 'stripe' } });
+            await alertOwner('[Argo Ventas] Suscripción cancelada (Stripe)', `La suscripción del tenant ${tenantId} se canceló (Stripe). La cuenta volvió a trial.`);
         }
         return res.status(200).json({ received: true, action: 'subscription_cancelled' });
     }
@@ -675,6 +694,8 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
             }).eq('id', tenantId);
             console.info(`[one-webhook] MP subscription cancelled: tenant ${tenantId} → trial`);
             await emailTenant(sb, tenantId, () => subscriptionEndedEmail('es'));
+            await logActivity(sb, { area: 'ventas', sourceType: 'webhook', action: 'subscription_cancelled', severity: 'alto', resourceType: 'tenant', resourceId: tenantId, reason: { provider: 'mercadopago' } });
+            await alertOwner('[Argo Ventas] Suscripción cancelada (MercadoPago)', `La suscripción del tenant ${tenantId} se canceló (MercadoPago). La cuenta volvió a trial.`);
         } else if (preapproval.status === 'paused') {
             // MercadoPago pauses a preapproval after its recurring charge fails
             // repeatedly. Treat it like a cancellation and downgrade so we never
@@ -689,6 +710,8 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
             }).eq('id', tenantId);
             console.error(`[one-webhook] MP subscription PAUSED (payment failing): tenant ${tenantId} → trial`);
             await emailTenant(sb, tenantId, () => paymentFailedEmail('es'));
+            await logActivity(sb, { area: 'ventas', sourceType: 'webhook', action: 'subscription_paused', severity: 'alto', resourceType: 'tenant', resourceId: tenantId, reason: { provider: 'mercadopago', cause: 'payment_failing' } });
+            await alertOwner('[Argo Ventas] Pago fallando / suscripción pausada (MercadoPago)', `MercadoPago pausó la suscripción del tenant ${tenantId} por pagos fallidos. Bajó a trial; si el pago se recupera, vuelve a su plan.`);
         }
 
         return res.status(200).json({ received: true, status: preapproval.status });

@@ -183,6 +183,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server configuration error' });
 
     const sb = createClient(supabaseUrl, serviceKey);
+
+    // Liveness heartbeat for qa-monitor's dead-man's-switch (best-effort, never throws).
+    try {
+        const _hbAt = new Date().toISOString();
+        await sb.from('health_checks').insert({
+            area: 'sistema', signal_key: 'puentes-sync-cron_heartbeat', source_type: 'cron', source_ref: 'puentes-sync-cron',
+            shape: 'threshold', measured_value: 0, setpoint_value: 0, comparator: '>=', unit: 'runs',
+            breached: false, severity: 'sano', checked_at: _hbAt, last_successful_check_at: _hbAt,
+        });
+    } catch (e) { console.warn('[puentes-sync-cron] heartbeat failed:', e); }
+
     const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.SITE_URL || 'https://argomethod.com');
