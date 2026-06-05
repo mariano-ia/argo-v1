@@ -97,10 +97,15 @@ async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClien
     return admin ? (user.email ?? null) : null;
 }
 
+// PII must not land on the Principia activity timeline (admin_audit_log stays
+// authoritative for full detail). Strip these keys from the governance double-write.
+const AUDIT_PII_KEYS = new Set(['email', 'adult_email', 'child_name', 'full_name', 'display_name', 'name', 'first_name', 'last_name']);
+
 async function auditLog(sb: ReturnType<typeof createClient<any, any>>, adminEmail: string, action: string, targetType: string, targetId: string, details?: Record<string, unknown>) {
     try { await sb.from('admin_audit_log').insert({ admin_email: adminEmail, action, target_type: targetType, target_id: targetId, details: details ?? null }); } catch { /* non-blocking */ }
     // Principia governance double-write: every admin action is also an
     // area=sistema, source_type=human row on the activity timeline.
+    // The actor is already adminEmail; reason carries only NON-PII detail keys.
     await logActivity(sb, {
         area: 'sistema',
         action: `admin:${action}`,
@@ -109,7 +114,7 @@ async function auditLog(sb: ReturnType<typeof createClient<any, any>>, adminEmai
         severity: 'info',
         resourceType: targetType,
         resourceId: targetId,
-        reason: { admin_email: adminEmail, ...(details ?? {}) },
+        reason: Object.fromEntries(Object.entries(details ?? {}).filter(([k]) => !AUDIT_PII_KEYS.has(k))),
     });
 }
 
