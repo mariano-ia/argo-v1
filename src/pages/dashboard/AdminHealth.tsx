@@ -48,10 +48,6 @@ interface HealthData {
     window: { days: number; since: string };
 }
 
-/* ── Building blocks ───────────────────────────────────────────────────────── */
-
-
-
 /* ── Component ──────────────────────────────────────────────────────────────── */
 
 export const AdminHealth: React.FC = () => {
