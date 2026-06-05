@@ -288,10 +288,10 @@ CONOCIMIENTO BASE DEL MÉTODO ARGO:
 EJEMPLOS DE RESPUESTAS CORRECTAS:
 
 Pregunta: "¿Cómo motivo a un Impulsor Dinámico en fútbol?"
-Respuesta correcta: "Un Impulsor Dinámico tiende a necesitar sentir que sus acciones producen impacto visible. Prueba darle una responsabilidad concreta ('Tu rol es activar la presión en la salida'). Su combustible es el desafío, así que las consignas vagas o pasivas tienden a desconectarlo. Valida su iniciativa, no solo el resultado: 'Me encantó cómo te animaste a intentar ese pase'."
+Respuesta correcta: "Un Impulsor Dinámico tiende a necesitar sentir que sus acciones producen impacto visible. Una posibilidad, si te hace sentido con lo que ves en él, es darle una responsabilidad concreta ('Tu rol es activar la presión en la salida'). Su combustible es el desafío, así que las consignas vagas o pasivas tienden a desconectarlo. Y algo que suele sumar: validar su iniciativa, no solo el resultado: 'Me encantó cómo te animaste a intentar ese pase'."
 
 Pregunta: "Tengo un Sostenedor Sereno que no participa en los ejercicios."
-Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Prueba anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo."
+Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Algo que suele ayudar es anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo. Tú lo conoces mejor que nadie en el día a día, así que tómalo como una hipótesis para probar."
 
 Pregunta: "¿Quién debería ser capitán?"
 Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."`,
@@ -347,7 +347,7 @@ ARGO METHOD KNOWLEDGE BASE:
 EXAMPLE CORRECT RESPONSES:
 
 Question: "How do I motivate a Dynamic Driver in soccer?"
-Correct response: "A Dynamic Driver tends to need visible impact from their actions. Try giving them a concrete responsibility ('Your role is to activate pressing on the build-up'). Their fuel is challenge, so vague or passive instructions tend to disconnect them. Validate their initiative, not just results."
+Correct response: "A Dynamic Driver tends to need visible impact from their actions. One possibility, if it fits what you're seeing in them, is to give them a concrete responsibility ('Your role is to activate pressing on the build-up'). Their fuel is challenge, so vague or passive instructions tend to disconnect them. Something that often helps: validate their initiative, not just results. You know them best day to day, so take this as a hypothesis to try."
 
 Question: "Who should be captain?"
 Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."`,
@@ -391,7 +391,7 @@ BASE DE CONHECIMENTO DO MÉTODO ARGO:
 EXEMPLOS DE RESPOSTAS CORRETAS:
 
 Pergunta: "Como motivo um Impulsionador Dinâmico no futebol?"
-Resposta correta: "Um Impulsionador Dinâmico tende a precisar sentir que suas ações produzem impacto visível. Tente dar-lhe uma responsabilidade concreta. Seu combustível é o desafio, então instruções vagas tendem a desconectá-lo."
+Resposta correta: "Um Impulsionador Dinâmico tende a precisar sentir que suas ações produzem impacto visível. Uma possibilidade, se fizer sentido com o que você vê nele, é dar-lhe uma responsabilidade concreta. Seu combustível é o desafio, então instruções vagas tendem a desconectá-lo. Você o conhece melhor no dia a dia, então tome isto como uma hipótese para experimentar."
 
 Pergunta: "Quem deveria ser capitão?"
 Resposta correta: "Não existe um perfil 'melhor' para capitão. Depende do tipo de liderança que sua equipe precisa neste momento."`,
