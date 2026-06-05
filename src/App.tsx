@@ -45,6 +45,9 @@ const PrincipiaShell      = lazy(() => import('./pages/dashboard/principia/Princ
 const PrincipiaResumen     = lazy(() => import('./pages/dashboard/principia/Resumen').then(m => ({ default: m.Resumen })));
 const PrincipiaRegistros   = lazy(() => import('./pages/dashboard/principia/Registros').then(m => ({ default: m.Registros })));
 const PrincipiaIncidentes  = lazy(() => import('./pages/dashboard/principia/Incidentes').then(m => ({ default: m.Incidentes })));
+const PrincipiaBandeja     = lazy(() => import('./pages/dashboard/principia/Bandeja').then(m => ({ default: m.Bandeja })));
+const PrincipiaAreaDetail  = lazy(() => import('./pages/dashboard/principia/AreaDetail').then(m => ({ default: m.AreaDetail })));
+const PrincipiaConsilium   = lazy(() => import('./pages/dashboard/principia/Consilium').then(m => ({ default: m.Consilium })));
 const AdminHealth = lazy(() => import('./pages/dashboard/AdminHealth').then(m => ({ default: m.AdminHealth })));
 const AdminFeedback   = lazy(() => import('./pages/dashboard/Feedback').then(m => ({ default: m.Feedback })));
 const BlogAdmin       = lazy(() => import('./pages/dashboard/BlogAdmin').then(m => ({ default: m.BlogAdmin })));
@@ -298,6 +301,9 @@ function App() {
                         <Route index             element={<PrincipiaResumen />} />
                         <Route path="registros"  element={<PrincipiaRegistros />} />
                         <Route path="incidentes" element={<PrincipiaIncidentes />} />
+                        <Route path="bandeja"    element={<PrincipiaBandeja />} />
+                        <Route path="consilium"  element={<PrincipiaConsilium />} />
+                        <Route path="area/:areaId" element={<PrincipiaAreaDetail />} />
                     </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
