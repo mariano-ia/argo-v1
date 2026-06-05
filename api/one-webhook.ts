@@ -497,7 +497,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     // finally gives up it emits customer.subscription.deleted (handled below,
     // which downgrades to trial). Here we log loudly for visibility/alerting.
     if (event.type === 'invoice.payment_failed') {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as Stripe.Invoice & { subscription?: string };
         const sub = typeof invoice.subscription === 'string' ? invoice.subscription : undefined;
         let failedTenantId: string | undefined;
         if (sub) {

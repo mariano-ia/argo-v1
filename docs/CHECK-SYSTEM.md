@@ -181,6 +181,20 @@ Acceso operativo (logs, env, deploys) vía CLI: ver [CLI-ACCESS.md](CLI-ACCESS.m
 ## 10) Huecos conocidos / próximos pasos
 
 - Las tablas de telemetría son **pull** salvo `ai_events` (que el monitor sí lee y alerta). `client_errors`/`audio_events` solo se ven en `/admin/health`: si quieres alertas sobre picos de errores de cliente, hay que agregar un check al monitor que los lea (mismo patrón que CHECK 6).
-- No hay alertas de costo de IA automáticas (admin-ai-usage es pull). Candidato a un CHECK 8.
+- No hay alertas de costo de IA automáticas (admin-ai-usage es pull). Candidato a un CHECK futuro.
 - PostHog está en el stack pero es client-side; no hay analítica server-side del chat más allá de `ai_events`.
 - El canary QA mete tráfico sintético en `ai_events` (1 fila/día). Es limpio (sin violations), no afecta las tasas de forma significativa.
+
+---
+
+## 11) Incidente 2026-06-05 (ERR_MODULE_NOT_FOUND) y capas agregadas
+
+**Qué pasó:** 7 funciones serverless (`create-tenant`, `session`, `one-webhook`, `send-email`, `report-recovery-cron`, `admin-tenants`, `trial-lifecycle-cron`) importaban de `../src/lib`. Vercel transpila (no bundlea) `api/`, así que esos imports pasaban `tsc` pero tiraban `ERR_MODULE_NOT_FOUND` en runtime. `report-recovery-cron` estuvo en 500 cada 5 min ~24h en prod sin alerta. Nadie lo detectó: ningún check invocaba esas funciones, el CI apuntaba a prod (no al código pusheado), el build no type-checkea `api/`, y un crash de import no deja filas en la base (los checks pasivos no ven nada).
+
+**Capas nuevas (incrementales, sin tocar los checks 1–7):**
+- **Prevención — `check:api-imports`** (`scripts/qa/check-api-imports.mjs`, gate de CI en el job `static-checks`): falla si cualquier `api/*.ts` importa de `../src`. Es la red real, porque `tsc` no puede atrapar esto. Regla en `CLAUDE.md` (Serverless endpoints): **inline el helper, no importes de `src/`**.
+- **Detección — qa-monitor CHECK 8** (`api/qa-monitor.ts`): le pega a cada endpoint con payload inerte y **falla ante cualquier 5xx** (distingue 401/403 = protegido OK, de 500 = roto en boot). Es el check que hubiera cazado este incidente.
+- **Latencia — qa-monitor pasó de diario a horario** (`vercel.json`): de hasta 24h a ≤1h de detección.
+- **Defensa en profundidad — `typecheck:api`** (`tsc -p tsconfig.api.json`, gate de CI): type-checkea `api/**` (el build solo cubría `src/`).
+
+**Próximos pasos (P1/P2, no implementados aún):** heartbeat por corrida de cada cron + dead-man's-switch en qa-monitor; apuntar el e2e del CI al preview de develop con un test que haga submit real; watcher out-of-band de logs 5xx de Vercel.

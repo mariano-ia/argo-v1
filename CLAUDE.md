@@ -119,7 +119,7 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `GET /api/admin-ai-usage` — AI consumption per tenant
 - `GET /api/admin-revenue` — revenue metrics
 - `GET /api/admin-argo-one` — Argo One purchases
-- **Important**: Vercel serverless cannot import between files in `/api`. AI provider is inlined in each file that needs it.
+- **Important**: Vercel serverless functions here are transpiled, NOT bundled. They **cannot import** between `/api` files **nor from `src/` (`../src/...`)** — such an import passes `tsc` but throws `ERR_MODULE_NOT_FOUND` at runtime (this caused a prod outage on 2026-06-05: 7 functions down, incl. report-recovery-cron). **Inline** any shared helper into each function (AI provider, Principia `logActivity`, lifecycle emails are all inlined this way). Enforced by `npm run check:api-imports` (CI gate). Detected by qa-monitor CHECK 8 (probes every endpoint, fails on 5xx).
 
 ## AI quality & anti-hallucination
 The AI consultant (`tenant-chat.ts`) has 5 anti-hallucination layers:

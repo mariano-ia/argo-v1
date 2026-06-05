@@ -30,7 +30,7 @@
     },
     {
       "path": "/api/qa-monitor",
-      "schedule": "0 12 * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/report-recovery-cron",

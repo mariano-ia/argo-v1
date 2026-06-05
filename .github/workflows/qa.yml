@@ -5,6 +5,22 @@ on:
   workflow_dispatch:
 
 jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    # Blocking gate on the PUSHED code (no secrets needed). Two guards born from the
+    # 2026-06-05 ERR_MODULE_NOT_FOUND outage:
+    #  1. check:api-imports — fails if any api/ function imports from ../src. Vercel
+    #     transpiles (does not bundle) api/, so such an import passes tsc but crashes
+    #     at runtime. This is the prevention layer that would have blocked that bug.
+    #  2. typecheck:api — type-checks api/**/*.ts (the build's tsc only covers src/).
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: 'npm' }
+      - run: npm ci
+      - run: npm run check:api-imports
+      - run: npm run typecheck:api
+
   content-lint:
     runs-on: ubuntu-latest
     # Blocking gate: the repo is clean of voseo/dash violations (backlog cleared 2026-05-26).

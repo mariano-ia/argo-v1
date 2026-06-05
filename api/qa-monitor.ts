@@ -191,6 +191,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         hb ? `last heartbeat ${hb.checked_at}` : 'no heartbeat row');
   } catch (e) { add('principia detector reachable', false, String(e)); }
 
+  // CHECK 8: no critical api endpoint returns a 5xx on boot. An import/boot crash
+  // (e.g. ERR_MODULE_NOT_FOUND from a cross-directory import) makes a function 500
+  // BEFORE its handler runs, leaving zero DB rows — invisible to every passive check
+  // above. We probe each endpoint with an inert/unauthenticated payload: a healthy
+  // function answers 4xx (bad request / auth-required), a broken one answers 5xx.
+  // This is the check that would have caught the 2026-06-05 ERR_MODULE_NOT_FOUND
+  // outage (create-tenant / session / one-webhook / send-email / *-cron). The probes
+  // are side-effect-free (empty body 400s, unauth crons 401, admin 403).
+  const bootProbes: { path: string; method: 'GET' | 'POST' }[] = [
+    { path: '/api/create-tenant', method: 'POST' },
+    { path: '/api/session', method: 'POST' },
+    { path: '/api/send-email', method: 'POST' },
+    { path: '/api/one-webhook', method: 'POST' },
+    { path: '/api/one-start-play', method: 'POST' },
+    { path: '/api/tenant-info', method: 'GET' },
+    { path: '/api/report-recovery-cron', method: 'GET' },
+    { path: '/api/trial-lifecycle-cron', method: 'GET' },
+    { path: '/api/admin-tenants', method: 'GET' },
+  ];
+  for (const ep of bootProbes) {
+    try {
+      const r = await fetch(`${base}${ep.path}`, ep.method === 'POST'
+        ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
+        : {});
+      add(`endpoint boots (no 5xx): ${ep.path}`, r.status < 500, `status=${r.status}`);
+    } catch (e) { add(`endpoint reachable: ${ep.path}`, false, String(e)); }
+  }
+
   const failures = checks.filter(c => !c.ok);
   if (failures.length) await sendAlert(failures);
 
