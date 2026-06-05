@@ -3,10 +3,11 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity,
+    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity, Compass,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
+    { to: '/admin/principia', label: 'Principia', icon: Compass },
     { to: '/admin/sessions',  label: 'Sesiones',  icon: Users },
     { to: '/admin/tenants',   label: 'Tenants',   icon: Building2 },
     { to: '/admin/ai-usage',  label: 'Consumo IA', icon: Cpu },
