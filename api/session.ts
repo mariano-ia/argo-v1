@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes, createHmac, timingSafeEqual } from 'crypto';
+import { logActivity } from '../src/lib/principia/activityLog';
 
 /**
  * Unified session endpoint. Routes by `action` field in POST body:
@@ -73,6 +74,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 effectiveTenantId = verifiedTenant;
             }
 
+            // ── Sport is defined by the club, not the parent ─────────────────
+            // For tenant (club) plays we stamp the sport server-side from the
+            // tenant record, ignoring whatever the client sends. Argo One /
+            // self-play (no tenant) keeps the sport provided by the buyer.
+            let effectiveSport: string | null = sport || null;
+            if (effectiveTenantId) {
+                const { data: tenantRow } = await sb
+                    .from('tenants')
+                    .select('sport')
+                    .eq('id', effectiveTenantId)
+                    .maybeSingle();
+                effectiveSport = tenantRow?.sport ?? null;
+            }
+
             // ── COPPA gate: children under 13 require a confirmed consent token ──
             if (typeof child_age === 'number' && child_age < 13) {
                 if (typeof consent_token !== 'string' || !/^[a-f0-9]{32}$/.test(consent_token)) {
@@ -138,7 +153,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 adult_email,
                 child_name,
                 child_age,
-                sport:           sport || null,
+                sport:           effectiveSport,
                 tenant_id:       effectiveTenantId,
                 lang:            lang ?? 'es',
                 eje:             '_pending',
@@ -247,13 +262,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 saveTenantId = verifiedTenant;
             }
 
+            // Sport is defined by the club (see "start"). Stamp it server-side.
+            let saveSport: string | null = sport || null;
+            if (saveTenantId) {
+                const { data: tenantRow } = await sb
+                    .from('tenants')
+                    .select('sport')
+                    .eq('id', saveTenantId)
+                    .maybeSingle();
+                saveSport = tenantRow?.sport ?? null;
+            }
+
             const save_share_token = randomBytes(16).toString('hex');
             const { data: saveData, error } = await sb.from('sessions').insert({
                 adult_name,
                 adult_email,
                 child_name,
                 child_age,
-                sport:            sport || null,
+                sport:            saveSport,
                 eje,
                 motor,
                 archetype_label,
@@ -272,6 +298,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error('[session:save] Insert error:', error.message, error.details);
                 return res.status(500).json({ error: error.message });
             }
+
+            // Principia ingestion (area=producto): a play finished with a real profile.
+            await logActivity(sb, {
+                area: 'producto',
+                action: 'session_completed',
+                sourceType: 'system',
+                severity: 'info',
+                resourceType: 'session',
+                resourceId: String(saveData.id),
+                reason: { session_id: saveData.id, eje, motor, tenant_id: saveTenantId },
+                relatedLogs: [`sessions.${saveData.id}`],
+            });
 
             return res.status(200).json({ ok: true, id: saveData.id, share_token: saveData.share_token });
         }

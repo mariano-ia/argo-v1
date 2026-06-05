@@ -24,7 +24,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Find the link
         const { data: link } = await sb
             .from('one_links')
-            .select('id, status, purchase_id, recipient_email, child_name')
+            .select('id, status, purchase_id, recipient_email, child_name, sport')
             .eq('slug', slug)
             .single();
 
@@ -52,6 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             link_id: link.id,
             recipient_email: link.recipient_email,
             child_name: link.child_name,
+            sport: link.sport,
         });
     } catch (err) {
         console.error('[one-start-play] Error:', err);

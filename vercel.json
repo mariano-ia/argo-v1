@@ -35,6 +35,14 @@
     {
       "path": "/api/report-recovery-cron",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/trial-lifecycle-cron",
+      "schedule": "0 11 * * *"
+    },
+    {
+      "path": "/api/principia-detect",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

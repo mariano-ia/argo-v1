@@ -91,6 +91,12 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 - When unsure which branch to target, **always ask the user**.
 - Never merge `develop` into `main` without explicit user approval.
 
+## CLI / MCP autonomy (owner authorization, 2026-06-05)
+The owner has authorized the agent to carry out **any action it can perform via CLI or MCP without asking first**: Supabase migrations/SQL, Vercel env vars and deploys, and other infra/config. Do them directly. The owner explicitly cannot perform these external/config steps themselves, so never hand them back as "things for you to do" when a CLI/MCP path exists.
+- This **supersedes** the earlier "prod migrations need explicit per-action OK" rule.
+- Still surface (do not silently execute) genuinely destructive or irreversible actions: dropping tables/columns, deleting or truncating data, hard-deleting accounts, cancelling live subscriptions, or pushing to `main`. Act on those only on a clear request and report exactly what changed.
+- Prefer surgical changes over broad ones: apply a single targeted migration via MCP rather than `supabase db push`, which applies every pending local migration.
+
 ## Serverless endpoints (Vercel)
 All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to bypass RLS:
 - `POST /api/save-session` — insert completed session

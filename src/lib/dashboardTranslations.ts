@@ -234,6 +234,8 @@ interface DashboardTexts {
         deportes: string[];
         deporteOtro: string;
         deporteOtroPlaceholder: string;
+        seleccionarDeporte: string;
+        deporteBloqueado: string;
         pais: string;
         seleccionarPais: string;
         ciudad: string;
@@ -536,6 +538,8 @@ const es: DashboardTexts = {
         deportes: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol'],
         deporteOtro: 'Otro',
         deporteOtroPlaceholder: 'Escribe el deporte...',
+        seleccionarDeporte: 'Seleccionar deporte',
+        deporteBloqueado: 'Definido al crear la cuenta',
         pais: 'País',
         seleccionarPais: 'Seleccionar país',
         ciudad: 'Ciudad',
@@ -833,6 +837,8 @@ const en: DashboardTexts = {
         deportes: ['Soccer', 'Hockey', 'Basketball', 'Rugby', 'Tennis', 'Swimming', 'Volleyball', 'Track & Field', 'Handball', 'Baseball'],
         deporteOtro: 'Other',
         deporteOtroPlaceholder: 'Type the sport...',
+        seleccionarDeporte: 'Select sport',
+        deporteBloqueado: 'Set when you created your account',
         pais: 'Country',
         seleccionarPais: 'Select country',
         ciudad: 'City',
@@ -1130,6 +1136,8 @@ const pt: DashboardTexts = {
         deportes: ['Futebol', 'Hóquei', 'Basquete', 'Rugby', 'Tênis', 'Natação', 'Vôlei', 'Atletismo', 'Handebol', 'Beisebol'],
         deporteOtro: 'Outro',
         deporteOtroPlaceholder: 'Digite o esporte...',
+        seleccionarDeporte: 'Selecionar esporte',
+        deporteBloqueado: 'Definido ao criar a conta',
         pais: 'País',
         seleccionarPais: 'Selecionar país',
         ciudad: 'Cidade',

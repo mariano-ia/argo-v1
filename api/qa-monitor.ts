@@ -179,7 +179,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (e) { add('coach canary reachable', false, String(e)); }
   }
 
+  // CHECK: Principia detector dead-man's-switch (out-of-band). If principia-detect
+  // hasn't written its heartbeat in 25 min (2.5x its 10-min cadence), the cockpit
+  // may show lying-green; page via the independent qa-monitor channel.
+  try {
+    const hbCutoff = new Date(Date.now() - 25 * 60 * 1000).toISOString();
+    const { data: hb } = await sb.from('health_checks')
+      .select('checked_at').eq('source_ref', 'principia-detect')
+      .order('checked_at', { ascending: false }).limit(1).maybeSingle();
+    add('principia detector alive', !!hb && hb.checked_at >= hbCutoff,
+        hb ? `last heartbeat ${hb.checked_at}` : 'no heartbeat row');
+  } catch (e) { add('principia detector reachable', false, String(e)); }
+
   const failures = checks.filter(c => !c.ok);
   if (failures.length) await sendAlert(failures);
+
+  // Principia ingestion: record the synthetic monitor run as a health_check row.
+  try {
+    await sb.from('system_activity_log').insert({
+      area: 'producto', source_type: 'cron', event_type: 'health_check',
+      actor: 'system', action: 'synthetic_monitor_run',
+      severity: failures.length ? 'medio' : 'sano',
+      status: failures.length ? 'failed' : 'success',
+      result: { total: checks.length, failed: failures.length, failing: failures.map(f => f.name) },
+      occurred_at: new Date().toISOString(),
+    });
+  } catch { /* non-blocking */ }
+
   return res.status(failures.length ? 500 : 200).json({ ok: failures.length === 0, checks });
 }

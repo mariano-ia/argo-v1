@@ -12,6 +12,7 @@ interface OneLink {
     status: 'available' | 'sent' | 'pending' | 'completed';
     recipient_email: string | null;
     child_name: string | null;
+    sport: string | null;
     completed_at: string | null;
     session_id: string | null;
 }
@@ -48,6 +49,9 @@ const T = {
         modalDesc: 'Ingresa el email del adulto responsable. Recibirá las instrucciones y luego el informe.',
         emailPlaceholder: 'Email del adulto responsable',
         namePlaceholder: 'Nombre del deportista (opcional)',
+        sportSelect: 'Deporte del deportista',
+        sportOtherPlaceholder: 'Escribe el deporte...',
+        sports: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro'],
         cancel: 'Cancelar',
         generateAndSend: 'Generar y enviar',
         loading: 'Cargando...',
@@ -79,6 +83,9 @@ const T = {
         modalDesc: 'Enter the responsible adult\'s email. They will receive instructions and then the report.',
         emailPlaceholder: 'Responsible adult\'s email',
         namePlaceholder: 'Athlete\'s name (optional)',
+        sportSelect: 'Athlete\'s sport',
+        sportOtherPlaceholder: 'Type the sport...',
+        sports: ['Soccer', 'Hockey', 'Basketball', 'Rugby', 'Tennis', 'Swimming', 'Volleyball', 'Track & Field', 'Handball', 'Baseball', 'Other'],
         cancel: 'Cancel',
         generateAndSend: 'Generate & send',
         loading: 'Loading...',
@@ -110,6 +117,9 @@ const T = {
         modalDesc: 'Insira o email do adulto responsável. Ele receberá as instruções e depois o relatório.',
         emailPlaceholder: 'Email do adulto responsável',
         namePlaceholder: 'Nome do atleta (opcional)',
+        sportSelect: 'Esporte do atleta',
+        sportOtherPlaceholder: 'Digite o esporte...',
+        sports: ['Futebol', 'Hóquei', 'Basquete', 'Rugby', 'Tênis', 'Natação', 'Vôlei', 'Atletismo', 'Handebol', 'Beisebol', 'Outro'],
         cancel: 'Cancelar',
         generateAndSend: 'Gerar e enviar',
         loading: 'Carregando...',
@@ -133,7 +143,12 @@ export const OnePanel: React.FC = () => {
     const [modal, setModal] = useState<string | null>(null); // link_id for modal
     const [modalEmail, setModalEmail] = useState('');
     const [modalName, setModalName] = useState('');
+    const [modalSport, setModalSport] = useState('');
+    const [modalSportCustom, setModalSportCustom] = useState('');
     const [sending, setSending] = useState(false);
+
+    const lastSport = t.sports[t.sports.length - 1];
+    const sportFinal = modalSport === lastSport ? modalSportCustom.trim() : modalSport;
     const [copied, setCopied] = useState<string | null>(null);
     const pollRef = React.useRef<ReturnType<typeof setInterval>>();
 
@@ -188,17 +203,19 @@ export const OnePanel: React.FC = () => {
     }, [status, token]);
 
     const handleGenerate = async () => {
-        if (!modal || !modalEmail) return;
+        if (!modal || !modalEmail || !sportFinal) return;
         setSending(true);
         await fetch(`/api/one-panel?token=${token}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'generate-link', link_id: modal, recipient_email: modalEmail, child_name: modalName }),
+            body: JSON.stringify({ action: 'generate-link', link_id: modal, recipient_email: modalEmail, child_name: modalName, sport: sportFinal }),
         });
         setSending(false);
         setModal(null);
         setModalEmail('');
         setModalName('');
+        setModalSport('');
+        setModalSportCustom('');
         fetchData();
     };
 
@@ -306,13 +323,13 @@ export const OnePanel: React.FC = () => {
                                 {link.status === 'completed' && (
                                     <>
                                         <p className="text-sm font-semibold text-argo-navy truncate">{link.child_name || t.completed}</p>
-                                        <p className="text-xs text-argo-grey">{t.completed} · {link.completed_at ? new Date(link.completed_at).toLocaleDateString() : ''}</p>
+                                        <p className="text-xs text-argo-grey">{link.sport ? `${link.sport} · ` : ''}{t.completed}{link.completed_at ? ` · ${new Date(link.completed_at).toLocaleDateString()}` : ''}</p>
                                     </>
                                 )}
                                 {(link.status === 'sent' || link.status === 'pending') && (
                                     <>
                                         <p className="text-sm font-semibold text-argo-navy">{link.child_name || t.sent}</p>
-                                        <p className="text-xs text-argo-grey">{t.sentTo} <span className="text-argo-violet-500">{link.recipient_email}</span> · {t.pending}</p>
+                                        <p className="text-xs text-argo-grey">{t.sentTo} <span className="text-argo-violet-500">{link.recipient_email}</span> · {link.sport ? `${link.sport} · ` : ''}{t.pending}</p>
                                     </>
                                 )}
                                 {link.status === 'available' && (
@@ -342,7 +359,7 @@ export const OnePanel: React.FC = () => {
                                 )}
                                 {link.status === 'available' && (
                                     <button
-                                        onClick={() => { setModal(link.id); setModalEmail(''); setModalName(''); }}
+                                        onClick={() => { setModal(link.id); setModalEmail(''); setModalName(''); setModalSport(''); setModalSportCustom(''); }}
                                         className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
                                     >
                                         {t.generateLink}
@@ -411,8 +428,26 @@ export const OnePanel: React.FC = () => {
                                 placeholder={t.namePlaceholder}
                                 value={modalName}
                                 onChange={e => setModalName(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-5"
+                                className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-3"
                             />
+                            <select
+                                value={modalSport}
+                                onChange={e => setModalSport(e.target.value)}
+                                className={`w-full px-4 py-3 rounded-xl border border-argo-border text-sm focus:outline-none focus:ring-2 focus:ring-argo-violet-300 ${modalSport ? 'text-argo-navy' : 'text-argo-light'} ${modalSport === lastSport ? 'mb-3' : 'mb-5'}`}
+                            >
+                                <option value="">{t.sportSelect}</option>
+                                {t.sports.map(d => <option key={d} value={d} className="text-argo-navy">{d}</option>)}
+                            </select>
+                            {modalSport === lastSport && (
+                                <input
+                                    type="text"
+                                    placeholder={t.sportOtherPlaceholder}
+                                    value={modalSportCustom}
+                                    onChange={e => setModalSportCustom(e.target.value)}
+                                    autoFocus
+                                    className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-5"
+                                />
+                            )}
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setModal(null)}
@@ -422,7 +457,7 @@ export const OnePanel: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleGenerate}
-                                    disabled={sending || !modalEmail}
+                                    disabled={sending || !modalEmail || !sportFinal}
                                     className="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50"
                                 >
                                     {sending ? '...' : t.generateAndSend}

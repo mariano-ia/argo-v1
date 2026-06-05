@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Activity, AlertTriangle, Bug } from 'lucide-react';
+import { Stat, BarRow } from '../../components/ui';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -46,37 +47,6 @@ interface HealthData {
     };
     window: { days: number; since: string };
 }
-
-/* ── Building blocks ───────────────────────────────────────────────────────── */
-
-const Stat: React.FC<{ label: string; value: string | number; sub?: string; accent?: 'green' | 'amber' | 'red' }> = ({ label, value, sub, accent }) => {
-    const colorMap = {
-        green: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-        amber: 'bg-amber-50  border-amber-200  text-amber-700',
-        red:   'bg-red-50    border-red-200    text-red-700',
-    } as const;
-    const cls = accent ? colorMap[accent] : 'bg-white border-gray-200 text-gray-900';
-    return (
-        <div className={`rounded-lg border px-4 py-3 ${cls}`}>
-            <p className="text-[11px] font-semibold uppercase opacity-70">{label}</p>
-            <p className="text-lg font-bold">{value}</p>
-            {sub && <p className="text-[10px] opacity-60">{sub}</p>}
-        </div>
-    );
-};
-
-const BarRow: React.FC<{ label: string; count: number; max: number; tint?: string }> = ({ label, count, max, tint = '#955FB5' }) => {
-    const pct = max > 0 ? (count / max) * 100 : 0;
-    return (
-        <div className="flex items-center gap-3 mb-1.5">
-            <span className="text-xs text-gray-600 w-44 truncate" title={label}>{label}</span>
-            <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: tint }} />
-            </div>
-            <span className="text-xs font-mono text-gray-700 w-12 text-right">{count}</span>
-        </div>
-    );
-};
 
 /* ── Component ──────────────────────────────────────────────────────────────── */
 

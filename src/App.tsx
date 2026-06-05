@@ -41,6 +41,13 @@ const AdminAIUsage    = lazy(() => import('./pages/dashboard/AdminAIUsage').then
 const AdminRevenue    = lazy(() => import('./pages/dashboard/AdminRevenue').then(m => ({ default: m.AdminRevenue })));
 const AdminArgoOne    = lazy(() => import('./pages/dashboard/AdminArgoOne').then(m => ({ default: m.AdminArgoOne })));
 const AdminAuditLog   = lazy(() => import('./pages/dashboard/AdminAuditLog').then(m => ({ default: m.AdminAuditLog })));
+const PrincipiaShell      = lazy(() => import('./pages/dashboard/principia/PrincipiaShell').then(m => ({ default: m.PrincipiaShell })));
+const PrincipiaResumen     = lazy(() => import('./pages/dashboard/principia/Resumen').then(m => ({ default: m.Resumen })));
+const PrincipiaRegistros   = lazy(() => import('./pages/dashboard/principia/Registros').then(m => ({ default: m.Registros })));
+const PrincipiaIncidentes  = lazy(() => import('./pages/dashboard/principia/Incidentes').then(m => ({ default: m.Incidentes })));
+const PrincipiaBandeja     = lazy(() => import('./pages/dashboard/principia/Bandeja').then(m => ({ default: m.Bandeja })));
+const PrincipiaAreaDetail  = lazy(() => import('./pages/dashboard/principia/AreaDetail').then(m => ({ default: m.AreaDetail })));
+const PrincipiaConsilium   = lazy(() => import('./pages/dashboard/principia/Consilium').then(m => ({ default: m.Consilium })));
 const AdminHealth = lazy(() => import('./pages/dashboard/AdminHealth').then(m => ({ default: m.AdminHealth })));
 const AdminFeedback   = lazy(() => import('./pages/dashboard/Feedback').then(m => ({ default: m.Feedback })));
 const BlogAdmin       = lazy(() => import('./pages/dashboard/BlogAdmin').then(m => ({ default: m.BlogAdmin })));
@@ -290,6 +297,14 @@ function App() {
                 <Route path="blog"          element={<BlogAdmin />} />
                 <Route path="blog/new"      element={<BlogEditor />} />
                 <Route path="blog/edit/:id" element={<BlogEditor />} />
+                    <Route path="principia" element={<PrincipiaShell />}>
+                        <Route index             element={<PrincipiaResumen />} />
+                        <Route path="registros"  element={<PrincipiaRegistros />} />
+                        <Route path="incidentes" element={<PrincipiaIncidentes />} />
+                        <Route path="bandeja"    element={<PrincipiaBandeja />} />
+                        <Route path="consilium"  element={<PrincipiaConsilium />} />
+                        <Route path="area/:areaId" element={<PrincipiaAreaDetail />} />
+                    </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
         </Routes>

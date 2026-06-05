@@ -68,3 +68,27 @@ export const STATUS_COLORS = {
     warning: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
     info:    { bg: 'bg-blue-50',  text: 'text-blue-700',  border: 'border-blue-200' },
 } as const;
+
+/* ── Severity colors (Principia / Vigia incidents) ─────────────────────────── */
+
+export type Severity = 'alto' | 'medio' | 'sano' | 'offline' | 'info';
+
+/**
+ * Single source of truth for incident severity styling.
+ * Keys map to the incidents.severity lifecycle values plus `info` (observations).
+ * Always index defensively: `SEVERITY_COLORS[sev]?.dot` — an unknown/legacy value
+ * must never resolve to `undefined.dot`.
+ */
+export const SEVERITY_COLORS: Record<Severity, {
+    dot: string;
+    bg: string;
+    text: string;
+    border: string;
+    label: string;
+}> = {
+    alto:    { dot: 'bg-red-500',    bg: 'bg-red-50',    text: 'text-red-700',    border: 'border-red-200',    label: 'Alto' },
+    medio:   { dot: 'bg-amber-500',  bg: 'bg-amber-50',  text: 'text-amber-700',  border: 'border-amber-200',  label: 'Medio' },
+    sano:    { dot: 'bg-green-500',  bg: 'bg-green-50',  text: 'text-green-700',  border: 'border-green-200',  label: 'Sano' },
+    offline: { dot: 'bg-gray-400',   bg: 'bg-gray-50',   text: 'text-gray-600',   border: 'border-gray-200',   label: 'Offline' },
+    info:    { dot: 'bg-blue-500',   bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200',   label: 'Info' },
+};

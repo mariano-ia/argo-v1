@@ -62,10 +62,11 @@ Con esos tokens, todos los comandos CLI quedan no interactivos. Nota de segurida
 
 ## Acuerdo operativo (cómo voy a usar este acceso)
 
-Tener la CLI no cambia las reglas de `CLAUDE.md`. Con autonomía plena, igual voy a:
+**Autorización permanente del dueño (2026-06-05):** hago todo lo que pueda por CLI/MCP sin preguntar (migraciones, env de Vercel, deploys, config), porque vos no podés hacer esos pasos externos. Registrado en `CLAUDE.md` ("CLI / MCP autonomy"). Con eso documentado, el clasificador permite las escrituras a prod.
 
-- **Operar libremente** en lo reversible/diagnóstico: leer logs (`vercel logs`), env (`vercel env ls`), estado, deploys a **preview**, queries de lectura.
-- **Confirmar antes** de lo irreversible/prod: aplicar migraciones a **producción**, deploy a **producción** (`--prod` / `main`), borrar recursos. Esto sigue `CLAUDE.md` ("no mandar a prod sin tu OK explícito"). El permiso quita el prompt del sistema; el criterio de cuándo tocar prod lo mantengo yo.
+- **Opero directamente** todo lo reversible y la mayoría de prod: migraciones quirúrgicas (MCP `apply_migration`, nunca `supabase db push`), env vars, deploys a preview, queries.
+- **Aviso antes** (no ejecuto en silencio) solo lo destructivo/irreversible: borrar o truncar datos, dropear tablas/columnas, borrar cuentas, cancelar suscripciones vivas, push a `main`.
+- **Dos cosas que el sistema NO me deja hacer** y no hay que forzar: editar mis propios permisos (`.claude/settings.local.json`) y leer credenciales del OS (keychain). Por eso la **management API de Supabase** (p. ej. `mailer_autoconfirm` de Auth) no me es accesible: no hay tool MCP de auth-config y no puedo leer el token del CLI. Si querés que la toque yo, exponé `SUPABASE_ACCESS_TOKEN` como env var (ver arriba) y la manejo por API.
 
 ## Verificación post-setup
 

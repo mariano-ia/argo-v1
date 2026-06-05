@@ -18,6 +18,7 @@ export const OnePlay: React.FC = () => {
     const consentTokenFromUrl = searchParams.get('consent');
     const [status, setStatus] = useState<Status>('loading');
     const [linkId, setLinkId] = useState<string>('');
+    const [linkSport, setLinkSport] = useState<string>('');
     const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
         if (!consentTokenFromUrl) return null;
         const resume = takeConsentResume(consentTokenFromUrl);
@@ -37,6 +38,7 @@ export const OnePlay: React.FC = () => {
                 if (res.ok) {
                     const data = await res.json();
                     setLinkId(data.link_id);
+                    setLinkSport(data.sport || '');
                     setStatus('ready');
                 } else if (res.status === 404) {
                     setStatus('not_found');
@@ -70,8 +72,10 @@ export const OnePlay: React.FC = () => {
         return <StatusScreen title="Algo salió mal" message="No pudimos iniciar la experiencia. Intenta de nuevo en unos minutos." />;
     }
 
-    // Ready — launch onboarding without tenant, with oneLink context
-    return <OnboardingFlowV2 oneLinkId={linkId} initialConsent={initialConsent} />;
+    // Ready — launch onboarding without tenant, with oneLink context.
+    // The sport was chosen by the buyer at link generation, so it is shown
+    // read-only and never asked again.
+    return <OnboardingFlowV2 oneLinkId={linkId} linkSport={linkSport} initialConsent={initialConsent} />;
 };
 
 const StatusScreen: React.FC<{ title: string; message: string }> = ({ title, message }) => (
