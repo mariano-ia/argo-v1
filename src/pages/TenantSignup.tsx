@@ -220,7 +220,7 @@ export const TenantSignup: React.FC = () => {
             await fetch('/api/create-tenant', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ auth_user_id: userId, email: userEmail, display_name: displayName, full_name: fullName || null }),
+                body: JSON.stringify({ auth_user_id: userId, email: userEmail, display_name: displayName, full_name: fullName || null, lang }),
             });
         } catch { /* proceed anyway */ }
         navigate('/dashboard', { replace: true });
@@ -266,7 +266,14 @@ export const TenantSignup: React.FC = () => {
             const { data, error: err } = await supabase.auth.signUp({
                 email,
                 password,
-                options: { data: { full_name: name.trim() } },
+                options: {
+                    data: { full_name: name.trim() },
+                    // After confirming their email, land back on /signup so the
+                    // onAuthStateChange listener creates the tenant and redirects
+                    // to the dashboard. Without this the link goes to the Site URL
+                    // and the tenant is never created.
+                    emailRedirectTo: window.location.origin + '/signup?plan=' + plan,
+                },
             });
             setLoading(false);
 

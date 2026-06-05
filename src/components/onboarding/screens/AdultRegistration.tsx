@@ -18,6 +18,10 @@ interface Props {
     flowType: 'auth' | 'tenant' | 'one';
     tenantId?: string;
     oneLinkId?: string;
+    /** When set, the sport was chosen earlier (club or Argo One link) and is shown read-only. */
+    readOnlySport?: string;
+    /** Club flow: institution name shown read-only as play context. */
+    institutionName?: string;
     onComplete: (data: AdultData) => void;
     onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
@@ -27,6 +31,8 @@ export const AdultRegistration: React.FC<Props> = ({
     flowType,
     tenantId,
     oneLinkId,
+    readOnlySport,
+    institutionName,
     onComplete,
     onConsentRequired,
 }) => {
@@ -47,11 +53,16 @@ export const AdultRegistration: React.FC<Props> = ({
     const deporteFinal = deporte === lastSport ? deporteCustom : deporte;
     const emailFinal = userEmail || email.trim();
 
+    // The sport is only asked when nobody chose it earlier. The club (tenant)
+    // defines it, and Argo One now captures it at link generation; in both
+    // cases it arrives as readOnlySport and is shown read-only, never asked.
+    const askSport = !readOnlySport && flowType !== 'tenant';
+
     const isValid =
         nombreAdulto.trim() &&
         emailFinal &&
         nombreNino.trim() &&
-        deporteFinal.trim() &&
+        (!askSport || deporteFinal.trim()) &&
         accepted &&
         !submitting;
 
@@ -64,7 +75,7 @@ export const AdultRegistration: React.FC<Props> = ({
             email: emailFinal,
             nombreNino: nombreNino.trim(),
             edad,
-            deporte: deporteFinal.trim(),
+            deporte: readOnlySport || deporteFinal.trim(),
         };
 
         if (edad < 13) {
@@ -108,6 +119,26 @@ export const AdultRegistration: React.FC<Props> = ({
                 </p>
             </div>
 
+            {/* Read-only play context: who they play for and the sport */}
+            {(institutionName || readOnlySport) && (
+                <div className="rounded-xl bg-[#F5F5F7] border border-[#D2D2D7] p-4 space-y-2.5">
+                    {institutionName && (
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
+                                {lang === 'en' ? 'Institution' : lang === 'pt' ? 'Instituição' : 'Institución'}
+                            </span>
+                            <span className="text-sm font-medium text-[#1D1D1F]">{institutionName}</span>
+                        </div>
+                    )}
+                    {readOnlySport && (
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">{ot.sport}</span>
+                            <span className="text-sm font-medium text-[#1D1D1F]">{readOnlySport}</span>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Form fields */}
             <div className="space-y-4">
                 {[
@@ -144,34 +175,36 @@ export const AdultRegistration: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {/* Deporte */}
-                <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">{ot.sport}</label>
-                    <div className="flex flex-wrap gap-2">
-                        {ot.sports.map(d => (
-                            <button
-                                key={d}
-                                onClick={() => setDeporte(d)}
-                                className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
-                                    deporte === d
-                                        ? 'bg-[#1D1D1F] text-white border-[#1D1D1F]'
-                                        : 'bg-white border-[#D2D2D7] text-[#424245] hover:border-[#1D1D1F]'
-                                }`}
-                            >
-                                {d}
-                            </button>
-                        ))}
+                {/* Deporte — only asked outside the club flow (Argo One) */}
+                {askSport && (
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">{ot.sport}</label>
+                        <div className="flex flex-wrap gap-2">
+                            {ot.sports.map(d => (
+                                <button
+                                    key={d}
+                                    onClick={() => setDeporte(d)}
+                                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                                        deporte === d
+                                            ? 'bg-[#1D1D1F] text-white border-[#1D1D1F]'
+                                            : 'bg-white border-[#D2D2D7] text-[#424245] hover:border-[#1D1D1F]'
+                                    }`}
+                                >
+                                    {d}
+                                </button>
+                            ))}
+                        </div>
+                        {deporte === lastSport && (
+                            <input
+                                type="text"
+                                value={deporteCustom}
+                                onChange={e => setDeporteCustom(e.target.value)}
+                                placeholder={ot.sportOtherPlaceholder}
+                                className="w-full border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
+                            />
+                        )}
                     </div>
-                    {deporte === lastSport && (
-                        <input
-                            type="text"
-                            value={deporteCustom}
-                            onChange={e => setDeporteCustom(e.target.value)}
-                            placeholder={ot.sportOtherPlaceholder}
-                            className="w-full border border-[#D2D2D7] rounded-xl px-4 py-2.5 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
-                        />
-                    )}
-                </div>
+                )}
             </div>
 
             {/* Consolidated consent block */}

@@ -132,6 +132,12 @@ interface OnboardingV2Props {
     /** Short-lived token from /api/start-play, required to attach to a tenant. */
     playToken?: string;
     oneLinkId?: string;
+    /** Argo One: sport chosen by the buyer at link generation (shown read-only). */
+    linkSport?: string;
+    /** Club flow: institution name shown read-only as play context. */
+    institutionName?: string;
+    /** Club flow: institution sport shown read-only (the club defines it). */
+    institutionSport?: string;
     /**
      * When provided (via the /consent/:token landing redirect), the flow
      * skips LanguageSelect → AdultIntros → AdultRegistration → WaitingScreen
@@ -147,7 +153,7 @@ interface OnboardingV2Props {
     demoMode?: boolean;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, initialConsent, demoMode = false }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, demoMode = false }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -1110,6 +1116,8 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         flowType={tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth'}
                         tenantId={tenantId}
                         oneLinkId={oneLinkId}
+                        readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}
+                        institutionName={tenantId ? (institutionName || undefined) : undefined}
                         onComplete={data => { setAdultData(data); advance(); }}
                         onConsentRequired={({ token, adultData: data }) => {
                             setAdultData(data);

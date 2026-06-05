@@ -74,7 +74,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get tenant by slug
         const { data: tenant } = await sb
             .from('tenants')
-            .select('id, display_name, plan, trial_expires_at, roster_limit')
+            .select('id, display_name, sport, plan, trial_expires_at, roster_limit')
             .eq('slug', slug)
             .single();
 
@@ -110,6 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ok: true,
             tenant_id: tenant.id,
             tenant_name: tenant.display_name,
+            tenant_sport: tenant.sport,
             roster_limit: data.roster_limit,
             active_count: data.active_count,
             available: data.available,

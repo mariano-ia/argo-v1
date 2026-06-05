@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
+import { welcomeEmail, sendTenantEmail } from '../src/lib/tenantEmails';
 
 function generateSlug(name: string): string {
     const base = name
@@ -29,7 +30,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { auth_user_id, email, display_name, full_name } = req.body;
+        const { auth_user_id, email, display_name, full_name, lang } = req.body;
 
         if (!auth_user_id || !email || !display_name) {
             return res.status(400).json({ error: 'Missing required fields: auth_user_id, email, display_name' });
@@ -87,6 +88,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (memberErr) {
             console.error('[create-tenant] tenant_members upsert failed:', memberErr.message);
         }
+
+        // Welcome email — only on a genuinely new account (not idempotent re-calls).
+        const welcome = welcomeEmail(typeof lang === 'string' ? lang : 'es', display_name, tenant!.slug);
+        await sendTenantEmail(email, welcome.subject, welcome.html);
 
         return res.status(200).json({ ok: true, tenant, existing: false });
     } catch (err) {

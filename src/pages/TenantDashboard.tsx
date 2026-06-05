@@ -6,6 +6,7 @@ import { Tooltip } from '../components/ui/Tooltip';
 import { useLang } from '../context/LangContext';
 import { getDashboardT } from '../lib/dashboardTranslations';
 import { TenantOnboarding } from './tenant/TenantOnboarding';
+import { TrialEndModal } from '../components/dashboard/TrialEndModal';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
@@ -62,6 +63,7 @@ export const TenantDashboard: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
+    const [showTrialModal, setShowTrialModal] = useState(true);
     const sessionCountRef = useRef<number | null>(null);
 
     // DEV bypass — only on localhost, never on deployed previews
@@ -159,6 +161,7 @@ export const TenantDashboard: React.FC = () => {
     const userInitials = userDisplayName.split(' ').map((w: string) => w[0]).filter(Boolean).slice(0, 2).join('').toUpperCase();
 
     const profileIncomplete = !!(tenant && !tenant.institution_type);
+    const trialExpired = !!(tenant && tenant.plan === 'trial' && tenant.trial_expires_at && new Date(tenant.trial_expires_at) < new Date());
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
     const NavItem = ({ to, label, icon: Icon, end, showDot }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean; showDot?: boolean }) => (
@@ -376,6 +379,15 @@ export const TenantDashboard: React.FC = () => {
 
     return (
         <ToastProvider>
+        {tenant && tenant.onboarding_completed && trialExpired && (
+            <TrialEndModal
+                open={showTrialModal}
+                lang={lang}
+                rosterCount={tenant.active_players_count}
+                onUpgrade={() => { setShowTrialModal(false); navigate('/dashboard/pricing'); }}
+                onClose={() => setShowTrialModal(false)}
+            />
+        )}
         <div className="flex h-screen bg-argo-bg overflow-hidden">
             {/* Desktop sidebar */}
             <div className="hidden md:flex">

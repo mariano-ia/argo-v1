@@ -13,6 +13,8 @@ export const TenantPlay: React.FC = () => {
     const [status, setStatus] = useState<Status>('loading');
     const [tenantId, setTenantId] = useState<string>('');
     const [playToken, setPlayToken] = useState<string>('');
+    const [tenantName, setTenantName] = useState<string>('');
+    const [tenantSport, setTenantSport] = useState<string>('');
     // If we're arriving from /consent/:token, pull the pre-populated adult data
     // from sessionStorage so we can skip the form entirely.
     const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
@@ -35,6 +37,8 @@ export const TenantPlay: React.FC = () => {
                     const data = await res.json();
                     setTenantId(data.tenant_id);
                     setPlayToken(data.play_token ?? '');
+                    setTenantName(data.tenant_name ?? '');
+                    setTenantSport(data.tenant_sport ?? '');
                     setStatus('ready');
                 } else if (res.status === 404) {
                     setStatus('not_found');
@@ -94,8 +98,17 @@ export const TenantPlay: React.FC = () => {
         );
     }
 
-    // Ready — launch the onboarding flow without user auth
-    return <OnboardingFlowV2 tenantId={tenantId} playToken={playToken} initialConsent={initialConsent} />;
+    // Ready — launch the onboarding flow without user auth. The institution and
+    // its sport are shown read-only (the club defines the sport, not the parent).
+    return (
+        <OnboardingFlowV2
+            tenantId={tenantId}
+            playToken={playToken}
+            institutionName={tenantName}
+            institutionSport={tenantSport}
+            initialConsent={initialConsent}
+        />
+    );
 };
 
 // ─── Status screen ───────────────────────────────────────────────────────────

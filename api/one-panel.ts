@@ -37,7 +37,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method === 'GET') {
         const { data: links } = await sb
             .from('one_links')
-            .select('id, slug, status, recipient_email, child_name, completed_at, session_id')
+            .select('id, slug, status, recipient_email, child_name, sport, completed_at, session_id')
             .eq('purchase_id', purchase.id)
             .order('created_at', { ascending: true });
 
@@ -60,11 +60,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ── POST: generate link ─────────────────────────────────────────────
-    const { action, link_id, recipient_email, child_name } = req.body ?? {};
+    const { action, link_id, recipient_email, child_name, sport } = req.body ?? {};
 
     if (action === 'generate-link') {
         if (!link_id) return res.status(400).json({ error: 'Missing link_id' });
         if (!recipient_email) return res.status(400).json({ error: 'Missing recipient_email' });
+        if (!sport || !String(sport).trim()) return res.status(400).json({ error: 'Missing sport' });
 
         // Verify link belongs to this purchase and is available
         const { data: link } = await sb
@@ -82,6 +83,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             status: 'sent',
             recipient_email: recipient_email.trim(),
             child_name: child_name?.trim() || null,
+            sport: String(sport).trim(),
             sent_at: new Date().toISOString(),
         }).eq('id', link_id);
 

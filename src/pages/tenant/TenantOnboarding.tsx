@@ -557,23 +557,17 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                         </Field>
 
                         <Field label={o.deporte}>
-                            <div className="flex flex-wrap gap-2">
+                            <select
+                                className={selectClass}
+                                value={o.deportes.includes(sport) ? sport : (sport ? '_other' : '')}
+                                onChange={e => setSport(e.target.value)}
+                            >
+                                <option value="">{o.seleccionarDeporte}</option>
                                 {o.deportes.map(d => (
-                                    <ChipButton
-                                        key={d}
-                                        selected={sport === d}
-                                        onClick={() => setSport(sport === d ? '' : d)}
-                                    >
-                                        {d}
-                                    </ChipButton>
+                                    <option key={d} value={d}>{d}</option>
                                 ))}
-                                <ChipButton
-                                    selected={!!sport && !o.deportes.includes(sport)}
-                                    onClick={() => setSport(sport && !o.deportes.includes(sport) ? '' : '_other')}
-                                >
-                                    {o.deporteOtro}
-                                </ChipButton>
-                            </div>
+                                <option value="_other">{o.deporteOtro}</option>
+                            </select>
                             {sport && !o.deportes.includes(sport) && (
                                 <input
                                     className={`${inputClass} mt-2`}
@@ -639,14 +633,21 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
             {/* Footer */}
             <div className="flex items-center justify-between mt-6">
-                <button
-                    type="button"
-                    onClick={handleSkip}
-                    disabled={saving}
-                    className="text-[13px] text-argo-grey hover:text-argo-navy transition-colors disabled:opacity-50"
-                >
-                    {o.completarDespues}
-                </button>
+                {/* Step 1 (institution name + sport) is mandatory, so no skip there */}
+                {step === 1 ? (
+                    <span />
+                ) : (
+                    /* Step 2 (owner profile) is optional, but we still persist
+                       the mandatory step-1 data, so this saves rather than skips. */
+                    <button
+                        type="button"
+                        onClick={handleFinish}
+                        disabled={saving}
+                        className="text-[13px] text-argo-grey hover:text-argo-navy transition-colors disabled:opacity-50"
+                    >
+                        {o.completarDespues}
+                    </button>
+                )}
 
                 <div className="flex items-center gap-3">
                     {step === 2 && (
@@ -662,7 +663,8 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                         <button
                             type="button"
                             onClick={() => setStep(2)}
-                            className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                            disabled={!displayName.trim() || !(sport.trim() && sport !== '_other')}
+                            className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {o.siguiente}
                         </button>

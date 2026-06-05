@@ -4,6 +4,22 @@ import Stripe from 'stripe';
 import { buffer } from 'micro';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { logActivity } from '../src/lib/principia/activityLog';
+import { paymentFailedEmail, subscriptionEndedEmail, sendTenantEmail } from '../src/lib/tenantEmails';
+
+// Look up a tenant's email and send a lifecycle email (best-effort).
+async function emailTenant(
+    sb: ReturnType<typeof createClient>,
+    tenantId: string | undefined,
+    build: () => { subject: string; html: string },
+): Promise<void> {
+    if (!tenantId) return;
+    const { data } = await sb.from('tenants').select('email').eq('id', tenantId).maybeSingle();
+    const email = (data as { email?: string } | null)?.email;
+    if (email) {
+        const { subject, html } = build();
+        await sendTenantEmail(email, subject, html);
+    }
+}
 
 // Verifies a MercadoPago webhook signature (x-signature: "ts=...,v1=...").
 // MP signs the manifest `id:<data.id>;request-id:<x-request-id>;ts:<ts>;`
@@ -450,6 +466,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
             failedTenantId = t?.id;
         }
         console.error(`[one-webhook] PAYMENT FAILED — subscription ${sub ?? '?'}, tenant ${failedTenantId ?? 'unknown'}, invoice ${invoice.id}`);
+        await emailTenant(sb, failedTenantId, () => paymentFailedEmail('es'));
         return res.status(200).json({ received: true, action: 'payment_failed_logged' });
     }
 
@@ -465,6 +482,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
                 subscription_id: null,
             }).eq('id', tenantId);
             console.info(`[one-webhook] Subscription cancelled: tenant ${tenantId} downgraded to trial`);
+            await emailTenant(sb, tenantId, () => subscriptionEndedEmail('es'));
         }
         return res.status(200).json({ received: true, action: 'subscription_cancelled' });
     }
@@ -617,8 +635,21 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
                 subscription_id: null,
             }).eq('id', tenantId);
             console.info(`[one-webhook] MP subscription cancelled: tenant ${tenantId} → trial`);
+            await emailTenant(sb, tenantId, () => subscriptionEndedEmail('es'));
         } else if (preapproval.status === 'paused') {
-            console.info(`[one-webhook] MP subscription paused: tenant ${tenantId}`);
+            // MercadoPago pauses a preapproval after its recurring charge fails
+            // repeatedly. Treat it like a cancellation and downgrade so we never
+            // serve a paid plan that isn't being paid for. If the payment later
+            // recovers, MP re-emits status='authorized' and the branch above
+            // restores the plan.
+            await sb.from('tenants').update({
+                plan: 'trial',
+                roster_limit: 8,
+                subscription_provider: null,
+                subscription_id: null,
+            }).eq('id', tenantId);
+            console.error(`[one-webhook] MP subscription PAUSED (payment failing): tenant ${tenantId} → trial`);
+            await emailTenant(sb, tenantId, () => paymentFailedEmail('es'));
         }
 
         return res.status(200).json({ received: true, status: preapproval.status });
