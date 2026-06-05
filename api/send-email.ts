@@ -1,8 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-// NOTE: Vercel serverless functions in /api CANNOT import from /src.
-// Cross-bundle imports cause ERR_MODULE_NOT_FOUND at runtime. Inline any
-// shared logic here instead. (See CLAUDE.md.)
+import { logActivity } from '../src/lib/principia/activityLog';
+// NOTE: Vercel serverless functions in /api CANNOT import between api/ files.
+// activityLog is imported from src/lib (a pure TS module with no browser deps)
+// which Vercel's esbuild bundler resolves correctly. (See CLAUDE.md.)
 
 // ─── Email HTML builder ───────────────────────────────────────────────────────
 
@@ -700,6 +701,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!response.ok) {
             const error = await response.json().catch(() => ({ message: 'Error desconocido de Resend' }));
             console.error('[send-email] Resend API error — status:', response.status, 'body:', JSON.stringify(error));
+            // Principia ingestion (area=producto): report email failed to send.
+            try {
+                const supabaseUrl = process.env.VITE_SUPABASE_URL;
+                const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                if (supabaseUrl && serviceKey) {
+                    const sbErr = createClient(supabaseUrl, serviceKey);
+                    await logActivity(sbErr, {
+                        area: 'producto',
+                        action: 'report_email_failed',
+                        sourceType: 'actuator',
+                        severity: 'medio',
+                        resourceType: 'session',
+                        resourceId: sessionId ? String(sessionId) : undefined,
+                        reason: { session_id: sessionId, resend_status: response.status },
+                        relatedLogs: sessionId ? [`sessions.${sessionId}`] : [],
+                    });
+                }
+            } catch { /* non-blocking */ }
             return res.status(response.status).json({ error });
         }
 
@@ -713,6 +732,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 try { await sb.from('sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId); } catch { /* non-blocking */ }
+                // Principia ingestion (area=producto): the report email reached the adult.
+                await logActivity(sb, {
+                    area: 'producto',
+                    action: 'report_email_sent',
+                    sourceType: 'actuator',
+                    severity: 'info',
+                    resourceType: 'session',
+                    resourceId: String(sessionId),
+                    reason: { session_id: sessionId },
+                    relatedLogs: [`sessions.${sessionId}`],
+                });
             }
         }
 
