@@ -1,6 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// This monitor makes several multi-second calls in one invocation (generate-ai
+// is 15-27s, the coach canary hits tenant-chat, plus 13 boot probes) and may now
+// retry the AI probe once on a transient 5xx. Give it explicit headroom so the
+// monitor itself never times out mid-run and silently skips its own activity-log
+// write / dead-man's-switch heartbeat.
+export const maxDuration = 120;
+
 type Check = { name: string; ok: boolean; detail?: string };
 
 async function sendAlert(failures: Check[]) {
@@ -41,6 +48,33 @@ function minimalReport() {
   };
 }
 
+// Probe fetch that retries ONCE on a transient 5xx or network error before
+// reporting the result. The AI endpoints take 15-27s and a single slow call can
+// exceed its own maxDuration and return a platform 5xx; that blip self-recovers
+// and report-recovery-cron backstops any real user, so one bad sample must not
+// page a human at 3am. A sustained failure (both attempts fail) still surfaces
+// the real status and alerts. The common case (200 on the first try) pays no
+// extra cost. Throws only if BOTH attempts throw (true unreachable endpoint).
+async function fetchProbe(url: string, init: RequestInit): Promise<{ status: number; body: Record<string, unknown> }> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r = await fetch(url, init);
+      // Retry a 5xx only on the first attempt; otherwise return the real status.
+      if (r.status >= 500 && attempt === 0) {
+        await new Promise(res => setTimeout(res, 2000));
+        continue;
+      }
+      const body = await r.json().catch(() => ({} as Record<string, unknown>));
+      return { status: r.status, body };
+    } catch (e) {
+      lastErr = e;
+      if (attempt === 0) { await new Promise(res => setTimeout(res, 2000)); continue; }
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Protect like the other crons.
   const secret = process.env.CRON_SECRET;
@@ -65,17 +99,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (e) { add('start-play reachable', false, String(e)); }
 
   // CHECK 2: generate-ai produces valid sections for a fixed report.
+  // Retries once on a transient 5xx (the AI call is slow and can occasionally
+  // exceed maxDuration on a single sample); only a sustained failure pages.
   try {
-    const r = await fetch(`${base}/api/generate-ai`, {
+    const { status, body } = await fetchProbe(`${base}/api/generate-ai`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         report: minimalReport(),
         context: { nombre: 'QA Kid', deporte: 'futbol', edad: 10, destinatario: 'entrenador', lang: 'es' },
       }),
     });
-    const b = await r.json().catch(() => ({} as Record<string, unknown>));
-    const sections = (b as { sections?: { resumenPerfil?: unknown } }).sections;
-    add('generate-ai 200 + sections', r.status === 200 && typeof sections?.resumenPerfil === 'string', `status=${r.status}`);
+    const sections = (body as { sections?: { resumenPerfil?: unknown } }).sections;
+    add('generate-ai 200 + sections', status === 200 && typeof sections?.resumenPerfil === 'string', `status=${status}`);
   } catch (e) { add('generate-ai reachable', false, String(e)); }
 
   // CHECK 3: DB integrity — no _pending sessions stuck for the QA tenant.
