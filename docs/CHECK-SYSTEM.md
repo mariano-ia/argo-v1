@@ -52,7 +52,7 @@ Cron diario (12:00 UTC). Corre 7 checks contra producción y, si **alguno falla*
 | # | Check | Qué valida | Falla si |
 |---|-------|-----------|----------|
 | 1 | `start-play 200 + ok` | El flujo de inicio de juego del tenant QA responde con capacidad | status ≠ 200 o `ok ≠ true` |
-| 2 | `generate-ai 200 + sections` | Generación de reporte de IA produce secciones válidas | no devuelve `sections.resumenPerfil` |
+| 2 | `generate-ai 200 + sections` | Generación de reporte de IA produce secciones válidas | no devuelve `sections.resumenPerfil`. Reintenta 1 vez ante un 5xx/error transitorio (la llamada IA tarda 15-27s y un sample lento puede 5xx): sólo un fallo **sostenido** (ambos intentos) alerta |
 | 3 | `no stuck _pending QA sessions` | No hay sesiones del tenant QA atascadas en `_pending` | ≥ 5 sesiones pending |
 | 4 | `blog-cron protected` | Los crons siguen protegidos por secret | `/api/blog-cron` no devuelve 401/403 |
 | 5 | `no AI-failed reports (24h)` | No hay sesiones con perfil pero sin reporte entregado | ≥ 1 sesión con `eje` real + `ai_sections` null en 24h |
