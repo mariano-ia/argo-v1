@@ -13,18 +13,35 @@ type Check = { name: string; ok: boolean; detail?: string };
 async function sendAlert(failures: Check[]) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.QA_ALERT_EMAIL || 'marianonoceti@gmail.com';
-  if (!apiKey) return;
   const lines = failures.map(f => `- ${f.name}: ${f.detail ?? 'failed'}`).join('\n');
-  await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: 'Argo QA <qa@argomethod.com>',
-      to,
-      subject: `[Argo QA] ${failures.length} check(s) FAILED`,
-      text: `El monitor sintético detectó fallas en producción:\n\n${lines}\n\nRevisa los logs de Vercel.`,
-    }),
-  }).catch(() => {});
+  const body = `El monitor sintético detectó fallas en producción:\n\n${lines}\n\nRevisa los logs de Vercel.`;
+
+  // Email (Resend) — the mandatory floor.
+  if (apiKey) {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Argo QA <qa@argomethod.com>',
+        to,
+        subject: `[Argo QA] ${failures.length} check(s) FAILED`,
+        text: body,
+      }),
+    }).catch(() => {});
+  }
+
+  // Telegram — second channel, using the same creds principia-detect/Vigía already
+  // uses. No-ops if unset. Plain text (no parse_mode) so check names with '_' or '*'
+  // never break Telegram's Markdown parser. Email-only alerting was the gap that made
+  // a Resend hiccup or a spam-foldered alert invisible.
+  const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+  const tgChat = process.env.TELEGRAM_CHAT_ID;
+  if (tgToken && tgChat) {
+    await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: tgChat, text: `[Argo QA] ${failures.length} check(s) FAILED\n\n${body}` }),
+    }).catch(() => {});
+  }
 }
 
 // Minimal but schema-valid ReportData for the generate-ai smoke check.
@@ -82,6 +99,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const provided = (req.query.secret as string) || auth.replace('Bearer ', '');
   if (secret && provided !== secret) return res.status(401).json({ error: 'unauthorized' });
 
+  // On-demand alert-channel self-test: `?selftest=1` fires one test alert through
+  // every channel (email + Telegram) and returns, WITHOUT running the checks. Lets us
+  // prove the alerting pipeline end-to-end without waiting for (or faking) a real
+  // failure. Still behind CRON_SECRET, so it can't be used to spam the owner.
+  if (req.query.selftest) {
+    await sendAlert([{ name: 'selftest', ok: false, detail: 'Prueba manual del canal de alertas. Si ves esto, las alertas del monitor te llegan bien.' }]);
+    return res.status(200).json({ ok: true, selftest: 'alert sent (email + telegram)' });
+  }
+
   const base = process.env.SITE_URL || 'https://www.argomethod.com';
   const slug = process.env.QA_TENANT_SLUG || 'qa-robot';
   const sb = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -90,12 +116,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // CHECK 1: start-play returns capacity for the QA tenant.
   try {
-    const r = await fetch(`${base}/api/start-play`, {
+    const { status, body } = await fetchProbe(`${base}/api/start-play`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slug }),
     });
-    const b = await r.json().catch(() => ({}));
-    add('start-play 200 + ok', r.status === 200 && b.ok === true, `status=${r.status}`);
+    add('start-play 200 + ok', status === 200 && (body as { ok?: boolean }).ok === true, `status=${status}`);
   } catch (e) { add('start-play reachable', false, String(e)); }
 
   // CHECK 2: generate-ai produces valid sections for a fixed report.
@@ -123,8 +148,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // CHECK 4: cron endpoints are protected.
   try {
-    const r = await fetch(`${base}/api/blog-cron`);
-    add('blog-cron protected', r.status === 401 || r.status === 403, `status=${r.status}`);
+    const { status } = await fetchProbe(`${base}/api/blog-cron`, {});
+    add('blog-cron protected', status === 401 || status === 403, `status=${status}`);
   } catch (e) { add('blog-cron reachable', false, String(e)); }
 
   // CHECK 5: AI-failed reports — sessions that finished profiling (real eje)
@@ -197,17 +222,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!access) {
         add('coach canary: QA login', false, `login status=${tokenRes.status}`);
       } else {
-        const r = await fetch(`${base}/api/tenant-chat`, {
+        const { status, body: b } = await fetchProbe(`${base}/api/tenant-chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${access}` },
           body: JSON.stringify({ message: 'En una frase, ¿cómo se llama el perfil de eje S con motor Medio?', lang: 'es' }),
         });
-        const b = await r.json().catch(() => ({} as Record<string, unknown>));
         const text = String((b as { message?: { content?: string } }).message?.content ?? '').toLowerCase();
         // Accent-insensitive so a valid "ritmico" (no accent) doesn't false-page.
         const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
         const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
-        add('coach canary: responds 200', r.status === 200 && text.length > 0, `status=${r.status}`);
+        add('coach canary: responds 200', status === 200 && text.length > 0, `status=${status}`);
         add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
         add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
       }
@@ -275,10 +299,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   ];
   for (const ep of bootProbes) {
     try {
-      const r = await fetch(`${base}${ep.path}`, ep.method === 'POST'
+      const { status } = await fetchProbe(`${base}${ep.path}`, ep.method === 'POST'
         ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' }
         : {});
-      add(`endpoint boots (no 5xx): ${ep.path}`, r.status < 500, `status=${r.status}`);
+      add(`endpoint boots (no 5xx): ${ep.path}`, status < 500, `status=${status}`);
     } catch (e) { add(`endpoint reachable: ${ep.path}`, false, String(e)); }
   }
 
