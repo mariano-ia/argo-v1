@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 
 // Report generation (Gemini + OpenAI fallback) can take 20-40s. Without this,
 // a slower model response would hit the platform's default timeout and fail.
@@ -392,6 +393,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    const t0 = Date.now();
     try {
         // 80 report generations/min per IP — generous for a club, caps abuse.
         if (await rateLimited(`rl:generate-ai:${clientIp(req)}`, 80, 60)) {
@@ -454,6 +456,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // to rewrite the response without those words. One retry max.
         const sectionsAsObj = sections as unknown as Record<string, unknown>;
         const firstFound = findProhibitedWords(sectionsAsObj);
+        const prohibitedHit = firstFound.length > 0;
+        // Assume a hit survives until the correction pass clears it; surfaced to ai_events telemetry below.
+        let prohibitedAfterRetry = prohibitedHit;
         if (firstFound.length > 0) {
             console.warn('[generate-ai] Prohibited words detected on first pass:', firstFound.join(', '));
             const correctionMessages: AIMsg[] = [
@@ -472,6 +477,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (stillFound.length === 0) {
                     sections = correctedSections;
                     aiResponse = correctedResp;
+                    prohibitedAfterRetry = false;
                 } else {
                     console.warn('[generate-ai] Correction still had prohibited words:', stillFound.join(', '));
                 }
@@ -494,6 +500,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             totalTokens: aiResponse.totalTokens,
             costUsd: getCostUsd(aiResponse),
         };
+
+        // Best-effort latency/quality telemetry (mirrors tenant-chat's ai_events log).
+        // Report generation runs 15-27s against a 60s ceiling; this lets us watch how
+        // close real traffic runs to the limit and whether prohibited-word leaks survive
+        // the correction pass. Never breaks the response; no-ops if env/table is absent.
+        try {
+            const sbUrl = process.env.VITE_SUPABASE_URL;
+            const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (sbUrl && sbKey) {
+                await createClient(sbUrl, sbKey).from('ai_events').insert({
+                    source: 'generate-ai',
+                    provider: aiResponse.provider,
+                    model: aiResponse.provider === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4o',
+                    lang: langCode,
+                    tokens_in: aiResponse.inputTokens,
+                    tokens_out: aiResponse.outputTokens,
+                    cost_usd: getCostUsd(aiResponse),
+                    latency_ms: Date.now() - t0,
+                    prohibited_hit: prohibitedHit,
+                    prohibited_after_retry: prohibitedAfterRetry,
+                });
+            }
+        } catch (telemetryErr) {
+            console.warn('[generate-ai] ai_events telemetry insert failed (non-fatal):', telemetryErr instanceof Error ? telemetryErr.message : telemetryErr);
+        }
 
         return res.status(200).json({ sections, usage });
     } catch (err: unknown) {
