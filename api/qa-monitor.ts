@@ -10,38 +10,63 @@ export const maxDuration = 120;
 
 type Check = { name: string; ok: boolean; detail?: string };
 
-async function sendAlert(failures: Check[]) {
+type AlertResult = {
+  email: 'sent' | 'error' | 'skipped (no RESEND_API_KEY)';
+  telegram: { attempted: boolean; ok?: boolean; description?: string };
+};
+
+async function sendAlert(failures: Check[]): Promise<AlertResult> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.QA_ALERT_EMAIL || 'marianonoceti@gmail.com';
   const lines = failures.map(f => `- ${f.name}: ${f.detail ?? 'failed'}`).join('\n');
   const body = `El monitor sintético detectó fallas en producción:\n\n${lines}\n\nRevisa los logs de Vercel.`;
+  const result: AlertResult = { email: 'skipped (no RESEND_API_KEY)', telegram: { attempted: false } };
 
   // Email (Resend) — the mandatory floor.
   if (apiKey) {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: 'Argo QA <qa@argomethod.com>',
-        to,
-        subject: `[Argo QA] ${failures.length} check(s) FAILED`,
-        text: body,
-      }),
-    }).catch(() => {});
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'Argo QA <qa@argomethod.com>',
+          to,
+          subject: `[Argo QA] ${failures.length} check(s) FAILED`,
+          text: body,
+        }),
+      });
+      result.email = r.ok ? 'sent' : 'error';
+      if (!r.ok) console.warn('[qa-monitor] Resend send failed:', r.status, await r.text().catch(() => ''));
+    } catch (e) { result.email = 'error'; console.warn('[qa-monitor] Resend threw:', e); }
   }
 
-  // Telegram — second channel, using the same creds principia-detect/Vigía already
-  // uses. No-ops if unset. Plain text (no parse_mode) so check names with '_' or '*'
-  // never break Telegram's Markdown parser. Email-only alerting was the gap that made
-  // a Resend hiccup or a spam-foldered alert invisible.
+  // Telegram — second channel, using the same creds principia-detect/Vigía uses.
+  // Surfaces the API result instead of swallowing it (email-only alerting was the
+  // gap that made a Resend hiccup invisible; a swallowed Telegram error is the same
+  // trap). Plain text (no parse_mode) so check names with '_' or '*' never break
+  // Telegram's Markdown parser.
   const tgToken = process.env.TELEGRAM_BOT_TOKEN;
   const tgChat = process.env.TELEGRAM_CHAT_ID;
   if (tgToken && tgChat) {
-    await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: tgChat, text: `[Argo QA] ${failures.length} check(s) FAILED\n\n${body}` }),
-    }).catch(() => {});
+    result.telegram.attempted = true;
+    try {
+      const r = await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: tgChat, text: `[Argo QA] ${failures.length} check(s) FAILED\n\n${body}` }),
+      });
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; description?: string };
+      result.telegram.ok = !!j.ok;
+      if (!j.ok) {
+        result.telegram.description = String(j.description ?? `http ${r.status}`);
+        console.warn('[qa-monitor] Telegram send failed:', result.telegram.description);
+      }
+    } catch (e) {
+      result.telegram.ok = false;
+      result.telegram.description = e instanceof Error ? e.message : String(e);
+      console.warn('[qa-monitor] Telegram threw:', result.telegram.description);
+    }
   }
+  return result;
 }
 
 // Minimal but schema-valid ReportData for the generate-ai smoke check.
@@ -104,8 +129,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // prove the alerting pipeline end-to-end without waiting for (or faking) a real
   // failure. Still behind CRON_SECRET, so it can't be used to spam the owner.
   if (req.query.selftest) {
-    await sendAlert([{ name: 'selftest', ok: false, detail: 'Prueba manual del canal de alertas. Si ves esto, las alertas del monitor te llegan bien.' }]);
-    return res.status(200).json({ ok: true, selftest: 'alert sent (email + telegram)' });
+    const delivery = await sendAlert([{ name: 'selftest', ok: false, detail: 'Prueba manual del canal de alertas. Si ves esto, las alertas del monitor te llegan bien.' }]);
+    return res.status(200).json({ ok: true, selftest: 'fired', delivery });
   }
 
   const base = process.env.SITE_URL || 'https://www.argomethod.com';
