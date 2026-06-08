@@ -37,6 +37,7 @@ La idea es que ninguna falla quede invisible: o la atrapa un test antes de salir
 | `/api/qa-monitor` | `0 * * * *` (cada hora) | **Monitor sintético.** ~33 checks de salud; manda email si algo NUEVO falla. |
 | `/api/report-recovery-cron` | `*/5 * * * *` (cada 5 min) | Red de seguridad de entrega de reportes (self-heal). |
 | `/api/principia-detect` | `*/10 * * * *` (cada 10 min) | Detector de Vigía/Principia + heartbeat del cockpit. |
+| `/api/journey-canary` | `0 9 * * *` (diario 09:00) | **Canary de viaje completo:** corre play→generate-ai→guardar sesión→enviar email como tenant QA, autolimpiante (borra su sesión `is_demo`). Alerta por email+Telegram si algún eslabón falla. Es el único check que verifica la cadena entera (sobre todo que el email se envía). |
 | `/api/blog-cron` | `0 10 * * 1,4` (Lun/Jue 10:00) | Publicación autónoma del blog. |
 | `/api/retention-cron` | `0 3 * * *` (diario 03:00) | Retención/limpieza de datos. Ver `api/retention-cron.ts`. |
 | `/api/trial-lifecycle-cron` | `0 11 * * *` (diario 11:00) | Emails de ciclo de vida del trial (por vencer/vencido). |

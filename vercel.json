@@ -43,6 +43,10 @@
     {
       "path": "/api/principia-detect",
       "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/journey-canary",
+      "schedule": "0 9 * * *"
     }
   ]
 }

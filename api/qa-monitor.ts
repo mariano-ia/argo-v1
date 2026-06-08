@@ -212,6 +212,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { count } = await sb.from('sessions').select('*', { count: 'exact', head: true })
       .neq('eje', '_pending')
       .is('ai_sections', null)
+      .not('is_demo', 'is', true) // exclude demo/canary sessions — not real undelivered reports
       .gte('created_at', cutoff);
     add('no AI-failed reports (24h)', (count ?? 0) === 0, `undelivered=${count}`);
   } catch (e) { add('AI-failure check reachable', false, String(e)); }
@@ -312,6 +313,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     'puentes-reminder-cron': 2880,  // daily
     'puentes-sync-cron': 2880,      // daily
     'trial-lifecycle-cron': 2880,   // daily
+    'journey-canary': 2880,         // daily (full play→report→email end-to-end)
     'blog-cron': 11520,             // Mon/Thu
   };
   for (const [ref, maxMin] of Object.entries(CRON_MAX_STALE_MIN)) {
@@ -346,6 +348,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     { path: '/api/retention-cron', method: 'GET' },
     { path: '/api/puentes-reminder-cron', method: 'GET' },
     { path: '/api/puentes-sync-cron', method: 'GET' },
+    { path: '/api/journey-canary', method: 'GET' },
     { path: '/api/admin-tenants', method: 'GET' },
   ];
   for (const ep of bootProbes) {
