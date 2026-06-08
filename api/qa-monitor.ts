@@ -133,6 +133,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ ok: true, selftest: 'fired', delivery });
   }
 
+  // Telegram setup helper (behind CRON_SECRET): `?tgdebug=1` returns the bot's
+  // @username, the currently-configured chat_id, and the distinct chats that have
+  // messaged the bot (via getUpdates). Used to find the owner's real chat_id after
+  // they /start the bot — the configured id was the bot's own (it can't message
+  // itself). Reads the runtime token; never returns it.
+  if (req.query.tgdebug) {
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChat = process.env.TELEGRAM_CHAT_ID;
+    if (!tgToken) return res.status(200).json({ ok: false, error: 'TELEGRAM_BOT_TOKEN unset at runtime' });
+    const me = await fetch(`https://api.telegram.org/bot${tgToken}/getMe`).then(r => r.json()).catch(() => ({}));
+    const upd = await fetch(`https://api.telegram.org/bot${tgToken}/getUpdates`).then(r => r.json()).catch(() => ({}));
+    type TgChat = { id: number; type: string; first_name?: string; username?: string; title?: string };
+    const updResult = ((upd as { result?: Array<{ message?: { chat?: TgChat } }> }).result) ?? [];
+    const chats = Array.from(
+      new Map(updResult.map(u => u.message?.chat).filter((c): c is TgChat => !!c).map(c => [c.id, c])).values()
+    );
+    return res.status(200).json({
+      ok: true,
+      bot: { username: (me as { result?: { username?: string; id?: number } }).result?.username, id: (me as { result?: { id?: number } }).result?.id },
+      configured_chat_id: tgChat,
+      getUpdates_ok: (upd as { ok?: boolean }).ok ?? false,
+      getUpdates_error: (upd as { description?: string }).description,
+      chats_that_messaged_bot: chats,
+    });
+  }
+
   const base = process.env.SITE_URL || 'https://www.argomethod.com';
   const slug = process.env.QA_TENANT_SLUG || 'qa-robot';
   const sb = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
