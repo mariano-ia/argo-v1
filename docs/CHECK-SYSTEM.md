@@ -1,7 +1,7 @@
 # Sistema de Checks y Monitoreo — Argo
 
 > Fuente única de verdad del sistema de "cómo sabemos si algo se rompe y cómo lo recuperamos".
-> Última actualización: 2026-06-04. Docs relacionados: [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md) (cómo funciona el Coach), [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md).
+> Última actualización: 2026-06-08. Docs relacionados: [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md) (cómo funciona el Coach), [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md).
 
 ## Filosofía: defensa en profundidad (3 anillos)
 
@@ -22,7 +22,7 @@ La idea es que ninguna falla quede invisible: o la atrapa un test antes de salir
 | Prevenir | Unit tests | `npm run qa:unit` | Manual / CI | Falla el comando |
 | Prevenir | Linter de contenido (voseo/guiones) | `npm run lint:content` + hook post-edit | En cada edición + manual | Exit ≠ 0 / hook |
 | Prevenir | Eval de IA (calidad de reportes y chat) | `npm run qa:ai-eval` | Manual | Reporte markdown |
-| Detectar | **Monitor sintético** (`qa-monitor`) | `/api/qa-monitor` | Cron diario 12:00 UTC | **Email (Resend)** |
+| Detectar | **Monitor sintético** (`qa-monitor`) | `/api/qa-monitor` | Cron horario (`0 * * * *`) | **Email (Resend)** |
 | Detectar | Telemetría del Coach (`ai_events`) | tabla + `/api/qa-monitor` CHECK 6 | Por cada respuesta + chequeo diario | Email vía monitor |
 | Detectar | Errores de cliente (`client_errors`) | tabla + `/admin/health` | En cada error de browser | Dashboard (pull) |
 | Detectar | Telemetría de audio (`audio_events`) | tabla + `/admin/health` | En cada evento de audio | Dashboard (pull) |
@@ -34,10 +34,12 @@ La idea es que ninguna falla quede invisible: o la atrapa un test antes de salir
 
 | Path | Schedule (UTC) | Propósito |
 |------|---------------|-----------|
-| `/api/qa-monitor` | `0 12 * * *` (diario 12:00) | **Monitor sintético.** 7 checks de salud; manda email si algo falla. |
+| `/api/qa-monitor` | `0 * * * *` (cada hora) | **Monitor sintético.** ~33 checks de salud; manda email si algo NUEVO falla. |
 | `/api/report-recovery-cron` | `*/5 * * * *` (cada 5 min) | Red de seguridad de entrega de reportes (self-heal). |
+| `/api/principia-detect` | `*/10 * * * *` (cada 10 min) | Detector de Vigía/Principia + heartbeat del cockpit. |
 | `/api/blog-cron` | `0 10 * * 1,4` (Lun/Jue 10:00) | Publicación autónoma del blog. |
 | `/api/retention-cron` | `0 3 * * *` (diario 03:00) | Retención/limpieza de datos. Ver `api/retention-cron.ts`. |
+| `/api/trial-lifecycle-cron` | `0 11 * * *` (diario 11:00) | Emails de ciclo de vida del trial (por vencer/vencido). |
 | `/api/puentes-reminder-cron` | `0 14 * * *` (diario 14:00) | Recordatorios de la feature Puentes. |
 | `/api/puentes-sync-cron` | `30 8 * * *` (diario 08:30) | Sincronización de Puentes. |
 
@@ -47,7 +49,7 @@ Todos los crons están protegidos por `CRON_SECRET` (header `Authorization: Bear
 
 ## 2) El monitor sintético — `/api/qa-monitor` (el corazón del sistema)
 
-Cron diario (12:00 UTC). Corre 7 checks contra producción y, si **alguno falla**, manda un email vía Resend a `QA_ALERT_EMAIL` (default `marianonoceti@gmail.com`). Si todo pasa: silencio. Devuelve 500 si hubo fallas, 200 si todo OK.
+Cron horario (`0 * * * *`). Corre ~33 checks contra producción y, si el conjunto de fallas **cambia** (algo NUEVO falla vs. la corrida anterior), manda un email vía Resend a `QA_ALERT_EMAIL` (default `marianonoceti@gmail.com`). Si todo pasa: silencio. Devuelve 500 si hubo fallas, 200 si todo OK.
 
 | # | Check | Qué valida | Falla si |
 |---|-------|-----------|----------|
