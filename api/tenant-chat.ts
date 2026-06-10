@@ -647,16 +647,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (action === 'threads') {
                 // Get distinct threads with last message + total user message count
+                // Chat history is personal: each user (coach or admin) sees only
+                // their own threads. Legacy callers without a member row see all.
+                let threadsQ = sb.from('chat_messages')
+                    .select('thread_id, content, created_at')
+                    .eq('tenant_id', tenant.id)
+                    .eq('role', 'user');
+                let countQ = sb.from('chat_messages')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('tenant_id', tenant.id)
+                    .eq('role', 'user');
+                if (callerMemberId) {
+                    threadsQ = threadsQ.eq('member_id', callerMemberId);
+                    countQ = countQ.eq('member_id', callerMemberId);
+                }
                 const [{ data: threads }, { count: totalUserMessages }] = await Promise.all([
-                    sb.from('chat_messages')
-                        .select('thread_id, content, created_at')
-                        .eq('tenant_id', tenant.id)
-                        .eq('role', 'user')
-                        .order('created_at', { ascending: false }),
-                    sb.from('chat_messages')
-                        .select('id', { count: 'exact', head: true })
-                        .eq('tenant_id', tenant.id)
-                        .eq('role', 'user'),
+                    threadsQ.order('created_at', { ascending: false }),
+                    countQ,
                 ]);
 
                 // Deduplicate by thread_id, keep most recent
@@ -674,12 +681,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const threadId = req.query.thread_id as string;
                 if (!threadId) return res.status(400).json({ error: 'thread_id required' });
 
-                const { data: messages } = await sb
+                let msgsQ = sb
                     .from('chat_messages')
                     .select('role, content, created_at')
                     .eq('tenant_id', tenant.id)
                     .eq('thread_id', threadId)
-                    .in('role', ['user', 'assistant'])
+                    .in('role', ['user', 'assistant']);
+                // Prevent reading another member's thread by guessing its id.
+                if (callerMemberId) msgsQ = msgsQ.eq('member_id', callerMemberId);
+                const { data: messages } = await msgsQ
                     .order('created_at', { ascending: true })
                     .limit(100);
 
@@ -1278,8 +1288,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ── Save both turns (only on success, so a failed AI call doesn't
         // consume a trial query and leaves no dangling question in the thread) ──
         await sb.from('chat_messages').insert([
-            { tenant_id: tenant.id, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
-            { tenant_id: tenant.id, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens },
+            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
+            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens },
         ]);
 
         // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
