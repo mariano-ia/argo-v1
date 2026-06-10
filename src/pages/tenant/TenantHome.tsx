@@ -243,24 +243,24 @@ export const TenantHome: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
-                {isCoach ? (
-                    // A coach shares their team link(s), not the institution-wide link.
-                    (teams && teams.length > 0) ? (
-                        <div className="flex flex-col items-stretch sm:items-end gap-4">
-                            {teams.map(t => (
-                                <div key={t.id}>
-                                    <p className="text-[11px] font-semibold text-argo-grey mb-1 sm:text-right">{t.name}</p>
-                                    <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-[12px] text-argo-light max-w-[220px] sm:text-right">
-                            {lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.'}
-                        </p>
-                    )
+                {/* The play link belongs to a plantel. Anyone assigned to plantel(es)
+                    sees their link(s); the institution-wide link is never offered
+                    (it would have no plantel to attribute the player to). */}
+                {(teams && teams.length > 0) ? (
+                    <div className="flex flex-col items-stretch sm:items-end gap-4">
+                        {teams.map(t => (
+                            <div key={t.id}>
+                                <p className="text-[11px] font-semibold text-argo-grey mb-1 sm:text-right">{t.name}</p>
+                                <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                            </div>
+                        ))}
+                    </div>
                 ) : (
-                    <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                    <p className="text-[12px] text-argo-light max-w-[240px] sm:text-right">
+                        {isCoach
+                            ? (lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.')
+                            : (lang === 'en' ? 'The play link belongs to a team. Assign yourself to a team to share its link, or your coaches share theirs.' : lang === 'pt' ? 'O link de jogo pertence a um plantel. Atribua-se a um plantel para compartilhar o link, ou seus treinadores compartilham o deles.' : 'El link de juego es de un plantel. Asígnate a un plantel para compartir su link, o tus entrenadores comparten el suyo.')}
+                    </p>
                 )}
             </div>
 

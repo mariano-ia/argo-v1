@@ -10,7 +10,6 @@ import {
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
-import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS } from '../../lib/designTokens';
@@ -78,7 +77,7 @@ function renderPerspectives(text: string, lang: string): React.ReactNode {
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantGuide: React.FC = () => {
-    const { tenant, role } = useOutletContext<{ tenant: TenantData | null; role?: string }>();
+    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
@@ -177,7 +176,6 @@ export const TenantGuide: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.guia}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.guide.subtitulo}</p>
                 </div>
-                {tenant && (role ?? 'owner') !== 'coach' && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Search + filters — full width */}

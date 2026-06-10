@@ -1,22 +1,18 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal, UserCheck } from 'lucide-react';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Layers, MoreHorizontal, UserCheck } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
-import { CollapsibleSection } from './components/CollapsibleSection';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
-import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
-import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface GroupRow { id: string; name: string; slug?: string; created_at: string; member_count: number; }
 interface MemberRow { id: string; session_id: string; added_at: string; child_name: string; child_age: number | null; sport: string; archetype_label: string; eje: string; motor: string; eje_secundario: string; }
-interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; motor: string; }
 interface CoachRow { member_id: string; email: string; full_name: string | null; status: string; }
 interface TenantMemberLite { id: string; email: string; role: string; status: string; full_name?: string | null; }
 
@@ -62,19 +58,10 @@ export const TenantGroups: React.FC = () => {
     const [detailGroup, setDetailGroup] = useState<{ id: string; name: string; slug?: string } | null>(null);
     const [members, setMembers] = useState<MemberRow[]>([]);
     const [coaches, setCoaches] = useState<CoachRow[]>([]);
-    const [detailLoading, setDetailLoading] = useState(false);
 
     // Rename
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState('');
-
-    // Add members
-    const [showAddPanel, setShowAddPanel] = useState(false);
-    const [allSessions, setAllSessions] = useState<SessionRow[]>([]);
-    const [sessionsLoading, setSessionsLoading] = useState(false);
-    const [selectedSessions, setSelectedSessions] = useState<Set<string>>(new Set());
-    const [adding, setAdding] = useState(false);
-    const [addSearch, setAddSearch] = useState('');
 
     // Assign coach
     const [showAssign, setShowAssign] = useState(false);
@@ -113,28 +100,23 @@ export const TenantGroups: React.FC = () => {
 
     /* ── Fetch detail ──────────────────────────────────────────────────────── */
     const fetchDetail = useCallback(async (groupId: string) => {
-        setDetailLoading(true);
         if (devBypass) {
             const g = DEV_GROUPS.find(g => g.id === groupId);
             setDetailGroup(g ? { id: g.id, name: g.name, slug: g.slug } : null);
             setMembers(DEV_MEMBERS[groupId] ?? []);
             setCoaches([]);
-            setDetailLoading(false);
             return;
         }
         const token = await getToken();
         if (!token) return;
-        try {
-            const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
-            if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); setCoaches(data.coaches ?? []); }
-        } finally { setDetailLoading(false); }
+        const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
+        if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); setCoaches(data.coaches ?? []); }
     }, [devBypass]);
 
     const selectGroup = (id: string) => {
         setSelectedId(id);
         setEditing(false);
         setConfirmDelete(false);
-        setShowAddPanel(false);
         setShowAssign(false);
         setShowMenu(false);
         fetchDetail(id);
@@ -161,45 +143,6 @@ export const TenantGroups: React.FC = () => {
         toast('success', dt.groups.grupoEliminado);
         setSelectedId(null); setDetailGroup(null); setMembers([]); setCoaches([]);
         fetchGroups();
-    };
-
-    /* ── Remove member ─────────────────────────────────────────────────────── */
-    const handleRemoveMember = async (sessionId: string) => {
-        if (!selectedId) return;
-        const removed = members.find(m => m.session_id === sessionId);
-        setMembers(prev => prev.filter(m => m.session_id !== sessionId));
-        const token = await getToken();
-        if (!token) return;
-        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }) });
-        if (!res.ok && removed) { setMembers(prev => [...prev, removed]); toast('error', dt.groups.noSePudoQuitar); }
-        else { toast('success', dt.groups.jugadorQuitado); fetchGroups(); }
-    };
-
-    /* ── Add members ───────────────────────────────────────────────────────── */
-    const openAddPanel = async () => {
-        setShowAddPanel(true);
-        setSelectedSessions(new Set());
-        setAddSearch('');
-        setSessionsLoading(true);
-        const token = await getToken();
-        if (!token) return;
-        try {
-            const res = await fetch('/api/tenant-sessions', { headers: authHeaders(token) });
-            if (res.ok) { const data = await res.json(); setAllSessions(data.sessions); }
-        } finally { setSessionsLoading(false); }
-    };
-
-    const handleAddMembers = async () => {
-        if (selectedSessions.size === 0 || !selectedId) return;
-        setAdding(true);
-        const token = await getToken();
-        if (!token) return;
-        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions) }) });
-        setAdding(false);
-        setShowAddPanel(false);
-        fetchDetail(selectedId);
-        fetchGroups();
-        toast('success', dt.groups.jugadoresAgregados(selectedSessions.size));
     };
 
     /* ── Assign / unassign coach ───────────────────────────────────────────── */
@@ -230,11 +173,6 @@ export const TenantGroups: React.FC = () => {
         toast('success', tt(lang, 'Entrenador quitado', 'Coach removed', 'Treinador removido'));
     };
 
-    const memberSessionIds = new Set(members.map(m => m.session_id));
-    const availableSessions = allSessions.filter(s => !memberSessionIds.has(s.id));
-    const filteredAvailable = addSearch
-        ? availableSessions.filter(s => s.child_name.toLowerCase().includes(addSearch.toLowerCase()))
-        : availableSessions;
     const assignedIds = new Set(coaches.map(c => c.member_id));
     const availableCoaches = allMembers.filter(m => m.role === 'coach' && !assignedIds.has(m.id));
 
@@ -244,10 +182,9 @@ export const TenantGroups: React.FC = () => {
     }
 
     const groupIntroBody = tt(lang,
-        'Crea planteles, comparte el enlace de cada uno y asigna entrenadores. Los jugadores que entran por el enlace de un plantel quedan en ese plantel.',
-        'Create teams, share each team link and assign coaches. Players who enter through a team link land in that team.',
-        'Crie plantéis, compartilhe o link de cada um e atribua treinadores. Os jogadores que entram pelo link de um plantel ficam nesse plantel.');
-    const rosterFull = tenant.active_players_count >= tenant.roster_limit;
+        'Crea planteles y asigna un entrenador a cada uno. El entrenador comparte el link de su plantel y los jugadores que entran quedan en ese plantel.',
+        'Create teams and assign a coach to each. The coach shares their team link, and players who enter land in that team.',
+        'Crie plantéis e atribua um treinador a cada um. O treinador compartilha o link do plantel e os jogadores que entram ficam nesse plantel.');
 
     // Planteles (the structural unit that owns the link) are admin-only.
     if (!isAdmin) {
@@ -421,12 +358,6 @@ export const TenantGroups: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {/* Team play link — admin only (coaches get their link on Inicio) */}
-                                    {isAdmin && detailGroup?.slug && (
-                                        <div className="mt-4 pt-4 border-t border-argo-border flex justify-end">
-                                            <LinkWidget slug={`${tenant.slug}/${detailGroup.slug}`} lang={lang} disabled={rosterFull} />
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Coaches — admin only */}
@@ -480,97 +411,6 @@ export const TenantGroups: React.FC = () => {
                                 </div>
                                 )}
 
-                                {/* Members as chips — collapsible */}
-                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-2">
-                                    <CollapsibleSection
-                                        title={`${dt.common.jugadores} (${members.length})`}
-                                        defaultOpen={false}
-                                        badge={undefined}
-                                    >
-                                    {isAdmin && (
-                                        <div className="flex items-center justify-end mb-3">
-                                            <button onClick={openAddPanel} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
-                                                <Plus size={12} /> {dt.groups.agregarJugadores}
-                                            </button>
-                                        </div>
-                                    )}
-
-                                    {detailLoading ? (
-                                        <div className="flex gap-2 flex-wrap">{[1,2,3].map(i => <div key={i} className="h-8 w-28 bg-argo-bg rounded-lg animate-pulse" />)}</div>
-                                    ) : members.length === 0 ? (
-                                        <p className="text-xs text-argo-light">{tt(lang, 'Este plantel todavía no tiene jugadores perfilados.', 'This team has no profiled players yet.', 'Este plantel ainda não tem jogadores perfilados.')}</p>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-2">
-                                            {members.map(m => {
-                                                const dot = AXIS_COLORS[m.eje] ?? '#6366f1';
-                                                return (
-                                                    <div key={m.id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
-                                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
-                                                        {m.child_name}
-                                                        {isAdmin && (
-                                                            <Tooltip text={tt(lang, 'Quitar', 'Remove', 'Remover')}>
-                                                                <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                                                    <X size={10} />
-                                                                </button>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-
-                                    {/* Inline add panel */}
-                                    <AnimatePresence>
-                                        {showAddPanel && (
-                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
-                                                <div className="mt-4 pt-4 border-t border-argo-border space-y-3">
-                                                    <div className="relative">
-                                                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-argo-light" />
-                                                        <input value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder={tt(lang, 'Buscar...', 'Search...', 'Buscar...')} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-argo-border text-[11px] outline-none focus:border-argo-violet-200" />
-                                                    </div>
-
-                                                    {sessionsLoading ? (
-                                                        <div className="flex gap-2">{[1,2,3].map(i => <div key={i} className="h-8 w-24 bg-argo-bg rounded-lg animate-pulse" />)}</div>
-                                                    ) : filteredAvailable.length === 0 ? (
-                                                        <p className="text-[11px] text-argo-light">{allSessions.length === 0 ? dt.players?.sinJugadores ?? 'No players' : dt.groups.todosEnGrupo}</p>
-                                                    ) : (
-                                                        <div className="flex flex-wrap gap-1.5 max-h-[160px] overflow-y-auto">
-                                                            {filteredAvailable.map(s => {
-                                                                const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
-                                                                const isSelected = selectedSessions.has(s.id);
-                                                                return (
-                                                                    <button
-                                                                        key={s.id}
-                                                                        onClick={() => { const next = new Set(selectedSessions); if (next.has(s.id)) next.delete(s.id); else next.add(s.id); setSelectedSessions(next); }}
-                                                                        className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
-                                                                            isSelected ? 'border-argo-navy bg-argo-navy text-white' : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
-                                                                        }`}
-                                                                    >
-                                                                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: isSelected ? 'rgba(255,255,255,0.5)' : dot }} />
-                                                                        {s.child_name}
-                                                                    </button>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={handleAddMembers}
-                                                            disabled={selectedSessions.size === 0 || adding}
-                                                            className="px-3.5 py-2 rounded-lg bg-argo-navy text-white text-[11px] font-semibold hover:bg-argo-navy/90 disabled:opacity-40 transition-colors"
-                                                        >
-                                                            {adding ? <Loader2 size={12} className="animate-spin" /> : `${dt.groups.agregarJugadores} (${selectedSessions.size})`}
-                                                        </button>
-                                                        <button onClick={() => setShowAddPanel(false)} className="text-[11px] text-argo-light hover:text-argo-grey transition-colors">{dt.common.cancelar}</button>
-                                                    </div>
-                                                </div>
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                    </CollapsibleSection>
-                                </div>
 
                             </motion.div>
                         )}

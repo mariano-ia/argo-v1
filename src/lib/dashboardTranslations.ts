@@ -327,7 +327,7 @@ interface DashboardTexts {
 const es: DashboardTexts = {
     nav: {
         inicio: 'Inicio',
-        jugadores: 'Mi equipo',
+        jugadores: 'Jugadores',
         grupos: 'Química de grupos',
         guia: 'Predictor Conductual',
         chat: 'Argo Coach',
@@ -420,7 +420,7 @@ const es: DashboardTexts = {
     },
     groups: {
         titulo: 'Planteles',
-        subtitulo: 'Crea planteles, comparte su enlace y asigna entrenadores. El plantel es dueño del enlace.',
+        subtitulo: 'Crea planteles y asigna entrenadores. El entrenador comparte el link de su plantel.',
         crearGrupo: 'Crear plantel',
         nombrePlaceholder: 'Nombre del plantel (ej: Sub-15 Femenino)',
         tusGrupos: 'Tus planteles',
@@ -626,7 +626,7 @@ const es: DashboardTexts = {
 const en: DashboardTexts = {
     nav: {
         inicio: 'Home',
-        jugadores: 'My team',
+        jugadores: 'Players',
         grupos: 'Group chemistry',
         guia: 'Behavioral Predictor',
         chat: 'Argo Coach',
@@ -719,7 +719,7 @@ const en: DashboardTexts = {
     },
     groups: {
         titulo: 'Teams',
-        subtitulo: 'Create teams, share their link and assign coaches. The team owns the link.',
+        subtitulo: 'Create teams and assign coaches. The coach shares their team link.',
         crearGrupo: 'Create team',
         nombrePlaceholder: 'Team name (e.g.: U-15 Girls)',
         tusGrupos: 'Your teams',
@@ -925,7 +925,7 @@ const en: DashboardTexts = {
 const pt: DashboardTexts = {
     nav: {
         inicio: 'Inicio',
-        jugadores: 'Minha equipe',
+        jugadores: 'Jogadores',
         grupos: 'Química de grupos',
         guia: 'Preditor Comportamental',
         chat: 'Argo Coach',
@@ -1018,7 +1018,7 @@ const pt: DashboardTexts = {
     },
     groups: {
         titulo: 'Plantéis',
-        subtitulo: 'Crie plantéis, compartilhe o link e atribua treinadores. O plantel é dono do link.',
+        subtitulo: 'Crie plantéis e atribua treinadores. O treinador compartilha o link do plantel.',
         crearGrupo: 'Criar plantel',
         nombrePlaceholder: 'Nome do plantel (ex: Sub-15 Feminino)',
         tusGrupos: 'Seus plantéis',

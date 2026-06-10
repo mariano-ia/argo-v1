@@ -9,7 +9,6 @@ import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
-import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
@@ -25,7 +24,7 @@ import {
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
-interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; }
+interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -562,6 +561,8 @@ export const TenantPlayers: React.FC = () => {
     const [search, setSearch] = useState('');
     const [ejeFilter, setEjeFilter] = useState<string | null>(null);
     const [showReprofileOnly, setShowReprofileOnly] = useState(false);
+    const [plantelFilter, setPlantelFilter] = useState<string | null>(null);
+    const [planteles, setPlanteles] = useState<{ id: string; name: string }[]>([]);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
 
@@ -575,6 +576,9 @@ export const TenantPlayers: React.FC = () => {
             // Also fetch archived
             const arRes = await fetch('/api/tenant-sessions?archived=1', { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (arRes.ok) { const arData = await arRes.json(); setArchivedSessions(arData.sessions ?? []); }
+            // Planteles for the filter dropdown
+            const plRes = await fetch('/api/tenant-groups', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            if (plRes.ok) { const plData = await plRes.json(); setPlanteles((plData.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
         } finally { setLoading(false); }
     }, [devBypass]);
 
@@ -605,6 +609,7 @@ export const TenantPlayers: React.FC = () => {
     const filtered = useMemo(() => {
         return sessions.filter(s => {
             if (ejeFilter && s.eje !== ejeFilter) return false;
+            if (plantelFilter && !(s.team_ids ?? []).includes(plantelFilter)) return false;
             if (showReprofileOnly && monthsSince(s.created_at) < 6) return false;
             if (search) {
                 const q = search.toLowerCase();
@@ -612,10 +617,10 @@ export const TenantPlayers: React.FC = () => {
             }
             return true;
         });
-    }, [sessions, search, ejeFilter, showReprofileOnly]);
+    }, [sessions, search, ejeFilter, plantelFilter, showReprofileOnly]);
 
     // Reset page when filters or page size change
-    useEffect(() => { setPage(0); }, [search, ejeFilter, showReprofileOnly, pageSize]);
+    useEffect(() => { setPage(0); }, [search, ejeFilter, plantelFilter, showReprofileOnly, pageSize]);
 
     const totalPages = Math.ceil(filtered.length / pageSize);
     const paginated = filtered.slice(page * pageSize, (page + 1) * pageSize);
@@ -644,7 +649,6 @@ export const TenantPlayers: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
-                {tenant && (role ?? 'owner') !== 'coach' && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Re-profile alert */}
@@ -696,6 +700,16 @@ export const TenantPlayers: React.FC = () => {
                         <AlertCircle size={12} />
                         {dt.players.rePerfilar} ({reprofileCount})
                     </button>
+                    {(role ?? 'owner') !== 'coach' && planteles.length > 0 && (
+                        <select
+                            value={plantelFilter ?? ''}
+                            onChange={e => setPlantelFilter(e.target.value || null)}
+                            className="px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-grey outline-none focus:border-argo-violet-200 bg-white"
+                        >
+                            <option value="">{lang === 'en' ? 'All teams' : lang === 'pt' ? 'Todos os plantéis' : 'Todos los planteles'}</option>
+                            {planteles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                    )}
                 </div>
             </div>
 
