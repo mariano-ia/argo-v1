@@ -1208,8 +1208,8 @@ export const Landing: React.FC = () => {
                                 </div>
                                 <div className="mt-8 flex flex-wrap gap-2">
                                     {[
-                                        { label: 'Mi equipo',           tip: 'El perfil conductual de cada deportista y su historial de informes.' },
-                                        { label: 'Dinámica Grupal',      tip: 'Agrupa deportistas y entiende la dinámica colectiva de cada equipo.' },
+                                        { label: 'Jugadores',           tip: 'El perfil conductual de cada deportista y su historial de informes.' },
+                                        { label: 'Química de grupos',    tip: 'Agrupa a tus jugadores y entiende la dinámica colectiva de cada grupo.' },
                                         { label: 'Predictor Conductual', tip: 'Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.' },
                                         { label: 'Argo Coach',        tip: 'Hazle consultas sobre tus deportistas y recibe consejos personalizados.' },
                                     ].map(({ label, tip }) => (

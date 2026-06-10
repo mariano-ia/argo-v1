@@ -196,7 +196,7 @@ export const TenantSignup: React.FC = () => {
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
             if (data.session) {
-                createTenantAndRedirect(data.session.user.id, data.session.user.email ?? '', data.session.user.user_metadata?.full_name || data.session.user.email?.split('@')[0] || 'Mi equipo');
+                createTenantAndRedirect(data.session.user.id, data.session.user.email ?? '', data.session.user.user_metadata?.full_name || data.session.user.email?.split('@')[0] || 'Mi institución');
             }
         });
 
@@ -206,7 +206,7 @@ export const TenantSignup: React.FC = () => {
                 createTenantAndRedirect(
                     session.user.id,
                     session.user.email ?? '',
-                    googleName || name || session.user.email?.split('@')[0] || 'Mi equipo',
+                    googleName || name || session.user.email?.split('@')[0] || 'Mi institución',
                     googleName,
                 );
             }

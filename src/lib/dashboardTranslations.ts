@@ -459,7 +459,7 @@ const es: DashboardTexts = {
     },
     chat: {
         titulo: 'Argo Coach',
-        subtitulo: 'Tu asistente personal de perfilamiento Argo. Pregunta sobre tus jugadores, situaciones o dinámica de equipo.',
+        subtitulo: 'Tu asistente personal de perfilamiento Argo. Pregunta sobre tus jugadores, situaciones o la química de tus grupos.',
         nuevaConsulta: 'Nueva consulta',
         conversaciones: 'Conversaciones',
         sinConversaciones: 'Todavía no tienes conversaciones.',
@@ -758,7 +758,7 @@ const en: DashboardTexts = {
     },
     chat: {
         titulo: 'Argo Coach',
-        subtitulo: 'Your personal Argo profiling assistant. Ask about your players, situations or team dynamics.',
+        subtitulo: 'Your personal Argo profiling assistant. Ask about your players, situations or group chemistry.',
         nuevaConsulta: 'New conversation',
         conversaciones: 'Conversations',
         sinConversaciones: 'No conversations yet.',
@@ -1057,7 +1057,7 @@ const pt: DashboardTexts = {
     },
     chat: {
         titulo: 'Argo Coach',
-        subtitulo: 'Seu assistente pessoal de perfilamento Argo. Pergunte sobre seus jogadores, situações ou dinâmica de equipe.',
+        subtitulo: 'Seu assistente pessoal de perfilamento Argo. Pergunte sobre seus jogadores, situações ou a química dos seus grupos.',
         nuevaConsulta: 'Nova conversa',
         conversaciones: 'Conversas',
         sinConversaciones: 'Ainda não há conversas.',
