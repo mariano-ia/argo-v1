@@ -44,7 +44,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate }) => {
+const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
     const [expanded, setExpanded] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
@@ -497,7 +497,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
                                         </button>
                                     )}
-                                    {locked ? (
+                                    {canManage && (locked ? (
                                         <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
                                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
                                                 <Lock size={11} />
@@ -513,8 +513,8 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
                                             {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
                                         </button>
-                                    )}
-                                    {archived && onReactivate && (
+                                    ))}
+                                    {canManage && archived && onReactivate && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onReactivate(session.id); }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-all"
@@ -523,7 +523,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
                                         </button>
                                     )}
-                                    {!archived && onArchive && (
+                                    {canManage && !archived && onArchive && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); onArchive(session.id); }}
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all"
@@ -774,7 +774,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} onArchive={handleArchive} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} onArchive={handleArchive} canManage={(role ?? 'owner') === 'coach'} />
                         ))}
                     </div>
 
@@ -827,7 +827,7 @@ export const TenantPlayers: React.FC = () => {
                     {showArchived && (
                         <div className="bg-white rounded-[14px] shadow-argo overflow-hidden mt-3 opacity-75">
                             {archivedSessions.map(s => (
-                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} archived onReactivate={handleReactivate} />
+                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} archived onReactivate={handleReactivate} canManage={(role ?? 'owner') === 'coach'} />
                             ))}
                         </div>
                     )}

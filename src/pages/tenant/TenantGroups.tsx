@@ -413,26 +413,35 @@ export const TenantGroups: React.FC = () => {
                                 )}
 
                                 {/* Players in this plantel — read-only (they join via the link) */}
-                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-4">
-                                    <h3 className="text-[13px] font-semibold text-argo-navy mb-3 flex items-center gap-1.5">
-                                        <Users size={13} className="text-argo-grey" /> {tt(lang, 'Jugadores', 'Players', 'Jogadores')} ({members.length})
-                                    </h3>
+                                <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
+                                    <div className="px-6 py-4 flex items-center justify-between border-b border-argo-border">
+                                        <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5">
+                                            <Users size={13} className="text-argo-grey" /> {tt(lang, 'Jugadores', 'Players', 'Jogadores')} ({members.length})
+                                        </h3>
+                                        <span className="text-[11px] text-argo-light">{tt(lang, 'Solo lectura', 'Read-only', 'Somente leitura')}</span>
+                                    </div>
                                     {members.length === 0 ? (
-                                        <p className="text-xs text-argo-light">{tt(lang, 'Este plantel todavía no tiene jugadores.', 'This team has no players yet.', 'Este plantel ainda não tem jogadores.')}</p>
+                                        <p className="px-6 py-4 text-xs text-argo-light">{tt(lang, 'Este plantel todavía no tiene jugadores. Entran por el link del plantel.', 'This team has no players yet. They join via the team link.', 'Este plantel ainda não tem jogadores. Eles entram pelo link do plantel.')}</p>
                                     ) : (
-                                        <div className="flex flex-wrap gap-2">
+                                        <div>
                                             {members.map(m => {
                                                 const dot = AXIS_COLORS[m.eje] ?? '#6366f1';
                                                 return (
-                                                    <div key={m.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary">
-                                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
-                                                        {m.child_name}
+                                                    <div key={m.id} className="flex items-center gap-3 px-6 py-3 border-b border-argo-border last:border-b-0">
+                                                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: dot }} />
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-medium text-argo-navy truncate">{m.child_name}</p>
+                                                            <p className="text-xs text-argo-light truncate">
+                                                                {m.archetype_label}
+                                                                {m.child_age ? ` · ${m.child_age} ${tt(lang, 'años', 'years', 'anos')}` : ''}
+                                                                {m.sport ? ` · ${m.sport}` : ''}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
                                         </div>
                                     )}
-                                    <p className="text-[11px] text-argo-light mt-3">{tt(lang, 'Solo lectura. Los jugadores entran por el link del plantel y se gestionan en Jugadores.', 'Read-only. Players join via the team link and are managed in Players.', 'Somente leitura. Os jogadores entram pelo link do plantel e são gerenciados em Jogadores.')}</p>
                                 </div>
 
                             </motion.div>
