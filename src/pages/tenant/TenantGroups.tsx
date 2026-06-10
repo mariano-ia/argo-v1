@@ -246,24 +246,26 @@ export const TenantGroups: React.FC = () => {
     }
 
     const groupIntroBody = tt(lang,
-        'Crea equipos, comparte el enlace de cada uno y asigna entrenadores. Los jugadores que entran por el enlace de un equipo quedan en ese equipo.',
-        'Create teams, share each team link and assign coaches. Players who enter through a team link land in that team.',
-        'Crie equipes, compartilhe o link de cada uma e atribua treinadores. Os jogadores que entram pelo link de uma equipe ficam nessa equipe.');
+        'Crea grupos, comparte el enlace de cada uno y asigna entrenadores. Los jugadores que entran por el enlace de un grupo quedan en ese grupo.',
+        'Create groups, share each group link and assign coaches. Players who enter through a group link land in that group.',
+        'Crie grupos, compartilhe o link de cada um e atribua treinadores. Os jogadores que entram pelo link de um grupo ficam nesse grupo.');
     const rosterFull = tenant.active_players_count >= tenant.roster_limit;
 
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-            <SectionIntro
-                storageKey="argo_intro_teams_v1"
-                icon={<Layers size={16} />}
-                title={tt(lang, 'Equipos', 'Teams', 'Equipes')}
-                body={groupIntroBody}
-            />
+            {isAdmin && (
+                <SectionIntro
+                    storageKey="argo_intro_teams_v1"
+                    icon={<Layers size={16} />}
+                    title={tt(lang, 'Química de grupos', 'Group chemistry', 'Química de grupos')}
+                    body={groupIntroBody}
+                />
+            )}
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
                 <div>
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.grupos}</h1>
-                    <p className="text-[13px] text-argo-grey mt-1">{dt.groups.subtitulo}</p>
+                    <p className="text-[13px] text-argo-grey mt-1">{isAdmin ? dt.groups.subtitulo : tt(lang, 'Tus grupos y su química.', 'Your groups and their chemistry.', 'Seus grupos e sua química.')}</p>
                 </div>
             </div>
 
@@ -341,10 +343,10 @@ export const TenantGroups: React.FC = () => {
                                 <div className="text-center max-w-sm">
                                     <Layers size={28} className="text-argo-border mx-auto mb-4" />
                                     <p className="text-[15px] font-semibold text-argo-navy mb-2">
-                                        {tt(lang, 'Selecciona un equipo', 'Select a team', 'Selecione uma equipe')}
+                                        {tt(lang, 'Selecciona un grupo', 'Select a group', 'Selecione um grupo')}
                                     </p>
                                     <p className="text-xs text-argo-light leading-relaxed">
-                                        {tt(lang, 'Elige un equipo de la lista para ver su enlace, sus entrenadores, sus jugadores y su química.', 'Choose a team from the list to see its link, coaches, players and chemistry.', 'Escolha uma equipe da lista para ver seu link, treinadores, jogadores e química.')}
+                                        {tt(lang, 'Elige un grupo de la lista para ver sus jugadores y su química.', 'Choose a group from the list to see its players and chemistry.', 'Escolha um grupo da lista para ver seus jogadores e química.')}
                                     </p>
                                 </div>
                             </motion.div>
@@ -410,15 +412,16 @@ export const TenantGroups: React.FC = () => {
                                         </div>
                                     )}
 
-                                    {/* Team play link */}
-                                    {detailGroup?.slug && (
+                                    {/* Team play link — admin only (coaches get their link on Inicio) */}
+                                    {isAdmin && detailGroup?.slug && (
                                         <div className="mt-4 pt-4 border-t border-argo-border flex justify-end">
                                             <LinkWidget slug={`${tenant.slug}/${detailGroup.slug}`} lang={lang} disabled={rosterFull} />
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Coaches */}
+                                {/* Coaches — admin only */}
+                                {isAdmin && (
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-4">
                                     <div className="flex items-center justify-between mb-3">
                                         <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5">
@@ -466,6 +469,7 @@ export const TenantGroups: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+                                )}
 
                                 {/* Members as chips — collapsible */}
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-2">
@@ -485,7 +489,7 @@ export const TenantGroups: React.FC = () => {
                                     {detailLoading ? (
                                         <div className="flex gap-2 flex-wrap">{[1,2,3].map(i => <div key={i} className="h-8 w-28 bg-argo-bg rounded-lg animate-pulse" />)}</div>
                                     ) : members.length === 0 ? (
-                                        <p className="text-xs text-argo-light">{dt.groups.sinMiembros}</p>
+                                        <p className="text-xs text-argo-light">{tt(lang, 'Este grupo todavía no tiene jugadores perfilados.', 'This group has no profiled players yet.', 'Este grupo ainda não tem jogadores perfilados.')}</p>
                                     ) : (
                                         <div className="flex flex-wrap gap-2">
                                             {members.map(m => {
@@ -562,7 +566,7 @@ export const TenantGroups: React.FC = () => {
                                 {/* Team chemistry */}
                                 {!detailLoading && members.length >= 2 && (
                                     <div>
-                                        <h3 className="text-[13px] font-semibold text-argo-navy mb-2 px-1">{tt(lang, 'Química del equipo', 'Team chemistry', 'Química da equipe')}</h3>
+                                        <h3 className="text-[13px] font-semibold text-argo-navy mb-2 px-1">{tt(lang, 'Química del grupo', 'Group chemistry', 'Química do grupo')}</h3>
                                         <GroupBalancePanel
                                             locked={tenant?.plan === 'trial'}
                                             members={members.map(m => ({
