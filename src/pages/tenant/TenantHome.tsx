@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Activity, Users, Layers, ChevronRight, Send } from 'lucide-react';
+import { Activity, Users, Layers, ChevronRight, Send, Shield } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
 import { AreaChart, Area, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis } from 'recharts';
 import { InfoTip } from '../../components/ui/Tooltip';
@@ -146,12 +146,14 @@ const DEV_SESSIONS: SessionRow[] = [
 export const TenantHome: React.FC = () => {
     const { tenant, refreshTenant, userEmail, memberProfile, devBypass, role, teams } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean; role?: string; teams?: { id: string; name: string; slug: string }[] }>();
     const isCoach = (role ?? 'owner') === 'coach';
+    const tt = (es: string, en: string, pt: string) => (lang === 'en' ? en : lang === 'pt' ? pt : es);
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const navigate = useNavigate();
     const [sessions, setSessions] = useState<SessionRow[]>([]);
     const [sessionsLoading, setSessionsLoading] = useState(true);
     const [groupCount, setGroupCount] = useState<number | null>(null);
+    const [chemGroupCount, setChemGroupCount] = useState<number | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [paymentMsg, setPaymentMsg] = useState<{ type: 'success' | 'cancel'; text: string } | null>(null);
 
@@ -163,7 +165,7 @@ export const TenantHome: React.FC = () => {
 
     useEffect(() => {
         if (!tenant) return;
-        if (devBypass) { setSessions(DEV_SESSIONS); setGroupCount(2); setSessionsLoading(false); return; }
+        if (devBypass) { setSessions(DEV_SESSIONS); setGroupCount(2); setChemGroupCount(1); setSessionsLoading(false); return; }
         const fetchData = async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
@@ -174,10 +176,15 @@ export const TenantHome: React.FC = () => {
                 if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
             } catch { /* silently fail */ }
             finally { setSessionsLoading(false); }
-            // Fetch group count
+            // Fetch plantel count
             try {
                 const res = await fetch('/api/tenant-groups', { headers });
                 if (res.ok) { const data = await res.json(); setGroupCount(data.groups?.length ?? 0); }
+            } catch { /* silently fail */ }
+            // Fetch chem-group (Química de grupos) count
+            try {
+                const res = await fetch('/api/tenant-chem-groups', { headers });
+                if (res.ok) { const data = await res.json(); setChemGroupCount(data.groups?.length ?? 0); }
             } catch { /* silently fail */ }
         };
         fetchData();
@@ -258,13 +265,17 @@ export const TenantHome: React.FC = () => {
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
-                {[
-                    { icon: Users, label: lang === 'en' ? 'Team' : lang === 'pt' ? 'Equipe' : 'Equipo', value: `${tenant.active_players_count}/${tenant.roster_limit}`, sub: `Plan ${tenant.plan}`, tip: lang === 'en' ? 'Active players in your team. Archive players to free up space.' : lang === 'pt' ? 'Jogadores ativos na sua equipe. Arquive jogadores para liberar espaço.' : 'Jugadores activos en tu equipo. Archiva jugadores para liberar lugar.' },
-                    { icon: Activity, label: lang === 'en' ? 'Total sessions' : lang === 'pt' ? 'Sessões totais' : 'Sesiones totales', value: sessionsLoading ? '...' : sessions.length, sub: lang === 'en' ? 'completed' : lang === 'pt' ? 'completadas' : 'completadas', tip: lang === 'en' ? 'Total completed experiences by your athletes' : lang === 'pt' ? 'Total de experiências completadas pelos seus atletas' : 'Total de experiencias completadas por tus deportistas' },
-                    { icon: Activity, label: lang === 'en' ? 'This month' : lang === 'pt' ? 'Este mês' : 'Este mes', value: sessionsLoading ? '...' : thisMonthCount, sub: lang === 'en' ? 'new sessions' : lang === 'pt' ? 'novas sessões' : 'nuevas sesiones', tip: lang === 'en' ? 'Experiences completed this month' : lang === 'pt' ? 'Experiências completadas este mês' : 'Experiencias completadas este mes' },
-                    { icon: Layers, label: lang === 'en' ? 'Groups' : lang === 'pt' ? 'Grupos' : 'Grupos', value: groupCount ?? (sessionsLoading ? '...' : 0), sub: lang === 'en' ? 'created' : lang === 'pt' ? 'criados' : 'creados', tip: lang === 'en' ? 'Organize your athletes in groups to see team dynamics' : lang === 'pt' ? 'Organize seus atletas em grupos para ver a dinâmica de equipe' : 'Organiza tus deportistas en grupos para ver la dinámica de equipo' },
-                ].map((stat, i) => (
+            <div className={`grid grid-cols-2 ${isCoach ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-5 mb-10`}>
+                {(isCoach ? [
+                    { icon: Users, label: tt('Jugadores', 'Players', 'Jogadores'), value: sessionsLoading ? '...' : sessions.length, sub: tt('en tu plantel', 'in your team', 'no seu plantel'), tip: tt('Jugadores perfilados de tu plantel.', 'Profiled players in your team.', 'Jogadores perfilados do seu plantel.') },
+                    { icon: Activity, label: tt('Este mes', 'This month', 'Este mês'), value: sessionsLoading ? '...' : thisMonthCount, sub: tt('nuevas sesiones', 'new sessions', 'novas sessões'), tip: tt('Sesiones completadas este mes.', 'Sessions completed this month.', 'Sessões completadas este mês.') },
+                    { icon: Layers, label: tt('Grupos', 'Groups', 'Grupos'), value: chemGroupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Grupos que creaste para analizar la química.', 'Groups you created to analyze chemistry.', 'Grupos que você criou para analisar a química.') },
+                ] : [
+                    { icon: Users, label: tt('Jugadores', 'Players', 'Jogadores'), value: sessionsLoading ? '...' : sessions.length, sub: tt('perfilados en el club', 'profiled in the club', 'perfilados no clube'), tip: tt('Total de jugadores perfilados en el club.', 'Total profiled players in the club.', 'Total de jogadores perfilados no clube.') },
+                    { icon: Shield, label: tt('Planteles', 'Teams', 'Plantéis'), value: groupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Cantidad de planteles del club.', 'Number of teams in the club.', 'Quantidade de plantéis do clube.') },
+                    { icon: Activity, label: tt('Este mes', 'This month', 'Este mês'), value: sessionsLoading ? '...' : thisMonthCount, sub: tt('nuevas sesiones', 'new sessions', 'novas sessões'), tip: tt('Sesiones completadas este mes.', 'Sessions completed this month.', 'Sessões completadas este mês.') },
+                    { icon: Layers, label: tt('Grupos', 'Groups', 'Grupos'), value: chemGroupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Grupos creados para analizar la química.', 'Groups created to analyze chemistry.', 'Grupos criados para analisar a química.') },
+                ]).map((stat, i) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 12 }}
