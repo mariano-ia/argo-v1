@@ -122,14 +122,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Get caller's tenant — try tenant_members first, fall back to tenants.auth_user_id
         let tenantId: string | null = null;
+        let callerRole = 'owner';
         const { data: callerRow } = await sb
             .from('tenant_members')
-            .select('tenant_id')
+            .select('tenant_id, role')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
             .maybeSingle();
         if (callerRow) {
             tenantId = (callerRow as { tenant_id: string }).tenant_id;
+            callerRole = (callerRow as { role: string }).role ?? 'owner';
         } else {
             const { data: tenantRow } = await sb
                 .from('tenants')
@@ -139,10 +141,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (tenantRow) tenantId = (tenantRow as { id: string }).id;
         }
         if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
+        // Only the institution admin (owner) can invite users
+        if (callerRole !== 'owner') return res.status(403).json({ error: 'forbidden' });
 
-        // Validate email
-        const { email, lang } = req.body ?? {};
+        // Validate email + parse role/teams
+        const { email, lang, role: roleInput, teams: teamsInput } = req.body ?? {};
         const emailLang = typeof lang === 'string' && ['es', 'en', 'pt'].includes(lang) ? lang : 'es';
+        const memberRole = roleInput === 'coach' ? 'coach' : 'member';
+        const teamIds: string[] = Array.isArray(teamsInput) ? teamsInput.filter((t: unknown): t is string => typeof t === 'string') : [];
         if (!email || typeof email !== 'string' || !email.includes('@')) {
             return res.status(400).json({ error: 'Invalid email' });
         }
@@ -184,12 +190,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Insert pending member record — store auth_user_id now so remove-member can clean up later
-        const { error: insertError } = await sb
+        const { data: insertedMember, error: insertError } = await sb
             .from('tenant_members')
-            .insert({ tenant_id: tenantId, email: normalizedEmail, role: 'member', status: 'pending', auth_user_id: linkData.user.id });
-        if (insertError) {
-            console.error('[invite-user] Insert error:', insertError.message);
+            .insert({ tenant_id: tenantId, email: normalizedEmail, role: memberRole, status: 'pending', auth_user_id: linkData.user.id })
+            .select('id')
+            .single();
+        if (insertError || !insertedMember) {
+            console.error('[invite-user] Insert error:', insertError?.message);
             return res.status(500).json({ error: 'Failed to create invite record' });
+        }
+
+        // Assign the coach to the selected teams (validate they belong to this tenant).
+        // group_coaches cascades on member delete, so the rollback below cleans these up too.
+        if (memberRole === 'coach' && teamIds.length > 0) {
+            const { data: validTeams } = await sb
+                .from('groups')
+                .select('id')
+                .eq('tenant_id', tenantId)
+                .is('deleted_at', null)
+                .in('id', teamIds);
+            const validTeamIds = (validTeams ?? []).map((g: { id: string }) => g.id);
+            if (validTeamIds.length > 0) {
+                await sb.from('group_coaches').insert(
+                    validTeamIds.map((gid: string) => ({ group_id: gid, member_id: (insertedMember as { id: string }).id }))
+                );
+            }
         }
 
         // Fetch tenant display name for the email

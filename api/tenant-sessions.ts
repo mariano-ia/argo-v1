@@ -28,17 +28,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        // Find their tenant via tenant_members (supports owner + invited members)
+        // Resolve caller scope: tenant + role + member id (coaches are scoped to teams)
+        let tenantId: string | null = null;
+        let role = 'owner';
+        let memberId: string | null = null;
         const { data: memberRow } = await sb
             .from('tenant_members')
-            .select('tenant_id')
+            .select('id, tenant_id, role')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
             .maybeSingle();
-
-        let tenantId: string | null = memberRow?.tenant_id ?? null;
-
-        if (!tenantId) {
+        if (memberRow) {
+            tenantId = memberRow.tenant_id;
+            role = memberRow.role ?? 'owner';
+            memberId = memberRow.id;
+        } else {
             // Fallback: owner who predates the tenant_members table
             const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
             if (tenantRow) tenantId = tenantRow.id;
@@ -47,20 +51,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!tenantId) {
             return res.status(404).json({ error: 'Tenant not found' });
         }
-        const tenant = { id: tenantId };
 
-        // Determine if requesting archived players
         const showArchived = req.query.archived === '1';
+        const teamFilter = typeof req.query.team === 'string' && req.query.team ? req.query.team : null;
+        const isCoach = role === 'coach';
+
+        // Visibility bound: coaches only see players in the teams they're assigned to.
+        // null = unbounded (owner/member see all tenant players).
+        let boundGroupIds: string[] | null = null;
+        if (isCoach && memberId) {
+            const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', memberId);
+            boundGroupIds = (gc ?? []).map((r: { group_id: string }) => r.group_id);
+        }
+
+        // Apply an explicit "filter by team" (must respect the coach's bound).
+        let effectiveGroupIds: string[] | null = boundGroupIds;
+        if (teamFilter) {
+            if (boundGroupIds && !boundGroupIds.includes(teamFilter)) {
+                return res.status(200).json({ sessions: [], total: 0 });
+            }
+            effectiveGroupIds = [teamFilter];
+        }
+
+        // If bounded to specific teams, resolve the player ids inside those teams.
+        let boundedSessionIds: string[] | null = null;
+        if (effectiveGroupIds !== null) {
+            if (effectiveGroupIds.length === 0) {
+                return res.status(200).json({ sessions: [], total: 0 });
+            }
+            const { data: gm } = await sb.from('group_members').select('session_id').in('group_id', effectiveGroupIds);
+            boundedSessionIds = Array.from(new Set((gm ?? []).map((r: { session_id: string }) => r.session_id)));
+            if (boundedSessionIds.length === 0) {
+                return res.status(200).json({ sessions: [], total: 0 });
+            }
+        }
 
         // Fetch sessions for this tenant
         let query = sb
             .from('sessions')
             .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, created_at, lang, answers, ai_sections')
-            .eq('tenant_id', tenant.id)
+            .eq('tenant_id', tenantId)
             .is('deleted_at', null)
             .not('eje', 'eq', '_pending')
             .order('created_at', { ascending: false })
             .limit(100);
+
+        if (boundedSessionIds) {
+            query = query.in('id', boundedSessionIds);
+        }
 
         // Filter by archived status
         if (showArchived) {
@@ -76,7 +114,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Failed to fetch sessions' });
         }
 
-        return res.status(200).json({ sessions: sessions ?? [], total: sessions?.length ?? 0 });
+        // Attach team membership per player so the dashboard can show the team
+        // column and filter. Coaches only see the teams within their own bound.
+        const sessIds = (sessions ?? []).map((s: { id: string }) => s.id);
+        const teamsBySession: Record<string, string[]> = {};
+        if (sessIds.length > 0) {
+            const { data: gm2 } = await sb.from('group_members').select('session_id, group_id').in('session_id', sessIds);
+            for (const r of (gm2 ?? []) as { session_id: string; group_id: string }[]) {
+                if (boundGroupIds && !boundGroupIds.includes(r.group_id)) continue;
+                (teamsBySession[r.session_id] ??= []).push(r.group_id);
+            }
+        }
+        const withTeams = (sessions ?? []).map((s: Record<string, unknown>) => ({
+            ...s,
+            team_ids: teamsBySession[s.id as string] ?? [],
+        }));
+
+        return res.status(200).json({ sessions: withTeams, total: withTeams.length });
     } catch (err) {
         console.error('[tenant-sessions] Unexpected error:', err);
         return res.status(500).json({ error: 'Internal server error' });

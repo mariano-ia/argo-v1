@@ -608,8 +608,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
+        const { data: memberRow } = await sb.from('tenant_members').select('id, tenant_id, role').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
         let tenantId: string | null = memberRow?.tenant_id ?? null;
+        const callerRole: string = memberRow?.role ?? 'owner';
+        const callerMemberId: string | null = memberRow?.id ?? null;
 
         if (!tenantId) {
             // Fallback: owner who predates the tenant_members table
@@ -619,6 +621,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
         const tenant = { id: tenantId };
+
+        // Coach scoping: a coach's AI consultant only sees players in the teams
+        // they're assigned to (privacy — these are minors). null = unscoped
+        // (owner/member see all). An empty list means "no players visible".
+        const isCoach = callerRole === 'coach';
+        let coachGroupIds: string[] | null = null;
+        let coachSessionIds: string[] | null = null;
+        if (isCoach && callerMemberId) {
+            const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', callerMemberId);
+            coachGroupIds = (gc ?? []).map((r: { group_id: string }) => r.group_id);
+            if (coachGroupIds.length > 0) {
+                const { data: gm } = await sb.from('group_members').select('session_id').in('group_id', coachGroupIds);
+                coachSessionIds = Array.from(new Set((gm ?? []).map((r: { session_id: string }) => r.session_id)));
+            } else {
+                coachSessionIds = [];
+            }
+        }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GET: List threads or messages
@@ -733,19 +752,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ai_sections is intentionally excluded here — it's a heavy JSONB blob
         // and we only need it when a specific player is mentioned (re-fetched below).
         const sessionLimit = Math.min(Math.max(tenantPlan?.roster_limit ?? 50, 50), 1000);
-        const [{ data: sessions }, { data: groupsData }] = await Promise.all([
-            sb.from('sessions')
-                .select('id, child_name, child_age, sport, eje, motor, eje_secundario, archetype_label')
-                .eq('tenant_id', tenant.id)
-                .is('deleted_at', null)
-                .not('eje', 'eq', '_pending')
-                .order('created_at', { ascending: false })
-                .limit(sessionLimit),
-            sb.from('groups')
-                .select('id, name, group_members(session_id)')
-                .eq('tenant_id', tenant.id)
-                .is('deleted_at', null),
-        ]);
+        const NO_MATCH = '00000000-0000-0000-0000-000000000000';
+        let sessionsQuery = sb.from('sessions')
+            .select('id, child_name, child_age, sport, eje, motor, eje_secundario, archetype_label')
+            .eq('tenant_id', tenant.id)
+            .is('deleted_at', null)
+            .not('eje', 'eq', '_pending')
+            .order('created_at', { ascending: false })
+            .limit(sessionLimit);
+        let groupsQuery = sb.from('groups')
+            .select('id, name, group_members(session_id)')
+            .eq('tenant_id', tenant.id)
+            .is('deleted_at', null);
+        // Coaches only see their teams' players (sentinel keeps an empty scope empty).
+        if (coachSessionIds !== null) {
+            sessionsQuery = sessionsQuery.in('id', coachSessionIds.length > 0 ? coachSessionIds : [NO_MATCH]);
+        }
+        if (coachGroupIds !== null) {
+            groupsQuery = groupsQuery.in('id', coachGroupIds.length > 0 ? coachGroupIds : [NO_MATCH]);
+        }
+        const [{ data: sessions }, { data: groupsData }] = await Promise.all([sessionsQuery, groupsQuery]);
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);

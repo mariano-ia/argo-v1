@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal } from 'lucide-react';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal, UserCheck } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
@@ -16,18 +16,21 @@ import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
-interface GroupRow { id: string; name: string; created_at: string; member_count: number; }
+interface GroupRow { id: string; name: string; slug?: string; created_at: string; member_count: number; }
 interface MemberRow { id: string; session_id: string; added_at: string; child_name: string; child_age: number | null; sport: string; archetype_label: string; eje: string; motor: string; eje_secundario: string; }
 interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; motor: string; }
+interface CoachRow { member_id: string; email: string; full_name: string | null; status: string; }
+interface TenantMemberLite { id: string; email: string; role: string; status: string; full_name?: string | null; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 const getToken = async () => { const { data: { session } } = await supabase.auth.getSession(); return session?.access_token ?? null; };
 const authHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+const tt = (lang: string, es: string, en: string, pt: string) => (lang === 'en' ? en : lang === 'pt' ? pt : es);
 
 /* ── Dev mock data ─────────────────────────────────────────────────────────── */
 const DEV_GROUPS: GroupRow[] = [
-    { id: 'dev-g1', name: 'Sub-12 Fútbol', created_at: new Date().toISOString(), member_count: 3 },
-    { id: 'dev-g2', name: 'Sub-15 Básquet', created_at: new Date().toISOString(), member_count: 2 },
+    { id: 'dev-g1', name: 'Sub-12 Fútbol', slug: 'devteam1', created_at: new Date().toISOString(), member_count: 3 },
+    { id: 'dev-g2', name: 'Sub-15 Básquet', slug: 'devteam2', created_at: new Date().toISOString(), member_count: 2 },
 ];
 const DEV_MEMBERS: Record<string, MemberRow[]> = {
     'dev-g1': [
@@ -43,10 +46,11 @@ const DEV_MEMBERS: Record<string, MemberRow[]> = {
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
 export const TenantGroups: React.FC = () => {
-    const { tenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean }>();
+    const { tenant, devBypass, role } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean; role?: string }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const { toast } = useToast();
+    const isAdmin = (role ?? 'owner') !== 'coach';
 
     // List
     const [groups, setGroups] = useState<GroupRow[]>([]);
@@ -57,8 +61,9 @@ export const TenantGroups: React.FC = () => {
 
     // Detail
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [detailGroup, setDetailGroup] = useState<{ id: string; name: string } | null>(null);
+    const [detailGroup, setDetailGroup] = useState<{ id: string; name: string; slug?: string } | null>(null);
     const [members, setMembers] = useState<MemberRow[]>([]);
+    const [coaches, setCoaches] = useState<CoachRow[]>([]);
     const [detailLoading, setDetailLoading] = useState(false);
 
     // Rename
@@ -73,13 +78,17 @@ export const TenantGroups: React.FC = () => {
     const [adding, setAdding] = useState(false);
     const [addSearch, setAddSearch] = useState('');
 
+    // Assign coach
+    const [showAssign, setShowAssign] = useState(false);
+    const [allMembers, setAllMembers] = useState<TenantMemberLite[]>([]);
+
     // Delete
     const [confirmDelete, setConfirmDelete] = useState(false);
 
     // Menu
     const [showMenu, setShowMenu] = useState(false);
 
-    /* ── Fetch groups ──────────────────────────────────────────────────────── */
+    /* ── Fetch teams ───────────────────────────────────────────────────────── */
     const fetchGroups = useCallback(async () => {
         if (devBypass) { setGroups(DEV_GROUPS); setLoading(false); return; }
         const token = await getToken();
@@ -92,7 +101,7 @@ export const TenantGroups: React.FC = () => {
 
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
-    /* ── Create group ──────────────────────────────────────────────────────── */
+    /* ── Create team ───────────────────────────────────────────────────────── */
     const handleCreate = async () => {
         if (!newName.trim()) return;
         setCreating(true);
@@ -109,8 +118,9 @@ export const TenantGroups: React.FC = () => {
         setDetailLoading(true);
         if (devBypass) {
             const g = DEV_GROUPS.find(g => g.id === groupId);
-            setDetailGroup(g ? { id: g.id, name: g.name } : null);
+            setDetailGroup(g ? { id: g.id, name: g.name, slug: g.slug } : null);
             setMembers(DEV_MEMBERS[groupId] ?? []);
+            setCoaches([]);
             setDetailLoading(false);
             return;
         }
@@ -118,7 +128,7 @@ export const TenantGroups: React.FC = () => {
         if (!token) return;
         try {
             const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
-            if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); }
+            if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); setCoaches(data.coaches ?? []); }
         } finally { setDetailLoading(false); }
     }, [devBypass]);
 
@@ -127,6 +137,7 @@ export const TenantGroups: React.FC = () => {
         setEditing(false);
         setConfirmDelete(false);
         setShowAddPanel(false);
+        setShowAssign(false);
         setShowMenu(false);
         fetchDetail(id);
     };
@@ -150,7 +161,7 @@ export const TenantGroups: React.FC = () => {
         if (!token) return;
         await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId }) });
         toast('success', dt.groups.grupoEliminado);
-        setSelectedId(null); setDetailGroup(null); setMembers([]);
+        setSelectedId(null); setDetailGroup(null); setMembers([]); setCoaches([]);
         fetchGroups();
     };
 
@@ -193,29 +204,59 @@ export const TenantGroups: React.FC = () => {
         toast('success', dt.groups.jugadoresAgregados(selectedSessions.size));
     };
 
+    /* ── Assign / unassign coach ───────────────────────────────────────────── */
+    const openAssign = async () => {
+        setShowAssign(true);
+        const token = await getToken();
+        if (!token) return;
+        try {
+            const res = await fetch('/api/tenant-members', { headers: authHeaders(token) });
+            if (res.ok) { const data = await res.json(); setAllMembers(data.members ?? []); }
+        } catch { /* noop */ }
+    };
+
+    const handleAssignCoach = async (memberId: string) => {
+        if (!selectedId) return;
+        const token = await getToken();
+        if (!token) return;
+        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'assign_coach', group_id: selectedId, member_id: memberId }) });
+        if (res.ok) { fetchDetail(selectedId); toast('success', tt(lang, 'Entrenador asignado', 'Coach assigned', 'Treinador atribuído')); }
+    };
+
+    const handleUnassignCoach = async (memberId: string) => {
+        if (!selectedId) return;
+        setCoaches(prev => prev.filter(c => c.member_id !== memberId));
+        const token = await getToken();
+        if (!token) return;
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'unassign_coach', group_id: selectedId, member_id: memberId }) });
+        toast('success', tt(lang, 'Entrenador quitado', 'Coach removed', 'Treinador removido'));
+    };
+
     const memberSessionIds = new Set(members.map(m => m.session_id));
     const availableSessions = allSessions.filter(s => !memberSessionIds.has(s.id));
     const filteredAvailable = addSearch
         ? availableSessions.filter(s => s.child_name.toLowerCase().includes(addSearch.toLowerCase()))
         : availableSessions;
+    const assignedIds = new Set(coaches.map(c => c.member_id));
+    const availableCoaches = allMembers.filter(m => m.role === 'coach' && !assignedIds.has(m.id));
 
     /* ── Loading ───────────────────────────────────────────────────────────── */
     if (!tenant) {
         return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;
     }
 
-    const groupIntroBody = lang === 'en'
-        ? 'Create teams and analyze how profiles complement or tension each other. Each group shows the behavioral balance of its members.'
-        : lang === 'pt'
-            ? 'Crie equipes e analise como os perfis se complementam ou tensionam. Cada grupo mostra o equilíbrio comportamental dos seus integrantes.'
-            : 'Crea equipos y analiza cómo se complementan o tensionan los perfiles. Cada grupo muestra el balance conductual de sus integrantes.';
+    const groupIntroBody = tt(lang,
+        'Crea equipos, comparte el enlace de cada uno y asigna entrenadores. Los jugadores que entran por el enlace de un equipo quedan en ese equipo.',
+        'Create teams, share each team link and assign coaches. Players who enter through a team link land in that team.',
+        'Crie equipes, compartilhe o link de cada uma e atribua treinadores. Os jogadores que entram pelo link de uma equipe ficam nessa equipe.');
+    const rosterFull = tenant.active_players_count >= tenant.roster_limit;
 
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
             <SectionIntro
-                storageKey="argo_intro_groups_v1"
+                storageKey="argo_intro_teams_v1"
                 icon={<Layers size={16} />}
-                title={lang === 'en' ? 'Group Dynamics' : lang === 'pt' ? 'Dinâmica de Grupo' : 'Dinámica Grupal'}
+                title={tt(lang, 'Equipos', 'Teams', 'Equipes')}
                 body={groupIntroBody}
             />
             {/* Header */}
@@ -224,7 +265,6 @@ export const TenantGroups: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.grupos}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.groups.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Two-panel layout */}
@@ -232,8 +272,8 @@ export const TenantGroups: React.FC = () => {
 
                 {/* ═══ LEFT PANEL ═══ */}
                 <div className="space-y-3">
-                    {/* Create button / inline form */}
-                    {showCreate ? (
+                    {/* Create button / inline form (admin only) */}
+                    {isAdmin && (showCreate ? (
                         <div className="flex items-center gap-2">
                             <input
                                 value={newName}
@@ -250,24 +290,14 @@ export const TenantGroups: React.FC = () => {
                                 <X size={14} />
                             </button>
                         </div>
-                    ) : (() => {
-                        const trialLimitReached = tenant?.plan === 'trial' && groups.length >= 1;
-                        return trialLimitReached ? (
-                            <Tooltip text={lang === 'en' ? 'Trial plan allows 1 group dynamic. Upgrade to create more.' : lang === 'pt' ? 'O plano de teste permite 1 dinâmica de grupo. Faça upgrade para criar mais.' : 'El plan de prueba permite 1 dinámica grupal. Mejora tu plan para crear más.'} maxWidth={220}>
-                                <span className="flex items-center gap-2 text-[13px] font-medium text-argo-light px-3 py-2.5 rounded-lg cursor-not-allowed">
-                                    <Plus size={16} strokeWidth={1.5} />
-                                    {dt.groups.crearGrupo}
-                                </span>
-                            </Tooltip>
-                        ) : (
-                            <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
-                                <Plus size={16} strokeWidth={1.5} />
-                                {dt.groups.crearGrupo}
-                            </button>
-                        );
-                    })()}
+                    ) : (
+                        <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
+                            <Plus size={16} strokeWidth={1.5} />
+                            {dt.groups.crearGrupo}
+                        </button>
+                    ))}
 
-                    {/* Groups list */}
+                    {/* Teams list */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-y-auto" style={{ maxHeight: 'calc(100vh - 18rem)' }}>
                         {loading ? (
                             <div className="p-4 space-y-3">
@@ -304,17 +334,17 @@ export const TenantGroups: React.FC = () => {
                 </div>
 
                 {/* ═══ RIGHT PANEL ═══ */}
-                <div className="min-w-0 lg:sticky lg:top-6 lg:pt-[52px]">
+                <div className="min-w-0 lg:sticky lg:top-6">
                     <AnimatePresence mode="wait">
                         {!selectedId ? (
                             <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center h-[300px]">
                                 <div className="text-center max-w-sm">
                                     <Layers size={28} className="text-argo-border mx-auto mb-4" />
                                     <p className="text-[15px] font-semibold text-argo-navy mb-2">
-                                        {lang === 'en' ? 'Select a group dynamic' : lang === 'pt' ? 'Selecione uma dinâmica de grupo' : 'Selecciona una dinámica grupal'}
+                                        {tt(lang, 'Selecciona un equipo', 'Select a team', 'Selecione uma equipe')}
                                     </p>
                                     <p className="text-xs text-argo-light leading-relaxed">
-                                        {lang === 'en' ? 'Choose a group dynamic from the list to see its members, balance analysis and coaching tools.' : lang === 'pt' ? 'Escolha uma dinâmica de grupo da lista para ver seus membros, análise de equilíbrio e ferramentas.' : 'Elige una dinámica grupal de la lista para ver sus miembros, análisis de equilibrio y herramientas.'}
+                                        {tt(lang, 'Elige un equipo de la lista para ver su enlace, sus entrenadores, sus jugadores y su química.', 'Choose a team from the list to see its link, coaches, players and chemistry.', 'Escolha uma equipe da lista para ver seu link, treinadores, jogadores e química.')}
                                     </p>
                                 </div>
                             </motion.div>
@@ -327,7 +357,7 @@ export const TenantGroups: React.FC = () => {
                                 transition={{ duration: 0.2 }}
                                 className="space-y-4"
                             >
-                                {/* Group header */}
+                                {/* Team header */}
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                     <div className="flex items-center justify-between">
                                         {editing ? (
@@ -339,8 +369,8 @@ export const TenantGroups: React.FC = () => {
                                                     className="flex-1 text-lg font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
                                                     autoFocus
                                                 />
-                                                <Tooltip text={lang === 'en' ? 'Confirm' : lang === 'pt' ? 'Confirmar' : 'Confirmar'}><button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button></Tooltip>
-                                                <Tooltip text={lang === 'en' ? 'Cancel' : lang === 'pt' ? 'Cancelar' : 'Cancelar'}><button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button></Tooltip>
+                                                <Tooltip text={tt(lang, 'Confirmar', 'Confirm', 'Confirmar')}><button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button></Tooltip>
+                                                <Tooltip text={tt(lang, 'Cancelar', 'Cancel', 'Cancelar')}><button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button></Tooltip>
                                             </div>
                                         ) : (
                                             <>
@@ -348,23 +378,25 @@ export const TenantGroups: React.FC = () => {
                                                     <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
                                                     <p className="text-[11px] text-argo-light mt-0.5">{members.length} {members.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                                                 </div>
-                                                <div className="relative">
-                                                    <Tooltip text={lang === 'en' ? 'Options' : lang === 'pt' ? 'Opções' : 'Opciones'}>
-                                                        <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
-                                                            <MoreHorizontal size={16} />
-                                                        </button>
-                                                    </Tooltip>
-                                                    {showMenu && (
-                                                        <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-argo-hover border border-argo-border py-1 w-40">
-                                                            <button onClick={() => { setEditName(detailGroup?.name ?? ''); setEditing(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
-                                                                <Pencil size={12} /> {lang === 'en' ? 'Rename' : lang === 'pt' ? 'Renomear' : 'Renombrar'}
+                                                {isAdmin && (
+                                                    <div className="relative">
+                                                        <Tooltip text={tt(lang, 'Opciones', 'Options', 'Opções')}>
+                                                            <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
+                                                                <MoreHorizontal size={16} />
                                                             </button>
-                                                            <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
-                                                                <Trash2 size={12} /> {lang === 'en' ? 'Delete' : lang === 'pt' ? 'Excluir' : 'Eliminar'}
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </div>
+                                                        </Tooltip>
+                                                        {showMenu && (
+                                                            <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-argo-hover border border-argo-border py-1 w-40">
+                                                                <button onClick={() => { setEditName(detailGroup?.name ?? ''); setEditing(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
+                                                                    <Pencil size={12} /> {tt(lang, 'Renombrar', 'Rename', 'Renomear')}
+                                                                </button>
+                                                                <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">
+                                                                    <Trash2 size={12} /> {tt(lang, 'Eliminar', 'Delete', 'Excluir')}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </>
                                         )}
                                     </div>
@@ -377,6 +409,62 @@ export const TenantGroups: React.FC = () => {
                                             <button onClick={() => setConfirmDelete(false)} className="px-3 py-1.5 rounded-lg border border-argo-border text-xs">{dt.common.cancelar}</button>
                                         </div>
                                     )}
+
+                                    {/* Team play link */}
+                                    {detailGroup?.slug && (
+                                        <div className="mt-4 pt-4 border-t border-argo-border flex justify-end">
+                                            <LinkWidget slug={`${tenant.slug}/${detailGroup.slug}`} lang={lang} disabled={rosterFull} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Coaches */}
+                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-4">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5">
+                                            <UserCheck size={13} className="text-argo-grey" /> {tt(lang, 'Entrenadores', 'Coaches', 'Treinadores')}
+                                        </h3>
+                                        {isAdmin && (
+                                            <button onClick={openAssign} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
+                                                <Plus size={12} /> {tt(lang, 'Asignar', 'Assign', 'Atribuir')}
+                                            </button>
+                                        )}
+                                    </div>
+                                    {coaches.length === 0 ? (
+                                        <p className="text-xs text-argo-light">{tt(lang, 'Sin entrenadores asignados.', 'No coaches assigned.', 'Sem treinadores atribuídos.')}</p>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {coaches.map(c => (
+                                                <div key={c.member_id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
+                                                    {c.full_name || c.email}
+                                                    {c.status === 'pending' && <span className="text-[10px] text-amber-500">({tt(lang, 'pendiente', 'pending', 'pendente')})</span>}
+                                                    {isAdmin && (
+                                                        <Tooltip text={tt(lang, 'Quitar', 'Remove', 'Remover')}>
+                                                            <button onClick={() => handleUnassignCoach(c.member_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                                <X size={10} />
+                                                            </button>
+                                                        </Tooltip>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {showAssign && isAdmin && (
+                                        <div className="mt-3 pt-3 border-t border-argo-border">
+                                            {availableCoaches.length === 0 ? (
+                                                <p className="text-[11px] text-argo-light">{tt(lang, 'No hay entrenadores disponibles. Crea uno en Usuarios.', 'No coaches available. Create one in Users.', 'Nenhum treinador disponível. Crie um em Usuários.')}</p>
+                                            ) : (
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {availableCoaches.map(m => (
+                                                        <button key={m.id} onClick={() => handleAssignCoach(m.id)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-argo-border text-argo-secondary hover:border-argo-violet-200 transition-all">
+                                                            <Plus size={10} /> {m.full_name || m.email}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <button onClick={() => setShowAssign(false)} className="mt-2 text-[11px] text-argo-light hover:text-argo-grey transition-colors">{dt.common.cancelar}</button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Members as chips — collapsible */}
@@ -386,11 +474,13 @@ export const TenantGroups: React.FC = () => {
                                         defaultOpen={false}
                                         badge={undefined}
                                     >
-                                    <div className="flex items-center justify-end mb-3">
-                                        <button onClick={openAddPanel} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
-                                            <Plus size={12} /> {dt.groups.agregarJugadores}
-                                        </button>
-                                    </div>
+                                    {isAdmin && (
+                                        <div className="flex items-center justify-end mb-3">
+                                            <button onClick={openAddPanel} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
+                                                <Plus size={12} /> {dt.groups.agregarJugadores}
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {detailLoading ? (
                                         <div className="flex gap-2 flex-wrap">{[1,2,3].map(i => <div key={i} className="h-8 w-28 bg-argo-bg rounded-lg animate-pulse" />)}</div>
@@ -404,11 +494,13 @@ export const TenantGroups: React.FC = () => {
                                                     <div key={m.id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
                                                         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
                                                         {m.child_name}
-                                                        <Tooltip text={lang === 'en' ? 'Remove' : lang === 'pt' ? 'Remover' : 'Quitar'}>
-                                                            <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                                                <X size={10} />
-                                                            </button>
-                                                        </Tooltip>
+                                                        {isAdmin && (
+                                                            <Tooltip text={tt(lang, 'Quitar', 'Remove', 'Remover')}>
+                                                                <button onClick={() => handleRemoveMember(m.session_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                                                                    <X size={10} />
+                                                                </button>
+                                                            </Tooltip>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
@@ -422,7 +514,7 @@ export const TenantGroups: React.FC = () => {
                                                 <div className="mt-4 pt-4 border-t border-argo-border space-y-3">
                                                     <div className="relative">
                                                         <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-argo-light" />
-                                                        <input value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder={lang === 'en' ? 'Search...' : 'Buscar...'} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-argo-border text-[11px] outline-none focus:border-argo-violet-200" />
+                                                        <input value={addSearch} onChange={e => setAddSearch(e.target.value)} placeholder={tt(lang, 'Buscar...', 'Search...', 'Buscar...')} className="w-full pl-7 pr-2 py-1.5 rounded-md border border-argo-border text-[11px] outline-none focus:border-argo-violet-200" />
                                                     </div>
 
                                                     {sessionsLoading ? (
@@ -467,21 +559,24 @@ export const TenantGroups: React.FC = () => {
                                     </CollapsibleSection>
                                 </div>
 
-                                {/* Balance panel */}
+                                {/* Team chemistry */}
                                 {!detailLoading && members.length >= 2 && (
-                                    <GroupBalancePanel
-                                        locked={tenant?.plan === 'trial'}
-                                        members={members.map(m => ({
-                                            session_id: m.session_id,
-                                            child_name: m.child_name,
-                                            child_age: m.child_age,
-                                            sport: m.sport,
-                                            eje: m.eje as MemberProfile['eje'],
-                                            motor: m.motor,
-                                            eje_secundario: m.eje_secundario,
-                                            archetype_label: m.archetype_label,
-                                        }))}
-                                    />
+                                    <div>
+                                        <h3 className="text-[13px] font-semibold text-argo-navy mb-2 px-1">{tt(lang, 'Química del equipo', 'Team chemistry', 'Química da equipe')}</h3>
+                                        <GroupBalancePanel
+                                            locked={tenant?.plan === 'trial'}
+                                            members={members.map(m => ({
+                                                session_id: m.session_id,
+                                                child_name: m.child_name,
+                                                child_age: m.child_age,
+                                                sport: m.sport,
+                                                eje: m.eje as MemberProfile['eje'],
+                                                motor: m.motor,
+                                                eje_secundario: m.eje_secundario,
+                                                archetype_label: m.archetype_label,
+                                            }))}
+                                        />
+                                    </div>
                                 )}
                             </motion.div>
                         )}

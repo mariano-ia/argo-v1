@@ -6,9 +6,9 @@ import { createHmac } from 'crypto';
 // session. /api/session verifies it before attaching a session to a tenant,
 // so a session can't be created in an arbitrary tenant by spoofing tenant_id.
 // HMAC key = service role key (server-only secret; avoids a new env var).
-function signPlayToken(tenantId: string, secret: string): string {
+function signPlayToken(tenantId: string, secret: string, teamId?: string | null): string {
     const exp = Date.now() + 60 * 60 * 1000; // 1 hour — long enough to play
-    const payload = Buffer.from(JSON.stringify({ t: tenantId, exp })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({ t: tenantId, tm: teamId ?? null, exp })).toString('base64url');
     const sig = createHmac('sha256', secret).update(payload).digest('base64url');
     return `${payload}.${sig}`;
 }
@@ -65,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(429).json({ error: 'rate_limited' });
         }
 
-        const { slug } = req.body;
+        const { slug, team_slug } = req.body;
 
         if (!slug || typeof slug !== 'string') {
             return res.status(400).json({ error: 'Missing slug' });
@@ -80,6 +80,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (!tenant) {
             return res.status(404).json({ error: 'Tenant not found' });
+        }
+
+        // Optional per-team play: resolve the team slug within this tenant. If it
+        // doesn't resolve, the play falls back to tenant-level (admin can assign later).
+        let teamId: string | null = null;
+        let teamName: string | null = null;
+        if (team_slug && typeof team_slug === 'string') {
+            const { data: team } = await sb
+                .from('groups')
+                .select('id, name')
+                .eq('tenant_id', tenant.id)
+                .eq('slug', team_slug)
+                .is('deleted_at', null)
+                .maybeSingle();
+            if (team) { teamId = team.id; teamName = team.name; }
         }
 
         // Check trial expiration
@@ -111,10 +126,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             tenant_id: tenant.id,
             tenant_name: tenant.display_name,
             tenant_sport: tenant.sport,
+            team_id: teamId,
+            team_name: teamName,
             roster_limit: data.roster_limit,
             active_count: data.active_count,
             available: data.available,
-            play_token: signPlayToken(tenant.id, serviceKey),
+            play_token: signPlayToken(tenant.id, serviceKey, teamId),
         });
     } catch (err) {
         console.error('[start-play] Unexpected error:', err);

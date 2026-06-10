@@ -44,22 +44,13 @@ export const TenantDashboard: React.FC = () => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
-    const NAV_MAIN = [
-        { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
-        { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
-        { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
-        { to: '/dashboard/groups',   label: dt.nav.grupos,    icon: Layers,          end: false },
-        { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
-    ];
-    const NAV_CONFIG = [
-        { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,        end: false },
-        { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,        end: false },
-    ];
-
     const location = useLocation();
     const [session, setSession] = useState<Session | null | undefined>(undefined);
     const [tenant, setTenant] = useState<TenantData | null>(null);
     const [memberProfile, setMemberProfile] = useState<MemberProfile | null>(null);
+    const [role, setRole] = useState<string>('owner');
+    const [teams, setTeams] = useState<{ id: string; name: string; slug: string }[]>([]);
+    const [memberId, setMemberId] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
@@ -98,6 +89,9 @@ export const TenantDashboard: React.FC = () => {
                 const data = await res.json();
                 if (data.tenant) setTenant(data.tenant);
                 if (data.memberProfile !== undefined) setMemberProfile(data.memberProfile);
+                if (data.role) setRole(data.role);
+                if (Array.isArray(data.teams)) setTeams(data.teams);
+                if (data.member_id !== undefined) setMemberId(data.member_id);
             }
         } catch { /* silently fail */ }
     }, [session, devBypass]);
@@ -162,6 +156,22 @@ export const TenantDashboard: React.FC = () => {
 
     const profileIncomplete = !!(tenant && !tenant.institution_type);
     const trialExpired = !!(tenant && tenant.plan === 'trial' && tenant.trial_expires_at && new Date(tenant.trial_expires_at) < new Date());
+
+    // Nav depends on role: coaches don't manage users (the club creates them).
+    const isCoach = role === 'coach';
+    const NAV_MAIN = [
+        { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
+        { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
+        { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
+        { to: '/dashboard/groups',   label: dt.nav.grupos,    icon: Layers,          end: false },
+        { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
+    ];
+    const NAV_CONFIG = isCoach
+        ? [{ to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings, end: false }]
+        : [
+            { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,  end: false },
+            { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,  end: false },
+        ];
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
     const NavItem = ({ to, label, icon: Icon, end, showDot }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean; showDot?: boolean }) => (
@@ -422,7 +432,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, devBypass }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass }} />
                     )}
                 </main>
             </div>

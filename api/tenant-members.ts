@@ -37,10 +37,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: error.message });
         }
 
+        // Attach assigned teams per member (coach -> team M:N via group_coaches)
+        const memberIds = (members ?? []).map(m => m.id);
+        const teamsByMember: Record<string, { id: string; name: string }[]> = {};
+        if (memberIds.length > 0) {
+            const { data: assignments } = await sb
+                .from('group_coaches')
+                .select('member_id, groups!inner ( id, name, deleted_at )')
+                .in('member_id', memberIds);
+            for (const a of (assignments ?? []) as Record<string, unknown>[]) {
+                const g = a.groups as { id: string; name: string; deleted_at: string | null } | null;
+                if (!g || g.deleted_at) continue;
+                (teamsByMember[a.member_id as string] ??= []).push({ id: g.id, name: g.name });
+            }
+        }
+
         const mapped = (members ?? []).map(m => ({
             ...m,
             isCurrentUser: m.auth_user_id === user.id,
             auth_user_id: undefined, // don't expose auth IDs to client
+            teams: teamsByMember[m.id] ?? [],
         }));
 
         return res.status(200).json({ members: mapped });

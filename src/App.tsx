@@ -239,6 +239,7 @@ function App() {
             <Route path="/"       element={<Landing />} />
             <Route path="/app"    element={<UserApp />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
+            <Route path="/play/:slug/:teamSlug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />

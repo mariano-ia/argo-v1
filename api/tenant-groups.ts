@@ -2,16 +2,23 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Unified groups endpoint. Routes by `action` field in POST body,
- * or GET for listing groups / group detail.
+ * Unified teams endpoint (table is still named `groups` for backward-compat).
+ * A "team" = a group with a play-link slug + assigned coaches. Players belong to
+ * teams via group_members (M:N, so a player can be shared across teams).
  *
- * GET                         → list groups
- * GET ?id=<uuid>              → group detail with members
- * POST { action: "create", name }                          → create group
- * POST { action: "rename", id, name }                      → rename group
- * POST { action: "delete", id }                            → soft-delete group
- * POST { action: "add_members", group_id, session_ids[] }  → add sessions to group
- * POST { action: "remove_members", group_id, session_ids[] } → remove sessions from group
+ * Read scope: the institution admin (owner) sees all teams; a coach sees only the
+ * teams they're assigned to. All mutations are admin-only.
+ *
+ * GET                          → list teams (scoped by role)
+ * GET ?id=<uuid>               → team detail: players + coaches
+ * POST { action: "create", name }                              → create team
+ * POST { action: "rename", id, name }                          → rename team
+ * POST { action: "delete", id }                                → soft-delete team
+ * POST { action: "add_members", group_id, session_ids[] }      → add players to team
+ * POST { action: "remove_members", group_id, session_ids[] }   → remove players from team
+ * POST { action: "assign_coach", group_id, member_id }         → assign coach to team
+ * POST { action: "unassign_coach", group_id, member_id }       → unassign coach from team
+ * POST { action: "set_player_teams", session_id, team_ids[] }  → move/share a player (replace memberships)
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET' && req.method !== 'POST') {
@@ -38,16 +45,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
+        // Resolve caller scope: tenant + role + member id
+        let tenantId: string | null = null;
+        let role = 'owner';
+        let memberId: string | null = null;
         const { data: memberRow } = await sb
             .from('tenant_members')
-            .select('tenant_id')
+            .select('id, tenant_id, role')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
             .maybeSingle();
-
-        let tenantId: string | null = memberRow?.tenant_id ?? null;
-
-        if (!tenantId) {
+        if (memberRow) {
+            tenantId = memberRow.tenant_id;
+            role = memberRow.role ?? 'owner';
+            memberId = memberRow.id;
+        } else {
             const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
             if (tenantRow) tenantId = tenantRow.id;
         }
@@ -56,25 +68,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(404).json({ error: 'Tenant not found' });
         }
         const tenant = { id: tenantId };
+        const isCoach = role === 'coach';
+        const isAdmin = !isCoach; // owner (and legacy 'member') manage teams
+
+        // For coaches, the set of teams they may see.
+        let coachGroupIds: string[] = [];
+        if (isCoach && memberId) {
+            const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', memberId);
+            coachGroupIds = (gc ?? []).map((r: { group_id: string }) => r.group_id);
+        }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // GET: List groups or group detail
+        // GET: List teams or team detail
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         if (req.method === 'GET') {
             const groupId = req.query.id as string | undefined;
 
-            // ── GET with id: Group detail ─────────────────────────────────
+            // ── GET with id: Team detail ──────────────────────────────────
             if (groupId) {
+                if (isCoach && !coachGroupIds.includes(groupId)) {
+                    return res.status(404).json({ error: 'Equipo no encontrado' });
+                }
                 const { data: group, error: grpError } = await sb
                     .from('groups')
-                    .select('id, name, created_at')
+                    .select('id, name, slug, created_at')
                     .eq('id', groupId)
                     .eq('tenant_id', tenant.id)
                     .is('deleted_at', null)
                     .single();
 
                 if (grpError || !group) {
-                    return res.status(404).json({ error: 'Grupo no encontrado' });
+                    return res.status(404).json({ error: 'Equipo no encontrado' });
                 }
 
                 const { data: members, error: memError } = await sb
@@ -116,16 +140,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     };
                 });
 
-                return res.status(200).json({ group, members: flatMembers });
+                // Assigned coaches
+                const { data: coachRows } = await sb
+                    .from('group_coaches')
+                    .select('member_id, tenant_members!inner ( id, email, full_name, status )')
+                    .eq('group_id', groupId);
+                const coaches = (coachRows ?? []).map((c: Record<string, unknown>) => {
+                    const tm = c.tenant_members as { id: string; email: string; full_name: string | null; status: string } | null;
+                    return { member_id: c.member_id, email: tm?.email ?? '', full_name: tm?.full_name ?? null, status: tm?.status ?? 'active' };
+                });
+
+                return res.status(200).json({ group, members: flatMembers, coaches });
             }
 
-            // ── GET without id: List groups ───────────────────────────────
-            const { data: groups, error: grpError } = await sb
+            // ── GET without id: List teams ────────────────────────────────
+            let listQuery = sb
                 .from('groups')
-                .select('id, name, created_at, group_members(count)')
+                .select('id, name, slug, created_at, group_members(count)')
                 .eq('tenant_id', tenant.id)
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false });
+            if (isCoach) {
+                if (coachGroupIds.length === 0) return res.status(200).json({ groups: [] });
+                listQuery = listQuery.in('id', coachGroupIds);
+            }
+            const { data: groups, error: grpError } = await listQuery;
 
             if (grpError) {
                 console.error('[tenant-groups] Query error:', grpError.message);
@@ -135,6 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const mapped = (groups ?? []).map((g: Record<string, unknown>) => ({
                 id: g.id,
                 name: g.name,
+                slug: g.slug,
                 created_at: g.created_at,
                 member_count: Array.isArray(g.group_members) && g.group_members[0]
                     ? (g.group_members[0] as { count: number }).count
@@ -145,27 +185,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // POST: Route by action
+        // POST: Route by action — admin only
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        if (!isAdmin) return res.status(403).json({ error: 'forbidden' });
         const { action } = req.body ?? {};
 
         // ── create ────────────────────────────────────────────────────────
         if (action === 'create') {
             const { name } = req.body;
             const trimmed = typeof name === 'string' ? name.trim() : '';
-            if (!trimmed) return res.status(400).json({ error: 'El nombre del grupo es requerido' });
+            if (!trimmed) return res.status(400).json({ error: 'El nombre del equipo es requerido' });
             if (trimmed.length > 100) return res.status(400).json({ error: 'El nombre no puede superar 100 caracteres' });
 
             const { data: group, error: insertError } = await sb
                 .from('groups')
                 .insert({ tenant_id: tenant.id, name: trimmed })
-                .select('id, name')
+                .select('id, name, slug')
                 .single();
 
             if (insertError) {
-                if (insertError.code === '23505') return res.status(409).json({ error: 'Ya existe un grupo con ese nombre' });
+                if (insertError.code === '23505') return res.status(409).json({ error: 'Ya existe un equipo con ese nombre' });
                 console.error('[tenant-groups] Insert error:', insertError.message);
-                return res.status(500).json({ error: 'Failed to create group' });
+                return res.status(500).json({ error: 'Failed to create team' });
             }
 
             return res.status(201).json({ ok: true, group });
@@ -175,7 +216,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (action === 'rename') {
             const { id, name } = req.body;
             const trimmed = typeof name === 'string' ? name.trim() : '';
-            if (!id) return res.status(400).json({ error: 'Group ID required' });
+            if (!id) return res.status(400).json({ error: 'Team ID required' });
             if (!trimmed) return res.status(400).json({ error: 'El nombre es requerido' });
             if (trimmed.length > 100) return res.status(400).json({ error: 'El nombre no puede superar 100 caracteres' });
 
@@ -186,9 +227,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .eq('tenant_id', tenant.id);
 
             if (updateError) {
-                if (updateError.code === '23505') return res.status(409).json({ error: 'Ya existe un grupo con ese nombre' });
+                if (updateError.code === '23505') return res.status(409).json({ error: 'Ya existe un equipo con ese nombre' });
                 console.error('[tenant-groups] Update error:', updateError.message);
-                return res.status(500).json({ error: 'Failed to rename group' });
+                return res.status(500).json({ error: 'Failed to rename team' });
             }
 
             return res.status(200).json({ ok: true });
@@ -197,7 +238,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ── delete ────────────────────────────────────────────────────────
         if (action === 'delete') {
             const { id } = req.body;
-            if (!id) return res.status(400).json({ error: 'Group ID required' });
+            if (!id) return res.status(400).json({ error: 'Team ID required' });
 
             const { error: delError } = await sb
                 .from('groups')
@@ -207,7 +248,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             if (delError) {
                 console.error('[tenant-groups] Delete error:', delError.message);
-                return res.status(500).json({ error: 'Failed to delete group' });
+                return res.status(500).json({ error: 'Failed to delete team' });
             }
 
             return res.status(200).json({ ok: true });
@@ -220,24 +261,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'group_id and session_ids[] are required' });
             }
 
-            // Verify group ownership
             const { data: grp, error: grpErr } = await sb
                 .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
-            if (grpErr || !grp) return res.status(404).json({ error: 'Grupo no encontrado' });
+            if (grpErr || !grp) return res.status(404).json({ error: 'Equipo no encontrado' });
 
-            // Verify session ownership
             const { data: validSessions } = await sb
                 .from('sessions').select('id').eq('tenant_id', tenant.id).is('deleted_at', null).not('eje', 'eq', '_pending').in('id', session_ids);
 
             const validIds = (validSessions ?? []).map((s: { id: string }) => s.id);
-            if (validIds.length === 0) return res.status(400).json({ error: 'No valid sessions found' });
+            if (validIds.length === 0) return res.status(400).json({ error: 'No valid players found' });
 
             const rows = validIds.map((sid: string) => ({ group_id, session_id: sid }));
             const { error: insertError } = await sb.from('group_members').upsert(rows, { onConflict: 'group_id,session_id' });
 
             if (insertError) {
                 console.error('[tenant-groups] Add members error:', insertError.message);
-                return res.status(500).json({ error: 'Failed to add members' });
+                return res.status(500).json({ error: 'Failed to add players' });
             }
 
             return res.status(200).json({ ok: true, added: validIds.length });
@@ -250,20 +289,99 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'group_id and session_ids[] are required' });
             }
 
-            // Verify group ownership
             const { data: grp, error: grpErr } = await sb
                 .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
-            if (grpErr || !grp) return res.status(404).json({ error: 'Grupo no encontrado' });
+            if (grpErr || !grp) return res.status(404).json({ error: 'Equipo no encontrado' });
 
             const { error: delError } = await sb
                 .from('group_members').delete().eq('group_id', group_id).in('session_id', session_ids);
 
             if (delError) {
                 console.error('[tenant-groups] Remove members error:', delError.message);
-                return res.status(500).json({ error: 'Failed to remove members' });
+                return res.status(500).json({ error: 'Failed to remove players' });
             }
 
             return res.status(200).json({ ok: true, removed: session_ids.length });
+        }
+
+        // ── assign_coach ──────────────────────────────────────────────────
+        if (action === 'assign_coach') {
+            const { group_id, member_id } = req.body;
+            if (!group_id || !member_id) return res.status(400).json({ error: 'group_id and member_id are required' });
+
+            const { data: grp } = await sb
+                .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
+            if (!grp) return res.status(404).json({ error: 'Equipo no encontrado' });
+
+            const { data: mem } = await sb
+                .from('tenant_members').select('id').eq('id', member_id).eq('tenant_id', tenant.id).single();
+            if (!mem) return res.status(404).json({ error: 'Entrenador no encontrado' });
+
+            const { error: assignErr } = await sb
+                .from('group_coaches').upsert({ group_id, member_id }, { onConflict: 'group_id,member_id' });
+            if (assignErr) {
+                console.error('[tenant-groups] Assign coach error:', assignErr.message);
+                return res.status(500).json({ error: 'Failed to assign coach' });
+            }
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── unassign_coach ────────────────────────────────────────────────
+        if (action === 'unassign_coach') {
+            const { group_id, member_id } = req.body;
+            if (!group_id || !member_id) return res.status(400).json({ error: 'group_id and member_id are required' });
+
+            const { data: grp } = await sb
+                .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
+            if (!grp) return res.status(404).json({ error: 'Equipo no encontrado' });
+
+            const { error: unErr } = await sb
+                .from('group_coaches').delete().eq('group_id', group_id).eq('member_id', member_id);
+            if (unErr) {
+                console.error('[tenant-groups] Unassign coach error:', unErr.message);
+                return res.status(500).json({ error: 'Failed to unassign coach' });
+            }
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── set_player_teams (move / share) ───────────────────────────────
+        // Replace a player's team memberships with the given set.
+        // [] = remove from all teams; [A] = move to A only; [A,B] = shared across A and B.
+        if (action === 'set_player_teams') {
+            const { session_id, team_ids } = req.body;
+            if (!session_id || !Array.isArray(team_ids)) {
+                return res.status(400).json({ error: 'session_id and team_ids[] are required' });
+            }
+
+            // Verify the player belongs to this tenant
+            const { data: sess } = await sb
+                .from('sessions').select('id').eq('id', session_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
+            if (!sess) return res.status(404).json({ error: 'Jugador no encontrado' });
+
+            // Keep only teams that belong to this tenant
+            let validTeamIds: string[] = [];
+            if (team_ids.length > 0) {
+                const { data: validTeams } = await sb
+                    .from('groups').select('id').eq('tenant_id', tenant.id).is('deleted_at', null).in('id', team_ids);
+                validTeamIds = (validTeams ?? []).map((g: { id: string }) => g.id);
+            }
+
+            // Replace memberships: drop existing, insert the new set
+            const { error: delErr } = await sb.from('group_members').delete().eq('session_id', session_id);
+            if (delErr) {
+                console.error('[tenant-groups] set_player_teams delete error:', delErr.message);
+                return res.status(500).json({ error: 'Failed to update player teams' });
+            }
+            if (validTeamIds.length > 0) {
+                const { error: insErr } = await sb.from('group_members').insert(
+                    validTeamIds.map((gid: string) => ({ group_id: gid, session_id }))
+                );
+                if (insErr) {
+                    console.error('[tenant-groups] set_player_teams insert error:', insErr.message);
+                    return res.status(500).json({ error: 'Failed to update player teams' });
+                }
+            }
+            return res.status(200).json({ ok: true, teams: validTeamIds.length });
         }
 
         return res.status(400).json({ error: 'Unknown action' });

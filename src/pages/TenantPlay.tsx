@@ -7,7 +7,10 @@ import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 type Status = 'loading' | 'ready' | 'not_found' | 'roster_full' | 'trial_expired' | 'error';
 
 export const TenantPlay: React.FC = () => {
-    const { slug } = useParams<{ slug: string }>();
+    // /play/:slug (whole institution) or /play/:slug/:teamSlug (a specific team).
+    // The team is resolved server-side and signed into the play_token, so a player
+    // can't spoof which team they join.
+    const { slug, teamSlug } = useParams<{ slug: string; teamSlug?: string }>();
     const [searchParams] = useSearchParams();
     const consentTokenFromUrl = searchParams.get('consent');
     const [status, setStatus] = useState<Status>('loading');
@@ -30,7 +33,7 @@ export const TenantPlay: React.FC = () => {
         fetch('/api/start-play', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ slug }),
+            body: JSON.stringify({ slug, team_slug: teamSlug }),
         })
             .then(async (res) => {
                 if (res.ok) {
@@ -52,7 +55,7 @@ export const TenantPlay: React.FC = () => {
                 }
             })
             .catch(() => setStatus('error'));
-    }, [slug]);
+    }, [slug, teamSlug]);
 
     if (status === 'loading') {
         return (

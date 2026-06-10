@@ -29,9 +29,14 @@ async function logActivity(sb: { from: (table: string) => { insert: (values: unk
  * spoofed tenant_id / session id could create or mutate another tenant's data.
  */
 
-// Verifies a play_token signed by /api/start-play. Returns the tenant_id it
-// authorizes, or null if the token is missing, tampered, or expired.
-function verifyPlayToken(token: unknown, secret: string): string | null {
+// Loose client type for the inline helpers below — the concrete Supabase client
+// carries heavy generics that don't unify cleanly across helper boundaries.
+type SB = { from: (table: string) => any };
+
+// Verifies a play_token signed by /api/start-play. Returns the tenant_id AND
+// team_id it authorizes, or null if the token is missing, tampered, or expired.
+// team_id is signed server-side so a player can't spoof which team they join.
+function verifyPlayToken(token: unknown, secret: string): { tenantId: string; teamId: string | null } | null {
     if (typeof token !== 'string' || !token.includes('.')) return null;
     const [payload, sig] = token.split('.');
     if (!payload || !sig) return null;
@@ -40,12 +45,36 @@ function verifyPlayToken(token: unknown, secret: string): string | null {
     const b = Buffer.from(expected);
     if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
     try {
-        const { t, exp } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+        const { t, tm, exp } = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
         if (typeof t !== 'string' || typeof exp !== 'number' || Date.now() > exp) return null;
-        return t;
+        return { tenantId: t, teamId: typeof tm === 'string' ? tm : null };
     } catch {
         return null;
     }
+}
+
+// Finds the canonical player (active session) for a tenant by adult email + child
+// name, case-insensitive. On re-profile we update this row instead of inserting a
+// duplicate, so a child is one slot no matter how many times they replay.
+async function findExistingPlayer(sb: SB, tenantId: string, adultEmail: unknown, childName: unknown): Promise<string | null> {
+    const { data: candidates } = await sb
+        .from('sessions')
+        .select('id, adult_email, child_name')
+        .eq('tenant_id', tenantId)
+        .is('archived_at', null)
+        .is('deleted_at', null);
+    const e = String(adultEmail ?? '').trim().toLowerCase();
+    const n = String(childName ?? '').trim().toLowerCase();
+    const match = (candidates ?? []).find((c: { adult_email: string | null; child_name: string | null }) =>
+        String(c.adult_email ?? '').trim().toLowerCase() === e &&
+        String(c.child_name ?? '').trim().toLowerCase() === n);
+    return (match as { id: string } | undefined)?.id ?? null;
+}
+
+// Attaches a player to a team (idempotent). No-op when teamId is null.
+async function ensureTeamMembership(sb: SB, sessionId: string, teamId: string | null): Promise<void> {
+    if (!teamId) return;
+    await sb.from('group_members').upsert({ group_id: teamId, session_id: sessionId }, { onConflict: 'group_id,session_id' });
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
@@ -79,13 +108,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // not the body. Sessions with no tenant (Argo One / self-play) are
             // allowed without a token — there is no tenant roster to abuse.
             let effectiveTenantId: string | null = null;
+            let effectiveTeamId: string | null = null;
             if (tenant_id) {
-                const verifiedTenant = verifyPlayToken(play_token, serviceKey);
-                if (!verifiedTenant || verifiedTenant !== tenant_id) {
+                const verified = verifyPlayToken(play_token, serviceKey);
+                if (!verified || verified.tenantId !== tenant_id) {
                     console.warn('[session:start] Rejected tenant attribution — invalid play_token for tenant', tenant_id);
                     return res.status(403).json({ error: 'invalid_play_token' });
                 }
-                effectiveTenantId = verifiedTenant;
+                effectiveTenantId = verified.tenantId;
+                effectiveTeamId = verified.teamId;
             }
 
             // ── Sport is defined by the club, not the parent ─────────────────
@@ -161,6 +192,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             }
 
+            // ── Identity dedup: a re-profile reuses the existing player row ──────
+            // If this child already has an active session in the tenant, hand back
+            // that row (with a fresh share_token) so the upcoming "update" overwrites
+            // it in place. No new row, no extra roster slot. Also (re)attach to the
+            // team whose link was used.
+            if (effectiveTenantId) {
+                const existingId = await findExistingPlayer(sb, effectiveTenantId, adult_email, child_name);
+                if (existingId) {
+                    const reShareToken = randomBytes(16).toString('hex');
+                    await sb.from('sessions')
+                        .update({ share_token: reShareToken, last_profiled_at: new Date().toISOString() })
+                        .eq('id', existingId);
+                    await ensureTeamMembership(sb, existingId, effectiveTeamId);
+                    if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
+                        await sb.from('parental_consents').update({ session_id: existingId }).eq('token', consent_token);
+                    }
+                    return res.status(200).json({ ok: true, id: existingId, share_token: reShareToken });
+                }
+            }
+
             const share_token = randomBytes(16).toString('hex');
             const { data, error } = await sb.from('sessions').insert({
                 adult_name,
@@ -195,6 +246,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .update({ session_id: data.id })
                     .eq('token', consent_token);
             }
+
+            // Attach the new player to its team (per-team play link)
+            await ensureTeamMembership(sb, data.id, effectiveTeamId);
 
             return res.status(200).json({ ok: true, id: data.id, share_token: data.share_token });
         }
@@ -265,15 +319,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'Missing required fields' });
             }
 
-            // Same tenant attribution gate as "start".
+            // Same tenant + team attribution gate as "start".
             let saveTenantId: string | null = null;
+            let saveTeamId: string | null = null;
             if (tenant_id) {
-                const verifiedTenant = verifyPlayToken(play_token, serviceKey);
-                if (!verifiedTenant || verifiedTenant !== tenant_id) {
+                const verified = verifyPlayToken(play_token, serviceKey);
+                if (!verified || verified.tenantId !== tenant_id) {
                     console.warn('[session:save] Rejected tenant attribution — invalid play_token for tenant', tenant_id);
                     return res.status(403).json({ error: 'invalid_play_token' });
                 }
-                saveTenantId = verifiedTenant;
+                saveTenantId = verified.tenantId;
+                saveTeamId = verified.teamId;
             }
 
             // Sport is defined by the club (see "start"). Stamp it server-side.
@@ -285,6 +341,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .eq('id', saveTenantId)
                     .maybeSingle();
                 saveSport = tenantRow?.sport ?? null;
+            }
+
+            // ── Identity dedup (save path): update existing player in place ──────
+            if (saveTenantId) {
+                const existingId = await findExistingPlayer(sb, saveTenantId, adult_email, child_name);
+                if (existingId) {
+                    const { error: upErr } = await sb.from('sessions').update({
+                        eje,
+                        motor,
+                        archetype_label,
+                        eje_secundario:   eje_secundario ?? null,
+                        answers:          answers ?? [],
+                        ai_tokens_input:  ai_tokens_input ?? 0,
+                        ai_tokens_output: ai_tokens_output ?? 0,
+                        ai_cost_usd:      ai_cost_usd ?? 0,
+                        last_profiled_at: new Date().toISOString(),
+                    }).eq('id', existingId);
+                    if (upErr) {
+                        console.error('[session:save] Update existing error:', upErr.message);
+                        return res.status(500).json({ error: upErr.message });
+                    }
+                    await ensureTeamMembership(sb, existingId, saveTeamId);
+                    await logActivity(sb, {
+                        area: 'producto', action: 'session_reprofiled', sourceType: 'system', severity: 'info',
+                        resourceType: 'session', resourceId: String(existingId),
+                        reason: { session_id: existingId, eje, motor, tenant_id: saveTenantId },
+                        relatedLogs: [`sessions.${existingId}`],
+                    });
+                    return res.status(200).json({ ok: true, id: existingId, share_token: '' });
+                }
             }
 
             const save_share_token = randomBytes(16).toString('hex');
@@ -312,6 +398,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error('[session:save] Insert error:', error.message, error.details);
                 return res.status(500).json({ error: error.message });
             }
+
+            // Attach the new player to its team (per-team play link)
+            await ensureTeamMembership(sb, saveData.id, saveTeamId);
 
             // Principia ingestion (area=producto): a play finished with a real profile.
             await logActivity(sb, {

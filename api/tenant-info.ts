@@ -19,16 +19,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Try tenant_members first (works for both owners and invited members)
         let tenantId: string | null = null;
+        let role = 'owner';
+        let memberId: string | null = null;
         let memberProfile: { full_name: string | null; role_in_institution: string | null } | null = null;
         const { data: memberRow } = await sb
             .from('tenant_members')
-            .select('tenant_id, full_name, role_in_institution')
+            .select('id, tenant_id, role, full_name, role_in_institution')
             .eq('auth_user_id', user.id)
             .eq('status', 'active')
             .maybeSingle();
 
         if (memberRow) {
             tenantId = (memberRow as { tenant_id: string }).tenant_id;
+            role = (memberRow as { role: string }).role ?? 'owner';
+            memberId = (memberRow as { id: string }).id;
             memberProfile = {
                 full_name: (memberRow as { full_name: string | null }).full_name ?? null,
                 role_in_institution: (memberRow as { role_in_institution: string | null }).role_in_institution ?? null,
@@ -45,11 +49,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // Also try to load owner profile (may exist even if auth_user_id wasn't indexed)
                 const { data: ownerMember } = await sb
                     .from('tenant_members')
-                    .select('full_name, role_in_institution')
+                    .select('id, full_name, role_in_institution')
                     .eq('tenant_id', tenantId)
                     .eq('role', 'owner')
                     .maybeSingle();
                 if (ownerMember) {
+                    memberId = (ownerMember as { id: string }).id;
                     memberProfile = {
                         full_name: (ownerMember as { full_name: string | null }).full_name ?? null,
                         role_in_institution: (ownerMember as { role_in_institution: string | null }).role_in_institution ?? null,
@@ -78,9 +83,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             activePlayersCount = count ?? 0;
         }
 
+        // Teams the caller is assigned to. Coaches see only these; owners see all
+        // teams (fetched separately via /api/tenant-groups).
+        let teams: { id: string; name: string; slug: string }[] = [];
+        if (memberId) {
+            const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', memberId);
+            const gids = (gc ?? []).map((r: { group_id: string }) => r.group_id);
+            if (gids.length > 0) {
+                const { data: teamRows } = await sb
+                    .from('groups')
+                    .select('id, name, slug')
+                    .in('id', gids)
+                    .is('deleted_at', null);
+                teams = (teamRows ?? []) as { id: string; name: string; slug: string }[];
+            }
+        }
+
         return res.status(200).json({
             tenant: tenant ? { ...tenant, active_players_count: activePlayersCount } : null,
             memberProfile,
+            role,
+            member_id: memberId,
+            teams,
         });
     } catch (err) {
         console.error('[tenant-info] Unexpected error:', err);
