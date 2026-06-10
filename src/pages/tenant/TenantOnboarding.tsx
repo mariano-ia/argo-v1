@@ -4,7 +4,7 @@ import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import type { Lang } from '../../context/LangContext';
 import type { TenantData } from '../TenantDashboard';
-import { Upload, CheckCircle2, User, Monitor, Mail, Users, Layers, Compass, MessageCircle, AlertCircle, Globe, Copy, Check } from 'lucide-react';
+import { Upload, CheckCircle2, User, Monitor, Mail, Users, Layers, Compass, MessageCircle, AlertCircle, Globe, Shield } from 'lucide-react';
 
 // ─── Orientation slide content (3 langs) ─────────────────────────────────────
 
@@ -17,10 +17,10 @@ const SLIDE_TEXT = {
             flow: ['Deportista', 'La odisea\nmenos de 10 min', 'Informe\npor email', 'Adulto\nresponsable'],
         },
         s1: {
-            tag: 'Tu link único',
-            title: 'La puerta de entrada de tus deportistas',
-            shareNote: 'Compártelo con el adulto responsable (padre, madre o tutor). Ellos completan el registro y le pasan el dispositivo al deportista.',
-            creditNote: 'Cada deportista que juega ocupa un lugar en tu roster. Si no completa la experiencia, el perfil queda pendiente y puedes reintentar.',
+            tag: 'La estructura',
+            title: 'Planteles, entrenadores y jugadores',
+            shareNote: 'Organizas a tus jugadores en planteles. A cada plantel le asignas un entrenador, que comparte el link de su plantel con los adultos responsables. El jugador que entra por ese link queda en ese plantel.',
+            creditNote: 'Cada jugador que juega ocupa un lugar en tu cupo. Si no completa la experiencia, el perfil queda pendiente y puedes reintentar.',
         },
         s2: {
             tag: 'Tu plataforma',
@@ -35,9 +35,9 @@ const SLIDE_TEXT = {
         },
         s3: {
             tag: 'Listo para empezar',
-            title: 'Tu primer paso: compartir el link',
-            body: 'Comparte el link con el adulto responsable de un deportista. El sistema hace el resto.',
-            hint: 'Compártelo por WhatsApp, email o el canal que uses con los padres.',
+            title: 'Tu primer paso: crea un plantel',
+            body: 'Crea tu primer plantel y asígnale un entrenador. El entrenador comparte el link del plantel con los adultos responsables y el sistema hace el resto.',
+            hint: 'Creas planteles y asignas entrenadores desde la sección Planteles del dashboard.',
             orNote: 'o antes configura los datos de tu institución',
         },
         nav: { skip: 'Completar después', skipLast: 'Ir al dashboard', next: 'Siguiente', setup: 'Configurar mi institución', back: 'Atrás' },
@@ -52,10 +52,10 @@ const SLIDE_TEXT = {
             flow: ['Athlete', 'The odyssey\nless than 10 min', 'Report\nby email', 'Responsible\nadult'],
         },
         s1: {
-            tag: 'Your unique link',
-            title: "Your athletes' entry point",
-            shareNote: 'Share it with the responsible adult (parent or guardian). They complete the registration and hand the device to the athlete.',
-            creditNote: 'Each athlete who plays takes a spot on your roster. If they don\'t complete the experience, the profile stays pending and you can retry.',
+            tag: 'The structure',
+            title: 'Teams, coaches and players',
+            shareNote: 'You organize your players into teams. Each team gets a coach who shares the team link with the responsible adults. The player who joins through that link lands in that team.',
+            creditNote: 'Each player who plays takes a spot on your roster. If they don\'t complete the experience, the profile stays pending and you can retry.',
         },
         s2: {
             tag: 'Your platform',
@@ -70,9 +70,9 @@ const SLIDE_TEXT = {
         },
         s3: {
             tag: 'Ready to start',
-            title: 'Your first step: share the link',
-            body: 'Share the link with the responsible adult of an athlete. The system does the rest.',
-            hint: 'Share it via WhatsApp, email, or whatever channel you use with parents.',
+            title: 'Your first step: create a team',
+            body: 'Create your first team and assign it a coach. The coach shares the team link with the responsible adults and the system does the rest.',
+            hint: 'You create teams and assign coaches from the Teams section of your dashboard.',
             orNote: 'or first set up your institution details',
         },
         nav: { skip: 'Complete later', skipLast: 'Go to dashboard', next: 'Next', setup: 'Set up my institution', back: 'Back' },
@@ -87,10 +87,10 @@ const SLIDE_TEXT = {
             flow: ['Atleta', 'A odisseia\nmenos de 10 min', 'Relatório\npor email', 'Adulto\nresponsável'],
         },
         s1: {
-            tag: 'Seu link único',
-            title: 'A porta de entrada dos seus atletas',
-            shareNote: 'Compartilhe com o adulto responsável (pai, mãe ou responsável). Eles completam o registro e passam o dispositivo ao atleta.',
-            creditNote: 'Cada atleta que joga ocupa um lugar no seu elenco. Se não completar a experiência, o perfil fica pendente e você pode tentar novamente.',
+            tag: 'A estrutura',
+            title: 'Plantéis, treinadores e jogadores',
+            shareNote: 'Você organiza seus jogadores em plantéis. A cada plantel você atribui um treinador, que compartilha o link do plantel com os adultos responsáveis. O jogador que entra por esse link fica nesse plantel.',
+            creditNote: 'Cada jogador que joga ocupa um lugar no seu elenco. Se não completar a experiência, o perfil fica pendente e você pode tentar novamente.',
         },
         s2: {
             tag: 'Sua plataforma',
@@ -105,9 +105,9 @@ const SLIDE_TEXT = {
         },
         s3: {
             tag: 'Pronto para começar',
-            title: 'Seu primeiro passo: compartilhar o link',
-            body: 'Compartilhe o link com o adulto responsável de um atleta. O sistema faz o resto.',
-            hint: 'Compartilhe pelo WhatsApp, email ou o canal que você usa com os pais.',
+            title: 'Seu primeiro passo: crie um plantel',
+            body: 'Crie seu primeiro plantel e atribua um treinador. O treinador compartilha o link do plantel com os adultos responsáveis e o sistema faz o resto.',
+            hint: 'Você cria plantéis e atribui treinadores na seção Plantéis do dashboard.',
             orNote: 'ou antes configure os dados da sua instituição',
         },
         nav: { skip: 'Completar depois', skipLast: 'Ir ao dashboard', next: 'Próximo', setup: 'Configurar minha instituição', back: 'Voltar' },
@@ -185,7 +185,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
     const [step, setStep]       = useState(0);
     const [slideIndex, setSlideIndex] = useState(0);
     const [saving, setSaving]   = useState(false);
-    const [copied, setCopied]   = useState(false);
     const [toast, setToast]     = useState<{ msg: string; ok: boolean } | null>(null);
 
     // Step 1 — institution
@@ -288,6 +287,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
     ];
     const DASH_ICONS = [
         <Users size={15} />,
+        <Shield size={15} />,
         <Layers size={15} />,
         <Compass size={15} />,
         <MessageCircle size={15} />,
@@ -370,10 +370,16 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             <>
                                 <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s1.tag}</p>
                                 <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-5">{sl.s1.title}</h2>
-                                <div className="flex items-center justify-between gap-3 bg-argo-bg border border-argo-border rounded-xl px-4 py-3 mb-5">
-                                    <span className="text-sm font-medium text-argo-violet-500 truncate">
-                                        argomethod.com/play/<strong>{tenant.slug}</strong>
-                                    </span>
+                                <div className="flex items-center gap-1.5 mb-5">
+                                    {[{ icon: <Shield size={16} />, label: lang === 'en' ? 'Team' : lang === 'pt' ? 'Plantel' : 'Plantel' }, { icon: <Users size={16} />, label: lang === 'en' ? 'Coach' : lang === 'pt' ? 'Treinador' : 'Entrenador' }, { icon: <Mail size={16} />, label: lang === 'en' ? 'Families' : lang === 'pt' ? 'Famílias' : 'Familias' }].map((s, i) => (
+                                        <React.Fragment key={i}>
+                                            <div className="flex flex-col items-center gap-1.5 flex-1 text-center">
+                                                <div className="w-10 h-10 rounded-[12px] border border-argo-border bg-argo-bg flex items-center justify-center text-argo-violet-500">{s.icon}</div>
+                                                <span className="text-[10px] font-medium text-argo-grey">{s.label}</span>
+                                            </div>
+                                            {i < 2 && <div className="flex items-center flex-shrink-0 text-argo-border" style={{ height: '40px', fontSize: '16px' }}>›</div>}
+                                        </React.Fragment>
+                                    ))}
                                 </div>
                                 <p className="text-sm text-argo-secondary leading-relaxed mb-5">{sl.s1.shareNote}</p>
                                 <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-3">
@@ -410,29 +416,9 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                                 <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s3.tag}</p>
                                 <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-3">{sl.s3.title}</h2>
                                 <p className="text-sm text-argo-grey leading-relaxed mb-6">{sl.s3.body}</p>
-                                <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-xl p-4 mb-4">
-                                    <div className="flex items-center justify-between gap-3 mb-2">
-                                        <span className="text-xs font-medium text-argo-violet-500 truncate">
-                                            argomethod.com/play/{tenant.slug}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(`https://argomethod.com/play/${tenant.slug}`);
-                                                setCopied(true);
-                                                setTimeout(() => setCopied(false), 2000);
-                                            }}
-                                            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold transition-colors flex-shrink-0 ${
-                                                copied
-                                                    ? 'bg-green-100 text-green-700 border border-green-200'
-                                                    : 'bg-white text-argo-violet-500 border border-argo-violet-200 hover:bg-argo-violet-100'
-                                            }`}
-                                        >
-                                            {copied ? <Check size={12} /> : <Copy size={12} />}
-                                            {copied ? sl.copiado : sl.copiarLink}
-                                        </button>
-                                    </div>
-                                    <p className="text-[11px] text-argo-grey">{sl.s3.hint}</p>
+                                <div className="flex items-start gap-2.5 bg-argo-violet-50 border border-argo-violet-100 rounded-xl px-4 py-3.5 mb-4">
+                                    <Shield size={16} className="text-argo-violet-500 flex-shrink-0 mt-0.5" />
+                                    <p className="text-xs text-argo-secondary leading-relaxed">{sl.s3.hint}</p>
                                 </div>
                                 <p className="text-xs text-argo-light text-center">{sl.s3.orNote}</p>
                             </>
