@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Clock, Trash2, Users } from 'lucide-react';
+import { Check, Clock, Trash2, Users, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -35,6 +35,8 @@ export const TenantUsers: React.FC = () => {
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [confirmUnassign, setConfirmUnassign] = useState<{ memberId: string; teamId: string } | null>(null);
+    const [unassigning, setUnassigning] = useState(false);
 
     const fetchMembers = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -130,6 +132,27 @@ export const TenantUsers: React.FC = () => {
     };
 
     const isOwner = members.some(m => m.isCurrentUser && m.role === 'owner');
+
+    // Remove a coach from one of their assigned planteles (with confirmation).
+    const handleUnassign = async (memberId: string, teamId: string) => {
+        setUnassigning(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setUnassigning(false); return; }
+        try {
+            const res = await fetch('/api/tenant-groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ action: 'unassign_coach', group_id: teamId, member_id: memberId }),
+            });
+            if (res.ok) { setFeedback({ type: 'success', text: tt(lang, 'Plantel quitado', 'Team removed', 'Plantel removido') }); fetchMembers(); }
+            else { setFeedback({ type: 'error', text: tt(lang, 'No se pudo quitar el plantel', 'Could not remove team', 'Não foi possível remover o plantel') }); }
+        } catch {
+            setFeedback({ type: 'error', text: tt(lang, 'No se pudo quitar el plantel', 'Could not remove team', 'Não foi possível remover o plantel') });
+        } finally {
+            setUnassigning(false);
+            setConfirmUnassign(null);
+        }
+    };
 
     const handleRemove = async (memberId: string) => {
         setDeleting(true);
@@ -285,8 +308,29 @@ export const TenantUsers: React.FC = () => {
                                     <p className="text-xs text-argo-light">
                                         {m.role === 'coach' ? tt(lang, 'Entrenador', 'Coach', 'Treinador') : tt(lang, 'Administrador', 'Admin', 'Administrador')}
                                         {m.isCurrentUser ? ` · ${dt.users.tu}` : ''}
-                                        {m.teams && m.teams.length > 0 ? ` · ${m.teams.map(t => t.name).join(', ')}` : ''}
                                     </p>
+                                    {m.teams && m.teams.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                            {m.teams.map(t => {
+                                                const isConfirming = confirmUnassign?.memberId === m.id && confirmUnassign?.teamId === t.id;
+                                                return (
+                                                    <span key={t.id} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full border border-argo-border bg-argo-bg text-[11px] font-medium text-argo-secondary">
+                                                        {t.name}
+                                                        {isOwner && (isConfirming ? (
+                                                            <span className="inline-flex items-center gap-1.5 ml-0.5">
+                                                                <button onClick={() => handleUnassign(m.id, t.id)} disabled={unassigning} className="text-[10px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-50">{tt(lang, 'Quitar', 'Remove', 'Remover')}</button>
+                                                                <button onClick={() => setConfirmUnassign(null)} className="text-[10px] text-argo-light hover:text-argo-grey">{dt.common.cancelar}</button>
+                                                            </span>
+                                                        ) : (
+                                                            <button onClick={() => setConfirmUnassign({ memberId: m.id, teamId: t.id })} className="p-0.5 rounded-full text-argo-light hover:text-red-500 hover:bg-red-50 transition-colors" title={tt(lang, 'Quitar del plantel', 'Remove from team', 'Remover do plantel')}>
+                                                                <X size={11} />
+                                                            </button>
+                                                        ))}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                                 <span className={`flex items-center gap-1 text-[11px] font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${
                                     m.status === 'active'
