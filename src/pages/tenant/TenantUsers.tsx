@@ -29,6 +29,8 @@ export const TenantUsers: React.FC = () => {
     const [email, setEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<'coach' | 'member'>('coach');
     const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
+    const [newTeamName, setNewTeamName] = useState('');
+    const [creatingTeam, setCreatingTeam] = useState(false);
     const [inviting, setInviting] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -59,6 +61,35 @@ export const TenantUsers: React.FC = () => {
     };
 
     useEffect(() => { fetchMembers(); fetchTeams(); }, []);
+
+    // Create a team inline during the invite flow and auto-select it.
+    const handleCreateTeam = async () => {
+        const name = newTeamName.trim();
+        if (!name) return;
+        setCreatingTeam(true);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setCreatingTeam(false); return; }
+        try {
+            const res = await fetch('/api/tenant-groups', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ action: 'create', name }),
+            });
+            const data = await res.json().catch(() => ({}));
+            if (res.ok && data.group?.id) {
+                const g = data.group as { id: string; name: string };
+                setTeamsList(prev => [...prev, { id: g.id, name: g.name }]);
+                setSelectedTeams(prev => { const n = new Set(prev); n.add(g.id); return n; });
+                setNewTeamName('');
+            } else {
+                setFeedback({ type: 'error', text: data.error ? `${data.error}` : tt(lang, 'No se pudo crear el equipo', 'Could not create team', 'Não foi possível criar a equipe') });
+            }
+        } catch {
+            setFeedback({ type: 'error', text: tt(lang, 'No se pudo crear el equipo', 'Could not create team', 'Não foi possível criar a equipe') });
+        } finally {
+            setCreatingTeam(false);
+        }
+    };
 
     const handleInvite = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -182,14 +213,12 @@ export const TenantUsers: React.FC = () => {
                             {inviting ? '...' : dt.users.enviar}
                         </button>
                     </div>
-                    {/* Team picker (coach only) */}
+                    {/* Team picker + inline create (coach only) */}
                     {inviteRole === 'coach' && (
                         <div>
                             <p className="text-[12px] text-argo-grey mb-1.5">{tt(lang, 'Asignar a equipos (opcional)', 'Assign to teams (optional)', 'Atribuir a equipes (opcional)')}</p>
-                            {teamsList.length === 0 ? (
-                                <p className="text-[11px] text-argo-light">{tt(lang, 'Todavía no creaste equipos. Créalos en Equipos.', 'You have no teams yet. Create them in Teams.', 'Você ainda não criou equipes. Crie em Equipes.')}</p>
-                            ) : (
-                                <div className="flex flex-wrap gap-1.5">
+                            {teamsList.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-2">
                                     {teamsList.map(t => {
                                         const sel = selectedTeams.has(t.id);
                                         return (
@@ -200,6 +229,23 @@ export const TenantUsers: React.FC = () => {
                                     })}
                                 </div>
                             )}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    value={newTeamName}
+                                    onChange={e => setNewTeamName(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateTeam(); } }}
+                                    placeholder={tt(lang, 'Crear un equipo nuevo', 'Create a new team', 'Criar uma equipe nova')}
+                                    className="flex-1 rounded-lg border border-argo-border bg-argo-bg px-3 py-2 text-[12px] outline-none focus:border-argo-violet-200 transition-colors"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleCreateTeam}
+                                    disabled={creatingTeam || !newTeamName.trim()}
+                                    className="px-3 py-2 rounded-lg border border-argo-border text-[12px] font-semibold text-argo-navy hover:bg-argo-bg disabled:opacity-40 transition-colors flex-shrink-0"
+                                >
+                                    {creatingTeam ? '...' : tt(lang, 'Crear equipo', 'Create team', 'Criar equipe')}
+                                </button>
+                            </div>
                         </div>
                     )}
                 </form>
