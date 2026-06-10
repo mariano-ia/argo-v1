@@ -265,17 +265,13 @@ export const TenantHome: React.FC = () => {
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}
-            <div className={`grid grid-cols-2 ${isCoach ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-5 mb-10`}>
-                {(isCoach ? [
-                    { icon: Users, label: tt('Jugadores', 'Players', 'Jogadores'), value: sessionsLoading ? '...' : sessions.length, sub: tt('en tu plantel', 'in your team', 'no seu plantel'), tip: tt('Jugadores perfilados de tu plantel.', 'Profiled players in your team.', 'Jogadores perfilados do seu plantel.') },
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+                {[
+                    { icon: Users, label: tt('Jugadores', 'Players', 'Jogadores'), value: sessionsLoading ? '...' : sessions.length, sub: tt('perfilados', 'profiled', 'perfilados'), tip: isCoach ? tt('Jugadores perfilados de tu plantel.', 'Profiled players in your team.', 'Jogadores perfilados do seu plantel.') : tt('Total de jugadores perfilados en el club.', 'Total profiled players in the club.', 'Total de jogadores perfilados no clube.') },
+                    { icon: Shield, label: tt('Planteles', 'Teams', 'Plantéis'), value: groupCount ?? (sessionsLoading ? '...' : 0), sub: isCoach ? tt('asignados', 'assigned', 'atribuídos') : tt('creados', 'created', 'criados'), tip: isCoach ? tt('Planteles a los que estás asignado.', 'Teams you are assigned to.', 'Plantéis aos quais você está atribuído.') : tt('Cantidad de planteles del club.', 'Number of teams in the club.', 'Quantidade de plantéis do clube.') },
                     { icon: Activity, label: tt('Este mes', 'This month', 'Este mês'), value: sessionsLoading ? '...' : thisMonthCount, sub: tt('nuevas sesiones', 'new sessions', 'novas sessões'), tip: tt('Sesiones completadas este mes.', 'Sessions completed this month.', 'Sessões completadas este mês.') },
                     { icon: Layers, label: tt('Grupos', 'Groups', 'Grupos'), value: chemGroupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Grupos que creaste para analizar la química.', 'Groups you created to analyze chemistry.', 'Grupos que você criou para analisar a química.') },
-                ] : [
-                    { icon: Users, label: tt('Jugadores', 'Players', 'Jogadores'), value: sessionsLoading ? '...' : sessions.length, sub: tt('perfilados en el club', 'profiled in the club', 'perfilados no clube'), tip: tt('Total de jugadores perfilados en el club.', 'Total profiled players in the club.', 'Total de jogadores perfilados no clube.') },
-                    { icon: Shield, label: tt('Planteles', 'Teams', 'Plantéis'), value: groupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Cantidad de planteles del club.', 'Number of teams in the club.', 'Quantidade de plantéis do clube.') },
-                    { icon: Activity, label: tt('Este mes', 'This month', 'Este mês'), value: sessionsLoading ? '...' : thisMonthCount, sub: tt('nuevas sesiones', 'new sessions', 'novas sessões'), tip: tt('Sesiones completadas este mes.', 'Sessions completed this month.', 'Sessões completadas este mês.') },
-                    { icon: Layers, label: tt('Grupos', 'Groups', 'Grupos'), value: chemGroupCount ?? (sessionsLoading ? '...' : 0), sub: tt('creados', 'created', 'criados'), tip: tt('Grupos creados para analizar la química.', 'Groups created to analyze chemistry.', 'Grupos criados para analisar a química.') },
-                ]).map((stat, i) => (
+                ].map((stat, i) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 12 }}
