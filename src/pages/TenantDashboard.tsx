@@ -291,8 +291,8 @@ export const TenantDashboard: React.FC = () => {
                     </>
                 )}
 
-                {/* Plan banner */}
-                {tenant && !isCollapsed && (
+                {/* Plan banner — institution-level (plan + roster). Hidden from coaches. */}
+                {tenant && !isCollapsed && !isCoach && (
                     <div className="mx-3 mb-3">
                         {tenant.plan === 'trial' ? (
                             <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-[10px] px-3 py-2.5 space-y-2">
