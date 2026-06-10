@@ -259,7 +259,7 @@ export const TenantHome: React.FC = () => {
                     <p className="text-[12px] text-argo-light max-w-[240px] sm:text-right">
                         {isCoach
                             ? (lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.')
-                            : (lang === 'en' ? 'The play link belongs to a team. Assign yourself to a team to share its link, or your coaches share theirs.' : lang === 'pt' ? 'O link de jogo pertence a um plantel. Atribua-se a um plantel para compartilhar o link, ou seus treinadores compartilham o deles.' : 'El link de juego es de un plantel. Asígnate a un plantel para compartir su link, o tus entrenadores comparten el suyo.')}
+                            : (lang === 'en' ? 'The play link belongs to each team. Assign yourself to one to share yours, or let each coach share their own.' : lang === 'pt' ? 'O link de jogo pertence a cada plantel. Atribua-se a um para compartilhar o seu, ou deixe que cada treinador compartilhe o do seu plantel.' : 'El link de juego pertenece a cada plantel. Asígnate a uno para compartir el tuyo, o deja que cada entrenador comparta el de su plantel.')}
                     </p>
                 )}
             </div>
