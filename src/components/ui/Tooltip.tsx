@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 
 /* ── Tooltip ───────────────────────────────────────────────────────────────── */
@@ -64,24 +65,42 @@ interface InfoTipProps {
 }
 
 export const InfoTip: React.FC<InfoTipProps> = ({ text, position = 'bottom' }) => {
-    const [visible, setVisible] = useState(false);
+    // Rendered in a portal with fixed positioning so it can't be clipped by an
+    // ancestor's overflow-hidden, and clamped to the viewport so it never runs
+    // off the right edge (the icon often sits at the far right of a row).
+    const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+    const ref = useRef<HTMLButtonElement>(null);
+
+    const WIDTH = 260;
+    const open = () => {
+        const el = ref.current;
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        const left = Math.min(Math.max(r.right - WIDTH, 8), window.innerWidth - WIDTH - 8);
+        const top = position === 'top' ? r.top - 6 : r.bottom + 6;
+        setCoords({ top, left });
+    };
+    const close = () => setCoords(null);
 
     return (
         <span className="relative inline-flex flex-shrink-0">
             <button
-                onMouseEnter={() => setVisible(true)}
-                onMouseLeave={() => setVisible(false)}
-                onClick={() => setVisible(v => !v)}
+                ref={ref}
+                onMouseEnter={open}
+                onMouseLeave={close}
+                onClick={() => (coords ? close() : open())}
                 className="w-[18px] h-[18px] rounded-full bg-argo-bg border border-argo-border flex items-center justify-center text-argo-grey hover:bg-argo-violet-50 hover:border-argo-violet-200 hover:text-argo-violet-500 transition-all"
             >
                 <Info size={11} />
             </button>
-            {visible && (
+            {coords && createPortal(
                 <div
-                    className={`absolute z-50 w-[260px] px-3 py-2.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed text-left shadow-lg pointer-events-none ${positionClasses[position]}`}
+                    style={{ position: 'fixed', top: coords.top, left: coords.left, width: WIDTH, zIndex: 9999, transform: position === 'top' ? 'translateY(-100%)' : undefined }}
+                    className="px-3 py-2.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed text-left shadow-lg pointer-events-none"
                 >
                     {text}
-                </div>
+                </div>,
+                document.body,
             )}
         </span>
     );
