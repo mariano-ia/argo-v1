@@ -12,7 +12,7 @@ import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
-import { Tooltip } from '../../components/ui/Tooltip';
+import { Tooltip, InfoTip } from '../../components/ui/Tooltip';
 import {
     classifyDecisionPattern,
     getPatternCopy,
@@ -481,6 +481,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className="flex items-center gap-1.5">
                                     {locked ? (
                                         <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
                                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
@@ -497,6 +498,8 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
                                         </button>
                                     )}
+                                        <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
+                                    </div>
                                     {canManage && (locked ? (
                                         <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
                                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
