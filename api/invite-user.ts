@@ -7,7 +7,7 @@ const INVITE_COPY: Record<string, { headline: (n: string) => string; sub: string
     es: {
         headline: (n) => `Te invitaron a unirte a <strong style="font-weight:700;">${n}</strong>`,
         sub: 'Crea tu contraseña para acceder al dashboard de Argo Method.',
-        body: 'Argo Method es una plataforma de perfilado conductual para deportistas jóvenes. Desde el dashboard puedes ver los perfiles de tus deportistas, organizar grupos y consultar al asistente Argo.',
+        body: 'Argo Method es una plataforma de perfilado conductual para deportistas jóvenes. Desde el dashboard puedes ver los perfiles de tus jugadores, analizar la química de tus grupos y consultar al asistente Argo.',
         hint: 'Haz clic en el botón de abajo para crear tu contraseña y acceder.',
         cta: 'Crear contraseña →',
         disclaimer: 'Este enlace es personal e intransferible. Si no esperabas esta invitación, puedes ignorar este mensaje.',
@@ -15,7 +15,7 @@ const INVITE_COPY: Record<string, { headline: (n: string) => string; sub: string
     en: {
         headline: (n) => `You've been invited to join <strong style="font-weight:700;">${n}</strong>`,
         sub: 'Create your password to access the Argo Method dashboard.',
-        body: 'Argo Method is a behavioral profiling platform for young athletes. From the dashboard you can view your athletes\' profiles, organize groups, and consult the Argo assistant.',
+        body: 'Argo Method is a behavioral profiling platform for young athletes. From the dashboard you can view your players\' profiles, analyze your group chemistry, and consult the Argo assistant.',
         hint: 'Click the button below to create your password and get started.',
         cta: 'Create password →',
         disclaimer: 'This link is personal and non-transferable. If you weren\'t expecting this invitation, you can safely ignore this message.',
@@ -23,7 +23,7 @@ const INVITE_COPY: Record<string, { headline: (n: string) => string; sub: string
     pt: {
         headline: (n) => `Você foi convidado a entrar em <strong style="font-weight:700;">${n}</strong>`,
         sub: 'Crie sua senha para acessar o dashboard do Argo Method.',
-        body: 'O Argo Method é uma plataforma de perfilamento comportamental para atletas jovens. No dashboard você pode ver os perfis dos seus atletas, organizar grupos e consultar o assistente Argo.',
+        body: 'O Argo Method é uma plataforma de perfilamento comportamental para atletas jovens. No dashboard você pode ver os perfis dos seus jogadores, analisar a química dos seus grupos e consultar o assistente Argo.',
         hint: 'Clique no botão abaixo para criar sua senha e começar.',
         cta: 'Criar senha →',
         disclaimer: 'Este link é pessoal e intransferível. Se você não esperava este convite, pode ignorar esta mensagem.',
