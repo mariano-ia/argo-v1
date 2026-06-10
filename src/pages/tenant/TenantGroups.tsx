@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil, Check, Trash2, Loader2, Layers, MoreHorizontal, UserCheck } from 'lucide-react';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Layers, MoreHorizontal, UserCheck, Users } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
+import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
@@ -411,6 +412,28 @@ export const TenantGroups: React.FC = () => {
                                 </div>
                                 )}
 
+                                {/* Players in this plantel — read-only (they join via the link) */}
+                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-4">
+                                    <h3 className="text-[13px] font-semibold text-argo-navy mb-3 flex items-center gap-1.5">
+                                        <Users size={13} className="text-argo-grey" /> {tt(lang, 'Jugadores', 'Players', 'Jogadores')} ({members.length})
+                                    </h3>
+                                    {members.length === 0 ? (
+                                        <p className="text-xs text-argo-light">{tt(lang, 'Este plantel todavía no tiene jugadores.', 'This team has no players yet.', 'Este plantel ainda não tem jogadores.')}</p>
+                                    ) : (
+                                        <div className="flex flex-wrap gap-2">
+                                            {members.map(m => {
+                                                const dot = AXIS_COLORS[m.eje] ?? '#6366f1';
+                                                return (
+                                                    <div key={m.id} className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary">
+                                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: dot }} />
+                                                        {m.child_name}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                    <p className="text-[11px] text-argo-light mt-3">{tt(lang, 'Solo lectura. Los jugadores entran por el link del plantel y se gestionan en Jugadores.', 'Read-only. Players join via the team link and are managed in Players.', 'Somente leitura. Os jogadores entram pelo link do plantel e são gerenciados em Jogadores.')}</p>
+                                </div>
 
                             </motion.div>
                         )}
