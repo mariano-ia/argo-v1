@@ -82,10 +82,10 @@ export const TenantUsers: React.FC = () => {
                 setSelectedTeams(prev => { const n = new Set(prev); n.add(g.id); return n; });
                 setNewTeamName('');
             } else {
-                setFeedback({ type: 'error', text: data.error ? `${data.error}` : tt(lang, 'No se pudo crear el equipo', 'Could not create team', 'Não foi possível criar a equipe') });
+                setFeedback({ type: 'error', text: data.error ? `${data.error}` : tt(lang, 'No se pudo crear el plantel', 'Could not create team', 'Não foi possível criar o plantel') });
             }
         } catch {
-            setFeedback({ type: 'error', text: tt(lang, 'No se pudo crear el equipo', 'Could not create team', 'Não foi possível criar a equipe') });
+            setFeedback({ type: 'error', text: tt(lang, 'No se pudo crear el plantel', 'Could not create team', 'Não foi possível criar o plantel') });
         } finally {
             setCreatingTeam(false);
         }
@@ -216,7 +216,7 @@ export const TenantUsers: React.FC = () => {
                     {/* Team picker + inline create (coach only) */}
                     {inviteRole === 'coach' && (
                         <div>
-                            <p className="text-[12px] text-argo-grey mb-1.5">{tt(lang, 'Asignar a equipos (opcional)', 'Assign to teams (optional)', 'Atribuir a equipes (opcional)')}</p>
+                            <p className="text-[12px] text-argo-grey mb-1.5">{tt(lang, 'Asignar a planteles (opcional)', 'Assign to teams (optional)', 'Atribuir a plantéis (opcional)')}</p>
                             {teamsList.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5 mb-2">
                                     {teamsList.map(t => {
@@ -234,7 +234,7 @@ export const TenantUsers: React.FC = () => {
                                     value={newTeamName}
                                     onChange={e => setNewTeamName(e.target.value)}
                                     onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateTeam(); } }}
-                                    placeholder={tt(lang, 'Crear un equipo nuevo', 'Create a new team', 'Criar uma equipe nova')}
+                                    placeholder={tt(lang, 'Crear un plantel nuevo', 'Create a new team', 'Criar um plantel novo')}
                                     className="flex-1 rounded-lg border border-argo-border bg-argo-bg px-3 py-2 text-[12px] outline-none focus:border-argo-violet-200 transition-colors"
                                 />
                                 <button
@@ -243,7 +243,7 @@ export const TenantUsers: React.FC = () => {
                                     disabled={creatingTeam || !newTeamName.trim()}
                                     className="px-3 py-2 rounded-lg border border-argo-border text-[12px] font-semibold text-argo-navy hover:bg-argo-bg disabled:opacity-40 transition-colors flex-shrink-0"
                                 >
-                                    {creatingTeam ? '...' : tt(lang, 'Crear equipo', 'Create team', 'Criar equipe')}
+                                    {creatingTeam ? '...' : tt(lang, 'Crear plantel', 'Create team', 'Criar plantel')}
                                 </button>
                             </div>
                         </div>

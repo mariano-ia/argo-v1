@@ -25,6 +25,7 @@ const TenantLink      = lazy(() => import('./pages/tenant/TenantLink').then(m =>
 const TenantSettings  = lazy(() => import('./pages/tenant/TenantSettings').then(m => ({ default: m.TenantSettings })));
 const TenantUsers     = lazy(() => import('./pages/tenant/TenantUsers').then(m => ({ default: m.TenantUsers })));
 const TenantGroups    = lazy(() => import('./pages/tenant/TenantGroups').then(m => ({ default: m.TenantGroups })));
+const TenantGrupos    = lazy(() => import('./pages/tenant/TenantGrupos').then(m => ({ default: m.TenantGrupos })));
 const TenantGuide     = lazy(() => import('./pages/tenant/TenantGuide').then(m => ({ default: m.TenantGuide })));
 const TenantPlayers   = lazy(() => import('./pages/tenant/TenantPlayers').then(m => ({ default: m.TenantPlayers })));
 const TenantChat      = lazy(() => import('./pages/tenant/TenantChat').then(m => ({ default: m.TenantChat })));
@@ -271,7 +272,9 @@ function App() {
             <Route path="/dashboard" element={<TenantDashboard />}>
                 <Route index           element={<TenantHome />} />
                 <Route path="players"  element={<TenantPlayers />} />
-                <Route path="groups"   element={<TenantGroups />} />
+                <Route path="planteles" element={<TenantGroups />} />
+                <Route path="grupos"   element={<TenantGrupos />} />
+                <Route path="groups"   element={<TenantGrupos />} />
                 <Route path="guide"    element={<TenantGuide />} />
                 <Route path="chat"     element={<TenantChat />} />
                 <Route path="link"     element={<TenantLink />} />

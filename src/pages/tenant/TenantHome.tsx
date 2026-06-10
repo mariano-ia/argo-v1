@@ -249,7 +249,7 @@ export const TenantHome: React.FC = () => {
                         </div>
                     ) : (
                         <p className="text-[12px] text-argo-light max-w-[220px] sm:text-right">
-                            {lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a uma equipe e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un equipo para obtener tu enlace.'}
+                            {lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.'}
                         </p>
                     )
                 ) : (

@@ -10,7 +10,7 @@ import { TrialEndModal } from '../components/dashboard/TrialEndModal';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
-    Users, Compass, MessageCircle, Layers, UserPlus, User,
+    Users, Compass, MessageCircle, Layers, UserPlus, User, Shield,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -159,11 +159,14 @@ export const TenantDashboard: React.FC = () => {
 
     // Nav depends on role: coaches don't manage users (the club creates them).
     const isCoach = role === 'coach';
+    const plantelesLabel = lang === 'en' ? 'Teams' : lang === 'pt' ? 'Plantéis' : 'Planteles';
     const NAV_MAIN = [
         { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
         { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
         { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
-        { to: '/dashboard/groups',   label: dt.nav.grupos,    icon: Layers,          end: false },
+        // Planteles (structural, owns the link) is admin-only; coaches just use the analytical tool.
+        ...(isCoach ? [] : [{ to: '/dashboard/planteles', label: plantelesLabel, icon: Shield, end: false }]),
+        { to: '/dashboard/grupos',   label: dt.nav.grupos,    icon: Layers,          end: false },
         { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
     ];
     const NAV_CONFIG = isCoach
