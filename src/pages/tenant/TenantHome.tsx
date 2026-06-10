@@ -144,7 +144,8 @@ const DEV_SESSIONS: SessionRow[] = [
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 export const TenantHome: React.FC = () => {
-    const { tenant, refreshTenant, userEmail, memberProfile, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean }>();
+    const { tenant, refreshTenant, userEmail, memberProfile, devBypass, role, teams } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean; role?: string; teams?: { id: string; name: string; slug: string }[] }>();
+    const isCoach = (role ?? 'owner') === 'coach';
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const navigate = useNavigate();
@@ -235,7 +236,25 @@ export const TenantHome: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
-                <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                {isCoach ? (
+                    // A coach shares their team link(s), not the institution-wide link.
+                    (teams && teams.length > 0) ? (
+                        <div className="flex flex-col items-stretch sm:items-end gap-4">
+                            {teams.map(t => (
+                                <div key={t.id}>
+                                    <p className="text-[11px] font-semibold text-argo-grey mb-1 sm:text-right">{t.name}</p>
+                                    <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-[12px] text-argo-light max-w-[220px] sm:text-right">
+                            {lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a uma equipe e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un equipo para obtener tu enlace.'}
+                        </p>
+                    )
+                ) : (
+                    <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                )}
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}

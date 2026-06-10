@@ -16,7 +16,7 @@ interface TenantData {
 }
 
 export const TenantLink: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant, role } = useOutletContext<{ tenant: TenantData | null; role?: string }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [copied, setCopied] = React.useState(false);
@@ -70,7 +70,7 @@ export const TenantLink: React.FC = () => {
                         {dt.link.descripcion}
                     </p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
+                {tenant && (role ?? 'owner') !== 'coach' && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             <div className="bg-white rounded-[14px] p-6 shadow-argo">

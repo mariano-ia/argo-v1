@@ -31,9 +31,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        // Get caller's tenant + verify they are the owner
+        // Resolve caller's tenant + role. Institution fields are owner-only; any
+        // active member (incl. coaches) may still update their OWN profile below.
         let tenantId: string | null = null;
         let memberRowId: string | null = null;
+        let isOwner = false;
 
         const { data: memberRow } = await sb
             .from('tenant_members')
@@ -45,32 +47,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (memberRow) {
             tenantId = (memberRow as { tenant_id: string }).tenant_id;
             memberRowId = (memberRow as { id: string }).id;
-            if ((memberRow as { role: string }).role !== 'owner') {
-                return res.status(403).json({ error: 'Only the owner can update institution settings' });
-            }
+            isOwner = (memberRow as { role: string }).role === 'owner';
         } else {
             const { data: tenantRow } = await sb
                 .from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
-            if (tenantRow) tenantId = (tenantRow as { id: string }).id;
+            if (tenantRow) { tenantId = (tenantRow as { id: string }).id; isOwner = true; }
         }
         if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
 
         const body = req.body as SetupBody;
 
-        // Update tenant institution fields
-        const tenantUpdate: Record<string, unknown> = {};
-        if (body.display_name        !== undefined) tenantUpdate.display_name        = body.display_name.trim();
-        if (body.institution_type    !== undefined) tenantUpdate.institution_type    = body.institution_type;
-        if (body.sport               !== undefined) tenantUpdate.sport               = body.sport;
-        if (body.country             !== undefined) tenantUpdate.country             = body.country;
-        if (body.city                !== undefined) tenantUpdate.city                = body.city?.trim() ?? null;
-        if (body.onboarding_completed !== undefined) tenantUpdate.onboarding_completed = body.onboarding_completed;
+        // Update tenant institution fields — OWNER ONLY (coaches can't touch the
+        // institution; their institution-field changes are silently ignored).
+        if (isOwner) {
+            const tenantUpdate: Record<string, unknown> = {};
+            if (body.display_name        !== undefined) tenantUpdate.display_name        = body.display_name.trim();
+            if (body.institution_type    !== undefined) tenantUpdate.institution_type    = body.institution_type;
+            if (body.sport               !== undefined) tenantUpdate.sport               = body.sport;
+            if (body.country             !== undefined) tenantUpdate.country             = body.country;
+            if (body.city                !== undefined) tenantUpdate.city                = body.city?.trim() ?? null;
+            if (body.onboarding_completed !== undefined) tenantUpdate.onboarding_completed = body.onboarding_completed;
 
-        if (Object.keys(tenantUpdate).length > 0) {
-            const { error } = await sb.from('tenants').update(tenantUpdate).eq('id', tenantId);
-            if (error) {
-                console.error('[tenant-setup] Tenant update error:', error.message);
-                return res.status(500).json({ error: error.message });
+            if (Object.keys(tenantUpdate).length > 0) {
+                const { error } = await sb.from('tenants').update(tenantUpdate).eq('id', tenantId);
+                if (error) {
+                    console.error('[tenant-setup] Tenant update error:', error.message);
+                    return res.status(500).json({ error: error.message });
+                }
             }
         }
 

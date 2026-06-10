@@ -53,8 +53,11 @@ const selectClass = inputClass;
 /* ── Component ──────────────────────────────────────────────────────────── */
 
 export const TenantSettings: React.FC = () => {
-    const { tenant, refreshTenant, memberProfile: initialProfile } =
-        useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; memberProfile: MemberProfile | null }>();
+    const { tenant, refreshTenant, memberProfile: initialProfile, role: callerRole } =
+        useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; memberProfile: MemberProfile | null; role?: string }>();
+    // Coaches manage only their own profile + language; institution settings and
+    // account actions belong to the institution admin.
+    const isCoach = (callerRole ?? 'owner') === 'coach';
     const { lang, setLang } = useLang();
     const dt = getDashboardT(lang);
     const o  = dt.onboarding;
@@ -233,7 +236,8 @@ export const TenantSettings: React.FC = () => {
                 {/* ── Editable card (institution + profile) ─────────── */}
                 <div className="bg-white rounded-[14px] p-6 shadow-argo space-y-6">
 
-                    {/* Institution section */}
+                    {/* Institution section — owner only */}
+                    {!isCoach && (<>
                     <div className="space-y-5">
                         <SectionTitle>{o.paso1Label}</SectionTitle>
 
@@ -305,6 +309,7 @@ export const TenantSettings: React.FC = () => {
 
                     {/* Divider */}
                     <div className="h-px bg-argo-border" />
+                    </>)}
 
                     {/* Profile section */}
                     <div className="space-y-5">
@@ -369,7 +374,8 @@ export const TenantSettings: React.FC = () => {
                     </div>
                 </div>
 
-                {/* ── Danger zone ─────────────────────────────── */}
+                {/* ── Danger zone — owner only ─────────────────────────────── */}
+                {!isCoach && (
                 <div className="bg-white rounded-[14px] p-6 shadow-argo border border-argo-border">
                     <div className="flex items-center gap-2 mb-4">
                         <AlertTriangle size={16} className="text-argo-light" />
@@ -410,6 +416,7 @@ export const TenantSettings: React.FC = () => {
                         </button>
                     </div>
                 </div>
+                )}
 
             </div>
         </div>

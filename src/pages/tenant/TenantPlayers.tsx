@@ -552,7 +552,7 @@ const DEV_SESSIONS: SessionRow[] = [
 ];
 
 export const TenantPlayers: React.FC = () => {
-    const { tenant, refreshTenant, devBypass } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; devBypass?: boolean }>();
+    const { tenant, refreshTenant, devBypass, role } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; devBypass?: boolean; role?: string }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -644,7 +644,7 @@ export const TenantPlayers: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
+                {tenant && (role ?? 'owner') !== 'coach' && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Re-profile alert */}

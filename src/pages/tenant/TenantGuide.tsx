@@ -78,7 +78,7 @@ function renderPerspectives(text: string, lang: string): React.ReactNode {
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantGuide: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant, role } = useOutletContext<{ tenant: TenantData | null; role?: string }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
@@ -177,7 +177,7 @@ export const TenantGuide: React.FC = () => {
                     <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.guia}</h1>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.guide.subtitulo}</p>
                 </div>
-                {tenant && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
+                {tenant && (role ?? 'owner') !== 'coach' && <LinkWidget slug={tenant.slug} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />}
             </div>
 
             {/* Search + filters — full width */}

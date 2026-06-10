@@ -25,14 +25,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        // Find tenant
-        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
+        // Find tenant — and gate to the owner. Canceling a subscription is an
+        // institution-level action; coaches/members must not be able to do it.
+        const { data: memberRow } = await sb.from('tenant_members').select('tenant_id, role').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
         let tenantId = memberRow?.tenant_id ?? null;
+        let isOwner = memberRow?.role === 'owner';
         if (!tenantId) {
             const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
             tenantId = tenantRow?.id ?? null;
+            if (tenantId) isOwner = true;
         }
         if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
+        if (!isOwner) return res.status(403).json({ error: 'Only the institution admin can cancel the subscription' });
 
         // Get subscription info
         const { data: tenant } = await sb.from('tenants')
