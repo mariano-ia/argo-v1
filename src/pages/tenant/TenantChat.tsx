@@ -401,7 +401,7 @@ export const TenantChat: React.FC = () => {
                             }`}>
                                 <span className="font-bold tabular-nums">{totalUserMessages}/10</span>
                                 <span className="font-medium opacity-80">
-                                    {lang === 'en' ? 'free trial queries' : 'consultas free trial'}
+                                    {lang === 'en' ? 'free trial queries' : lang === 'pt' ? 'consultas de teste' : 'consultas free trial'}
                                 </span>
                             </span>
                         </div>

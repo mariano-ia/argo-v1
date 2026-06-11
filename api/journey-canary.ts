@@ -24,6 +24,7 @@ import { createClient } from '@supabase/supabase-js';
 export const maxDuration = 120; // generate-ai alone is 15-27s; give the chain room.
 
 const CANARY_CHILD_NAME = 'Journey Canary'; // stable marker for cleanup
+const CANARY_TEAM_CHILD = 'Journey Canary Plantel'; // marker for the per-plantel attribution check
 const STEP_TIMEOUT_MS = 60_000;
 
 type StepResult = { step: string; ok: boolean; detail: string };
@@ -206,13 +207,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } else if (!failures.length) {
       failures.push({ step: 'send-email', ok: false, detail: 'skipped: no session/sections' });
     }
+
+    // STEP 5 — per-plantel attribution. The flow above exercises the institution
+    // link; coaches share PER-PLANTEL links, so this is the only signal that team
+    // attribution (start-play w/ team_slug -> session save -> group_members row)
+    // actually works end-to-end. Without it, a silent break in ensureTeamMembership
+    // would make players vanish from coach rosters while the canary stayed green.
+    if (tenantId) {
+      try {
+        // Ensure the QA tenant has a plantel to attribute to (idempotent: reuse or create).
+        let teamSlug = '';
+        let teamId = '';
+        const { data: existingTeam } = await sb.from('groups')
+          .select('id, slug').eq('tenant_id', tenantId).is('deleted_at', null).limit(1).maybeSingle();
+        if (existingTeam && existingTeam.slug) { teamSlug = existingTeam.slug; teamId = existingTeam.id; }
+        else {
+          const { data: newTeam } = await sb.from('groups')
+            .insert({ tenant_id: tenantId, name: 'Canary Plantel' }).select('id, slug').single();
+          teamSlug = newTeam && newTeam.slug ? newTeam.slug : '';
+          teamId = newTeam && newTeam.id ? newTeam.id : '';
+        }
+        if (!teamSlug || !teamId) {
+          failures.push({ step: 'plantel-attribution', ok: false, detail: 'could not resolve a QA plantel slug' });
+        } else {
+          const sp = await call(`${base}/api/start-play`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug, team_slug: teamSlug }),
+          });
+          const teamToken = String(sp.body.play_token ?? '');
+          if (sp.status !== 200 || sp.body.ok !== true || !teamToken) {
+            failures.push({ step: 'plantel-start-play', ok: false, detail: `status=${sp.status} body=${JSON.stringify(sp.body).slice(0, 160)}` });
+          } else {
+            const sv = await call(`${base}/api/session`, {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'save', adult_name: 'Canary', adult_email: toEmail,
+                child_name: CANARY_TEAM_CHILD, child_age: 12,
+                eje: 'S', motor: 'Medio', archetype_label: 'Sostenedor Rítmico',
+                tenant_id: tenantId, play_token: teamToken, lang: 'es', is_demo: true,
+              }),
+            });
+            const teamSessionId = String(sv.body.id ?? '');
+            if (sv.status !== 200 || sv.body.ok !== true || !teamSessionId) {
+              failures.push({ step: 'plantel-save-session', ok: false, detail: `status=${sv.status} body=${JSON.stringify(sv.body).slice(0, 160)}` });
+            } else {
+              const { data: gm } = await sb.from('group_members')
+                .select('id').eq('group_id', teamId).eq('session_id', teamSessionId).maybeSingle();
+              if (!gm) {
+                failures.push({ step: 'plantel-attribution', ok: false, detail: 'session saved but not attributed to the plantel (no group_members row)' });
+              }
+            }
+          }
+        }
+      } catch (e) { failures.push({ step: 'plantel-attribution', ok: false, detail: String(e) }); }
+    }
   } finally {
     // Cleanup — ALWAYS, even on failure. Hard-delete every canary session for the
     // QA tenant (self-healing: clears leftovers from a prior crashed run too), so
     // the roster stays clean and is_demo rows never accumulate. Children FK rows
     // (feedback/chat_messages/...) are deleted first in case any exist.
     try {
-      let q = sb.from('sessions').select('id').eq('child_name', CANARY_CHILD_NAME).eq('is_demo', true);
+      let q = sb.from('sessions').select('id').in('child_name', [CANARY_CHILD_NAME, CANARY_TEAM_CHILD]).eq('is_demo', true);
       if (tenantId) q = q.eq('tenant_id', tenantId);
       const { data: stale } = await q;
       const ids = (stale ?? []).map((r: { id: string }) => r.id);

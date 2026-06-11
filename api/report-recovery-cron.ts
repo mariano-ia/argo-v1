@@ -77,6 +77,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .from('sessions')
         .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token')
         .neq('eje', '_pending')
+        .not('is_demo', 'is', true) // never generate/send for demo or canary sessions
         .is('email_sent_at', null)
         .gte('created_at', cutoff)
         .order('created_at', { ascending: true })

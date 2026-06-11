@@ -21,7 +21,6 @@ import { NotFound }           from './pages/NotFound';
 // Tenant dashboard (only loaded when authenticated tenant accesses /dashboard)
 const TenantDashboard = lazy(() => import('./pages/TenantDashboard').then(m => ({ default: m.TenantDashboard })));
 const TenantHome      = lazy(() => import('./pages/tenant/TenantHome').then(m => ({ default: m.TenantHome })));
-const TenantLink      = lazy(() => import('./pages/tenant/TenantLink').then(m => ({ default: m.TenantLink })));
 const TenantSettings  = lazy(() => import('./pages/tenant/TenantSettings').then(m => ({ default: m.TenantSettings })));
 const TenantUsers     = lazy(() => import('./pages/tenant/TenantUsers').then(m => ({ default: m.TenantUsers })));
 const TenantGroups    = lazy(() => import('./pages/tenant/TenantGroups').then(m => ({ default: m.TenantGroups })));
@@ -277,7 +276,6 @@ function App() {
                 <Route path="groups"   element={<TenantGrupos />} />
                 <Route path="guide"    element={<TenantGuide />} />
                 <Route path="chat"     element={<TenantChat />} />
-                <Route path="link"     element={<TenantLink />} />
                 <Route path="users"    element={<TenantUsers />} />
                 <Route path="settings" element={<TenantSettings />} />
                 <Route path="pricing"  element={<TenantPricing />} />

@@ -61,7 +61,7 @@ function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string,
         <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>
     </td><td style="vertical-align:top;padding-left:8px;padding-bottom:12px;">
         <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Dashboard completo + API</p>
-        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Grupos ilimitados, guia situacional, palabras puente, checklist, integraciones.</p>
+        <p style="margin:2px 0 0;font-size:12px;color:#86868B;">Planteles y grupos ilimitados, guía situacional, palabras puente, checklist, integraciones.</p>
     </td></tr>
     <tr><td width="28" style="vertical-align:top;">
         <div style="width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);text-align:center;line-height:20px;font-size:11px;color:#16a34a;font-weight:700;">&#10003;</div>

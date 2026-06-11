@@ -784,7 +784,7 @@ const PricingSection: React.FC<{
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 50 jugadores activos', 'Up to 50 active players', 'Até 50 jogadores ativos')} />
-                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
                         <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
                         <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
@@ -833,7 +833,7 @@ const PricingSection: React.FC<{
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
                         <PricingFeature label={L('Hasta 100 jugadores activos', 'Up to 100 active players', 'Até 100 jogadores ativos')} />
-                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
                         <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
                         <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
@@ -865,7 +865,7 @@ const PricingSection: React.FC<{
                         <PricingFeature label={L('Argo Coach Premium', 'Argo Coach Premium', 'Argo Coach Premium')} sub={L('modelo avanzado', 'advanced model', 'modelo avançado')} />
                         <PricingFeature label={L('Jugadores ilimitados', 'Unlimited players', 'Jogadores ilimitados')} />
                         <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
-                        <PricingFeature label={L('Grupos ilimitados', 'Unlimited groups', 'Grupos ilimitados')} />
+                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
                         <PricingFeature label={L('Dashboard completo + API', 'Full dashboard + API', 'Dashboard completo + API')} />
                         <PricingFeature label={L('Integraciones custom', 'Custom integrations', 'Integrações custom')} />
                         <PricingFeature label={L('Onboarding asistido', 'Assisted onboarding', 'Onboarding assistido')} />

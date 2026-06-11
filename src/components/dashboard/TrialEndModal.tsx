@@ -19,7 +19,7 @@ const COPY = {
         keepTitle: 'Lo que conservas',
         keep: 'Todos los perfiles y reportes que ya generaste.',
         unlockTitle: 'Lo que activas con un plan',
-        unlock: 'Más jugadores en tu equipo, consultor IA y todas las funciones.',
+        unlock: 'Más jugadores en tu plantel, consultor IA y todas las funciones.',
         cta: 'Ver planes',
         later: 'Quizás más tarde',
     },

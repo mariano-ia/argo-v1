@@ -13,7 +13,7 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a la plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
-        noCredits: 'Tu roster está lleno. Archiva jugadores para liberar lugar.',
+        noCredits: 'Tu cupo está lleno. Archiva jugadores para liberar lugar.',
     },
     en: {
         label: 'Invite athletes to play with your link',

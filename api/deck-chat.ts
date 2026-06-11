@@ -71,7 +71,7 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 
 ## Dashboard (para instituciones)
 - Equipo: todos los jugadores con su perfil
-- Dinámica Grupal: composición conductual del equipo, detectar desbalances
+- Química de grupos: composición conductual del grupo, detectar desbalances
 - Argo Coach: preguntas libres sobre cualquier jugador ("¿Cómo motivo a Mateo?")
 - Predictor Conductual: base de datos de escenarios por arquetipo
 - Link único: cada institución tiene su link para compartir

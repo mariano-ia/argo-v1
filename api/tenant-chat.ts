@@ -1314,6 +1314,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 prohibited_after_retry: qa.prohibitedAfterRetry,
                 context_miss: qa.contextMiss,
                 fair_use_exceeded: fairUseExceeded,
+                group_ids: coachGroupIds, // per-plantel attribution for coaches; null for owner/admin
             });
         } catch (telemetryErr) {
             console.warn('[tenant-chat] ai_events telemetry insert failed (non-fatal):', telemetryErr instanceof Error ? telemetryErr.message : telemetryErr);

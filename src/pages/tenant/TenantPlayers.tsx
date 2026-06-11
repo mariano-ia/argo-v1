@@ -514,7 +514,7 @@ const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashbo
                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
                                         >
                                             {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                            {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? 'Error' : dt.home.reenviarInforme}
+                                            {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? (lang === 'en' ? 'Error' : lang === 'pt' ? 'Erro' : 'Error') : dt.home.reenviarInforme}
                                         </button>
                                     ))}
                                     {canManage && archived && onReactivate && (

@@ -74,7 +74,8 @@ async function findExistingPlayer(sb: SB, tenantId: string, adultEmail: unknown,
 // Attaches a player to a team (idempotent). No-op when teamId is null.
 async function ensureTeamMembership(sb: SB, sessionId: string, teamId: string | null): Promise<void> {
     if (!teamId) return;
-    await sb.from('group_members').upsert({ group_id: teamId, session_id: sessionId }, { onConflict: 'group_id,session_id' });
+    const { error } = await sb.from('group_members').upsert({ group_id: teamId, session_id: sessionId }, { onConflict: 'group_id,session_id' });
+    if (error) console.error('[session] ensureTeamMembership failed to attribute player to plantel:', error.message, { sessionId, teamId });
 }
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
