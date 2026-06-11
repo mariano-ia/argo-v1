@@ -23,9 +23,9 @@ interface SessionRow { id: string; child_name: string; child_age: number; sport:
 
 
 const CATEGORY_LABELS: Record<string, Record<string, string>> = {
-    es: { Motivación: 'Motivación', Emocional: 'Emocional', Comunicación: 'Comunicación', Presión: 'Presión', Social: 'Social', Concentración: 'Concentración', Observación: 'Observación', Grupal: 'Grupal' },
-    en: { Motivación: 'Motivation', Emocional: 'Emotional', Comunicación: 'Communication', Presión: 'Pressure', Social: 'Social', Concentración: 'Focus', Observación: 'Observation', Grupal: 'Team' },
-    pt: { Motivación: 'Motivação', Emocional: 'Emocional', Comunicación: 'Comunicação', Presión: 'Pressão', Social: 'Social', Concentración: 'Concentração', Observación: 'Observação', Grupal: 'Coletivo' },
+    es: { Motivación: 'Motivación', Emocional: 'Emocional', Comunicación: 'Comunicación', Presión: 'Presión', Social: 'Social', Concentración: 'Concentración', Observación: 'Observación', Grupal: 'Grupal', Rol: 'Rol' },
+    en: { Motivación: 'Motivation', Emocional: 'Emotional', Comunicación: 'Communication', Presión: 'Pressure', Social: 'Social', Concentración: 'Focus', Observación: 'Observation', Grupal: 'Team', Rol: 'Role' },
+    pt: { Motivación: 'Motivação', Emocional: 'Emocional', Comunicación: 'Comunicação', Presión: 'Pressão', Social: 'Social', Concentración: 'Concentração', Observación: 'Observação', Grupal: 'Coletivo', Rol: 'Papel' },
 };
 const getCategoryLabel = (cat: string, lang: string) => CATEGORY_LABELS[lang]?.[cat] ?? cat;
 
