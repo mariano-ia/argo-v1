@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Validate token and get purchase
     const { data: purchase } = await sb
         .from('one_purchases')
-        .select('id, email, pack_size, payment_status, created_at, paid_at')
+        .select('id, email, pack_size, payment_status, created_at, paid_at, lang')
         .eq('access_token', token)
         .single();
 
@@ -94,13 +94,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const resendKey = process.env.RESEND_API_KEY;
         if (resendKey) {
             const childDisplay = child_name?.trim() || 'tu deportista';
+            const pl = (purchase.lang as string) || 'es';
+            const PL = pl === 'en' ? {
+                subject: `Argo Method: ${childDisplay}'s experience is ready`,
+                heading: `${childDisplay}'s experience is ready`,
+                body1: `Someone invited ${childDisplay} to play an interactive adventure of under 10 minutes. When it ends, you'll receive a personalized behavioral profile report at this email.`,
+                body2: 'Complete the registration, hand the device to the athlete, and you are done.',
+                cta: 'Start the experience',
+                note: 'This link is single-use. Once the experience is completed, it cannot be used again.',
+            } : pl === 'pt' ? {
+                subject: `Argo Method: a experiência de ${childDisplay} está pronta`,
+                heading: `A experiência de ${childDisplay} está pronta`,
+                body1: `Alguém convidou ${childDisplay} para jogar uma aventura interativa de menos de 10 minutos. Ao terminar, você receberá um relatório de perfil comportamental personalizado neste email.`,
+                body2: 'Complete o registro, passe o dispositivo ao atleta, e pronto.',
+                cta: 'Começar a experiência',
+                note: 'Este link é de uso único. Uma vez completada a experiência, não poderá ser usado novamente.',
+            } : {
+                subject: `Argo Method: la experiencia de ${childDisplay} está lista`,
+                heading: `La experiencia de ${childDisplay} está lista`,
+                body1: `Alguien te invitó a que ${childDisplay} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.`,
+                body2: 'Completa el registro, pásale el dispositivo al deportista, y listo.',
+                cta: 'Comenzar la experiencia',
+                note: 'Este link es de un solo uso. Una vez completada la experiencia, no podrá volver a usarse.',
+            };
             await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     from: 'Argo Method <hola@argomethod.com>',
                     to: [recipient_email.trim()],
-                    subject: `Argo Method: la experiencia de ${childDisplay} está lista`,
+                    subject: PL.subject,
                     html: `
 <!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
@@ -110,13 +133,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
 </td></tr>
 <tr><td style="padding:28px;">
-    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">La experiencia de ${childDisplay} está lista</h2>
-    <p style="font-size:14px;color:#86868B;margin:0 0 8px;">Alguien te invitó a que ${childDisplay} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.</p>
-    <p style="font-size:14px;color:#86868B;margin:0 0 24px;">Completa el registro, pásale el dispositivo al deportista, y listo.</p>
+    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
+    <p style="font-size:14px;color:#86868B;margin:0 0 8px;">${PL.body1}</p>
+    <p style="font-size:14px;color:#86868B;margin:0 0 24px;">${PL.body2}</p>
     <a href="${playUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">
-        Comenzar la experiencia
+        ${PL.cta}
     </a>
-    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;">Este link es de un solo uso. Una vez completada la experiencia, no podrá volver a usarse.</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;">${PL.note}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;">
     <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
