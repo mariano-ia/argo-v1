@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         const { data: tenants } = await sb
             .from('tenants')
-            .select('id, email, display_name, trial_expires_at')
+            .select('id, email, display_name, trial_expires_at, lang')
             .eq('plan', 'trial')
             .not('trial_expires_at', 'is', null)
             .limit(BATCH_LIMIT);
@@ -86,11 +86,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const expiry = new Date(t.trial_expires_at as string).getTime();
             const msLeft = expiry - now;
             const name = (t.display_name as string) || '';
+            const lang = (t.lang as string) || DEFAULT_LANG;
 
             if (msLeft <= 0) {
                 // Expired: only within the first 24h after expiry (fires once/day).
                 if (-msLeft < DAY_MS) {
-                    const e = trialExpiredEmail(DEFAULT_LANG, name);
+                    const e = trialExpiredEmail(lang, name);
                     await sendTenantEmail(t.email as string, e.subject, e.html);
                     expired++;
                 } else {
@@ -101,11 +102,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             const daysLeft = Math.ceil(msLeft / DAY_MS);
             if (daysLeft === 3) {
-                const e = trialExpiringEmail(DEFAULT_LANG, name, 3);
+                const e = trialExpiringEmail(lang, name, 3);
                 await sendTenantEmail(t.email as string, e.subject, e.html);
                 expiring3++;
             } else if (daysLeft === 1) {
-                const e = trialExpiringEmail(DEFAULT_LANG, name, 1);
+                const e = trialExpiringEmail(lang, name, 1);
                 await sendTenantEmail(t.email as string, e.subject, e.html);
                 expiring1++;
             } else {

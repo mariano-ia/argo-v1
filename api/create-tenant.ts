@@ -132,6 +132,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 slug,
                 plan: 'trial',
                 roster_limit: 8,
+                lang: typeof lang === 'string' && ['es', 'en', 'pt'].includes(lang) ? lang : 'es',
                 trial_expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
             }, { onConflict: 'auth_user_id', ignoreDuplicates: true })
             .select('id, slug')

@@ -155,7 +155,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { email, pack_size, country: bodyCountry } = req.body as { email?: string; pack_size?: number; country?: string };
+        const { email, pack_size, country: bodyCountry, lang: bodyLang } = req.body as { email?: string; pack_size?: number; country?: string; lang?: string };
+        const lang = typeof bodyLang === 'string' && ['es', 'en', 'pt'].includes(bodyLang) ? bodyLang : 'es';
 
         if (!email || !pack_size || !PACKS[pack_size]) {
             return res.status(400).json({ error: 'Missing or invalid email/pack_size. Valid packs: 1, 3, 5.' });
@@ -201,6 +202,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 currency,
                 payment_provider: provider,
                 payment_status: 'pending',
+                lang,
             })
             .select('id, access_token')
             .single();
