@@ -677,7 +677,7 @@ const PricingSection: React.FC<{
     L: (es: string, en: string, pt: string) => string;
     navigate: (path: string) => void;
     lang: string;
-}> = ({ L, navigate }) => {
+}> = ({ L, navigate, lang }) => {
     const [annual, setAnnual] = useState(true);
     const [onePack, setOnePack] = useState<number | null>(null);
     const [oneEmail, setOneEmail] = useState('');
