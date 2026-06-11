@@ -1,7 +1,7 @@
 # Sistema de Checks y Monitoreo — Argo
 
 > Fuente única de verdad del sistema de "cómo sabemos si algo se rompe y cómo lo recuperamos".
-> Última actualización: 2026-06-08. Docs relacionados: [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md) (cómo funciona el Coach), [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md).
+> Última actualización: 2026-06-10. Docs relacionados: [ARGO-COACH-EXPLAINED.md](ARGO-COACH-EXPLAINED.md) (cómo funciona el Coach), [ARGO-COACH-AUDIT.md](ARGO-COACH-AUDIT.md), [CLI-ACCESS.md](CLI-ACCESS.md), [GO-TO-MARKET-HARDENING.md](GO-TO-MARKET-HARDENING.md), [CLUB-TEAMS-HIERARCHY.md](CLUB-TEAMS-HIERARCHY.md).
 
 ## Filosofía: defensa en profundidad (3 anillos)
 
@@ -35,9 +35,9 @@ La idea es que ninguna falla quede invisible: o la atrapa un test antes de salir
 | Path | Schedule (UTC) | Propósito |
 |------|---------------|-----------|
 | `/api/qa-monitor` | `0 * * * *` (cada hora) | **Monitor sintético.** ~33 checks de salud; manda email si algo NUEVO falla. |
-| `/api/report-recovery-cron` | `*/5 * * * *` (cada 5 min) | Red de seguridad de entrega de reportes (self-heal). |
+| `/api/report-recovery-cron` | `*/5 * * * *` (cada 5 min) | Red de seguridad de entrega de reportes (self-heal). Salta sesiones `is_demo` (no genera IA ni manda email para canary/demo). |
 | `/api/principia-detect` | `*/10 * * * *` (cada 10 min) | Detector de Vigía/Principia + heartbeat del cockpit. |
-| `/api/journey-canary` | `0 9 * * *` (diario 09:00) | **Canary de viaje completo:** corre play→generate-ai→guardar sesión→enviar email como tenant QA, autolimpiante (borra su sesión `is_demo`). Alerta por email+Telegram si algún eslabón falla. Es el único check que verifica la cadena entera (sobre todo que el email se envía). |
+| `/api/journey-canary` | `0 9 * * *` (diario 09:00) | **Canary de viaje completo:** corre play→generate-ai→guardar sesión→enviar email como tenant QA, autolimpiante (borra su sesión `is_demo`). Alerta por email+Telegram si algún eslabón falla. Es el único check que verifica la cadena entera (sobre todo que el email se envía). **+ paso per-plantel (2026-06-10):** además corre start-play con un `team_slug` del tenant QA y verifica que el jugador quedó en `group_members` → atrapa una rotura silenciosa de la atribución a plantel (el flujo del entrenador). |
 | `/api/blog-cron` | `0 10 * * 1,4` (Lun/Jue 10:00) | Publicación autónoma del blog. |
 | `/api/retention-cron` | `0 3 * * *` (diario 03:00) | Retención/limpieza de datos. Ver `api/retention-cron.ts`. |
 | `/api/trial-lifecycle-cron` | `0 11 * * *` (diario 11:00) | Emails de ciclo de vida del trial (por vencer/vencido). |
@@ -101,8 +101,8 @@ Todas las tablas de telemetría tienen **RLS on sin policies** → los clientes 
 
 ### `ai_events` — esquema de calidad del Coach
 Columnas clave (además de tenant/thread/provider/model/lang/tokens/cost/latency):
-`mentioned_player`, `groundtruth_violation`, `label_violation`, `prohibited_hit`, `prohibited_after_retry`, `context_miss`, `fair_use_exceeded`.
-**Nunca guarda el nombre real del niño** — solo flags. Migración: `supabase/migrations/20260604_ai_events.sql`.
+`mentioned_player`, `groundtruth_violation`, `label_violation`, `prohibited_hit`, `prohibited_after_retry`, `context_miss`, `fair_use_exceeded`, y `group_ids` (los planteles a los que estaba scopeado el coach; null para owner/admin → permite drill-down de calidad por plantel).
+**Nunca guarda el nombre real del niño** — solo flags. Migraciones: `supabase/migrations/20260604_ai_events.sql` + `20260610_ai_events_group_ids.sql`.
 
 ---
 
@@ -196,8 +196,22 @@ Acceso operativo (logs, env, deploys) vía CLI: ver [CLI-ACCESS.md](CLI-ACCESS.m
 
 **Capas nuevas (incrementales, sin tocar los checks 1–7):**
 - **Prevención — `check:api-imports`** (`scripts/qa/check-api-imports.mjs`, gate de CI en el job `static-checks`): falla si cualquier `api/*.ts` importa de `../src`. Es la red real, porque `tsc` no puede atrapar esto. Regla en `CLAUDE.md` (Serverless endpoints): **inline el helper, no importes de `src/`**.
-- **Detección — qa-monitor CHECK 8** (`api/qa-monitor.ts`): le pega a cada endpoint con payload inerte y **falla ante cualquier 5xx** (distingue 401/403 = protegido OK, de 500 = roto en boot). Es el check que hubiera cazado este incidente.
+- **Detección — qa-monitor CHECK 8** (`api/qa-monitor.ts`): le pega a cada endpoint con payload inerte y **falla ante cualquier 5xx** (distingue 401/403 = protegido OK, de 500 = roto en boot). Es el check que hubiera cazado este incidente. **Ampliado 2026-06-10:** se sumaron `start-play`, `tenant-groups` y `tenant-chem-groups` a los boot probes (endpoints nuevos de la jerarquía de planteles).
 - **Latencia — qa-monitor pasó de diario a horario** (`vercel.json`): de hasta 24h a ≤1h de detección.
 - **Defensa en profundidad — `typecheck:api`** (`tsc -p tsconfig.api.json`, gate de CI): type-checkea `api/**` (el build solo cubría `src/`).
 
 **Próximos pasos (P1/P2, no implementados aún):** heartbeat por corrida de cada cron + dead-man's-switch en qa-monitor; apuntar el e2e del CI al preview de develop con un test que haga submit real; watcher out-of-band de logs 5xx de Vercel.
+
+---
+
+## 12) Actualización 2026-06-10 (jerarquía de planteles)
+
+Con la jerarquía Club→Plantel→Entrenador→Jugador en prod ([CLUB-TEAMS-HIERARCHY.md](CLUB-TEAMS-HIERARCHY.md)), Vigía se ajustó para seguir monitoreando el flujo real (la auditoría había detectado que el canary solo probaba el link institucional):
+
+- **Canary per-plantel** (`api/journey-canary.ts`): nuevo paso que corre `start-play` con `team_slug` y verifica la fila en `group_members`. Sin esto, una rotura de la atribución a plantel (el flujo que usan los entrenadores) pasaba inadvertida. Reutiliza/crea un plantel "Canary Plantel" en el tenant QA y limpia la sesión `is_demo` al final.
+- **Error no-silencioso** (`api/session.ts`, `ensureTeamMembership`): el upsert a `group_members` ahora loguea su error (antes una falla devolvía `ok` igual y el jugador "desaparecía" del roster del coach).
+- **Boot probes ampliados** (CHECK 8): `start-play`, `tenant-groups`, `tenant-chem-groups`.
+- **Higiene demo** (`api/report-recovery-cron.ts`): filtra `is_demo` → nunca genera IA ni manda email para sesiones demo/canary.
+- **Telemetría por plantel** (`ai_events.group_ids`): habilita drill-down de calidad del Coach por plantel (la agregación de CHECK 6 sigue tenant-wide; la columna queda poblada para un futuro corte por plantel).
+
+> Nota: estos refuerzos corren contra `main` (producción). Son plenamente efectivos desde que la jerarquía se mergeó a `main` el 2026-06-10.

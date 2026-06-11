@@ -1,77 +1,92 @@
-# Club → Teams → Coaches + Players hierarchy
+# Club → Planteles → Entrenadores + Jugadores (jerarquía multi-tenant)
 
-Status: implemented on `develop` (2026-06-10). DB migration applied to prod Supabase (`Argo`, ref `luutdozbhinfiogugjbv`). Additive only; production `main` is unaffected.
+> Estado: **en producción** (`main`, argomethod.com) desde 2026-06-10. Migraciones aplicadas a la prod Supabase (`Argo`, ref `luutdozbhinfiogugjbv`).
+> Esta es la fuente de verdad del modelo. El registro cronológico de cómo se construyó está en [CHANGELOG-2026-06-10.md](CHANGELOG-2026-06-10.md).
 
-## What this delivers
+## El modelo (definitivo)
 
-The club (tenant) is no longer one shared list. It now has:
+El club (tenant) dejó de ser una lista compartida. La jerarquía es:
 
-- **Equipos (teams)** — created by the institution admin. Each team has its own play link.
-- **Entrenadores (coaches)** — invited by the admin and assigned to one or more teams. A coach sees only the players of their teams (dashboard, players list, and the AI consultant are all scoped). Coaches do not see the Users section.
-- **Jugadores (players)** — a player is a completed session. When a child plays via a team's link they land in that team automatically. A player is a single canonical record: re-playing updates the same player (no duplicate, one roster slot), and the update is reflected in every team the player belongs to.
-- **Mover / compartir** — the admin can move a player between teams or share a player across two teams (one profile, one slot, visible to both coaches).
+- **Club** = el tenant. Lo administra el **Administrador de la institución** (rol `owner`), que ve todo.
+- **Plantel** = la unidad **estructural**. **Es dueña del link de juego.** El admin crea planteles y les asigna entrenadores. El plantel persiste aunque el entrenador se vaya. (DB: tabla `groups`; el nombre de la tabla se mantuvo para no romper, el concepto se llama "plantel".)
+- **Entrenador** (rol `coach`) = se asigna a uno o más planteles. Ve **solo** los jugadores de sus planteles (scoping en todos lados: lista, dashboard, Argo Coach). Comparte el link de su plantel desde Inicio. No ve la sección Usuarios.
+- **Jugador** = una sesión completada. Cuando un niño juega por el link de un plantel, queda atribuido a ese plantel automáticamente. Identidad canónica: re-jugar actualiza al mismo jugador (sin duplicado, un solo cupo).
 
-The old "Dinámica Grupal" feature is renamed: the section is **"Equipos"** and the collective-profile analytics inside a team is **"Química del equipo"**.
+Y, **separado de lo anterior**:
 
-## Data model (migration `20260610_teams_hierarchy.sql`)
+- **Química de grupos** = herramienta **analítica** (tabla `chem_groups` + `chem_group_members`). El admin y el entrenador arman grupos con sus propios jugadores para analizar la química. **No tiene link, no asigna entrenadores.** Es por-usuario.
 
-Teams reuse the existing `groups` / `group_members` tables (names kept so production `main` keeps working). Changes, all additive:
+> **Plantel ≠ Grupo.** El plantel es estructura (dueño del link, lo crea el admin). El grupo es análisis (lo arma cada usuario con sus jugadores). Al principio ambos vivían en `groups`; el 2026-06-10 se separaron.
 
-- `groups.slug` — unique, auto-generated (`encode(gen_random_bytes(6),'hex')`). The per-team play-link slug. Existing rows backfilled; column is `NOT NULL`.
-- `group_coaches (group_id, member_id)` — coach ↔ team assignment (M:N). `member_id` → `tenant_members(id)`. RLS denies direct client access (service-role API only).
-- `tenant_members.role` CHECK now allows `'coach'` (was `owner|member`).
-- Backfill: every tenant with ungrouped active players got a default team named **"General"** with those players attached. (All current tenants are test data.)
+## Reglas de potestad (quién puede qué)
 
-Player ↔ team membership = `group_members` (already M:N, which is what makes "compartir" free). Coach scoping derives from `group_coaches → group_members → sessions`.
+| Acción | Admin (owner) | Entrenador (coach) |
+|---|---|---|
+| Crear/renombrar/eliminar **planteles** | ✅ | ❌ |
+| Asignar/quitar **entrenadores** de un plantel | ✅ | ❌ |
+| Ver **todos** los jugadores de la institución | ✅ | ❌ (solo los de sus planteles) |
+| **Gestionar** jugadores (archivar, reenviar informe, reactivar) | ❌ | ✅ (los suyos) |
+| Descargar PDF del informe | ✅ | ✅ |
+| **Compartir link de juego** | ✅ **solo si está asignado a un plantel** | ✅ (el de sus planteles) |
+| Crear **grupos** (Química de grupos) | ✅ (con sus jugadores) | ✅ (con los suyos) |
+| Usuarios, facturación, ajustes de institución | ✅ | ❌ |
 
-## How attribution works (the key mechanism)
+Principios clave (decisiones del owner):
+- **El link es del plantel, no del entrenador.** Hay un link por plantel. El entrenador decide a qué grupos lo asigna después.
+- **La potestad de los jugadores es del entrenador.** El admin ve a todos en solo lectura (incluido el listado dentro de cada plantel); archivar/reenviar son del entrenador.
+- **El admin solo envía juegos si también es entrenador de un plantel.** No hay link institución-wide: ese link no tendría plantel al cual atribuir. ("No queremos administradores de clubes compartiendo links.")
 
-- The play link is `argomethod.com/play/:tenantSlug/:teamSlug` (the old `/play/:tenantSlug` still works and lands the player tenant-level/unassigned).
-- `start-play` resolves the team slug within the tenant and signs the team id into the existing HMAC `play_token` (payload `{t, tm, exp}`). The team id is therefore **server-verified and unspoofable**, exactly like `tenant_id`.
-- `session.ts` extracts the team from the verified token and:
-  - **Identity dedup**: looks up an existing active player by `tenant_id + adult_email + child_name` (case-insensitive). If found, it updates that player in place (re-profile) instead of inserting — no new row, no extra roster slot. Otherwise it inserts a new player.
-  - **Team membership**: attaches the player to the team via `group_members` (idempotent, additive).
+## Modelo de datos (migraciones)
 
-## Roles & scoping
+Todo aditivo. Aplicado a prod vía MCP el 2026-06-10.
 
-- **Admin** = tenant `owner` (label: "Administrador de la institución"). Sees all players and all teams; can create teams, invite/assign coaches, move/share players. Legacy `member` is treated as admin (full visibility) for backward-compat.
-- **Coach** = `tenant_members.role = 'coach'`. Sees only players in their assigned teams across: `tenant-sessions`, `tenant-groups` (list + detail), and `tenant-chat` (AI consultant roster + mentioned-player injection). The Users nav and page are hidden/blocked for coaches. A coach can copy their team link to invite players.
+| Migración | Qué agrega |
+|---|---|
+| `20260610_teams_hierarchy.sql` | `groups.slug` (único, `encode(gen_random_bytes(6),'hex')`, NOT NULL) = slug del link por plantel; `group_coaches(group_id, member_id)` (asignación coach↔plantel, M:N, `member_id`→`tenant_members.id`, RLS deny); `tenant_members.role` CHECK ahora permite `'coach'`; backfill de planteles "General". |
+| `20260610_chat_messages_member_scope.sql` | `chat_messages.member_id` + backfill al owner → historial de Argo Coach por-usuario. |
+| `20260610_chem_groups_analytic_tool.sql` | `chem_groups(id, tenant_id, owner_member_id, name, created_at, deleted_at)` + `chem_group_members(group_id, session_id)` + RLS deny. = la herramienta "Química de grupos", separada de planteles. |
+| `20260610_ai_events_group_ids.sql` | `ai_events.group_ids text[]` = scope de planteles del coach en cada evento del chat → telemetría drill-down por plantel. |
 
-## How to test (on the develop preview)
+- Atribución jugador↔plantel = `group_members` (M:N). El scoping del coach deriva de `group_coaches → group_members → sessions`.
+- Atribución jugador↔grupo = `chem_group_members`.
 
-1. Log in as an existing (admin) tenant. Open **Equipos**. You'll see your teams (test tenants now have a "General" team). Create a new team.
-2. Select a team → copy its **play link** (it's `/play/<tenant>/<team>`). Assign a coach (after step 3).
-3. Open **Usuarios** → invite a user as **Entrenador**, optionally pick teams to assign. They get the invite email → set password → they're a coach.
-4. As the coach (log in with that account): you should see only the players of your team(s), no **Usuarios** section, and the **Argo Coach** assistant only knows your players.
-5. Play the odyssey via a team link (`/play/<tenant>/<team>`) → the finished player appears in that team, attributed to its coach.
-6. Re-play with the same adult email + child name → the same player updates (no duplicate, roster count unchanged).
-7. As admin, in a team's detail use **Agregar jugadores** / the per-player **X** to share/move players between teams.
+## Cómo funciona la atribución (mecanismo clave)
 
-## Decisions made (all reversible)
+- El link es `argomethod.com/play/:tenantSlug/:plantelSlug`. (`/play/:tenantSlug` solo sigue ruteando pero ya no se ofrece en el dashboard: dejaría al jugador sin plantel.)
+- `start-play` resuelve el slug del plantel dentro del tenant y firma el `team_id` dentro del `play_token` HMAC (payload `{t, tm, exp}`, firmado con el service-role key). El plantel queda **verificado server-side e infalsificable**, igual que el `tenant_id`.
+- `session.ts` extrae el plantel del token verificado y:
+  - **Dedup de identidad**: busca un jugador activo por `tenant_id + lower(adult_email) + lower(child_name)`. Si existe, lo actualiza en lugar (re-perfilado) — sin fila nueva, sin cupo extra. Si no, inserta.
+  - **Membresía**: lo ata al plantel vía `group_members` (idempotente). Desde 2026-06-10 el error del upsert se loguea (antes era silencioso).
 
-- Admin label: "Administrador de la institución". New role: "Entrenador". ("Superadmin" stays reserved for the Argo global dashboard.)
-- Identity key for dedup: tenant + adult email + child name.
-- Each existing tenant got a default "General" team with its players.
-- "Dinámica Grupal" → section **"Equipos"**, analytics → **"Química del equipo"** (en: Teams / Team chemistry; pt: Equipes / Química da equipe).
-- Membership on play is single-team (the link used); move/share are admin actions.
-- Team creation is allowed on all plans (teams are structural, not a premium analytic). The chemistry analytics stays locked on trial, as before.
-- Mutations (create/rename/delete/assign coach/add-remove players/move-share) are admin-only, enforced server-side.
+## Las secciones del dashboard (estado final)
 
-## Deferred / known limitations (not blockers)
+- **Inicio**: stats + el/los link(s) de los planteles asignados (ambos roles). Si no hay plantel asignado, un aviso (no el link institucional).
+- **Jugadores** (antes "Mi equipo"): todos los jugadores de la institución (admin) / los del coach (coach), con **filtro por plantel** (admin). El admin es solo lectura de gestión (PDF sí; archivar/reenviar no).
+- **Planteles** (solo admin): lista de planteles + su(s) entrenador(es) + ABM (crear/renombrar/eliminar, asignar/quitar coaches). Listado de jugadores del plantel en **solo lectura** (fila: nombre + arquetipo + edad + deporte). Sin link, sin gestión de jugadores.
+- **Química de grupos**: arma grupos con tus jugadores y analiza la química (GroupBalancePanel). Ambos roles, scopeado.
+- **Argo Coach** (chat): consultor IA, scopeado al coach; historial por-usuario.
+- **Usuarios** (solo admin): invitar admin/entrenador; los planteles asignados a cada coach son **chips con X** (quitar con confirmación → `unassign_coach`).
+- **Guía / Ajustes**: ajustes de institución solo del owner; el coach edita su propio perfil.
 
-- **Players-page team filter + a dedicated one-click "move" UI**: the `set_player_teams` endpoint (atomic move/share) exists but the players list doesn't yet expose a team filter or a move dialog. Today move/share is done from a team's detail (add/remove members). `tenant-sessions` already returns `team_ids` per player to drive a future filter/column.
-- **Team name on the play screen**: attribution is silent (no "estás jugando con el equipo X" confirmation yet).
-- **Per-member chat history**: `tenant-chat` scopes the player context to the coach, but chat threads are still tenant-wide (a coach could see another member's past threads). Player data (the sensitive part) is scoped; thread isolation is a follow-up.
-- **Re-profile at a full roster**: `start-play`'s roster pre-gate runs before the child is identified, so a re-play could be blocked at a full roster. Dedup prevents double-counting on save; the pre-gate edge is unsolved (would require passing identity to start-play).
-- **RLS defense-in-depth on `sessions`**: scoping is enforced in the service-role API. A second RLS layer on `sessions` keyed off team membership is a worthwhile follow-up for minors' data.
+## Roles & scoping (resumen técnico)
 
-## Files changed
+- **Admin** = `owner` (o `member` legacy, tratado como admin). Visibilidad total.
+- **Coach** = `tenant_members.role = 'coach'`. Scopeado en `tenant-sessions`, `tenant-groups`, `tenant-chem-groups` y `tenant-chat` (roster + inyección del jugador mencionado). Mutaciones admin-only enforced server-side (`if (!isAdmin) return 403` al tope del POST).
 
-- Migration: `supabase/migrations/20260610_teams_hierarchy.sql`
-- API: `api/tenant-info.ts`, `api/tenant-sessions.ts`, `api/tenant-groups.ts`, `api/tenant-members.ts`, `api/invite-user.ts`, `api/start-play.ts`, `api/session.ts`, `api/tenant-chat.ts`
-- Frontend: `src/App.tsx`, `src/pages/TenantPlay.tsx`, `src/pages/TenantDashboard.tsx`, `src/pages/tenant/TenantGroups.tsx`, `src/pages/tenant/TenantUsers.tsx`, `src/lib/dashboardTranslations.ts`
+## Datos demo (Club San Fernando)
 
-## Verification run before commit
+Para pruebas, el coach "Entrenador Marian" (`hello@storyhunt.city`) de **Club San Fernando** tiene **20 jugadores demo** (10 + 10 en sus 2 planteles), perfiles DISC válidos y diversos (los 12 arquetipos), deporte = Rugby (el del club). Marcados `is_demo = true` y con `email_sent_at` seteado (el cron de recovery no los toca). Borrables en cualquier momento (`WHERE is_demo = true`).
 
-`check:api-imports` ✓ · `typecheck:api` ✓ · `tsc` (src) ✓ · `qa:unit` ✓ · `lint:content` ✓ · `vite build` ✓.
-(`npm run lint` is pre-existing broken — no ESLint config file in the repo.)
+## Verificación (corrida antes de mergear a main)
+
+`tsc` (src) ✓ · `typecheck:api` ✓ · `check:api-imports` ✓ · `lint:content` ✓ · `vite build` ✓. DB: RLS en todas las tablas de la jerarquía, 0 huérfanos, 0 fugas cross-tenant.
+
+## Auditoría (2026-06-10)
+
+Auditoría exhaustiva multi-agente (6 dimensiones, 28 agentes, cada hallazgo verificado adversarialmente). Confirmó seguridad y coherencia; los hallazgos accionables se implementaron antes de ir a prod (ver el changelog, fase J, y [CHECK-SYSTEM.md](CHECK-SYSTEM.md) §11 para los ajustes de Vigía). Decisiones de NO-implementar (del owner): no filtrar `is_demo` del dashboard (querés ver los demo), y no mostrar el link del plantel en la página Planteles (no querés admins enviando juegos).
+
+## Archivos principales
+
+- Migraciones: `supabase/migrations/20260610_*.sql` (teams_hierarchy, chat_messages_member_scope, chem_groups_analytic_tool, ai_events_group_ids).
+- API: `api/tenant-info.ts`, `api/tenant-sessions.ts`, `api/tenant-groups.ts`, `api/tenant-chem-groups.ts`, `api/tenant-members.ts`, `api/invite-user.ts`, `api/start-play.ts`, `api/session.ts`, `api/tenant-chat.ts`, `api/tenant-setup.ts`, `api/cancel-subscription.ts`.
+- Frontend: `src/App.tsx`, `src/pages/TenantPlay.tsx`, `src/pages/TenantDashboard.tsx`, `src/pages/tenant/{TenantHome,TenantPlayers,TenantGroups,TenantGrupos,TenantUsers,TenantOnboarding,TenantChat}.tsx`, `src/components/ui/Tooltip.tsx`, `src/lib/dashboardTranslations.ts`.
