@@ -217,6 +217,17 @@ export const TenantSignup: React.FC = () => {
 
     const createTenantAndRedirect = async (userId: string, userEmail: string, displayName: string, fullName?: string) => {
         try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+            // If the user already belongs to a club (e.g. an invited coach/admin),
+            // never create a new trial tenant — just go to their dashboard.
+            if (token) {
+                const info = await fetch('/api/tenant-info', { headers: { Authorization: `Bearer ${token}` } });
+                if (info.ok) {
+                    const data = await info.json().catch(() => ({} as { tenant?: unknown }));
+                    if (data.tenant) { navigate('/dashboard', { replace: true }); return; }
+                }
+            }
             await fetch('/api/create-tenant', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

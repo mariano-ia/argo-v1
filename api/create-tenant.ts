@@ -93,6 +93,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Invalid auth_user_id' });
         }
 
+        // ── Guard: an invited member must NEVER get their own trial tenant ──────
+        // If this auth user is already a tenant_members row (linked by id, or
+        // invited by email and not yet linked), they belong to an existing club
+        // (e.g. an invited coach/admin). Return that club and skip creation + the
+        // welcome email. Also makes the endpoint idempotent for existing owners.
+        const { data: byAuthMember } = await sb.from('tenant_members')
+            .select('id, tenant_id, auth_user_id')
+            .eq('auth_user_id', auth_user_id)
+            .limit(1).maybeSingle();
+        let membership = byAuthMember as { id: string; tenant_id: string; auth_user_id: string | null } | null;
+        if (!membership) {
+            const { data: byEmailMember } = await sb.from('tenant_members')
+                .select('id, tenant_id, auth_user_id')
+                .eq('email', email)
+                .limit(1).maybeSingle();
+            membership = byEmailMember as { id: string; tenant_id: string; auth_user_id: string | null } | null;
+            if (membership && !membership.auth_user_id) {
+                // Link the invited-by-email membership to this auth user on first login.
+                await sb.from('tenant_members').update({ auth_user_id }).eq('id', membership.id);
+            }
+        }
+        if (membership) {
+            const { data: existingTenant } = await sb.from('tenants')
+                .select('id, slug').eq('id', membership.tenant_id).maybeSingle();
+            return res.status(200).json({ ok: true, member: true, tenant: existingTenant ?? null });
+        }
+
         // Upsert pattern: try insert, if auth_user_id conflict return existing
         const slug = generateSlug(display_name);
 
