@@ -692,7 +692,7 @@ const PricingSection: React.FC<{
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: oneEmail, pack_size: onePack }),
+                body: JSON.stringify({ email: oneEmail, pack_size: onePack, lang }),
             });
             const data = await res.json();
             if (data.checkout_url) {
