@@ -101,13 +101,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (resendKey && session.adult_email) {
             const childName = session.child_name;
+            const gLang = (session.lang as string) || 'es';
+            const L = gLang === 'en' ? {
+                subject: `Exclusive access: ${childName}'s full report on Argo Method`,
+                heading: `Exclusive access to <strong style="font-weight:700;">${childName}</strong>'s full report`,
+                badgeLabel: 'Special access enabled',
+                badgeBody: `The Argo Method team unlocked ${childName}'s full report for you. It includes every section that is normally available only on paid plans.`,
+                includes: 'Includes',
+                features: ['Performance motor and decision style', 'Bridge words and words to avoid', 'Decision pattern and cognitive rhythm', 'Quick training guide', 'Checklist before, during and after', 'Echoes off the field'],
+                cta: 'View full report',
+                note: `This link is personal. ${childName}'s full report is available anytime.`,
+                footer: 'Argo Method · Behavioral profiling for young athletes',
+            } : gLang === 'pt' ? {
+                subject: `Acesso exclusivo: o relatório completo de ${childName} no Argo Method`,
+                heading: `Acesso exclusivo ao relatório completo de <strong style="font-weight:700;">${childName}</strong>`,
+                badgeLabel: 'Acesso especial habilitado',
+                badgeBody: `A equipe do Argo Method liberou o relatório completo de ${childName} para você. Inclui todas as seções que normalmente estão disponíveis apenas nos planos pagos.`,
+                includes: 'Inclui',
+                features: ['Motor de desempenho e estilo de decisão', 'Palavras-ponte e palavras a evitar', 'Padrão de decisão e ritmo cognitivo', 'Guia rápido de treino', 'Checklist antes, durante e depois', 'Ecos fora da quadra'],
+                cta: 'Ver relatório completo',
+                note: `Este link é pessoal. O relatório completo de ${childName} está disponível a qualquer momento.`,
+                footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
+            } : {
+                subject: `Acceso exclusivo: el informe completo de ${childName} en Argo Method`,
+                heading: `Acceso exclusivo al informe completo de <strong style="font-weight:700;">${childName}</strong>`,
+                badgeLabel: 'Acceso especial habilitado',
+                badgeBody: `El equipo de Argo Method desbloqueó el informe completo de ${childName} para ti. Incluye todas las secciones que normalmente están disponibles solo en planes pagos.`,
+                includes: 'Incluye',
+                features: ['Motor de rendimiento y estilo de decisión', 'Palabras puente y palabras a evitar', 'Patrón de decisión y ritmo cognitivo', 'Guía rápida de entrenamiento', 'Checklist antes, durante y después', 'Ecos fuera de la cancha'],
+                cta: 'Ver informe completo',
+                note: `Este link es personal. El informe completo de ${childName} está disponible en cualquier momento.`,
+                footer: 'Argo Method · Perfilamiento conductual para deportistas jóvenes',
+            };
             await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     from: 'Argo Method <hola@argomethod.com>',
                     to: [session.adult_email],
-                    subject: `Acceso exclusivo: el informe completo de ${childName} en Argo Method`,
+                    subject: L.subject,
                     html: `
 <!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
@@ -116,20 +148,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
 <tr><td style="background:#1D1D1F;padding:28px;">
     <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-    <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;line-height:1.2;">
-        Acceso exclusivo al informe completo de <strong style="font-weight:700;">${childName}</strong>
-    </p>
+    <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;line-height:1.2;">${L.heading}</p>
 </td></tr>
 
 <tr><td style="padding:28px;">
     <div style="background:rgba(149,95,181,0.06);border:1px solid rgba(149,95,181,0.15);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
-        <p style="margin:0;font-size:13px;font-weight:600;color:#955FB5;">Acceso especial habilitado</p>
-        <p style="margin:4px 0 0;font-size:12px;color:#86868B;">El equipo de Argo Method ha desbloqueado el informe completo de ${childName} para ti. Este acceso incluye todas las secciones del informe que normalmente estan disponibles solo en planes pagos.</p>
+        <p style="margin:0;font-size:13px;font-weight:600;color:#955FB5;">${L.badgeLabel}</p>
+        <p style="margin:4px 0 0;font-size:12px;color:#86868B;">${L.badgeBody}</p>
     </div>
 
-    <p style="margin:0 0 12px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">Incluye</p>
+    <p style="margin:0 0 12px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">${L.includes}</p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-    ${['Motor de rendimiento y estilo de decision', 'Palabras puente y palabras a evitar', 'Patron de decision y ritmo cognitivo', 'Guia rapida de entrenamiento', 'Checklist antes, durante y despues', 'Ecos fuera de la cancha'].map(f => `
+    ${L.features.map(f => `
     <tr><td width="24" style="vertical-align:top;padding-bottom:8px;">
         <div style="width:16px;height:16px;border-radius:50%;background:rgba(149,95,181,0.1);border:1px solid rgba(149,95,181,0.2);text-align:center;line-height:16px;font-size:9px;color:#955FB5;font-weight:700;">&#10003;</div>
     </td><td style="padding-left:8px;padding-bottom:8px;">
@@ -139,15 +169,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     <div style="text-align:center;">
         <a href="${reportUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
-            Ver informe completo
+            ${L.cta}
         </a>
     </div>
 
-    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">Este link es personal. El informe completo de ${childName} esta disponible en cualquier momento.</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${L.note}</p>
 </td></tr>
 
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jovenes</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">${L.footer}</p>
 </td></tr>
 
 </table></td></tr></table>

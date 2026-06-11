@@ -223,20 +223,65 @@ async function sendConfirmationEmail(
     });
 }
 
-async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number): Promise<void> {
+async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number, lang: string = 'es'): Promise<void> {
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) return;
 
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const planLabel = plan === 'pro' ? 'PRO' : 'Academy';
-    const features = [
-        { label: 'Consultas IA ilimitadas', desc: 'Pregunta lo que necesites sobre tus jugadores sin restricción.' },
-        { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
-        { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después del entrenamiento.' },
-        { label: `Hasta ${rosterLimit} jugadores activos`, desc: 'Perfila y re-perfila cada 6 meses. Sin créditos, sin límites de uso.' },
-        { label: 'Química de grupos ilimitada con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
-        { label: 'Predictor Conductual personalizado', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },
-    ];
+    const L = lang === 'en' ? {
+        subject: `Your ${planLabel} plan on Argo Method is active`,
+        heroTitle: 'Your plan is active.',
+        badgeLabel: `${planLabel} plan active`,
+        badgeBody: `Up to ${rosterLimit} active players. Every feature unlocked.`,
+        unlockedLabel: 'What your plan unlocked',
+        closing: 'Your dashboard already reflects the unlocked features.',
+        cta: 'Go to dashboard',
+        footer: 'Argo Method · Behavioral profiling for young athletes',
+        features: [
+            { label: 'Unlimited AI queries', desc: 'Ask whatever you need about your players, with no limit.' },
+            { label: 'Bridge words and words to avoid', desc: 'Key phrases to connect with each profile and the ones that create resistance.' },
+            { label: 'Quick guide and per-player checklist', desc: 'Activators, demotivators and a checklist before, during and after training.' },
+            { label: `Up to ${rosterLimit} active players`, desc: 'Profile and re-profile every 6 months. No credits, no usage limits.' },
+            { label: 'Unlimited group chemistry with full analysis', desc: 'Coaching tools, pairing suggestions and a simulator.' },
+            { label: 'Personalized Behavioral Predictor', desc: 'Guidance tailored to each player profile.' },
+        ],
+    } : lang === 'pt' ? {
+        subject: `Seu plano ${planLabel} no Argo Method está ativo`,
+        heroTitle: 'Seu plano está ativo.',
+        badgeLabel: `Plano ${planLabel} ativo`,
+        badgeBody: `Até ${rosterLimit} jogadores ativos. Todas as funções desbloqueadas.`,
+        unlockedLabel: 'O que seu plano desbloqueou',
+        closing: 'Seu dashboard já reflete as funções desbloqueadas.',
+        cta: 'Ir ao dashboard',
+        footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
+        features: [
+            { label: 'Consultas de IA ilimitadas', desc: 'Pergunte o que precisar sobre seus jogadores, sem restrição.' },
+            { label: 'Palavras-ponte e palavras a evitar', desc: 'Frases-chave para conectar com cada perfil e as que geram resistência.' },
+            { label: 'Guia rápido e checklist por jogador', desc: 'Ativadores, desmotivadores e um checklist antes, durante e depois do treino.' },
+            { label: `Até ${rosterLimit} jogadores ativos`, desc: 'Perfile e re-perfile a cada 6 meses. Sem créditos, sem limites de uso.' },
+            { label: 'Química de grupos ilimitada com análise completa', desc: 'Ferramentas de coaching, sugestões de duplas e simulador.' },
+            { label: 'Preditor Comportamental personalizado', desc: 'Orientações adaptadas ao perfil de cada jogador.' },
+        ],
+    } : {
+        subject: `Tu plan ${planLabel} en Argo Method está activo`,
+        heroTitle: 'Tu plan está activo.',
+        badgeLabel: `Plan ${planLabel} activo`,
+        badgeBody: `Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas.`,
+        unlockedLabel: 'Qué se desbloqueó con tu plan',
+        closing: 'Tu dashboard ya refleja las funcionalidades desbloqueadas.',
+        cta: 'Ir al dashboard',
+        footer: 'Argo Method · Perfilamiento conductual para deportistas jóvenes',
+        features: [
+            { label: 'Consultas IA ilimitadas', desc: 'Pregunta lo que necesites sobre tus jugadores sin restricción.' },
+            { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
+            { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después del entrenamiento.' },
+            { label: `Hasta ${rosterLimit} jugadores activos`, desc: 'Perfila y re-perfila cada 6 meses. Sin créditos, sin límites de uso.' },
+            { label: 'Química de grupos ilimitada con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
+            { label: 'Predictor Conductual personalizado', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },
+        ],
+    };
+    const features = L.features;
 
     const featureRows = features.map(f => `
         <tr>
@@ -257,25 +302,25 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
 
 <tr><td style="background:#1D1D1F;padding:28px;">
     <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-    <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;">Tu plan está activo.</p>
+    <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${L.heroTitle}</p>
 </td></tr>
 
 <tr><td style="padding:28px;">
     <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
-        <p style="margin:0;font-size:14px;font-weight:700;color:#16a34a;">Plan ${planLabel} activo</p>
-        <p style="margin:4px 0 0;font-size:12px;color:#86868B;">Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas.</p>
+        <p style="margin:0;font-size:14px;font-weight:700;color:#16a34a;">${L.badgeLabel}</p>
+        <p style="margin:4px 0 0;font-size:12px;color:#86868B;">${L.badgeBody}</p>
     </div>
 
-    <p style="margin:0 0 16px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">Qué se desbloqueó con tu plan</p>
+    <p style="margin:0 0 16px;font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;">${L.unlockedLabel}</p>
 
     <table width="100%" cellpadding="0" cellspacing="0">
         ${featureRows}
     </table>
 
     <div style="text-align:center;margin:24px 0 0;">
-        <p style="margin:0 0 16px;font-size:13px;color:#86868B;">Tu dashboard ya refleja las funcionalidades desbloqueadas.</p>
+        <p style="margin:0 0 16px;font-size:13px;color:#86868B;">${L.closing}</p>
         <a href="${origin}/dashboard" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
-            Ir al dashboard
+            ${L.cta}
         </a>
     </div>
 </td></tr>
@@ -293,7 +338,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
         body: JSON.stringify({
             from: 'Argo Method <hola@argomethod.com>',
             to: [email],
-            subject: `Tu plan ${planLabel} en Argo Method está activo`,
+            subject: L.subject,
             html,
         }),
     });
@@ -677,11 +722,11 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
             }).eq('id', tenantId);
 
             // Fetch tenant email for upgrade email
-            const { data: tenant } = await sb.from('tenants').select('auth_user_id').eq('id', tenantId).maybeSingle();
+            const { data: tenant } = await sb.from('tenants').select('auth_user_id, lang').eq('id', tenantId).maybeSingle();
             if (tenant?.auth_user_id) {
                 const { data: { user } } = await sb.auth.admin.getUserById(tenant.auth_user_id);
                 if (user?.email) {
-                    await sendUpgradeEmail(user.email, plan, config.roster_limit);
+                    await sendUpgradeEmail(user.email, plan, config.roster_limit, (tenant.lang as string) || 'es');
                 }
             }
 
@@ -826,9 +871,10 @@ async function handleSubscription(
         return res.status(500).json({ error: 'Failed to update tenant' });
     }
 
+    const { data: upgTenant } = await sb.from('tenants').select('lang').eq('id', tenantId).maybeSingle();
     const email = session.customer_email;
     if (email) {
-        await sendUpgradeEmail(email, plan, config.roster_limit);
+        await sendUpgradeEmail(email, plan, config.roster_limit, (upgTenant?.lang as string) || 'es');
     }
 
     console.info(`[one-webhook] Subscription (${provider}): Tenant ${tenantId} upgraded to ${plan} (roster: ${config.roster_limit})`);
