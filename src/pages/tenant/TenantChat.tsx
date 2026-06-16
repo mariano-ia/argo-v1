@@ -68,7 +68,7 @@ function groupThreadsByDate(threads: Thread[], lang: string): { label: string; i
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantChat: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; effectiveTeamId?: string | null }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
@@ -194,7 +194,7 @@ export const TenantChat: React.FC = () => {
             const res = await fetch('/api/tenant-chat', {
                 method: 'POST',
                 headers: authHeaders(token),
-                body: JSON.stringify({ action: 'send', thread_id: activeThreadId, message: msg, lang, tenant_id: tenant?.id }),
+                body: JSON.stringify({ action: 'send', thread_id: activeThreadId, message: msg, lang, tenant_id: tenant?.id, team: effectiveTeamId ?? undefined }),
                 signal: controller.signal,
             });
             clearTimeout(timeout);

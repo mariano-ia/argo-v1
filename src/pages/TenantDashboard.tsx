@@ -178,6 +178,7 @@ export const TenantDashboard: React.FC = () => {
     const setActiveContext = React.useCallback((ctx: ActiveContext) => {
         setActiveContextState(ctx);
         writeStoredContext(session?.user?.id, ctx);
+        setShowTrialModal(true); // re-arm the blocked prompt for the new context
         const active = memberships.find(m => m.tenant?.id === ctx.tenantId);
         if (active) {
             setTenant(active.tenant);
@@ -569,6 +570,7 @@ export const TenantDashboard: React.FC = () => {
                 open={showTrialModal}
                 lang={lang}
                 rosterCount={tenant.active_players_count}
+                isCoach={isCoachRole}
                 onUpgrade={() => { setShowTrialModal(false); navigate('/dashboard/pricing'); }}
                 onClose={() => setShowTrialModal(false)}
             />

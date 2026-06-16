@@ -28,7 +28,9 @@ const tt = (lang: string, es: string, en: string, pt: string) => (lang === 'en' 
  * sees only the groups they created. Separate from planteles (which own the link).
  */
 export const TenantGrupos: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null; devBypass?: boolean }>();
+    const { tenant, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; devBypass?: boolean; effectiveTeamId?: string | null }>();
+    // In a plantel hat, the player pool to add to a group is scoped to that plantel.
+    const teamScope = effectiveTeamId ? `&team=${effectiveTeamId}` : '';
     const { lang } = useLang();
     const { toast } = useToast();
 
@@ -127,7 +129,7 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setSessionsLoading(false); return; }
         try {
-            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}${teamScope}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setAllSessions(data.sessions ?? []); }
         } finally { setSessionsLoading(false); }
     };

@@ -7,9 +7,18 @@ interface Props {
     open: boolean;
     lang: string;
     rosterCount: number;
+    /** When the active context is a coach hat, the user cannot pay — show a
+     *  "contact your admin" variant with no upgrade CTA. */
+    isCoach?: boolean;
     onUpgrade: () => void;
     onClose: () => void;
 }
+
+const COACH_COPY = {
+    es: { badge: 'Institución pausada', title: 'Esta institución está pausada', body: 'El periodo de prueba de esta institución terminó. Habla con el administrador para reactivar el plan. Tus jugadores y reportes siguen aquí.', close: 'Entendido' },
+    en: { badge: 'Institution paused', title: 'This institution is paused', body: 'This institution\'s trial period ended. Talk to the admin to reactivate the plan. Your players and reports are still here.', close: 'Got it' },
+    pt: { badge: 'Instituição pausada', title: 'Esta instituição está pausada', body: 'O período de teste desta instituição terminou. Fale com o administrador para reativar o plano. Seus jogadores e relatórios continuam aqui.', close: 'Entendi' },
+};
 
 const COPY = {
     es: {
@@ -47,8 +56,9 @@ const COPY = {
     },
 };
 
-export const TrialEndModal: React.FC<Props> = ({ open, lang, onUpgrade, onClose }) => {
+export const TrialEndModal: React.FC<Props> = ({ open, lang, isCoach, onUpgrade, onClose }) => {
     const c = COPY[lang as keyof typeof COPY] ?? COPY.es;
+    const cc = COACH_COPY[lang as keyof typeof COACH_COPY] ?? COACH_COPY.es;
 
     return (
         <AnimatePresence>
@@ -82,32 +92,42 @@ export const TrialEndModal: React.FC<Props> = ({ open, lang, onUpgrade, onClose 
                             </div>
 
                             <p className="text-[11px] font-bold text-argo-violet-500 uppercase tracking-widest mb-1.5">
-                                {c.badge}
+                                {isCoach ? cc.badge : c.badge}
                             </p>
-                            <h2 className="text-2xl font-bold text-argo-navy tracking-tight">{c.title}</h2>
-                            <p className="text-sm text-argo-grey mt-2 leading-relaxed">{c.body}</p>
+                            <h2 className="text-2xl font-bold text-argo-navy tracking-tight">{isCoach ? cc.title : c.title}</h2>
+                            <p className="text-sm text-argo-grey mt-2 leading-relaxed">{isCoach ? cc.body : c.body}</p>
 
                             <div className="mt-5 space-y-3">
                                 <div className="rounded-xl border border-argo-border bg-argo-neutral px-4 py-3">
                                     <p className="text-[11px] font-bold text-argo-secondary uppercase tracking-wide">{c.keepTitle}</p>
                                     <p className="text-[13px] text-argo-grey mt-0.5 leading-relaxed">{c.keep}</p>
                                 </div>
-                                <div className="rounded-xl border border-argo-violet-100 bg-argo-violet-50 px-4 py-3">
-                                    <p className="text-[11px] font-bold text-argo-violet-500 uppercase tracking-wide">{c.unlockTitle}</p>
-                                    <p className="text-[13px] text-argo-violet-400 mt-0.5 leading-relaxed">{c.unlock}</p>
-                                </div>
+                                {!isCoach && (
+                                    <div className="rounded-xl border border-argo-violet-100 bg-argo-violet-50 px-4 py-3">
+                                        <p className="text-[11px] font-bold text-argo-violet-500 uppercase tracking-wide">{c.unlockTitle}</p>
+                                        <p className="text-[13px] text-argo-violet-400 mt-0.5 leading-relaxed">{c.unlock}</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="mt-6 space-y-2.5">
-                                <Button variant="violet" size="lg" className="w-full" onClick={onUpgrade}>
-                                    {c.cta}
-                                </Button>
-                                <button
-                                    onClick={onClose}
-                                    className="w-full text-center text-[13px] text-argo-grey hover:text-argo-navy transition-colors py-1"
-                                >
-                                    {c.later}
-                                </button>
+                                {isCoach ? (
+                                    <Button variant="violet" size="lg" className="w-full" onClick={onClose}>
+                                        {cc.close}
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button variant="violet" size="lg" className="w-full" onClick={onUpgrade}>
+                                            {c.cta}
+                                        </Button>
+                                        <button
+                                            onClick={onClose}
+                                            className="w-full text-center text-[13px] text-argo-grey hover:text-argo-navy transition-colors py-1"
+                                        >
+                                            {c.later}
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </motion.div>

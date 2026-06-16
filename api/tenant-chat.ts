@@ -677,6 +677,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        // Plantel-hat scoping: when the dashboard is focused on a specific plantel
+        // (context switcher), scope the consultant to that plantel's players,
+        // respecting the coach bound. Mirrors tenant-sessions ?team=.
+        const teamFilter = (typeof req.query.team === 'string' && req.query.team ? req.query.team : null)
+            ?? (typeof req.body?.team === 'string' && req.body.team ? req.body.team : null);
+        if (teamFilter) {
+            if (coachGroupIds && !coachGroupIds.includes(teamFilter)) {
+                coachGroupIds = [];
+                coachSessionIds = [];
+            } else {
+                coachGroupIds = [teamFilter];
+                const { data: gmTeam } = await sb.from('group_members').select('session_id').in('group_id', [teamFilter]);
+                coachSessionIds = Array.from(new Set((gmTeam ?? []).map((r: { session_id: string }) => r.session_id)));
+            }
+        }
+
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // GET: List threads or messages
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
