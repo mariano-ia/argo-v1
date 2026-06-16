@@ -249,23 +249,24 @@ export const TenantHome: React.FC = () => {
                     sees their link(s); the institution-wide link is never offered
                     (it would have no plantel to attribute the player to). */}
                 {(() => {
-                    // In a plantel hat, show only the active plantel's link.
-                    const visibleTeams = effectiveTeamId ? (teams ?? []).filter(t => t.id === effectiveTeamId) : (teams ?? []);
-                    return visibleTeams.length > 0 ? (
-                    <div className="flex flex-col items-stretch sm:items-end gap-4">
-                        {visibleTeams.map(t => (
-                            <div key={t.id}>
-                                <p className="text-[11px] font-semibold text-argo-grey mb-1 sm:text-right">{t.name}</p>
-                                <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p className="text-[12px] text-argo-light max-w-[240px] sm:text-right">
-                        {isCoach
-                            ? (lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.')
-                            : (lang === 'en' ? 'The play link belongs to each team. Assign yourself to one to share yours, or let each coach share their own.' : lang === 'pt' ? 'O link de jogo pertence a cada plantel. Atribua-se a um para compartilhar o seu, ou deixe que cada treinador compartilhe o do seu plantel.' : 'El link de juego pertenece a cada plantel. Asígnate a uno para compartir el tuyo, o deja que cada entrenador comparta el de su plantel.')}
-                    </p>
+                    // The play link belongs to a plantel context. Focused on a plantel,
+                    // show that one link. Otherwise (Administración hat) the links live in
+                    // the Planteles section — never stack them all here.
+                    if (effectiveTeamId) {
+                        const t = (teams ?? []).find(x => x.id === effectiveTeamId);
+                        return t ? (
+                            <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
+                        ) : null;
+                    }
+                    const hasOwnTeams = (teams ?? []).length > 0;
+                    return (
+                        <p className="text-[12px] text-argo-light max-w-[260px] sm:text-right">
+                            {isCoach
+                                ? tt('Pídele al administrador que te asigne a un plantel para obtener tu link.', 'Ask your admin to assign you to a team to get your play link.', 'Peça ao administrador para atribuir você a um plantel e obter seu link.')
+                                : hasOwnTeams
+                                    ? tt('Elige un plantel en el selector (arriba) para ver y compartir su link de juego.', 'Pick a team in the selector (top) to see and share its play link.', 'Escolha um plantel no seletor (acima) para ver e compartilhar o link de jogo.')
+                                    : tt('El link de juego pertenece a cada plantel. Asígnate a uno desde Planteles para compartir el tuyo.', 'The play link belongs to each team. Assign yourself to one from Teams to share yours.', 'O link de jogo pertence a cada plantel. Atribua-se a um em Plantéis para compartilhar o seu.')}
+                        </p>
                     );
                 })()}
             </div>
