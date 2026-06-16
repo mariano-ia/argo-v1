@@ -41,7 +41,7 @@ const DEV_MEMBERS: Record<string, MemberRow[]> = {
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
 export const TenantGroups: React.FC = () => {
-    const { tenant, devBypass, role } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean; role?: string }>();
+    const { tenant, refreshTenant, devBypass, role, memberId } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; devBypass?: boolean; role?: string; memberId?: string | null }>();
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const { toast } = useToast();
@@ -369,9 +369,25 @@ export const TenantGroups: React.FC = () => {
                                             <UserCheck size={13} className="text-argo-grey" /> {tt(lang, 'Entrenadores', 'Coaches', 'Treinadores')}
                                         </h3>
                                         {isAdmin && (
-                                            <button onClick={openAssign} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
-                                                <Plus size={12} /> {tt(lang, 'Asignar', 'Assign', 'Atribuir')}
-                                            </button>
+                                            <div className="flex items-center gap-3">
+                                                {memberId && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (assignedIds.has(memberId)) await handleUnassignCoach(memberId);
+                                                            else await handleAssignCoach(memberId);
+                                                            refreshTenant?.();
+                                                        }}
+                                                        className="text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity"
+                                                    >
+                                                        {assignedIds.has(memberId)
+                                                            ? tt(lang, 'Quitarme', 'Remove me', 'Sair')
+                                                            : tt(lang, 'Asignarme', 'Assign me', 'Atribuir-me')}
+                                                    </button>
+                                                )}
+                                                <button onClick={openAssign} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
+                                                    <Plus size={12} /> {tt(lang, 'Asignar', 'Assign', 'Atribuir')}
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                     {coaches.length === 0 ? (
