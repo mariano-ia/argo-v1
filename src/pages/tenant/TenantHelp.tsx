@@ -58,7 +58,8 @@ export const TenantHelp: React.FC = () => {
     const location = useLocation();
 
     const [search, setSearch] = useState('');
-    const [openIds, setOpenIds] = useState<Set<string>>(new Set());
+    // Single-open accordion: at most one article expanded at a time.
+    const [openId, setOpenId] = useState<string | null>(null);
 
     const isCoach = role === 'coach';
     const isTrial = tenant?.plan === 'trial';
@@ -72,7 +73,6 @@ export const TenantHelp: React.FC = () => {
     }), [lang, isCoach]);
 
     const q = normalize(search.trim());
-    const isSearching = q.length > 0;
 
     const visible = useMemo(() => articles.filter(a => {
         if (!q) return true;
@@ -88,7 +88,7 @@ export const TenantHelp: React.FC = () => {
     useEffect(() => {
         const hash = location.hash.replace('#', '');
         if (!hash) return;
-        setOpenIds(prev => new Set(prev).add(hash));
+        setOpenId(hash);
         const el = document.getElementById(`help-${hash}`);
         if (el) {
             const id = window.setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
@@ -96,12 +96,8 @@ export const TenantHelp: React.FC = () => {
         }
     }, [location.hash]);
 
-    const isOpen = (id: string) => isSearching || openIds.has(id);
-    const toggle = (id: string) => setOpenIds(prev => {
-        const next = new Set(prev);
-        if (next.has(id)) next.delete(id); else next.add(id);
-        return next;
-    });
+    const isOpen = (id: string) => openId === id;
+    const toggle = (id: string) => setOpenId(prev => (prev === id ? null : id));
 
     if (!tenant) {
         return <div className="flex items-center justify-center py-20"><div className="w-5 h-5 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin" /></div>;

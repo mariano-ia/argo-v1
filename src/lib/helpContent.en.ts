@@ -13,7 +13,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
     {
         id: 'como-funciona',
         category: 'getting-started',
-        title: 'How does Argo work, in a nutshell?',
+        title: 'How does Argo work in a nutshell?',
         body: 'Argo turns a 10-minute adventure into a behavioral profile of the child, made for the adult who supports them.\n\nThe path is simple: you create a team, share its link, the child plays the odyssey and, when they finish, their profile appears in your dashboard and a report is emailed to the responsible adult.',
     },
     {
@@ -265,7 +265,6 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
             'Archive the players you are no longer following to free a spot.',
             'Or move to a plan with more capacity when you need it.',
         ],
-        audience: 'admin',
         links: [{ label: 'Go to Players', to: '/dashboard/players' }],
     },
     {
@@ -273,6 +272,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         category: 'account',
         title: 'What does the trial include and what unlocks with a paid plan?',
         body: 'The trial gives you the full dashboard, several players and a limited number of Argo Coach queries, for a limited time.\n\nA paid plan unlocks the bridge words and words to avoid, the quick guide, the per-player Predictor personalization, the group detail and re-profiling, plus more team capacity.',
+        audience: 'admin',
         links: [{ label: 'See plans', to: '/dashboard/pricing' }],
     },
     {

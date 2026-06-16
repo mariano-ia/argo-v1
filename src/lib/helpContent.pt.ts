@@ -13,7 +13,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
     {
         id: 'como-funciona',
         category: 'getting-started',
-        title: 'Como funciona o Argo, em poucas palavras?',
+        title: 'Como funciona o Argo em poucas palavras?',
         body: 'O Argo transforma uma aventura de cerca de 10 minutos em um perfil comportamental da criança, pensado para o adulto que a acompanha.\n\nO caminho é simples: você cria um plantel, compartilha o link dele, a criança joga a odisseia e, ao terminar, o perfil aparece no seu painel e um relatório é enviado por email ao adulto responsável.',
     },
     {
@@ -265,7 +265,6 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
             'Arquive os jogadores que você não está mais acompanhando para liberar vaga.',
             'Ou passe para um plano com mais capacidade quando precisar.',
         ],
-        audience: 'admin',
         links: [{ label: 'Ir para Jogadores', to: '/dashboard/players' }],
     },
     {
@@ -273,6 +272,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         category: 'account',
         title: 'O que a avaliação inclui e o que é desbloqueado com um plano pago?',
         body: 'A avaliação dá a você o painel completo, vários jogadores e uma quantidade limitada de consultas ao Argo Coach, por tempo limitado.\n\nUm plano pago desbloqueia as palavras ponte e a evitar, o guia rápido, a personalização do Preditor por jogador, o detalhe dos grupos e o reperfilamento, além de mais capacidade de equipe.',
+        audience: 'admin',
         links: [{ label: 'Ver planos', to: '/dashboard/pricing' }],
     },
     {
