@@ -16,6 +16,7 @@ interface DashboardTexts {
         miLink: string;
         usuarios: string;
         ajustes: string;
+        ayuda: string;
         cerrarSesion: string;
     };
 
@@ -334,6 +335,7 @@ const es: DashboardTexts = {
         miLink: 'Invitar',
         usuarios: 'Usuarios',
         ajustes: 'Ajustes',
+        ayuda: 'Ayuda',
         cerrarSesion: 'Cerrar sesión',
     },
     users: {
@@ -633,6 +635,7 @@ const en: DashboardTexts = {
         miLink: 'Invite',
         usuarios: 'Users',
         ajustes: 'Settings',
+        ayuda: 'Help',
         cerrarSesion: 'Sign out',
     },
     users: {
@@ -932,6 +935,7 @@ const pt: DashboardTexts = {
         miLink: 'Convidar',
         usuarios: 'Usuários',
         ajustes: 'Configurações',
+        ayuda: 'Ajuda',
         cerrarSesion: 'Sair',
     },
     users: {

@@ -10,7 +10,7 @@ import { TrialEndModal } from '../components/dashboard/TrialEndModal';
 import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
-    Users, Compass, MessageCircle, Layers, UserPlus, User, Shield,
+    Users, Compass, MessageCircle, Layers, UserPlus, User, Shield, HelpCircle,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -170,10 +170,14 @@ export const TenantDashboard: React.FC = () => {
         { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
     ];
     const NAV_CONFIG = isCoach
-        ? [{ to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings, end: false }]
+        ? [
+            { to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings,    end: false },
+            { to: '/dashboard/help',     label: dt.nav.ayuda,   icon: HelpCircle,  end: false },
+        ]
         : [
             { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,  end: false },
             { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,  end: false },
+            { to: '/dashboard/help',     label: dt.nav.ayuda,     icon: HelpCircle, end: false },
         ];
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */

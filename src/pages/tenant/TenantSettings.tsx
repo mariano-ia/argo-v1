@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useOutletContext, useNavigate } from 'react-router-dom';
+import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import type { Lang } from '../../context/LangContext';
@@ -274,7 +274,7 @@ export const TenantSettings: React.FC = () => {
                             {sportLocked ? (
                                 <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border border-argo-border bg-argo-neutral">
                                     <span className="text-[14px] text-argo-navy">{tenant?.sport}</span>
-                                    <span className="text-[11px] text-argo-light">{o.deporteBloqueado}</span>
+                                    <Link to="/dashboard/help#deporte-bloqueado" className="text-[11px] text-argo-light hover:text-argo-violet-500 hover:underline transition-colors">{o.deporteBloqueado}</Link>
                                 </div>
                             ) : (
                                 <>

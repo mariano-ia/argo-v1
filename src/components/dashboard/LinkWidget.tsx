@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Copy, Check, Info } from 'lucide-react';
 
 interface Props {
@@ -7,13 +8,14 @@ interface Props {
     disabled?: boolean;
 }
 
-const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string; noCredits: string }> = {
+const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string; noCredits: string; why: string }> = {
     es: {
         label: 'Invita deportistas a jugar con tu link',
         tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a la plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
         noCredits: 'Tu cupo está lleno. Archiva jugadores para liberar lugar.',
+        why: '¿Por qué?',
     },
     en: {
         label: 'Invite athletes to play with your link',
@@ -21,6 +23,7 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         copy: 'Copy link',
         copied: 'Copied',
         noCredits: 'Your roster is full. Archive players to free up space.',
+        why: 'Why?',
     },
     pt: {
         label: 'Convide atletas a jogar com seu link',
@@ -28,6 +31,7 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         copy: 'Copiar link',
         copied: 'Copiado',
         noCredits: 'Seu elenco está cheio. Arquive jogadores para liberar espaço.',
+        why: 'Por quê?',
     },
 };
 
@@ -75,6 +79,16 @@ export const LinkWidget: React.FC<Props> = ({ slug, lang, disabled = false }) =>
                 {copied ? <Check size={11} /> : <Copy size={11} />}
                 {copied ? t.copied : t.copy}
             </button>
+            {disabled && (
+                <div className="mt-1.5">
+                    <Link
+                        to="/dashboard/help#cupo-lleno"
+                        className="text-[11px] font-medium text-argo-violet-500 hover:underline"
+                    >
+                        {t.why}
+                    </Link>
+                </div>
+            )}
         </div>
     );
 };

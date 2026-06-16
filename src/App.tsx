@@ -29,6 +29,7 @@ const TenantGuide     = lazy(() => import('./pages/tenant/TenantGuide').then(m =
 const TenantPlayers   = lazy(() => import('./pages/tenant/TenantPlayers').then(m => ({ default: m.TenantPlayers })));
 const TenantChat      = lazy(() => import('./pages/tenant/TenantChat').then(m => ({ default: m.TenantChat })));
 const TenantPricing   = lazy(() => import('./pages/tenant/TenantPricing').then(m => ({ default: m.TenantPricing })));
+const TenantHelp      = lazy(() => import('./pages/tenant/TenantHelp').then(m => ({ default: m.TenantHelp })));
 
 // Admin dashboard (only loaded when admin accesses /admin)
 const Dashboard       = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -278,6 +279,7 @@ function App() {
                 <Route path="chat"     element={<TenantChat />} />
                 <Route path="users"    element={<TenantUsers />} />
                 <Route path="settings" element={<TenantSettings />} />
+                <Route path="help"     element={<TenantHelp />} />
                 <Route path="pricing"  element={<TenantPricing />} />
             </Route>
 
