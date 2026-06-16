@@ -38,6 +38,47 @@ export interface MemberProfile {
     role_in_institution: string | null;
 }
 
+export type PlanStatus = 'active' | 'trial' | 'trial_expired';
+
+/** One institution the identity belongs to (see docs/CONTEXT-SWITCHER.md). */
+export interface Membership {
+    tenant: TenantData;
+    role: string;
+    member_id: string | null;
+    memberProfile: MemberProfile | null;
+    teams: { id: string; name: string; slug: string }[];
+    status: PlanStatus;
+    blocked: boolean;
+}
+
+/** Which institution + hat the user is acting as. Phase 1 only resolves
+ *  tenantId (defaults to the primary membership); the switcher (Phase 3) lets
+ *  the user change it and `hat` will start driving the data scope + nav. */
+export type ContextHat = 'admin' | { plantelId: string };
+
+export interface ActiveContext {
+    tenantId: string;
+    hat: ContextHat;
+}
+
+const activeCtxKey = (userId: string) => `argo_active_context_${userId}`;
+
+function readStoredContext(userId: string | undefined): ActiveContext | null {
+    if (!userId) return null;
+    try {
+        const raw = localStorage.getItem(activeCtxKey(userId));
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.tenantId === 'string') return parsed as ActiveContext;
+    } catch { /* ignore */ }
+    return null;
+}
+
+function writeStoredContext(userId: string | undefined, ctx: ActiveContext): void {
+    if (!userId) return;
+    try { localStorage.setItem(activeCtxKey(userId), JSON.stringify(ctx)); } catch { /* ignore */ }
+}
+
 
 export const TenantDashboard: React.FC = () => {
     const navigate = useNavigate();
@@ -51,6 +92,8 @@ export const TenantDashboard: React.FC = () => {
     const [role, setRole] = useState<string>('owner');
     const [teams, setTeams] = useState<{ id: string; name: string; slug: string }[]>([]);
     const [memberId, setMemberId] = useState<string | null>(null);
+    const [memberships, setMemberships] = useState<Membership[]>([]);
+    const [activeContext, setActiveContextState] = useState<ActiveContext | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
@@ -87,16 +130,61 @@ export const TenantDashboard: React.FC = () => {
             });
             if (res.ok) {
                 const data = await res.json();
-                if (data.tenant) setTenant(data.tenant);
-                if (data.memberProfile !== undefined) setMemberProfile(data.memberProfile);
-                if (data.role) setRole(data.role);
-                if (Array.isArray(data.teams)) setTeams(data.teams);
-                if (data.member_id !== undefined) setMemberId(data.member_id);
+                // Membership list. Back-compat: synthesize one from the top-level
+                // fields if an older payload lacks `memberships`.
+                const list: Membership[] = Array.isArray(data.memberships) && data.memberships.length > 0
+                    ? data.memberships
+                    : (data.tenant ? [{
+                        tenant: data.tenant,
+                        role: data.role ?? 'owner',
+                        member_id: data.member_id ?? null,
+                        memberProfile: data.memberProfile ?? null,
+                        teams: Array.isArray(data.teams) ? data.teams : [],
+                        status: 'active' as PlanStatus,
+                        blocked: false,
+                    }] : []);
+                setMemberships(list);
+
+                // Resolve the active membership: stored context if still valid,
+                // else the primary (first) one. Single-membership users always
+                // land on their only institution — identical to before.
+                const userId = session?.user?.id;
+                const stored = readStoredContext(userId);
+                const active = list.find(m => m.tenant?.id === stored?.tenantId) ?? list[0] ?? null;
+
+                if (active) {
+                    setTenant(active.tenant);
+                    setMemberProfile(active.memberProfile);
+                    setRole(active.role);
+                    setTeams(active.teams);
+                    setMemberId(active.member_id);
+                    const ctx: ActiveContext = { tenantId: active.tenant.id, hat: stored?.hat ?? 'admin' };
+                    setActiveContextState(ctx);
+                    writeStoredContext(userId, ctx);
+                } else {
+                    setTenant(null);
+                }
             }
         } catch { /* silently fail */ }
     }, [session, devBypass]);
 
     useEffect(() => { fetchTenant(); }, [fetchTenant]);
+
+    /* ── Active context switch (dormant in Phase 1; wired by the switcher in
+          Phase 3). Re-points tenant/role/teams to the chosen membership and
+          persists the choice. ──────────────────────────────────────────────── */
+    const setActiveContext = React.useCallback((ctx: ActiveContext) => {
+        setActiveContextState(ctx);
+        writeStoredContext(session?.user?.id, ctx);
+        const active = memberships.find(m => m.tenant?.id === ctx.tenantId);
+        if (active) {
+            setTenant(active.tenant);
+            setMemberProfile(active.memberProfile);
+            setRole(active.role);
+            setTeams(active.teams);
+            setMemberId(active.member_id);
+        }
+    }, [session, memberships]);
 
     /* ── New-session notification dot ─────────────────────────────────────── */
     const checkNewSessions = useCallback(async () => {
@@ -439,7 +527,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass, memberships, activeContext, setActiveContext }} />
                     )}
                 </main>
             </div>
