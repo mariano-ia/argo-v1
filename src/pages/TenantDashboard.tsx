@@ -11,6 +11,7 @@ import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
     Users, Compass, MessageCircle, Layers, UserPlus, User, Shield, HelpCircle,
+    ChevronsUpDown, Check,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -96,6 +97,7 @@ export const TenantDashboard: React.FC = () => {
     const [activeContext, setActiveContextState] = useState<ActiveContext | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+    const [switcherOpen, setSwitcherOpen] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
     const [showTrialModal, setShowTrialModal] = useState(true);
     const sessionCountRef = useRef<number | null>(null);
@@ -245,27 +247,48 @@ export const TenantDashboard: React.FC = () => {
     const profileIncomplete = !!(tenant && !tenant.institution_type);
     const trialExpired = !!(tenant && tenant.plan === 'trial' && tenant.trial_expires_at && new Date(tenant.trial_expires_at) < new Date());
 
-    // Nav depends on role: coaches don't manage users (the club creates them).
-    const isCoach = role === 'coach';
+    // ── Active context (institution × hat) drives nav + data scope ──────────
+    // role = the membership permission level; the active HAT decides the view.
+    const isCoachRole = role === 'coach';
+    const activeMembership = memberships.find(m => m.tenant.id === (activeContext?.tenantId ?? tenant?.id)) ?? null;
+    const activeTeams = activeMembership?.teams ?? teams;
+    const currentHat: ContextHat = activeContext?.hat ?? 'admin';
+    const effectiveTeamId = typeof currentHat === 'object' ? currentHat.plantelId : null;
+    // Admin nav (Users + Planteles) shows only in the "Administración" hat of a
+    // non-coach membership. A plantel hat renders the coach-style nav + scope.
+    const isAdminView = currentHat === 'admin' && !isCoachRole;
+
+    const adminLabel = lang === 'en' ? 'Administration' : lang === 'pt' ? 'Administração' : 'Administración';
+    const activeHatLabel = effectiveTeamId
+        ? (activeTeams.find(t => t.id === effectiveTeamId)?.name ?? '')
+        : adminLabel;
+    const totalHats = (isCoachRole ? 0 : 1) + activeTeams.length;
+    const hasSwitcher = memberships.length > 1 || totalHats > 1;
+
+    const defaultHatFor = (m: Membership): ContextHat =>
+        m.role !== 'coach' ? 'admin' : (m.teams[0] ? { plantelId: m.teams[0].id } : 'admin');
+    const switchToInstitution = (m: Membership) => { setActiveContext({ tenantId: m.tenant.id, hat: defaultHatFor(m) }); setSwitcherOpen(false); };
+    const switchToHat = (hat: ContextHat) => { if (activeContext) setActiveContext({ tenantId: activeContext.tenantId, hat }); setSwitcherOpen(false); };
+
     const plantelesLabel = lang === 'en' ? 'Teams' : lang === 'pt' ? 'Plantéis' : 'Planteles';
     const NAV_MAIN = [
         { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
         { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
         { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
-        // Planteles (structural, owns the link) is admin-only; coaches just use the analytical tool.
-        ...(isCoach ? [] : [{ to: '/dashboard/planteles', label: plantelesLabel, icon: Shield, end: false }]),
+        // Planteles (structural, owns the link) shows only in the admin view.
+        ...(isAdminView ? [{ to: '/dashboard/planteles', label: plantelesLabel, icon: Shield, end: false }] : []),
         { to: '/dashboard/grupos',   label: dt.nav.grupos,    icon: Layers,          end: false },
         { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
     ];
-    const NAV_CONFIG = isCoach
+    const NAV_CONFIG = isAdminView
         ? [
-            { to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings,    end: false },
-            { to: '/dashboard/help',     label: dt.nav.ayuda,   icon: HelpCircle,  end: false },
-        ]
-        : [
             { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,  end: false },
             { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,  end: false },
             { to: '/dashboard/help',     label: dt.nav.ayuda,     icon: HelpCircle, end: false },
+        ]
+        : [
+            { to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings,    end: false },
+            { to: '/dashboard/help',     label: dt.nav.ayuda,   icon: HelpCircle,  end: false },
         ];
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
@@ -360,23 +383,80 @@ export const TenantDashboard: React.FC = () => {
                                 </Tooltip>
                             )}
                         </div>
-                        {/* Institution block */}
+                        {/* Context switcher (institution × hat) */}
                         {tenant && (
-                            <div className="px-4 pb-4">
-                                <div className="flex items-center gap-2.5 px-2 py-2 rounded-[10px]">
+                            <div className="px-4 pb-4 relative">
+                                <button
+                                    type="button"
+                                    onClick={() => { if (hasSwitcher) setSwitcherOpen(v => !v); }}
+                                    className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-[10px] text-left ${hasSwitcher ? 'hover:bg-argo-bg transition-colors' : 'cursor-default'}`}
+                                >
                                     {tenant.logo_url ? (
-                                        <img
-                                            src={tenant.logo_url}
-                                            alt={tenant.display_name}
-                                            className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white flex-shrink-0"
-                                        />
+                                        <img src={tenant.logo_url} alt={tenant.display_name} className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white flex-shrink-0" />
                                     ) : (
-                                        <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">
-                                            {initials}
-                                        </div>
+                                        <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold flex-shrink-0">{initials}</div>
                                     )}
-                                    <span className="text-[13px] font-semibold text-argo-navy truncate">{tenant.display_name}</span>
-                                </div>
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-[13px] font-semibold text-argo-navy truncate leading-tight">{tenant.display_name}</p>
+                                        {(hasSwitcher || effectiveTeamId) && (
+                                            <p className="text-[10px] text-argo-grey truncate leading-tight">{activeHatLabel}</p>
+                                        )}
+                                    </div>
+                                    {hasSwitcher && <ChevronsUpDown size={13} className="text-argo-light flex-shrink-0" />}
+                                </button>
+
+                                {switcherOpen && hasSwitcher && (
+                                    <>
+                                        <div className="fixed inset-0 z-30" onClick={() => setSwitcherOpen(false)} />
+                                        <div className="absolute left-4 right-4 top-full mt-1 z-40 bg-white border border-argo-border rounded-xl shadow-lg py-1.5 max-h-[60vh] overflow-y-auto">
+                                            {memberships.map(m => {
+                                                const isActiveInst = m.tenant.id === activeContext?.tenantId;
+                                                return (
+                                                    <div key={m.tenant.id}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => { if (!isActiveInst) switchToInstitution(m); }}
+                                                            className={`w-full flex items-center gap-2 px-3 py-1.5 text-left ${isActiveInst ? '' : 'hover:bg-argo-bg transition-colors'}`}
+                                                        >
+                                                            {m.tenant.logo_url ? (
+                                                                <img src={m.tenant.logo_url} alt="" className="w-5 h-5 rounded-[5px] object-contain border border-argo-border bg-white flex-shrink-0" />
+                                                            ) : (
+                                                                <div className="w-5 h-5 rounded-[5px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[9px] font-bold flex-shrink-0">
+                                                                    {m.tenant.display_name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}
+                                                                </div>
+                                                            )}
+                                                            <span className="text-[12px] font-semibold text-argo-navy truncate flex-1">{m.tenant.display_name}</span>
+                                                            {m.blocked && (
+                                                                <span className="text-[9px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md flex-shrink-0">
+                                                                    {lang === 'en' ? 'Paused' : 'Pausada'}
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                        {isActiveInst && (
+                                                            <div className="pb-1">
+                                                                {m.role !== 'coach' && (
+                                                                    <button type="button" onClick={() => switchToHat('admin')} className="w-full flex items-center gap-2 pl-9 pr-3 py-1.5 text-left hover:bg-argo-bg transition-colors">
+                                                                        <span className={`text-[12px] flex-1 ${currentHat === 'admin' ? 'font-semibold text-argo-violet-500' : 'text-argo-secondary'}`}>{adminLabel}</span>
+                                                                        {currentHat === 'admin' && <Check size={13} className="text-argo-violet-500 flex-shrink-0" />}
+                                                                    </button>
+                                                                )}
+                                                                {m.teams.map(t => {
+                                                                    const on = effectiveTeamId === t.id;
+                                                                    return (
+                                                                        <button key={t.id} type="button" onClick={() => switchToHat({ plantelId: t.id })} className="w-full flex items-center gap-2 pl-9 pr-3 py-1.5 text-left hover:bg-argo-bg transition-colors">
+                                                                            <span className={`text-[12px] truncate flex-1 ${on ? 'font-semibold text-argo-violet-500' : 'text-argo-secondary'}`}>{t.name}</span>
+                                                                            {on && <Check size={13} className="text-argo-violet-500 flex-shrink-0" />}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </>
+                                )}
                                 <div className="mx-2 mt-1 h-px bg-argo-border" />
                             </div>
                         )}
@@ -384,7 +464,7 @@ export const TenantDashboard: React.FC = () => {
                 )}
 
                 {/* Plan banner — institution-level (plan + roster). Hidden from coaches. */}
-                {tenant && !isCollapsed && !isCoach && (
+                {tenant && !isCollapsed && !isCoachRole && (
                     <div className="mx-3 mb-3">
                         {tenant.plan === 'trial' ? (
                             <div className="bg-argo-violet-50 border border-argo-violet-100 rounded-[10px] px-3 py-2.5 space-y-2">
@@ -527,7 +607,7 @@ export const TenantDashboard: React.FC = () => {
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
-                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass, memberships, activeContext, setActiveContext }} />
+                        <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass, memberships, activeContext, setActiveContext, effectiveTeamId, isAdminView }} />
                     )}
                 </main>
             </div>

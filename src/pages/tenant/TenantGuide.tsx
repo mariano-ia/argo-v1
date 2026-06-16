@@ -77,7 +77,9 @@ function renderPerspectives(text: string, lang: string): React.ReactNode {
 /* ── Component ─────────────────────────────────────────────────────────────── */
 
 export const TenantGuide: React.FC = () => {
-    const { tenant } = useOutletContext<{ tenant: TenantData | null }>();
+    const { tenant, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; effectiveTeamId?: string | null }>();
+    // In a plantel hat, scope the player selector to that plantel.
+    const teamScope = effectiveTeamId ? `&team=${effectiveTeamId}` : '';
     const { lang } = useLang();
     const dt = getDashboardT(lang);
 
@@ -100,7 +102,7 @@ export const TenantGuide: React.FC = () => {
         if (!session) return;
         const headers = { Authorization: `Bearer ${session.access_token}` };
         try {
-            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}${teamScope}`, { headers });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
         } finally { setSessionsLoaded(true); }
         // Fetch groups with members
@@ -124,7 +126,7 @@ export const TenantGuide: React.FC = () => {
                 setGroups(groupsWithMembers);
             }
         } catch { /* ignore */ }
-    }, [tenant?.id]);
+    }, [tenant?.id, teamScope]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 

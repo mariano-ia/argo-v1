@@ -554,7 +554,9 @@ const DEV_SESSIONS: SessionRow[] = [
 ];
 
 export const TenantPlayers: React.FC = () => {
-    const { tenant, refreshTenant, devBypass, role } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; devBypass?: boolean; role?: string }>();
+    const { tenant, refreshTenant, devBypass, role, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => Promise<void>; devBypass?: boolean; role?: string; effectiveTeamId?: string | null }>();
+    // When focused on a plantel (context hat), scope every fetch to it.
+    const teamScope = effectiveTeamId ? `&team=${effectiveTeamId}` : '';
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -574,16 +576,16 @@ export const TenantPlayers: React.FC = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}${teamScope}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
             // Also fetch archived
-            const arRes = await fetch(`/api/tenant-sessions?archived=1&tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const arRes = await fetch(`/api/tenant-sessions?archived=1&tenant_id=${tenant?.id ?? ''}${teamScope}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (arRes.ok) { const arData = await arRes.json(); setArchivedSessions(arData.sessions ?? []); }
             // Planteles for the filter dropdown
             const plRes = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (plRes.ok) { const plData = await plRes.json(); setPlanteles((plData.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
         } finally { setLoading(false); }
-    }, [devBypass, tenant?.id]);
+    }, [devBypass, tenant?.id, teamScope]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
@@ -703,7 +705,7 @@ export const TenantPlayers: React.FC = () => {
                         <AlertCircle size={12} />
                         {dt.players.rePerfilar} ({reprofileCount})
                     </button>
-                    {(role ?? 'owner') !== 'coach' && planteles.length > 0 && (
+                    {(role ?? 'owner') !== 'coach' && !effectiveTeamId && planteles.length > 0 && (
                         <select
                             value={plantelFilter ?? ''}
                             onChange={e => setPlantelFilter(e.target.value || null)}

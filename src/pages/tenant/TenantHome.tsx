@@ -144,7 +144,9 @@ const DEV_SESSIONS: SessionRow[] = [
 
 /* ── Component ───────────────────────────────────────────────────────────── */
 export const TenantHome: React.FC = () => {
-    const { tenant, refreshTenant, userEmail, memberProfile, devBypass, role, teams } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean; role?: string; teams?: { id: string; name: string; slug: string }[] }>();
+    const { tenant, refreshTenant, userEmail, memberProfile, devBypass, role, teams, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; refreshTenant: () => void; userEmail: string; memberProfile: { full_name: string | null } | null; devBypass?: boolean; role?: string; teams?: { id: string; name: string; slug: string }[]; effectiveTeamId?: string | null }>();
+    // When focused on a plantel (context hat), scope stats + link to it.
+    const teamScope = effectiveTeamId ? `&team=${effectiveTeamId}` : '';
     const isCoach = (role ?? 'owner') === 'coach';
     const tt = (es: string, en: string, pt: string) => (lang === 'en' ? en : lang === 'pt' ? pt : es);
     const { lang } = useLang();
@@ -172,7 +174,7 @@ export const TenantHome: React.FC = () => {
             const headers = { Authorization: `Bearer ${session.access_token}` };
             // Fetch sessions
             try {
-                const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers });
+                const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}${teamScope}`, { headers });
                 if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
             } catch { /* silently fail */ }
             finally { setSessionsLoading(false); }
@@ -190,7 +192,7 @@ export const TenantHome: React.FC = () => {
         fetchData();
         const interval = setInterval(fetchData, 30_000);
         return () => clearInterval(interval);
-    }, [tenant, devBypass]);
+    }, [tenant, devBypass, teamScope]);
 
     // All hooks MUST be above any early return
     const locale = lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR';
@@ -246,9 +248,12 @@ export const TenantHome: React.FC = () => {
                 {/* The play link belongs to a plantel. Anyone assigned to plantel(es)
                     sees their link(s); the institution-wide link is never offered
                     (it would have no plantel to attribute the player to). */}
-                {(teams && teams.length > 0) ? (
+                {(() => {
+                    // In a plantel hat, show only the active plantel's link.
+                    const visibleTeams = effectiveTeamId ? (teams ?? []).filter(t => t.id === effectiveTeamId) : (teams ?? []);
+                    return visibleTeams.length > 0 ? (
                     <div className="flex flex-col items-stretch sm:items-end gap-4">
-                        {teams.map(t => (
+                        {visibleTeams.map(t => (
                             <div key={t.id}>
                                 <p className="text-[11px] font-semibold text-argo-grey mb-1 sm:text-right">{t.name}</p>
                                 <LinkWidget slug={`${tenant.slug}/${t.slug}`} lang={lang} disabled={tenant.active_players_count >= tenant.roster_limit} />
@@ -261,7 +266,8 @@ export const TenantHome: React.FC = () => {
                             ? (lang === 'en' ? 'Ask your institution admin to assign you to a team to get your play link.' : lang === 'pt' ? 'Peça ao administrador da instituição para atribuir você a um plantel e obter seu link.' : 'Pídele al administrador de la institución que te asigne a un plantel para obtener tu enlace.')
                             : (lang === 'en' ? 'The play link belongs to each team. Assign yourself to one to share yours, or let each coach share their own.' : lang === 'pt' ? 'O link de jogo pertence a cada plantel. Atribua-se a um para compartilhar o seu, ou deixe que cada treinador compartilhe o do seu plantel.' : 'El link de juego pertenece a cada plantel. Asígnate a uno para compartir el tuyo, o deja que cada entrenador comparta el de su plantel.')}
                     </p>
-                )}
+                    );
+                })()}
             </div>
 
             {/* ═══ ROW 2: Stats ═══ */}
