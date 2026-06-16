@@ -60,10 +60,10 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setLoading(false); return; }
         try {
-            const res = await fetch('/api/tenant-chem-groups', { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-chem-groups?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setGroups(data.groups ?? []); }
         } finally { setLoading(false); }
-    }, []);
+    }, [tenant]);
 
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
@@ -73,7 +73,7 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setCreating(false); return; }
         try {
-            const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim() }) });
+            const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), tenant_id: tenant?.id }) });
             if (res.ok) { setNewName(''); setShowCreate(false); fetchGroups(); toast('success', tt(lang, 'Grupo creado', 'Group created', 'Grupo criado')); }
         } finally { setCreating(false); }
     };
@@ -83,10 +83,10 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setDetailLoading(false); return; }
         try {
-            const res = await fetch(`/api/tenant-chem-groups?id=${groupId}`, { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-chem-groups?id=${groupId}&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members ?? []); }
         } finally { setDetailLoading(false); }
-    }, []);
+    }, [tenant]);
 
     const selectGroup = (id: string) => {
         setSelectedId(id); setEditing(false); setConfirmDelete(false); setShowAddPanel(false); setShowMenu(false);
@@ -97,7 +97,7 @@ export const TenantGrupos: React.FC = () => {
         if (!editName.trim() || !selectedId) return;
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim() }) });
+        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim(), tenant_id: tenant?.id }) });
         setEditing(false); fetchDetail(selectedId); fetchGroups();
         toast('success', tt(lang, 'Grupo renombrado', 'Group renamed', 'Grupo renomeado'));
     };
@@ -106,7 +106,7 @@ export const TenantGrupos: React.FC = () => {
         if (!selectedId) return;
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId }) });
+        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId, tenant_id: tenant?.id }) });
         toast('success', tt(lang, 'Grupo eliminado', 'Group deleted', 'Grupo excluído'));
         setSelectedId(null); setDetailGroup(null); setMembers([]); fetchGroups();
     };
@@ -117,7 +117,7 @@ export const TenantGrupos: React.FC = () => {
         setMembers(prev => prev.filter(m => m.session_id !== sessionId));
         const token = await getToken();
         if (!token) return;
-        const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId] }) });
+        const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'remove_members', group_id: selectedId, session_ids: [sessionId], tenant_id: tenant?.id }) });
         if (!res.ok && removed) { setMembers(prev => [...prev, removed]); toast('error', tt(lang, 'No se pudo quitar', 'Could not remove', 'Não foi possível remover')); }
         else { fetchGroups(); }
     };
@@ -127,7 +127,7 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setSessionsLoading(false); return; }
         try {
-            const res = await fetch('/api/tenant-sessions', { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setAllSessions(data.sessions ?? []); }
         } finally { setSessionsLoading(false); }
     };
@@ -137,7 +137,7 @@ export const TenantGrupos: React.FC = () => {
         setAdding(true);
         const token = await getToken();
         if (!token) { setAdding(false); return; }
-        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions) }) });
+        await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'add_members', group_id: selectedId, session_ids: Array.from(selectedSessions), tenant_id: tenant?.id }) });
         setAdding(false); setShowAddPanel(false); fetchDetail(selectedId); fetchGroups();
         toast('success', tt(lang, 'Jugadores agregados', 'Players added', 'Jogadores adicionados'));
     };

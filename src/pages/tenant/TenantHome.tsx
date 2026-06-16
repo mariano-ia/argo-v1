@@ -172,18 +172,18 @@ export const TenantHome: React.FC = () => {
             const headers = { Authorization: `Bearer ${session.access_token}` };
             // Fetch sessions
             try {
-                const res = await fetch('/api/tenant-sessions', { headers });
+                const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers });
                 if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
             } catch { /* silently fail */ }
             finally { setSessionsLoading(false); }
             // Fetch plantel count
             try {
-                const res = await fetch('/api/tenant-groups', { headers });
+                const res = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers });
                 if (res.ok) { const data = await res.json(); setGroupCount(data.groups?.length ?? 0); }
             } catch { /* silently fail */ }
             // Fetch chem-group (Química de grupos) count
             try {
-                const res = await fetch('/api/tenant-chem-groups', { headers });
+                const res = await fetch(`/api/tenant-chem-groups?tenant_id=${tenant?.id ?? ''}`, { headers });
                 if (res.ok) { const data = await res.json(); setChemGroupCount(data.groups?.length ?? 0); }
             } catch { /* silently fail */ }
         };

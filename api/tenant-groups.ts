@@ -1,6 +1,48 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// Phase 2: resolve which tenant the caller acts on. An explicit tenant_id
+// requires ACTIVE membership of THAT tenant; absent tenant_id keeps the
+// single-membership back-compat path. Returns null when the caller may not act.
+async function resolveTenantContext(
+    sb: any,
+    userId: string,
+    requestedTenantId: string | null,
+): Promise<{ tenantId: string; role: string; memberId: string | null } | null> {
+    if (requestedTenantId) {
+        const { data: m } = await sb
+            .from('tenant_members')
+            .select('id, tenant_id, role')
+            .eq('auth_user_id', userId)
+            .eq('tenant_id', requestedTenantId)
+            .eq('status', 'active')
+            .maybeSingle();
+        if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+        const { data: t } = await sb
+            .from('tenants')
+            .select('id')
+            .eq('id', requestedTenantId)
+            .eq('auth_user_id', userId)
+            .maybeSingle();
+        if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+        return null;
+    }
+    const { data: m } = await sb
+        .from('tenant_members')
+        .select('id, tenant_id, role')
+        .eq('auth_user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+    if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+    const { data: t } = await sb
+        .from('tenants')
+        .select('id')
+        .eq('auth_user_id', userId)
+        .maybeSingle();
+    if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+    return null;
+}
+
 /**
  * Unified teams endpoint (table is still named `groups` for backward-compat).
  * A "team" = a group with a play-link slug + assigned coaches. Players belong to
@@ -45,28 +87,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        // Resolve caller scope: tenant + role + member id
-        let tenantId: string | null = null;
-        let role = 'owner';
-        let memberId: string | null = null;
-        const { data: memberRow } = await sb
-            .from('tenant_members')
-            .select('id, tenant_id, role')
-            .eq('auth_user_id', user.id)
-            .eq('status', 'active')
-            .maybeSingle();
-        if (memberRow) {
-            tenantId = memberRow.tenant_id;
-            role = memberRow.role ?? 'owner';
-            memberId = memberRow.id;
-        } else {
-            const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
-            if (tenantRow) tenantId = tenantRow.id;
-        }
-
-        if (!tenantId) {
-            return res.status(404).json({ error: 'Tenant not found' });
-        }
+        // Resolve caller scope: tenant + role + member id (Phase 2: explicit tenant_id supported)
+        const requestedTenantId = (typeof req.query.tenant_id === 'string' && req.query.tenant_id ? req.query.tenant_id : null) ?? (typeof req.body?.tenant_id === 'string' && req.body.tenant_id ? req.body.tenant_id : null);
+        const ctx = await resolveTenantContext(sb, user.id, requestedTenantId);
+        if (!ctx) return res.status(requestedTenantId ? 403 : 404).json({ error: requestedTenantId ? 'Not a member of this tenant' : 'Tenant not found' });
+        const tenantId = ctx.tenantId;
+        const role = ctx.role;
+        const memberId = ctx.memberId;
         const tenant = { id: tenantId };
         const isCoach = role === 'coach';
         const isAdmin = !isCoach; // owner (and legacy 'member') manage teams

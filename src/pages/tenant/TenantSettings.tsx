@@ -128,6 +128,7 @@ export const TenantSettings: React.FC = () => {
         if (logoFile) {
             const form = new FormData();
             form.append('logo', logoFile);
+            form.append('tenant_id', tenant?.id ?? '');
             const logoRes = await fetch('/api/upload-logo', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
@@ -151,6 +152,7 @@ export const TenantSettings: React.FC = () => {
         body.city = city.trim() || null;
         body.full_name = fullName.trim() || null;
         body.role_in_institution = role || null;
+        body.tenant_id = tenant?.id;
 
         const res = await fetch('/api/tenant-setup', {
             method: 'PATCH',
@@ -176,7 +178,8 @@ export const TenantSettings: React.FC = () => {
         try {
             const res = await fetch('/api/cancel-subscription', {
                 method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tenant_id: tenant?.id }),
             });
             if (res.ok) {
                 toast('success', s.cancelarSuscripcionOk);

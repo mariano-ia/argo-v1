@@ -21,7 +21,7 @@ const tt = (lang: string, es: string, en: string, pt: string) => (lang === 'en' 
 export const TenantUsers: React.FC = () => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
-    const { role: callerRole } = useOutletContext<{ role?: string }>();
+    const { role: callerRole, tenant } = useOutletContext<{ role?: string; tenant?: { id: string } | null }>();
 
     const [members, setMembers] = useState<Member[]>([]);
     const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>([]);
@@ -42,7 +42,7 @@ export const TenantUsers: React.FC = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch('/api/tenant-members', {
+            const res = await fetch(`/api/tenant-members?tenant_id=${tenant?.id ?? ''}`, {
                 headers: { Authorization: `Bearer ${session.access_token}` },
             });
             if (res.ok) {
@@ -57,7 +57,7 @@ export const TenantUsers: React.FC = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch('/api/tenant-groups', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const res = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setTeamsList((data.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
         } catch { /* silently fail */ }
     };
@@ -75,7 +75,7 @@ export const TenantUsers: React.FC = () => {
             const res = await fetch('/api/tenant-groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                body: JSON.stringify({ action: 'create', name }),
+                body: JSON.stringify({ action: 'create', name, tenant_id: tenant?.id }),
             });
             const data = await res.json().catch(() => ({}));
             if (res.ok && data.group?.id) {
@@ -108,7 +108,7 @@ export const TenantUsers: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify({ email: email.trim(), lang, role: inviteRole, teams: inviteRole === 'coach' ? Array.from(selectedTeams) : [] }),
+                body: JSON.stringify({ email: email.trim(), lang, role: inviteRole, teams: inviteRole === 'coach' ? Array.from(selectedTeams) : [], tenant_id: tenant?.id }),
             });
 
             if (res.ok) {
@@ -142,7 +142,7 @@ export const TenantUsers: React.FC = () => {
             const res = await fetch('/api/tenant-groups', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                body: JSON.stringify({ action: 'unassign_coach', group_id: teamId, member_id: memberId }),
+                body: JSON.stringify({ action: 'unassign_coach', group_id: teamId, member_id: memberId, tenant_id: tenant?.id }),
             });
             if (res.ok) { setFeedback({ type: 'success', text: tt(lang, 'Plantel quitado', 'Team removed', 'Plantel removido') }); fetchMembers(); }
             else { setFeedback({ type: 'error', text: tt(lang, 'No se pudo quitar el plantel', 'Could not remove team', 'Não foi possível remover o plantel') }); }
@@ -165,7 +165,7 @@ export const TenantUsers: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify({ memberId }),
+                body: JSON.stringify({ memberId, tenant_id: tenant?.id }),
             });
             if (res.ok) {
                 setFeedback({ type: 'success', text: dt.users.eliminado });

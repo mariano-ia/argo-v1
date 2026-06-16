@@ -100,19 +100,19 @@ export const TenantGuide: React.FC = () => {
         if (!session) return;
         const headers = { Authorization: `Bearer ${session.access_token}` };
         try {
-            const res = await fetch('/api/tenant-sessions', { headers });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
         } finally { setSessionsLoaded(true); }
         // Fetch groups with members
         try {
-            const res = await fetch('/api/tenant-groups', { headers });
+            const res = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers });
             if (res.ok) {
                 const data = await res.json();
                 // For each group, fetch members
                 const groupsWithMembers = await Promise.all(
                     (data.groups ?? []).map(async (g: { id: string; name: string }) => {
                         try {
-                            const mRes = await fetch(`/api/tenant-groups?id=${g.id}`, { headers });
+                            const mRes = await fetch(`/api/tenant-groups?id=${g.id}&tenant_id=${tenant?.id ?? ''}`, { headers });
                             if (mRes.ok) {
                                 const mData = await mRes.json();
                                 return { id: g.id, name: g.name, session_ids: (mData.members ?? []).map((m: { session_id: string }) => m.session_id) };
@@ -124,7 +124,7 @@ export const TenantGuide: React.FC = () => {
                 setGroups(groupsWithMembers);
             }
         } catch { /* ignore */ }
-    }, []);
+    }, [tenant?.id]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 

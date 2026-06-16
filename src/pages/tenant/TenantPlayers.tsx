@@ -574,16 +574,16 @@ export const TenantPlayers: React.FC = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
         try {
-            const res = await fetch('/api/tenant-sessions', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (res.ok) { const data = await res.json(); setSessions(data.sessions); }
             // Also fetch archived
-            const arRes = await fetch('/api/tenant-sessions?archived=1', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const arRes = await fetch(`/api/tenant-sessions?archived=1&tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (arRes.ok) { const arData = await arRes.json(); setArchivedSessions(arData.sessions ?? []); }
             // Planteles for the filter dropdown
-            const plRes = await fetch('/api/tenant-groups', { headers: { Authorization: `Bearer ${session.access_token}` } });
+            const plRes = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
             if (plRes.ok) { const plData = await plRes.json(); setPlanteles((plData.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
         } finally { setLoading(false); }
-    }, [devBypass]);
+    }, [devBypass, tenant?.id]);
 
     useEffect(() => { if (tenant) fetchSessions(); }, [tenant, fetchSessions]);
 
@@ -593,7 +593,7 @@ export const TenantPlayers: React.FC = () => {
         const res = await fetch('/api/archive-player', {
             method: 'POST',
             headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: sessionId, action: 'archive' }),
+            body: JSON.stringify({ session_id: sessionId, action: 'archive', tenant_id: tenant?.id }),
         });
         if (res.ok) { await fetchSessions(); await refreshTenant(); }
     };
@@ -604,7 +604,7 @@ export const TenantPlayers: React.FC = () => {
         const res = await fetch('/api/archive-player', {
             method: 'POST',
             headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ session_id: sessionId, action: 'reactivate' }),
+            body: JSON.stringify({ session_id: sessionId, action: 'reactivate', tenant_id: tenant?.id }),
         });
         if (res.ok) { await fetchSessions(); await refreshTenant(); }
     };

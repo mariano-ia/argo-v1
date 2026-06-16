@@ -107,7 +107,7 @@ export const TenantChat: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch('/api/tenant-chat?action=threads', { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-chat?action=threads&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) {
                 const data = await res.json();
                 setThreads(data.threads);
@@ -142,7 +142,7 @@ export const TenantChat: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch(`/api/tenant-chat?action=messages&thread_id=${threadId}`, { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-chat?action=messages&thread_id=${threadId}&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setMessages(data.messages); scrollToBottom(); }
         } finally { setMessagesLoading(false); }
     };
@@ -194,7 +194,7 @@ export const TenantChat: React.FC = () => {
             const res = await fetch('/api/tenant-chat', {
                 method: 'POST',
                 headers: authHeaders(token),
-                body: JSON.stringify({ action: 'send', thread_id: activeThreadId, message: msg, lang }),
+                body: JSON.stringify({ action: 'send', thread_id: activeThreadId, message: msg, lang, tenant_id: tenant?.id }),
                 signal: controller.signal,
             });
             clearTimeout(timeout);

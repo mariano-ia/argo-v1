@@ -226,7 +226,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         const res = await fetch('/api/tenant-setup', {
             method: 'PATCH',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ onboarding_completed: true }),
+            body: JSON.stringify({ onboarding_completed: true, tenant_id: tenant?.id }),
         });
         if (!res.ok) showToast(o.errorGuardar, false);
         else await onComplete();
@@ -241,6 +241,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         if (logoFile) {
             const form = new FormData();
             form.append('logo', logoFile);
+            form.append('tenant_id', tenant?.id ?? '');
             const logoRes = await fetch('/api/upload-logo', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
@@ -253,7 +254,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
             }
         }
 
-        const body: Record<string, unknown> = { onboarding_completed: true };
+        const body: Record<string, unknown> = { onboarding_completed: true, tenant_id: tenant?.id };
         if (displayName.trim())  body.display_name        = displayName.trim();
         if (tipo)                body.institution_type    = tipo;
         if (sport.trim() && sport !== '_other') body.sport = sport.trim();

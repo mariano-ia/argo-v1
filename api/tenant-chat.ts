@@ -1,6 +1,48 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// Phase 2: resolve which tenant the caller acts on. An explicit tenant_id
+// requires ACTIVE membership of THAT tenant; absent tenant_id keeps the
+// single-membership back-compat path. Returns null when the caller may not act.
+async function resolveTenantContext(
+    sb: any,
+    userId: string,
+    requestedTenantId: string | null,
+): Promise<{ tenantId: string; role: string; memberId: string | null } | null> {
+    if (requestedTenantId) {
+        const { data: m } = await sb
+            .from('tenant_members')
+            .select('id, tenant_id, role')
+            .eq('auth_user_id', userId)
+            .eq('tenant_id', requestedTenantId)
+            .eq('status', 'active')
+            .maybeSingle();
+        if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+        const { data: t } = await sb
+            .from('tenants')
+            .select('id')
+            .eq('id', requestedTenantId)
+            .eq('auth_user_id', userId)
+            .maybeSingle();
+        if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+        return null;
+    }
+    const { data: m } = await sb
+        .from('tenant_members')
+        .select('id, tenant_id, role')
+        .eq('auth_user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+    if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+    const { data: t } = await sb
+        .from('tenants')
+        .select('id')
+        .eq('auth_user_id', userId)
+        .maybeSingle();
+    if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+    return null;
+}
+
 // ─── Inline AI provider (Vercel serverless can't import between api files) ──
 
 interface AIMessage { role: 'system' | 'user' | 'assistant'; content: string; }
@@ -608,19 +650,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: { user }, error: authError } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
         if (authError || !user) return res.status(401).json({ error: 'Invalid token' });
 
-        const { data: memberRow } = await sb.from('tenant_members').select('id, tenant_id, role').eq('auth_user_id', user.id).eq('status', 'active').maybeSingle();
-        let tenantId: string | null = memberRow?.tenant_id ?? null;
-        const callerRole: string = memberRow?.role ?? 'owner';
-        const callerMemberId: string | null = memberRow?.id ?? null;
-
-        if (!tenantId) {
-            // Fallback: owner who predates the tenant_members table
-            const { data: tenantRow } = await sb.from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
-            if (tenantRow) tenantId = tenantRow.id;
-        }
-
-        if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
-        const tenant = { id: tenantId };
+        // Phase 2: an explicit tenant_id (query or body) targets a specific tenant
+        // and requires active membership of THAT tenant; absent it, fall back to
+        // the single-membership resolution.
+        const requestedTenantId = (typeof req.query.tenant_id === 'string' && req.query.tenant_id ? req.query.tenant_id : null) ?? (typeof req.body?.tenant_id === 'string' && req.body.tenant_id ? req.body.tenant_id : null);
+        const ctx = await resolveTenantContext(sb, user.id, requestedTenantId);
+        if (!ctx) return res.status(requestedTenantId ? 403 : 404).json({ error: requestedTenantId ? 'Not a member of this tenant' : 'Tenant not found' });
+        const callerRole: string = ctx.role;
+        const callerMemberId: string | null = ctx.memberId;
+        const tenant = { id: ctx.tenantId };
 
         // Coach scoping: a coach's AI consultant only sees players in the teams
         // they're assigned to (privacy — these are minors). null = unscoped

@@ -192,7 +192,7 @@ export const TenantDashboard: React.FC = () => {
         const { data: { session: authSession } } = await supabase.auth.getSession();
         if (!authSession) return;
         try {
-            const res = await fetch('/api/tenant-sessions', {
+            const res = await fetch(`/api/tenant-sessions?tenant_id=${tenant.id}`, {
                 headers: { Authorization: `Bearer ${authSession.access_token}` },
             });
             if (!res.ok) return;

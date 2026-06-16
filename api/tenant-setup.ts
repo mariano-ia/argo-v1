@@ -1,6 +1,48 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// Phase 2: resolve which tenant the caller acts on. An explicit tenant_id
+// requires ACTIVE membership of THAT tenant; absent tenant_id keeps the
+// single-membership back-compat path. Returns null when the caller may not act.
+async function resolveTenantContext(
+    sb: any,
+    userId: string,
+    requestedTenantId: string | null,
+): Promise<{ tenantId: string; role: string; memberId: string | null } | null> {
+    if (requestedTenantId) {
+        const { data: m } = await sb
+            .from('tenant_members')
+            .select('id, tenant_id, role')
+            .eq('auth_user_id', userId)
+            .eq('tenant_id', requestedTenantId)
+            .eq('status', 'active')
+            .maybeSingle();
+        if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+        const { data: t } = await sb
+            .from('tenants')
+            .select('id')
+            .eq('id', requestedTenantId)
+            .eq('auth_user_id', userId)
+            .maybeSingle();
+        if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+        return null;
+    }
+    const { data: m } = await sb
+        .from('tenant_members')
+        .select('id, tenant_id, role')
+        .eq('auth_user_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+    if (m) return { tenantId: (m as { tenant_id: string }).tenant_id, role: (m as { role: string }).role ?? 'owner', memberId: (m as { id: string }).id };
+    const { data: t } = await sb
+        .from('tenants')
+        .select('id')
+        .eq('auth_user_id', userId)
+        .maybeSingle();
+    if (t) return { tenantId: (t as { id: string }).id, role: 'owner', memberId: null };
+    return null;
+}
+
 interface SetupBody {
     // Institution (step 1)
     display_name?: string;
@@ -33,27 +75,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Resolve caller's tenant + role. Institution fields are owner-only; any
         // active member (incl. coaches) may still update their OWN profile below.
-        let tenantId: string | null = null;
-        let memberRowId: string | null = null;
-        let isOwner = false;
+        const requestedTenantId = typeof req.body?.tenant_id === 'string' && req.body.tenant_id ? req.body.tenant_id : null;
 
-        const { data: memberRow } = await sb
-            .from('tenant_members')
-            .select('id, tenant_id, role')
-            .eq('auth_user_id', user.id)
-            .eq('status', 'active')
-            .maybeSingle();
+        const ctx = await resolveTenantContext(sb, user.id, requestedTenantId);
+        if (!ctx) return res.status(requestedTenantId ? 403 : 404).json({ error: requestedTenantId ? 'Not a member of this tenant' : 'Tenant not found' });
 
-        if (memberRow) {
-            tenantId = (memberRow as { tenant_id: string }).tenant_id;
-            memberRowId = (memberRow as { id: string }).id;
-            isOwner = (memberRow as { role: string }).role === 'owner';
-        } else {
-            const { data: tenantRow } = await sb
-                .from('tenants').select('id').eq('auth_user_id', user.id).maybeSingle();
-            if (tenantRow) { tenantId = (tenantRow as { id: string }).id; isOwner = true; }
-        }
-        if (!tenantId) return res.status(404).json({ error: 'Tenant not found' });
+        const tenantId: string = ctx.tenantId;
+        const memberRowId: string | null = ctx.memberId;
+        const isOwner = ctx.role === 'owner';
 
         const body = req.body as SetupBody;
 

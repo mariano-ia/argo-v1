@@ -6,7 +6,7 @@ import { useOutletContext } from 'react-router-dom';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
-interface TenantData { plan: string; }
+interface TenantData { id?: string; plan: string; }
 
 /* ── i18n ──────────────────────────────────────────────────────────────────── */
 
@@ -156,7 +156,7 @@ export const TenantPricing: React.FC = () => {
             const res = await fetch('/api/create-subscription', {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ plan, billing: annual ? 'annual' : 'monthly' }),
+                body: JSON.stringify({ plan, billing: annual ? 'annual' : 'monthly', tenant_id: tenant?.id }),
             });
             const data = await res.json();
             if (data.checkout_url) {

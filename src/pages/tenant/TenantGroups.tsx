@@ -80,10 +80,10 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch('/api/tenant-groups', { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setGroups(data.groups); }
         } finally { setLoading(false); }
-    }, [devBypass]);
+    }, [devBypass, tenant?.id]);
 
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
@@ -94,7 +94,7 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim() }) });
+            const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), tenant_id: tenant?.id }) });
             if (res.ok) { setNewName(''); setShowCreate(false); fetchGroups(); toast('success', dt.groups.grupoCreado); }
         } finally { setCreating(false); }
     };
@@ -110,9 +110,9 @@ export const TenantGroups: React.FC = () => {
         }
         const token = await getToken();
         if (!token) return;
-        const res = await fetch(`/api/tenant-groups?id=${groupId}`, { headers: authHeaders(token) });
+        const res = await fetch(`/api/tenant-groups?id=${groupId}&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
         if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); setCoaches(data.coaches ?? []); }
-    }, [devBypass]);
+    }, [devBypass, tenant?.id]);
 
     const selectGroup = (id: string) => {
         setSelectedId(id);
@@ -128,7 +128,7 @@ export const TenantGroups: React.FC = () => {
         if (!editName.trim() || !selectedId) return;
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim() }) });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim(), tenant_id: tenant?.id }) });
         setEditing(false);
         fetchDetail(selectedId);
         fetchGroups();
@@ -140,7 +140,7 @@ export const TenantGroups: React.FC = () => {
         if (!selectedId) return;
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId }) });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId, tenant_id: tenant?.id }) });
         toast('success', dt.groups.grupoEliminado);
         setSelectedId(null); setDetailGroup(null); setMembers([]); setCoaches([]);
         fetchGroups();
@@ -152,7 +152,7 @@ export const TenantGroups: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch('/api/tenant-members', { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-members?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) { const data = await res.json(); setAllMembers(data.members ?? []); }
         } catch { /* noop */ }
     };
@@ -161,7 +161,7 @@ export const TenantGroups: React.FC = () => {
         if (!selectedId) return;
         const token = await getToken();
         if (!token) return;
-        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'assign_coach', group_id: selectedId, member_id: memberId }) });
+        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'assign_coach', group_id: selectedId, member_id: memberId, tenant_id: tenant?.id }) });
         if (res.ok) { fetchDetail(selectedId); toast('success', tt(lang, 'Entrenador asignado', 'Coach assigned', 'Treinador atribuído')); }
     };
 
@@ -170,7 +170,7 @@ export const TenantGroups: React.FC = () => {
         setCoaches(prev => prev.filter(c => c.member_id !== memberId));
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'unassign_coach', group_id: selectedId, member_id: memberId }) });
+        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'unassign_coach', group_id: selectedId, member_id: memberId, tenant_id: tenant?.id }) });
         toast('success', tt(lang, 'Entrenador quitado', 'Coach removed', 'Treinador removido'));
     };
 
