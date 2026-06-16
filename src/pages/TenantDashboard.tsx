@@ -389,7 +389,7 @@ export const TenantDashboard: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => { if (hasSwitcher) setSwitcherOpen(v => !v); }}
-                                    className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-[10px] text-left ${hasSwitcher ? 'hover:bg-argo-bg transition-colors' : 'cursor-default'}`}
+                                    className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] text-left transition-colors ${hasSwitcher ? 'border border-argo-border bg-white shadow-sm hover:border-argo-violet-200 hover:bg-argo-bg' : 'cursor-default'}`}
                                 >
                                     {tenant.logo_url ? (
                                         <img src={tenant.logo_url} alt={tenant.display_name} className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white flex-shrink-0" />
@@ -402,7 +402,7 @@ export const TenantDashboard: React.FC = () => {
                                             <p className="text-[10px] text-argo-grey truncate leading-tight">{activeHatLabel}</p>
                                         )}
                                     </div>
-                                    {hasSwitcher && <ChevronsUpDown size={13} className="text-argo-light flex-shrink-0" />}
+                                    {hasSwitcher && <ChevronsUpDown size={15} className="text-argo-grey flex-shrink-0" />}
                                 </button>
 
                                 {switcherOpen && hasSwitcher && (
