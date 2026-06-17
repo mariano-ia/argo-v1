@@ -10,6 +10,7 @@ import { CollapsibleSection } from './components/CollapsibleSection';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
+import { ContextChip } from '../../components/dashboard/ContextChip';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -173,7 +174,10 @@ export const TenantGrupos: React.FC = () => {
             />
             {/* Header */}
             <div className="mb-6">
-                <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{tt(lang, 'Química de grupos', 'Group chemistry', 'Química de grupos')}</h1>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{tt(lang, 'Química de grupos', 'Group chemistry', 'Química de grupos')}</h1>
+                    <ContextChip />
+                </div>
                 <p className="text-[13px] text-argo-grey mt-1">{tt(lang, 'Agrupa a tus jugadores para analizar la química de cada grupo.', 'Group your players to analyze each group chemistry.', 'Agrupe seus jogadores para analisar a química de cada grupo.')}</p>
             </div>
 

@@ -3,6 +3,7 @@ import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom
 import { motion } from 'framer-motion';
 import { Activity, Users, Layers, ChevronRight, Send, Shield } from 'lucide-react';
 import { LinkWidget } from '../../components/dashboard/LinkWidget';
+import { ContextChip } from '../../components/dashboard/ContextChip';
 import { AreaChart, Area, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis } from 'recharts';
 import { InfoTip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
@@ -242,7 +243,10 @@ export const TenantHome: React.FC = () => {
             {/* ═══ ROW 1: Header + Link ═══ */}
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.home.bienvenida(memberProfile?.full_name || userEmail.split('@')[0])}</h1>
+                        <ContextChip />
+                    </div>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.home.descripcionInicio}</p>
                 </div>
                 {/* The play link belongs to a plantel. Anyone assigned to plantel(es)

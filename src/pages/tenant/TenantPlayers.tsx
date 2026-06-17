@@ -10,6 +10,7 @@ import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
+import { ContextChip } from '../../components/dashboard/ContextChip';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
 import { Tooltip, InfoTip } from '../../components/ui/Tooltip';
@@ -651,7 +652,10 @@ export const TenantPlayers: React.FC = () => {
             />
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                        <h1 className="text-[26px] font-bold text-argo-navy tracking-tight">{dt.nav.jugadores}</h1>
+                        <ContextChip />
+                    </div>
                     <p className="text-[13px] text-argo-grey mt-1">{dt.players.subtitulo}</p>
                 </div>
             </div>
