@@ -84,6 +84,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const memberId: string | null = ctx.memberId;
         const isCoach = role === 'coach';
 
+        // Active plantel from the context switcher. Chem groups are scoped to a
+        // single plantel (categories like U12 vs U14 are not comparable).
+        const plantelFilter = (typeof req.query.team === 'string' && req.query.team ? req.query.team : null)
+            ?? (typeof req.body?.team === 'string' && req.body.team ? req.body.team : null);
+
         // The set of players the caller may put into a chem group: a coach is bound
         // to their planteles' players; admin/owner can use any tenant player.
         // null = unbounded.
@@ -130,13 +135,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(200).json({ group, members: flat });
             }
 
-            const { data: groups, error: grpErr } = await sb
+            let listQuery = sb
                 .from('chem_groups')
                 .select('id, name, created_at, chem_group_members(count)')
                 .eq('tenant_id', tenantId)
                 .eq('owner_member_id', memberId)
-                .is('deleted_at', null)
-                .order('created_at', { ascending: false });
+                .is('deleted_at', null);
+            // In a plantel hat, only that plantel's groups.
+            if (plantelFilter) listQuery = listQuery.eq('plantel_id', plantelFilter);
+            const { data: groups, error: grpErr } = await listQuery.order('created_at', { ascending: false });
             if (grpErr) {
                 console.error('[tenant-chem-groups] list error:', grpErr.message);
                 return res.status(500).json({ error: 'Failed to fetch groups' });
@@ -157,9 +164,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
             if (!name) return res.status(400).json({ error: 'El nombre del grupo es requerido' });
             if (name.length > 100) return res.status(400).json({ error: 'El nombre no puede superar 100 caracteres' });
+            // A chem group belongs to a plantel. Require + validate it.
+            if (!plantelFilter) return res.status(400).json({ error: 'Elegí un plantel para crear el grupo' });
+            const { data: pl } = await sb.from('groups').select('id').eq('id', plantelFilter).eq('tenant_id', tenantId).is('deleted_at', null).maybeSingle();
+            if (!pl) return res.status(400).json({ error: 'Plantel inválido' });
             const { data: group, error } = await sb
                 .from('chem_groups')
-                .insert({ tenant_id: tenantId, owner_member_id: memberId, name })
+                .insert({ tenant_id: tenantId, owner_member_id: memberId, name, plantel_id: plantelFilter })
                 .select('id, name')
                 .single();
             if (error) {
