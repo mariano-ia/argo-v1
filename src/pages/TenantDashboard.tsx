@@ -160,7 +160,18 @@ export const TenantDashboard: React.FC = () => {
                     setRole(active.role);
                     setTeams(active.teams);
                     setMemberId(active.member_id);
-                    const ctx: ActiveContext = { tenantId: active.tenant.id, hat: stored?.hat ?? 'admin' };
+                    // Resolve the hat: a coach defaults to their first plantel (no
+                    // admin hat); a stored plantel hat is honored only if that
+                    // plantel still exists in this membership's teams.
+                    const teamsList = active.teams ?? [];
+                    const defaultHat: ContextHat = active.role !== 'coach'
+                        ? 'admin'
+                        : (teamsList[0] ? { plantelId: teamsList[0].id } : 'admin');
+                    const sh = stored?.hat;
+                    let hat: ContextHat = defaultHat;
+                    if (sh === 'admin' && active.role !== 'coach') hat = 'admin';
+                    else if (sh && typeof sh === 'object' && teamsList.some(t => t.id === sh.plantelId)) hat = { plantelId: sh.plantelId };
+                    const ctx: ActiveContext = { tenantId: active.tenant.id, hat };
                     setActiveContextState(ctx);
                     writeStoredContext(userId, ctx);
                 } else {

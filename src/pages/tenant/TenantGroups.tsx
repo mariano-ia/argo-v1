@@ -144,6 +144,7 @@ export const TenantGroups: React.FC = () => {
         toast('success', dt.groups.grupoEliminado);
         setSelectedId(null); setDetailGroup(null); setMembers([]); setCoaches([]);
         fetchGroups();
+        refreshTenant?.(); // a deleted plantel must drop out of the context switcher
     };
 
     /* ── Assign / unassign coach ───────────────────────────────────────────── */

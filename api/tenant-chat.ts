@@ -717,7 +717,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
                 // Threads are scoped to the active context: a plantel hat shows that
                 // plantel's conversations; Administración shows admin-level (null) ones.
-                // The count stays tenant-wide (it powers the trial query limit).
+                // The count is NOT plantel-scoped (it stays per-member, powering the
+                // trial query limit) so switching plantel never resets the cap.
                 threadsQ = teamFilter ? threadsQ.eq('plantel_id', teamFilter) : threadsQ.is('plantel_id', null);
                 const [{ data: threads }, { count: totalUserMessages }] = await Promise.all([
                     threadsQ.order('created_at', { ascending: false }),

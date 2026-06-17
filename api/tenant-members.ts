@@ -67,7 +67,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const tenantId = ctx.tenantId;
         const role = ctx.role;
         const memberId = ctx.memberId;
-        void role; void memberId;
+        void memberId;
+        // The staff roster is an admin view (Usuarios / Planteles are admin-only).
+        if (role === 'coach') return res.status(403).json({ error: 'forbidden' });
 
         const { data: members, error } = await sb
             .from('tenant_members')

@@ -229,7 +229,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const tenantId = ctx.tenantId;
         const role = ctx.role;
         const memberId = ctx.memberId;
-        void role; void memberId;
+        void memberId;
+        // Only the institution owner can start a subscription (mirrors cancel).
+        if (role !== 'owner') return res.status(403).json({ error: 'Only the institution admin can manage the subscription' });
 
         const { data: tenantRow } = await sb.from('tenants').select('country').eq('id', tenantId).maybeSingle();
         const tenantCountry: string | null = tenantRow?.country ?? null;

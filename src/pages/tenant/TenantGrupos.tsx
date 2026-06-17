@@ -30,10 +30,16 @@ const tt = (lang: string, es: string, en: string, pt: string) => (lang === 'en' 
  */
 export const TenantGrupos: React.FC = () => {
     const { tenant, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; devBypass?: boolean; effectiveTeamId?: string | null }>();
-    // In a plantel hat, the player pool to add to a group is scoped to that plantel.
-    const teamScope = effectiveTeamId ? `&team=${effectiveTeamId}` : '';
     const { lang } = useLang();
     const { toast } = useToast();
+
+    // Chem groups belong to a plantel. The effective plantel is the active hat,
+    // or — in the Administración hat — one the admin picks below (so the tool is
+    // usable without self-assigning). `pagePlanteles` feeds that picker.
+    const [pickedPlantel, setPickedPlantel] = useState<string | null>(null);
+    const [pagePlanteles, setPagePlanteles] = useState<{ id: string; name: string }[]>([]);
+    const activePlantel = effectiveTeamId ?? pickedPlantel;
+    const teamScope = activePlantel ? `&team=${activePlantel}` : '';
 
     const [groups, setGroups] = useState<GroupRow[]>([]);
     const [loading, setLoading] = useState(true);
@@ -70,6 +76,22 @@ export const TenantGrupos: React.FC = () => {
 
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
+    // In the Administración hat, load the institution's planteles for the picker.
+    useEffect(() => {
+        if (!tenant || effectiveTeamId) return;
+        let cancelled = false;
+        (async () => {
+            const token = await getToken();
+            if (!token) return;
+            const res = await fetch(`/api/tenant-groups?tenant_id=${tenant.id}`, { headers: authHeaders(token) });
+            if (res.ok && !cancelled) { const data = await res.json(); setPagePlanteles((data.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
+        })();
+        return () => { cancelled = true; };
+    }, [tenant, effectiveTeamId]);
+
+    // Switching the hat clears the admin's picked plantel.
+    useEffect(() => { setPickedPlantel(null); }, [effectiveTeamId]);
+
     // Switching plantel clears any selected group from the previous one.
     useEffect(() => { setSelectedId(null); }, [teamScope]);
 
@@ -79,7 +101,7 @@ export const TenantGrupos: React.FC = () => {
         const token = await getToken();
         if (!token) { setCreating(false); return; }
         try {
-            const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), tenant_id: tenant?.id, team: effectiveTeamId }) });
+            const res = await fetch('/api/tenant-chem-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), tenant_id: tenant?.id, team: activePlantel }) });
             if (res.ok) { setNewName(''); setShowCreate(false); fetchGroups(); toast('success', tt(lang, 'Grupo creado', 'Group created', 'Grupo criado')); }
         } finally { setCreating(false); }
     };
@@ -181,11 +203,23 @@ export const TenantGrupos: React.FC = () => {
                 <p className="text-[13px] text-argo-grey mt-1">{tt(lang, 'Agrupa a tus jugadores para analizar la química de cada grupo.', 'Group your players to analyze each group chemistry.', 'Agrupe seus jogadores para analisar a química de cada grupo.')}</p>
             </div>
 
-            {!effectiveTeamId ? (
+            {!activePlantel ? (
                 <div className="bg-white rounded-[14px] shadow-argo py-16 flex flex-col items-center text-center px-6">
                     <Layers size={28} className="text-argo-border mb-3" />
                     <p className="text-[15px] font-semibold text-argo-navy mb-1">{tt(lang, 'Elige un plantel', 'Pick a team', 'Escolha um plantel')}</p>
-                    <p className="text-[13px] text-argo-light max-w-sm leading-relaxed">{tt(lang, 'La química de grupos se analiza dentro de un plantel (cada categoría es distinta). Elige uno en el selector de arriba para ver y crear sus grupos.', 'Group chemistry is analyzed within a team (each category is different). Pick one in the selector above to see and create its groups.', 'A química de grupos é analisada dentro de um plantel (cada categoria é diferente). Escolha um no seletor acima para ver e criar seus grupos.')}</p>
+                    <p className="text-[13px] text-argo-light max-w-sm leading-relaxed mb-4">{tt(lang, 'La química de grupos se analiza dentro de un plantel (cada categoría es distinta). Elige uno para ver y crear sus grupos.', 'Group chemistry is analyzed within a team (each category is different). Pick one to see and create its groups.', 'A química de grupos é analisada dentro de um plantel (cada categoria é diferente). Escolha um para ver e criar seus grupos.')}</p>
+                    {pagePlanteles.length > 0 ? (
+                        <select
+                            value=""
+                            onChange={e => setPickedPlantel(e.target.value || null)}
+                            className="px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] text-argo-secondary bg-white outline-none focus:border-argo-violet-200"
+                        >
+                            <option value="">{tt(lang, 'Selecciona un plantel...', 'Select a team...', 'Selecione um plantel...')}</option>
+                            {pagePlanteles.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        </select>
+                    ) : (
+                        <p className="text-[12px] text-argo-light">{tt(lang, 'Todavía no hay planteles. Crea uno en la sección Planteles.', 'No teams yet. Create one in the Teams section.', 'Ainda não há plantéis. Crie um na seção Plantéis.')}</p>
+                    )}
                 </div>
             ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">

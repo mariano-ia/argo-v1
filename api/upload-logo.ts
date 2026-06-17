@@ -131,6 +131,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Resolve caller's tenant
         const ctx = await resolveTenantContext(sb, user.id, requestedTenantId);
         if (!ctx) return res.status(requestedTenantId ? 403 : 404).json({ error: requestedTenantId ? 'Not a member of this tenant' : 'Tenant not found' });
+        // The institution logo is an admin-level setting — coaches can't overwrite it.
+        if (ctx.role === 'coach') return res.status(403).json({ error: 'forbidden' });
         const tenantId: string = ctx.tenantId;
 
         const file = parseMultipart(raw, boundaryMatch[1]);

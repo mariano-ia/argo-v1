@@ -218,13 +218,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Invalid email' });
         }
         const normalizedEmail = email.toLowerCase().trim();
+        // Escape LIKE wildcards so an attacker-supplied address (e.g. "%@gmail.com"
+        // or one containing "_") can never match other people's rows via ILIKE.
+        // Using ILIKE on the escaped pattern gives a case-insensitive EXACT match.
+        const emailPattern = normalizedEmail.replace(/([\\%_])/g, '\\$1');
 
-        // Check not already a member
+        // Check not already a member (case-insensitive)
         const { data: existing } = await sb
             .from('tenant_members')
             .select('id, status')
             .eq('tenant_id', tenantId)
-            .eq('email', normalizedEmail)
+            .ilike('email', emailPattern)
             .maybeSingle();
 
         if (existing) {
@@ -240,7 +244,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { data: existingIdentity } = await sb
             .from('tenant_members')
             .select('auth_user_id')
-            .ilike('email', normalizedEmail)
+            .ilike('email', emailPattern)
             .not('auth_user_id', 'is', null)
             .limit(1)
             .maybeSingle();

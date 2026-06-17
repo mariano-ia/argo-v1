@@ -109,7 +109,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (found) authUserId = found.id;
             }
             if (authUserId) {
-                await sb.auth.admin.deleteUser(authUserId);
+                // Multi-institution: one auth identity can back memberships in
+                // several tenants (and may own one). The member row was already
+                // deleted above, so only destroy the auth account when NOTHING
+                // else references it — otherwise we'd lock the person out of
+                // every other institution.
+                const { count: otherMemberships } = await sb
+                    .from('tenant_members')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('auth_user_id', authUserId);
+                const { data: ownedTenant } = await sb
+                    .from('tenants')
+                    .select('id')
+                    .eq('auth_user_id', authUserId)
+                    .limit(1)
+                    .maybeSingle();
+                if ((otherMemberships ?? 0) === 0 && !ownedTenant) {
+                    await sb.auth.admin.deleteUser(authUserId);
+                }
             }
         } catch (err) {
             // Non-fatal: member record is already deleted, log and continue

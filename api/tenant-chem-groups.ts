@@ -207,7 +207,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
             // Verify the group belongs to the caller
             const { data: grp } = await sb.from('chem_groups')
-                .select('id').eq('id', group_id).eq('tenant_id', tenantId).eq('owner_member_id', memberId).is('deleted_at', null).single();
+                .select('id, plantel_id').eq('id', group_id).eq('tenant_id', tenantId).eq('owner_member_id', memberId).is('deleted_at', null).single();
             if (!grp) return res.status(404).json({ error: 'Grupo no encontrado' });
 
             if (action === 'remove_members') {
@@ -223,6 +223,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: valid } = await validQuery;
             let validIds = (valid ?? []).map((s: { id: string }) => s.id);
             if (scope !== null) validIds = validIds.filter(id => scope.includes(id));
+            // A chem group belongs to one plantel — enforce that only that plantel's
+            // players can be added (the invariant the UI already follows).
+            const groupPlantelId = (grp as { plantel_id: string | null }).plantel_id;
+            if (groupPlantelId) {
+                const { data: gm } = await sb.from('group_members').select('session_id').eq('group_id', groupPlantelId);
+                const plantelSessionIds = new Set((gm ?? []).map((r: { session_id: string }) => r.session_id));
+                validIds = validIds.filter((id: string) => plantelSessionIds.has(id));
+            }
             if (validIds.length === 0) return res.status(400).json({ error: 'No valid players found' });
             const rows = validIds.map((sid: string) => ({ group_id, session_id: sid }));
             const { error } = await sb.from('chem_group_members').upsert(rows, { onConflict: 'group_id,session_id' });
