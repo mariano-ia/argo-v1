@@ -33,6 +33,7 @@ export const TenantUsers: React.FC = () => {
     const [creatingTeam, setCreatingTeam] = useState(false);
     const [inviting, setInviting] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [settingRole, setSettingRole] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [confirmUnassign, setConfirmUnassign] = useState<{ memberId: string; teamId: string } | null>(null);
@@ -187,6 +188,31 @@ export const TenantUsers: React.FC = () => {
         }
     };
 
+    // Change a member's level: 'member' (Administración) ↔ 'coach' (Entrenador).
+    // Owner-only (server-enforced); the institution owner can't be changed here.
+    const handleSetRole = async (memberId: string, role: 'member' | 'coach') => {
+        setSettingRole(memberId);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setSettingRole(null); return; }
+        try {
+            const res = await fetch('/api/update-member-role', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ tenant_id: tenant?.id, member_id: memberId, role }),
+            });
+            if (res.ok) {
+                setFeedback({ type: 'success', text: tt(lang, 'Nivel actualizado', 'Level updated', 'Nível atualizado') });
+                fetchMembers();
+            } else {
+                setFeedback({ type: 'error', text: tt(lang, 'No se pudo cambiar el nivel', 'Could not change the level', 'Não foi possível mudar o nível') });
+            }
+        } catch {
+            setFeedback({ type: 'error', text: tt(lang, 'No se pudo cambiar el nivel', 'Could not change the level', 'Não foi possível mudar o nível') });
+        } finally {
+            setSettingRole(null);
+        }
+    };
+
     // Coaches don't manage users — the institution admin does.
     if (callerRole === 'coach') {
         return (
@@ -311,10 +337,24 @@ export const TenantUsers: React.FC = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-argo-navy truncate">{m.email}</p>
-                                    <p className="text-xs text-argo-light">
-                                        {m.role === 'coach' ? tt(lang, 'Entrenador', 'Coach', 'Treinador') : tt(lang, 'Administrador', 'Admin', 'Administrador')}
-                                        {m.isCurrentUser ? ` · ${dt.users.tu}` : ''}
-                                    </p>
+                                    <div className="text-xs text-argo-light flex items-center gap-1.5 mt-0.5">
+                                        {m.role === 'owner' ? (
+                                            <span className="font-semibold text-argo-secondary">{tt(lang, 'Propietario', 'Owner', 'Proprietário')}</span>
+                                        ) : isOwner ? (
+                                            <select
+                                                value={m.role === 'coach' ? 'coach' : 'member'}
+                                                onChange={e => handleSetRole(m.id, e.target.value as 'member' | 'coach')}
+                                                disabled={settingRole === m.id}
+                                                className="text-xs border border-argo-border rounded-md px-1.5 py-0.5 bg-white text-argo-secondary outline-none focus:border-argo-violet-200 disabled:opacity-50"
+                                            >
+                                                <option value="member">{tt(lang, 'Administrador', 'Admin', 'Administrador')}</option>
+                                                <option value="coach">{tt(lang, 'Entrenador', 'Coach', 'Treinador')}</option>
+                                            </select>
+                                        ) : (
+                                            <span>{m.role === 'coach' ? tt(lang, 'Entrenador', 'Coach', 'Treinador') : tt(lang, 'Administrador', 'Admin', 'Administrador')}</span>
+                                        )}
+                                        {m.isCurrentUser ? <span>· {dt.users.tu}</span> : null}
+                                    </div>
                                     {m.teams && m.teams.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mt-1.5">
                                             {m.teams.map(t => {
