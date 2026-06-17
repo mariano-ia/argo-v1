@@ -96,10 +96,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Find all matching sessions. Same matching policy as request-delete:
         // exact email, substring child_name (case-insensitive).
+        // Escape LIKE wildcards in the stored email so a crafted value can never
+        // mass-match (and mass-delete) other parents' sessions via ILIKE.
+        const emailPattern = request.adult_email.replace(/([\\%_])/g, '\\$1');
         let sessionQuery = sb
             .from('sessions')
             .select('id')
-            .ilike('adult_email', request.adult_email);
+            .ilike('adult_email', emailPattern);
         if (request.child_name) {
             const safe = request.child_name.replace(/[%_]/g, '\\$&');
             sessionQuery = sessionQuery.ilike('child_name', `%${safe}%`);

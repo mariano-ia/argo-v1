@@ -118,15 +118,18 @@ export const TenantChat: React.FC = () => {
 
     useEffect(() => { if (tenant) fetchThreads(); }, [tenant, fetchThreads]);
 
-    // Switching plantel (context hat) resets the open conversation — chats are
-    // per-context. Skip the first run so a restored thread isn't wiped on mount.
+    // Switching context (institution OR plantel) resets the open conversation —
+    // chats are per-context. Skip the first run so a restored thread isn't wiped
+    // on mount. Keyed on both tenant and plantel: an admin with two institutions
+    // sits in the 'admin' hat (effectiveTeamId null) in both, so plantel alone
+    // would miss the A→B institution switch.
     const ctxInitRef = useRef(true);
     useEffect(() => {
         if (ctxInitRef.current) { ctxInitRef.current = false; return; }
         setActiveThreadId(null);
         setMessages([]);
         persistThread(null);
-    }, [effectiveTeamId]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [effectiveTeamId, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-send from query param (e.g. ?q=How+do+I+motivate...)
     const cameFromDeepLink = useRef(false);

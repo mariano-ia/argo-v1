@@ -245,7 +245,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .from('tenant_members')
             .select('auth_user_id')
             .ilike('email', emailPattern)
-            .not('auth_user_id', 'is', null)
+            .eq('status', 'active') // only attach to a CONFIRMED identity, never a
+            .not('auth_user_id', 'is', null) // pending invite that was never accepted
             .limit(1)
             .maybeSingle();
 

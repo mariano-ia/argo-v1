@@ -83,7 +83,7 @@ function deleteEmailES(args: TemplateArgs): EmailTemplate {
     </div>
   </div>
 </body></html>`,
-        text: `Recibimos una solicitud para eliminar permanentemente ${childName ? `los datos de ${childName}` : 'todos los datos asociados a este email'} de los sistemas de Argo Method.\n\nEsta acción es IRREVERSIBLE. Una vez confirmada, todos los datos se borran de forma permanente.\n\nSi tú solicitaste esto, confirma aquí:\n${confirmUrl}\n\nEste enlace expira en 1 hora.\n\nSi no fuiste tú, ignora este email. No se eliminará nada mientras no hagas click.\n\nArgo Method — hola@argomethod.com`,
+        text: `Recibimos una solicitud para eliminar permanentemente ${childName ? `los datos de ${childName}` : 'todos los datos asociados a este email'} de los sistemas de Argo Method.\n\nEsta acción es IRREVERSIBLE. Una vez confirmada, todos los datos se borran de forma permanente.\n\nSi tú solicitaste esto, confirma aquí:\n${confirmUrl}\n\nEste enlace expira en 1 hora.\n\nSi no fuiste tú, ignora este email. No se eliminará nada mientras no hagas click.\n\nArgo Method · hola@argomethod.com`,
     };
 }
 
@@ -206,10 +206,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         //   - child_name (optional): case-insensitive SUBSTRING match so
         //     parents don't need to remember exactly how they typed the
         //     name during onboarding. "Lucas" matches "Lucas Pérez", etc.
+        // Escape LIKE wildcards so a crafted address (e.g. "%@gmail.com") can't
+        // match other parents' sessions via ILIKE — exact case-insensitive match.
+        const emailPattern = emailNorm.replace(/([\\%_])/g, '\\$1');
         let query = sb
             .from('sessions')
             .select('id', { count: 'exact', head: true })
-            .ilike('adult_email', emailNorm);
+            .ilike('adult_email', emailPattern);
         if (childNameClean) {
             // Escape any % / _ in user input so they're not interpreted as
             // wildcards, then wrap in % for substring match.
