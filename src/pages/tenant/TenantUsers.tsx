@@ -112,7 +112,13 @@ export const TenantUsers: React.FC = () => {
             });
 
             if (res.ok) {
-                setFeedback({ type: 'success', text: dt.users.enviado(email.trim()) });
+                const data = await res.json().catch(() => ({}));
+                setFeedback({ type: 'success', text: data.attached
+                    ? tt(lang,
+                        `${email.trim()} ya tenía cuenta en Argo. Lo agregamos a tu equipo.`,
+                        `${email.trim()} already had an Argo account. We added them to your team.`,
+                        `${email.trim()} já tinha conta no Argo. Adicionamos à sua equipe.`)
+                    : dt.users.enviado(email.trim()) });
                 setEmail('');
                 setSelectedTeams(new Set());
                 fetchMembers();

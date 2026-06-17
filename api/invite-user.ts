@@ -145,6 +145,41 @@ function buildInviteEmail(tenantName: string, actionLink: string, lang = 'es'): 
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
+// Email for an EXISTING Argo identity added to another institution (no password
+// to create — they already have an account).
+function buildAddedEmail(tenantName: string, dashUrl: string, lang = 'es'): string {
+    const violet = '#955FB5';
+    const violetShadow = 'rgba(149,95,181,0.28)';
+    const copy: Record<string, { headline: string; sub: string; body: string; hint: string; cta: string; disclaimer: string }> = {
+        es: { headline: `Te sumaron a ${tenantName}`, sub: 'Ya tienes acceso con tu cuenta de Argo', body: `Un administrador de ${tenantName} te agregó a su equipo en Argo Method.`, hint: 'Entra con tu cuenta actual. Vas a ver esta institución en el selector, arriba a la izquierda.', cta: 'Abrir mi panel', disclaimer: 'Si no esperabas esto, puedes ignorar este email.' },
+        en: { headline: `You've been added to ${tenantName}`, sub: 'You already have access with your Argo account', body: `An admin at ${tenantName} added you to their team on Argo Method.`, hint: 'Sign in with your current account. This institution will appear in the selector, top left.', cta: 'Open my dashboard', disclaimer: 'If you did not expect this, you can ignore this email.' },
+        pt: { headline: `Você foi adicionado a ${tenantName}`, sub: 'Você já tem acesso com sua conta Argo', body: `Um administrador de ${tenantName} adicionou você à equipe no Argo Method.`, hint: 'Entre com sua conta atual. Esta instituição aparecerá no seletor, no canto superior esquerdo.', cta: 'Abrir meu painel', disclaimer: 'Se você não esperava isso, pode ignorar este email.' },
+    };
+    const c = copy[lang] ?? copy.es;
+    return `<!DOCTYPE html>
+<html lang="${lang}"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Argo Method</title></head>
+<body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+  <tr><td style="background:#1D1D1F;padding:26px 28px 30px;">
+    <div><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;"> Method</span></div>
+    <p style="margin:16px 0 0;font-size:22px;font-weight:300;color:#ffffff;letter-spacing:-0.4px;line-height:1.3;">${c.headline}</p>
+    <p style="margin:8px 0 0;font-size:13px;color:#86868B;">${c.sub}</p>
+  </td></tr>
+  <tr><td style="padding:32px 28px 8px;">
+    <p style="margin:0 0 14px;font-size:15px;color:#424245;line-height:1.7;">${c.body}</p>
+    <p style="margin:0;font-size:14px;color:#86868B;line-height:1.65;">${c.hint}</p>
+  </td></tr>
+  <tr><td style="padding:28px 28px 32px;text-align:center;">
+    <a href="${dashUrl}" style="display:inline-block;background:${violet};color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;padding:17px 44px;border-radius:12px;letter-spacing:-0.01em;box-shadow:0 4px 18px ${violetShadow};">${c.cta}</a>
+    <p style="margin:16px auto 0;font-size:11px;color:#AEAEB2;max-width:380px;line-height:1.7;">${c.disclaimer}</p>
+  </td></tr>
+  <tr><td style="background:#F5F5F7;border-top:1px solid #E8E8ED;padding:18px 28px;text-align:center;">
+    <p style="margin:0;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">Argo Method · Dashboard</p>
+  </td></tr>
+</table></td></tr></table></body></html>`;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -195,6 +230,64 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (existing) {
             if ((existing as { status: string }).status === 'active') return res.status(409).json({ error: 'already_member' });
             if ((existing as { status: string }).status === 'pending') return res.status(409).json({ error: 'already_invited' });
+        }
+
+        // Multi-institution: if this email already has an Argo identity (it's a
+        // member of another institution, so we already hold its auth_user_id),
+        // don't create a new auth user — attach a membership to the existing
+        // identity (active immediately) and notify them. This is what lets one
+        // coach belong to several clubs.
+        const { data: existingIdentity } = await sb
+            .from('tenant_members')
+            .select('auth_user_id')
+            .ilike('email', normalizedEmail)
+            .not('auth_user_id', 'is', null)
+            .limit(1)
+            .maybeSingle();
+
+        if (existingIdentity && (existingIdentity as { auth_user_id: string | null }).auth_user_id) {
+            const existingAuthId = (existingIdentity as { auth_user_id: string }).auth_user_id;
+            const { data: attached, error: attachErr } = await sb
+                .from('tenant_members')
+                .insert({ tenant_id: tenantId, email: normalizedEmail, role: memberRole, status: 'active', auth_user_id: existingAuthId })
+                .select('id')
+                .single();
+            if (attachErr || !attached) {
+                console.error('[invite-user] attach error:', attachErr?.message);
+                return res.status(500).json({ error: 'Failed to add member' });
+            }
+            if (memberRole === 'coach' && teamIds.length > 0) {
+                const { data: validTeams } = await sb
+                    .from('groups').select('id').eq('tenant_id', tenantId).is('deleted_at', null).in('id', teamIds);
+                const validTeamIds = (validTeams ?? []).map((g: { id: string }) => g.id);
+                if (validTeamIds.length > 0) {
+                    await sb.from('group_coaches').insert(
+                        validTeamIds.map((gid: string) => ({ group_id: gid, member_id: (attached as { id: string }).id }))
+                    );
+                }
+            }
+            // Notify (best-effort — the membership is already active).
+            const { data: tn } = await sb.from('tenants').select('display_name').eq('id', tenantId).single();
+            const tenantName = (tn as { display_name: string } | null)?.display_name ?? 'una institución';
+            const resendKey = process.env.RESEND_API_KEY;
+            if (resendKey) {
+                const proto = (req.headers['x-forwarded-proto'] as string) ?? 'https';
+                const host = (req.headers['x-forwarded-host'] as string) ?? req.headers.host ?? 'argomethod.com';
+                const dashUrl = `${proto}://${host}/dashboard`;
+                await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: 'Argo Method <hola@argomethod.com>',
+                        to: [normalizedEmail],
+                        subject: emailLang === 'en' ? `You've been added to ${tenantName} on Argo Method`
+                            : emailLang === 'pt' ? `Você foi adicionado a ${tenantName} no Argo Method`
+                            : `Te agregaron a ${tenantName} en Argo Method`,
+                        html: buildAddedEmail(tenantName, dashUrl, emailLang),
+                    }),
+                }).catch(() => { /* best-effort */ });
+            }
+            return res.status(200).json({ ok: true, attached: true });
         }
 
         // Build redirect URL dynamically from request host
