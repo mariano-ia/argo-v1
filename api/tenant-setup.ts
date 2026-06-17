@@ -1,5 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
+
+// Same slug format as create-tenant: slugified name + random suffix. Inlined
+// because Vercel serverless functions can't import between api/ files.
+function generateSlug(name: string): string {
+    const base = name
+        .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '') // strip accents
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 30);
+    return `${base || 'institucion'}-${randomBytes(4).toString('hex')}`;
+}
 
 // Phase 2: resolve which tenant the caller acts on. An explicit tenant_id
 // requires ACTIVE membership of THAT tenant; absent tenant_id keeps the
@@ -90,7 +103,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // institution; their institution-field changes are silently ignored).
         if (isOwner) {
             const tenantUpdate: Record<string, unknown> = {};
-            if (body.display_name        !== undefined) tenantUpdate.display_name        = body.display_name.trim();
+            if (body.display_name !== undefined) {
+                const newName = body.display_name.trim();
+                tenantUpdate.display_name = newName;
+                // Renaming regenerates the slug so the play link reflects the new
+                // name. Only when the name actually changes (don't churn the slug
+                // — and break links — on every Save).
+                const { data: current } = await sb.from('tenants').select('display_name').eq('id', tenantId).maybeSingle();
+                if (current && (current as { display_name: string | null }).display_name !== newName) {
+                    tenantUpdate.slug = generateSlug(newName);
+                }
+            }
             if (body.institution_type    !== undefined) tenantUpdate.institution_type    = body.institution_type;
             if (body.sport               !== undefined) tenantUpdate.sport               = body.sport;
             if (body.country             !== undefined) tenantUpdate.country             = body.country;
