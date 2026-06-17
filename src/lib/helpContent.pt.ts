@@ -66,6 +66,20 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         body: 'A criança joga uma aventura de cerca de 10 minutos com tema náutico. Responde perguntas e mini jogos sem saber que está revelando a sua forma de decidir e de se relacionar.\n\nNão há respostas certas nem erradas, e nunca parece um exame. No final, o relatório vai para o adulto responsável, não para a criança.',
     },
 
+    {
+        id: 'usar-selector',
+        category: 'getting-started',
+        title: 'Como troco de instituição ou de plantel? (o seletor)',
+        body: 'Se você pertence a mais de uma instituição, ou dirige algum plantel, no canto superior esquerdo do menu vai ver um seletor (sua instituição com uma seta ⇅).\n\nDali você escolhe o contexto em que está: a instituição completa (Administração) ou um plantel específico. O que escolher reconfigura tudo: os jogadores, as estatísticas, o Preditor, a química e até o Argo Coach se concentram nesse contexto.',
+        tip: 'Se você tem apenas uma instituição e nenhum plantel atribuído, o seletor não aparece (não há nada entre o que trocar).',
+    },
+    {
+        id: 'varias-instituciones',
+        category: 'getting-started',
+        title: 'Posso pertencer a várias instituições?',
+        body: 'Sim. Uma mesma conta pode fazer parte de várias instituições (por exemplo, se você treina em dois clubes). Quando um administrador adiciona você pelo email, essa instituição aparece no seu seletor, no canto superior esquerdo.\n\nVocê não precisa de outra conta nem de outro email: entra com a sua e troca de uma para outra pelo seletor.',
+    },
+
     /* ═══ Plantéis e treinadores ═══ */
     {
         id: 'que-es-plantel',
@@ -114,6 +128,35 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         title: 'Sou treinador e não vejo a seção Plantéis. Está certo?',
         body: 'Sim, é normal. A gestão de plantéis (criá-los e atribuir treinadores) é feita pelo administrador da instituição.\n\nVocê trabalha com os jogadores dos plantéis que lhe atribuíram: vê eles em Jogadores e o link aparece na Home. Se faltar acesso a um plantel, peça ao administrador.',
         audience: 'coach',
+    },
+
+    {
+        id: 'admin-tambien-entrena',
+        category: 'planteles',
+        title: 'Sou administrador e também dirijo um plantel. Como faço?',
+        body: 'Você pode ser administrador da instituição e, além disso, treinador de um ou mais plantéis. Você não perde nada: apenas soma o plantel à sua conta.',
+        steps: [
+            'Abra Plantéis e selecione o plantel que você dirige.',
+            'Na seção Treinadores, toque em "Atribuir-me".',
+            'Pronto: esse plantel aparece no seu seletor. Ao escolhê-lo você entra na visão de treinador dele (o link, os jogadores, o chat).',
+            'Para voltar à visão completa, escolha "Administração" no seletor.',
+        ],
+        audience: 'admin',
+        links: [{ label: 'Ir para Plantéis', to: '/dashboard/planteles' }],
+    },
+    {
+        id: 'cambiar-nivel-miembro',
+        category: 'planteles',
+        title: 'Como mudo o nível de um membro (Administrador ou Treinador)?',
+        body: 'Em Usuários, cada membro tem um seletor de nível. Administrador vê e gerencia toda a instituição; Treinador vê apenas os seus plantéis.',
+        steps: [
+            'Abra Usuários.',
+            'Na linha do membro, troque o seletor entre Administrador e Treinador.',
+            'A mudança é imediata.',
+        ],
+        tip: 'O proprietário da conta não pode ter o nível alterado (a linha dele diz "Proprietário"). Assim a instituição sempre mantém um dono.',
+        audience: 'admin',
+        links: [{ label: 'Ir para Usuários', to: '/dashboard/users' }],
     },
 
     /* ═══ Jogadores e perfis ═══ */
@@ -186,7 +229,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         id: 'que-es-grupo',
         category: 'grupos',
         title: 'O que é a química de grupos e como ela difere de um plantel?',
-        body: 'Um plantel é estrutural: organiza os seus jogadores e é dono do link. Um grupo de química é uma ferramenta de análise: você monta um subconjunto dos seus jogadores para ver como funcionam juntos.\n\nO grupo não tem link nem recebe jogadores novos. Você o cria para responder perguntas como, por exemplo, como a sua linha defensiva se complementa.',
+        body: 'Um plantel é estrutural: organiza os seus jogadores e é dono do link. Um grupo de química é uma ferramenta de análise: você monta um subconjunto dos seus jogadores para ver como funcionam juntos.\n\nCada grupo pertence a um plantel (Sub-12 e Sub-14 são categorias diferentes, não se comparam). Para ver ou criar grupos, primeiro escolha um plantel no seletor. O grupo não tem link nem recebe jogadores novos: você o cria para responder perguntas como, por exemplo, como a sua linha defensiva se complementa.',
     },
     {
         id: 'crear-grupo',

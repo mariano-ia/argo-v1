@@ -1,10 +1,60 @@
 # Context Switcher — Implementation Plan
 
-Status: **design locked 2026-06-16, not built.** This is the implementation
-reference. It supersedes nothing yet; no code/migrations applied.
+Status: **SHIPPED to `develop` 2026-06-16** (Phases 1-5 + polish). Not on `main`.
+The plan below is the original spec; the **As-built** section right after it is
+the living record of what actually exists.
 
 Builds on `docs/CLUB-TEAMS-HIERARCHY.md` (plantel/grupo model). Design rationale
 lives in the conversation that produced this; the locked decisions are below.
+
+---
+
+## As-built (what shipped, 2026-06-16, on `develop`)
+
+One identity can belong to several institutions and, within each, wear different
+hats (Administración or a plantel it coaches). A sidebar **context switcher**
+(institución × sombrero) is the single source of scope: selecting reconfigures
+data + nav. Single-institution users see no change (switcher hidden).
+
+**Migrations applied to prod Supabase** (`luutdozbhinfiogugjbv`, nullable, non-destructive):
+- `20260616_chem_groups_plantel_scope.sql` → `chem_groups.plantel_id` (FK groups).
+- `20260616_chat_messages_plantel_scope.sql` → `chat_messages.plantel_id` (FK groups).
+- No schema change needed for memberships/roles: `tenant_members` already keyed on
+  `(tenant_id, lower(email))` (not global), and `group_coaches` is M:N.
+
+**Backend.** Every scoped `/api/tenant-*` endpoint inlines `resolveTenantContext(sb, userId, requestedTenantId)`:
+explicit `tenant_id` → requires an ACTIVE membership of THAT tenant (403 else, no
+fallback; legacy owners allowed only for their own tenant); absent → original
+single-membership resolution. Covered: tenant-info (now returns ALL memberships +
+per-tenant plan/block status), tenant-sessions, tenant-groups, tenant-chem-groups,
+tenant-chat, tenant-members, tenant-setup, archive-player, create/cancel-subscription,
+invite-user, remove-member, upload-logo. New endpoint `update-member-role`
+(owner-only; can't touch the owner row). `invite-user` attaches a membership to an
+existing identity instead of failing `email_already_exists` (multi-institution).
+Plantel scoping reuses `?team=`: tenant-sessions/tenant-chat honor it for any role;
+chem groups + chat threads filter/stamp `plantel_id` (trial query COUNT stays
+tenant-wide).
+
+**Frontend.** `TenantDashboard` resolves an `ActiveContext { tenantId, hat }`
+(localStorage → primary), exposes `memberships / activeContext / setActiveContext /
+effectiveTeamId / isAdminView` via the Outlet, renders the switcher, and drives the
+nav off the active HAT (Administración → admin nav; plantel → coach nav; plan banner
+keyed off the real role). Data screens (Inicio, Jugadores, Predictor, Química, Argo
+Coach) send the active tenant + `effectiveTeamId` and refetch on hat change.
+`ContextChip` reminds you of the active plantel (admin gets an ✕ to exit).
+`TrialEndModal` is role-aware (coach → "institution paused, talk to admin", no
+upgrade CTA). Self-assign via "Asignarme" on the plantel detail. Per-member level
+`<select>` (Administrador↔Entrenador) in Users; the owner row is locked
+("Propietario") so the institution always keeps an owner. Polish: collapsed-sidebar
+logo opens the switcher; switching to a plantel hat off an admin page redirects to
+Inicio. Play link follows the active plantel (no stacking; team-name label removed).
+
+**Known leftovers / decisions:** legacy `chem_groups`/`chat_messages` with
+`plantel_id = null` show only in the Administración hat (recreate inside a plantel);
+ownership transfer is a deliberate future action (owner is non-demotable here);
+optional `[+]` add-plantel-per-member chips in Users not built (assign via plantel
+detail / Asignarme). Deferred endpoints (still single-tenant by `tenants.auth_user_id`,
+not data-leak vectors): delete-session, delete-account, accept-invite.
 
 ---
 

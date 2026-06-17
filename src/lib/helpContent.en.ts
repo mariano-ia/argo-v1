@@ -66,6 +66,20 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         body: 'The child plays a 10-minute adventure with a nautical theme. They answer questions and mini-games without knowing they are revealing how they decide and relate to others.\n\nThere are no right or wrong answers, and it never feels like a test. At the end, the report goes to the responsible adult, not to the child.',
     },
 
+    {
+        id: 'usar-selector',
+        category: 'getting-started',
+        title: 'How do I switch institution or team? (the selector)',
+        body: 'If you belong to more than one institution, or you coach a team, you will see a selector at the top left of the menu (your institution with a ⇅ arrow).\n\nFrom there you pick the context you are in: the whole institution (Administration) or a specific team. Whatever you pick reconfigures everything: players, stats, the Predictor, group chemistry and even Argo Coach focus on that context.',
+        tip: 'If you only have one institution and no team assigned, the selector does not appear (there is nothing to switch between).',
+    },
+    {
+        id: 'varias-instituciones',
+        category: 'getting-started',
+        title: 'Can I belong to several institutions?',
+        body: 'Yes. One account can be part of several institutions (for example, if you coach at two clubs). When an admin adds you by email, that institution appears in your selector, top left.\n\nYou do not need another account or email: sign in with yours and switch between them from the selector.',
+    },
+
     /* ═══ Teams and coaches ═══ */
     {
         id: 'que-es-plantel',
@@ -114,6 +128,35 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         title: 'I am a coach and I don\'t see the Teams section. Is that right?',
         body: 'Yes, that is normal. Managing teams (creating them and assigning coaches) is done by the institution administrator.\n\nYou work with the players in the teams you were assigned: you see them in Players and their link appears on Home. If you are missing access to a team, ask your administrator.',
         audience: 'coach',
+    },
+
+    {
+        id: 'admin-tambien-entrena',
+        category: 'planteles',
+        title: 'I am an admin and I also coach a team. How do I do that?',
+        body: 'You can be the institution admin and, on top of that, the coach of one or more teams. You lose nothing: you just add the team to your account.',
+        steps: [
+            'Open Teams and select the team you coach.',
+            'In the Coaches section, tap "Assign me".',
+            'Done: that team appears in your selector. Picking it enters its coach view (its link, its players, its chat).',
+            'To go back to the full view, pick "Administration" in the selector.',
+        ],
+        audience: 'admin',
+        links: [{ label: 'Go to Teams', to: '/dashboard/planteles' }],
+    },
+    {
+        id: 'cambiar-nivel-miembro',
+        category: 'planteles',
+        title: 'How do I change a member\'s level (Admin or Coach)?',
+        body: 'In Users, each member has a level selector. Admin sees and manages the whole institution; Coach sees only their teams.',
+        steps: [
+            'Open Users.',
+            'In the member\'s row, switch the selector between Admin and Coach.',
+            'The change is immediate.',
+        ],
+        tip: 'The account owner\'s level cannot be changed (their row says "Owner"). That way the institution always keeps an owner.',
+        audience: 'admin',
+        links: [{ label: 'Go to Users', to: '/dashboard/users' }],
     },
 
     /* ═══ Players and profiles ═══ */
@@ -186,7 +229,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         id: 'que-es-grupo',
         category: 'grupos',
         title: 'What is group chemistry and how is it different from a team?',
-        body: 'A team is structural: it organizes your players and owns the link. A chemistry group is an analysis tool: you put together a subset of your players to see how they work together.\n\nThe group has no link and does not receive new players. You create it to answer questions such as, for example, how your back line complements each other.',
+        body: 'A team is structural: it organizes your players and owns the link. A chemistry group is an analysis tool: you put together a subset of your players to see how they work together.\n\nEach group belongs to a team (U12 and U14 are different categories, not comparable). To see or create groups, first pick a team in the selector. The group has no link and does not receive new players: you create it to answer questions such as, for example, how your back line complements each other.',
     },
     {
         id: 'crear-grupo',
