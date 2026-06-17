@@ -222,6 +222,15 @@ export const TenantDashboard: React.FC = () => {
         }
     }, [location.pathname, tenant]);
 
+    // Switching to a plantel hat hides the admin-only sections; if the user is on
+    // one of them, send them back to Inicio.
+    useEffect(() => {
+        const isAdmin = (activeContext?.hat ?? 'admin') === 'admin' && role !== 'coach';
+        if (!isAdmin && (location.pathname.startsWith('/dashboard/planteles') || location.pathname.startsWith('/dashboard/users'))) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [activeContext, role, location.pathname, navigate]);
+
     const handleLogout = async () => { await supabase.auth.signOut(); navigate('/'); };
 
     // Loading
@@ -350,20 +359,27 @@ export const TenantDashboard: React.FC = () => {
                                 <PanelLeftOpen size={16} />
                             </button>
                         </Tooltip>
-                        {/* Institution logo — collapsed */}
+                        {/* Institution logo — collapsed (opens the switcher) */}
                         {tenant && (
-                            <Tooltip text={tenant.display_name} position="right">
-                                {tenant.logo_url ? (
-                                    <img
-                                        src={tenant.logo_url}
-                                        alt={tenant.display_name}
-                                        className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white"
-                                    />
-                                ) : (
-                                    <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold">
-                                        {initials}
-                                    </div>
-                                )}
+                            <Tooltip text={hasSwitcher ? (lang === 'en' ? 'Switch context' : lang === 'pt' ? 'Trocar contexto' : 'Cambiar contexto') : tenant.display_name} position="right">
+                                <button
+                                    type="button"
+                                    onClick={() => { if (hasSwitcher) { setCollapsed(false); setSwitcherOpen(true); } }}
+                                    className={`relative ${hasSwitcher ? 'cursor-pointer' : 'cursor-default'}`}
+                                >
+                                    {tenant.logo_url ? (
+                                        <img
+                                            src={tenant.logo_url}
+                                            alt={tenant.display_name}
+                                            className="w-8 h-8 rounded-[8px] object-contain border border-argo-border bg-white"
+                                        />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-[8px] bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold">
+                                            {initials}
+                                        </div>
+                                    )}
+                                    {hasSwitcher && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-white border border-argo-border flex items-center justify-center"><ChevronsUpDown size={8} className="text-argo-grey" /></span>}
+                                </button>
                             </Tooltip>
                         )}
                         <div className="w-6 h-px bg-argo-border" />
