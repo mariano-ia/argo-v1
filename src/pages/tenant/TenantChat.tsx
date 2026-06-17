@@ -107,16 +107,26 @@ export const TenantChat: React.FC = () => {
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch(`/api/tenant-chat?action=threads&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
+            const res = await fetch(`/api/tenant-chat?action=threads&tenant_id=${tenant?.id ?? ''}&team=${effectiveTeamId ?? ''}`, { headers: authHeaders(token) });
             if (res.ok) {
                 const data = await res.json();
                 setThreads(data.threads);
                 setTotalUserMessages(data.total_user_messages ?? 0);
             }
         } finally { setThreadsLoading(false); }
-    }, []);
+    }, [tenant?.id, effectiveTeamId]);
 
     useEffect(() => { if (tenant) fetchThreads(); }, [tenant, fetchThreads]);
+
+    // Switching plantel (context hat) resets the open conversation — chats are
+    // per-context. Skip the first run so a restored thread isn't wiped on mount.
+    const ctxInitRef = useRef(true);
+    useEffect(() => {
+        if (ctxInitRef.current) { ctxInitRef.current = false; return; }
+        setActiveThreadId(null);
+        setMessages([]);
+        persistThread(null);
+    }, [effectiveTeamId]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Auto-send from query param (e.g. ?q=How+do+I+motivate...)
     const cameFromDeepLink = useRef(false);

@@ -715,6 +715,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     threadsQ = threadsQ.eq('member_id', callerMemberId);
                     countQ = countQ.eq('member_id', callerMemberId);
                 }
+                // Threads are scoped to the active context: a plantel hat shows that
+                // plantel's conversations; Administración shows admin-level (null) ones.
+                // The count stays tenant-wide (it powers the trial query limit).
+                threadsQ = teamFilter ? threadsQ.eq('plantel_id', teamFilter) : threadsQ.is('plantel_id', null);
                 const [{ data: threads }, { count: totalUserMessages }] = await Promise.all([
                     threadsQ.order('created_at', { ascending: false }),
                     countQ,
@@ -1342,8 +1346,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ── Save both turns (only on success, so a failed AI call doesn't
         // consume a trial query and leaves no dangling question in the thread) ──
         await sb.from('chat_messages').insert([
-            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0 },
-            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens },
+            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter },
+            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens, plantel_id: teamFilter },
         ]);
 
         // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
