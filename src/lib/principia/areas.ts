@@ -18,7 +18,7 @@ export const AREA_MODULES: AreaModule[] = [
         setpoint: {
             signals: [
                 { signal_key: 'client_errors_per_day',  label: 'Errores de cliente por dia',     comparator: '<', target: 5,  unit: 'errores/dia',     loop_id: 'tecnica' },
-                { signal_key: 'audio_recoveries_per_day', label: 'Recuperaciones de audio por dia', comparator: '<', target: 10, unit: 'recoveries/dia', loop_id: 'tecnica' },
+                { signal_key: 'audio_recovery_sessions_per_day', label: 'Sesiones con recuperacion de audio por dia', comparator: '<', target: 3, unit: 'sesiones/dia', loop_id: 'tecnica' },
                 { signal_key: 'sessions_without_report',  label: 'Sesiones sin reporte (mas de 4 h)', comparator: '<', target: 1, unit: 'sesiones',     loop_id: 'entrega' },
                 { signal_key: 'report_email_delivery',    label: 'Entrega de reporte',               comparator: '>', target: 99, unit: '%',            loop_id: 'entrega' },
             ],

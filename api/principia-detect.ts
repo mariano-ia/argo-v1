@@ -77,18 +77,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    // SIGNAL 2: audio_events > 10/day (technical loop).
+    // SIGNAL 2: audio recovery surge — DISTINCT sessions with a real audio fault today.
+    // A surge means MANY players hit audio problems, not one device looping. We count
+    // distinct session_id (so a single long testing/QA session can never trip it) and
+    // exclude 'visibility_recover' (benign: the watchdog resuming audio after a tab
+    // switch, expected behavior, not a fault). Threshold: > 3 distinct affected sessions.
     {
-        const { data } = await sb.from('audio_events').select('created_at').gte('created_at', since);
-        const today = (data ?? []).filter(r => dayKey(r.created_at) === dayKey(new Date().toISOString())).length;
-        await writeHealthCheck(sb, 'tecnica', 'audio_recoveries_per_day', 'audio_events', today, 10, '<', today >= 10);
-        if (today > 10) breaches.push({
-            classKey: 'audio_recovery_surge', loopId: 'tecnica', signalKey: 'audio_recoveries_per_day', sourceRef: 'audio_events',
-            measured: today, setpoint: 10, comparator: '>', severity: 'medio',
-            title: 'Surge de recuperacion de audio', summary: `${today} recuperaciones de audio hoy (umbral 10).`,
-            diagnosis: { likely: 'investigar codec / EffectPlayer', metric: 'audio_recoveries_per_day', current: today },
+        const { data } = await sb.from('audio_events')
+            .select('created_at, session_id, recovery_type').gte('created_at', since);
+        const todayKey = dayKey(new Date().toISOString());
+        const faultSessions = new Set(
+            (data ?? [])
+                .filter(r => dayKey(r.created_at) === todayKey && r.recovery_type !== 'visibility_recover' && r.session_id)
+                .map(r => r.session_id as string),
+        );
+        const affected = faultSessions.size;
+        await writeHealthCheck(sb, 'tecnica', 'audio_recovery_sessions_per_day', 'audio_events', affected, 3, '<', affected > 3);
+        if (affected > 3) breaches.push({
+            classKey: 'audio_recovery_surge', loopId: 'tecnica', signalKey: 'audio_recovery_sessions_per_day', sourceRef: 'audio_events',
+            measured: affected, setpoint: 3, comparator: '>', severity: 'medio',
+            title: 'Surge de recuperacion de audio', summary: `${affected} sesiones con recuperacion de audio hoy (umbral 3).`,
+            diagnosis: { likely: 'investigar codec / EffectPlayer', metric: 'audio_recovery_sessions_per_day', current: affected },
             proposed: { type: 'open_pr', executable: false, confidence: 0.5 },
-            actionKey: buildActionKey('audio_recovery_surge', [], dayKey(new Date().toISOString())),
+            actionKey: buildActionKey('audio_recovery_surge', [], todayKey),
         });
     }
 
@@ -152,6 +163,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             await sb.from('incidents').update({ signal_count: existing.signal_count + 1, last_seen_at: new Date().toISOString() }).eq('id', existing.id);
             incidentId = existing.id;
         } else {
+            // Durable disposition (governance): if a human already rejected or snoozed
+            // THIS action_key, do NOT recreate it. The detect cron re-breaches every cycle
+            // while a daily counter stays over setpoint; without this guard a 'Rechazar'
+            // just spawns a fresh incident on the next run (the dedup index only covers
+            // non-closed rows, so a resolved/snoozed row no longer blocks a new insert).
+            // Auto-resolved incidents leave resolution=null (the verify-loop sets only
+            // verification_result), so a genuinely recurring problem can still re-open.
+            // Surge action_keys embed the UTC day, so this suppression lifts the next day.
+            const { data: priorDisposition } = await sb.from('incidents')
+                .select('resolution')
+                .eq('area', 'producto').eq('action_key', b.actionKey)
+                .in('status', ['resolved', 'snoozed'])
+                .not('resolution', 'is', null)
+                .order('id', { ascending: false }).limit(1);
+            const decision = (priorDisposition?.[0]?.resolution as { decision?: string } | null)?.decision;
+            if (decision === 'reject' || decision === 'snooze') continue;
+
             // Truncated lifecycle (v1): open the incident directly at 'awaiting_approval'
             // (skips open/diagnosing/proposed, reserved for when AI diagnosis splits from detection).
             const { data: ins } = await sb.from('incidents').insert({
