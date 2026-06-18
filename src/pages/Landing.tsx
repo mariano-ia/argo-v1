@@ -759,9 +759,6 @@ const PricingSection: React.FC<{
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>PRO</p>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.04em' }}>
-                            {L('Precio beta', 'Beta price', 'Preço beta')}
-                        </span>
                     </div>
                     <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
                         {annual ? '$40' : '$49'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
@@ -808,9 +805,6 @@ const PricingSection: React.FC<{
                     </span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Academy</p>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 7px', borderRadius: '4px', letterSpacing: '0.04em' }}>
-                            {L('Precio beta', 'Beta price', 'Preço beta')}
-                        </span>
                     </div>
                     <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
                         {annual ? '$70' : '$89'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
@@ -953,16 +947,6 @@ const PricingSection: React.FC<{
                         </div>
                     )}
                     {oneError && <p style={{ fontSize: '12px', color: '#DC2626', marginTop: '8px' }}>{oneError}</p>}
-                    <p style={{ fontSize: '12px', color: '#86868B', marginTop: '12px', textAlign: 'center' }}>
-                        {L(
-                            '¿Desde Argentina? ',
-                            'From Argentina? ',
-                            'Da Argentina? ',
-                        )}
-                        <a href="/one" style={{ color: '#955FB5', fontWeight: 500, textDecoration: 'none' }}>
-                            {L('Ver precios en pesos', 'See prices in ARS', 'Ver preços em pesos')}
-                        </a>
-                    </p>
                 </div>
             </div>
         </div>
@@ -1093,7 +1077,7 @@ export const Landing: React.FC = () => {
                     className="mb-6"
                 >
                     {L(
-                        'Perfilamiento conductual DISC para deportistas juveniles de 8 a 16 anos',
+                        'Perfilamiento conductual DISC para deportistas juveniles de 8 a 16 años',
                         'DISC behavioral profiling for youth athletes aged 8 to 16',
                         'Perfil comportamental DISC para atletas juvenis de 8 a 16 anos',
                     )}
