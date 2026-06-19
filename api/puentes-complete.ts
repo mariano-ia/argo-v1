@@ -180,20 +180,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             console.warn(`[puentes-complete] ${failedGens.length}/${siblingIds.length} generations failed, continuing anyway`);
         }
 
-        // Fire-and-forget the email send (its handler waits for ai_sections).
-        // We use the anchor session id since the email aggregates all
-        // children of the purchase internally.
-        fetch(`${origin}/api/send-puentes-email`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ puentes_session_id }),
-        }).catch(err => console.warn('[puentes-complete] send-puentes-email fire-and-forget failed:', err));
+        // Send the report email and AWAIT it. A previous fire-and-forget here
+        // silently dropped emails: Vercel can freeze the serverless instance
+        // the moment this handler returns its response, killing any in-flight
+        // un-awaited fetch. We use the anchor session id since the email
+        // aggregates all children of the purchase internally. If the send
+        // fails the report is already generated and persisted, so we still
+        // return ok; the puentes-sync-cron backstop re-sends generated-but-
+        // unsent sessions.
+        let emailSent = false;
+        try {
+            const emailRes = await fetch(`${origin}/api/send-puentes-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puentes_session_id }),
+            });
+            emailSent = emailRes.ok;
+            if (!emailRes.ok) {
+                console.warn('[puentes-complete] send-puentes-email failed:', await emailRes.text());
+            }
+        } catch (err) {
+            console.warn('[puentes-complete] send-puentes-email threw:', err);
+        }
 
         return res.status(200).json({
             ok: true,
             profile,
             children_count: siblingIds.length,
             failed_count: failedGens.length,
+            email_sent: emailSent,
         });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

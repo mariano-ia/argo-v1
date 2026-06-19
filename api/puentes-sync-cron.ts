@@ -169,6 +169,7 @@ interface PurchaseEvents {
     lang: string;
     newSiblings: string[];
     reprofiles: string[];
+    sessionIds: string[];
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -310,9 +311,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         lang: session.lang || paidPurchase.lang || 'es',
                         newSiblings: [],
                         reprofiles: [],
+                        sessionIds: [],
                     };
                 }
                 const bucket = eventsByPurchase[paidPurchase.id];
+                bucket.sessionIds.push(targetSessionId);
                 const name = (session.child_name || '').trim();
                 if (name) {
                     const target = isNewSibling ? bucket.newSiblings : bucket.reprofiles;
@@ -351,6 +354,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         errors.push(`email failed for ${events.adultEmail}: ${await r.text()}`);
                     } else {
                         parentsEmailed++;
+                        // Stamp the just-notified sessions so the unsent-report
+                        // backstop below doesn't re-send them a full report.
+                        if (events.sessionIds.length > 0) {
+                            await sb.from('puentes_sessions')
+                                .update({ status: 'sent', sent_at: new Date().toISOString() })
+                                .in('id', events.sessionIds);
+                        }
                     }
                 } catch (e: any) {
                     errors.push(`email ${events.adultEmail}: ${e?.message || String(e)}`);
@@ -380,12 +390,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
+        // Backstop: reports that generated but whose email never sent. The
+        // primary path (/api/puentes-complete) awaits the send, but a transient
+        // Resend/network failure there (or a legacy fire-and-forget drop) can
+        // leave a session at status='generated' with ai_sections set yet
+        // sent_at NULL. Re-trigger send-puentes-email, which aggregates all
+        // children of the purchase and marks them sent, so we call it once per
+        // purchase. Scoped to the lookback window and to rows older than 10 min
+        // to avoid racing the live completion flow.
+        let emailsRecovered = 0;
+        const unsentBefore = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        const { data: unsentRows } = await sb
+            .from('puentes_sessions')
+            .select('id, purchase_id, created_at')
+            .eq('status', 'generated')
+            .is('sent_at', null)
+            .not('ai_sections', 'is', null)
+            .gte('created_at', sinceIso)
+            .lt('created_at', unsentBefore)
+            .order('created_at', { ascending: false })
+            .limit(BATCH_LIMIT);
+        const recoveredPurchases = new Set<string>();
+        for (const row of unsentRows ?? []) {
+            if (row.purchase_id && recoveredPurchases.has(row.purchase_id)) continue;
+            if (row.purchase_id) recoveredPurchases.add(row.purchase_id);
+            try {
+                const r = await fetch(`${origin}/api/send-puentes-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ puentes_session_id: row.id }),
+                });
+                if (r.ok) emailsRecovered++;
+                else errors.push(`unsent resend failed for ${row.id}: ${await r.text()}`);
+            } catch (e: any) {
+                errors.push(`unsent resend ${row.id}: ${e?.message || String(e)}`);
+            }
+        }
+
         return res.status(200).json({
             ok: true,
             new_siblings: newSiblings,
             reprofiles,
             parents_emailed: parentsEmailed,
             retried,
+            emails_recovered: emailsRecovered,
             errors,
         });
     } catch (err) {
