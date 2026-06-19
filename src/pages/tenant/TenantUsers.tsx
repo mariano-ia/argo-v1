@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Clock, Trash2, Users, X } from 'lucide-react';
+import { Check, Clock, Send, Trash2, Users, X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -36,6 +36,7 @@ export const TenantUsers: React.FC = () => {
     const [settingRole, setSettingRole] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
+    const [resendingId, setResendingId] = useState<string | null>(null);
     const [confirmUnassign, setConfirmUnassign] = useState<{ memberId: string; teamId: string } | null>(null);
     const [unassigning, setUnassigning] = useState(false);
 
@@ -158,6 +159,34 @@ export const TenantUsers: React.FC = () => {
         } finally {
             setUnassigning(false);
             setConfirmUnassign(null);
+        }
+    };
+
+    // Resend a dashboard invitation to a pending member (regenerates a fresh
+    // link server-side and re-emails it). Preserves role + plantel assignments.
+    const handleResend = async (memberId: string) => {
+        setResendingId(memberId);
+        setFeedback(null);
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { setResendingId(null); return; }
+        const member = members.find(m => m.id === memberId);
+        try {
+            const res = await fetch('/api/resend-invite', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ member_id: memberId, tenant_id: tenant?.id, lang }),
+            });
+            if (res.ok) {
+                setFeedback({ type: 'success', text: dt.users.reenviada(member?.email ?? '') });
+            } else {
+                const data = await res.json().catch(() => ({}));
+                const text = data.error === 'already_active' ? dt.users.yaEsMiembro : dt.users.errorReenvio;
+                setFeedback({ type: 'error', text });
+            }
+        } catch {
+            setFeedback({ type: 'error', text: dt.users.errorReenvio });
+        } finally {
+            setResendingId(null);
         }
     };
 
@@ -386,6 +415,16 @@ export const TenantUsers: React.FC = () => {
                                     {m.status === 'active' ? <Check size={10} /> : <Clock size={10} />}
                                     {m.status === 'active' ? dt.users.activo : dt.users.pendiente}
                                 </span>
+                                {isOwner && m.status === 'pending' && (
+                                    <button
+                                        onClick={() => handleResend(m.id)}
+                                        disabled={resendingId === m.id}
+                                        title={dt.users.reenviar}
+                                        className="text-argo-light hover:text-argo-violet-500 transition-colors flex-shrink-0 p-1 disabled:opacity-50"
+                                    >
+                                        <Send size={13} />
+                                    </button>
+                                )}
                                 {isOwner && m.role !== 'owner' && (
                                     confirmDeleteId === m.id ? (
                                         <div className="flex items-center gap-1.5 flex-shrink-0">

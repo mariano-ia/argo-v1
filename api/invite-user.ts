@@ -295,10 +295,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ ok: true, attached: true });
         }
 
-        // Build redirect URL dynamically from request host
+        // Tenant display name — used both in the redirect (so the expired-link
+        // page can name who to contact) and in the email body below.
+        const { data: tenantData } = await sb
+            .from('tenants')
+            .select('display_name')
+            .eq('id', tenantId)
+            .single();
+        const tenantName = (tenantData as { display_name: string } | null)?.display_name ?? 'tu organización';
+
+        // Build redirect URL dynamically from request host. `org` lets
+        // /set-password show "contact <institution>" when the link is expired,
+        // since there is no session to look the tenant up at that point.
         const proto = (req.headers['x-forwarded-proto'] as string) ?? 'https';
         const host = (req.headers['x-forwarded-host'] as string) ?? req.headers.host ?? 'argomethod.com';
-        const redirectTo = `${proto}://${host}/set-password?lang=${emailLang}`;
+        const redirectTo = `${proto}://${host}/set-password?lang=${emailLang}&org=${encodeURIComponent(tenantName)}`;
 
         // Generate invite link (does NOT send any email — we send our own below)
         const { data: linkData, error: inviteError } = await sb.auth.admin.generateLink({
@@ -345,15 +356,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // Fetch tenant display name for the email
-        const { data: tenantData } = await sb
-            .from('tenants')
-            .select('display_name')
-            .eq('id', tenantId)
-            .single();
-        const tenantName = (tenantData as { display_name: string } | null)?.display_name ?? 'tu organización';
-
-        // Send branded invite email via Resend
+        // Send branded invite email via Resend (tenantName fetched above)
         const resendKey = process.env.RESEND_API_KEY;
         if (resendKey) {
             const html = buildInviteEmail(tenantName, linkData.properties.action_link, emailLang);

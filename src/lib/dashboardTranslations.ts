@@ -39,6 +39,9 @@ interface DashboardTexts {
         eliminado: string;
         errorEliminar: string;
         emailYaRegistrado: string;
+        reenviar: string;
+        reenviada: (email: string) => string;
+        errorReenvio: string;
     };
 
     // Common
@@ -356,6 +359,9 @@ const es: DashboardTexts = {
         eliminado: 'Miembro eliminado.',
         errorEliminar: 'No se pudo eliminar al miembro.',
         emailYaRegistrado: 'Este email ya tiene una cuenta en Argo. Elimina primero al miembro anterior si quieres re-invitarlo.',
+        reenviar: 'Reenviar invitación',
+        reenviada: (email) => `Invitación reenviada a ${email}.`,
+        errorReenvio: 'No se pudo reenviar la invitación.',
     },
     common: {
         crear: 'Crear',
@@ -656,6 +662,9 @@ const en: DashboardTexts = {
         eliminado: 'Member removed.',
         errorEliminar: 'Could not remove the member.',
         emailYaRegistrado: 'This email already has an Argo account. Remove the previous member first if you want to re-invite them.',
+        reenviar: 'Resend invitation',
+        reenviada: (email) => `Invitation resent to ${email}.`,
+        errorReenvio: 'Could not resend the invitation.',
     },
     common: {
         crear: 'Create',
@@ -956,6 +965,9 @@ const pt: DashboardTexts = {
         eliminado: 'Membro removido.',
         errorEliminar: 'Não foi possível remover o membro.',
         emailYaRegistrado: 'Este email já tem uma conta no Argo. Remova o membro anterior primeiro se quiser convidá-lo novamente.',
+        reenviar: 'Reenviar convite',
+        reenviada: (email) => `Convite reenviado para ${email}.`,
+        errorReenvio: 'Não foi possível reenviar o convite.',
     },
     common: {
         crear: 'Criar',
