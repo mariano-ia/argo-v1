@@ -357,7 +357,12 @@ function buildHtml(params: {
             ${langAttr === 'en' ? 'THE TUNING CONTRACT' : langAttr === 'pt' ? 'O CONTRATO DE SINTONIA' : 'EL CONTRATO DE SINTONÍA'}
           </p>
           ${params.resumenPerfil.split(/\n\n+/).filter(Boolean).map(p => {
-              const html = p.trim().replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+              // Strip any leaked HTML before converting markdown bold so tags
+              // don't render as real markup in the email (defensive: generate-ai
+              // sanitizes at the source).
+              const html = p.trim()
+                  .replace(/<[^>]+>/g, '')
+                  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
               return `<p style="font-size:14px;color:#424245;line-height:1.75;margin:0 0 10px 0;">${html}</p>`;
           }).join('')}
           <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:16px;">

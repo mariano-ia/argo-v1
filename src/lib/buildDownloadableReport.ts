@@ -108,10 +108,18 @@ export function buildDownloadableReportHtml(opts: DownloadReportOptions): string
     const clean = (text: string) => {
         if (!text) return '';
         return text
+            // Strip HTML the AI occasionally leaks into plain-text fields (e.g. a
+            // `<ul><li>` checklist). Since this output is injected raw into the
+            // PDF/email HTML, leaving tags in would render as real markup.
+            .replace(/<\/(li|p|div|ul|ol)>/gi, ' ')
+            .replace(/<br\s*\/?>/gi, ' ')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/g, ' ')
             .replace(/Nota fundamental:[\s\S]*/i, '')
             .replace(/Nota de seguridad:[\s\S]*/i, '')
             .replace(/Invitación de sintonía:[\s\S]*/i, '')
             .replace(/Feedback de sintonía:[\s\S]*/i, '')
+            .replace(/[ \t]+/g, ' ')
             .trim();
     };
 
@@ -214,9 +222,9 @@ export function buildDownloadableReportHtml(opts: DownloadReportOptions): string
     ${report.checklist ? `
     <div style="display:flex;gap:12px;margin-bottom:16px;">
         ${[
-            { label: t.before, text: report.checklist.antes, color: C.violet500 },
-            { label: t.during, text: report.checklist.durante, color: C.axisS },
-            { label: t.after, text: report.checklist.despues, color: C.axisI },
+            { label: t.before, text: clean(report.checklist.antes), color: C.violet500 },
+            { label: t.during, text: clean(report.checklist.durante), color: C.axisS },
+            { label: t.after, text: clean(report.checklist.despues), color: C.axisI },
         ].map(c => `
             <div style="flex:1;background:${C.white};border-radius:14px;padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
                 <p style="font-size:10px;font-weight:700;text-transform:uppercase;color:${c.color};margin:0 0 8px 0;">${c.label}</p>

@@ -434,12 +434,21 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     const allNoiseWords  = [...(report.palabrasRuido  || []), ...(report.palabrasRuidoExtra  || [])];
 
     const cleanText = (text: string) =>
-        text
+        (text || '')
+            // Strip HTML the AI occasionally leaks into plain-text fields (e.g. a
+            // `<ul><li>` checklist) so it doesn't show as literal tags. Defensive:
+            // generate-ai now sanitizes at the source, this covers reports stored
+            // before that fix.
+            .replace(/<\/(li|p|div|ul|ol)>/gi, ' ')
+            .replace(/<br\s*\/?>/gi, ' ')
+            .replace(/<[^>]+>/g, '')
+            .replace(/&nbsp;/g, ' ')
             .replace(/Nota fundamental:[\s\S]*/i, '')
             .replace(/Nota de seguridad:[\s\S]*/i, '')
             .replace(/Invitación de sintonía:[\s\S]*/i, '')
             .replace(/Feedback de sintonía:[\s\S]*/i, '')
             .replace(/Nota de acompañamiento:[\s\S]*/i, '')
+            .replace(/[ \t]+/g, ' ')
             .trim();
 
     return (
@@ -625,9 +634,9 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                         {report.checklist && (
                             <div className="flex gap-3 mb-4 flex-col sm:flex-row">
                                 {[
-                                    { label: t.before,  text: report.checklist.antes,   color: 'text-argo-violet-500', dot: '#955FB5' },
-                                    { label: t.during,  text: report.checklist.durante, color: 'text-green-600',       dot: '#22c55e' },
-                                    { label: t.after,   text: report.checklist.despues, color: 'text-amber-600',       dot: '#f59e0b' },
+                                    { label: t.before,  text: cleanText(report.checklist.antes),   color: 'text-argo-violet-500', dot: '#955FB5' },
+                                    { label: t.during,  text: cleanText(report.checklist.durante), color: 'text-green-600',       dot: '#22c55e' },
+                                    { label: t.after,   text: cleanText(report.checklist.despues), color: 'text-amber-600',       dot: '#f59e0b' },
                                 ].map(c => (
                                     <div key={c.label} className="flex-1 bg-white rounded-[14px] p-4 shadow-argo">
                                         <div className="flex items-center gap-1.5 mb-2.5">

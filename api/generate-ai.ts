@@ -153,6 +153,10 @@ function buildPrompt(base: ReportData, ctx: ReportContext): string {
   }
 }`;
 
+    // Every field is plain text. The model sometimes formats the checklist as
+    // an HTML `<ul><li>` list, which renders as literal tags in the report.
+    const formatRule = `\n\nFORMATO (OBLIGATORIO): Todos los campos son TEXTO PLANO. NO uses HTML (nada de <ul>, <li>, <b>, <p>, <br>) ni listas con viñetas ni numeración. La única marca permitida es **negrita** con dobles asteriscos donde el esquema lo indique. Cada campo del checklist ("antes", "durante", "despues") debe ser UNA frase breve y fluida (máximo 2 oraciones), no una lista.`;
+
     return `Eres un redactor especialista del Método Argo, un sistema de perfilado conductual para deportistas infantiles basado en DISC.${langInstruction}
 
 ${WRITING_RULES}
@@ -192,7 +196,7 @@ Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture
 - Tono: cálido, directo, que enganche desde la primera línea
 ${base.ejeSecundario ? `\nEl perfil tiene una tendencia secundaria "${base.tendenciaLabel}" (eje ${base.ejeSecundario}) que refleja una flexibilidad natural.${base.tendenciaParagraph ? ` Contexto de la tendencia: ${base.tendenciaParagraph}` : ''} Menciona sutilmente esta tendencia en las secciones "wow", "combustible" y "corazon", sin diluir la identidad del arquetipo primario. Usa la información del párrafo de tendencia para enriquecer la personalización.` : ''}
 
-Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones). Usa ${NAME_PLACEHOLDER} para mencionar al deportista.
+Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta (sin markdown, sin explicaciones). Usa ${NAME_PLACEHOLDER} para mencionar al deportista.${formatRule}
 ${jsonSchema}`;
 }
 
@@ -211,6 +215,47 @@ function rehydrateName<T>(value: T, realName: string): T {
         const out: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
             out[k] = rehydrateName(v, realName);
+        }
+        return out as T;
+    }
+    return value;
+}
+
+// Strips HTML markup from a string while preserving readable plain text.
+// The schema asks every field for plain text, but the model occasionally
+// formats fields (notably the checklist) as `<ul><li><b>...` lists. Those
+// tags render as literal text in the React report page (auto-escaped) and
+// would render as actual markup in the email/PDF, so we normalize at the
+// source. `**bold**` markdown is intentionally left intact — renderers
+// convert it. List items and line breaks become spaces so the prose flows.
+function stripHtmlTags(s: string): string {
+    return s
+        .replace(/<\/(li|p|div|ul|ol)>/gi, ' ')
+        .replace(/<br\s*\/?>/gi, ' ')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+// Recursively strips HTML from every string value of the AI response so no
+// markup reaches the database. Only runs the regex when a tag is present.
+function sanitizeSections<T>(value: T): T {
+    if (typeof value === 'string') {
+        return (/<[^>]+>/.test(value) ? stripHtmlTags(value) : value) as unknown as T;
+    }
+    if (Array.isArray(value)) {
+        return value.map(v => sanitizeSections(v)) as unknown as T;
+    }
+    if (value !== null && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+            out[k] = sanitizeSections(v);
         }
         return out as T;
     }
@@ -485,6 +530,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.warn('[generate-ai] Correction pass failed, keeping original response:', correctionErr instanceof Error ? correctionErr.message : correctionErr);
             }
         }
+
+        // Strip any HTML the model leaked into plain-text fields before it ever
+        // reaches the DB (the model sometimes returns the checklist as a
+        // `<ul><li>` list, which renders as literal tags in the report page).
+        sections = sanitizeSections(sections);
 
         // Rehydrate the placeholder with the real name. The real name was never
         // sent to Gemini — it exists only on our server and in this response.
