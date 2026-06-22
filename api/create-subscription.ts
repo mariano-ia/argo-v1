@@ -66,6 +66,16 @@ const COUNTRY_MAP: Record<string, string> = {
     argentina: 'AR', mexico: 'MX', brazil: 'BR', usa: 'US', spain: 'ES',
 };
 
+// Public base URL the payment providers should call back for webhooks. Preview
+// deployments notify their own host so the build under test receives MP IPNs;
+// production uses the canonical site URL.
+function webhookBaseUrl(): string {
+    if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
+    }
+    return process.env.SITE_URL || 'https://argomethod.com';
+}
+
 /* ── ARS rate cache (1 hour TTL) ─────────────────────────────────────────── */
 
 let cachedArsRate: { venta: number; fetchedAt: number } | null = null;
@@ -175,6 +185,9 @@ async function createMPPreapproval(
             external_reference: tenantId,
             payer_email: email,
             back_url: `${origin}/dashboard?upgraded=1`,
+            // Self-contained IPN so preapproval status changes reach us without
+            // depending on a dashboard-configured MP webhook.
+            notification_url: `${webhookBaseUrl()}/api/one-webhook`,
             auto_recurring: {
                 frequency,
                 frequency_type: 'months',
@@ -246,7 +259,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const countryCode = COUNTRY_MAP[tenantCountry ?? '']
             || (req.headers['x-vercel-ip-country'] as string)?.toUpperCase()
             || 'US';
-        const useMercadoPago = MP_COUNTRIES.includes(countryCode);
+        // AR_VIA_STRIPE=true charges Argentine tenants in USD via Stripe (no
+        // AFIP / formal AR seller required) instead of MercadoPago in ARS.
+        const arViaStripe = countryCode === 'AR' && process.env.AR_VIA_STRIPE === 'true';
+        const useMercadoPago = !arViaStripe && MP_COUNTRIES.includes(countryCode);
 
         let checkoutUrl: string;
 

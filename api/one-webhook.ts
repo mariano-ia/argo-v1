@@ -680,14 +680,22 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
     // When MERCADOPAGO_WEBHOOK_SECRET is set, every MP notification must carry
     // a valid signature. Without the secret we log loudly but still process,
     // so the webhook keeps working until the secret is configured in Vercel.
+    // Signature handling is best-effort by design. MP signs dashboard-webhook
+    // (v2) deliveries with x-signature, but IPN notifications sent to a
+    // preference's/preapproval's notification_url do NOT carry it. Rejecting
+    // unsigned IPNs would again leave every payment unconfirmed (the original
+    // bug). So we reject only when a signature is PRESENT but invalid (blocks
+    // tampering of v2 deliveries), and otherwise proceed to the authoritative
+    // gate below: every payment/preapproval is re-fetched from MP's API with our
+    // seller token, so a forged "approved" event cannot exist in our account.
     const mpSecret = process.env.MERCADOPAGO_WEBHOOK_SECRET;
-    if (mpSecret) {
-        if (!verifyMpSignature(req, mpSecret)) {
-            console.error('[one-webhook] MP signature verification failed — rejecting');
-            return res.status(401).json({ error: 'Invalid signature' });
-        }
-    } else {
-        console.warn('[one-webhook] MERCADOPAGO_WEBHOOK_SECRET not set — MP signature verification DISABLED (insecure)');
+    const sigPresent = typeof req.headers['x-signature'] === 'string';
+    if (mpSecret && sigPresent && !verifyMpSignature(req, mpSecret)) {
+        console.error('[one-webhook] MP signature present but invalid — rejecting');
+        return res.status(401).json({ error: 'Invalid signature' });
+    }
+    if (!sigPresent) {
+        console.warn('[one-webhook] MP notification without x-signature (IPN) — proceeding via authoritative API re-fetch');
     }
 
     // ── Subscription preapproval events ──────────────────────────────────
