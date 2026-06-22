@@ -20,7 +20,7 @@ export const TermsPage: React.FC = () => (
                     </span>
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
-                <p className="text-sm text-argo-grey mt-2">Última actualización: 14 de mayo de 2026</p>
+                <p className="text-sm text-argo-grey mt-2">Última actualización: 22 de junio de 2026</p>
                 <div className="mt-4">
                     <CoppaBadge />
                 </div>
@@ -89,7 +89,14 @@ export const TermsPage: React.FC = () => (
                 <p>Podemos modificar estos términos en cualquier momento. Los cambios se comunicarán por email a los usuarios con suscripción activa y entrarán en vigencia 30 días después de la notificación.</p>
             </Section>
 
-            <Section title="12. Contacto">
+            <Section title="12. Comunicaciones y newsletter">
+                <p>Al registrarte o utilizar la Plataforma, nos proporcionas una dirección de correo electrónico que usamos para enviarte comunicaciones esenciales del servicio (informes, confirmaciones de compra, avisos de cuenta y notificaciones operativas).</p>
+                <p>Además, podemos enviarte comunicaciones informativas y de novedades a ese correo: nuestra newsletter, consejos sobre la metodología Argo, mejoras del producto y propuestas relacionadas con nuestros servicios.</p>
+                <p>Puedes dejar de recibir las comunicaciones informativas en cualquier momento, sin que esto afecte las comunicaciones esenciales del servicio, usando el enlace de baja incluido en cada correo o escribiendo a hola@argomethod.com.</p>
+                <p>No vendemos ni cedemos tu correo electrónico a terceros con fines publicitarios.</p>
+            </Section>
+
+            <Section title="13. Contacto">
                 <p>Para consultas sobre estos términos: hola@argomethod.com</p>
             </Section>
 
