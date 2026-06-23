@@ -42,14 +42,25 @@ Fix (on `develop`, commit `85f6adf`):
 
 ## AR launch without AFIP — `AR_VIA_STRIPE` toggle
 
-Selling to AR via the **US Stripe account in USD** means the sale is made by the
-US entity → **no AFIP factura** (same model as Netflix/Spotify). Trade-off: the AR
-buyer pays at *dólar tarjeta* (oficial + ~60% país/perception taxes) and sees
-higher card declines. New env toggle `AR_VIA_STRIPE=true` routes Argentine buyers
-to Stripe USD instead of MercadoPago, in both `one-checkout` and
-`create-subscription`. Default (unset) keeps MP routing. Set on **Preview
-(develop)** for testing; **not set in production** (prod AR still → MP) pending a
-launch decision.
+Selling to AR via the **US Stripe account in USD** means the sale is made (at the
+entity level) by the US entity → **no AFIP factura to the customer**. New env
+toggle `AR_VIA_STRIPE=true` routes Argentine buyers to Stripe USD instead of
+MercadoPago, in both `one-checkout` and `create-subscription`. Default (unset)
+keeps MP routing. Set on **Preview (develop)** for testing; **not set in
+production** (prod AR still → MP) pending a launch decision.
+
+> **Tax landscape corrected (2026-06-23).** An earlier version of this section
+> said the AR buyer pays "oficial + ~60% país/perception taxes". That figure was
+> stale (the old PAÍS + Ganancias scheme). The **Impuesto PAÍS expired Dec 2024**
+> and the parallel "blue" rate converged with the official after the cepo was
+> lifted, so the realistic AR card surcharge in 2026 is **near the dólar oficial**
+> (estimate at oficial, not +30/60%). Argo is **not** on AFIP's Anexo II of
+> foreign digital-service providers, so AR buyers most likely do **not** get the
+> 21% IVA percepción that Netflix's customers pay (verify with real charges).
+> "Only US taxes" is true only at the **entity** level — an Argentine-resident
+> founder still owes AR tax on income drawn from the US entity. Full analysis,
+> alternatives matrix, Stripe per-transaction costs, and the recommended phased
+> plan: **`docs/PAGOS-ARGENTINA-ESTRATEGIA.md`**.
 
 ## End-to-end test evidence (13/13 on preview deployment)
 
