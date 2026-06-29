@@ -528,6 +528,23 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                         <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
                                     </div>
+                                    {(session.history?.length ?? 0) > 1 && (
+                                        <div className="mt-3 pt-3 border-t border-argo-border">
+                                            <p className="text-[11px] font-semibold text-argo-grey uppercase tracking-wide mb-2">
+                                                {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
+                                            </p>
+                                            <div className="space-y-1.5">
+                                                {(session.history ?? []).map((h, i) => (
+                                                    <div key={h.id} className="flex items-center gap-2 text-xs">
+                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
+                                                        <span className="text-argo-secondary font-medium">{h.archetype_label}</span>
+                                                        <span className="text-argo-light">{new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                        {i === 0 && <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                     {canManage && (locked ? (
                                         <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
                                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
@@ -598,6 +615,9 @@ export const TenantPlayers: React.FC = () => {
     const [planteles, setPlanteles] = useState<{ id: string; name: string }[]>([]);
     const [page, setPage] = useState(0);
     const [pageSize, setPageSize] = useState(20);
+    const [mergeGroup, setMergeGroup] = useState<SessionRow[] | null>(null);
+    const [mergeSurvivor, setMergeSurvivor] = useState<string | null>(null);
+    const [mergeBusy, setMergeBusy] = useState(false);
 
     const fetchSessions = useCallback(async () => {
         if (devBypass) { setSessions(DEV_SESSIONS); setLoading(false); return; }
@@ -652,6 +672,37 @@ export const TenantPlayers: React.FC = () => {
         });
     }, [sessions, search, ejeFilter, plantelFilter, showReprofileOnly]);
 
+    // Possible duplicates: same adult email + child name (same name != same child, so
+    // we never auto-merge — only surface them for the coach to confirm and unify).
+    const duplicateGroups = useMemo(() => {
+        const map = new Map<string, SessionRow[]>();
+        for (const s of sessions) {
+            const key = `${(s.adult_email ?? '').trim().toLowerCase()}|${(s.child_name ?? '').trim().toLowerCase()}`;
+            const arr = map.get(key) ?? [];
+            arr.push(s);
+            map.set(key, arr);
+        }
+        return Array.from(map.values()).filter(g => g.length > 1);
+    }, [sessions]);
+
+    const handleMergeGroup = async (survivorId: string, group: SessionRow[]) => {
+        setMergeBusy(true);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+            for (const s of group) {
+                if (s.id === survivorId) continue;
+                await fetch('/api/merge-players', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ survivor_id: survivorId, absorbed_id: s.id, tenant_id: tenant?.id }),
+                });
+            }
+            setMergeGroup(null); setMergeSurvivor(null);
+            await fetchSessions(); await refreshTenant();
+        } finally { setMergeBusy(false); }
+    };
+
     // Reset page when filters or page size change
     useEffect(() => { setPage(0); }, [search, ejeFilter, plantelFilter, showReprofileOnly, pageSize]);
 
@@ -694,6 +745,26 @@ export const TenantPlayers: React.FC = () => {
                     <div>
                         <p className="text-sm font-medium text-amber-800">{dt.players.rePerfilarAlerta(reprofileCount)}</p>
                         <p className="text-xs text-amber-700 mt-0.5">{dt.players.rePerfilarAlertaDesc}</p>
+                    </div>
+                </div>
+            )}
+
+            {duplicateGroups.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-2">
+                    <div className="flex items-start gap-3">
+                        <Users size={16} className="text-amber-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                            <p className="text-sm font-medium text-amber-800">{lang === 'en' ? 'Possible duplicate players' : lang === 'pt' ? 'Possíveis jogadores duplicados' : 'Posibles jugadores duplicados'}</p>
+                            <p className="text-xs text-amber-700 mt-0.5">{lang === 'en' ? 'These look like the same child. If they are, unify them into one with a combined history.' : lang === 'pt' ? 'Parecem a mesma criança. Se forem, unifique em um só com histórico combinado.' : 'Parecen el mismo niño. Si lo son, unifícalos en uno solo con su historial combinado.'}</p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pl-7">
+                        {duplicateGroups.map((g, i) => (
+                            <button key={i} onClick={() => { setMergeGroup(g); setMergeSurvivor(g[0].id); }}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 transition-colors">
+                                {g[0].child_name} ({g.length}) · {lang === 'en' ? 'unify' : lang === 'pt' ? 'unificar' : 'unificar'}
+                            </button>
+                        ))}
                     </div>
                 </div>
             )}
@@ -869,6 +940,42 @@ export const TenantPlayers: React.FC = () => {
                     )}
                 </div>
             )}
+
+            <AnimatePresence>
+                {mergeGroup && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+                        onClick={() => { if (!mergeBusy) { setMergeGroup(null); setMergeSurvivor(null); } }}>
+                        <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
+                            className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+                            <h3 className="text-lg font-semibold text-argo-navy">{lang === 'en' ? 'Unify players' : lang === 'pt' ? 'Unificar jogadores' : 'Unificar jugadores'}</h3>
+                            <p className="text-sm text-argo-secondary">{lang === 'en' ? 'Choose which record to keep. The others merge into it; all profile history is preserved and one roster slot is freed.' : lang === 'pt' ? 'Escolha qual registro manter. Os demais serão unificados nele; todo o histórico é preservado e uma vaga é liberada.' : 'Elige cuál ficha conservar. Las demás se unifican en ella; se conserva todo el historial y se libera un lugar del equipo.'}</p>
+                            <div className="space-y-2">
+                                {mergeGroup.map(s => (
+                                    <label key={s.id} className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${mergeSurvivor === s.id ? 'border-argo-violet-400 bg-argo-violet-50' : 'border-argo-border hover:bg-argo-bg'}`}>
+                                        <input type="radio" name="survivor" checked={mergeSurvivor === s.id} onChange={() => setMergeSurvivor(s.id)} />
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-medium text-argo-navy truncate">{s.child_name}, {s.child_age}</p>
+                                            <p className="text-xs text-argo-grey truncate">{s.archetype_label} · {new Date(s.created_at).toLocaleDateString(lang === 'pt' ? 'pt-BR' : lang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                                        </div>
+                                    </label>
+                                ))}
+                            </div>
+                            <div className="flex gap-2 justify-end pt-2">
+                                <button onClick={() => { setMergeGroup(null); setMergeSurvivor(null); }} disabled={mergeBusy}
+                                    className="px-4 py-2 rounded-lg text-sm font-medium border border-argo-border text-argo-secondary disabled:opacity-50">
+                                    {lang === 'en' ? 'Cancel' : 'Cancelar'}
+                                </button>
+                                <button onClick={() => { if (mergeSurvivor) handleMergeGroup(mergeSurvivor, mergeGroup); }} disabled={mergeBusy || !mergeSurvivor}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 disabled:opacity-50 flex items-center gap-2">
+                                    {mergeBusy && <Loader2 size={14} className="animate-spin" />}
+                                    {lang === 'en' ? 'Unify' : 'Unificar'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </motion.div>
     );
 };
