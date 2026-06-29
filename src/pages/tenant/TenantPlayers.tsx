@@ -332,15 +332,21 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">
                                         {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
                                     </p>
-                                    <div className="flex flex-wrap gap-x-5 gap-y-1.5">
-                                        {(session.history ?? []).map((h, i) => (
-                                            <div key={h.id} className="flex items-center gap-2 text-xs">
-                                                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
-                                                <span className="text-argo-secondary font-medium">{h.archetype_label}</span>
-                                                <span className="text-argo-light">{new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                                                {i === 0 && <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>}
-                                            </div>
-                                        ))}
+                                    <div className="flex flex-col gap-1">
+                                        {(session.history ?? []).map((h, i) => {
+                                            const isCurrent = i === 0;
+                                            const dateStr = new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+                                            return (
+                                                <div key={h.id} className={`flex items-center gap-2 ${isCurrent ? 'text-xs' : 'text-[10px]'}`}>
+                                                    <span className={`rounded-full flex-shrink-0 ${isCurrent ? 'w-1.5 h-1.5' : 'w-1 h-1 opacity-60'}`} style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
+                                                    <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{h.archetype_label}</span>
+                                                    <span className="text-argo-light">{dateStr}</span>
+                                                    {isCurrent
+                                                        ? <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>
+                                                        : <span className="text-[9px] font-medium text-argo-light bg-argo-bg border border-argo-border px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'previous' : lang === 'pt' ? 'anterior' : 'perfil anterior'}</span>}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
