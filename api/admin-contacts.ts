@@ -48,7 +48,7 @@ async function fetchAll(
             .select(columns)
             .range(from, from + PAGE - 1);
         if (error) throw error;
-        const rows = (data ?? []) as Record<string, unknown>[];
+        const rows = (data ?? []) as unknown as Record<string, unknown>[];
         out.push(...rows);
         if (rows.length < PAGE) break;
     }
