@@ -41,9 +41,11 @@ effectiveTeamId / isAdminView` via the Outlet, renders the switcher, and drives 
 nav off the active HAT (Administración → admin nav; plantel → coach nav; plan banner
 keyed off the real role). Data screens (Inicio, Jugadores, Predictor, Química, Argo
 Coach) send the active tenant + `effectiveTeamId` and refetch on hat change.
-`ContextChip` reminds you of the active plantel (admin gets an ✕ to exit).
+`ContextChip` is a passive, read-only indicator of the active plantel (no ✕;
+change or exit the context from the sidebar switcher).
 `TrialEndModal` is role-aware (coach → "institution paused, talk to admin", no
-upgrade CTA). Self-assign via "Asignarme" on the plantel detail. Per-member level
+upgrade CTA). Self-assign via the "Yo" toggleable chip on the plantel detail
+(tap to assign/unassign, with a confirmation step). Per-member level
 `<select>` (Administrador↔Entrenador) in Users; the owner row is locked
 ("Propietario") so the institution always keeps an owner. Polish: collapsed-sidebar
 logo opens the switcher; switching to a plantel hat off an admin page redirects to
@@ -52,8 +54,9 @@ Inicio. Play link follows the active plantel (no stacking; team-name label remov
 **Known leftovers / decisions:** legacy `chem_groups`/`chat_messages` with
 `plantel_id = null` show only in the Administración hat (recreate inside a plantel);
 ownership transfer is a deliberate future action (owner is non-demotable here);
-optional `[+]` add-plantel-per-member chips in Users not built (assign via plantel
-detail / Asignarme). Deferred endpoints (still single-tenant by `tenants.auth_user_id`,
+optional `[+]` add-plantel-per-member chips in Users not built (assign via the
+toggleable coach chips on the plantel detail, including the "Yo" self-assign chip).
+Deferred endpoints (still single-tenant by `tenants.auth_user_id`,
 not data-leak vectors): delete-session, delete-account, accept-invite.
 
 ---
