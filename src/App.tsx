@@ -11,6 +11,7 @@ import { Landing }            from './pages/Landing';
 import { Login }              from './pages/Login';
 import { TenantSignup }      from './pages/TenantSignup';
 import { TenantPlay }        from './pages/TenantPlay';
+import { TenantReprofilePlay } from './pages/TenantReprofilePlay';
 import { BlogIndex }           from './pages/BlogIndex';
 import { BlogPost }            from './pages/BlogPost';
 import { BlogCategory }        from './pages/BlogCategory';
@@ -240,6 +241,7 @@ function App() {
             {/* Public */}
             <Route path="/"       element={<Landing />} />
             <Route path="/app"    element={<UserApp />} />
+            <Route path="/play/r/:reprofileToken" element={<TenantReprofilePlay />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
             <Route path="/play/:slug/:teamSlug" element={<TenantPlay />} />
             <Route path="/signup" element={<TenantSignup />} />

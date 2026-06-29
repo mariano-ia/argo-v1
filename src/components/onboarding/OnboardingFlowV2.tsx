@@ -145,6 +145,14 @@ interface OnboardingV2Props {
      */
     initialConsent?: InitialConsent | null;
     /**
+     * Re-profile: pre-fill the EXISTING child's identity and skip the adult form.
+     * 13+ jump straight to device-handoff; under-13 land on adult-registration so
+     * fresh parental consent is re-collected. The reprofile play_token (passed as
+     * playToken) carries the signed child id, so /api/session appends a NEW
+     * perfilamiento to that child instead of creating a new child.
+     */
+    initialAdultData?: AdultData | null;
+    /**
      * When true (used by /demo), the flow skips ALL onboarding screens, runs
      * the game with adult data provided via initialConsent, never writes to
      * the DB (no startSession/saveSession/updateSession), and renders
@@ -153,7 +161,7 @@ interface OnboardingV2Props {
     demoMode?: boolean;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, demoMode = false }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, demoMode = false }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -167,15 +175,23 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // `device-handoff` is always the screen immediately after
     // `parental-consent-waiting` in the SCREENS array.
     const DEVICE_HANDOFF_INDEX = SCREENS.findIndex(s => s.type === 'device-handoff');
+    const ADULT_REGISTRATION_INDEX = SCREENS.findIndex(s => s.type === 'adult-registration');
     // Demo: jump straight to the first story slide (skips all adult onboarding screens)
     const DEMO_START_INDEX = SCREENS.findIndex(
         (s): s is Extract<ScreenDef, { type: 'story' }> => s.type === 'story' && s.slideId === 'intro_a',
     );
+    // Re-profile: 13+ skip straight to device-handoff; under-13 land on the
+    // registration screen so fresh parental consent is re-collected.
+    const reprofileStartIndex = initialAdultData
+        ? (initialAdultData.edad >= 13 ? DEVICE_HANDOFF_INDEX : ADULT_REGISTRATION_INDEX)
+        : null;
     const [screenIndex, setScreenIndex] = useState(
-        demoMode ? DEMO_START_INDEX : initialConsent ? DEVICE_HANDOFF_INDEX : 0,
+        demoMode ? DEMO_START_INDEX
+            : initialConsent ? DEVICE_HANDOFF_INDEX
+            : reprofileStartIndex ?? 0,
     );
     const [adultData, setAdultData]     = useState<AdultData | null>(
-        initialConsent ? initialConsent.adultData : null,
+        initialConsent ? initialConsent.adultData : (initialAdultData ?? null),
     );
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [aiSections, setAiSections]   = useState<AISections | null>(null);
