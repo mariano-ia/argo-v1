@@ -25,7 +25,7 @@ import {
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
-interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; }
+export interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -45,7 +45,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
+export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
     const [expanded, setExpanded] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);

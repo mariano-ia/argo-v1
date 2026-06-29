@@ -28,9 +28,27 @@ const ARS_PACKS: Record<number, number> = {
 // Countries that use MercadoPago (local currency)
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
+// Launch toggle: when AR_VIA_STRIPE=true, Argentine buyers are charged in USD
+// through the (US) Stripe account instead of MercadoPago. This lets us sell in
+// Argentina without being a formal AR seller (no AFIP invoicing) — the sale is
+// made by the US entity, exactly like Netflix/Spotify. Other Latam countries
+// stay on MercadoPago. Default (unset) keeps the original MP routing.
 function getProvider(country?: string): 'mercadopago' | 'stripe' {
     if (!country) return 'stripe';
-    return MP_COUNTRIES.includes(country.toUpperCase()) ? 'mercadopago' : 'stripe';
+    const cc = country.toUpperCase();
+    if (cc === 'AR' && process.env.AR_VIA_STRIPE === 'true') return 'stripe';
+    return MP_COUNTRIES.includes(cc) ? 'mercadopago' : 'stripe';
+}
+
+// Public base URL the payment providers should call back for webhooks. On a
+// Vercel preview deployment we use the deployment's own host so MercadoPago
+// notifications land on the same build under test; in production we use the
+// canonical site URL.
+function webhookBaseUrl(): string {
+    if (process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL) {
+        return `https://${process.env.VERCEL_URL}`;
+    }
+    return process.env.SITE_URL || 'https://argomethod.com';
 }
 
 /* ── ARS rate cache (1 hour TTL) ─────────────────────────────────────────── */
@@ -124,6 +142,10 @@ async function createMPCheckout(pack: typeof PACKS[1], email: string, purchaseId
             }],
             payer: { email },
             metadata: { purchase_id: purchaseId, source: 'argo_one' },
+            // Self-contained IPN: MP notifies this URL directly, so payment
+            // confirmation no longer depends on a webhook configured in the MP
+            // dashboard (which was missing — every ARS purchase stayed pending).
+            notification_url: `${webhookBaseUrl()}/api/one-webhook`,
             back_urls: {
                 success: `${origin}/one/panel?success=1`,
                 failure: `${origin}/pricing`,
