@@ -75,6 +75,10 @@ export const TenantGroups: React.FC = () => {
     // Players that compose the selected plantel (full sessions → clickable reports)
     const [plantelSessions, setPlantelSessions] = useState<SessionRow[]>([]);
 
+    // Assigning/unassigning a coach needs an explicit confirm — one tap on a chip
+    // stages the change; the user confirms it before it applies.
+    const [pendingToggle, setPendingToggle] = useState<{ id: string; label: string; assigned: boolean } | null>(null);
+
     /* ── Fetch teams ───────────────────────────────────────────────────────── */
     const fetchGroups = useCallback(async () => {
         if (devBypass) { setGroups(DEV_GROUPS); setLoading(false); return; }
@@ -133,6 +137,7 @@ export const TenantGroups: React.FC = () => {
         setEditing(false);
         setConfirmDelete(false);
         setShowMenu(false);
+        setPendingToggle(null);
         setPlantelSessions([]);
         fetchDetail(id);
     };
@@ -192,13 +197,23 @@ export const TenantGroups: React.FC = () => {
         if (id === memberId) refreshTenant?.();
     };
 
-    // Chip style: filled when assigned, outline when not.
-    const chipCls = (on: boolean) =>
+    // Chip style: filled when assigned, outline when not; ringed while pending confirm.
+    const chipCls = (on: boolean, pending: boolean) =>
         `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all ${
             on
                 ? 'bg-argo-violet-500 border-argo-violet-500 text-white hover:bg-argo-violet-600'
                 : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
-        }`;
+        }${pending ? ' ring-2 ring-argo-violet-300 ring-offset-1' : ''}`;
+
+    // Tapping a chip stages the change; tapping the same chip again cancels it.
+    const requestToggle = (id: string, label: string) =>
+        setPendingToggle(prev => (prev?.id === id ? null : { id, label, assigned: assignedIds.has(id) }));
+    const confirmToggle = async () => {
+        if (!pendingToggle) return;
+        const id = pendingToggle.id;
+        setPendingToggle(null);
+        await toggleCoachAssignment(id);
+    };
 
     /* ── Loading ───────────────────────────────────────────────────────────── */
     if (!tenant) {
@@ -393,14 +408,14 @@ export const TenantGroups: React.FC = () => {
                                     </h3>
                                     <p className="text-[11px] text-argo-light mb-3">
                                         {tt(lang,
-                                            'Toca un chip para asignar o quitar. Los usuarios nuevos se crean en la sección Usuarios.',
-                                            'Tap a chip to assign or remove. Create new users in the Users section.',
-                                            'Toque um chip para atribuir ou remover. Crie novos usuários na seção Usuários.')}
+                                            'Toca un chip para asignar o quitar un entrenador. Te pedimos confirmación antes de aplicar el cambio. Los usuarios nuevos se crean en la sección Usuarios.',
+                                            'Tap a chip to assign or remove a coach. We ask for confirmation before applying it. Create new users in the Users section.',
+                                            'Toque um chip para atribuir ou remover um treinador. Pedimos confirmação antes de aplicar. Crie novos usuários na seção Usuários.')}
                                     </p>
                                     <div className="flex flex-wrap gap-2">
-                                        {/* "Yo" chip — self assign/unassign */}
+                                        {/* "Yo" chip — self assign/unassign (with confirm) */}
                                         {memberId && (
-                                            <button onClick={() => toggleCoachAssignment(memberId)} className={chipCls(assignedIds.has(memberId))}>
+                                            <button onClick={() => requestToggle(memberId, tt(lang, 'Yo', 'Me', 'Eu'))} className={chipCls(assignedIds.has(memberId), pendingToggle?.id === memberId)}>
                                                 {assignedIds.has(memberId) ? <Check size={11} /> : <Plus size={11} />}
                                                 {tt(lang, 'Yo', 'Me', 'Eu')}
                                             </button>
@@ -409,7 +424,7 @@ export const TenantGroups: React.FC = () => {
                                         {chipMembers.map(m => {
                                             const on = assignedIds.has(m.id);
                                             return (
-                                                <button key={m.id} onClick={() => toggleCoachAssignment(m.id)} className={chipCls(on)}>
+                                                <button key={m.id} onClick={() => requestToggle(m.id, m.full_name || m.email)} className={chipCls(on, pendingToggle?.id === m.id)}>
                                                     {on ? <Check size={11} /> : <Plus size={11} />}
                                                     {m.full_name || m.email}
                                                     {m.status === 'pending' && (
@@ -423,6 +438,26 @@ export const TenantGroups: React.FC = () => {
                                             <p className="text-xs text-argo-light">{tt(lang, 'Todavía no hay usuarios. Crea entrenadores en la sección Usuarios.', 'No users yet. Create coaches in the Users section.', 'Ainda não há usuários. Crie treinadores na seção Usuários.')}</p>
                                         )}
                                     </div>
+
+                                    {/* Confirmation step — assigning/removing a coach is not a one-tap action */}
+                                    {pendingToggle && (() => {
+                                        const self = pendingToggle.id === memberId;
+                                        const who = pendingToggle.label;
+                                        const msg = pendingToggle.assigned
+                                            ? (self
+                                                ? tt(lang, '¿Quitarte de este plantel?', 'Remove yourself from this team?', 'Sair deste plantel?')
+                                                : tt(lang, `¿Quitar a ${who} de este plantel?`, `Remove ${who} from this team?`, `Remover ${who} deste plantel?`))
+                                            : (self
+                                                ? tt(lang, '¿Asignarte a este plantel?', 'Assign yourself to this team?', 'Atribuir-te a este plantel?')
+                                                : tt(lang, `¿Asignar a ${who} a este plantel?`, `Assign ${who} to this team?`, `Atribuir ${who} a este plantel?`));
+                                        return (
+                                            <div className="mt-3 pt-3 border-t border-argo-border flex items-center gap-3">
+                                                <p className="text-xs text-argo-secondary flex-1">{msg}</p>
+                                                <button onClick={confirmToggle} className="px-3 py-1.5 rounded-lg bg-argo-violet-500 text-white text-xs font-semibold hover:bg-argo-violet-600 transition-colors flex-shrink-0">{tt(lang, 'Confirmar', 'Confirm', 'Confirmar')}</button>
+                                                <button onClick={() => setPendingToggle(null)} className="px-3 py-1.5 rounded-lg border border-argo-border text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex-shrink-0">{dt.common.cancelar}</button>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
                                 )}
 
