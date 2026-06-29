@@ -280,7 +280,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         id: 'reperfilar',
         category: 'players',
         title: '¿Cómo y cuándo vuelvo a perfilar a un niño?',
-        body: 'Los niños crecen y cambian, por eso el perfil se puede actualizar cada 6 meses. Cuando pasa ese tiempo, el jugador muestra un aviso de que conviene re-perfilarlo.\n\nNo hay un botón especial: vuelves a compartirle el mismo link y el niño juega de nuevo. Su perfil se actualiza en el lugar, sin ocupar un nuevo cupo.',
+        body: 'Los niños crecen y cambian, por eso el perfil se puede actualizar cada 6 meses. Cuando pasa ese tiempo, el jugador muestra un aviso de que conviene re-perfilarlo.\n\nA los 6 meses aparece un botón de re-perfilar en la ficha del jugador. El botón copia un link propio del niño: se lo compartes al adulto responsable y el niño vuelve a jugar. El nuevo perfil se suma a su historial (no borra el anterior) y no ocupa un nuevo cupo.',
         links: [{ label: 'Ir a Jugadores', to: '/dashboard/players' }],
     },
     {

@@ -196,7 +196,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         id: 'reperfilar',
         category: 'players',
         title: 'How and when do I re-profile a child?',
-        body: 'Children grow and change, so the profile can be updated every 6 months. When that time passes, the player shows a note suggesting a re-profile.\n\nThere is no special button: you share the same link again and the child plays once more. Their profile updates in place, without taking up a new spot.',
+        body: 'Children grow and change, so the profile can be updated every 6 months. When that time passes, the player shows a note suggesting a re-profile.\n\nAt 6 months a re-profile button appears on the player's card. It copies the child's own link: you share it with the responsible adult and the child plays again. The new profile is added to their history (the previous one is kept) and does not take up a new spot.',
         links: [{ label: 'Go to Players', to: '/dashboard/players' }],
     },
     {

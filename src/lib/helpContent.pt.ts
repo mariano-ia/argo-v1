@@ -196,7 +196,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         id: 'reperfilar',
         category: 'players',
         title: 'Como e quando refaço o perfil de uma criança?',
-        body: 'As crianças crescem e mudam, por isso o perfil pode ser atualizado a cada 6 meses. Quando esse tempo passa, o jogador mostra um aviso de que convém refazer o perfil.\n\nNão há um botão especial: você compartilha de novo o mesmo link e a criança joga outra vez. O perfil é atualizado no lugar, sem ocupar uma nova vaga.',
+        body: 'As crianças crescem e mudam, por isso o perfil pode ser atualizado a cada 6 meses. Quando esse tempo passa, o jogador mostra um aviso de que convém refazer o perfil.\n\nAos 6 meses aparece um botão de refazer o perfil na ficha do jogador. Ele copia um link próprio da criança: você compartilha com o adulto responsável e a criança joga de novo. O novo perfil é adicionado ao histórico (o anterior é mantido) e não ocupa uma nova vaga.',
         links: [{ label: 'Ir para Jogadores', to: '/dashboard/players' }],
     },
     {
