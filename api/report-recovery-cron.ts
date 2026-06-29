@@ -16,6 +16,25 @@ async function logActivity(sb: { from: (table: string) => { insert: (values: unk
     } catch (err) { console.warn('[principia:logActivity] non-blocking write failed:', err); }
 }
 
+// Defense-in-depth (post-split): re-derive ONLY the primary eje from the stored
+// answers tally and compare to the stored eje. If they clearly disagree we SKIP the
+// row and flag it, never authoring a contested report and NEVER recalculating motor
+// (motor needs game metrics not always present). Returns the answers-derived eje, or
+// null when there is no clear single winner (a tie — trust the stored eje then).
+// api/ cannot import src/lib (ERR_MODULE_NOT_FOUND), so the tally is inlined.
+function ejeFromAnswers(answers: unknown): string | null {
+    if (!Array.isArray(answers)) return null;
+    const tally: Record<string, number> = { D: 0, I: 0, S: 0, C: 0 };
+    for (const a of answers) {
+        const ax = a && typeof a === 'object' && 'axis' in a ? String((a as { axis: unknown }).axis) : null;
+        if (ax && ax in tally) tally[ax]++;
+    }
+    if (tally.D + tally.I + tally.S + tally.C === 0) return null;
+    const max = Math.max(tally.D, tally.I, tally.S, tally.C);
+    const winners = Object.keys(tally).filter(k => tally[k] === max);
+    return winners.length === 1 ? winners[0] : null;
+}
+
 /**
  * GET/POST /api/report-recovery-cron
  *
@@ -72,14 +91,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const windowStart = Date.now() - RECOVERY_WINDOW_HOURS * 60 * 60 * 1000;
     const cutoff = new Date(Math.max(FORWARD_FROM, windowStart)).toISOString();
 
-    // Resolved sessions (real profile) that were never emailed, within the window.
+    // Resolved perfilamientos (real profile) that were never emailed, within the
+    // window. The 2-minute age floor skips rows mid two-phase write (profile saved,
+    // ai_sections about to land) so the cron never races a live generation.
     const { data: sessions, error } = await sb
-        .from('sessions')
-        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token')
-        .neq('eje', '_pending')
+        .from('perfilamientos')
+        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token, answers')
+        .eq('status', 'resolved')
         .not('is_demo', 'is', true) // never generate/send for demo or canary sessions
         .is('email_sent_at', null)
         .gte('created_at', cutoff)
+        .lt('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString())
         .order('created_at', { ascending: true })
         .limit(BATCH_SIZE);
 
@@ -94,6 +116,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const r = { id: s.id, aiGenerated: false, emailed: false, error: undefined as string | undefined };
         try {
             let aiSections = s.ai_sections as { palabrasPuente?: string[] } | null;
+
+            // Defense: if the answers clearly disagree with the stored eje, do NOT
+            // author a report from a contested axis — skip and flag to Principia.
+            const derivedEje = ejeFromAnswers(s.answers);
+            if (!aiSections && derivedEje && derivedEje !== s.eje) {
+                await logActivity(sb, {
+                    area: 'producto', action: 'report_axis_mismatch_skipped', sourceType: 'cron',
+                    severity: 'degradado', resourceType: 'session', resourceId: String(s.id),
+                    reason: { session_id: s.id, stored_eje: s.eje, answers_eje: derivedEje },
+                    relatedLogs: [`perfilamientos.${s.id}`],
+                });
+                r.error = 'axis_mismatch';
+                results.push(r);
+                continue;
+            }
 
             // 1. Regenerate AI sections if missing (same minimal payload shape as
             //    admin-grant-access — generate-ai fills the rest from the archetype).
@@ -127,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
                 const aiData = await aiRes.json();
                 aiSections = aiData.sections;
-                await sb.from('sessions').update({
+                await sb.from('perfilamientos').update({
                     ai_sections: aiData.sections,
                     ai_cost_usd: aiData.usage?.costUsd ?? 0,
                     ai_tokens_input: aiData.usage?.inputTokens ?? 0,
@@ -137,10 +174,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             // 2. Send the report email. /api/send-email is idempotent (stamps
-            //    email_sent_at) so this won't double-send.
-            const arquetipo = s.eje_secundario
-                ? `${s.archetype_label}`
-                : s.archetype_label;
+            //    email_sent_at on the perfilamiento) so this won't double-send.
+            const arquetipo = s.archetype_label;
             const emailRes = await fetch(`${origin}/api/send-email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -175,7 +210,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 resourceType: 'session',
                 resourceId: String(s.id),
                 reason: { session_id: s.id, ai_generated: r.aiGenerated },
-                relatedLogs: [`sessions.${s.id}`],
+                relatedLogs: [`perfilamientos.${s.id}`],
             });
         } catch (err) {
             r.error = err instanceof Error ? err.message : String(err);
