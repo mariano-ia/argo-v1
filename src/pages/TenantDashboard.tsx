@@ -296,21 +296,22 @@ export const TenantDashboard: React.FC = () => {
         { to: '/dashboard',          label: dt.nav.inicio,    icon: LayoutDashboard, end: true },
         { to: '/dashboard/players',  label: dt.nav.jugadores, icon: Users,           end: false },
         { to: '/dashboard/chat',     label: dt.nav.chat,      icon: MessageCircle,   end: false },
-        // Planteles (structural, owns the link) shows only in the admin view.
-        ...(isAdminView ? [{ to: '/dashboard/planteles', label: plantelesLabel, icon: Shield, end: false }] : []),
         { to: '/dashboard/grupos',   label: dt.nav.grupos,    icon: Layers,          end: false },
         { to: '/dashboard/guide',    label: dt.nav.guia,      icon: Compass,         end: false },
     ];
-    const NAV_CONFIG = isAdminView
+    // Planteles + Usuarios are one pair: the institution's structure and its
+    // people. Admin-only, rendered together (Planteles above Usuarios) as their
+    // own cluster so it reads as two things that belong together.
+    const NAV_INSTITUCION = isAdminView
         ? [
-            { to: '/dashboard/users',    label: dt.nav.usuarios,  icon: UserPlus,  end: false },
-            { to: '/dashboard/settings', label: dt.nav.ajustes,   icon: Settings,  end: false },
-            { to: '/dashboard/help',     label: dt.nav.ayuda,     icon: HelpCircle, end: false },
+            { to: '/dashboard/planteles', label: plantelesLabel,   icon: Shield,   end: false },
+            { to: '/dashboard/users',     label: dt.nav.usuarios,  icon: UserPlus, end: false },
         ]
-        : [
-            { to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings,    end: false },
-            { to: '/dashboard/help',     label: dt.nav.ayuda,   icon: HelpCircle,  end: false },
-        ];
+        : [];
+    const NAV_CONFIG = [
+        { to: '/dashboard/settings', label: dt.nav.ajustes, icon: Settings,   end: false },
+        { to: '/dashboard/help',     label: dt.nav.ayuda,   icon: HelpCircle, end: false },
+    ];
 
     /* ── Nav item renderer ─────────────────────────────────────────────────── */
     const NavItem = ({ to, label, icon: Icon, end, showDot }: { to: string; label: string; icon: React.FC<{ size?: number | string }>; end: boolean; showDot?: boolean }) => (
@@ -544,6 +545,17 @@ export const TenantDashboard: React.FC = () => {
                 {/* Nav — Principal */}
                 <nav className={`flex-1 space-y-0.5 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
                     {NAV_MAIN.map(item => <NavItem key={item.to} {...item} showDot={item.to === '/dashboard/players' ? hasNewPlayers : undefined} />)}
+
+                    {/* Institution cluster — Planteles + Usuarios go together (admin only).
+                        Sandwiched between two dividers so they read as one pair. */}
+                    {NAV_INSTITUCION.length > 0 && (
+                        <>
+                            <div className={`${isCollapsed ? 'mx-1 my-4' : 'mx-3 my-5'}`}>
+                                <div className="h-px bg-argo-border opacity-60" />
+                            </div>
+                            {NAV_INSTITUCION.map(item => <NavItem key={item.to} {...item} />)}
+                        </>
+                    )}
 
                     {/* Separator */}
                     <div className={`${isCollapsed ? 'mx-1 my-4' : 'mx-3 my-5'}`}>

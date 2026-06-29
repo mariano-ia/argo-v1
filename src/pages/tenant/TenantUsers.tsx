@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Check, Clock, Send, Trash2, Users, X } from 'lucide-react';
+import { Check, Clock, Send, Trash2, Users } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
@@ -24,21 +24,15 @@ export const TenantUsers: React.FC = () => {
     const { role: callerRole, tenant } = useOutletContext<{ role?: string; tenant?: { id: string } | null }>();
 
     const [members, setMembers] = useState<Member[]>([]);
-    const [teamsList, setTeamsList] = useState<{ id: string; name: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const [inviteRole, setInviteRole] = useState<'coach' | 'member'>('coach');
-    const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
-    const [newTeamName, setNewTeamName] = useState('');
-    const [creatingTeam, setCreatingTeam] = useState(false);
     const [inviting, setInviting] = useState(false);
     const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [settingRole, setSettingRole] = useState<string | null>(null);
     const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
     const [deleting, setDeleting] = useState(false);
     const [resendingId, setResendingId] = useState<string | null>(null);
-    const [confirmUnassign, setConfirmUnassign] = useState<{ memberId: string; teamId: string } | null>(null);
-    const [unassigning, setUnassigning] = useState(false);
 
     const fetchMembers = async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -55,45 +49,7 @@ export const TenantUsers: React.FC = () => {
         finally { setLoading(false); }
     };
 
-    const fetchTeams = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-        try {
-            const res = await fetch(`/api/tenant-groups?tenant_id=${tenant?.id ?? ''}`, { headers: { Authorization: `Bearer ${session.access_token}` } });
-            if (res.ok) { const data = await res.json(); setTeamsList((data.groups ?? []).map((g: { id: string; name: string }) => ({ id: g.id, name: g.name }))); }
-        } catch { /* silently fail */ }
-    };
-
-    useEffect(() => { fetchMembers(); fetchTeams(); }, []);
-
-    // Create a team inline during the invite flow and auto-select it.
-    const handleCreateTeam = async () => {
-        const name = newTeamName.trim();
-        if (!name) return;
-        setCreatingTeam(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { setCreatingTeam(false); return; }
-        try {
-            const res = await fetch('/api/tenant-groups', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                body: JSON.stringify({ action: 'create', name, tenant_id: tenant?.id }),
-            });
-            const data = await res.json().catch(() => ({}));
-            if (res.ok && data.group?.id) {
-                const g = data.group as { id: string; name: string };
-                setTeamsList(prev => [...prev, { id: g.id, name: g.name }]);
-                setSelectedTeams(prev => { const n = new Set(prev); n.add(g.id); return n; });
-                setNewTeamName('');
-            } else {
-                setFeedback({ type: 'error', text: data.error ? `${data.error}` : tt(lang, 'No se pudo crear el plantel', 'Could not create team', 'Não foi possível criar o plantel') });
-            }
-        } catch {
-            setFeedback({ type: 'error', text: tt(lang, 'No se pudo crear el plantel', 'Could not create team', 'Não foi possível criar o plantel') });
-        } finally {
-            setCreatingTeam(false);
-        }
-    };
+    useEffect(() => { fetchMembers(); }, []);
 
     const handleInvite = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -110,7 +66,7 @@ export const TenantUsers: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${session.access_token}`,
                 },
-                body: JSON.stringify({ email: email.trim(), lang, role: inviteRole, teams: inviteRole === 'coach' ? Array.from(selectedTeams) : [], tenant_id: tenant?.id }),
+                body: JSON.stringify({ email: email.trim(), lang, role: inviteRole, teams: [], tenant_id: tenant?.id }),
             });
 
             if (res.ok) {
@@ -122,7 +78,6 @@ export const TenantUsers: React.FC = () => {
                         `${email.trim()} já tinha conta no Argo. Adicionamos à sua equipe.`)
                     : dt.users.enviado(email.trim()) });
                 setEmail('');
-                setSelectedTeams(new Set());
                 fetchMembers();
             } else {
                 const data = await res.json();
@@ -140,27 +95,6 @@ export const TenantUsers: React.FC = () => {
     };
 
     const isOwner = members.some(m => m.isCurrentUser && m.role === 'owner');
-
-    // Remove a coach from one of their assigned planteles (with confirmation).
-    const handleUnassign = async (memberId: string, teamId: string) => {
-        setUnassigning(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { setUnassigning(false); return; }
-        try {
-            const res = await fetch('/api/tenant-groups', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                body: JSON.stringify({ action: 'unassign_coach', group_id: teamId, member_id: memberId, tenant_id: tenant?.id }),
-            });
-            if (res.ok) { setFeedback({ type: 'success', text: tt(lang, 'Plantel quitado', 'Team removed', 'Plantel removido') }); fetchMembers(); }
-            else { setFeedback({ type: 'error', text: tt(lang, 'No se pudo quitar el plantel', 'Could not remove team', 'Não foi possível remover o plantel') }); }
-        } catch {
-            setFeedback({ type: 'error', text: tt(lang, 'No se pudo quitar el plantel', 'Could not remove team', 'Não foi possível remover o plantel') });
-        } finally {
-            setUnassigning(false);
-            setConfirmUnassign(null);
-        }
-    };
 
     // Resend a dashboard invitation to a pending member (regenerates a fresh
     // link server-side and re-emails it). Preserves role + plantel assignments.
@@ -297,41 +231,12 @@ export const TenantUsers: React.FC = () => {
                             {inviting ? '...' : dt.users.enviar}
                         </button>
                     </div>
-                    {/* Team picker + inline create (coach only) */}
-                    {inviteRole === 'coach' && (
-                        <div>
-                            <p className="text-[12px] text-argo-grey mb-1.5">{tt(lang, 'Asignar a planteles (opcional)', 'Assign to teams (optional)', 'Atribuir a plantéis (opcional)')}</p>
-                            {teamsList.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mb-2">
-                                    {teamsList.map(t => {
-                                        const sel = selectedTeams.has(t.id);
-                                        return (
-                                            <button key={t.id} type="button" onClick={() => { const n = new Set(selectedTeams); if (n.has(t.id)) n.delete(t.id); else n.add(t.id); setSelectedTeams(n); }} className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${sel ? 'border-argo-violet-500 bg-argo-violet-50 text-argo-violet-500' : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'}`}>
-                                                {t.name}
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                            <div className="flex items-center gap-2">
-                                <input
-                                    value={newTeamName}
-                                    onChange={e => setNewTeamName(e.target.value)}
-                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCreateTeam(); } }}
-                                    placeholder={tt(lang, 'Crear un plantel nuevo', 'Create a new team', 'Criar um plantel novo')}
-                                    className="flex-1 rounded-lg border border-argo-border bg-argo-bg px-3 py-2 text-[12px] outline-none focus:border-argo-violet-200 transition-colors"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleCreateTeam}
-                                    disabled={creatingTeam || !newTeamName.trim()}
-                                    className="px-3 py-2 rounded-lg border border-argo-border text-[12px] font-semibold text-argo-navy hover:bg-argo-bg disabled:opacity-40 transition-colors flex-shrink-0"
-                                >
-                                    {creatingTeam ? '...' : tt(lang, 'Crear plantel', 'Create team', 'Criar plantel')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
+                    <p className="text-[11px] text-argo-light">
+                        {tt(lang,
+                            'Los entrenadores se asignan a sus planteles desde la sección Planteles.',
+                            'Coaches are assigned to their teams from the Teams section.',
+                            'Os treinadores são atribuídos aos seus plantéis na seção Plantéis.')}
+                    </p>
                 </form>
                 {feedback && (
                     <p className={`text-xs mt-3 ${feedback.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
@@ -386,24 +291,11 @@ export const TenantUsers: React.FC = () => {
                                     </div>
                                     {m.teams && m.teams.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mt-1.5">
-                                            {m.teams.map(t => {
-                                                const isConfirming = confirmUnassign?.memberId === m.id && confirmUnassign?.teamId === t.id;
-                                                return (
-                                                    <span key={t.id} className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full border border-argo-border bg-argo-bg text-[11px] font-medium text-argo-secondary">
-                                                        {t.name}
-                                                        {isOwner && (isConfirming ? (
-                                                            <span className="inline-flex items-center gap-1.5 ml-0.5">
-                                                                <button onClick={() => handleUnassign(m.id, t.id)} disabled={unassigning} className="text-[10px] font-semibold text-red-600 hover:text-red-700 disabled:opacity-50">{tt(lang, 'Quitar', 'Remove', 'Remover')}</button>
-                                                                <button onClick={() => setConfirmUnassign(null)} className="text-[10px] text-argo-light hover:text-argo-grey">{dt.common.cancelar}</button>
-                                                            </span>
-                                                        ) : (
-                                                            <button onClick={() => setConfirmUnassign({ memberId: m.id, teamId: t.id })} className="p-0.5 rounded-full text-argo-light hover:text-red-500 hover:bg-red-50 transition-colors" title={tt(lang, 'Quitar del plantel', 'Remove from team', 'Remover do plantel')}>
-                                                                <X size={11} />
-                                                            </button>
-                                                        ))}
-                                                    </span>
-                                                );
-                                            })}
+                                            {m.teams.map(t => (
+                                                <span key={t.id} className="inline-flex items-center px-2.5 py-1 rounded-full border border-argo-border bg-argo-bg text-[11px] font-medium text-argo-secondary">
+                                                    {t.name}
+                                                </span>
+                                            ))}
                                         </div>
                                     )}
                                 </div>

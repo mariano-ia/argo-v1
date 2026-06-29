@@ -8,7 +8,7 @@ import { useToast } from '../../components/ui/Toast';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
-import { AXIS_COLORS } from '../../lib/designTokens';
+import { PlayerRow, type SessionRow } from './TenantPlayers';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
@@ -57,7 +57,6 @@ export const TenantGroups: React.FC = () => {
     // Detail
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [detailGroup, setDetailGroup] = useState<{ id: string; name: string; slug?: string } | null>(null);
-    const [members, setMembers] = useState<MemberRow[]>([]);
     const [coaches, setCoaches] = useState<CoachRow[]>([]);
 
     // Rename
@@ -65,7 +64,6 @@ export const TenantGroups: React.FC = () => {
     const [editName, setEditName] = useState('');
 
     // Assign coach
-    const [showAssign, setShowAssign] = useState(false);
     const [allMembers, setAllMembers] = useState<TenantMemberLite[]>([]);
 
     // Delete
@@ -73,6 +71,9 @@ export const TenantGroups: React.FC = () => {
 
     // Menu
     const [showMenu, setShowMenu] = useState(false);
+
+    // Players that compose the selected plantel (full sessions → clickable reports)
+    const [plantelSessions, setPlantelSessions] = useState<SessionRow[]>([]);
 
     /* ── Fetch teams ───────────────────────────────────────────────────────── */
     const fetchGroups = useCallback(async () => {
@@ -104,22 +105,35 @@ export const TenantGroups: React.FC = () => {
         if (devBypass) {
             const g = DEV_GROUPS.find(g => g.id === groupId);
             setDetailGroup(g ? { id: g.id, name: g.name, slug: g.slug } : null);
-            setMembers(DEV_MEMBERS[groupId] ?? []);
+            const dm = DEV_MEMBERS[groupId] ?? [];
             setCoaches([]);
+            setPlantelSessions(dm.map((m): SessionRow => ({
+                id: m.session_id, child_name: m.child_name, child_age: m.child_age ?? 10,
+                adult_name: 'Adulto Demo', adult_email: 'demo@example.com', sport: m.sport,
+                archetype_label: m.archetype_label, eje: m.eje, motor: m.motor,
+                eje_secundario: m.eje_secundario || null, lang: 'es', created_at: m.added_at,
+                answers: null, ai_sections: null,
+            })));
             return;
         }
         const token = await getToken();
         if (!token) return;
         const res = await fetch(`/api/tenant-groups?id=${groupId}&tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
-        if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setMembers(data.members); setCoaches(data.coaches ?? []); }
+        if (res.ok) { const data = await res.json(); setDetailGroup(data.group); setCoaches(data.coaches ?? []); }
+        // Full sessions scoped to this plantel → rich, clickable player roster.
+        const sres = await fetch(`/api/tenant-sessions?tenant_id=${tenant?.id ?? ''}&team=${groupId}`, { headers: authHeaders(token) });
+        if (sres.ok) { const sdata = await sres.json(); setPlantelSessions(sdata.sessions ?? []); }
+        // Institution members → assignable coach chips (assign/unassign in place).
+        const mres = await fetch(`/api/tenant-members?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
+        if (mres.ok) { const mdata = await mres.json(); setAllMembers(mdata.members ?? []); }
     }, [devBypass, tenant?.id]);
 
     const selectGroup = (id: string) => {
         setSelectedId(id);
         setEditing(false);
         setConfirmDelete(false);
-        setShowAssign(false);
         setShowMenu(false);
+        setPlantelSessions([]);
         fetchDetail(id);
     };
 
@@ -142,22 +156,12 @@ export const TenantGroups: React.FC = () => {
         if (!token) return;
         await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'delete', id: selectedId, tenant_id: tenant?.id }) });
         toast('success', dt.groups.grupoEliminado);
-        setSelectedId(null); setDetailGroup(null); setMembers([]); setCoaches([]);
+        setSelectedId(null); setDetailGroup(null); setPlantelSessions([]); setCoaches([]);
         fetchGroups();
         refreshTenant?.(); // a deleted plantel must drop out of the context switcher
     };
 
     /* ── Assign / unassign coach ───────────────────────────────────────────── */
-    const openAssign = async () => {
-        setShowAssign(true);
-        const token = await getToken();
-        if (!token) return;
-        try {
-            const res = await fetch(`/api/tenant-members?tenant_id=${tenant?.id ?? ''}`, { headers: authHeaders(token) });
-            if (res.ok) { const data = await res.json(); setAllMembers(data.members ?? []); }
-        } catch { /* noop */ }
-    };
-
     const handleAssignCoach = async (memberId: string) => {
         if (!selectedId) return;
         const token = await getToken();
@@ -176,7 +180,25 @@ export const TenantGroups: React.FC = () => {
     };
 
     const assignedIds = new Set(coaches.map(c => c.member_id));
-    const availableCoaches = allMembers.filter(m => m.role === 'coach' && !assignedIds.has(m.id));
+    // Chips: every institution coach + anyone currently assigned (covers an admin
+    // who got assigned), minus myself — the "Yo" chip handles self-assignment.
+    const chipMembers = allMembers.filter(m => (m.role === 'coach' || assignedIds.has(m.id)) && m.id !== memberId);
+
+    /* ── Toggle a coach (or myself) on/off this plantel ────────────────────── */
+    const toggleCoachAssignment = async (id: string) => {
+        if (assignedIds.has(id)) await handleUnassignCoach(id);
+        else await handleAssignCoach(id);
+        // Self-assignment changes which hats appear in the context switcher.
+        if (id === memberId) refreshTenant?.();
+    };
+
+    // Chip style: filled when assigned, outline when not.
+    const chipCls = (on: boolean) =>
+        `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all ${
+            on
+                ? 'bg-argo-violet-500 border-argo-violet-500 text-white hover:bg-argo-violet-600'
+                : 'border-argo-border text-argo-secondary hover:border-argo-violet-200'
+        }`;
 
     /* ── Loading ───────────────────────────────────────────────────────────── */
     if (!tenant) {
@@ -326,7 +348,7 @@ export const TenantGroups: React.FC = () => {
                                             <>
                                                 <div>
                                                     <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
-                                                    <p className="text-[11px] text-argo-light mt-0.5">{members.length} {members.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
+                                                    <p className="text-[11px] text-argo-light mt-0.5">{plantelSessions.length} {plantelSessions.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                                                 </div>
                                                 {isAdmin && (
                                                     <div className="relative">
@@ -362,101 +384,64 @@ export const TenantGroups: React.FC = () => {
 
                                 </div>
 
-                                {/* Coaches — admin only */}
+                                {/* Coaches — toggleable chips (assign / unassign). The
+                                    "Yo" chip lets the admin self-assign. Admin-only. */}
                                 {isAdmin && (
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5">
-                                            <UserCheck size={13} className="text-argo-grey" /> {tt(lang, 'Entrenadores', 'Coaches', 'Treinadores')}
-                                        </h3>
-                                        {isAdmin && (
-                                            <div className="flex items-center gap-3">
-                                                {memberId && (
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (assignedIds.has(memberId)) await handleUnassignCoach(memberId);
-                                                            else await handleAssignCoach(memberId);
-                                                            refreshTenant?.();
-                                                        }}
-                                                        className="text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity"
-                                                    >
-                                                        {assignedIds.has(memberId)
-                                                            ? tt(lang, 'Quitarme', 'Remove me', 'Sair')
-                                                            : tt(lang, 'Asignarme', 'Assign me', 'Atribuir-me')}
-                                                    </button>
-                                                )}
-                                                <button onClick={openAssign} className="flex items-center gap-1.5 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity">
-                                                    <Plus size={12} /> {tt(lang, 'Asignar', 'Assign', 'Atribuir')}
+                                    <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5 mb-1">
+                                        <UserCheck size={13} className="text-argo-grey" /> {tt(lang, 'Entrenadores', 'Coaches', 'Treinadores')}
+                                    </h3>
+                                    <p className="text-[11px] text-argo-light mb-3">
+                                        {tt(lang,
+                                            'Toca un chip para asignar o quitar. Los usuarios nuevos se crean en la sección Usuarios.',
+                                            'Tap a chip to assign or remove. Create new users in the Users section.',
+                                            'Toque um chip para atribuir ou remover. Crie novos usuários na seção Usuários.')}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {/* "Yo" chip — self assign/unassign */}
+                                        {memberId && (
+                                            <button onClick={() => toggleCoachAssignment(memberId)} className={chipCls(assignedIds.has(memberId))}>
+                                                {assignedIds.has(memberId) ? <Check size={11} /> : <Plus size={11} />}
+                                                {tt(lang, 'Yo', 'Me', 'Eu')}
+                                            </button>
+                                        )}
+                                        {/* One chip per assignable coach */}
+                                        {chipMembers.map(m => {
+                                            const on = assignedIds.has(m.id);
+                                            return (
+                                                <button key={m.id} onClick={() => toggleCoachAssignment(m.id)} className={chipCls(on)}>
+                                                    {on ? <Check size={11} /> : <Plus size={11} />}
+                                                    {m.full_name || m.email}
+                                                    {m.status === 'pending' && (
+                                                        <span className={`text-[10px] ${on ? 'text-white/80' : 'text-amber-500'}`}>({tt(lang, 'pendiente', 'pending', 'pendente')})</span>
+                                                    )}
                                                 </button>
-                                            </div>
+                                            );
+                                        })}
+                                        {/* Empty state: no users to assign yet */}
+                                        {!memberId && chipMembers.length === 0 && (
+                                            <p className="text-xs text-argo-light">{tt(lang, 'Todavía no hay usuarios. Crea entrenadores en la sección Usuarios.', 'No users yet. Create coaches in the Users section.', 'Ainda não há usuários. Crie treinadores na seção Usuários.')}</p>
                                         )}
                                     </div>
-                                    {coaches.length === 0 ? (
-                                        <p className="text-xs text-argo-light">{tt(lang, 'Sin entrenadores asignados.', 'No coaches assigned.', 'Sem treinadores atribuídos.')}</p>
-                                    ) : (
-                                        <div className="flex flex-wrap gap-2">
-                                            {coaches.map(c => (
-                                                <div key={c.member_id} className="flex items-center gap-2 pl-3 pr-1.5 py-1.5 rounded-lg border border-argo-border text-[12px] font-medium text-argo-secondary group">
-                                                    {c.full_name || c.email}
-                                                    {c.status === 'pending' && <span className="text-[10px] text-amber-500">({tt(lang, 'pendiente', 'pending', 'pendente')})</span>}
-                                                    {isAdmin && (
-                                                        <Tooltip text={tt(lang, 'Quitar', 'Remove', 'Remover')}>
-                                                            <button onClick={() => handleUnassignCoach(c.member_id)} className="p-0.5 rounded text-argo-light hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
-                                                                <X size={10} />
-                                                            </button>
-                                                        </Tooltip>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {showAssign && isAdmin && (
-                                        <div className="mt-3 pt-3 border-t border-argo-border">
-                                            {availableCoaches.length === 0 ? (
-                                                <p className="text-[11px] text-argo-light">{tt(lang, 'No hay entrenadores disponibles. Crea uno en Usuarios.', 'No coaches available. Create one in Users.', 'Nenhum treinador disponível. Crie um em Usuários.')}</p>
-                                            ) : (
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {availableCoaches.map(m => (
-                                                        <button key={m.id} onClick={() => handleAssignCoach(m.id)} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium border border-argo-border text-argo-secondary hover:border-argo-violet-200 transition-all">
-                                                            <Plus size={10} /> {m.full_name || m.email}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <button onClick={() => setShowAssign(false)} className="mt-2 text-[11px] text-argo-light hover:text-argo-grey transition-colors">{dt.common.cancelar}</button>
-                                        </div>
-                                    )}
                                 </div>
                                 )}
 
-                                {/* Players in this plantel — read-only (they join via the link) */}
+                                {/* Players in this plantel — full reports. Admin manages
+                                    read-only (PDF yes; archive/resend belong to the coach). */}
                                 <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                                     <div className="px-6 py-4 flex items-center justify-between border-b border-argo-border">
                                         <h3 className="text-[13px] font-semibold text-argo-navy flex items-center gap-1.5">
-                                            <Users size={13} className="text-argo-grey" /> {tt(lang, 'Jugadores', 'Players', 'Jogadores')} ({members.length})
+                                            <Users size={13} className="text-argo-grey" /> {tt(lang, 'Jugadores', 'Players', 'Jogadores')} ({plantelSessions.length})
                                         </h3>
-                                        <span className="text-[11px] text-argo-light">{tt(lang, 'Solo lectura', 'Read-only', 'Somente leitura')}</span>
+                                        <span className="text-[11px] text-argo-light">{tt(lang, 'Toca para ver el informe', 'Tap to open the report', 'Toque para ver o relatório')}</span>
                                     </div>
-                                    {members.length === 0 ? (
+                                    {plantelSessions.length === 0 ? (
                                         <p className="px-6 py-4 text-xs text-argo-light">{tt(lang, 'Este plantel todavía no tiene jugadores. Entran por el link del plantel.', 'This team has no players yet. They join via the team link.', 'Este plantel ainda não tem jogadores. Eles entram pelo link do plantel.')}</p>
                                     ) : (
                                         <div>
-                                            {members.map(m => {
-                                                const dot = AXIS_COLORS[m.eje] ?? '#6366f1';
-                                                return (
-                                                    <div key={m.id} className="flex items-center gap-3 px-6 py-3 border-b border-argo-border last:border-b-0">
-                                                        <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: dot }} />
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-medium text-argo-navy truncate">{m.child_name}</p>
-                                                            <p className="text-xs text-argo-light truncate">
-                                                                {m.archetype_label}
-                                                                {m.child_age ? ` · ${m.child_age} ${tt(lang, 'años', 'years', 'anos')}` : ''}
-                                                                {m.sport ? ` · ${m.sport}` : ''}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })}
+                                            {plantelSessions.map(s => (
+                                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} canManage={false} />
+                                            ))}
                                         </div>
                                     )}
                                 </div>
