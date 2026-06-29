@@ -119,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // profiles, so the prior _pending guard is implicit in the view.
         let query = sb
             .from('current_perfilamiento')
-            .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, current_profile_date, lang, answers, ai_sections')
+            .select('id, perfilamiento_id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, current_profile_date, lang, answers, ai_sections, share_token, reprofile_token, full_access, email_sent_at, perfilamiento_count, archived_at')
             .eq('tenant_id', tenantId)
             .is('deleted_at', null)
             .order('current_profile_date', { ascending: false })
@@ -148,11 +148,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Membership is keyed on the child id (= current_perfilamiento.id).
         const sessIds = (sessions ?? []).map((s: { id: string }) => s.id);
         const teamsBySession: Record<string, string[]> = {};
+        const historyByChild: Record<string, unknown[]> = {};
         if (sessIds.length > 0) {
             const { data: gm2 } = await sb.from('group_members').select('child_id, group_id').in('child_id', sessIds);
             for (const r of (gm2 ?? []) as { child_id: string; group_id: string }[]) {
                 if (boundGroupIds && !boundGroupIds.includes(r.group_id)) continue;
                 (teamsBySession[r.child_id] ??= []).push(r.group_id);
+            }
+            // Per-child perfilamiento history (resolved assessments, newest first) for
+            // the dashboard timeline. The current one is the first entry per child.
+            const { data: hist } = await sb
+                .from('perfilamientos')
+                .select('id, child_id, eje, motor, archetype_label, created_at, email_sent_at, share_token')
+                .in('child_id', sessIds)
+                .eq('status', 'resolved')
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false });
+            for (const h of (hist ?? []) as { child_id: string }[]) {
+                (historyByChild[h.child_id] ??= []).push(h);
             }
         }
         const withTeams = (sessions ?? []).map((s: Record<string, unknown>) => ({
@@ -161,6 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // profile date as current_profile_date; expose it as created_at too.
             created_at: s.current_profile_date,
             team_ids: teamsBySession[s.id as string] ?? [],
+            history: historyByChild[s.id as string] ?? [],
         }));
 
         return res.status(200).json({ sessions: withTeams, total: withTeams.length });

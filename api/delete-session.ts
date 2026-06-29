@@ -41,16 +41,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { id, type } = req.body;
 
         if (type === 'session' && id) {
-            // `id` is now a CHILD id (the roster slot the dashboard lists).
-            // Verify the child belongs to this tenant before deleting.
-            const { data: child } = await sb
-                .from('children')
-                .select('id, tenant_id')
-                .eq('id', id)
-                .single();
-
-            if (!child || child.tenant_id !== tenant.id) {
-                return res.status(404).json({ error: 'Session not found' });
+            // `id` may be a CHILD id (tenant dashboard roster list) or a
+            // PERFILAMIENTO id (superadmin per-play list). Resolve to the child,
+            // scoped to the caller's tenant. Deleting a "player" deletes the child.
+            let childId: string | null = null;
+            const { data: childRow } = await sb
+                .from('children').select('id, tenant_id').eq('id', id).maybeSingle();
+            if (childRow) {
+                if (childRow.tenant_id !== tenant.id) return res.status(404).json({ error: 'Session not found' });
+                childId = childRow.id;
+            } else {
+                const { data: perfRow } = await sb
+                    .from('perfilamientos').select('child_id, tenant_id').eq('id', id).maybeSingle();
+                if (!perfRow || perfRow.tenant_id !== tenant.id) {
+                    return res.status(404).json({ error: 'Session not found' });
+                }
+                childId = perfRow.child_id;
             }
 
             // Collect this child's perfilamiento ids so we can hard-delete the
@@ -59,7 +65,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: perfis } = await sb
                 .from('perfilamientos')
                 .select('id')
-                .eq('child_id', id);
+                .eq('child_id', childId);
             const perfiIds = (perfis ?? []).map(p => p.id);
 
             // HARD DELETE: remove related rows first, then the child itself.
@@ -81,14 +87,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 await sb.from('parental_consents').delete().in('session_id', perfiIds);
             }
 
-            // 4. Delete group_members entries for this child (membership is by child)
-            await sb.from('group_members').delete().eq('child_id', id);
+            // 4. Delete group_members + chem_group_members for this child (membership is by child)
+            await sb.from('group_members').delete().eq('child_id', childId);
+            await sb.from('chem_group_members').delete().eq('child_id', childId);
 
             // 5. Delete the child row itself. The FK on perfilamientos.child_id is
             //    ON DELETE CASCADE, so all of this child's perfilamientos go with it.
             const { error } = await sb.from('children')
                 .delete()
-                .eq('id', id)
+                .eq('id', childId)
                 .eq('tenant_id', tenant.id); // double-check with tenant_id
             if (error) {
                 console.error('[delete-session] child delete error:', error.message);
@@ -100,7 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 admin_email: user.email ?? 'unknown',
                 action: 'hard_delete_session',
                 target_type: 'session',
-                target_id: id,
+                target_id: childId,
                 details: { tenant_id: tenant.id, reason: 'tenant_request' },
             });
         } else if (type === 'lead' && id) {

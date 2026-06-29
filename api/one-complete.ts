@@ -110,6 +110,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         if (perfErr || !perfilamiento) {
             console.error('[one-complete] Perfilamiento insert error:', perfErr?.message);
+            // Clean up the just-created childless child so a retry doesn't orphan it.
+            await sb.from('children').delete().eq('id', child.id);
             return res.status(500).json({ error: 'Failed to save session' });
         }
 
