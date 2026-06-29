@@ -45,7 +45,11 @@ export const ConsentLanding: React.FC = () => {
                         lang: cd.lang,
                     });
 
-                    if (cd.flow_type === 'tenant' && cd.tenant_slug) {
+                    if (cd.flow_type === 'tenant' && cd.reprofile_token) {
+                        // Re-profile: return to the per-child link so the play appends
+                        // a perfilamiento to the existing child (not a new one).
+                        target = `/play/r/${cd.reprofile_token}?consent=${token}`;
+                    } else if (cd.flow_type === 'tenant' && cd.tenant_slug) {
                         target = `/play/${cd.tenant_slug}?consent=${token}`;
                     } else if (cd.flow_type === 'one' && cd.one_link_slug) {
                         target = `/one/${cd.one_link_slug}?consent=${token}`;

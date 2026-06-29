@@ -122,6 +122,7 @@ export const TenantReprofilePlay: React.FC = () => {
                 institutionName={tenantName}
                 institutionSport={tenantSport}
                 initialAdultData={adultData}
+                reprofileToken={reprofileToken}
             />
         );
     }

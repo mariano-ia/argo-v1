@@ -149,8 +149,11 @@ CREATE UNIQUE INDEX chem_group_members_unique ON public.chem_group_members(group
 CREATE INDEX chem_group_members_child_idx ON public.chem_group_members(child_id);
 
 -- ── 5. parental_consents: thread the child (keep session_id = the perfilamiento) ─
-ALTER TABLE public.parental_consents ADD COLUMN child_id  uuid REFERENCES public.children(id);
-ALTER TABLE public.parental_consents ADD COLUMN reprofile boolean NOT NULL DEFAULT false;
+ALTER TABLE public.parental_consents ADD COLUMN child_id        uuid REFERENCES public.children(id);
+-- When set, this consent authorizes a RE-PROFILE: the consent-landing redirect must
+-- return to /play/r/<reprofile_token> (not the general link) so the play appends a
+-- perfilamiento to the existing child instead of creating a new one.
+ALTER TABLE public.parental_consents ADD COLUMN reprofile_token text;
 UPDATE public.parental_consents pc SET child_id = p.child_id
   FROM public.perfilamientos p WHERE p.id = pc.session_id AND pc.session_id IS NOT NULL;
 -- session_id intentionally stays bound to the perfilamiento it authorized (COPPA chain, immutable).

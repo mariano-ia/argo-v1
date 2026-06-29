@@ -22,6 +22,8 @@ interface Props {
     readOnlySport?: string;
     /** Club flow: institution name shown read-only as play context. */
     institutionName?: string;
+    /** Re-profile: threaded into the consent request so the landing returns to /play/r/<token>. */
+    reprofileToken?: string;
     onComplete: (data: AdultData) => void;
     onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
@@ -33,6 +35,7 @@ export const AdultRegistration: React.FC<Props> = ({
     oneLinkId,
     readOnlySport,
     institutionName,
+    reprofileToken,
     onComplete,
     onConsentRequired,
 }) => {
@@ -85,6 +88,7 @@ export const AdultRegistration: React.FC<Props> = ({
                 flowType,
                 tenantId,
                 oneLinkId,
+                reprofileToken,
                 lang,
             });
             setSubmitting(false);

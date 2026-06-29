@@ -80,7 +80,7 @@ function consentEmailES(args: TemplateArgs): EmailTemplate {
     </div>
   </div>
 </body></html>`,
-        text: `Hola ${adultName},\n\n${childName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${childName}.\n\nConfirma aquí:\n${confirmUrl}\n\nEste enlace expira en 24 horas.\n\n¿Por qué? Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${childName}.\n\nSi no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.\n\nArgo Method — hola@argomethod.com`,
+        text: `Hola ${adultName},\n\n${childName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${childName}.\n\nConfirma aquí:\n${confirmUrl}\n\nEste enlace expira en 24 horas.\n\n¿Por qué? Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${childName}.\n\nSi no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.\n\nArgo Method. hola@argomethod.com`,
     };
 }
 
@@ -180,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const {
         adult_name, adult_email, child_name, child_age, sport,
-        flow_type, tenant_id, one_link_id, lang,
+        flow_type, tenant_id, one_link_id, reprofile_token, lang,
     } = req.body ?? {};
 
     // Basic validation
@@ -211,6 +211,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             flow_type,
             tenant_id: typeof tenant_id === 'string' ? tenant_id : null,
             one_link_id: typeof one_link_id === 'string' ? one_link_id : null,
+            reprofile_token: typeof reprofile_token === 'string' && /^[a-f0-9]{32}$/.test(reprofile_token) ? reprofile_token : null,
             lang: langSafe,
             expires_at: expiresAt,
         });

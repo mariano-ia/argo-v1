@@ -152,6 +152,9 @@ interface OnboardingV2Props {
      * perfilamiento to that child instead of creating a new child.
      */
     initialAdultData?: AdultData | null;
+    /** Re-profile: the child's reprofile_token, threaded into the consent request so an
+     *  under-13 re-profile returns to /play/r/<token> after consent (appends, not new child). */
+    reprofileToken?: string;
     /**
      * When true (used by /demo), the flow skips ALL onboarding screens, runs
      * the game with adult data provided via initialConsent, never writes to
@@ -161,7 +164,7 @@ interface OnboardingV2Props {
     demoMode?: boolean;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, demoMode = false }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, reprofileToken, demoMode = false }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -1132,6 +1135,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         flowType={tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth'}
                         tenantId={tenantId}
                         oneLinkId={oneLinkId}
+                        reprofileToken={reprofileToken}
                         readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}
                         institutionName={tenantId ? (institutionName || undefined) : undefined}
                         onComplete={data => { setAdultData(data); advance(); }}
