@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -25,7 +25,8 @@ import {
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
-export interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; }
+export interface PerfilamientoHistory { id: string; eje: string; motor: string; archetype_label: string; created_at: string; email_sent_at: string | null; share_token: string | null; }
+export interface SessionRow { id: string; perfilamiento_id?: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; share_token?: string | null; reprofile_token?: string | null; full_access?: boolean; email_sent_at?: string | null; perfilamiento_count?: number; archived_at?: string | null; history?: PerfilamientoHistory[]; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -49,6 +50,19 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
     const [expanded, setExpanded] = useState(false);
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
+    const [copied, setCopied] = useState(false);
+
+    const reprofileLink = session.reprofile_token
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/play/r/${session.reprofile_token}`
+        : null;
+    const copyReprofileLink = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!reprofileLink) return;
+        navigator.clipboard?.writeText(reprofileLink).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+        }).catch(() => {});
+    };
 
     const axisCfg = AXIS_CONFIG[session.eje];
     const dot = AXIS_COLORS[session.eje] ?? '#6366f1';
@@ -158,7 +172,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                 arquetipo:      arquetipoFull,
                 perfil:         sessionLang === 'es' ? report.perfil : '',
                 palabrasPuente: report.palabrasPuente,
-                sessionId:      session.id,
+                sessionId:      session.perfilamiento_id ?? session.id,
                 lang:           sessionLang,
             });
             setResendOk(true);
@@ -275,12 +289,25 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                     </span>
                 </Tooltip>
 
-                {/* Re-profile badge */}
-                {needsReprofile && (
-                    <Tooltip text={lang === 'en' ? `${months} months since last profile — we recommend a new session` : lang === 'pt' ? `${months} meses desde o último perfil — recomendamos uma nova sessão` : `${months} meses desde el último perfil, recomendamos una nueva sesión`} maxWidth={220}>
-                        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex-shrink-0 hidden sm:flex">
-                            <AlertCircle size={10} />
-                            {dt.players.rePerfilar}
+                {/* Re-profile: appears at 6 months. Copies the child's re-profile link. */}
+                {needsReprofile && reprofileLink && (
+                    <Tooltip
+                        text={copied
+                            ? (lang === 'en' ? 'Link copied. Share it with the responsible adult.' : lang === 'pt' ? 'Link copiado. Compartilhe com o adulto responsável.' : 'Link copiado. Compártelo con el adulto responsable del niño.')
+                            : (lang === 'en' ? `${months} months since the last profile. Behavior may have changed; copy the link and share it for a new profile.` : lang === 'pt' ? `${months} meses desde o último perfil. O comportamento pode ter mudado; copie o link e compartilhe para um novo perfil.` : `${months} meses desde el último perfil. El comportamiento puede haber cambiado. Copia el link y compártelo para un nuevo perfil.`)}
+                        maxWidth={240}
+                    >
+                        <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={copyReprofileLink}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') copyReprofileLink(e as unknown as React.MouseEvent); }}
+                            className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 cursor-pointer transition-colors ${copied ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200 active:bg-amber-100'}`}
+                        >
+                            {copied ? <Check size={10} /> : <Copy size={10} />}
+                            {copied
+                                ? (lang === 'en' ? 'Link copied' : lang === 'pt' ? 'Link copiado' : 'Link copiado')
+                                : dt.players.rePerfilar}
                         </span>
                     </Tooltip>
                 )}
