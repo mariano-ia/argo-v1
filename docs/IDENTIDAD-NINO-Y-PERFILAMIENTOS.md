@@ -25,10 +25,12 @@ Dos problemas de fondo, ambos resueltos acá:
    **siempre crea un niño nuevo**. Se elimina el dedup por nombre+email.
 2. **El niño y el perfilamiento son cosas distintas.** Un niño tiene un **historial** de perfilamientos. El perfil
    actual = el último. Re-perfilar **agrega**, nunca borra ni pisa.
-3. **Re-perfilar es explícito.** Único camino: botón "Re-perfilar" (ícono copiar) en la ficha del niño. **Aparece a
-   los 4 meses** del perfil actual (no antes), como recomendación. En hover explica que la conducta del niño pudo
-   cambiar. Al tocarlo copia el link propio del niño y muestra un snackbar ("Link copiado con éxito, compártelo
-   con el adulto responsable del niño"). Jugar ese link crea un perfilamiento nuevo para **ese** niño.
+3. **Re-perfilar es explícito y a los 6 meses.** Único camino: botón "Re-perfilar" (ícono copiar) en la ficha del
+   niño. **Aparece a los 6 meses** del perfil actual; antes de los 6 meses **no existe** el botón. Re-perfilar antes
+   es **imposible** (bloqueo duro en el servidor, no solo en la UI: aunque alguien tenga el link, el endpoint lo
+   rechaza si no pasaron 6 meses). En hover explica que la conducta del niño pudo cambiar. Al tocarlo copia el link
+   propio del niño y muestra un snackbar ("Link copiado con éxito, compártelo con el adulto responsable del niño").
+   Jugar ese link crea un perfilamiento nuevo para **ese** niño.
 4. **Cupos por niño.** Un niño = un cupo. Re-perfilar **no** consume cupo. Crear un niño nuevo sí (respeta el límite
    del plan). Unificar libera un cupo.
 5. **Duplicados con unificación.** Si dos niños parecen la misma persona (mismo email + mismo nombre en el tenant),
@@ -76,6 +78,7 @@ informe viven **co-locados en la misma fila**, así no pueden divergir. Se **pre
 | `eje` / `motor` / `archetype_label` | text | default `_pending` |
 | `eje_secundario` | text | |
 | `answers` | jsonb | forma `{axis, responseTimeMs}[]` |
+| `game_metrics` | jsonb | métricas crudas de los mini-juegos al finalizar (para recalcular el motor a futuro). **v1** |
 | `ai_sections` | jsonb | el informe |
 | `ai_tokens_input` / `ai_tokens_output` / `ai_cost_usd` | | |
 | `lang` | text | |
@@ -157,14 +160,21 @@ Rate-limit (KV) por `reprofile_token`.
 
 ## 6. Cupos
 
-**Un cupo = un niño activo** (`children` con `archived_at IS NULL AND deleted_at IS NULL`), no un perfilamiento.
-Este es el arreglo central: re-perfilar agrega un perfilamiento a un niño existente, así que **no puede** consumir
-cupo; solo el link general crea un niño y consume cupo.
+**Un cupo = un niño activo con al menos un perfilamiento `resolved`** (`children` no archivado/borrado, con un
+perfilamiento terminado). Un niño que **empezó pero no terminó** (solo perfilamientos `in_flight`) **no ocupa cupo**
+(decisión owner 2026-06-29; **supersede** la nota vieja de CLAUDE.md "abandoned sessions occupy a slot"). Re-perfilar
+agrega un perfilamiento a un niño existente, así que **no puede** consumir cupo; solo el link general que **se completa**
+consume cupo.
+
+> Consecuencia a diseñar: como el cupo se "cobra" al **terminar** (no al empezar), el chequeo de capacidad no puede ser
+> solo al `start-play`. Opciones: (a) reservar el cupo temporalmente al empezar y liberarlo si se abandona (TTL), o (b)
+> validar la capacidad al **completar** (al pasar a `resolved`). Recomendado (a) para no frustrar a un niño que ya jugó.
+> A definir en implementación.
 
 - Reescribir `check_roster_capacity` (`20260330_roster_model.sql`) para contar **niños activos**.
 - `/api/start-reprofile` saltea el chequeo por completo.
-- Un primer juego en curso (niño cuyo único perfilamiento es `in_flight`) **igual ocupa cupo** (coincide con
-  CLAUDE.md: "abandoned sessions occupy a slot, can be retried").
+- Un primer juego en curso o abandonado (niño cuyo único perfilamiento es `in_flight`) **no ocupa cupo** (ver
+  definición arriba). El cupo se cobra al primer `resolved`.
 - **Reconciliar las 5 definiciones hoy divergentes** sobre una sola: `check_roster_capacity`, el gate de reactivar en
   `archive-player` (ruteado por el **mismo** chequeo atómico `FOR UPDATE`, hoy es un SELECT-luego-UPDATE que puede
   correr en carrera), `tenant-info.active_players_count`, `admin-tenants` (quitar el `.not('eje','eq','_pending')`
@@ -172,8 +182,11 @@ cupo; solo el link general crea un niño y consume cupo.
   los gates del frontend (`LinkWidget`/`TenantHome`).
 - Argo One (niños con `tenant_id NULL`) nunca cuentan.
 - Unificar libera cupo solo (el conteo baja al tombstonear al absorbido); `liberados = activos_antes - activos_después`.
-- Retirar `check_reprofile_cooldown` (RPC de 6 meses, muerto y sin llamadas). Los 4 meses son una recomendación de
-  cliente sobre la fecha de la vista, no un candado.
+- **Candado de 6 meses (duro).** El re-perfilado tiene una cadencia obligatoria de 6 meses: no se puede re-perfilar
+  antes. Se enforcea en el **servidor** dentro de `/api/start-reprofile` (rechaza si `now() - current_profile_date < 6
+  meses`, error tipo `reprofile_too_soon`), no solo en la UI. El RPC muerto `check_reprofile_cooldown` se **revive/
+  reimplementa** como esta verificación (antes estaba sin llamadas). El botón en el panel aparece exactamente cuando se
+  cumple el candado.
 
 ## 7. UX del panel (`TenantPlayers.tsx`)
 
@@ -184,15 +197,18 @@ cupo; solo el link general crea un niño y consume cupo.
 - **Timeline / historial.** Bloque nuevo en el detalle expandido: una fila por perfilamiento `resolved` (fecha, chip
   de eje/motor, "enviado" si `email_sent_at`, deep-link "ver informe" a `/report/:perfilamientoId?token=share_token`).
   El actual (último) resaltado. `/api/tenant-sessions` debe devolver el array de historial por niño.
-- **Gate de 4 meses.** Cambiar `monthsSince(created_at) >= 6` por `>= 4` **y** sobre `current_profile_date` (no
-  `created_at`, que es cuándo se creó el cupo y haría re-flaggear a un niño recién perfilado, la misma conflación que
-  causó el bug). Aplicar en los **tres** sitios: flag por ficha (~57-58), conteo + banner ámbar (~633, 664-672), y
-  filtro "solo re-perfilar" (~619).
+- **Gate de 6 meses.** El umbral sigue siendo `>= 6`, pero el **input cambia** de `created_at` a `current_profile_date`
+  (no `created_at`, que es cuándo se creó el cupo y haría re-flaggear a un niño recién perfilado, la misma conflación
+  que causó el bug). El botón de re-perfilar **solo se renderiza** cuando se cumplen los 6 meses (antes no aparece).
+  Aplicar en los **tres** sitios: flag por ficha (~57-58), conteo + banner ámbar (~633, 664-672), y filtro "solo
+  re-perfilar" (~619). El bloqueo real vive en el servidor (`/api/start-reprofile`, ver §6); la UI solo refleja el
+  mismo umbral.
 - **Copy (tuteo, sin guiones).** Snackbar: "Link copiado con éxito, compártelo con el adulto responsable del niño."
   Tooltip hover: "El comportamiento del niño puede haber cambiado. Recomendamos un nuevo perfilamiento."
   (El borrador "enviáselo al padre del niño" usa voseo y lo rechaza el hook; usar "compártelo".)
-- **i18n** (`dashboardTranslations.ts`): `6 meses → 4 meses` en es (~408-410), en (~711-713), pt (~1014-1016); agregar
-  claves nuevas (3 idiomas) para snackbar, tooltip, label del timeline, aviso de duplicado y confirmación de unificar.
+- **i18n** (`dashboardTranslations.ts`): los textos de "6 meses" **se mantienen** (ya dicen 6); solo agregar claves
+  nuevas (3 idiomas) para snackbar, tooltip, label del timeline, aviso de duplicado, confirmación de unificar y el error
+  `reprofile_too_soon`.
 - **Help/Terms/Pricing**: reescribir "6 meses" y "se actualiza en el lugar" a 4 meses + modelo por-niño que **agrega**
   (no pisa). (Actualización proactiva del Help Center, por CLAUDE.md.)
 
@@ -220,8 +236,9 @@ Resolución (el modelo A lo hace limpio):
    `email_sent_at` de un informe previo.
 5. Arreglar el no-op existente (líneas ~141-143, ambas ramas de `eje_secundario` iguales).
 
-Fast-follow (no v1): agregar `game_metrics jsonb` a `perfilamientos` al finalizar, para que el motor sea
-re-resolvible deterministamente más adelante.
+**En v1 (decisión owner):** se guarda `game_metrics jsonb` en `perfilamientos` al finalizar. Esto **no** cambia la
+decisión del cron (sigue confiando en el motor co-locado; no recalcula), pero deja el motor **re-resolvible
+deterministamente** a futuro (si cambia el algoritmo de motor, para análisis, o para una verificación más fuerte).
 
 ## 9. Unificar dos niños (merge)
 
@@ -297,7 +314,8 @@ Modos de falla cubiertos:
    Verificar cero dangling.
 8. **`CREATE VIEW current_perfilamiento`** (último `resolved` por niño, id del niño AS id, `current_profile_date`,
    `perfilamiento_count`); GRANT/RLS espejando `sessions`.
-9. **Reescribir `check_roster_capacity`** (contar niños activos); re-apuntar el índice; retirar `check_reprofile_cooldown`.
+9. **Reescribir `check_roster_capacity`** (contar niños activos); re-apuntar el índice; **reimplementar
+   `check_reprofile_cooldown`** como el candado duro de 6 meses que usa `start-reprofile` (antes estaba sin llamadas).
 10. **`CREATE FUNCTION merge_children(...)`** SECURITY DEFINER (§9).
 11. **Código `session.ts`:** quitar `findExistingPlayer` + ambas ramas de overwrite; partir `start` en niño-nuevo vs
     re-perfilar (append vía `cid` firmado, sin cupo); `ensureTeamMembership` al **niño**; `cid` por `verifyPlayToken/signPlayToken`.
@@ -319,7 +337,7 @@ Modos de falla cubiertos:
 |---|---|
 | `api/session.ts` | Quitar `findExistingPlayer` + ambas ramas de overwrite. `start` niño-nuevo vs re-perfilar (cid firmado). `update` por `share_token`. `ensureTeamMembership` al niño. Validar `consent.child_id == cid`. |
 | `api/start-play.ts` | Link general: mantener tenant-by-slug + `check_roster_capacity` (cuenta niños). `play_token` sin `cid`. |
-| `api/start-reprofile.ts` | **Nuevo.** Resolver niño por `reprofile_token`, saltear cupo, firmar `{t,tm,cid,m:'r',exp}`. |
+| `api/start-reprofile.ts` | **Nuevo.** Resolver niño por `reprofile_token`, **candado duro de 6 meses** (rechazar `reprofile_too_soon` si `now() - current_profile_date < 6 meses`), saltear cupo, firmar `{t,tm,cid,m:'r',exp}`. |
 | `api/merge-players.ts` | **Nuevo.** `resolveTenantContext` + asersión de tenant + RPC `merge_children`. |
 | `api/report-recovery-cron.ts` | §8: `status='resolved'` + age floor; generar-no-reescribir; re-derivar solo eje skip-and-flag; fix no-op 141-143. |
 | `api/tenant-sessions.ts` | Leer la vista: una fila por niño + `reprofile_token` + `current_profile_date` + historial. |
@@ -343,26 +361,34 @@ Modos de falla cubiertos:
 | `src/pages/ReportPage.tsx` | Resolver a un perfilamiento. |
 | `src/pages/tenant/TenantHome.tsx` / `TenantDashboard.tsx` / `TenantSettings.tsx` / `LinkWidget.tsx` | `active_players_count` = niños activos; copy de "roster lleno". |
 | `src/pages/ConsentLanding.tsx` + `api/request-consent` + `api/confirm-consent` | Threading de `child_id`+`reprofile`; menores de 13 vuelven a `/play/r/<token>?consent=...`. |
-| `src/lib/dashboardTranslations.ts` | 6→4 meses (3 idiomas) + claves nuevas (snackbar tuteo, tooltip, timeline, duplicado, unificar). |
-| `src/lib/helpContent.ts` (+ `.en`) / `TermsPage.tsx` / `TenantPricing.tsx` | 4 meses + modelo append-not-overwrite. |
+| `src/lib/dashboardTranslations.ts` | Mantener "6 meses" (3 idiomas) + claves nuevas (snackbar tuteo, tooltip, timeline, duplicado, unificar, `reprofile_too_soon`). |
+| `src/lib/helpContent.ts` (+ `.en`) / `TermsPage.tsx` / `TenantPricing.tsx` | Mantener 6 meses + reescribir "se actualiza en el lugar" al modelo append-not-overwrite (por-niño, con historial). |
 | `src/lib/profileResolver.ts` | Sin editar, pero la lógica de conteo de eje/eje_secundario se **inlinea** byte a byte en el cron. |
 
-## 12. Decisiones abiertas para el owner
+## 12. Decisiones
 
-1. **Re-derivación del cron (importante).** El "re-resolver eje/motor desde answers" del item #6 no es seguro para el
-   **motor** (no es reproducible sin métricas de juego). Propuesta: confiar en `eje/motor` co-locados, generar-solo, y
-   opcionalmente re-derivar **solo el eje** que **saltea y avisa** si difiere (nunca reescribe). ¿Confirmás esta enmienda?
-2. **Nivel de cada FK** (la mayor decisión de esquema): membresías → niño; consents/Puentes/feedback → perfilamiento.
-   ¿Confirmás?
-3. **`game_metrics` ahora o fast-follow** (para que el motor sea re-resolvible a futuro). Recomendado: fast-follow.
-4. **Sin puntero `current_perfilamiento_id` en v1** (actual derivado en la vista). ¿OK, o querés un puntero mantenido por trigger por performance de lectura?
-5. **Permiso de unificar:** ¿solo owner o owner + coach? Recomendado owner + coach (el coach es quien ve el duplicado),
-   con actor logueado.
-6. **Link de un niño absorbido:** redirigir transparente al sobreviviente vía `merged_into` (recomendado) vs "link expirado".
-7. **Cap de frecuencia de re-perfilado** (p. ej. ignorar re-perfilados dentro de los 30 días del último) como
-   anti-spam. Recomendado agregar; confirmar ventana.
-8. **Un niño empezado pero incompleto ocupa cupo** (recomendado, coincide con CLAUDE.md). Confirmar para unificar las 5
-   definiciones de cupo y que admin deje de filtrar `_pending`.
+### Resueltas (owner, 2026-06-29)
+
+- **Re-derivación del cron:** confirmada la enmienda. El cron confía en `eje/motor` co-locados (modelo A), genera-solo,
+  y re-deriva **solo el eje** como red de seguridad: si difiere, **saltea y avisa**, nunca reescribe. El motor nunca se
+  recalcula (no es reproducible sin métricas de juego).
+- **Permiso de unificar:** **cualquier usuario** del tenant puede unificar (no solo el owner). `/api/merge-players`
+  valida que ambos niños sean del tenant del que llama; el actor queda logueado.
+- **Cadencia de re-perfilado: 6 meses, candado duro.** El botón aparece a los 6 meses del perfil actual; antes no
+  existe. Nadie puede re-perfilar antes, ni con el link en mano: `/api/start-reprofile` rechaza si no pasaron 6 meses
+  (`reprofile_too_soon`). No hay cap anti-spam artificial (el candado de 6 meses ya lo gobierna). El "4 meses" queda
+  descartado.
+- **`game_metrics`: en v1.** Se guarda al finalizar cada perfilamiento, para poder recalcular el motor a futuro.
+- **Niño incompleto no ocupa cupo.** Un niño que empezó pero no terminó (solo `in_flight`) no cuenta; el cupo se cobra
+  al primer `resolved`. Supersede la nota vieja de CLAUDE.md ("abandoned sessions occupy a slot"). Falta definir si el
+  cupo se reserva temporal al empezar (con TTL) o se valida al completar.
+
+### Abiertas
+
+2. **Nivel de cada FK** (mayor decisión de esquema): membresías → niño; consents/Puentes/feedback → perfilamiento.
+   ¿Confirmás? (Explicado en el chat 2026-06-29.)
+4. **Sin puntero `current_perfilamiento_id` en v1** (actual derivado en la vista). ¿OK, o puntero por trigger por performance?
+5. **Link de un niño absorbido:** redirigir transparente al sobreviviente vía `merged_into` (recomendado) vs "link expirado".
 
 ## 13. Riesgos clave
 
