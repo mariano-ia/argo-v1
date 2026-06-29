@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Argo One — El silencio del auto</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px; height: 1920px;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #0a0a0a;
+    overflow: hidden;
+    position: relative;
+  }
+  .bg {
+    position: absolute; top: 0; left: 0; right: 0; height: 60%;
+    background-image: url('hero-car-silence.png');
+    background-size: cover;
+    background-position: center 35%;
+  }
+  /* Top minimal gradient for logo */
+  .top-grad {
+    position: absolute; top: 0; left: 0; right: 0; height: 200px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
+  }
+  /* Solid bottom panel for text */
+  .bottom-panel {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 45%;
+    background: #0a0a0a;
+  }
+  /* Smooth transition between image and panel */
+  .transition {
+    position: absolute; bottom: 45%; left: 0; right: 0; height: 80px;
+    background: linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,1) 100%);
+  }
+
+  .top-content {
+    position: absolute; top: 0; left: 0; right: 0;
+    padding: 60px 70px;
+    z-index: 2;
+  }
+  .bottom-content {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 50px 70px 60px;
+    z-index: 2;
+    display: flex; flex-direction: column;
+    gap: 28px;
+  }
+
+  /* Logo */
+  .logo {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 36px; letter-spacing: -0.025em;
+  }
+  .logo .argo { font-weight: 800; color: #fff; }
+  .logo .method { font-weight: 100; color: #fff; }
+
+  /* Bottom content */
+  .bottom {
+    display: flex; flex-direction: column;
+    gap: 36px;
+  }
+
+  .headline {
+    font-size: 82px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+  .headline-2 {
+    font-size: 82px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    margin-top: 20px;
+  }
+
+  /* Divider */
+  .divider {
+    width: 80px;
+    height: 3px;
+    background: #955FB5;
+    border-radius: 100px;
+  }
+
+  /* Resolution copy */
+  .resolution {
+    font-size: 34px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.4;
+    max-width: 920px;
+    font-weight: 500;
+  }
+  .resolution strong {
+    color: #fff;
+    font-weight: 800;
+  }
+
+  /* CTA strip */
+  .cta {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 36px;
+    margin-top: 8px;
+  }
+  .cta-text {
+    color: #1D1D1F;
+    font-size: 30px; font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .cta-url {
+    color: #955FB5;
+    font-size: 24px; font-weight: 600;
+  }
+
+  /* Tiny meta */
+  .meta {
+    display: flex; gap: 28px;
+    margin-top: 4px;
+    color: rgba(255,255,255,0.55);
+    font-size: 20px; font-weight: 500;
+  }
+  .meta span { display: flex; align-items: center; gap: 8px; }
+  .meta .dot {
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+    display: inline-block;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="top-grad"></div>
+  <div class="bottom-panel"></div>
+  <div class="transition"></div>
+
+  <div class="top-content">
+    <div class="logo">
+      <span class="argo">Argo</span><span class="method">Method</span>
+    </div>
+  </div>
+
+  <div class="bottom-content">
+    <div>
+      <div class="headline">Lo único que él quiere<br>es que no le hables.</div>
+      <div class="headline-2">Lo único que tú quieres<br>es saber qué decirle.</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="resolution">
+      <strong>Argo One</strong> te muestra exactamente qué necesita escuchar tu hijo según su perfil deportivo. Una aventura interactiva de 10 minutos. Un informe completo por email.
+    </div>
+
+    <div class="cta">
+      <div class="cta-text">Descúbrelo →</div>
+      <div class="cta-url">argomethod.com/one</div>
+    </div>
+
+    <div class="meta">
+      <span>10 minutos</span>
+      <span class="dot"></span>
+      <span>Sin cuenta</span>
+      <span class="dot"></span>
+      <span>Pago único</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Argo One — Story 12 perfiles v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1080px; height: 1920px;
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    background: #000;
+    overflow: hidden;
+    position: relative;
+  }
+  .bg {
+    position: absolute; inset: 0;
+    background-image: url('hero-soccer-boy.png');
+    background-size: cover;
+    background-position: center 30%;
+  }
+  /* Top gradient for badge legibility */
+  .top-grad {
+    position: absolute; top: 0; left: 0; right: 0; height: 380px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 100%);
+  }
+  /* Bottom gradient for text legibility */
+  .bottom-grad {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 1100px;
+    background: linear-gradient(180deg, rgba(15,5,30,0) 0%, rgba(15,5,30,0.85) 35%, rgba(15,5,30,0.97) 100%);
+  }
+
+  .container {
+    position: relative; z-index: 2;
+    width: 100%; height: 100%;
+    padding: 60px 70px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Top — logo + science badge */
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 38px; letter-spacing: -0.025em;
+  }
+  .logo .argo { font-weight: 800; color: #fff; }
+  .logo .method { font-weight: 100; color: #fff; }
+
+  .science-badge {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 12px 22px;
+    color: #fff;
+    font-size: 20px; font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  /* Big floating number — overlaid on the boy */
+  .big-number {
+    position: absolute;
+    top: 380px;
+    right: 40px;
+    font-size: 380px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 0.85;
+    letter-spacing: -0.06em;
+    text-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    z-index: 3;
+  }
+  .big-number-sub {
+    position: absolute;
+    top: 720px;
+    right: 70px;
+    width: 380px;
+    font-size: 26px;
+    font-weight: 600;
+    color: #fff;
+    text-align: right;
+    line-height: 1.25;
+    z-index: 3;
+    letter-spacing: -0.005em;
+  }
+
+  /* Bottom content */
+  .bottom {
+    display: flex; flex-direction: column;
+    gap: 32px;
+  }
+
+  .headline {
+    font-size: 78px; font-weight: 800;
+    color: #fff; line-height: 1.05;
+    letter-spacing: -0.035em;
+  }
+  .headline em {
+    font-style: normal;
+    color: #C99FE0;
+  }
+
+  .sub {
+    font-size: 28px;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.45;
+    max-width: 800px;
+  }
+
+  /* Profile chips */
+  .chips {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .chip {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 16px;
+    padding: 22px 24px;
+    color: #fff;
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .chip.D { border-left: 4px solid #fb923c; }
+  .chip.I { border-left: 4px solid #fbbf24; }
+  .chip.S { border-left: 4px solid #4ade80; }
+  .chip.C { border-left: 4px solid #818cf8; }
+  .chip-more {
+    grid-column: span 2;
+    text-align: center;
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.25);
+    color: rgba(255,255,255,0.7);
+    font-size: 22px; font-weight: 500;
+    padding: 16px 24px;
+  }
+
+  /* CTA */
+  .cta {
+    background: #fff;
+    border-radius: 18px;
+    padding: 28px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 12px;
+  }
+  .cta-text {
+    color: #1D1D1F;
+    font-size: 30px; font-weight: 700;
+  }
+  .cta-url {
+    color: #955FB5;
+    font-size: 24px; font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="top-grad"></div>
+  <div class="bottom-grad"></div>
+
+  <div class="big-number">12</div>
+  <div class="big-number-sub">maneras<br>distintas de<br>vivir el deporte</div>
+
+  <div class="container">
+
+    <div class="top">
+      <div class="logo">
+        <span class="argo">Argo</span><span class="method">Method</span>
+      </div>
+      <div class="science-badge">Ciencia del comportamiento</div>
+    </div>
+
+    <div class="bottom">
+      <div class="headline">
+        ¿Cuál es la <em>de tu hijo</em>?
+      </div>
+      <div class="sub">
+        Una aventura interactiva de 10 minutos lo revela. Y te muestra cómo acompañarlo mejor en el deporte.
+      </div>
+
+      <div class="chips">
+        <div class="chip D">Impulsor Dinámico</div>
+        <div class="chip I">Conector Rítmico</div>
+        <div class="chip S">Sostenedor Sereno</div>
+        <div class="chip C">Estratega Observador</div>
+        <div class="chip-more">+ 8 perfiles más</div>
+      </div>
+
+      <div class="cta">
+        <div class="cta-text">Descúbrelo →</div>
+        <div class="cta-url">argomethod.com/one</div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>
