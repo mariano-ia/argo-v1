@@ -183,11 +183,10 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const DEMO_START_INDEX = SCREENS.findIndex(
         (s): s is Extract<ScreenDef, { type: 'story' }> => s.type === 'story' && s.slideId === 'intro_a',
     );
-    // Re-profile: 13+ skip straight to device-handoff; under-13 land on the
-    // registration screen so fresh parental consent is re-collected.
-    const reprofileStartIndex = initialAdultData
-        ? (initialAdultData.edad >= 13 ? DEVICE_HANDOFF_INDEX : ADULT_REGISTRATION_INDEX)
-        : null;
+    // Re-profile goes through the adult registration screen (pre-filled), so it follows
+    // the SAME flow as the first play: the responsible adult confirms identity + accepts
+    // T&C, and for under-13 children the parental consent step is re-collected.
+    const reprofileStartIndex = initialAdultData ? ADULT_REGISTRATION_INDEX : null;
     const [screenIndex, setScreenIndex] = useState(
         demoMode ? DEMO_START_INDEX
             : initialConsent ? DEVICE_HANDOFF_INDEX
@@ -1136,6 +1135,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         tenantId={tenantId}
                         oneLinkId={oneLinkId}
                         reprofileToken={reprofileToken}
+                        initialValues={initialAdultData ?? undefined}
                         readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}
                         institutionName={tenantId ? (institutionName || undefined) : undefined}
                         onComplete={data => { setAdultData(data); advance(); }}

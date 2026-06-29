@@ -64,7 +64,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         }).catch(() => {});
     };
 
-    const axisCfg = AXIS_CONFIG[session.eje];
     const dot = AXIS_COLORS[session.eje] ?? '#6366f1';
     const chip = AXIS_CHIP_STYLE[session.eje] ?? AXIS_CHIP_STYLE.C;
     const motorCfg = MOTOR_CHIP_STYLE[session.motor] ?? MOTOR_CHIP_STYLE['Medio'];
@@ -327,6 +326,24 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
+                            {/* Profile history timeline (full width, at the top) */}
+                            {(session.history?.length ?? 0) > 1 && (
+                                <div className="mb-5 pb-4 border-b border-argo-border">
+                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">
+                                        {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
+                                    </p>
+                                    <div className="flex flex-wrap gap-x-5 gap-y-1.5">
+                                        {(session.history ?? []).map((h, i) => (
+                                            <div key={h.id} className="flex items-center gap-2 text-xs">
+                                                <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
+                                                <span className="text-argo-secondary font-medium">{h.archetype_label}</span>
+                                                <span className="text-argo-light">{new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                                                {i === 0 && <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             {/* 2-column layout for detail */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
@@ -376,7 +393,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         >
                                             <div className="flex flex-wrap gap-1.5">
                                                 {reportData.palabrasPuente.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
                                                 ))}
                                             </div>
                                         </LockedSection>
@@ -385,7 +402,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {reportData.palabrasPuente.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium border" style={{ background: axisCfg?.bgColor, color: axisCfg?.color, borderColor: axisCfg?.borderColor }}>{w}</span>
+                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
                                                 ))}
                                             </div>
                                         </div>
@@ -528,23 +545,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                         <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
                                     </div>
-                                    {(session.history?.length ?? 0) > 1 && (
-                                        <div className="mt-3 pt-3 border-t border-argo-border">
-                                            <p className="text-[11px] font-semibold text-argo-grey uppercase tracking-wide mb-2">
-                                                {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
-                                            </p>
-                                            <div className="space-y-1.5">
-                                                {(session.history ?? []).map((h, i) => (
-                                                    <div key={h.id} className="flex items-center gap-2 text-xs">
-                                                        <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
-                                                        <span className="text-argo-secondary font-medium">{h.archetype_label}</span>
-                                                        <span className="text-argo-light">{new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
-                                                        {i === 0 && <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                     {canManage && (locked ? (
                                         <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
                                             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
@@ -669,7 +669,10 @@ export const TenantPlayers: React.FC = () => {
                 return s.child_name.toLowerCase().includes(q) || s.archetype_label.toLowerCase().includes(q) || (s.sport ?? '').toLowerCase().includes(q);
             }
             return true;
-        });
+        }).sort((a, b) =>
+            // Players due for re-profiling (>= 6 months) float to the top.
+            (monthsSince(b.created_at) >= 6 ? 1 : 0) - (monthsSince(a.created_at) >= 6 ? 1 : 0)
+        );
     }, [sessions, search, ejeFilter, plantelFilter, showReprofileOnly]);
 
     // Possible duplicates: same adult email + child name (same name != same child, so

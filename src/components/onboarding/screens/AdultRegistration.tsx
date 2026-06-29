@@ -24,6 +24,8 @@ interface Props {
     institutionName?: string;
     /** Re-profile: threaded into the consent request so the landing returns to /play/r/<token>. */
     reprofileToken?: string;
+    /** Re-profile: pre-fill the form with the existing child's identity (adult confirms). */
+    initialValues?: AdultData;
     onComplete: (data: AdultData) => void;
     onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
@@ -36,17 +38,18 @@ export const AdultRegistration: React.FC<Props> = ({
     readOnlySport,
     institutionName,
     reprofileToken,
+    initialValues,
     onComplete,
     onConsentRequired,
 }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
-    const [nombreAdulto, setNombreAdulto]   = useState('');
-    const [email, setEmail]                 = useState(userEmail);
-    const [nombreNino, setNombreNino]       = useState('');
-    const [edad, setEdad]                   = useState(10);
-    const [deporte, setDeporte]             = useState('');
+    const [nombreAdulto, setNombreAdulto]   = useState(initialValues?.nombreAdulto ?? '');
+    const [email, setEmail]                 = useState(initialValues?.email ?? userEmail);
+    const [nombreNino, setNombreNino]       = useState(initialValues?.nombreNino ?? '');
+    const [edad, setEdad]                   = useState(initialValues?.edad ?? 10);
+    const [deporte, setDeporte]             = useState(initialValues?.deporte ?? '');
     const [deporteCustom, setDeporteCustom] = useState('');
     const [accepted, setAccepted]           = useState(false);
     const [submitting, setSubmitting]       = useState(false);
