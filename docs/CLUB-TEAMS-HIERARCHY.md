@@ -33,7 +33,7 @@ Y, **separado de lo anterior**:
 
 Principios clave (decisiones del owner):
 - **El link es del plantel, no del entrenador.** Hay un link por plantel. El entrenador decide a qué grupos lo asigna después.
-- **La potestad de los jugadores es del entrenador.** El admin ve a todos en solo lectura (incluido el listado dentro de cada plantel); archivar/reenviar son del entrenador.
+- **La potestad de los jugadores es del entrenador.** El admin ve a todos en solo lectura (incluido el listado dentro de cada plantel, donde cada jugador abre el informe completo con descarga de PDF); archivar/reenviar son del entrenador.
 - **El admin solo envía juegos si también es entrenador de un plantel.** No hay link institución-wide: ese link no tendría plantel al cual atribuir. ("No queremos administradores de clubes compartiendo links.")
 
 ## Modelo de datos (migraciones)
@@ -62,10 +62,10 @@ Todo aditivo. Aplicado a prod vía MCP el 2026-06-10.
 
 - **Inicio**: stats + el/los link(s) de los planteles asignados (ambos roles). Si no hay plantel asignado, un aviso (no el link institucional).
 - **Jugadores** (antes "Mi equipo"): todos los jugadores de la institución (admin) / los del coach (coach), con **filtro por plantel** (admin). El admin es solo lectura de gestión (PDF sí; archivar/reenviar no).
-- **Planteles** (solo admin): lista de planteles + su(s) entrenador(es) + ABM (crear/renombrar/eliminar, asignar/quitar coaches). Listado de jugadores del plantel en **solo lectura** (fila: nombre + arquetipo + edad + deporte). Sin link, sin gestión de jugadores.
+- **Planteles** (solo admin): lista de planteles + su(s) entrenador(es) + ABM (crear/renombrar/eliminar). Los entrenadores se asignan con **chips toggleables** (tocar para asignar/quitar, **con confirmación**) más un chip **"Yo"** para autoasignarse en un toque. No se crean usuarios desde aquí (eso es en Usuarios). El plantel muestra su **listado completo de jugadores**; cada jugador se expande al informe completo con descarga de PDF. El admin gestiona en solo lectura (PDF sí; archivar/reenviar son del entrenador). Sin link.
 - **Química de grupos**: arma grupos con tus jugadores y analiza la química (GroupBalancePanel). Ambos roles, scopeado.
 - **Argo Coach** (chat): consultor IA, scopeado al coach; historial por-usuario.
-- **Usuarios** (solo admin): invitar admin/entrenador; los planteles asignados a cada coach son **chips con X** (quitar con confirmación → `unassign_coach`).
+- **Usuarios** (solo admin): crear usuarios (email + nivel Entrenador/Administrador), cambiar el nivel de un miembro, reenviar invitación (pendiente) y eliminar. Los planteles de cada miembro aparecen como **chips de solo lectura** (informativos, sin X). La asignación a planteles se hace **solo** en la sección Planteles.
 - **Guía / Ajustes**: ajustes de institución solo del owner; el coach edita su propio perfil.
 
 ## Roles & scoping (resumen técnico)

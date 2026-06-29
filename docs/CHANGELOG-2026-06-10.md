@@ -12,6 +12,8 @@ Estado del modelo final: [CLUB-TEAMS-HIERARCHY.md](CLUB-TEAMS-HIERARCHY.md). Aju
 
 `4f19d4c` · **crear plantel inline al invitar un entrenador** (desde Usuarios).
 
+> **Superseded (2026-06):** el formulario de invitación ya no asigna ni crea planteles; solo pide email + nivel. Los planteles se crean en Planteles y la asignación se hace allí con chips toggleables. Ver `CLUB-TEAMS-HIERARCHY.md`.
+
 `b6aa8b0` · **scoping por rol de ajustes + link de juego** para coaches (settings owner-only; el coach ve su link, no el institucional).
 
 `b297f24` · **historial de Argo Coach por-usuario.** Migración `20260610_chat_messages_member_scope.sql` (chat_messages.member_id).
@@ -36,6 +38,8 @@ Estado del modelo final: [CLUB-TEAMS-HIERARCHY.md](CLUB-TEAMS-HIERARCHY.md). Aju
 
 `1226381` · **admin solo lectura en jugadores** (sin archivar/reenviar/reactivar; PDF queda) — la potestad de los jugadores es del entrenador. Filas de jugador estilo "Jugadores" en Planteles (nombre + arquetipo + edad + deporte).
 
+> **Superseded (2026-06):** el listado de jugadores en Planteles ahora muestra el roster completo y cada jugador se expande al informe completo con descarga de PDF (admin en solo lectura: PDF sí; archivar/reenviar del entrenador). Ver `CLUB-TEAMS-HIERARCHY.md`.
+
 ## Fase E — Detalles de UX
 
 `d7a2e6d` · ícono (i) con tooltip al lado de "Descargar PDF" (explica que es el informe extendido que reciben los padres).
@@ -51,6 +55,8 @@ Estado del modelo final: [CLUB-TEAMS-HIERARCHY.md](CLUB-TEAMS-HIERARCHY.md). Aju
 ## Fase G — Usuarios: chips de plantel
 
 `9f32058` · **chips de plantel removibles por entrenador** en Usuarios: X → confirmación → `unassign_coach` (desasigna al coach del plantel; el plantel y sus jugadores quedan). Resuelve "el coach con 2 planteles no podía quedarse con uno".
+
+> **Superseded (2026-06):** los chips de plantel en Usuarios pasaron a solo lectura (informativos, sin X). La asignación/desasignación ahora se hace con chips toggleables (incluido el chip "Yo"), con confirmación, en la sección Planteles. Ver `CLUB-TEAMS-HIERARCHY.md`.
 
 ## Fase H — Datos demo (DB, sin commit de código)
 
