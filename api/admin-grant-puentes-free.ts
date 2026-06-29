@@ -122,7 +122,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
         const { data: session, error: sErr } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, adult_email, child_name, lang, tenant_id')
             .eq('id', session_id)
             .maybeSingle();
@@ -178,8 +178,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Multi-child: include all siblings of the same email, capped at 5.
+        // source_session_id (in puentes_sessions) still binds to a perfilamiento
+        // id, so we list resolved perfilamientos here (not the child view).
         const { data: siblings } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, child_name, created_at')
             .eq('adult_email', session.adult_email)
             .is('deleted_at', null)

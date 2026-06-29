@@ -148,7 +148,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { data: candidates, error: candErr } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, adult_email, adult_name, child_name, lang, created_at')
             .lt('created_at', threshold)
             .is('puentes_reminder_sent_at', null)
@@ -188,7 +188,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .eq('status', 'paid')
                     .maybeSingle();
                 if (existing) {
-                    await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
+                    await sb.from('perfilamientos').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
                     skippedPaid++;
                     continue;
                 }
@@ -243,8 +243,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     continue;
                 }
 
-                // Mark ALL of this parent's pending sessions as reminded
-                await sb.from('sessions').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
+                // Mark ALL of this parent's pending perfilamientos as reminded
+                await sb.from('perfilamientos').update({ puentes_reminder_sent_at: new Date().toISOString() }).in('id', sessionIds);
                 sent++;
             } catch (e: any) {
                 errors.push(`${adultEmail}: ${e?.message || String(e)}`);

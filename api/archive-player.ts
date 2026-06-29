@@ -73,22 +73,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Missing session_id or action' });
         }
 
-        // Verify session belongs to this tenant
-        const { data: session } = await sb
-            .from('sessions')
+        // A "player" is now a CHILD (the roster slot). `session_id` carries the
+        // child id (the dashboard lists children via current_perfilamiento).
+        const { data: child } = await sb
+            .from('children')
             .select('id, archived_at, tenant_id')
             .eq('id', session_id)
             .eq('tenant_id', tenantId)
             .is('deleted_at', null)
             .maybeSingle();
 
-        if (!session) return res.status(404).json({ error: 'Session not found' });
+        if (!child) return res.status(404).json({ error: 'Session not found' });
 
         if (action === 'archive') {
-            if (session.archived_at) return res.status(400).json({ error: 'Already archived' });
+            if (child.archived_at) return res.status(400).json({ error: 'Already archived' });
 
             const { error } = await sb
-                .from('sessions')
+                .from('children')
                 .update({ archived_at: new Date().toISOString() })
                 .eq('id', session_id);
 
@@ -97,9 +98,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         if (action === 'reactivate') {
-            if (!session.archived_at) return res.status(400).json({ error: 'Not archived' });
+            if (!child.archived_at) return res.status(400).json({ error: 'Not archived' });
 
-            // Check roster capacity before reactivating
+            // Check roster capacity before reactivating. A slot = an active CHILD
+            // (not archived, not deleted, not merged away).
             const { data: tenant } = await sb
                 .from('tenants')
                 .select('roster_limit')
@@ -107,18 +109,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .single();
 
             const { count } = await sb
-                .from('sessions')
+                .from('children')
                 .select('*', { count: 'exact', head: true })
                 .eq('tenant_id', tenantId)
                 .is('archived_at', null)
-                .is('deleted_at', null);
+                .is('deleted_at', null)
+                .is('merged_into', null);
 
             if ((count ?? 0) >= (tenant?.roster_limit ?? 0)) {
                 return res.status(403).json({ error: 'roster_full' });
             }
 
             const { error } = await sb
-                .from('sessions')
+                .from('children')
                 .update({ archived_at: null })
                 .eq('id', session_id);
 

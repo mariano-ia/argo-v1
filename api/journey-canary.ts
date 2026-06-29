@@ -247,12 +247,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 tenant_id: tenantId, play_token: teamToken, lang: 'es', is_demo: true,
               }),
             });
-            const teamSessionId = String(sv.body.id ?? '');
-            if (sv.status !== 200 || sv.body.ok !== true || !teamSessionId) {
+            // Membership is keyed on the CHILD now (group_members.child_id); the save
+            // response returns both the perfilamiento id and the child_id.
+            const teamChildId = String(sv.body.child_id ?? '');
+            if (sv.status !== 200 || sv.body.ok !== true || !teamChildId) {
               failures.push({ step: 'plantel-save-session', ok: false, detail: `status=${sv.status} body=${JSON.stringify(sv.body).slice(0, 160)}` });
             } else {
               const { data: gm } = await sb.from('group_members')
-                .select('id').eq('group_id', teamId).eq('session_id', teamSessionId).maybeSingle();
+                .select('child_id').eq('group_id', teamId).eq('child_id', teamChildId).maybeSingle();
               if (!gm) {
                 failures.push({ step: 'plantel-attribution', ok: false, detail: 'session saved but not attributed to the plantel (no group_members row)' });
               }
@@ -262,20 +264,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       } catch (e) { failures.push({ step: 'plantel-attribution', ok: false, detail: String(e) }); }
     }
   } finally {
-    // Cleanup — ALWAYS, even on failure. Hard-delete every canary session for the
-    // QA tenant (self-healing: clears leftovers from a prior crashed run too), so
-    // the roster stays clean and is_demo rows never accumulate. Children FK rows
-    // (feedback/chat_messages/...) are deleted first in case any exist.
+    // Cleanup — ALWAYS, even on failure. The roster slot is the CHILD now, so we
+    // hard-delete every canary child for the QA tenant (self-healing: clears
+    // leftovers from a prior crashed run too). Deleting the child CASCADES its
+    // perfilamientos + group_members + chem_group_members (FKs ON DELETE CASCADE),
+    // so the roster stays clean and is_demo rows never accumulate. feedback /
+    // chat_messages reference the perfilamiento id (FK unchanged), so we clear
+    // those by perfilamiento id first in case any exist.
     try {
-      let q = sb.from('sessions').select('id').in('child_name', [CANARY_CHILD_NAME, CANARY_TEAM_CHILD]).eq('is_demo', true);
-      if (tenantId) q = q.eq('tenant_id', tenantId);
-      const { data: stale } = await q;
-      const ids = (stale ?? []).map((r: { id: string }) => r.id);
-      if (ids.length) {
-        await sb.from('feedback').delete().in('session_id', ids).then(() => {}, () => {});
-        await sb.from('chat_messages').delete().in('session_id', ids).then(() => {}, () => {});
-        await sb.from('group_members').delete().in('session_id', ids).then(() => {}, () => {});
-        await sb.from('sessions').delete().in('id', ids);
+      let cq = sb.from('children').select('id').in('child_name', [CANARY_CHILD_NAME, CANARY_TEAM_CHILD]).eq('is_demo', true);
+      if (tenantId) cq = cq.eq('tenant_id', tenantId);
+      const { data: staleChildren } = await cq;
+      const childIds = (staleChildren ?? []).map((r: { id: string }) => r.id);
+      if (childIds.length) {
+        const { data: stalePerf } = await sb.from('perfilamientos').select('id').in('child_id', childIds);
+        const perfIds = (stalePerf ?? []).map((r: { id: string }) => r.id);
+        if (perfIds.length) {
+          await sb.from('feedback').delete().in('session_id', perfIds).then(() => {}, () => {});
+          await sb.from('chat_messages').delete().in('session_id', perfIds).then(() => {}, () => {});
+        }
+        // Cascades perfilamientos + group_members + chem_group_members.
+        await sb.from('children').delete().in('id', childIds);
       }
     } catch (e) { console.warn('[journey-canary] cleanup failed (non-fatal):', e); }
   }

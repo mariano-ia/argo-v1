@@ -94,45 +94,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             })
             .eq('token', token);
 
-        // Find all matching sessions. Same matching policy as request-delete:
-        // exact email, substring child_name (case-insensitive).
+        // Find all matching children (the persistent identity to erase). Same
+        // matching policy as request-delete: exact email, substring child_name
+        // (case-insensitive). Identity columns live on `children` now.
         // Escape LIKE wildcards in the stored email so a crafted value can never
-        // mass-match (and mass-delete) other parents' sessions via ILIKE.
+        // mass-match (and mass-delete) other parents' data via ILIKE.
         const emailPattern = request.adult_email.replace(/([\\%_])/g, '\\$1');
-        let sessionQuery = sb
-            .from('sessions')
+        let childQuery = sb
+            .from('children')
             .select('id')
             .ilike('adult_email', emailPattern);
         if (request.child_name) {
             const safe = request.child_name.replace(/[%_]/g, '\\$&');
-            sessionQuery = sessionQuery.ilike('child_name', `%${safe}%`);
+            childQuery = childQuery.ilike('child_name', `%${safe}%`);
         }
-        const { data: matchedSessions, error: matchErr } = await sessionQuery;
+        const { data: matchedChildren, error: matchErr } = await childQuery;
         if (matchErr) {
             console.error('[confirm-delete] match error:', matchErr.message);
             return res.status(500).json({ ok: false, error: 'db_error' });
         }
 
-        const sessionIds = (matchedSessions ?? []).map(s => s.id);
+        const childIds = (matchedChildren ?? []).map(c => c.id);
         let deletedCount = 0;
 
-        if (sessionIds.length > 0) {
-            // Hard delete related rows first (same order as delete-session.ts)
-            await sb.from('feedback').delete().in('session_id', sessionIds);
-            await sb.from('chat_messages').delete().in('session_id', sessionIds);
-            await sb.from('group_members').delete().in('session_id', sessionIds);
-            await sb.from('parental_consents').delete().in('session_id', sessionIds);
+        if (childIds.length > 0) {
+            // Collect the perfilamiento ids for these children so we can hard
+            // delete the rows that FK-reference a PERFILAMIENTO (feedback,
+            // chat_messages, parental_consents still key off a perfilamiento id).
+            const { data: perfis } = await sb
+                .from('perfilamientos')
+                .select('id')
+                .in('child_id', childIds);
+            const perfiIds = (perfis ?? []).map(p => p.id);
 
+            // Hard delete related rows first (same order as delete-session.ts)
+            if (perfiIds.length > 0) {
+                await sb.from('feedback').delete().in('session_id', perfiIds);
+                await sb.from('chat_messages').delete().in('session_id', perfiIds);
+                await sb.from('parental_consents').delete().in('session_id', perfiIds);
+            }
+            // group_members keys on the child now.
+            await sb.from('group_members').delete().in('child_id', childIds);
+
+            // Delete the children. perfilamientos.child_id is ON DELETE CASCADE,
+            // so every matching child's perfilamientos are erased with it.
             const { error: delErr, count: delCount } = await sb
-                .from('sessions')
+                .from('children')
                 .delete({ count: 'exact' })
-                .in('id', sessionIds);
+                .in('id', childIds);
 
             if (delErr) {
-                console.error('[confirm-delete] session delete error:', delErr.message);
+                console.error('[confirm-delete] child delete error:', delErr.message);
                 return res.status(500).json({ ok: false, error: 'delete_failed' });
             }
-            deletedCount = delCount ?? sessionIds.length;
+            deletedCount = delCount ?? childIds.length;
         }
 
         // Mark as completed

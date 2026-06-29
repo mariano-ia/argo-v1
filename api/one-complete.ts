@@ -6,8 +6,9 @@ import { createClient } from '@supabase/supabase-js';
  * Body: { link_id, session_data }
  *
  * Called when an Argo One odyssey is completed.
- * Saves session to sessions table (no tenant_id), marks link as completed,
- * and triggers the report email to the recipient.
+ * Creates a child (no tenant_id) + a resolved perfilamiento (no tenant_id),
+ * marks the link as completed (one_links.session_id = the perfilamiento id, so
+ * the /report/:id link stays valid), and triggers the report email.
  */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -55,10 +56,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!link) return res.status(404).json({ error: 'Link not found' });
         if (link.status === 'completed') return res.status(400).json({ error: 'Already completed' });
 
-        // Save session (no tenant_id — this is Argo One)
-        const { data: session, error: sessErr } = await sb
-            .from('sessions')
+        // Argo One: a completed play creates a CHILD (tenant_id NULL = persistent
+        // roster/identity entity) plus a resolved PERFILAMIENTO (the assessment).
+        // 1:1 here — each Argo One link yields exactly one child + one perfilamiento.
+        const lang = session_data.lang || 'es';
+
+        const { data: child, error: childErr } = await sb
+            .from('children')
             .insert({
+                tenant_id: null,  // Argo One: no tenant
+                adult_name: session_data.adult_name,
+                adult_email: session_data.adult_email,
+                child_name: session_data.child_name,
+                child_age: session_data.child_age,
+                sport: session_data.sport,
+                lang,
+            })
+            .select('id')
+            .single();
+
+        if (childErr || !child) {
+            console.error('[one-complete] Child insert error:', childErr?.message);
+            return res.status(500).json({ error: 'Failed to save session' });
+        }
+
+        // Save the perfilamiento, the assessment (no tenant_id — this is Argo One).
+        // Identity columns are still present + populated per row.
+        const { data: perfilamiento, error: perfErr } = await sb
+            .from('perfilamientos')
+            .insert({
+                child_id: child.id,
+                status: 'resolved',
                 adult_name: session_data.adult_name,
                 adult_email: session_data.adult_email,
                 child_name: session_data.child_name,
@@ -73,28 +101,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_tokens_input: session_data.ai_tokens_input || 0,
                 ai_tokens_output: session_data.ai_tokens_output || 0,
                 ai_cost_usd: session_data.ai_cost_usd || 0,
-                lang: session_data.lang || 'es',
+                lang,
                 tenant_id: null,  // Argo One: no tenant
                 last_profiled_at: new Date().toISOString(),
             })
             .select('id')
             .single();
 
-        if (sessErr) {
-            console.error('[one-complete] Session insert error:', sessErr.message);
+        if (perfErr || !perfilamiento) {
+            console.error('[one-complete] Perfilamiento insert error:', perfErr?.message);
             return res.status(500).json({ error: 'Failed to save session' });
         }
 
-        // Mark link as completed
+        // Mark link as completed. session_id stores the PERFILAMIENTO id so the
+        // /report/:id link (read by perfilamiento id) stays valid.
         await sb.from('one_links').update({
             status: 'completed',
-            session_id: session!.id,
+            session_id: perfilamiento.id,
             completed_at: new Date().toISOString(),
         }).eq('id', link_id);
 
         return res.status(200).json({
             ok: true,
-            session_id: session!.id,
+            session_id: perfilamiento.id,
         });
     } catch (err) {
         console.error('[one-complete] Error:', err);

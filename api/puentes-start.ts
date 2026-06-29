@@ -69,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const childMap: Record<string, any> = {};
         if (sourceIds.length > 0) {
             const { data: childRows } = await sb
-                .from('sessions')
+                .from('perfilamientos')
                 .select('id, child_name, eje, motor, archetype_label, sport, lang')
                 .in('id', sourceIds);
             for (const c of childRows ?? []) {

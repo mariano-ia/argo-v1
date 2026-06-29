@@ -7,16 +7,17 @@ import { createClient } from '@supabase/supabase-js';
  * Daily cron (Vercel) that hard-deletes stale data to comply with the
  * retention policy documented in the privacy page. Runs at 03:00 UTC.
  *
- * Retention rules:
+ * Retention rules (the slot/archive lifecycle now lives on `children`; each
+ * child hard-delete cascades its perfilamientos via the FK):
  *  - parental_consents: expired rows older than 7 days are deleted.
  *  - parental_consents: confirmed-but-unused rows (consumed_at IS NULL)
  *    older than 48h are deleted — the 24h token + 24h grace period.
- *  - sessions (tenant archived): rows with archived_at older than 2 years
+ *  - children (tenant archived): rows with archived_at older than 2 years
  *    are hard-deleted along with their related feedback/chat/group rows.
- *  - sessions (Argo One): rows with tenant_id IS NULL and created_at older
- *    than 2 years are hard-deleted. Argo One sessions are identified by
+ *  - children (Argo One): rows with tenant_id IS NULL and created_at older
+ *    than 2 years are hard-deleted. Argo One children are identified by
  *    the absence of a tenant_id.
- *  - Previously soft-deleted sessions (deleted_at IS NOT NULL) are purged
+ *  - Previously soft-deleted children (deleted_at IS NOT NULL) are purged
  *    as part of the migration to hard deletes — any remaining rows older
  *    than 30 days get hard-deleted.
  *
@@ -102,10 +103,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             results.stale_confirmed_deleted = deletedStale?.length ?? 0;
         }
 
-        // ── 3. Tenant sessions archived > 2 years ──────────────────────
+        // Hard-deletes a set of children: removes the rows that FK-reference
+        // their perfilamientos (feedback/chat/parental_consents key on a
+        // perfilamiento id), removes group_members (keyed on child_id), then
+        // deletes the children — perfilamientos.child_id is ON DELETE CASCADE.
+        const purgeChildren = async (childIds: string[]): Promise<{ error?: string }> => {
+            const { data: perfis } = await sb
+                .from('perfilamientos')
+                .select('id')
+                .in('child_id', childIds);
+            const perfiIds = (perfis ?? []).map(r => r.id);
+            if (perfiIds.length > 0) {
+                await sb.from('feedback').delete().in('session_id', perfiIds);
+                await sb.from('chat_messages').delete().in('session_id', perfiIds);
+                await sb.from('parental_consents').delete().in('session_id', perfiIds);
+            }
+            await sb.from('group_members').delete().in('child_id', childIds);
+            const { error: errDel } = await sb.from('children').delete().in('id', childIds);
+            return errDel ? { error: errDel.message } : {};
+        };
+
+        // ── 3. Tenant children archived > 2 years ──────────────────────
         // Fetch IDs first so we can cascade-delete children explicitly.
         const { data: oldArchived, error: err3fetch } = await sb
-            .from('sessions')
+            .from('children')
             .select('id')
             .not('archived_at', 'is', null)
             .lt('archived_at', twoYearsAgo);
@@ -115,14 +136,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else {
             const ids = (oldArchived ?? []).map(r => r.id);
             if (ids.length > 0) {
-                await sb.from('feedback').delete().in('session_id', ids);
-                await sb.from('chat_messages').delete().in('session_id', ids);
-                await sb.from('group_members').delete().in('session_id', ids);
-                await sb.from('parental_consents').delete().in('session_id', ids);
-                const { error: errDel } = await sb.from('sessions').delete().in('id', ids);
-                if (errDel) {
-                    console.error('[retention-cron] archived delete error:', errDel.message);
-                    results.archived_sessions_error = errDel.message;
+                const { error: purgeErr } = await purgeChildren(ids);
+                if (purgeErr) {
+                    console.error('[retention-cron] archived delete error:', purgeErr);
+                    results.archived_sessions_error = purgeErr;
                 } else {
                     results.archived_sessions_deleted = ids.length;
                 }
@@ -131,9 +148,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // ── 4. Argo One sessions > 2 years ─────────────────────────────
+        // ── 4. Argo One children > 2 years ─────────────────────────────
         const { data: oldArgoOne, error: err4fetch } = await sb
-            .from('sessions')
+            .from('children')
             .select('id')
             .is('tenant_id', null)
             .lt('created_at', twoYearsAgo);
@@ -143,14 +160,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else {
             const ids = (oldArgoOne ?? []).map(r => r.id);
             if (ids.length > 0) {
-                await sb.from('feedback').delete().in('session_id', ids);
-                await sb.from('chat_messages').delete().in('session_id', ids);
-                await sb.from('group_members').delete().in('session_id', ids);
-                await sb.from('parental_consents').delete().in('session_id', ids);
-                const { error: errDel } = await sb.from('sessions').delete().in('id', ids);
-                if (errDel) {
-                    console.error('[retention-cron] argo-one delete error:', errDel.message);
-                    results.argo_one_sessions_error = errDel.message;
+                const { error: purgeErr } = await purgeChildren(ids);
+                if (purgeErr) {
+                    console.error('[retention-cron] argo-one delete error:', purgeErr);
+                    results.argo_one_sessions_error = purgeErr;
                 } else {
                     results.argo_one_sessions_deleted = ids.length;
                 }
@@ -159,9 +172,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // ── 5. Purge old soft-deleted sessions (pre-hard-delete legacy) ──
+        // ── 5. Purge old soft-deleted children (pre-hard-delete legacy) ──
         const { data: oldSoftDeleted, error: err5fetch } = await sb
-            .from('sessions')
+            .from('children')
             .select('id')
             .not('deleted_at', 'is', null)
             .lt('deleted_at', thirtyDaysAgo);
@@ -171,14 +184,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         } else {
             const ids = (oldSoftDeleted ?? []).map(r => r.id);
             if (ids.length > 0) {
-                await sb.from('feedback').delete().in('session_id', ids);
-                await sb.from('chat_messages').delete().in('session_id', ids);
-                await sb.from('group_members').delete().in('session_id', ids);
-                await sb.from('parental_consents').delete().in('session_id', ids);
-                const { error: errDel } = await sb.from('sessions').delete().in('id', ids);
-                if (errDel) {
-                    console.error('[retention-cron] soft-deleted purge error:', errDel.message);
-                    results.soft_deleted_error = errDel.message;
+                const { error: purgeErr } = await purgeChildren(ids);
+                if (purgeErr) {
+                    console.error('[retention-cron] soft-deleted purge error:', purgeErr);
+                    results.soft_deleted_error = purgeErr;
                 } else {
                     results.soft_deleted_purged = ids.length;
                 }

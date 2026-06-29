@@ -128,22 +128,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     return res.status(404).json({ error: 'Equipo no encontrado' });
                 }
 
+                // Members are children now. Read the membership rows, then resolve
+                // each child's current profile from the view (id = child id). A
+                // two-step read avoids relying on PostgREST embedding through a view.
                 const { data: members, error: memError } = await sb
                     .from('group_members')
-                    .select(`
-                        id,
-                        session_id,
-                        added_at,
-                        sessions!inner (
-                            child_name,
-                            child_age,
-                            sport,
-                            archetype_label,
-                            eje,
-                            motor,
-                            eje_secundario
-                        )
-                    `)
+                    .select('id, child_id, added_at')
                     .eq('group_id', groupId);
 
                 if (memError) {
@@ -151,11 +141,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     return res.status(500).json({ error: 'Failed to fetch members' });
                 }
 
+                const memberChildIds = (members ?? []).map((m: { child_id: string }) => m.child_id);
+                const profileByChild: Record<string, Record<string, unknown>> = {};
+                if (memberChildIds.length > 0) {
+                    const { data: profiles } = await sb
+                        .from('current_perfilamiento')
+                        .select('id, child_name, child_age, sport, archetype_label, eje, motor, eje_secundario')
+                        .in('id', memberChildIds);
+                    for (const p of (profiles ?? []) as Record<string, unknown>[]) {
+                        profileByChild[p.id as string] = p;
+                    }
+                }
+
                 const flatMembers = (members ?? []).map((m: Record<string, unknown>) => {
-                    const s = m.sessions as Record<string, unknown> | null;
+                    const s = profileByChild[m.child_id as string] ?? null;
                     return {
                         id: m.id,
-                        session_id: m.session_id,
+                        // Keep the response key `session_id` for client back-compat;
+                        // its value is now the child id (the membership key).
+                        session_id: m.child_id,
                         added_at: m.added_at,
                         child_name: s?.child_name ?? '',
                         child_age: s?.child_age ?? null,
@@ -292,14 +296,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
             if (grpErr || !grp) return res.status(404).json({ error: 'Equipo no encontrado' });
 
+            // session_ids[] now carries CHILD ids. Validate they are this tenant's
+            // active children with a current profile via the view (id = child id).
             const { data: validSessions } = await sb
-                .from('sessions').select('id').eq('tenant_id', tenant.id).is('deleted_at', null).not('eje', 'eq', '_pending').in('id', session_ids);
+                .from('current_perfilamiento').select('id').eq('tenant_id', tenant.id).is('deleted_at', null).in('id', session_ids);
 
             const validIds = (validSessions ?? []).map((s: { id: string }) => s.id);
             if (validIds.length === 0) return res.status(400).json({ error: 'No valid players found' });
 
-            const rows = validIds.map((sid: string) => ({ group_id, session_id: sid }));
-            const { error: insertError } = await sb.from('group_members').upsert(rows, { onConflict: 'group_id,session_id' });
+            const rows = validIds.map((cid: string) => ({ group_id, child_id: cid }));
+            const { error: insertError } = await sb.from('group_members').upsert(rows, { onConflict: 'group_id,child_id' });
 
             if (insertError) {
                 console.error('[tenant-groups] Add members error:', insertError.message);
@@ -320,8 +326,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .from('groups').select('id').eq('id', group_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
             if (grpErr || !grp) return res.status(404).json({ error: 'Equipo no encontrado' });
 
+            // session_ids[] now carries CHILD ids (the membership key).
             const { error: delError } = await sb
-                .from('group_members').delete().eq('group_id', group_id).in('session_id', session_ids);
+                .from('group_members').delete().eq('group_id', group_id).in('child_id', session_ids);
 
             if (delError) {
                 console.error('[tenant-groups] Remove members error:', delError.message);
@@ -380,9 +387,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(400).json({ error: 'session_id and team_ids[] are required' });
             }
 
-            // Verify the player belongs to this tenant
+            // session_id now carries the CHILD id. Verify the child (player)
+            // belongs to this tenant via the view (id = child id).
             const { data: sess } = await sb
-                .from('sessions').select('id').eq('id', session_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
+                .from('current_perfilamiento').select('id').eq('id', session_id).eq('tenant_id', tenant.id).is('deleted_at', null).single();
             if (!sess) return res.status(404).json({ error: 'Jugador no encontrado' });
 
             // Keep only teams that belong to this tenant
@@ -393,15 +401,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 validTeamIds = (validTeams ?? []).map((g: { id: string }) => g.id);
             }
 
-            // Replace memberships: drop existing, insert the new set
-            const { error: delErr } = await sb.from('group_members').delete().eq('session_id', session_id);
+            // Replace memberships: drop existing, insert the new set (keyed on child_id).
+            const { error: delErr } = await sb.from('group_members').delete().eq('child_id', session_id);
             if (delErr) {
                 console.error('[tenant-groups] set_player_teams delete error:', delErr.message);
                 return res.status(500).json({ error: 'Failed to update player teams' });
             }
             if (validTeamIds.length > 0) {
                 const { error: insErr } = await sb.from('group_members').insert(
-                    validTeamIds.map((gid: string) => ({ group_id: gid, session_id }))
+                    validTeamIds.map((gid: string) => ({ group_id: gid, child_id: session_id }))
                 );
                 if (insErr) {
                     console.error('[tenant-groups] set_player_teams insert error:', insErr.message);

@@ -196,10 +196,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        // Check whether any matching sessions exist. We do NOT reveal this
+        // Check whether any matching children exist. We do NOT reveal this
         // to the caller (would leak whether an email is registered), but we
         // only send the email if there's something to delete — otherwise
-        // attackers could use this endpoint to spam arbitrary emails.
+        // attackers could use this endpoint to spam arbitrary emails. We match
+        // `children` (the persistent identity) so this stays consistent with
+        // confirm-delete, which deletes children.
         //
         // Matching policy:
         //   - adult_email: case-insensitive exact match (trimmed, lowercased)
@@ -207,10 +209,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         //     parents don't need to remember exactly how they typed the
         //     name during onboarding. "Lucas" matches "Lucas Pérez", etc.
         // Escape LIKE wildcards so a crafted address (e.g. "%@gmail.com") can't
-        // match other parents' sessions via ILIKE — exact case-insensitive match.
+        // match other parents' data via ILIKE — exact case-insensitive match.
         const emailPattern = emailNorm.replace(/([\\%_])/g, '\\$1');
         let query = sb
-            .from('sessions')
+            .from('children')
             .select('id', { count: 'exact', head: true })
             .ilike('adult_email', emailPattern);
         if (childNameClean) {
@@ -229,7 +231,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!count || count === 0) {
             // No matching data. Silently return success so we don't leak
             // whether this email exists in the system.
-            console.info('[request-delete] no matching sessions', { email_prefix: emailNorm.slice(0, 3) });
+            console.info('[request-delete] no matching children', { email_prefix: emailNorm.slice(0, 3) });
             return res.status(200).json({ ok: true });
         }
 

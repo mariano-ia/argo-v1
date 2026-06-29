@@ -103,7 +103,7 @@ function getCopy(lang: string) {
     };
     return {
         eyebrow: 'Argo Puentes · Carta de Navegación',
-        subjectPrefix: 'Tu Argo Puentes — vínculo con',
+        subjectPrefix: 'Tu Argo Puentes: vínculo con',
         bondTitle: 'Tu vínculo',
         welcome: 'Bienvenida',
         yourStyle: 'Tu estilo natural',
@@ -436,7 +436,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let childMap: Record<string, { eje?: string; child_name?: string }> = {};
         if (sourceIds.length > 0) {
             const { data: childRows } = await sb
-                .from('sessions')
+                .from('perfilamientos')
                 .select('id, eje, child_name')
                 .in('id', sourceIds);
             for (const c of childRows ?? []) {

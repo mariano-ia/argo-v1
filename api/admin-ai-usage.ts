@@ -44,9 +44,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .neq('is_synthetic', true) // exclude synthetic QA tenant from AI usage
             .order('ai_queries_count', { ascending: false });
 
-        // Get AI costs from sessions (report generation) per tenant
+        // Get AI costs from perfilamientos (report generation) per tenant. AI cost is
+        // stamped per perfilamiento (assessment), so usage totals must sum over every
+        // perfilamiento, not the current-profile view (which would drop re-profiles).
         let sessionsQuery = sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('tenant_id, ai_cost_usd, ai_tokens_input, ai_tokens_output, created_at')
             .is('deleted_at', null)
             .not('ai_cost_usd', 'is', null);

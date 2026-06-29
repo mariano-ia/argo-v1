@@ -152,7 +152,13 @@ export const Sessions: React.FC = () => {
             setLoading(true);
             const [{ data: sessions }, { data: leads }, { data: tenants }, { data: puentes }] = await Promise.all([
                 supabase
-                    .from('sessions')
+                    // Superadmin "Sesiones" list = one row per play (perfilamiento).
+                    // Reads the renamed sessions table directly (NOT the current_perfilamiento
+                    // view): row.id must stay a perfilamiento id because every row action
+                    // (grant-access, resend, puentes invite/free, delete) sends it as
+                    // session_id to endpoints that look it up by id in perfilamientos, and
+                    // puentes_reminder_sent_at lives on this table, not on the view.
+                    .from('perfilamientos')
                     .select('id,created_at,adult_name,adult_email,child_name,child_age,sport,eje,motor,eje_secundario,lang,archetype_label,ai_cost_usd,tenant_id,is_demo,puentes_reminder_sent_at')
                     .is('deleted_at', null)
                     .not('eje', 'eq', '_pending')

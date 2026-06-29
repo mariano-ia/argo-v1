@@ -89,16 +89,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const plantelFilter = (typeof req.query.team === 'string' && req.query.team ? req.query.team : null)
             ?? (typeof req.body?.team === 'string' && req.body.team ? req.body.team : null);
 
-        // The set of players the caller may put into a chem group: a coach is bound
-        // to their planteles' players; admin/owner can use any tenant player.
-        // null = unbounded.
+        // The set of players (children) the caller may put into a chem group: a
+        // coach is bound to their planteles' children; admin/owner can use any
+        // tenant child. null = unbounded. Members are children now (child_id).
         const playerScope = async (): Promise<string[] | null> => {
             if (!isCoach || !memberId) return null;
             const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', memberId);
             const plantelIds = (gc ?? []).map((r: { group_id: string }) => r.group_id);
             if (plantelIds.length === 0) return [];
-            const { data: gm } = await sb.from('group_members').select('session_id').in('group_id', plantelIds);
-            return Array.from(new Set((gm ?? []).map((r: { session_id: string }) => r.session_id)));
+            const { data: gm } = await sb.from('group_members').select('child_id').in('group_id', plantelIds);
+            return Array.from(new Set((gm ?? []).map((r: { child_id: string }) => r.child_id)));
         };
 
         // ── GET ──────────────────────────────────────────────────────────────
@@ -116,18 +116,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .single();
                 if (grpErr || !group) return res.status(404).json({ error: 'Grupo no encontrado' });
 
+                // Members are children now. Read membership rows, then resolve each
+                // child's current profile from the view (id = child id). Two steps
+                // avoid relying on PostgREST embedding through a view.
                 const { data: members, error: memErr } = await sb
                     .from('chem_group_members')
-                    .select('id, session_id, added_at, sessions!inner ( child_name, child_age, sport, archetype_label, eje, motor, eje_secundario )')
+                    .select('id, child_id, added_at')
                     .eq('group_id', groupId);
                 if (memErr) {
                     console.error('[tenant-chem-groups] members error:', memErr.message);
                     return res.status(500).json({ error: 'Failed to fetch members' });
                 }
+                const memberChildIds = (members ?? []).map((m: { child_id: string }) => m.child_id);
+                const profileByChild: Record<string, Record<string, unknown>> = {};
+                if (memberChildIds.length > 0) {
+                    const { data: profiles } = await sb
+                        .from('current_perfilamiento')
+                        .select('id, child_name, child_age, sport, archetype_label, eje, motor, eje_secundario')
+                        .in('id', memberChildIds);
+                    for (const p of (profiles ?? []) as Record<string, unknown>[]) {
+                        profileByChild[p.id as string] = p;
+                    }
+                }
                 const flat = (members ?? []).map((m: Record<string, unknown>) => {
-                    const s = m.sessions as Record<string, unknown> | null;
+                    const s = profileByChild[m.child_id as string] ?? null;
                     return {
-                        id: m.id, session_id: m.session_id, added_at: m.added_at,
+                        // Keep response key `session_id`; value is now the child id.
+                        id: m.id, session_id: m.child_id, added_at: m.added_at,
                         child_name: s?.child_name ?? '', child_age: s?.child_age ?? null, sport: s?.sport ?? '',
                         archetype_label: s?.archetype_label ?? '', eje: s?.eje ?? '', motor: s?.motor ?? '', eje_secundario: s?.eje_secundario ?? '',
                     };
@@ -210,30 +225,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .select('id, plantel_id').eq('id', group_id).eq('tenant_id', tenantId).eq('owner_member_id', memberId).is('deleted_at', null).single();
             if (!grp) return res.status(404).json({ error: 'Grupo no encontrado' });
 
+            // session_ids[] now carries CHILD ids (the membership key) throughout.
             if (action === 'remove_members') {
-                const { error } = await sb.from('chem_group_members').delete().eq('group_id', group_id).in('session_id', session_ids);
+                const { error } = await sb.from('chem_group_members').delete().eq('group_id', group_id).in('child_id', session_ids);
                 if (error) return res.status(500).json({ error: 'Failed to remove players' });
                 return res.status(200).json({ ok: true, removed: session_ids.length });
             }
 
-            // add_members — only players the caller can actually see
+            // add_members — only children the caller can actually see. Validate they
+            // are this tenant's children with a current profile via the view.
             const scope = await playerScope();
-            let validQuery = sb.from('sessions').select('id')
-                .eq('tenant_id', tenantId).is('deleted_at', null).not('eje', 'eq', '_pending').in('id', session_ids);
+            let validQuery = sb.from('current_perfilamiento').select('id')
+                .eq('tenant_id', tenantId).is('deleted_at', null).in('id', session_ids);
             const { data: valid } = await validQuery;
             let validIds = (valid ?? []).map((s: { id: string }) => s.id);
             if (scope !== null) validIds = validIds.filter(id => scope.includes(id));
             // A chem group belongs to one plantel — enforce that only that plantel's
-            // players can be added (the invariant the UI already follows).
+            // children can be added (the invariant the UI already follows).
             const groupPlantelId = (grp as { plantel_id: string | null }).plantel_id;
             if (groupPlantelId) {
-                const { data: gm } = await sb.from('group_members').select('session_id').eq('group_id', groupPlantelId);
-                const plantelSessionIds = new Set((gm ?? []).map((r: { session_id: string }) => r.session_id));
-                validIds = validIds.filter((id: string) => plantelSessionIds.has(id));
+                const { data: gm } = await sb.from('group_members').select('child_id').eq('group_id', groupPlantelId);
+                const plantelChildIds = new Set((gm ?? []).map((r: { child_id: string }) => r.child_id));
+                validIds = validIds.filter((id: string) => plantelChildIds.has(id));
             }
             if (validIds.length === 0) return res.status(400).json({ error: 'No valid players found' });
-            const rows = validIds.map((sid: string) => ({ group_id, session_id: sid }));
-            const { error } = await sb.from('chem_group_members').upsert(rows, { onConflict: 'group_id,session_id' });
+            const rows = validIds.map((cid: string) => ({ group_id, child_id: cid }));
+            const { error } = await sb.from('chem_group_members').upsert(rows, { onConflict: 'group_id,child_id' });
             if (error) return res.status(500).json({ error: 'Failed to add players' });
             return res.status(200).json({ ok: true, added: validIds.length });
         }

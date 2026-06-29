@@ -439,19 +439,20 @@ async function handlePuentesPaid(args: {
         provider_payment_id: providerPaymentId,
     }).eq('id', purchaseId);
 
-    // Multi-child support: one Argo Puentes purchase covers every Argo session
-    // that this adult email already completed (up to MAX_CHILDREN_PER_PURCHASE).
+    // Multi-child support: one Argo Puentes purchase covers every child this adult
+    // email already profiled (up to MAX_CHILDREN_PER_PURCHASE). current_perfilamiento
+    // gives one row per child = its latest resolved perfilamiento, already filtered
+    // to resolved + non-deleted. perfilamiento_id is the assessment id that
+    // puentes_sessions.source_session_id binds to (FK unchanged, by perfilamiento id).
     // The originating source_session_id is included first, followed by any
     // siblings ordered by most recent first.
     const MAX_CHILDREN_PER_PURCHASE = 5;
     const { data: siblings } = await sb
-        .from('sessions')
-        .select('id, child_name, created_at')
+        .from('current_perfilamiento')
+        .select('perfilamiento_id, child_name, current_profile_date')
         .eq('adult_email', purchase.recipient_email)
-        .is('deleted_at', null)
-        .not('eje', 'eq', '_pending')
-        .order('created_at', { ascending: false });
-    const siblingIds = (siblings ?? []).map((s: any) => s.id);
+        .order('current_profile_date', { ascending: false });
+    const siblingIds = (siblings ?? []).map((s: any) => s.perfilamiento_id);
     const uniqueIds = Array.from(new Set([purchase.source_session_id, ...siblingIds])).slice(0, MAX_CHILDREN_PER_PURCHASE);
 
     const sessionRows = uniqueIds.map(sid => ({

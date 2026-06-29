@@ -665,15 +665,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // (owner/member see all). An empty list means "no players visible".
         const isCoach = callerRole === 'coach';
         let coachGroupIds: string[] | null = null;
-        let coachSessionIds: string[] | null = null;
+        // Members are CHILDREN now (group_members.session_id -> child_id). These ids
+        // match current_perfilamiento.id (the child id) used to scope the player list.
+        let coachChildIds: string[] | null = null;
         if (isCoach && callerMemberId) {
             const { data: gc } = await sb.from('group_coaches').select('group_id').eq('member_id', callerMemberId);
             coachGroupIds = (gc ?? []).map((r: { group_id: string }) => r.group_id);
             if (coachGroupIds.length > 0) {
-                const { data: gm } = await sb.from('group_members').select('session_id').in('group_id', coachGroupIds);
-                coachSessionIds = Array.from(new Set((gm ?? []).map((r: { session_id: string }) => r.session_id)));
+                const { data: gm } = await sb.from('group_members').select('child_id').in('group_id', coachGroupIds);
+                coachChildIds = Array.from(new Set((gm ?? []).map((r: { child_id: string }) => r.child_id)));
             } else {
-                coachSessionIds = [];
+                coachChildIds = [];
             }
         }
 
@@ -685,11 +687,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (teamFilter) {
             if (coachGroupIds && !coachGroupIds.includes(teamFilter)) {
                 coachGroupIds = [];
-                coachSessionIds = [];
+                coachChildIds = [];
             } else {
                 coachGroupIds = [teamFilter];
-                const { data: gmTeam } = await sb.from('group_members').select('session_id').in('group_id', [teamFilter]);
-                coachSessionIds = Array.from(new Set((gmTeam ?? []).map((r: { session_id: string }) => r.session_id)));
+                const { data: gmTeam } = await sb.from('group_members').select('child_id').in('group_id', [teamFilter]);
+                coachChildIds = Array.from(new Set((gmTeam ?? []).map((r: { child_id: string }) => r.child_id)));
             }
         }
 
@@ -822,20 +824,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // and we only need it when a specific player is mentioned (re-fetched below).
         const sessionLimit = Math.min(Math.max(tenantPlan?.roster_limit ?? 50, 50), 1000);
         const NO_MATCH = '00000000-0000-0000-0000-000000000000';
-        let sessionsQuery = sb.from('sessions')
+        // current_perfilamiento = one row per CHILD (latest resolved profile). Its
+        // id is the CHILD id, which matches group_members.child_id used for scoping.
+        // The view only contains resolved profiles, so '_pending' never appears (the
+        // explicit guard is kept as defense in depth).
+        let sessionsQuery = sb.from('current_perfilamiento')
             .select('id, child_name, child_age, sport, eje, motor, eje_secundario, archetype_label')
             .eq('tenant_id', tenant.id)
             .is('deleted_at', null)
             .not('eje', 'eq', '_pending')
-            .order('created_at', { ascending: false })
+            .order('current_profile_date', { ascending: false })
             .limit(sessionLimit);
         let groupsQuery = sb.from('groups')
-            .select('id, name, group_members(session_id)')
+            .select('id, name, group_members(child_id)')
             .eq('tenant_id', tenant.id)
             .is('deleted_at', null);
         // Coaches only see their teams' players (sentinel keeps an empty scope empty).
-        if (coachSessionIds !== null) {
-            sessionsQuery = sessionsQuery.in('id', coachSessionIds.length > 0 ? coachSessionIds : [NO_MATCH]);
+        if (coachChildIds !== null) {
+            sessionsQuery = sessionsQuery.in('id', coachChildIds.length > 0 ? coachChildIds : [NO_MATCH]);
         }
         if (coachGroupIds !== null) {
             groupsQuery = groupsQuery.in('id', coachGroupIds.length > 0 ? coachGroupIds : [NO_MATCH]);
@@ -923,7 +929,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const playerListForPrompt = allPlayers.map(p => placeholderForId(p.id)).join(', ');
         // Team-level group awareness: list all groups so Gemini can ask for
         // clarification when the keyword matcher below doesn't fire.
-        type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ session_id: string }> | null };
+        type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ child_id: string }> | null };
         const groups = (groupsData ?? []) as GroupRowWithMembers[];
         const groupsList = groups.length > 0
             ? `\nGrupos del equipo: ${groups.map(g => `"${g.name}" (${(g.group_members ?? []).length})`).join(', ')}.`
@@ -956,9 +962,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const mp = mentionedPlayer;
             const tend = mp.eje_secundario ? tendLabels[mp.eje_secundario] ?? '' : '';
             const mentionedPlaceholder = placeholderForId(mp.id);
-            // Re-fetch ai_sections on-demand (tenant-scoped: defense in depth, R12).
+            // Re-fetch ai_sections on-demand for the child's CURRENT profile
+            // (tenant-scoped: defense in depth, R12). mp.id is the CHILD id, so this
+            // reads the same current_perfilamiento row that produced the player list.
             const { data: reportRow } = await sb
-                .from('sessions')
+                .from('current_perfilamiento')
                 .select('ai_sections')
                 .eq('id', mp.id)
                 .eq('tenant_id', tenant.id)
@@ -1052,7 +1060,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
         const buildGroupStats = (g: GroupRowWithMembers) => {
-            const memberIds = (g.group_members ?? []).map(m => m.session_id);
+            const memberIds = (g.group_members ?? []).map(m => m.child_id);
             const groupMembers = memberIds
                 .map(id => playersById.get(id))
                 .filter((p): p is typeof allPlayers[number] => !!p);

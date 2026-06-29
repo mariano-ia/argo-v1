@@ -520,7 +520,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 const { data } = await sb
-                    .from('sessions')
+                    .from('perfilamientos')
                     .select('email_sent_at, share_token, ai_sections')
                     .eq('id', sessionId)
                     .maybeSingle();
@@ -747,7 +747,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const supabaseUrl = process.env.VITE_SUPABASE_URL;
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
-                try { await sb.from('sessions').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId); } catch { /* non-blocking */ }
+                try { await sb.from('perfilamientos').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId); } catch { /* non-blocking */ }
                 // Principia ingestion (area=producto): the report email reached the adult.
                 await logActivity(sb, {
                     area: 'producto',

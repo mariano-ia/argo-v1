@@ -106,7 +106,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
         const { data: session, error: sErr } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, adult_email, child_name, lang, puentes_reminder_sent_at')
             .eq('id', session_id)
             .maybeSingle();
@@ -165,7 +165,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const sentAt = new Date().toISOString();
-        await sb.from('sessions').update({ puentes_reminder_sent_at: sentAt }).eq('id', session.id);
+        await sb.from('perfilamientos').update({ puentes_reminder_sent_at: sentAt }).eq('id', session.id);
 
         // Audit log entry (best-effort, do not fail the request if logging fails)
         try {

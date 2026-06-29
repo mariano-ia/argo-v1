@@ -211,7 +211,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { data: recentSessions } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, adult_email, child_name, lang, eje, created_at')
             .gte('created_at', sinceIso)
             .not('adult_email', 'is', null)
@@ -237,7 +237,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 const { data: existingByName } = await sb
                     .from('puentes_sessions')
-                    .select('id, source_session_id, status, ai_sections, source:sessions!source_session_id(child_name)')
+                    .select('id, source_session_id, status, ai_sections, source:perfilamientos!source_session_id(child_name)')
                     .eq('purchase_id', paidPurchase.id);
                 const matching = (existingByName ?? []).find((e: any) => {
                     const name = Array.isArray(e.source) ? e.source[0]?.child_name : e.source?.child_name;

@@ -97,13 +97,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const t = tenantMap.get(d.tenant_id) as Record<string, unknown> | undefined;
             if (!t) return null; // tenant deleted/missing
 
-            // Active players in this tenant.
+            // Active players in this tenant. A roster slot = a CHILD, so count
+            // active children (not perfilamientos): not archived, not deleted,
+            // and not merged into another child.
             const { count } = await sb
-                .from('sessions')
+                .from('children')
                 .select('*', { count: 'exact', head: true })
                 .eq('tenant_id', d.tenant_id)
                 .is('archived_at', null)
-                .is('deleted_at', null);
+                .is('deleted_at', null)
+                .is('merged_into', null);
 
             // Planteles this member is assigned to (coach scope; owners manage all).
             let teams: { id: string; name: string; slug: string }[] = [];

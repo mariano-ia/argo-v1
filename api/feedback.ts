@@ -35,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             const { data: session, error: sessionErr } = await sb
-                .from('sessions')
+                .from('perfilamientos')
                 .select('id')
                 .eq('id', sessionId)
                 .single();
@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .from('feedback')
                 .select(`
                     id, session_id, clarity, helpfulness, identification, open_comment, created_at,
-                    sessions!inner ( adult_name, child_name, archetype_label, sport )
+                    perfilamientos!inner ( adult_name, child_name, archetype_label, sport )
                 `)
                 .order('created_at', { ascending: false })
                 .limit(200);

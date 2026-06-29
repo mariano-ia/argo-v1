@@ -91,7 +91,12 @@ export const Metrics: React.FC = () => {
 
     useEffect(() => {
         supabase
-            .from('sessions')
+            // Activity + AI-cost analytics over every assessment (one row per play).
+            // Reads the renamed sessions table directly (NOT the current_perfilamiento
+            // view): AI cost is per-assessment and "sesiones totales" counts plays, so the
+            // view (latest resolved profile per child) would under-count plays and drop the
+            // cost of historical re-profiles. Same rows + semantics as the old sessions table.
+            .from('perfilamientos')
             .select('created_at,eje,motor,archetype_label,ai_cost_usd,ai_tokens_input,ai_tokens_output')
             .is('deleted_at', null)
             .not('eje', 'eq', '_pending')

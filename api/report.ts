@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     const { data, error } = await sb
-        .from('sessions')
+        .from('perfilamientos')
         .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
@@ -47,7 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(403).json({ error: 'Invalid access token' });
     }
 
-    // Resolve tenant plan — sessions without a tenant (legacy MVP) show full report
+    // Resolve tenant plan — perfilamientos without a tenant (legacy MVP) show full report
     let tenantPlan: string | null = null;
     if (data.tenant_id) {
         const { data: tenant } = await sb

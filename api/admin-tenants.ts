@@ -189,22 +189,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (tenantIds.length > 0) {
                 // Active players per tenant
                 for (const t of tenants ?? []) {
+                    // Active players = active roster slots = active children
+                    // (the roster entity now lives in children, not perfilamientos).
                     const { count: activeCount } = await sb
-                        .from('sessions')
+                        .from('children')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', t.id)
                         .is('archived_at', null)
                         .is('deleted_at', null)
-                        .not('eje', 'eq', '_pending');
+                        .is('merged_into', null);
 
+                    // Total plays ever (append-only assessments) for the tenant.
                     const { count: totalCount } = await sb
-                        .from('sessions')
+                        .from('perfilamientos')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', t.id)
                         .is('deleted_at', null);
 
                     const { data: lastSession } = await sb
-                        .from('sessions')
+                        .from('perfilamientos')
                         .select('created_at')
                         .eq('tenant_id', t.id)
                         .is('deleted_at', null)

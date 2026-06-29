@@ -262,10 +262,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { puentes_session_id } = req.body as { puentes_session_id?: string };
         if (!puentes_session_id) return res.status(400).json({ error: 'Missing puentes_session_id' });
 
-        // Fetch puentes_session + source child session
+        // Fetch puentes_session + source child perfilamiento
         const { data: pSession, error: pErr } = await sb
             .from('puentes_sessions')
-            .select('*, source:sessions!source_session_id(id, child_name, sport, eje, motor, archetype_label, ai_sections, lang)')
+            .select('*, source:perfilamientos!source_session_id(id, child_name, sport, eje, motor, archetype_label, ai_sections, lang)')
             .eq('id', puentes_session_id)
             .maybeSingle();
         if (pErr || !pSession) return res.status(404).json({ error: 'Puentes session not found' });

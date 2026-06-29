@@ -202,9 +202,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             || (req.headers['x-vercel-ip-country'] as string)?.toUpperCase()
             || 'US';
 
-        // Look up source session to get child name, lang fallback, tenant_id
+        // Look up source perfilamiento to get child name, lang fallback, tenant_id
         const { data: srcSession, error: srcErr } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, lang, tenant_id, child_name')
             .eq('id', source_session_id)
             .maybeSingle();

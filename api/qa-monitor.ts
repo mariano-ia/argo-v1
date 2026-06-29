@@ -189,10 +189,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     add('generate-ai 200 + sections', status === 200 && typeof sections?.resumenPerfil === 'string', `status=${status}`);
   } catch (e) { add('generate-ai reachable', false, String(e)); }
 
-  // CHECK 3: DB integrity — no _pending sessions stuck for the QA tenant.
+  // CHECK 3: DB integrity — no _pending perfilamientos stuck for the QA tenant.
+  // An in-flight play is a perfilamiento with eje='_pending'.
   try {
     const { data: tenant } = await sb.from('tenants').select('id').eq('slug', slug).single();
-    const { count } = await sb.from('sessions').select('*', { count: 'exact', head: true })
+    const { count } = await sb.from('perfilamientos').select('*', { count: 'exact', head: true })
       .eq('tenant_id', tenant?.id).eq('eje', '_pending');
     add('no stuck _pending QA sessions', (count ?? 0) < 5, `pending=${count}`);
   } catch (e) { add('DB reachable', false, String(e)); }
@@ -209,7 +210,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // and must be regenerated. Any such session should page ops.
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { count } = await sb.from('sessions').select('*', { count: 'exact', head: true })
+    // AI sections are stamped per perfilamiento (the play); a finished play
+    // (real eje) with null ai_sections is an undelivered report.
+    const { count } = await sb.from('perfilamientos').select('*', { count: 'exact', head: true })
       .neq('eje', '_pending')
       .is('ai_sections', null)
       .not('is_demo', 'is', true) // exclude demo/canary sessions — not real undelivered reports

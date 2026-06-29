@@ -15,12 +15,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const supabase = createClient(supabaseUrl, serviceKey);
 
+    // Distribution sample of recent CURRENT profiles (one row per child) used only
+    // as a tie-breaker during profile resolution. The view surfaces resolved
+    // profiles only, so the prior _pending guard is implicit; it exposes the
+    // profile date as current_profile_date (the renamed table has no created_at
+    // semantics here for "current").
     const { data, error } = await supabase
-        .from('sessions')
+        .from('current_perfilamiento')
         .select('eje,motor')
         .is('deleted_at', null)
-        .not('eje', 'eq', '_pending')
-        .order('created_at', { ascending: false })
+        .order('current_profile_date', { ascending: false })
         .limit(50);
 
     if (error) {

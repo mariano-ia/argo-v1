@@ -110,7 +110,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // legacy backlog, not an actionable delivery stall — baseline it out so the
         // monitor analyses from now on instead of re-alerting on an old, settled pile.
         const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
-        const { data } = await sb.from('sessions')
+        // ai_sections is stamped per perfilamiento (the play); the recovery action
+        // below acts by perfilamiento id. The signalKey/sourceRef labels stay
+        // 'sessions' to keep health-check identity in sync with the Producto registry.
+        const { data } = await sb.from('perfilamientos')
             .select('id, created_at').is('ai_sections', null).neq('eje', '_pending')
             .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const stalled = data ?? [];
@@ -131,7 +134,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
         // Same baseline as SIGNAL 3: only recent (last 72h) unsent reports are actionable.
         const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
-        const { data } = await sb.from('sessions')
+        // email_sent_at / ai_sections are per-perfilamiento; resend acts by that id.
+        const { data } = await sb.from('perfilamientos')
             .select('id').not('ai_sections', 'is', null).is('email_sent_at', null)
             .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const unsent = data ?? [];
@@ -241,7 +245,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (actionType === 'trigger_report_recovery' || actionType === 'resend_email' || actionType === 'retry') {
                 const ids = String(inc.entity_ref ?? '').split(',').filter(Boolean);
                 if (ids.length) {
-                    const { data: still } = await sb.from('sessions')
+                    const { data: still } = await sb.from('perfilamientos')
                         .select('id, ai_sections, email_sent_at').in('id', ids);
                     const stillBroken = (still ?? []).filter(s =>
                         actionType === 'trigger_report_recovery' || actionType === 'retry'

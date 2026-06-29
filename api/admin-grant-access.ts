@@ -29,9 +29,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { session_id } = req.body as { session_id?: string };
         if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
-        // Get session data including AI sections
+        // Get perfilamiento data including AI sections (session_id is a perfilamiento id)
         const { data: session } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd, share_token')
             .eq('id', session_id)
             .single();
@@ -67,7 +67,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
                 if (aiRes.ok) {
                     const aiData = await aiRes.json();
-                    await sb.from('sessions').update({
+                    await sb.from('perfilamientos').update({
                         ai_sections: aiData.sections,
                         ai_cost_usd: aiData.usage?.costUsd ?? 0,
                         ai_tokens_input: aiData.usage?.inputTokens ?? 0,
@@ -83,9 +83,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // Set full_access
+        // Set full_access on the perfilamiento
         const { error: updateErr } = await sb
-            .from('sessions')
+            .from('perfilamientos')
             .update({ full_access: true })
             .eq('id', session_id);
 

@@ -99,27 +99,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             effectiveGroupIds = [teamFilter];
         }
 
-        // If bounded to specific teams, resolve the player ids inside those teams.
+        // If bounded to specific teams, resolve the child ids inside those teams.
+        // Members are children now (group_members.child_id), and the
+        // current_perfilamiento view's id IS the child id, so these ids filter it.
         let boundedSessionIds: string[] | null = null;
         if (effectiveGroupIds !== null) {
             if (effectiveGroupIds.length === 0) {
                 return res.status(200).json({ sessions: [], total: 0 });
             }
-            const { data: gm } = await sb.from('group_members').select('session_id').in('group_id', effectiveGroupIds);
-            boundedSessionIds = Array.from(new Set((gm ?? []).map((r: { session_id: string }) => r.session_id)));
+            const { data: gm } = await sb.from('group_members').select('child_id').in('group_id', effectiveGroupIds);
+            boundedSessionIds = Array.from(new Set((gm ?? []).map((r: { child_id: string }) => r.child_id)));
             if (boundedSessionIds.length === 0) {
                 return res.status(200).json({ sessions: [], total: 0 });
             }
         }
 
-        // Fetch sessions for this tenant
+        // Fetch the current profile per child for this tenant (one row per child).
+        // current_perfilamiento.id is the CHILD id; it only surfaces resolved
+        // profiles, so the prior _pending guard is implicit in the view.
         let query = sb
-            .from('sessions')
-            .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, created_at, lang, answers, ai_sections')
+            .from('current_perfilamiento')
+            .select('id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, current_profile_date, lang, answers, ai_sections')
             .eq('tenant_id', tenantId)
             .is('deleted_at', null)
-            .not('eje', 'eq', '_pending')
-            .order('created_at', { ascending: false })
+            .order('current_profile_date', { ascending: false })
             .limit(100);
 
         if (boundedSessionIds) {
@@ -142,17 +145,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Attach team membership per player so the dashboard can show the team
         // column and filter. Coaches only see the teams within their own bound.
+        // Membership is keyed on the child id (= current_perfilamiento.id).
         const sessIds = (sessions ?? []).map((s: { id: string }) => s.id);
         const teamsBySession: Record<string, string[]> = {};
         if (sessIds.length > 0) {
-            const { data: gm2 } = await sb.from('group_members').select('session_id, group_id').in('session_id', sessIds);
-            for (const r of (gm2 ?? []) as { session_id: string; group_id: string }[]) {
+            const { data: gm2 } = await sb.from('group_members').select('child_id, group_id').in('child_id', sessIds);
+            for (const r of (gm2 ?? []) as { child_id: string; group_id: string }[]) {
                 if (boundGroupIds && !boundGroupIds.includes(r.group_id)) continue;
-                (teamsBySession[r.session_id] ??= []).push(r.group_id);
+                (teamsBySession[r.child_id] ??= []).push(r.group_id);
             }
         }
         const withTeams = (sessions ?? []).map((s: Record<string, unknown>) => ({
             ...s,
+            // Preserve the prior response shape: the view exposes the current
+            // profile date as current_profile_date; expose it as created_at too.
+            created_at: s.current_profile_date,
             team_ids: teamsBySession[s.id as string] ?? [],
         }));
 

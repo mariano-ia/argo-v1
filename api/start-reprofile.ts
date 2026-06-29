@@ -14,12 +14,6 @@ function signReprofileToken(tenantId: string, childId: string, secret: string): 
     return `${payload}.${sig}`;
 }
 
-function clientIp(req: VercelRequest): string {
-    const fwd = req.headers['x-forwarded-for'];
-    const raw = Array.isArray(fwd) ? fwd[0] : (fwd ?? '');
-    return raw.split(',')[0].trim() || 'unknown';
-}
-
 // Fixed-window rate limit via Vercel KV / Upstash. No-ops if not configured. Keyed on
 // the reprofile_token so a leaked link can't be spammed into endless perfilamientos.
 async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
