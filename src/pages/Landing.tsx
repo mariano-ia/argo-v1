@@ -1173,10 +1173,10 @@ export const Landing: React.FC = () => {
 
             {/* ── LA HERRAMIENTA ── */}
             <div id="como-funciona" style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
-                {/* Violet strip — narrower than the card, creating the overflow effect */}
+                {/* Violet fill — reaches the top so the hero photo meets the violet with no white band; still ends 128px short of the bottom so the card overflows into the section below */}
                 <div style={{
                     position: 'absolute', left: 0, right: 0,
-                    top: '128px', bottom: '128px',
+                    top: 0, bottom: '128px',
                     background: '#E3E3FF',
                 }} />
                 {/* Floating white card — -mx-14 expands 56px each side to match other sections' content width */}
