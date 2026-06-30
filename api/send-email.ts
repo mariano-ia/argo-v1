@@ -40,6 +40,10 @@ function buildHtml(params: {
     // Renders the upsell price in the currency the parent previously paid
     // in (Argo One). Undefined means "show both".
     preferredCurrency?: 'usd' | 'ars' | null;
+    // Locked demo (is_demo && !full_access): suppress the Argo Puentes block
+    // entirely. We never pitch the adult Puente to someone who only has a demo
+    // report; it only appears once they have a full report (paid or gifted).
+    suppressPuentes?: boolean;
 }): string {
     const langAttr = (params.lang || 'es') as 'es' | 'en' | 'pt';
     const baseUrl = params.siteUrl || 'https://argomethod.com';
@@ -222,7 +226,7 @@ function buildHtml(params: {
     const pc = puentesCopy[langAttr] ?? puentesCopy.es;
     const puentesActionUrl = isIncluded ? (params.existingPuentesMagicLink as string) : puentesCheckoutUrl;
 
-    const puentesWidget = params.sessionId ? `
+    const puentesWidget = (params.sessionId && !params.suppressPuentes) ? `
   <!-- SEPARATOR -->
   <tr><td style="padding:0 28px;"><div style="height:1px;background:#E8E8ED;"></div></td></tr>
 
@@ -512,6 +516,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             email_sent_at?: string | null;
             share_token?: string | null;
             ai_sections?: { resumenPerfil?: string; palabrasPuente?: string[] } | null;
+            is_demo?: boolean | null;
+            full_access?: boolean | null;
         };
         let sessionRow: SessionRow | null = null;
         if (sessionId) {
@@ -521,7 +527,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 const { data } = await sb
                     .from('perfilamientos')
-                    .select('email_sent_at, share_token, ai_sections')
+                    .select('email_sent_at, share_token, ai_sections, is_demo, full_access')
                     .eq('id', sessionId)
                     .maybeSingle();
                 sessionRow = (data as SessionRow) ?? null;
@@ -583,9 +589,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // the Puentes lookup or insert can never block the child report
         // email itself. If it fails we just fall back to showing the
         // standard upsell CTA.
+        // Locked demo: the adult only has a demo report, so never pitch (or
+        // auto-create) Argo Puentes. The Puente only makes sense once they have a
+        // full report (after paying $9.99 to unlock, or an admin full_access gift).
+        const isLockedDemo = Boolean(sessionRow?.is_demo) && !sessionRow?.full_access;
         let existingPuentesMagicLink: string | undefined;
         try {
-            if (sessionId && toEmail) {
+            if (sessionId && toEmail && !isLockedDemo) {
                 const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
                 const sUrl = process.env.VITE_SUPABASE_URL;
                 if (sKey && sUrl) {
@@ -688,6 +698,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             siteUrl,
             existingPuentesMagicLink,
             preferredCurrency,
+            suppressPuentes: isLockedDemo,
         });
 
         const langAttr = lang || 'es';

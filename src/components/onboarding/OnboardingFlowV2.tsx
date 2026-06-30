@@ -944,7 +944,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             // generation failed, we deliberately do NOT email a base/generic
             // report. The session is left with ai_sections=null, which the
             // admin regeneration flow detects to rebuild + send it later.
-            if (finalSections) {
+            // Demo plays never auto-send a report email: the abridged report is
+            // shown on-screen (DemoEndScreen), and the full report is only ever
+            // delivered later when the player unlocks it ($9.99) or we gift it
+            // (admin full_access grant). This avoids (a) emailing the full report
+            // for free and (b) pitching Argo Puentes to someone who only has a demo.
+            if (demoMode) {
+                console.log('[Argo] Demo play: skipping auto report email. sessionId:', sessionIdRef.current);
+            } else if (finalSections) {
                 // Use AI-translated labels for non-es languages
                 const translatedLabel = finalSections.label ?? report.arquetipo.label;
                 const translatedTendencia = finalSections.tendenciaLabel ?? report.tendenciaLabel;

@@ -78,7 +78,7 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 - Multi-usuario: varios coaches, una cuenta
 
 ## Argo One (para padres)
-Compra única, sin suscripción. El padre compra un pack (1, 3 o 5 perfiles), recibe links de juego, y el reporte llega por email. No necesita crear cuenta.
+Compra única, sin suscripción. El adulto compra el informe del niño (One) o el informe más el Puente del adulto (One + Puente), recibe el link de juego y el reporte llega por email. No necesita crear cuenta.
 
 ## Precios
 - Trial: gratis 14 días, 8 jugadores

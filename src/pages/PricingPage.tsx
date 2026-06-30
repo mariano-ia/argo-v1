@@ -289,14 +289,12 @@ export const PricingPage: React.FC = () => {
                         </div>
                         <div className="flex gap-3 flex-shrink-0">
                             {[
-                                { n: 1, price: '$14.99', each: '' },
-                                { n: 3, price: '$34.99', each: '$11.66' },
-                                { n: 5, price: '$49.99', each: '$10.00' },
+                                { name: 'Argo One', price: '$9.99' },
+                                { name: 'Argo One +', price: '$12.99' },
                             ].map(p => (
-                                <div key={p.n} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
-                                    <p className="text-[15px] font-medium text-argo-navy">{p.n} {p.n === 1 ? t.report : t.reports}</p>
+                                <div key={p.name} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
+                                    <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>
                                     <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">{p.price}</p>
-                                    {p.each && <p className="text-[10px] text-argo-light mt-0.5">{p.each} {t.perReport}</p>}
                                 </div>
                             ))}
                         </div>

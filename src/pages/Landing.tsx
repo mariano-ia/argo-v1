@@ -44,8 +44,8 @@ const ARCHETYPES = [
 const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     {
         es: 'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
-        en: 'Lives sport through action. Their energy does not wait for instructions — it needs constant movement to stay in the zone. Under pressure, they accelerate. When held back without reason, they lose their spark. Constant challenge and autonomy are their fuel.',
-        pt: 'Vive o esporte pela ação. Sua energia não espera instruções — precisa de movimento constante para estar na zona. Sob pressão, acelera. Quando é freado sem razão, perde a centelha. O desafio permanente e a autonomia são seu combustível.',
+        en: 'Lives sport through action. Their energy does not wait for instructions. It needs constant movement to stay in the zone. Under pressure, they accelerate. When held back without reason, they lose their spark. Constant challenge and autonomy are their fuel.',
+        pt: 'Vive o esporte pela ação. Sua energia não espera instruções. Precisa de movimento constante para estar na zona. Sob pressão, acelera. Quando é freado sem razão, perde a centelha. O desafio permanente e a autonomia são seu combustível.',
     },
     {
         es: 'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
@@ -64,13 +64,13 @@ const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     },
     {
         es: 'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
-        en: 'Builds bridges with calm and conviction. Connects with everyone and knows when to speak and when to listen. Does not chase every stimulus — selects their moments to shine. Needs genuine recognition and a team where they feel they matter.',
+        en: 'Builds bridges with calm and conviction. Connects with everyone and knows when to speak and when to listen. Does not chase every stimulus. Selects their moments to shine. Needs genuine recognition and a team where they feel they matter.',
         pt: 'Constrói pontes com calma e convicção. Relaciona-se com todos e sabe quando falar e quando ouvir. Não corre atrás de cada estímulo. Seleciona os momentos para brilhar. Precisa de espaços de reconhecimento genuíno e uma equipe onde sinta que importa.',
     },
     {
         es: 'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
-        en: 'Depth is not weakness — it is their silent superpower. Connects with others through listening and empathy, not noise. Observes before participating, but when they do, they leave a mark. Needs a trusting environment where the bond matters more than the result.',
-        pt: 'A profundidade não é fraqueza — é seu superpoder silencioso. Conecta-se com os outros pela escuta e empatia, não pelo ruído. Observa antes de participar, mas quando o faz, deixa marca. Precisa de um ambiente de confiança onde o vínculo seja mais importante que o resultado.',
+        en: 'Depth is not weakness. It is their silent superpower. Connects with others through listening and empathy, not noise. Observes before participating, but when they do, they leave a mark. Needs a trusting environment where the bond matters more than the result.',
+        pt: 'A profundidade não é fraqueza. É seu superpoder silencioso. Conecta-se com os outros pela escuta e empatia, não pelo ruído. Observa antes de participar, mas quando o faz, deixa marca. Precisa de um ambiente de confiança onde o vínculo seja mais importante que o resultado.',
     },
     {
         es: 'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
@@ -84,18 +84,18 @@ const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     },
     {
         es: 'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
-        en: 'Calm in the eye of the storm. Processes every situation with patience and acts with a consistency few can sustain. Does not react — responds. Needs time and trust to adapt to changes, but once they do, they become the group\'s anchor.',
-        pt: 'A calma no meio da tempestade. Processa cada situação com paciência e age com uma consistência que poucos conseguem manter. Não reage — responde. Precisa de tempo e confiança para se adaptar às mudanças, mas uma vez que o faz, torna-se a âncora do grupo.',
+        en: 'Calm in the eye of the storm. Processes every situation with patience and acts with a consistency few can sustain. Does not react. Responds. Needs time and trust to adapt to changes, but once they do, they become the group\'s anchor.',
+        pt: 'A calma no meio da tempestade. Processa cada situação com paciência e age com uma consistência que poucos conseguem manter. Não reage. Responde. Precisa de tempo e confiança para se adaptar às mudanças, mas uma vez que o faz, torna-se a âncora do grupo.',
     },
     {
         es: 'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
-        en: 'Analyzes in seconds what others take minutes to see. Combines processing speed with tactical precision — a rarity that turns every game into applied intelligence. Needs complex challenges and space to lead from analysis, without anyone interrupting their process.',
-        pt: 'Analisa em segundos o que outros levam minutos para ver. Combina velocidade de processamento com precisão tática — uma raridade que transforma cada jogo em um exercício de inteligência aplicada. Precisa de desafios complexos e espaço para liderar pela análise, sem que ninguém interrompa seu processo.',
+        en: 'Analyzes in seconds what others take minutes to see. Combines processing speed with tactical precision. A rarity that turns every game into applied intelligence. Needs complex challenges and space to lead from analysis, without anyone interrupting their process.',
+        pt: 'Analisa em segundos o que outros levam minutos para ver. Combina velocidade de processamento com precisão tática. Uma raridade que transforma cada jogo em um exercício de inteligência aplicada. Precisa de desafios complexos e espaço para liderar pela análise, sem que ninguém interrompa seu processo.',
     },
     {
         es: 'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
-        en: 'Thinks before speaking and speaks before acting. Their process is not slow — it is exact. Every decision is grounded in observation and judgment. Prefers quality over speed and precision over volume. Needs an environment that values analysis and does not pressure them to act before they are ready.',
-        pt: 'Pensa antes de falar e fala antes de agir. Seu processo não é lento — é exato. Cada decisão é sustentada em observação e critério. Prefere qualidade à velocidade e precisão ao volume. Precisa de um ambiente que valorize a análise e não o pressione a agir antes de estar pronto.',
+        en: 'Thinks before speaking and speaks before acting. Their process is not slow. It is exact. Every decision is grounded in observation and judgment. Prefers quality over speed and precision over volume. Needs an environment that values analysis and does not pressure them to act before they are ready.',
+        pt: 'Pensa antes de falar e fala antes de agir. Seu processo não é lento. É exato. Cada decisão é sustentada em observação e critério. Prefere qualidade à velocidade e precisão ao volume. Precisa de um ambiente que valorize a análise e não o pressione a agir antes de estar pronto.',
     },
     {
         es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. El deporte es un tablero que prefiere comprender antes de ejecutar.',
@@ -183,9 +183,9 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
         { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del menor, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' },
     ],
     en: [
-        { q: 'What is Argo Method?', a: 'There are no incorrect children — only children who haven\'t yet found an adult who understands them. Argo Method is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 12-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
-        { q: 'What is the DISC model?', a: 'DISC is a behavioral observation model used worldwide for over 30 years. It describes four behavioral patterns: Driver (action and results oriented), Connector (people and energy oriented), Sustainer (stability and team oriented), and Strategist (analysis and precision oriented). Argo adapts this framework to youth sports with child-friendly language, gamification, and an additional layer — the Engine — that measures each athlete\'s processing pace.' },
-        { q: 'Who receives the report?', a: 'The adult who accompanies the athlete: coaches, parents, or representatives of sports institutions. The report is sent by email when the experience ends. It\'s not a report for the child — it\'s a tool for the adult to better support them.' },
+        { q: 'What is Argo Method?', a: 'There are no incorrect children. Only children who haven\'t yet found an adult who understands them. Argo Method is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 12-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
+        { q: 'What is the DISC model?', a: 'DISC is a behavioral observation model used worldwide for over 30 years. It describes four behavioral patterns: Driver (action and results oriented), Connector (people and energy oriented), Sustainer (stability and team oriented), and Strategist (analysis and precision oriented). Argo adapts this framework to youth sports with child-friendly language, gamification, and an additional layer (the Engine) that measures each athlete\'s processing pace.' },
+        { q: 'Who receives the report?', a: 'The adult who accompanies the athlete: coaches, parents, or representatives of sports institutions. The report is sent by email when the experience ends. It\'s not a report for the child. It\'s a tool for the adult to better support them.' },
         { q: 'Does the child need to create an account?', a: 'No. Only a brief form with name, age, and sport is needed. No passwords, no downloads, no installations.' },
         { q: 'How long does the experience take?', a: 'About 12 minutes. An interactive adventure with mini-games and decisions, presented with a nautical theme. The child answers them alone, in a quiet environment.' },
         { q: 'Are there correct or incorrect answers?', a: 'No. Each answer reflects a behavioral tendency, not a right or wrong choice. No abilities are measured and no diagnoses are issued. All answers are valid.' },
@@ -194,9 +194,9 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
         { q: 'What data do you collect?', a: 'Adult\'s name, email, child\'s name, age, and sport. Game answers are used exclusively to generate the report. We do not sell or share data with third parties.' },
     ],
     pt: [
-        { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas — existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 10 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
-        { q: 'O que é o modelo DISC?', a: 'DISC é um modelo de comportamento observável utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais: Impulsionador (orientado à ação e resultados), Conector (orientado às pessoas e energia), Sustentador (orientado à estabilidade e equipe) e Estrategista (orientado à análise e precisão). Argo adapta esse modelo ao esporte juvenil com linguagem para crianças, gamificação e uma camada adicional — o Motor — que mede o ritmo de processamento de cada atleta.' },
-        { q: 'Para quem é o relatório?', a: 'Para o adulto que acompanha o atleta: treinadores, pais, mães ou representantes de instituições esportivas. O relatório chega por email ao finalizar a experiência. Não é um relatório para a criança — é uma ferramenta para que o adulto possa acompanhá-la melhor.' },
+        { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas. Existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 10 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
+        { q: 'O que é o modelo DISC?', a: 'DISC é um modelo de comportamento observável utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais: Impulsionador (orientado à ação e resultados), Conector (orientado às pessoas e energia), Sustentador (orientado à estabilidade e equipe) e Estrategista (orientado à análise e precisão). Argo adapta esse modelo ao esporte juvenil com linguagem para crianças, gamificação e uma camada adicional (o Motor) que mede o ritmo de processamento de cada atleta.' },
+        { q: 'Para quem é o relatório?', a: 'Para o adulto que acompanha o atleta: treinadores, pais, mães ou representantes de instituições esportivas. O relatório chega por email ao finalizar a experiência. Não é um relatório para a criança. É uma ferramenta para que o adulto possa acompanhá-la melhor.' },
         { q: 'A criança precisa criar uma conta?', a: 'Não. Apenas um formulário breve com nome, idade e esporte. Sem senhas, sem downloads, sem instalar nada.' },
         { q: 'Quanto tempo dura a experiência?', a: 'Aproximadamente 10 minutos. Uma aventura interativa com mini-jogos e decisões, apresentada com temática náutica. A criança responde sozinha, em um ambiente tranquilo.' },
         { q: 'Existem respostas certas ou erradas?', a: 'Não. Cada resposta reflete uma tendência comportamental, não um acerto ou erro. Não se medem capacidades nem se emitem diagnósticos. Todas as respostas são válidas.' },
@@ -954,7 +954,7 @@ export const Landing: React.FC = () => {
 
                 <motion.div {...fadeUp(0.28)} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
                     <button
-                        onClick={() => navigate('/signup')}
+                        onClick={() => navigate('/demo')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
                             backgroundColor: '#ffffff', color: '#1D1D1F',
@@ -966,7 +966,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar prueba gratuita', 'Start free trial', 'Iniciar avaliação gratuita')}
+                        {L('Jugar gratis', 'Play free', 'Jogar grátis')}
                         <ArrowRight size={15} />
                     </button>
                     <button
@@ -1012,7 +1012,7 @@ export const Landing: React.FC = () => {
                                 <div className="mt-10 space-y-7">
                                     <div>
                                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
-                                            01 — El juego
+                                            01. El juego
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
                                             Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones reflejan patrones conductuales de forma natural, sin preguntas directas.
@@ -1020,7 +1020,7 @@ export const Landing: React.FC = () => {
                                     </div>
                                     <div>
                                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
-                                            02 — La plataforma
+                                            02. La plataforma
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
                                             La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte en un entorno alineado con cómo tiende a procesar.
@@ -1084,7 +1084,7 @@ export const Landing: React.FC = () => {
                             {L(
                                 'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen deportistas jóvenes incorrectos. Existen deportistas fuera de sintonía. Cuando alguien no disfruta del deporte, no es por falta de capacidad, es porque el ambiente actual no está alineado con cómo tiende a procesar.',
                                 'We apply this ancient wisdom to sports behavioral science. There are no wrong children. There are children out of sync. When a child does not enjoy sport, it is not from lack of ability, it is because they are filling a role in the crew that does not match their nature.',
-                                'Aplicamos essa sabedoria milenar à ciência do comportamento esportivo. Não existem crianças incorretas. Existem crianças fora de sintonia. Quando uma criança não aproveita o esporte, não é por falta de capacidade — é porque está ocupando um lugar na tripulação que não lhe corresponde.',
+                                'Aplicamos essa sabedoria milenar à ciência do comportamento esportivo. Não existem crianças incorretas. Existem crianças fora de sintonia. Quando uma criança não aproveita o esporte, não é por falta de capacidade. É porque está ocupando um lugar na tripulação que não lhe corresponde.',
                             )}
                         </p>
                     </motion.div>
@@ -1375,7 +1375,7 @@ export const Landing: React.FC = () => {
                         )}
                     </p>
                     <button
-                        onClick={() => navigate('/signup')}
+                        onClick={() => navigate('/demo')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '10px',
                             backgroundColor: '#955FB5', color: '#fff',
@@ -1386,7 +1386,7 @@ export const Landing: React.FC = () => {
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                     >
-                        {L('Iniciar prueba gratuita', 'Start free trial', 'Iniciar avaliação gratuita')}
+                        {L('Jugar gratis', 'Play free', 'Jogar grátis')}
                         <ArrowRight size={16} />
                     </button>
                 </motion.div>
