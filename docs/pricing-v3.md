@@ -1,9 +1,12 @@
 # Argo Method — Pricing & Product Model v3
 
-> Status: Design locked (logic), implementation pending
+> Status: Design locked; core transactional model SHIPPED to main 2026-06-30
 > Date: 2026-06-30
 > Supersedes: `docs/pricing-v2.md` (roster/subscription self-serve model)
 > Related: `docs/DEMO-FUNNEL.md` (free "Jugar gratis" entry + demo report), `docs/superpowers/plans/2026-05-13-argo-puentes.md` (original Puentes build), `docs/PAYMENTS-READINESS.md`
+>
+> **BUILD PROGRESS (shipped to main 2026-06-30, commit `f2de7ae`):** Argo One / Argo One + Puente checkout is live — USD-only Stripe, **$9.99 / $12.99**, no packs, `one_purchases.includes_puente`. The **combo delivers a prepaid Puente automatically**: on a combo child's completion, `api/one-complete.ts` creates a complimentary (`provider='comp'`, `amount_cents=0`, `status='paid'`) `puentes_purchase` for the adult (skips if one already exists), and `api/send-email.ts` then shows the prepaid Puente magic link instead of the $4.99 upsell (and creates the `puentes_session`). E2E-verified on preview incl. the idempotency guard (two combos, same adult → one Puente). The demo funnel + $9.99 unlock are live (`docs/DEMO-FUNNEL.md`), the home 3-column pricing card is live, and stale Argo One prices ($14.99/$34.99/$49.99 packs) were removed from `/pricing`, tenant `/pricing`, and the sales bot KB.
+> **STILL PENDING:** volume packs (§ below, parked), reusable adult-profile questionnaire split (§2), the family 30%-off upsell, and the demo-lead nurturing sequence.
 
 This document is the single source of truth for the consumer (B2C) product line: **Argo One**, **Argo Puente**, and the consultive **Argo Coach**. It replaces the self-serve subscription ladder of v2 with a transactional model built around three entities and a reusable adult profile.
 

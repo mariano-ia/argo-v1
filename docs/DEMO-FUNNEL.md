@@ -5,6 +5,10 @@
 > BUILT 2026-06-30: demo now actually LOCKS (api/report.ts returns `is_demo`; ReportPage lock fires on `(tenant_plan==='trial' || is_demo) && !full_access`); Motor de rendimiento shown in the demo; "Motor" removed from the locked teaser; one-demo-per-email guard (`api/check-demo.ts`) + "ya jugaste con este email" cartel in `Demo.tsx`; nav button "14 días gratis" → "Jugar gratis" → `/demo`.
 > BUILT (Gap C, 2026-06-30): buy-to-unlock. `api/unlock-checkout.ts` ($9.99 Stripe USD / MercadoPago ARS tied to `session_id`, no one_purchases row); `api/one-webhook.ts` `handleUnlockPaid` sets `full_access=true` on the session (Stripe `metadata.source='unlock'`, MP `external_reference='unlock_<id>'`); the demo report CTA "Obtener informe completo" calls `/api/unlock-checkout` and redirects. VERIFIED on the develop preview 2026-06-30 (NOT on main): `/api/report` returns `is_demo` so the demo locks; `/api/check-demo` works (both the false case and the TRUE query path); `/api/unlock-checkout` creates real Stripe AND MercadoPago checkouts; guards work (`Session not found`, `Already unlocked`); `full_access` propagates to the report API (unlocked session serves `full_access:true`). The ONLY unverified link is the payment completion (Stripe/MP event → webhook `handleUnlockPaid` → `full_access`) — deferred to a real/test payment; the webhook branch mirrors the proven One/Puentes handlers and typechecks. Webhook-lag nuance: the success redirect may briefly show the report still locked until the webhook fires; acceptable for v1, could add a short retry on `?unlocked=1`.
 > Decision locked: one demo per email = HARD BLOCK with a "ya jugaste con este email" notice (counts completed demos, case-insensitive, fail-open on API error).
+> **SHIPPED TO MAIN 2026-06-30 (commit `f2de7ae`)** — the full demo funnel + new business model is live in production. Two final corrections in this push:
+> 1. **The demo no longer auto-sends any report email.** `OnboardingFlowV2`'s completion handler now skips `sendReport` when `demoMode`. The abridged report shows on-screen (`DemoEndScreen`); the full report is delivered ONLY on unlock ($9.99) or admin gift. This fixed a leak where a demo silently emailed the FULL report for free, undercutting the unlock funnel.
+> 2. **`send-email` suppresses the Argo Puentes block for a locked demo** (`is_demo && !full_access`): it skips the paid-Puente lookup and passes `suppressPuentes` to the HTML builder. We never pitch the adult Puente to someone who only has a demo report; it appears once they have a full report (paid or gifted).
+> Also in this push: the home **hero + final CTA** now read "Jugar gratis" → `/demo` (they were still "Iniciar prueba gratuita" → `/signup`; the earlier migration had only changed the small nav button). The **Argo One + Puente combo** delivers a prepaid Puente automatically — see `docs/pricing-v3.md`.
 > Related: `docs/pricing-v3.md` (pricing model), `src/pages/ReportPage.tsx` (locked report), `/demo` route + `DemoEndScreen.tsx`
 
 ## What it is
@@ -64,7 +68,7 @@ The CTA is **gated on `is_demo`**: a trial-tenant locked report (a coach) keeps 
 - [ ] **Gift the full report = the existing `full_access` grant** (regenerates AI if missing + sends full report). Verify it works on demo sessions.
 
 ### Phase 5 — Entry point
-- [ ] Change the **"14 días gratis" button → "Jugar gratis"**, routing to the demo onboarding (NOT `/signup`). Retire the trial CTA (Academy is consultive).
+- [x] Change the **"14 días gratis" button → "Jugar gratis"**, routing to the demo onboarding (NOT `/signup`). DONE for all three landing CTAs: nav button, **hero CTA**, and **final CTA** (the hero + final were missed in the first pass and still pointed at `/signup`; fixed in `f2de7ae`). Trial CTA retired from the home (Academy is consultive).
 
 ### Phase 6 — Nurturing (DEFERRED, design later)
 - Email sequence to demo leads who did not buy. Out of scope for v1.
@@ -73,8 +77,8 @@ The CTA is **gated on `is_demo`**: a trial-tenant locked report (a coach) keeps 
 
 1. **Buy-to-unlock plumbing:** reuse `one-checkout` with a `session_id` ref, or a dedicated `demo-unlock` endpoint? (Reuse is less code; dedicated is cleaner to reason about.)
 2. **One-per-email behavior:** redirect to the existing demo report (recommended) vs a hard block.
-3. **Email the locked demo report** to the parent (nurturing hook) or only show on screen? (At minimum, capture the email.)
-4. **"Jugar gratis" placement:** nav button + hero CTA.
+3. **RESOLVED (2026-06-30):** the demo does NOT auto-send any email. The abridged report shows on-screen only; the full report is delivered solely on unlock ($9.99) or admin gift. The email is still captured for nurturing. This also keeps the Argo Puentes proposal away from demo-only players.
+4. **RESOLVED (2026-06-30):** "Jugar gratis" placement = nav button + hero CTA + final CTA, all routing to `/demo`.
 5. **Abuse:** add an IP rate-limit on top of one-per-email?
 
 ## Guardrails / risks
