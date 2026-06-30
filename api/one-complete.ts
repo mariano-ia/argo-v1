@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 /**
  * POST /api/one-complete
@@ -122,6 +123,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             session_id: perfilamiento.id,
             completed_at: new Date().toISOString(),
         }).eq('id', link_id);
+
+        // ── Argo One + Puente combo: deliver the prepaid Puente ───────────────
+        // If this purchase is the combo (one_purchases.includes_puente), create a
+        // complimentary ($0, comp) Argo Puentes purchase for the responsible adult
+        // so it is already PAID when the report email is sent. send-email then shows
+        // the prepaid Puente magic link (instead of the $4.99 upsell) and creates the
+        // puentes_session itself. Skips if the adult already has a paid purchase, to
+        // avoid a duplicate. Non-blocking: a failure here never blocks the report.
+        try {
+            const { data: onePurchase } = await sb
+                .from('one_purchases')
+                .select('includes_puente')
+                .eq('id', link.purchase_id)
+                .maybeSingle();
+
+            if (onePurchase?.includes_puente && session_data.adult_email) {
+                const { data: existing } = await sb
+                    .from('puentes_purchases')
+                    .select('id')
+                    .eq('recipient_email', session_data.adult_email)
+                    .eq('status', 'paid')
+                    .maybeSingle();
+
+                if (!existing) {
+                    await sb.from('puentes_purchases').insert({
+                        source_session_id: perfilamiento.id,
+                        recipient_email: session_data.adult_email,
+                        recipient_name: session_data.adult_name ?? null,
+                        child_name: session_data.child_name,
+                        amount_cents: 0,
+                        currency: 'USD',
+                        provider: 'comp',
+                        provider_payment_id: `combo_${link.purchase_id}`,
+                        status: 'paid',
+                        paid_at: new Date().toISOString(),
+                        magic_token: crypto.randomBytes(24).toString('base64url'),
+                        lang,
+                        source: 'argo_one',
+                        tenant_id: null,
+                    });
+                }
+            }
+        } catch (puentesErr) {
+            console.warn('[one-complete] prepaid combo Puente failed:', puentesErr instanceof Error ? puentesErr.message : puentesErr);
+        }
 
         return res.status(200).json({
             ok: true,
