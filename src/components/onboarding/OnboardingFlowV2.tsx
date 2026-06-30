@@ -156,15 +156,17 @@ interface OnboardingV2Props {
      *  under-13 re-profile returns to /play/r/<token> after consent (appends, not new child). */
     reprofileToken?: string;
     /**
-     * When true (used by /demo), the flow skips ALL onboarding screens, runs
-     * the game with adult data provided via initialConsent, never writes to
-     * the DB (no startSession/saveSession/updateSession), and renders
-     * DemoEndScreen instead of ChildResultReveal at completion.
+     * When true (used by /demo, "Jugar gratis"), the flow runs the SAME full
+     * onboarding as a normal play (language, registration incl. sport, parental
+     * consent, the odyssey) but flags the session is_demo and renders
+     * DemoEndScreen (an abridged report) instead of ChildResultReveal.
      */
     demoMode?: boolean;
+    /** Called in demo mode when the responsible adult's email already played a demo. */
+    onDemoBlocked?: () => void;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, reprofileToken, demoMode = false }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, reprofileToken, demoMode = false, onDemoBlocked }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -179,17 +181,15 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // `parental-consent-waiting` in the SCREENS array.
     const DEVICE_HANDOFF_INDEX = SCREENS.findIndex(s => s.type === 'device-handoff');
     const ADULT_REGISTRATION_INDEX = SCREENS.findIndex(s => s.type === 'adult-registration');
-    // Demo: jump straight to the first story slide (skips all adult onboarding screens)
-    const DEMO_START_INDEX = SCREENS.findIndex(
-        (s): s is Extract<ScreenDef, { type: 'story' }> => s.type === 'story' && s.slideId === 'intro_a',
-    );
     // Re-profile goes through the adult registration screen (pre-filled), so it follows
     // the SAME flow as the first play: the responsible adult confirms identity + accepts
     // T&C, and for under-13 children the parental consent step is re-collected.
     const reprofileStartIndex = initialAdultData ? ADULT_REGISTRATION_INDEX : null;
+    // The demo (demoMode, no initialConsent) runs the SAME full onboarding as a
+    // normal play — language, registration (incl. sport), parental consent — so it
+    // can personalize by sport; only the end report is abridged.
     const [screenIndex, setScreenIndex] = useState(
-        demoMode ? DEMO_START_INDEX
-            : initialConsent ? DEVICE_HANDOFF_INDEX
+        initialConsent ? DEVICE_HANDOFF_INDEX
             : reprofileStartIndex ?? 0,
     );
     const [adultData, setAdultData]     = useState<AdultData | null>(
@@ -1138,7 +1138,21 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         initialValues={initialAdultData ?? undefined}
                         readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}
                         institutionName={tenantId ? (institutionName || undefined) : undefined}
-                        onComplete={data => { setAdultData(data); advance(); }}
+                        onComplete={async data => {
+                            // One demo per email: if this email already completed a demo,
+                            // signal the page to show the notice instead of playing again.
+                            if (demoMode) {
+                                try {
+                                    const r = await fetch('/api/check-demo', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ email: data.email }),
+                                    });
+                                    if (r.ok) { const d = await r.json(); if (d?.already_played) { onDemoBlocked?.(); return; } }
+                                } catch { /* fail open */ }
+                            }
+                            setAdultData(data); advance();
+                        }}
                         onConsentRequired={({ token, adultData: data }) => {
                             setAdultData(data);
                             setConsentCtx({ token, adultData: data });
