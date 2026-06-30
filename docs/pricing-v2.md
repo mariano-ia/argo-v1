@@ -1,5 +1,7 @@
 # Argo Method — Pricing v2
 
+> **SUPERSEDED (2026-06-30) by `docs/pricing-v3.md`.** v3 replaces the self-serve subscription ladder with a transactional model (Argo One / Argo Puente / consultive Argo Coach) built on a reusable adult profile. Keep v2 for historical reference only.
+>
 > Approved: 2026-03-30
 > Status: Pending implementation
 > Replaces: Credit-based pricing model

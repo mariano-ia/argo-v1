@@ -673,40 +673,25 @@ const PricingFeature: React.FC<{ label: string; sub?: string }> = ({ label, sub 
     </li>
 );
 
+const ProductName: React.FC<{ rest: string }> = ({ rest }) => (
+    <><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>{rest}</span></>
+);
+
+const ReportItem: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (
+    <li className="flex items-start gap-2 py-[7px] border-b border-[#F5F5F7] last:border-b-0">
+        <Check size={13} className="flex-shrink-0 mt-[3px]" style={{ color: '#955FB5' }} />
+        <span>
+            <span style={{ fontSize: '13px', fontWeight: 600, color: '#1D1D1F', display: 'block', lineHeight: 1.3 }}>{title}</span>
+            <span style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.4 }}>{desc}</span>
+        </span>
+    </li>
+);
+
 const PricingSection: React.FC<{
     L: (es: string, en: string, pt: string) => string;
     navigate: (path: string) => void;
     lang: string;
-}> = ({ L, navigate, lang }) => {
-    const [annual, setAnnual] = useState(true);
-    const [onePack, setOnePack] = useState<number | null>(null);
-    const [oneEmail, setOneEmail] = useState('');
-    const [oneLoading, setOneLoading] = useState(false);
-    const [oneError, setOneError] = useState('');
-
-    const handleOneBuy = async () => {
-        if (!onePack || !oneEmail) return;
-        setOneLoading(true);
-        setOneError('');
-        try {
-            const res = await fetch('/api/one-checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: oneEmail, pack_size: onePack, lang }),
-            });
-            const data = await res.json();
-            if (data.checkout_url) {
-                window.location.href = data.checkout_url;
-            } else {
-                setOneError(L('Error al crear el checkout. Intenta de nuevo.', 'Checkout error. Try again.', 'Erro ao criar o checkout. Tente novamente.'));
-                setOneLoading(false);
-            }
-        } catch {
-            setOneError(L('Error de conexión. Intenta de nuevo.', 'Connection error. Try again.', 'Erro de conexão. Tente novamente.'));
-            setOneLoading(false);
-        }
-    };
-
+}> = ({ L, navigate }) => {
     const included = L('incluido', 'included', 'incluído');
 
     return (
@@ -717,236 +702,90 @@ const PricingSection: React.FC<{
                     {L('Precios', 'Pricing', 'Preços')}
                 </p>
                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '12px' }} className="text-argo-navy">
-                    {L('El plan que se ajusta a tu equipo', 'The plan that fits your team', 'O plano que se ajusta ao seu time')}
+                    {L('Para un niño, o para todo tu equipo', 'For one child, or your whole team', 'Para uma criança, ou para todo o seu time')}
                 </h2>
             </div>
 
-            {/* Toggle */}
-            <div className="flex items-center justify-center gap-3 mb-8">
-                <span style={{ fontSize: '13px', fontWeight: annual ? 400 : 600, color: annual ? '#86868B' : '#1D1D1F' }}>{L('Mensual', 'Monthly', 'Mensal')}</span>
-                <button
-                    onClick={() => setAnnual(v => !v)}
-                    style={{ width: '44px', height: '24px', borderRadius: '12px', position: 'relative', transition: 'background 0.2s', background: annual ? '#955FB5' : '#D2D2D7', border: 'none', cursor: 'pointer' }}
-                >
-                    <span style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#fff', position: 'absolute', top: '2px', transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.15)', ...(annual ? { right: '2px' } : { left: '2px' }) }} />
-                </button>
-                <span style={{ fontSize: '13px', fontWeight: annual ? 600 : 400, color: annual ? '#1D1D1F' : '#86868B' }}>{L('Anual', 'Annual', 'Anual')}</span>
-                {annual && (
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#fff', background: '#955FB5', padding: '3px 10px', borderRadius: '20px' }}>
-                        {L('Ahorra hasta 21%', 'Save up to 21%', 'Economize até 21%')}
-                    </span>
-                )}
-            </div>
+            {/* Three columns */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
-            {/* Trial */}
-            <div style={{ background: 'rgba(149,95,181,0.06)', border: '1px solid rgba(149,95,181,0.15)', borderRadius: '12px', padding: '14px 24px', textAlign: 'center', marginBottom: '32px' }}>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#955FB5', marginBottom: '2px' }}>
-                    {L('Comienza con 14 días gratis', 'Start with 14 free days', 'Comece com 14 dias grátis')}
-                </p>
-                <p style={{ fontSize: '12px', color: '#86868B' }}>
-                    {L(
-                        'Dashboard completo, 8 deportistas, Argo Coach. Sin tarjeta de crédito.',
-                        'Full dashboard, 8 athletes, AI consultant. No credit card required.',
-                        'Dashboard completo, 8 atletas, Argo Coach. Sem cartão de crédito.',
-                    )}
-                </p>
-            </div>
-
-            {/* Plans */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-12">
-
-                {/* PRO */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>PRO</p>
-                    </div>
-                    <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        {annual ? '$40' : '$49'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
+                {/* ── COL 1: Argo One ─────────────────────────────────────── */}
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" One" /></p>
+                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
+                        {L('El informe del perfil del niño.', "The child's profile report.", 'O relatório do perfil da criança.')}
                     </p>
-                    {annual ? (
-                        <>
-                            <div style={{ marginTop: '6px', marginBottom: '4px' }}>
-                                <span style={{ fontSize: '13px', color: '#AEAEB2', textDecoration: 'line-through', marginRight: '6px' }}>$49/{L('mes', 'mo', 'mês')}</span>
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{L('Ahorra 18%', 'Save 18%', 'Economize 18%')}</span>
-                            </div>
-                            <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
-                                {L('Facturado como $480/año', 'Billed as $480/year', 'Cobrado como $480/ano')}
-                            </p>
-                        </>
-                    ) : (
-                        <p style={{ fontSize: '12px', color: '#AEAEB2', marginTop: '6px', marginBottom: '16px' }}>
-                            {L('Facturación mensual', 'Billed monthly', 'Cobrança mensal')}
-                        </p>
-                    )}
+                    <p style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', marginBottom: '18px' }}>$9.99</p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
-                        <PricingFeature label={L('Hasta 50 jugadores activos', 'Up to 50 active players', 'Até 50 jogadores ativos')} />
-                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
-                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
-                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
-                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
-                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
+                        <ReportItem title={L('Su perfil', 'Their profile', 'Seu perfil')} desc={L('Quién es hoy, y por dónde puede crecer.', 'Who they are today, and where they can grow.', 'Quem ele é hoje, e por onde pode crescer.')} />
+                        <ReportItem title={L('Su combustible', 'Their fuel', 'Seu combustível')} desc={L('Lo que lo enciende y lo sostiene.', 'What lights them up and keeps them going.', 'O que o acende e o sustenta.')} />
+                        <ReportItem title={L('Su corazón', 'Their heart', 'Seu coração')} desc={L('Lo que necesita para crecer y estar bien.', 'What they need to grow and feel well.', 'O que ele precisa para crescer e estar bem.')} />
+                        <ReportItem title={L('Palabras puente', 'Bridge words', 'Palavras-ponte')} desc={L('Cómo hablarle para conectar.', 'How to speak so you connect.', 'Como falar com ele para conectar.')} />
+                        <ReportItem title={L('Palabras a evitar', 'Words to avoid', 'Palavras a evitar')} desc={L('Las que lo apagan, sin querer.', 'The ones that dim them, without meaning to.', 'As que o apagam, sem querer.')} />
+                        <ReportItem title={L('Guía para acompañarlo', 'A guide to support them', 'Guia para acompanhá-lo')} desc={L('Pasos concretos para el día a día.', 'Concrete steps for everyday life.', 'Passos concretos para o dia a dia.')} />
                     </ul>
                     <button
-                        onClick={() => navigate('/signup')}
-                        style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer' }}
+                        onClick={() => navigate('/one')}
+                        style={{ width: '100%', padding: '13px', borderRadius: '12px', border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
                     >
-                        {L('Probar PRO gratis', 'Try PRO free', 'Testar PRO grátis')}
+                        {L('Comprar', 'Buy', 'Comprar')} <ProductName rest=" One" />
                     </button>
-                    <p style={{ fontSize: '11px', color: '#AEAEB2', textAlign: 'center', marginTop: '8px' }}>
-                        {L('Sin tarjeta de crédito · 14 días', 'No credit card · 14 days', 'Sem cartão · 14 dias')}
-                    </p>
                 </div>
 
-                {/* ACADEMY */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
+                {/* ── COL 2: Argo One + Puente (destacada) ────────────────── */}
+                <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
                     <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                        {L('Más popular', 'Most popular', 'Mais popular')}
+                        {L('Recomendado', 'Recommended', 'Recomendado')}
                     </span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Academy</p>
-                    </div>
-                    <p style={{ fontSize: '34px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', lineHeight: 1 }}>
-                        {annual ? '$70' : '$89'} <span style={{ fontSize: '14px', fontWeight: 400, color: '#86868B' }}>/ {L('mes', 'mo', 'mês')}</span>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest={L(' One + Puente', ' One + Bridge', ' One + Ponte')} /></p>
+                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
+                        {L('El informe del niño y tu propio Puente con él.', "The child's report and your own Bridge with them.", 'O relatório da criança e a sua própria Ponte com ele.')}
                     </p>
-                    {annual ? (
-                        <>
-                            <div style={{ marginTop: '6px', marginBottom: '4px' }}>
-                                <span style={{ fontSize: '13px', color: '#AEAEB2', textDecoration: 'line-through', marginRight: '6px' }}>$89/{L('mes', 'mo', 'mês')}</span>
-                                <span style={{ fontSize: '11px', fontWeight: 700, color: '#955FB5', background: 'rgba(149,95,181,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{L('Ahorra 21%', 'Save 21%', 'Economize 21%')}</span>
-                            </div>
-                            <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
-                                {L('Facturado como $840/año', 'Billed as $840/year', 'Cobrado como $840/ano')}
-                            </p>
-                        </>
-                    ) : (
-                        <p style={{ fontSize: '12px', color: '#AEAEB2', marginTop: '6px', marginBottom: '16px' }}>
-                            {L('Facturación mensual', 'Billed monthly', 'Cobrança mensal')}
-                        </p>
-                    )}
+                    <p style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em', marginBottom: '18px' }}>$12.99</p>
+                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F', marginBottom: '8px' }}>
+                        {L('Todo el informe de Argo One, y además tu Puente:', 'The full Argo One report, plus your Bridge:', 'Todo o relatório do Argo One, e mais a sua Ponte:')}
+                    </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={included} />
-                        <PricingFeature label={L('Hasta 100 jugadores activos', 'Up to 100 active players', 'Até 100 jogadores ativos')} />
-                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
-                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
-                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
-                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
-                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
-                        <PricingFeature label={L('Multi-usuario', 'Multi-user access', 'Multi-usuário')} sub={L('varios coaches', 'multiple coaches', 'vários treinadores')} />
-                        <PricingFeature label={L('Soporte prioritario', 'Priority support', 'Suporte prioritário')} />
+                        <ReportItem title={L('Tu perfil como adulto', 'Your profile as an adult', 'Seu perfil como adulto')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
+                        <ReportItem title={L('La previa del partido', 'Before the match', 'O pré-jogo')} desc={L('Cómo estar antes de que juegue.', 'How to be before they play.', 'Como estar antes de ele jogar.')} />
+                        <ReportItem title={L('Cuando algo no sale', 'When something goes wrong', 'Quando algo não sai')} desc={L('Acompañar la frustración con calma.', 'Holding the frustration calmly.', 'Acompanhar a frustração com calma.')} />
+                        <ReportItem title={L('La charla después del partido', 'The talk after the match', 'A conversa depois do jogo')} desc={L('Qué decir, y cuándo callar.', 'What to say, and when to stay quiet.', 'O que dizer, e quando calar.')} />
+                        <ReportItem title={L('El largo plazo', 'The long run', 'O longo prazo')} desc={L('Cuidar su gozo por el deporte.', 'Protecting their joy for sport.', 'Cuidar do prazer dele pelo esporte.')} />
                     </ul>
                     <button
-                        onClick={() => navigate('/signup')}
-                        style={{ width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: 'none', background: '#955FB5', color: '#fff', cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
+                        onClick={() => navigate('/one')}
+                        style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
                     >
-                        {L('Probar Academy gratis', 'Try Academy free', 'Testar Academy grátis')}
+                        {L('Comprar', 'Buy', 'Comprar')} <ProductName rest={L(' One + Puente', ' One + Bridge', ' One + Ponte')} />
                     </button>
-                    <p style={{ fontSize: '11px', color: '#AEAEB2', textAlign: 'center', marginTop: '8px' }}>
-                        {L('Sin tarjeta de crédito · 14 días', 'No credit card · 14 days', 'Sem cartão · 14 dias')}
-                    </p>
                 </div>
 
-                {/* ENTERPRISE */}
-                <div style={{ background: '#FAFAFA', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-                    <p style={{ fontSize: '11px', fontWeight: 700, color: '#1D1D1F', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Enterprise</p>
-                    <p style={{ fontSize: '22px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '4px' }}>
-                        {L('A medida', 'Custom', 'Sob medida')}
+                {/* ── COL 3: Argo Academy ─────────────────────────────────── */}
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" Academy" /></p>
+                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
+                        {L('Para tu institución o equipo.', 'For your institution or team.', 'Para a sua instituição ou time.')}
                     </p>
-                    <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '16px' }}>
-                        {L('A partir de 150 jugadores', 'From 150 players', 'A partir de 150 jogadores')}
+                    <p style={{ fontSize: '15px', fontWeight: 700, color: '#955FB5', marginBottom: '2px' }}>
+                        {L('14 días de prueba', '14-day trial', '14 dias de teste')}
+                    </p>
+                    <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '18px' }}>
+                        {L('sin tarjeta de crédito', 'no credit card', 'sem cartão de crédito')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Argo Coach Premium', 'Argo Coach Premium', 'Argo Coach Premium')} sub={L('modelo avanzado', 'advanced model', 'modelo avançado')} />
-                        <PricingFeature label={L('Jugadores ilimitados', 'Unlimited players', 'Jogadores ilimitados')} />
-                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
+                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
+                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
+                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={L('consultor con IA', 'AI consultant', 'consultor com IA')} />
                         <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
-                        <PricingFeature label={L('Dashboard completo + API', 'Full dashboard + API', 'Dashboard completo + API')} />
-                        <PricingFeature label={L('Integraciones custom', 'Custom integrations', 'Integrações custom')} />
-                        <PricingFeature label={L('Onboarding asistido', 'Assisted onboarding', 'Onboarding assistido')} />
-                        <PricingFeature label={L('Soporte dedicado', 'Dedicated support', 'Suporte dedicado')} />
+                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
+                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
                     </ul>
                     <a
                         href="mailto:hola@argomethod.com"
-                        style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
+                        style={{ display: 'block', width: '100%', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
                     >
-                        {L('Contactar ventas', 'Contact sales', 'Contatar vendas')}
+                        {L('Pedir más información', 'Request information', 'Pedir mais informação')}
                     </a>
-                </div>
-            </div>
-
-            {/* Argo One — compact with buy flow */}
-            <div style={{ borderTop: '1px solid #E8E8ED', paddingTop: '32px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '12px' }}>
-                    {L('Padres y familias', 'Parents & families', 'Pais e famílias')}
-                </p>
-                <div style={{ background: '#fff', borderRadius: '14px', padding: '24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)' }}>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-5">
-                        <div className="flex-1">
-                            <p style={{ fontSize: '15px', fontWeight: 600, color: '#1D1D1F', marginBottom: '4px' }}>Argo One</p>
-                            <p style={{ fontSize: '13px', color: '#86868B', lineHeight: 1.6 }}>
-                                {L(
-                                    'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
-                                    'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
-                                    'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
-                                )}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Pack selector */}
-                    <div className="flex gap-3 mb-4">
-                        {[
-                            { n: 1, price: '$14.99', each: '' },
-                            { n: 3, price: '$34.99', each: '$11.66' },
-                            { n: 5, price: '$49.99', each: '$10.00' },
-                        ].map(p => (
-                            <button
-                                key={p.n}
-                                onClick={() => setOnePack(p.n)}
-                                style={{
-                                    textAlign: 'center', padding: '12px 16px', borderRadius: '12px', minWidth: '96px', flex: 1,
-                                    border: onePack === p.n ? '2px solid #955FB5' : '1px solid #E8E8ED',
-                                    background: onePack === p.n ? 'rgba(149,95,181,0.04)' : '#fff',
-                                    cursor: 'pointer', transition: 'all 0.2s',
-                                }}
-                            >
-                                <p style={{ fontSize: '14px', fontWeight: 500, color: '#1D1D1F' }}>
-                                    {p.n} {p.n === 1 ? L('informe', 'report', 'relatório') : L('informes', 'reports', 'relatórios')}
-                                </p>
-                                <p style={{ fontSize: '14px', fontWeight: 700, color: '#955FB5', marginTop: '2px' }}>{p.price}</p>
-                                {p.each && <p style={{ fontSize: '10px', color: '#AEAEB2', marginTop: '1px' }}>{p.each} {L('por informe', 'per report', 'por relatório')}</p>}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Email + buy */}
-                    {onePack && (
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <input
-                                type="email"
-                                placeholder={L('Tu email', 'Your email', 'Seu email')}
-                                value={oneEmail}
-                                onChange={e => setOneEmail(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleOneBuy()}
-                                style={{ flex: 1, padding: '12px 16px', borderRadius: '10px', border: '1px solid #D2D2D7', fontSize: '14px', outline: 'none' }}
-                            />
-                            <button
-                                onClick={handleOneBuy}
-                                disabled={oneLoading || !oneEmail}
-                                style={{
-                                    padding: '12px 24px', borderRadius: '10px', border: 'none', fontSize: '14px', fontWeight: 600,
-                                    background: oneEmail ? '#955FB5' : '#D2D2D7', color: '#fff', cursor: oneEmail ? 'pointer' : 'default',
-                                    opacity: oneLoading ? 0.6 : 1, transition: 'all 0.2s', whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {oneLoading
-                                    ? '...'
-                                    : L('Comprar', 'Buy', 'Comprar')
-                                }
-                            </button>
-                        </div>
-                    )}
-                    {oneError && <p style={{ fontSize: '12px', color: '#DC2626', marginTop: '8px' }}>{oneError}</p>}
                 </div>
             </div>
         </div>
