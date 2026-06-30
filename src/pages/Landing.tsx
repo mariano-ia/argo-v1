@@ -1273,8 +1273,15 @@ export const Landing: React.FC = () => {
                         {L('El sistema · Tres dimensiones', 'The system · Three dimensions', 'O sistema · Três dimensões')}
                     </SectionLabel>
                     <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('Modelo DISC + Motor = Sintonia deportiva.', 'DISC Model + Engine = Sports synergy.', 'Modelo DISC + Motor = Sintonia esportiva.')}
+                        {L('Conducta + Motor: las dos dimensiones del Método Argo.', 'Behavior + Engine: the two dimensions of the Argo Method.', 'Conduta + Motor: as duas dimensões do Método Argo.')}
                     </h2>
+                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '16px', maxWidth: '640px', lineHeight: 1.75 }}>
+                        {L(
+                            'Una base científica (el modelo DISC) adaptada al deporte juvenil y enriquecida con el Motor, el ritmo al que cada niño procesa. El resultado es su sintonía: dónde tiende a disfrutar y a rendir.',
+                            'A scientific foundation (the DISC model) adapted to youth sport and enriched with the Engine, the pace at which each child processes. The result is their synergy: where they tend to thrive.',
+                            'Uma base científica (o modelo DISC) adaptada ao esporte juvenil e enriquecida com o Motor, o ritmo em que cada criança processa. O resultado é a sua sintonia: onde costuma aproveitar e render.',
+                        )}
+                    </p>
 
                     {/* Inline definitions */}
                     <div className="flex flex-wrap items-start gap-8 mt-8">
