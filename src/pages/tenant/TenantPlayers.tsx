@@ -337,8 +337,8 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         <div className="px-6 pb-6 pt-2">
                             {/* Profile history timeline (left) + plain-language change description (right) */}
                             {(session.history?.length ?? 0) > 1 && (
-                                <div className="mb-5 pb-4 border-b border-argo-border flex flex-col lg:flex-row lg:items-start gap-4">
-                                    <div className="lg:flex-1 min-w-0">
+                                <div className="mb-5 pb-4 border-b border-argo-border grid grid-cols-1 lg:grid-cols-2 lg:items-start gap-6">
+                                    <div className="min-w-0">
                                         <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">
                                             {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
                                         </p>
@@ -360,9 +360,9 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         </div>
                                     </div>
                                     {changeDesc && (
-                                        <div className="lg:w-80 flex-shrink-0 rounded-xl bg-argo-violet-50 border border-argo-violet-100 p-3 flex gap-2">
-                                            <Sprout size={15} className="text-argo-violet-600 mt-0.5 flex-shrink-0" />
-                                            <p className="text-xs text-argo-violet-600 leading-relaxed">{changeDesc}</p>
+                                        <div className="rounded-xl border border-argo-violet-100 p-3 flex gap-2">
+                                            <Sprout size={15} className="text-argo-violet-400 mt-0.5 flex-shrink-0" />
+                                            <p className="text-xs text-argo-secondary leading-relaxed">{changeDesc}</p>
                                         </div>
                                     )}
                                 </div>
