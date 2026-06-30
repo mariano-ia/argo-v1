@@ -183,7 +183,7 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 - Checklist Durante: ${base.checklist.durante}
 - Checklist Después: ${base.checklist.despues}
 
-TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil.
+TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil. Si el contenido base contiene afirmaciones categóricas sobre el niño, conviértelas a lenguaje probabilístico ("tiende a", "suele", "es probable que"); nunca afirmes una identidad fija ("es un...", "siempre", "será", "destinado a").
 
 SECCIÓN ESPECIAL — "resumenPerfil" (Retrato de Sintonía):
 Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture la esencia de ${NAME_PLACEHOLDER} en el deporte. Debe ser:
@@ -309,6 +309,57 @@ function findProhibitedWords(sections: Record<string, unknown>): string[] {
                     ? new RegExp(escape(w), 'i')
                     : new RegExp(`\\b${escape(w)}\\b`, 'i');
                 if (pattern.test(v)) found.add(w);
+            }
+        } else if (Array.isArray(v)) {
+            v.forEach(walk);
+        } else if (v !== null && typeof v === 'object') {
+            Object.values(v).forEach(walk);
+        }
+    };
+    walk(sections);
+    return [...found];
+}
+
+// ─── Deterministic-language detector (anti-fixed-identity) ───────────────────
+// HIGH-PRECISION patterns that catch language asserting a FIXED IDENTITY ABOUT
+// THE CHILD ("X is a born leader", "X will always be...") — NOT the method, the
+// axes, or legitimate probabilistic copy. To stay safe we never match bare "es"
+// or bare "siempre" (which appear in legit copy like "es probable que", "es un
+// buen momento para", "siempre desde la fortaleza"): the "is a/un" shapes are
+// tied to the child's name placeholder or a pronoun, and only unambiguously
+// categorical future/guarantee phrases are detected standalone.
+// In generate-ai the child's name is the `__NAME__` placeholder (real name is
+// rehydrated AFTER this check), so detection runs against the placeholder.
+const NAME = NAME_PLACEHOLDER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const DETERMINISTIC_PATTERNS: RegExp[] = [
+    // Child (name placeholder / pronoun) + "es/será un(a)" + word ⇒ "X es un líder".
+    new RegExp(`(?:${NAME}|él|ella|el niño|la niña|el deportista)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
+    new RegExp(`(?:${NAME}|he|she|the athlete|the child)\\s+is\\s+a\\s+\\p{L}`, 'iu'),
+    new RegExp(`(?:${NAME}|ele|ela|a criança|o atleta)\\s+é\\s+um[a]?\\s+\\p{L}`, 'iu'),
+    // Child + siempre/nunca/jamás (+ verb implied) ⇒ "X siempre se frustra".
+    new RegExp(`(?:${NAME}|él|ella)\\s+(?:siempre|nunca|jamás)(?![\\p{L}\\p{N}])`, 'iu'),
+    new RegExp(`(?:${NAME}|he|she)\\s+(?:always|never)(?![\\p{L}\\p{N}])`, 'iu'),
+    new RegExp(`(?:${NAME}|ele|ela)\\s+(?:sempre|nunca)(?![\\p{L}\\p{N}])`, 'iu'),
+    // Categorical future / guarantee phrases (safe to detect standalone).
+    // (No bare "será un(a)" — it appears in legit copy like "el informe será una
+    // invitación"; the child-tied "X es/será un(a)" pattern above covers the real case.)
+    /\bva a ser\b/iu, /\bserá siempre\b/iu,
+    /\bdefinitivamente\b/iu, /\bsin duda\b/iu, /\bgarantiza\b/iu,
+    /\bnació para\b/iu, /\bestá destinad[oa]\b/iu,
+    /\bwill always\b/iu, /\bwill never\b/iu, /\bdefinitely\b/iu,
+    /\bwithout a doubt\b/iu, /\bguarantees?\b/iu, /\bborn to\b/iu, /\bis destined\b/iu,
+    /\bvai ser\b/iu, /\bsempre será\b/iu, /\bsem dúvida\b/iu, /\bgarante\b/iu, /\bnasceu para\b/iu,
+];
+
+// Returns the deterministic patterns (as source strings) that matched any string
+// value of the sections object. Mirrors findProhibitedWords' walk so deterministic
+// hits flow through the SAME correction+telemetry path as prohibited words.
+function findDeterministicHits(sections: Record<string, unknown>): string[] {
+    const found = new Set<string>();
+    const walk = (v: unknown): void => {
+        if (typeof v === 'string') {
+            for (const re of DETERMINISTIC_PATTERNS) {
+                if (re.test(v)) found.add(re.source);
             }
         } else if (Array.isArray(v)) {
             v.forEach(walk);
@@ -500,31 +551,45 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // but the model sometimes leaks them anyway. If we find any, ask it
         // to rewrite the response without those words. One retry max.
         const sectionsAsObj = sections as unknown as Record<string, unknown>;
-        const firstFound = findProhibitedWords(sectionsAsObj);
-        const prohibitedHit = firstFound.length > 0;
+        const firstProhibited = findProhibitedWords(sectionsAsObj);
+        // Deterministic-language hits flow through the SAME single-retry path as
+        // prohibited words; both surface to ai_events telemetry below. If either
+        // survives the retry we behave exactly as before (log + serve, never block).
+        const firstDeterministic = findDeterministicHits(sectionsAsObj);
+        const firstFound = [...firstProhibited, ...firstDeterministic];
+        const prohibitedHit = firstProhibited.length > 0;
+        const determinismHit = firstDeterministic.length > 0;
         // Assume a hit survives until the correction pass clears it; surfaced to ai_events telemetry below.
         let prohibitedAfterRetry = prohibitedHit;
+        let determinismAfterRetry = determinismHit;
         if (firstFound.length > 0) {
-            console.warn('[generate-ai] Prohibited words detected on first pass:', firstFound.join(', '));
+            if (firstProhibited.length > 0) console.warn('[generate-ai] Prohibited words detected on first pass:', firstProhibited.join(', '));
+            if (firstDeterministic.length > 0) console.warn('[generate-ai] Deterministic language detected on first pass:', firstDeterministic.join(' | '));
             const correctionMessages: AIMsg[] = [
                 ...messages,
                 { role: 'assistant', content: aiResponse.content },
                 {
                     role: 'user',
-                    content: `Tu respuesta anterior contenía palabras prohibidas por las reglas de redacción de Argo: ${firstFound.join(', ')}. Reformula TODO el JSON sin usar esas palabras ni sus sinónimos (déficit, clínico, diagnóstico, determinista). Recuerda: siempre desde la fortaleza, nunca desde el déficit. Devuelve ÚNICAMENTE el JSON con la misma estructura.`,
+                    content: `Tu respuesta anterior contenía lenguaje que las reglas de Argo no permiten${firstProhibited.length > 0 ? ` (palabras prohibidas: ${firstProhibited.join(', ')})` : ''}${firstDeterministic.length > 0 ? ` y afirmaciones deterministas sobre el niño ("X es un...", "siempre/nunca", "será", "destinado a")` : ''}. Reformula TODO el JSON sin usar esas palabras ni lenguaje categórico sobre el niño: usa SIEMPRE lenguaje probabilístico ("tiende a", "suele", "es probable que", "podría"). Nunca afirmes una identidad fija. Recuerda: siempre desde la fortaleza, nunca desde el déficit. Devuelve ÚNICAMENTE el JSON con la misma estructura.`,
                 },
             ];
             try {
                 const correctedResp = await callAI(correctionMessages, { ...aiOpts, provider: aiResponse.provider });
                 const correctedCleaned = correctedResp.content.replace(/^```(?:json)?\n?/m, '').replace(/\n?```$/m, '').trim();
                 const correctedSections = JSON.parse(correctedCleaned) as AISections;
-                const stillFound = findProhibitedWords(correctedSections as unknown as Record<string, unknown>);
-                if (stillFound.length === 0) {
+                const correctedObj = correctedSections as unknown as Record<string, unknown>;
+                const stillProhibited = findProhibitedWords(correctedObj);
+                const stillDeterministic = findDeterministicHits(correctedObj);
+                // Accept the correction only if it cleared everything; otherwise keep
+                // the original (same behavior as before for prohibited words).
+                if (stillProhibited.length === 0 && stillDeterministic.length === 0) {
                     sections = correctedSections;
                     aiResponse = correctedResp;
                     prohibitedAfterRetry = false;
+                    determinismAfterRetry = false;
                 } else {
-                    console.warn('[generate-ai] Correction still had prohibited words:', stillFound.join(', '));
+                    if (stillProhibited.length > 0) console.warn('[generate-ai] Correction still had prohibited words:', stillProhibited.join(', '));
+                    if (stillDeterministic.length > 0) console.warn('[generate-ai] Correction still had deterministic language:', stillDeterministic.join(' | '));
                 }
             } catch (correctionErr) {
                 console.warn('[generate-ai] Correction pass failed, keeping original response:', correctionErr instanceof Error ? correctionErr.message : correctionErr);
@@ -568,8 +633,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     tokens_out: aiResponse.outputTokens,
                     cost_usd: getCostUsd(aiResponse),
                     latency_ms: Date.now() - t0,
-                    prohibited_hit: prohibitedHit,
-                    prohibited_after_retry: prohibitedAfterRetry,
+                    // Determinism hits are folded into the existing prohibited_* booleans
+                    // (no new column needed; the existing telemetry registers them).
+                    prohibited_hit: prohibitedHit || determinismHit,
+                    prohibited_after_retry: prohibitedAfterRetry || determinismAfterRetry,
                 });
             }
         } catch (telemetryErr) {

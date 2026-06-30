@@ -60,22 +60,22 @@ type PatternMap = Record<DecisionPattern, PatternCopy>;
 const ES: PatternMap = {
     constante: {
         label: 'Decisor constante',
-        desc:  'Toma decisiones con la misma claridad al principio y al final.',
-        imp:   'Puedes darle instrucciones complejas en cualquier momento del partido. Responde igual en el primer minuto que en el último.',
+        desc:  'Tiende a tomar decisiones con una claridad parecida al principio y al final.',
+        imp:   'Puedes darle instrucciones complejas en cualquier momento del partido. Suele responder de forma similar en el primer minuto y en el último.',
     },
     arranque_lento: {
         label: 'Arranque progresivo',
-        desc:  'Necesita los primeros minutos para activarse. Una vez que entra en ritmo, es muy difícil de frenar.',
-        imp:   'No le asignes responsabilidades críticas al inicio. Dale tiempo para calentar también la cabeza, no solo el cuerpo.',
+        desc:  'Suele tomarse los primeros minutos para activarse. Una vez que entra en ritmo, suele costar mucho frenarlo.',
+        imp:   'Quizá convenga evitar responsabilidades críticas al inicio. Dale tiempo para calentar también la cabeza, no solo el cuerpo.',
     },
     cierre_desgaste: {
         label: 'Energía de inicio',
-        desc:  'Sus mejores decisiones llegan al principio. Con el tiempo, la toma de decisiones le demanda más esfuerzo.',
+        desc:  'Sus mejores decisiones suelen llegar al principio. Con el tiempo, la toma de decisiones podría demandarle más esfuerzo.',
         imp:   'Dosifica la carga de decisiones a lo largo del partido. Su momento de mayor claridad es el arranque.',
     },
     contexto: {
         label: 'Decisor de contexto',
-        desc:  'Su capacidad de decisión varía mucho según cómo llega ese día.',
+        desc:  'Su capacidad de decisión parece variar bastante según cómo llega ese día.',
         imp:   'Vale la pena tomarte 2 minutos antes de cada sesión para leer cómo está. Una pregunta simple puede cambiar todo.',
     },
 };
@@ -83,22 +83,22 @@ const ES: PatternMap = {
 const EN: PatternMap = {
     constante: {
         label: 'Consistent decider',
-        desc:  'Makes decisions with the same clarity at the start and at the end.',
-        imp:   'You can give complex instructions at any point in the session. Responds just as well in the first minute as in the last.',
+        desc:  'Tends to make decisions with a similar clarity at the start and at the end.',
+        imp:   'You can give complex instructions at any point in the session. Usually responds in a similar way in the first minute and in the last.',
     },
     arranque_lento: {
         label: 'Progressive starter',
-        desc:  'Needs the first few minutes to get going. Once in rhythm, very hard to stop.',
-        imp:   'Avoid assigning critical responsibilities at the start. Give them time to warm up mentally, not just physically.',
+        desc:  'Usually takes the first few minutes to get going. Once in rhythm, usually hard to stop.',
+        imp:   'It may be best to avoid critical responsibilities at the start. Give them time to warm up mentally, not just physically.',
     },
     cierre_desgaste: {
         label: 'Front-loaded energy',
-        desc:  'Best decisions come early. Over time, decision-making demands more effort.',
+        desc:  'Best decisions usually come early. Over time, decision-making may demand more effort.',
         imp:   'Pace decision demands throughout the session. Their peak clarity is at the start.',
     },
     contexto: {
         label: 'Context-based decider',
-        desc:  'Decision-making ability varies a lot depending on how they arrive that day.',
+        desc:  'Decision-making ability seems to vary quite a bit depending on how they arrive that day.',
         imp:   'Worth taking 2 minutes before each session to check in. A simple question can change everything.',
     },
 };
@@ -106,22 +106,22 @@ const EN: PatternMap = {
 const PT: PatternMap = {
     constante: {
         label: 'Decisor constante',
-        desc:  'Toma decisões com a mesma clareza no início e no final.',
-        imp:   'Pode dar instruções complexas em qualquer momento da sessão. Responde igual no primeiro minuto que no último.',
+        desc:  'Tende a tomar decisões com uma clareza parecida no início e no final.',
+        imp:   'Pode dar instruções complexas em qualquer momento da sessão. Costuma responder de forma parecida no primeiro minuto e no último.',
     },
     arranque_lento: {
         label: 'Início progressivo',
-        desc:  'Precisa dos primeiros minutos para se ativar. Uma vez em ritmo, é muito difícil de parar.',
-        imp:   'Evite atribuir responsabilidades críticas no início. Dê tempo para aquecer também a cabeça, não só o corpo.',
+        desc:  'Costuma levar os primeiros minutos para se ativar. Uma vez em ritmo, costuma custar muito pará-lo.',
+        imp:   'Talvez convenha evitar responsabilidades críticas no início. Dê tempo para aquecer também a cabeça, não só o corpo.',
     },
     cierre_desgaste: {
         label: 'Energia de início',
-        desc:  'Suas melhores decisões chegam no começo. Com o tempo, tomar decisões exige mais esforço.',
+        desc:  'Suas melhores decisões costumam chegar no começo. Com o tempo, tomar decisões pode exigir mais esforço.',
         imp:   'Distribua a carga de decisões ao longo da sessão. Seu momento de maior clareza é o início.',
     },
     contexto: {
         label: 'Decisor de contexto',
-        desc:  'Sua capacidade de decisão varia muito conforme como chega naquele dia.',
+        desc:  'Sua capacidade de decisão parece variar bastante conforme como chega naquele dia.',
         imp:   'Vale a pena tirar 2 minutos antes de cada sessão para perceber como está. Uma pergunta simples pode mudar tudo.',
     },
 };

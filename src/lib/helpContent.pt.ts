@@ -14,7 +14,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         id: 'como-funciona',
         category: 'getting-started',
         title: 'Como funciona o Argo em poucas palavras?',
-        body: 'O Argo transforma uma aventura de cerca de 10 minutos em um perfil comportamental da criança, pensado para o adulto que a acompanha.\n\nO caminho é simples: você cria um plantel, compartilha o link dele, a criança joga a odisseia e, ao terminar, o perfil aparece no seu painel e um relatório é enviado por email ao adulto responsável.',
+        body: 'O Argo transforma uma aventura de cerca de 10 minutos em uma leitura das tendências comportamentais da criança neste momento (não um rótulo fixo), pensada para o adulto que a acompanha.\n\nO caminho é simples: você cria um plantel, compartilha o link dele, a criança joga a odisseia e, ao terminar, o perfil aparece no seu painel e um relatório é enviado por email ao adulto responsável.',
     },
     {
         id: 'configura-institucion',

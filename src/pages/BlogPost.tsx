@@ -6,9 +6,9 @@ import { fetchPostBySlug, fetchAlternateLangs, fetchRelatedPosts, type BlogPost 
 import { useLang } from '../context/LangContext';
 
 const I18N: Record<string, { ctaQuestion: string; ctaButton: string; navCta: string; navLogin: string }> = {
-    es: { ctaQuestion: 'Descubre el perfil conductual de tus deportistas', ctaButton: 'Iniciar prueba gratuita', navCta: '14 dias gratis', navLogin: 'Iniciar sesion' },
-    en: { ctaQuestion: 'Discover the behavioral profile of your athletes', ctaButton: 'Start free trial', navCta: '14 days free', navLogin: 'Log in' },
-    pt: { ctaQuestion: 'Descubra o perfil comportamental dos seus atletas', ctaButton: 'Iniciar teste gratuito', navCta: '14 dias gratis', navLogin: 'Entrar' },
+    es: { ctaQuestion: 'Entiende mejor el perfil conductual de tus deportistas', ctaButton: 'Iniciar prueba gratuita', navCta: '14 dias gratis', navLogin: 'Iniciar sesion' },
+    en: { ctaQuestion: 'Better understand your athletes\' behavioral profile', ctaButton: 'Start free trial', navCta: '14 days free', navLogin: 'Log in' },
+    pt: { ctaQuestion: 'Entenda melhor o perfil comportamental dos seus atletas', ctaButton: 'Iniciar teste gratuito', navCta: '14 dias gratis', navLogin: 'Entrar' },
 };
 
 const LOCALE_MAP: Record<string, string> = { es: 'es-ES', en: 'en-US', pt: 'pt-BR' };

@@ -13,7 +13,7 @@ interface GroupProfileText {
 
 export const GROUP_PROFILE_TEXTS_PT: Record<GroupType, GroupProfileText> = {
     Competitivo: {
-        identity: 'Um grupo que se acende com os desafios. A energia competitiva é o combustível natural e o ritmo é ditado por quem toma a iniciativa.',
+        identity: 'Um grupo que se acende com os desafios. A energia competitiva costuma ser o combustível e o ritmo é ditado por quem toma a iniciativa.',
         strengths: [
             'Alta capacidade de reação em situações de pressão',
             'Determinação para sustentar o esforço quando o resultado importa',
@@ -52,7 +52,7 @@ export const GROUP_PROFILE_TEXTS_PT: Record<GroupType, GroupProfileText> = {
         ],
     },
     Metódico: {
-        identity: 'Um grupo que observa antes de agir. A precisão e a compreensão profunda são a forma natural de abordar qualquer desafio esportivo.',
+        identity: 'Um grupo que observa antes de agir. A precisão e a compreensão profunda costumam ser a forma de abordar os desafios esportivos.',
         strengths: [
             'Atenção ao detalhe que reduz erros técnicos',
             'Capacidade de análise tática superior à média',
@@ -184,7 +184,7 @@ export const INDICATOR_TEXTS_PT: Record<string, AxisIndicatorTexts> = {
         moderada:      { label: 'Presença moderada', description: 'A liderança nesse grupo tende a depender mais do adulto. Isso abre a oportunidade de desenvolver liderança em jogadores que ainda não a expressam.' },
         marcada:       { label: 'Presença marcada', description: 'O grupo tem vários líderes naturais. Cada um pode brilhar se tiver um espaço claro de responsabilidade.' },
         definido_alto: { label: 'Estilo definido', description: 'O grupo tem uma densidade alta de jogadores que buscam liderar. Definir papéis rotativos e espaços de responsabilidade permite que essa energia seja canalizada de forma produtiva.' },
-        definido_bajo: { label: 'Estilo definido', description: 'O grupo funciona bem com orientação externa. O adulto é o principal referente de direção, o que permite trabalhar a liderança como habilidade a desenvolver.' },
+        definido_bajo: { label: 'Estilo definido', description: 'O grupo tende a funcionar bem com orientação externa; por enquanto o adulto costuma ser o principal referente de direção, o que permite trabalhar a liderança como habilidade a desenvolver.' },
     },
     I: {
         equilibrada:   { label: 'Presença equilibrada', description: 'O grupo tem boa capacidade de conexão social e expressividade.' },
@@ -197,14 +197,14 @@ export const INDICATOR_TEXTS_PT: Record<string, AxisIndicatorTexts> = {
         equilibrada:   { label: 'Presença equilibrada', description: 'O grupo tem uma base emocional sólida que lhe dá consistência.' },
         moderada:      { label: 'Presença moderada', description: 'O grupo tem um ritmo variável que pode ser sua força em contextos dinâmicos. Rotinas previsíveis (mesmo aquecimento, mesma estrutura) oferecem uma âncora quando necessário.' },
         marcada:       { label: 'Presença marcada', description: 'O grupo tem alta estabilidade emocional. Essa consistência é a base sobre a qual o adulto pode ir construindo desafios graduais.' },
-        definido_alto: { label: 'Estilo definido', description: 'A consistência é o superpoder desse grupo. Novos desafios, introduzidos de forma gradual e explicada, são a oportunidade de crescimento. O grupo aceita mudanças quando entende o porquê.' },
+        definido_alto: { label: 'Estilo definido', description: 'A consistência tende a ser a maior fortaleza desse grupo. Novos desafios, introduzidos de forma gradual e explicada, são a oportunidade de crescimento. O grupo aceita mudanças quando entende o porquê.' },
         definido_bajo: { label: 'Estilo definido', description: 'O grupo tem um estilo reativo e dinâmico. Isso o torna forte em situações de mudança. Rotinas breves e previsíveis no início de cada sessão oferecem uma base de referência.' },
     },
     C: {
         equilibrada:   { label: 'Presença equilibrada', description: 'O grupo tem boa capacidade de observação e atenção tática.' },
         moderada:      { label: 'Presença moderada', description: 'O grupo se move mais pelo instinto do que pela análise. Essa espontaneidade é valiosa, e pausas breves de observação ("olha essa jogada, o que você vê?") incorporam a análise sem frear a ação.' },
         marcada:       { label: 'Presença marcada', description: 'O grupo tem alta capacidade analítica. Exercícios que combinam observação com execução ("olha, decide, executa") são ideais para esse grupo.' },
-        definido_alto: { label: 'Estilo definido', description: 'A observação é a força central desse grupo. Exercícios com tempo limitado para decidir ("três segundos para escolher") ajudam a conectar a análise com a ação rápida.' },
+        definido_alto: { label: 'Estilo definido', description: 'A observação costuma ser uma das fortalezas mais visíveis desse grupo. Exercícios com tempo limitado para decidir ("três segundos para escolher") ajudam a conectar a análise com a ação rápida.' },
         definido_bajo: { label: 'Estilo definido', description: 'O grupo age com fluidez e espontaneidade. Revisões breves pós-exercício ("o que aconteceu ali?") permitem incorporar a reflexão sem interromper o ritmo natural.' },
     },
 };

@@ -8,17 +8,17 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         {
             id: 'adult_intro_1',
             title: 'Bienvenido a Argo',
-            body: 'Argo es una herramienta de autoconocimiento deportivo para chicos y chicas de 8 a 16 años. A través de una historia interactiva, identificamos cómo se motiva el deportista, cómo aprende y cómo reacciona bajo presión.',
+            body: 'Argo es una herramienta de autoconocimiento deportivo para chicos y chicas de 8 a 16 años. A través de una historia interactiva, exploramos tendencias en cómo se motiva el deportista, cómo aprende y cómo suele reaccionar bajo presión.',
         },
         {
             id: 'adult_intro_2',
             title: '12 decisiones. Una aventura.',
-            body: 'El deportista navega una historia ambientada en el mundo del Argo (la nave legendaria) y toma 12 decisiones que, sin saberlo, revelan su perfil comportamental. No hay respuestas correctas ni incorrectas. Solo elecciones auténticas.',
+            body: 'El deportista navega una historia ambientada en el mundo del Argo (la nave legendaria) y toma 12 decisiones que dejan ver tendencias de su forma de decidir y relacionarse hoy. No hay respuestas correctas ni incorrectas. Solo elecciones auténticas.',
         },
         {
             id: 'adult_intro_3',
             title: 'El Informe de Sintonía',
-            body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo del deportista, su motor de motivación, claves de comunicación y sugerencias concretas para el entrenamiento. Todo generado con inteligencia artificial.',
+            body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo que mejor describe sus tendencias actuales, su motor de motivación, claves de comunicación y sugerencias concretas para el entrenamiento. Todo generado con inteligencia artificial.',
         },
     ],
 
@@ -26,17 +26,17 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         {
             id: 'adult_intro_1',
             title: 'Welcome to Argo',
-            body: 'Argo is a sports self-discovery tool for kids ages 8 to 16. Through an interactive story, we identify how the athlete is motivated, how they learn, and how they react under pressure.',
+            body: 'Argo is a sports self-discovery tool for kids ages 8 to 16. Through an interactive story, we explore tendencies in how the athlete is motivated, how they learn, and how they tend to react under pressure.',
         },
         {
             id: 'adult_intro_2',
             title: '12 decisions. One adventure.',
-            body: 'The athlete navigates a story set in the world of the Argo — the legendary ship — and makes 12 decisions that, without knowing it, reveal their behavioral profile. There are no right or wrong answers. Only authentic choices.',
+            body: 'The athlete navigates a story set in the world of the Argo (the legendary ship) and makes 12 decisions that let their behavioral tendencies show. There are no right or wrong answers. Only authentic choices.',
         },
         {
             id: 'adult_intro_3',
             title: 'The Attunement Report',
-            body: 'When it\'s done, we send a personalized report to your email with the athlete\'s archetype, motivation engine, communication keys, and concrete training suggestions. All generated with artificial intelligence.',
+            body: 'When it\'s done, we send a personalized report to your email with the archetype that best describes the athlete\'s current tendencies, their motivation engine, communication keys, and concrete training suggestions. All generated with artificial intelligence.',
         },
     ],
 
@@ -44,17 +44,17 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         {
             id: 'adult_intro_1',
             title: 'Bem-vindo ao Argo',
-            body: 'Argo é uma ferramenta de autoconhecimento esportivo para meninos e meninas de 8 a 16 anos. Através de uma história interativa, identificamos como o atleta se motiva, como aprende e como reage sob pressão.',
+            body: 'Argo é uma ferramenta de autoconhecimento esportivo para meninos e meninas de 8 a 16 anos. Através de uma história interativa, exploramos tendências em como o atleta se motiva, como aprende e como costuma reagir sob pressão.',
         },
         {
             id: 'adult_intro_2',
             title: '12 decisões. Uma aventura.',
-            body: 'O atleta navega uma história ambientada no mundo do Argo — o navio lendário — e toma 12 decisões que, sem saber, revelam seu perfil comportamental. Não há respostas certas ou erradas. Apenas escolhas autênticas.',
+            body: 'O atleta navega uma história ambientada no mundo do Argo (o navio lendário) e toma 12 decisões que deixam ver tendências de sua forma de decidir e se relacionar hoje. Não há respostas certas ou erradas. Apenas escolhas autênticas.',
         },
         {
             id: 'adult_intro_3',
             title: 'O Relatório de Sintonia',
-            body: 'Ao finalizar, enviamos para o seu e-mail um relatório personalizado com o arquétipo do atleta, seu motor de motivação, chaves de comunicação e sugestões concretas para o treinamento. Tudo gerado com inteligência artificial.',
+            body: 'Ao finalizar, enviamos para o seu e-mail um relatório personalizado com o arquétipo que melhor descreve suas tendências atuais, seu motor de motivação, chaves de comunicação e sugestões concretas para o treinamento. Tudo gerado com inteligência artificial.',
         },
     ],
 };

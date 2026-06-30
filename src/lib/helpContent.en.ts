@@ -14,7 +14,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         id: 'como-funciona',
         category: 'getting-started',
         title: 'How does Argo work in a nutshell?',
-        body: 'Argo turns a 10-minute adventure into a behavioral profile of the child, made for the adult who supports them.\n\nThe path is simple: you create a team, share its link, the child plays the odyssey and, when they finish, their profile appears in your dashboard and a report is emailed to the responsible adult.',
+        body: 'Argo turns a 10-minute adventure into a reading of the child\'s behavioral tendencies right now (not a fixed label), made for the adult who supports them.\n\nThe path is simple: you create a team, share its link, the child plays the odyssey and, when they finish, their profile appears in your dashboard and a report is emailed to the responsible adult.',
     },
     {
         id: 'configura-institucion',

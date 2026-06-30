@@ -35,6 +35,60 @@ async function callAI(messages: AIMessage[], opts: { temperature?: number; maxTo
 
 // ─── End inline AI provider ─────────────────────────────────────────────────
 
+// ─── Quality gate: prohibited words + deterministic language ─────────────────
+// Mirrors generate-ai.ts. Blog runs via cron with no human waiting, so it is
+// SAFE to degrade to draft (never publish) when these fire. The check runs AFTER
+// the humanizer (the humanizer can otherwise turn probabilistic phrasing back
+// into categorical). HTML is stripped to plain text before scanning so tags
+// (e.g. <strong>) don't break word boundaries.
+const BLOG_PROHIBITED_WORDS: string[] = [
+    // Clinical / diagnostic (es/en/pt)
+    'déficit', 'deficit', 'trastorno', 'disorder', 'transtorno',
+    'diagnóstico', 'diagnosis', 'patología', 'pathology', 'patologia',
+    'síndrome', 'syndrome', 'tdah', 'adhd', 'autismo', 'autism',
+    'terapia', 'therapy', 'tratamiento', 'treatment', 'tratamento',
+];
+
+function blogStripHtml(html: string): string {
+    return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+}
+
+function blogFindProhibited(text: string): string[] {
+    const found = new Set<string>();
+    const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    for (const w of BLOG_PROHIBITED_WORDS) {
+        const pattern = /\s/.test(w) ? new RegExp(escape(w), 'iu') : new RegExp(`\\b${escape(w)}\\b`, 'iu');
+        if (pattern.test(text)) found.add(w);
+    }
+    return [...found];
+}
+
+// HIGH-PRECISION deterministic patterns about a CHILD/profile. Never matches bare
+// "es"/"siempre" (legit copy: "es probable que", "siempre desde la fortaleza"):
+// the "is a/un" shapes are tied to a child noun/pronoun, and only unambiguously
+// categorical future/guarantee phrases are detected standalone. No specific name
+// is available in blog content, so the patterns use generic child references.
+const BLOG_DETERMINISTIC_PATTERNS: RegExp[] = [
+    new RegExp(`(?:él|ella|el niño|la niña|el deportista|el jugador|tu hijo|tu hija)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
+    new RegExp(`(?:he|she|the athlete|the child|the player|your child)\\s+is\\s+a\\s+\\p{L}`, 'iu'),
+    new RegExp(`(?:ele|ela|a criança|o atleta|o jogador|seu filho|sua filha)\\s+é\\s+um[a]?\\s+\\p{L}`, 'iu'),
+    new RegExp(`(?:él|ella|el niño|la niña)\\s+(?:siempre|nunca|jamás)(?![\\p{L}\\p{N}])`, 'iu'),
+    /\bva a ser\b/iu, /\bserá siempre\b/iu,
+    /\bdefinitivamente\b/iu, /\bsin duda\b/iu, /\bgarantiza\b/iu,
+    /\bnació para\b/iu, /\bestá destinad[oa]\b/iu,
+    /\bwill always\b/iu, /\bwill never\b/iu, /\bdefinitely\b/iu,
+    /\bwithout a doubt\b/iu, /\bguarantees?\b/iu, /\bborn to\b/iu, /\bis destined\b/iu,
+    /\bvai ser\b/iu, /\bsempre será\b/iu, /\bsem dúvida\b/iu, /\bgarante\b/iu, /\bnasceu para\b/iu,
+];
+
+function blogFindDeterministic(text: string): string[] {
+    const found = new Set<string>();
+    for (const re of BLOG_DETERMINISTIC_PATTERNS) {
+        if (re.test(text)) found.add(re.source);
+    }
+    return [...found];
+}
+
 const supabase = createClient(
     process.env.VITE_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -142,6 +196,8 @@ REGLAS:
 - Si es espanol: mantiene latam neutro con tuteo (nunca voseo)
 - Si es ingles o portugues: mantiene el idioma natural, no traduzcas
 - Mantiene el HTML intacto (tags, estructura)
+- NUNCA conviertas lenguaje probabilistico en categorico. Manten "tiende a / suele / puede / podria / es probable que". No uses "es / siempre / nunca / su verdadera personalidad / descubre exactamente" al hablar de ninos o de perfiles. El comportamiento es una tendencia que puede evolucionar, no una identidad fija.
+- Esta regla aplica TAMBIEN a cualquier metadato (title, seo_title, meta_description): manten lenguaje probabilistico, nunca determinista.
 - Devuelve SOLO el HTML corregido, nada mas
 - Si el texto ya es bueno, devuelvelo como esta`;
 
@@ -380,13 +436,55 @@ Devuelve SOLO el JSON, sin markdown ni backticks.`;
         humanizedContent = humanizeResponse.content.trim();
     }
 
+    // Step 2b: Quality gate (AFTER the humanizer, which can otherwise re-introduce
+    // categorical phrasing). Scans content + metadata for prohibited words and
+    // deterministic language about children/profiles. One regeneration retry; if
+    // hits persist, DEGRADE TO DRAFT (cron autopublish → never publish bad copy;
+    // a human reviews the draft). This never throws — a clean post still publishes.
+    let qualityForceDraft = false;
+    const scanText = (html: string) =>
+        `${blogStripHtml(html)} ${article.title ?? ''} ${article.seo_title ?? ''} ${article.meta_description ?? ''}`;
+    const scanSubject = scanText(humanizedContent);
+    const qProhibited = blogFindProhibited(scanSubject);
+    const qDeterministic = blogFindDeterministic(scanSubject);
+    if (qProhibited.length > 0 || qDeterministic.length > 0) {
+        console.warn(`[blog-generate] Quality gate hit (lang=${lang}) prohibited=[${qProhibited.join(', ')}] deterministic=[${qDeterministic.join(' | ')}]`);
+        try {
+            const fixResponse = await callAI([
+                { role: 'system', content: HUMANIZER_SYSTEM },
+                {
+                    role: 'user',
+                    content: `Revisa este articulo. Contiene lenguaje que Argo no permite${qProhibited.length > 0 ? ` (palabras prohibidas: ${qProhibited.join(', ')})` : ''}${qDeterministic.length > 0 ? ` y afirmaciones deterministas sobre ninos/perfiles ("X es un...", "siempre/nunca", "sera", "destinado a")` : ''}. Reescribe SOLO la forma sin cambiar el significado: usa lenguaje probabilistico ("tiende a", "suele", "es probable que", "podria") y nunca terminologia clinica. Manten el HTML intacto. Devuelve SOLO el HTML corregido.\n\n${humanizedContent}`,
+                },
+            ], { temperature: 0.3, maxTokens: 16000 });
+            totalInputTokens += fixResponse.inputTokens;
+            totalOutputTokens += fixResponse.outputTokens;
+            const fixed = fixResponse.content.trim();
+            const fixedScan = scanText(fixed);
+            const stillProhibited = blogFindProhibited(fixedScan);
+            const stillDeterministic = blogFindDeterministic(fixedScan);
+            if (stillProhibited.length === 0 && stillDeterministic.length === 0) {
+                humanizedContent = fixed;
+            } else {
+                qualityForceDraft = true;
+                console.warn(`[blog-generate] Quality gate persisted after retry (lang=${lang}); forcing draft. prohibited=[${stillProhibited.join(', ')}] deterministic=[${stillDeterministic.join(' | ')}]`);
+            }
+        } catch (qErr) {
+            // Regeneration failed — be conservative and keep it out of production.
+            qualityForceDraft = true;
+            console.warn('[blog-generate] Quality-gate regeneration failed; forcing draft:', qErr instanceof Error ? qErr.message : qErr);
+        }
+    }
+
     // Step 3: Internal links
     const slug = slugify(article.slug || article.title);
     const contentWithLinks = injectInternalLinks(humanizedContent, slug, existingPosts);
 
-    // Step 4: Save to blog_posts
+    // Step 4: Save to blog_posts. A quality-gate failure overrides autoPublish:
+    // the post is saved as a draft for human review instead of going live.
     const readingTime = article.reading_time || estimateReadingTime(contentWithLinks);
-    const status = autoPublish ? 'published' : 'draft';
+    const effectiveAutoPublish = autoPublish && !qualityForceDraft;
+    const status = effectiveAutoPublish ? 'published' : 'draft';
     const now = new Date().toISOString();
 
     const { data: post, error } = await supabase
@@ -416,13 +514,15 @@ Devuelve SOLO el JSON, sin markdown ni backticks.`;
 
     if (error) throw new Error(`DB insert failed: ${error.message}`);
 
-    // Step 5: Update topic if linked
+    // Step 5: Update topic if linked. Uses effectiveAutoPublish so a quality-gate
+    // degradation leaves the topic as 'generated' (not 'published'), surfacing the
+    // draft for human review instead of marking the topic done.
     if (input.topic_id) {
         await supabase.from('blog_topics').update({
-            status: autoPublish ? 'published' : 'generated',
+            status: effectiveAutoPublish ? 'published' : 'generated',
             post_id: post.id,
             generated_at: now,
-            published_at: autoPublish ? now : null,
+            published_at: effectiveAutoPublish ? now : null,
         }).eq('id', input.topic_id);
     }
 

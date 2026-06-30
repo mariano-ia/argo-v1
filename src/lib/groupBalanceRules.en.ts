@@ -13,7 +13,7 @@ interface GroupProfileText {
 
 export const GROUP_PROFILE_TEXTS_EN: Record<GroupType, GroupProfileText> = {
     Competitivo: {
-        identity: 'A group that comes alive under challenge. Competitive energy is their natural fuel, and the pace is set by whoever takes the initiative.',
+        identity: 'A group that comes alive under challenge. Competitive energy tends to be their fuel, and the pace is set by whoever takes the initiative.',
         strengths: [
             'Strong ability to respond quickly in high-pressure situations',
             'Determination to push through when the result matters',
@@ -52,7 +52,7 @@ export const GROUP_PROFILE_TEXTS_EN: Record<GroupType, GroupProfileText> = {
         ],
     },
     Metódico: {
-        identity: 'A group that observes before it acts. Precision and deep understanding are their natural approach to any athletic challenge.',
+        identity: 'A group that observes before it acts. Precision and deep understanding tend to be their way of approaching athletic challenges.',
         strengths: [
             'Attention to detail that reduces technical errors',
             'Tactical analysis ability above average',
@@ -184,7 +184,7 @@ export const INDICATOR_TEXTS_EN: Record<string, AxisIndicatorTexts> = {
         moderada:      { label: 'Moderate presence', description: 'Leadership in this group tends to lean on the adult. That opens the door to developing leadership in players who haven\'t expressed it yet.' },
         marcada:       { label: 'Strong presence', description: 'The group has several natural leaders. Each one can shine when given a clear area of ownership.' },
         definido_alto: { label: 'Defined style', description: 'The group has a high density of players who want to lead. Setting up rotating roles and defined areas of responsibility lets that energy flow productively.' },
-        definido_bajo: { label: 'Defined style', description: 'The group works well with external guidance. The adult is the primary source of direction, which creates a good base for developing leadership as a skill.' },
+        definido_bajo: { label: 'Defined style', description: 'The group tends to work well with external guidance; for now the adult is usually the primary source of direction, which creates a good base for developing leadership as a skill.' },
     },
     I: {
         equilibrada:   { label: 'Balanced presence', description: 'The group has good social connection and expressiveness.' },
@@ -197,14 +197,14 @@ export const INDICATOR_TEXTS_EN: Record<string, AxisIndicatorTexts> = {
         equilibrada:   { label: 'Balanced presence', description: 'The group has a solid emotional foundation that gives it consistency.' },
         moderada:      { label: 'Moderate presence', description: 'The group has a shifting rhythm that can be an asset in dynamic contexts. Predictable routines (same warm-up, same structure) give it an anchor when needed.' },
         marcada:       { label: 'Strong presence', description: 'The group has high emotional stability. That consistency is the foundation from which the adult can build progressive challenges.' },
-        definido_alto: { label: 'Defined style', description: 'Consistency is this group\'s superpower. New challenges, introduced gradually and with explanation, are the growth opportunity. The group accepts change when it understands why.' },
+        definido_alto: { label: 'Defined style', description: 'Consistency tends to be this group\'s strongest asset. New challenges, introduced gradually and with explanation, are the growth opportunity. The group accepts change when it understands why.' },
         definido_bajo: { label: 'Defined style', description: 'The group has a reactive, dynamic style. That makes it strong in fast-changing situations. Brief, predictable routines at the start of each session give it a reference point.' },
     },
     C: {
         equilibrada:   { label: 'Balanced presence', description: 'The group has good observational ability and tactical awareness.' },
         moderada:      { label: 'Moderate presence', description: 'The group moves more on instinct than analysis. That spontaneity is valuable, and brief observation pauses ("look at this play — what do you see?") bring in analysis without stopping the action.' },
         marcada:       { label: 'Strong presence', description: 'The group has strong analytical ability. Exercises that combine observation with execution ("see it, decide, execute") are a great fit.' },
-        definido_alto: { label: 'Defined style', description: 'Observation is this group\'s core strength. Exercises with a limited decision window ("three seconds to choose") help them connect analysis to fast action.' },
+        definido_alto: { label: 'Defined style', description: 'Observation tends to be one of this group\'s most visible strengths. Exercises with a limited decision window ("three seconds to choose") help them connect analysis to fast action.' },
         definido_bajo: { label: 'Defined style', description: 'The group acts with fluency and spontaneity. Brief post-exercise reviews ("what just happened there?") let them incorporate reflection without breaking their natural rhythm.' },
     },
 };

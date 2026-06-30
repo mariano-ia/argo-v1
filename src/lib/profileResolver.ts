@@ -76,10 +76,10 @@ export interface SessionContext {
 }
 
 export const TENDENCIA_LABELS: Record<Axis, string> = {
-    D: 'con chispa de acción',
-    I: 'con brújula social',
-    S: 'con raíz firme',
-    C: 'con ojo de detalle',
+    D: 'con tendencia a la acción',
+    I: 'con tendencia a lo social',
+    S: 'con tendencia a la calma firme',
+    C: 'con tendencia al detalle',
 };
 
 export type AnswerOption = 'IMP' | 'CON' | 'SOS' | 'EST';

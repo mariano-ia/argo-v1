@@ -73,6 +73,59 @@ function findProhibitedWords(sections: Record<string, unknown>): string[] {
     return [...found];
 }
 
+// ─── Deterministic-language detector (anti-fixed-identity) ───────────────────
+// HIGH-PRECISION patterns that catch language asserting a FIXED IDENTITY ABOUT
+// THE CHILD ("X es un líder nato", "X siempre/nunca...", "será", "destinado a")
+// — NOT the method, the axes, or legitimate probabilistic copy. We never match
+// bare "es"/"siempre" (which appear in legit copy like "es probable que",
+// "siempre desde la fortaleza"): the "is a/un" shapes are tied to the child's
+// name or a pronoun, and only unambiguously categorical future/guarantee phrases
+// are detected standalone. The Puentes output already uses the child's REAL name
+// (no placeholder), so the name is injected into the pattern at call time.
+const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function buildDeterministicPatterns(childName: string): RegExp[] {
+    const first = (childName || '').trim().split(/\s+/)[0];
+    const namePart = first ? `${escapeRe(first)}|` : '';
+    return [
+        // Child (name / pronoun) + "es/será un(a)" + word ⇒ "X es un líder".
+        new RegExp(`(?:${namePart}él|ella|el niño|la niña|el deportista)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${namePart}he|she|the athlete|the child)\\s+is\\s+a\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${namePart}ele|ela|a criança|o atleta)\\s+é\\s+um[a]?\\s+\\p{L}`, 'iu'),
+        // Child + siempre/nunca/jamás ⇒ "X siempre se frustra".
+        new RegExp(`(?:${namePart}él|ella)\\s+(?:siempre|nunca|jamás)(?![\\p{L}\\p{N}])`, 'iu'),
+        new RegExp(`(?:${namePart}he|she)\\s+(?:always|never)(?![\\p{L}\\p{N}])`, 'iu'),
+        new RegExp(`(?:${namePart}ele|ela)\\s+(?:sempre|nunca)(?![\\p{L}\\p{N}])`, 'iu'),
+        // Categorical future / guarantee phrases (safe to detect standalone).
+        // (No bare "será un(a)" — appears in legit copy; the child-tied pattern covers it.)
+        /\bva a ser\b/iu, /\bserá siempre\b/iu,
+        /\bdefinitivamente\b/iu, /\bsin duda\b/iu, /\bgarantiza\b/iu,
+        /\bnació para\b/iu, /\bestá destinad[oa]\b/iu,
+        /\bwill always\b/iu, /\bwill never\b/iu, /\bdefinitely\b/iu,
+        /\bwithout a doubt\b/iu, /\bguarantees?\b/iu, /\bborn to\b/iu, /\bis destined\b/iu,
+        /\bvai ser\b/iu, /\bsempre será\b/iu, /\bsem dúvida\b/iu, /\bgarante\b/iu, /\bnasceu para\b/iu,
+    ];
+}
+
+// Returns the deterministic patterns (as source strings) that matched any string
+// value of the sections object. Mirrors findProhibitedWords' walk so deterministic
+// hits flow through the SAME correction path as prohibited words.
+function findDeterministicHits(sections: Record<string, unknown>, patterns: RegExp[]): string[] {
+    const found = new Set<string>();
+    const walk = (v: unknown): void => {
+        if (typeof v === 'string') {
+            for (const re of patterns) {
+                if (re.test(v)) found.add(re.source);
+            }
+        } else if (Array.isArray(v)) {
+            v.forEach(walk);
+        } else if (v !== null && typeof v === 'object') {
+            Object.values(v).forEach(walk);
+        }
+    };
+    walk(sections);
+    return [...found];
+}
+
 const AXIS_LABELS = {
     D: { es: 'Impulsor (energía de impulso)', en: 'Driver (impulse energy)', pt: 'Impulsor (energia de impulso)' },
     I: { es: 'Conector (energía conectora)', en: 'Connector (connecting energy)', pt: 'Conector (energia conectora)' },
@@ -328,20 +381,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(502).json({ error: 'Invalid AI response shape' });
         }
 
-        // Prohibited words enforcement
+        // Prohibited words + deterministic-language enforcement. Deterministic
+        // hits flow through the SAME single correction-retry path. If anything
+        // persists after the retry we behave exactly as before (log + serve the
+        // generated content; never block the report).
+        const detPatterns = buildDeterministicPatterns(child.child_name || '');
         const offenders = findProhibitedWords(aiSections);
-        if (offenders.length > 0) {
-            console.warn('[generate-puentes] Prohibited words found on first pass:', offenders.join(', '));
-            const correctionUser = `${userContent}\n\nThe previous response contained these forbidden words: ${offenders.join(', ')}. Rewrite the complete JSON without them, keeping the same structure and meaning. Use probabilistic and non-clinical language.`;
+        const detOffenders = findDeterministicHits(aiSections, detPatterns);
+        if (offenders.length > 0 || detOffenders.length > 0) {
+            if (offenders.length > 0) console.warn('[generate-puentes] Prohibited words found on first pass:', offenders.join(', '));
+            if (detOffenders.length > 0) console.warn('[generate-puentes] Deterministic language found on first pass:', detOffenders.join(' | '));
+            const correctionUser = `${userContent}\n\nThe previous response contained language Argo does not allow${offenders.length > 0 ? ` (forbidden words: ${offenders.join(', ')})` : ''}${detOffenders.length > 0 ? ` and deterministic statements about the child ("X es/será un...", "siempre/nunca", "destinado a")` : ''}. Rewrite the complete JSON without them, keeping the same structure and meaning. Use probabilistic, non-categorical and non-clinical language ("tiende a", "suele", "es probable que", "podría"); never assert a fixed identity about the child.`;
             try {
                 const correction = await callGemini({ systemContent, userContent: correctionUser });
                 const corrected = parseJsonResponse(correction.content);
                 const stillOffending = findProhibitedWords(corrected as any);
-                if (stillOffending.length === 0) {
+                const stillDet = findDeterministicHits(corrected as any, detPatterns);
+                if (stillOffending.length === 0 && stillDet.length === 0) {
                     aiSections = corrected;
                     resp = correction;
                 } else {
-                    console.warn('[generate-puentes] Still has prohibited words after correction:', stillOffending.join(', '));
+                    if (stillOffending.length > 0) console.warn('[generate-puentes] Still has prohibited words after correction:', stillOffending.join(', '));
+                    if (stillDet.length > 0) console.warn('[generate-puentes] Still has deterministic language after correction:', stillDet.join(' | '));
                 }
             } catch (corrErr) {
                 console.warn('[generate-puentes] Correction retry failed', corrErr);

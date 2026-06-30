@@ -83,6 +83,8 @@ async function generateTopicIdea(
 
 Pilar: ${pillar}. Audiencia: ${audience}. Formato: ${format}.${archetypeContext}${recentList}
 
+El titulo NO debe ser determinista (evita "descubre quien es", "verdadero perfil", "exactamente como es", "lo que tu hijo es"). Usa lenguaje probabilistico ("senales de", "tiende a", "como suele", "que puede revelar").
+
 Responde un JSON con "title" (max 80 chars) y "description" (max 150 chars).`;
 
     const response = await callAI([

@@ -13,7 +13,7 @@ const fadeUp = (delay = 0) => ({
 });
 
 const I18N: Record<string, { subtitle: string; empty: string; back: string; navCta: string; navLogin: string }> = {
-    es: { subtitle: 'Ciencia del comportamiento, deporte juvenil y herramientas para entrenadores.', empty: 'No hay articulos publicados aun.', back: 'Volver', navCta: '14 dias gratis', navLogin: 'Iniciar sesion' },
+    es: { subtitle: 'Ciencia del comportamiento, deporte juvenil y herramientas para entrenadores que buscan comprender mejor.', empty: 'No hay articulos publicados aun.', back: 'Volver', navCta: '14 dias gratis', navLogin: 'Iniciar sesion' },
     en: { subtitle: 'Behavioral science, youth sports and tools for coaches.', empty: 'No articles published yet.', back: 'Back', navCta: '14 days free', navLogin: 'Log in' },
     pt: { subtitle: 'Ciencia do comportamento, esporte juvenil e ferramentas para treinadores.', empty: 'Nenhum artigo publicado ainda.', back: 'Voltar', navCta: '14 dias gratis', navLogin: 'Entrar' },
 };

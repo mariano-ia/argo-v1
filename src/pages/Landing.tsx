@@ -524,8 +524,8 @@ const FlipCard: React.FC = () => {
                                 {lang === 'es'
                                     ? 'Argo cruza las 12 respuestas del juego con patrones conductuales para aproximarse a las tendencias principales de este deportista.'
                                     : lang === 'pt'
-                                    ? 'Argo cruza as 12 respostas do jogo com padrões comportamentais para construir o perfil único deste atleta.'
-                                    : 'Argo cross-references the 12 game responses with behavioral patterns to build this athlete\'s unique profile.'}
+                                    ? 'Argo cruza as 12 respostas do jogo com padrões comportamentais para aproximar-se das principais tendências deste atleta.'
+                                    : 'Argo cross-references the 12 game responses with behavioral patterns to approximate this athlete\'s main tendencies.'}
                             </p>
                             <div className="space-y-4" style={{ flex: 1 }}>
                                 {(['D', 'I', 'S', 'C'] as const).map((axis, ai) => (
@@ -1085,9 +1085,9 @@ export const Landing: React.FC = () => {
                     className="mb-8"
                 >
                     {lang === 'en'
-                        ? <>Every child is unique.<br />Argo discovers their ideal way of experiencing sport.</>
+                        ? <>Every child is unique.<br />Argo identifies tendencies in how they experience sport.</>
                         : lang === 'pt'
-                        ? <>Cada criança é única.<br />O Argo descobre sua maneira ideal de viver o esporte.</>
+                        ? <>Cada criança é única.<br />O Argo identifica tendências em como vive o esporte.</>
                         : <>Cada niño es único.<br />Argo identifica tendencias en cómo vive el deporte.</>}
                 </motion.h1>
 
@@ -1313,7 +1313,7 @@ export const Landing: React.FC = () => {
                                 {L('Sintonía', 'Synergy', 'Sintonia')}
                             </p>
                             <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
-                                {L('Los lugares donde tiende a disfrutar y rendir', 'The exact place where they thrive', 'O lugar exato onde aproveita e rende')}
+                                {L('Los lugares donde tiende a disfrutar y rendir', 'The places where they tend to thrive', 'Os lugares onde costuma aproveitar e render')}
                             </p>
                         </div>
                     </div>

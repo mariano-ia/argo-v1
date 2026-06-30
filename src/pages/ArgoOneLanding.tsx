@@ -95,7 +95,7 @@ const ArgoOneLanding: React.FC = () => {
               <div style={{ maxWidth: '480px', margin: '0 auto' }}>
                 <motion.div {...fade()} style={{ textAlign: 'center', marginBottom: '16px' }}>
                     <h1 style={{ fontWeight: 700, fontSize: 'clamp(1.4rem, 5vw, 1.85rem)', lineHeight: 1.2, letterSpacing: '-0.025em', color: '#1D1D1F', marginBottom: '10px' }}>
-                        Tu hijo tiene un perfil deportivo unico. Descubrelo en 10 minutos y ayudalo a disfrutar mas del juego.
+                        Tu hijo vive el deporte a su manera. Conoce sus tendencias en 10 minutos y ayudalo a disfrutar mas del juego.
                     </h1>
                     <p style={{ fontSize: '14px', color: '#424245', lineHeight: 1.5 }}>
                         Cada chico vive el deporte a su manera. El informe te da las claves para acompanarlo mejor y que disfrute mas.

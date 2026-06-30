@@ -269,6 +269,43 @@ export function unknownNameTokens(message: string): string[] {
     return caps.filter(t => !KNOWN_VOCAB.has(normalizeName(t)));
 }
 
+// ─── Deterministic-language detector (anti-fixed-identity) ───────────────────
+// HIGH-PRECISION patterns that catch language asserting a FIXED IDENTITY ABOUT
+// THE CHILD ("X es un líder nato", "X siempre/nunca...", "será", "destinado a")
+// — NOT the method, the axes, or legitimate probabilistic copy. We never match
+// bare "es"/"siempre" (legit copy: "es probable que", "es un buen momento para",
+// "siempre desde la fortaleza"): the "is a/un" shapes are tied to the mentioned
+// player's name or a pronoun, and only unambiguously categorical future/guarantee
+// phrases are detected standalone. `playerName` (when a single player is mentioned)
+// scopes the name-tied patterns to that child; the response text is already
+// rehydrated to real names, so the real first name is used here.
+const escapeDetStr = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function buildDeterministicPatterns(playerName: string | null): RegExp[] {
+    const first = (playerName || '').trim().split(/\s+/)[0];
+    const namePart = first ? `${escapeDetStr(first)}|` : '';
+    return [
+        new RegExp(`(?:${namePart}él|ella|el niño|la niña|el deportista)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${namePart}he|she|the athlete|the child)\\s+is\\s+a\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${namePart}ele|ela|a criança|o atleta)\\s+é\\s+um[a]?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${namePart}él|ella)\\s+(?:siempre|nunca|jamás)(?![\\p{L}\\p{N}])`, 'iu'),
+        new RegExp(`(?:${namePart}he|she)\\s+(?:always|never)(?![\\p{L}\\p{N}])`, 'iu'),
+        new RegExp(`(?:${namePart}ele|ela)\\s+(?:sempre|nunca)(?![\\p{L}\\p{N}])`, 'iu'),
+        // Categorical future / guarantee phrases (safe to detect standalone).
+        // (No bare "será un(a)" — appears in legit copy; the child-tied pattern covers it.)
+        /\bva a ser\b/iu, /\bserá siempre\b/iu,
+        /\bdefinitivamente\b/iu, /\bsin duda\b/iu, /\bgarantiza\b/iu,
+        /\bnació para\b/iu, /\bestá destinad[oa]\b/iu,
+        /\bwill always\b/iu, /\bwill never\b/iu, /\bdefinitely\b/iu,
+        /\bwithout a doubt\b/iu, /\bguarantees?\b/iu, /\bborn to\b/iu, /\bis destined\b/iu,
+        /\bvai ser\b/iu, /\bsempre será\b/iu, /\bsem dúvida\b/iu, /\bgarante\b/iu, /\bnasceu para\b/iu,
+    ];
+}
+
+/** True if any deterministic pattern matches the text. */
+function hasDeterministicLanguage(text: string, patterns: RegExp[]): boolean {
+    return patterns.some(re => re.test(text));
+}
+
 /**
  * Chat DISC endpoint.
  * GET ?action=threads              → list threads
@@ -1263,17 +1300,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ];
         const contentLower = assistantContent.toLowerCase();
         const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
+        // Deterministic-language scan flows through the SAME retry + safe-fallback
+        // path as prohibited words. Scoped to the mentioned player's real first name
+        // when a single player was matched (mirrors the ground-truth scoping below);
+        // otherwise only the standalone categorical phrases apply.
+        const detPatterns = buildDeterministicPatterns(mentionedPlayer ? mentionedPlayer.child_name : null);
+        const foundDeterministic = hasDeterministicLanguage(assistantContent, detPatterns);
 
-        if (foundProhibited.length > 0) {
-            qa.prohibitedHit = true;
-            console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
+        if (foundProhibited.length > 0 || foundDeterministic) {
+            qa.prohibitedHit = qa.prohibitedHit || foundProhibited.length > 0 || foundDeterministic;
+            if (foundProhibited.length > 0) console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
+            if (foundDeterministic) console.warn('[tenant-chat] Deterministic language found in response');
             // The retry sends the original (still-anonymized) assistant content
             // back to Gemini, not the rehydrated one. Use aiResult.content which
             // still has placeholders.
             const retryMessages = [
                 ...aiMessages,
                 { role: 'assistant' as const, content: aiResult.content },
-                { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía palabras prohibidas (${foundProhibited.join(', ')}). Reformula sin usar esas palabras. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
+                { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía lenguaje que no se permite${foundProhibited.length > 0 ? ` (palabras prohibidas: ${foundProhibited.join(', ')})` : ''}${foundDeterministic ? ` y afirmaciones deterministas sobre el niño ("X es un...", "siempre/nunca", "será", "destinado a")` : ''}. Reformula usando lenguaje probabilístico ("tiende a", "suele", "es probable que", "podría"); nunca afirmes una identidad fija sobre el niño. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
             ];
             let cleaned: string | null = null;
             try {
@@ -1281,8 +1325,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 totalInputTokens += retryResult.inputTokens;
                 totalOutputTokens += retryResult.outputTokens;
                 const candidate = rehydrate(retryResult.content);
-                // Re-scan the retried text; only accept it if it's actually clean (R5).
-                if (candidate && !PROHIBITED_WORDS.some(w => candidate.toLowerCase().includes(w))) {
+                // Re-scan the retried text; only accept it if it's actually clean (R5):
+                // free of BOTH prohibited words and deterministic language.
+                if (candidate
+                    && !PROHIBITED_WORDS.some(w => candidate.toLowerCase().includes(w))
+                    && !hasDeterministicLanguage(candidate, detPatterns)) {
                     cleaned = candidate;
                     servedProvider = retryResult.provider;
                 }
@@ -1292,10 +1339,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (cleaned) {
                 assistantContent = cleaned;
             } else {
-                // Retry failed or still contained prohibited language. Never serve
-                // clinical/negative copy about a child — use a safe neutral message (R6).
+                // Retry failed or still contained prohibited/deterministic language.
+                // Never serve clinical/negative/fixed-identity copy about a child —
+                // use a safe neutral message (R6).
                 qa.prohibitedAfterRetry = true;
-                console.warn('[tenant-chat] Prohibited words persisted after retry; serving safe fallback');
+                console.warn('[tenant-chat] Prohibited/deterministic language persisted after retry; serving safe fallback');
                 const SAFE_FALLBACK: Record<string, string> = {
                     es: 'Prefiero reformular esto con más cuidado. ¿Puedes contarme un poco más sobre la situación para darte una respuesta enfocada en cómo acompañar mejor al niño?',
                     en: 'Let me rephrase this more carefully. Could you tell me a bit more about the situation so I can focus on how to best support the child?',

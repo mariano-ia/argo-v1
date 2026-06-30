@@ -97,7 +97,7 @@ const T = {
             h1: 'El niño no responde un test.',
             h2: 'Vive una aventura.',
             sub:
-                'La gamificación no es decoración. Es lo único que vuelve creíbles los resultados. Un niño no responde con autenticidad cuando se siente evaluado.',
+                'La gamificación no es decoración. Es lo que ayuda a que el niño responda con mayor autenticidad. Un niño no responde con autenticidad cuando se siente evaluado.',
             step1Title: 'El niño juega',
             step1Body:
                 'Una odisea náutica de doce minutos. Tres mini juegos de reacción y doce decisiones contadas como capítulos de una historia. Sin formularios, sin preguntas clínicas, sin etiquetas.',
@@ -125,7 +125,7 @@ const T = {
             layer1: 'Capa 1',
             layer1Title: 'Argo Coach',
             layer1Body:
-                'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA conoce el perfil real de cada niño del equipo y responde con lenguaje concreto, probabilístico, libre de jerga clínica.',
+                'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA trabaja con el perfil de tendencias que mostró cada niño y responde con lenguaje cercano, concreto, probabilístico, libre de jerga clínica.',
             layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere arrancar el entrenamiento?"',
             layer2: 'Capa 2',
             layer2Title: 'Equipos Equilibrados',

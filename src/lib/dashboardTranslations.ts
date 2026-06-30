@@ -403,7 +403,7 @@ const es: DashboardTexts = {
     },
     players: {
         titulo: 'Jugadores',
-        subtitulo: 'Todos los deportistas perfilados. Toca un jugador para ver su resumen de perfil.',
+        subtitulo: 'Todos los deportistas con perfil. Toca un jugador para ver el resumen de sus tendencias.',
         buscarPlaceholder: 'Buscar por nombre, arquetipo o deporte...',
         rePerfilar: 'Re-perfilar',
         rePerfilarAlerta: (n) => `${n} ${n === 1 ? 'jugador tiene' : 'jugadores tienen'} más de 6 meses desde su último perfil.`,
@@ -483,7 +483,7 @@ const es: DashboardTexts = {
     profile: {
         axisNames: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' },
         motorNames: { 'Rápido': 'Dinámico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
-        tendenciaLabels: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
+        tendenciaLabels: { D: 'con tendencia a la acción', I: 'con tendencia a lo social', S: 'con tendencia a la calma firme', C: 'con tendencia al detalle' },
         indicatorLabels: { D: 'Energía de liderazgo', I: 'Capital social', S: 'Base de estabilidad', C: 'Atención al detalle' },
     },
     link: {
@@ -706,7 +706,7 @@ const en: DashboardTexts = {
     },
     players: {
         titulo: 'Players',
-        subtitulo: 'All profiled athletes. Tap a player to see their profile summary.',
+        subtitulo: 'All athletes with a profile. Tap a player to see the summary of their tendencies.',
         buscarPlaceholder: 'Search by name, archetype or sport...',
         rePerfilar: 'Re-profile',
         rePerfilarAlerta: (n) => `${n} ${n === 1 ? 'player has' : 'players have'} been profiled more than 6 months ago.`,
@@ -786,7 +786,7 @@ const en: DashboardTexts = {
     profile: {
         axisNames: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' },
         motorNames: { 'Rápido': 'Dynamic', 'Medio': 'Rhythmic', 'Lento': 'Serene' },
-        tendenciaLabels: { D: 'with a spark of action', I: 'with a social compass', S: 'with firm roots', C: 'with an eye for detail' },
+        tendenciaLabels: { D: 'with a tendency toward action', I: 'with a tendency toward the social', S: 'with a tendency toward firm calm', C: 'with a tendency toward detail' },
         indicatorLabels: { D: 'Leadership energy', I: 'Social capital', S: 'Stability base', C: 'Attention to detail' },
     },
     link: {
@@ -1009,7 +1009,7 @@ const pt: DashboardTexts = {
     },
     players: {
         titulo: 'Jogadores',
-        subtitulo: 'Todos os atletas perfilados. Toque em um jogador para ver o resumo do perfil.',
+        subtitulo: 'Todos os atletas com perfil. Toque em um jogador para ver o resumo das suas tendências.',
         buscarPlaceholder: 'Buscar por nome, arquétipo ou esporte...',
         rePerfilar: 'Re-perfilar',
         rePerfilarAlerta: (n) => `${n} ${n === 1 ? 'jogador tem' : 'jogadores têm'} mais de 6 meses desde o último perfil.`,
@@ -1089,7 +1089,7 @@ const pt: DashboardTexts = {
     profile: {
         axisNames: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
         motorNames: { 'Rápido': 'Dinâmico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
-        tendenciaLabels: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
+        tendenciaLabels: { D: 'com tendência à ação', I: 'com tendência ao social', S: 'com tendência à calma firme', C: 'com tendência ao detalhe' },
         indicatorLabels: { D: 'Energia de liderança', I: 'Capital social', S: 'Base de estabilidade', C: 'Atenção ao detalhe' },
     },
     link: {

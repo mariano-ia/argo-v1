@@ -239,17 +239,17 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-arrancar',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor necesita sentir que lo que viene vale la pena. Si no ve un desafío claro, la transición le cuesta más. Su motor lo empuja a la acción, pero solo cuando el objetivo lo motiva.',
+        whatsHappeningForProfile: 'El Impulsor suele necesitar sentir que lo que viene vale la pena. Si no ve un desafío claro, la transición tiende a costarle más. Su motor lo empuja a la acción, pero solo cuando el objetivo lo motiva.',
         howToAccompany: [
             'Proponle un mini-desafío personal para los primeros 5 minutos: "A ver si hoy arrancas más rápido que la última vez".',
             'Dale un rol activo desde el inicio: que arme los conos, que elija el primer ejercicio, que lidere el calentamiento.',
         ],
-        ifNotResponding: 'Déjalo mirar los primeros minutos sin presionarlo. Cuando vea al grupo en acción, su instinto competitivo se activa solo.',
+        ifNotResponding: 'Déjalo mirar los primeros minutos sin presionarlo. Cuando vea al grupo en acción, su instinto competitivo suele activarse solo.',
     },
     {
         situationId: 'no-quiere-arrancar',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector necesita conexión social para activarse. Si llegó solo, si su amigo no vino, o si el clima del grupo está raro, le cuesta engancharse. Su energía se enciende con las personas, no con la actividad en sí.',
+        whatsHappeningForProfile: 'El Conector suele necesitar conexión social para activarse. Si llegó solo, si su amigo no vino, o si el clima del grupo está raro, tiende a costarle engancharse. Su energía se enciende con las personas, no con la actividad en sí.',
         howToAccompany: [
             'Acércate y pregúntale algo personal: "¿Cómo estuvo el día?". Esa micro-conexión es su interruptor de encendido.',
             'Ponlo al lado de alguien con quien tenga afinidad para el primer ejercicio.',
@@ -259,7 +259,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-arrancar',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén necesita que todo esté "en su lugar" para sentirse seguro. Si el entrenamiento cambió de horario, si hay gente nueva, o si algo en su rutina se alteró, la transición se hace más pesada. Su motor más lento hace que el cambio de chip le tome más tiempo.',
+        whatsHappeningForProfile: 'El Sostén suele necesitar que todo esté "en su lugar" para sentirse seguro. Si el entrenamiento cambió de horario, si hay gente nueva, o si algo en su rutina se alteró, la transición tiende a hacerse más pesada. Su motor más lento hace que el cambio de chip le tome más tiempo.',
         howToAccompany: [
             'Mantenlo en la rutina: que haga el mismo calentamiento de siempre, en el mismo lugar, con los mismos compañeros.',
             'No le pidas que explique por qué no quiere. Simplemente dale un par de minutos y dile: "Arrancamos cuando estés listo".',
@@ -269,12 +269,12 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-arrancar',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega necesita entender qué va a pasar antes de comprometerse. Si no sabe qué se va a entrenar, o si el plan cambió sin explicación, prefiere quedarse afuera procesando. Su motor de procesamiento necesita cerrar la lógica antes de arrancar.',
+        whatsHappeningForProfile: 'El Estratega suele necesitar entender qué va a pasar antes de comprometerse. Si no sabe qué se va a entrenar, o si el plan cambió sin explicación, tiende a quedarse afuera procesando. Su motor de procesamiento necesita cerrar la lógica antes de arrancar.',
         howToAccompany: [
             'Cuéntale brevemente qué van a hacer hoy: "Primero calentamiento, después un ejercicio táctico, y terminamos con partido". La previsibilidad lo activa.',
             'Si cambió algo del plan habitual, explícale por qué: "Hoy vamos a hacer algo diferente porque necesitamos practicar X".',
         ],
-        ifNotResponding: 'Déjalo que observe la primera actividad desde afuera. Cuando entienda la lógica del ejercicio, se va a sumar solo.',
+        ifNotResponding: 'Déjalo que observe la primera actividad desde afuera. Cuando entienda la lógica del ejercicio, es probable que se sume solo.',
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -293,7 +293,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-frustra-cuando-pierde',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector siente la derrota como un quiebre social: "le fallé al grupo", "no fui suficiente para el equipo". Su frustración viene más del impacto en los demás que del resultado en sí.',
+        whatsHappeningForProfile: 'El Conector tiende a vivir la derrota como un quiebre social: "le fallé al grupo", "no fui suficiente para el equipo". Su frustración suele venir más del impacto en los demás que del resultado en sí.',
         howToAccompany: [
             'Valida la emoción desde lo vincular: "Se nota que te importa mucho el equipo, eso habla bien de ti".',
             'Sepáralo del "yo le fallé al grupo" con datos: "Mira todo lo que el equipo logró hoy, y tú fuiste parte de eso".',
@@ -303,7 +303,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-frustra-cuando-pierde',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén no explota con la derrota, pero la guarda. Se queda callado, se retrae, y puede arrastrar la frustración por varios días. Su estabilidad natural lo hace parecer "bien" por fuera, pero por dentro le cuesta soltar.',
+        whatsHappeningForProfile: 'El Sostén no suele explotar con la derrota; más bien tiende a guardarla. Se queda callado, se retrae, y puede arrastrar la frustración por varios días. Su estabilidad natural lo hace parecer "bien" por fuera, pero por dentro le cuesta soltar.',
         howToAccompany: [
             'Valida sin forzar: "Si necesitas hablar, aquí estoy". No le pidas que procese en el momento.',
             'En los entrenamientos siguientes, observa si está más callado de lo habitual. Si lo ves diferente, un "¿cómo vienes?" sin presión suele abrir la puerta.',
@@ -313,7 +313,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-frustra-cuando-pierde',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega analiza la derrota en loop: repasa cada error, cada jugada, buscando el momento exacto donde todo salió mal. Su frustración es más cerebral que emocional, pero igual lo paraliza.',
+        whatsHappeningForProfile: 'El Estratega suele analizar la derrota en loop: repasa cada error, cada jugada, buscando el momento exacto donde todo salió mal. Su frustración tiende a ser más cerebral que emocional, pero igual lo paraliza.',
         howToAccompany: [
             'Valida su análisis: "Está bien que pienses en lo que pasó, eso te va a hacer mejorar". Después ponle límite al loop: "Elijamos una sola cosa para trabajar la próxima".',
             'Ofrécele datos concretos: "Mira, en 10 jugadas acertaste 7. El balance es positivo". Los números lo sacan del circuito emocional.',
@@ -327,7 +327,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-hace-lo-que-pido',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor escuchó la instrucción, pero ya decidió cómo hacerla a su manera. No es desobediencia. es que su motor rápido lo lanza a la acción antes de que termines de hablar, y confía en su instinto.',
+        whatsHappeningForProfile: 'El Impulsor probablemente escuchó la instrucción, pero ya decidió cómo hacerla a su manera. No es desobediencia. es que su motor rápido suele lanzarlo a la acción antes de que termines de hablar, y confía en su instinto.',
         howToAccompany: [
             'Dile la instrucción corta y directa, en una frase. "Pase al pivote, tiro al arco." Menos palabras, más acción.',
             'Si hizo algo diferente pero funcionó, reconocelo: "Buena decisión. Ahora probemos también de esta otra forma".',
@@ -371,7 +371,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'raro-antes-del-partido',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor muestra los nervios con hiperactividad: habla más de la cuenta, se mueve mucho, o al revés, se pone irritable y callado. La incertidumbre le molesta porque quiere controlar el resultado y no puede.',
+        whatsHappeningForProfile: 'El Impulsor suele mostrar los nervios con hiperactividad: habla más de la cuenta, se mueve mucho, o al revés, se pone irritable y callado. La incertidumbre le molesta porque quiere controlar el resultado y no puede.',
         howToAccompany: [
             'Dale una tarea concreta que lo haga sentir en control: "Calienta con pelota, haz 20 tiros". La acción física canaliza la ansiedad.',
             'Háblale en clave de plan: "Hoy tu rol es X. Si pasa Y, haces Z". La claridad del plan lo calma.',
@@ -381,7 +381,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'raro-antes-del-partido',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector busca contención social: habla con todos, hace chistes, o se pega a su persona de confianza. Los nervios los procesa a través del vínculo. Si está callado, algo le pesa más de lo normal.',
+        whatsHappeningForProfile: 'El Conector suele buscar contención social: habla con todos, hace chistes, o se pega a su persona de confianza. Los nervios tiende a procesarlos a través del vínculo. Si está callado, algo le pesa más de lo normal.',
         howToAccompany: [
             'Genera un momento grupal de conexión: una ronda de manos, un grito de equipo, un "¿cómo venimos?". Eso lo centra.',
             'Si está más callado de lo normal, acércate sin presionar: "¿Todo bien?" y un gesto de apoyo (palmada, choque de puños).',
@@ -391,7 +391,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'raro-antes-del-partido',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén se cierra. Está más callado, más pegado a la rutina, hace exactamente lo mismo que siempre como para sentir que algo no cambió. La incertidumbre del partido le pega en su base de seguridad.',
+        whatsHappeningForProfile: 'El Sostén suele cerrarse. Está más callado, más pegado a la rutina, hace exactamente lo mismo que siempre como para sentir que algo no cambió. La incertidumbre del partido le pega en su base de seguridad.',
         howToAccompany: [
             'Mantenle la rutina pre-partido lo más igual posible: mismo calentamiento, mismo lugar, mismos compañeros cerca.',
             'Dile algo que le dé seguridad: "Hoy jugamos como en el entrenamiento, nada raro, lo mismo que ya sabemos hacer".',
@@ -420,12 +420,12 @@ export const SITUATION_CARDS: SituationCard[] = [
             'Dale un rol desde el borde: "Mira y decime qué harías diferente". Eso lo mantiene activo mientras observa.',
             'Proponle un desafío de entrada: "¿Te animas a probarlo? Si no te convence, vuelves". La puerta de salida lo anima a entrar.',
         ],
-        ifNotResponding: 'Déjalo mirar una ronda completa y después pregúntale directamente: "¿Listo?". El Impulsor responde bien a la invitación directa.',
+        ifNotResponding: 'Déjalo mirar una ronda completa y después pregúntale directamente: "¿Listo?". El Impulsor suele responder bien a la invitación directa.',
     },
     {
         situationId: 'mira-desde-afuera',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector observa desde afuera cuando no conoce a nadie o cuando siente que el clima social no es seguro. Necesita identificar a "su persona" dentro del grupo antes de entrar.',
+        whatsHappeningForProfile: 'El Conector suele observar desde afuera cuando no conoce a nadie o cuando siente que el clima social no es seguro. Tiende a necesitar identificar a "su persona" dentro del grupo antes de entrar.',
         howToAccompany: [
             'Preséntale a alguien: "Él es Mateo, está en tu misma posición. Entrenen juntos". Un aliado es su puerta de entrada.',
             'Inclúyelo en una actividad en dupla o grupo chico antes de mandarlo al grupo grande.',
@@ -440,7 +440,7 @@ export const SITUATION_CARDS: SituationCard[] = [
             'No lo apures. Dale el tiempo de observación que necesita. Un "Cuando estés listo, súmate" sin presión es lo que más funciona.',
             'Si puedes, ponlo a hacer la misma actividad pero al costado, en paralelo, sin exposición grupal.',
         ],
-        ifNotResponding: 'Déjalo mirar toda la sesión si es necesario. La próxima vez va a entrar más rápido. El Sostén construye seguridad acumulando experiencias positivas de observación.',
+        ifNotResponding: 'Déjalo mirar toda la sesión si es necesario. La próxima vez suele entrar más rápido. El Sostén construye seguridad acumulando experiencias positivas de observación.',
     },
     {
         situationId: 'mira-desde-afuera',
@@ -459,7 +459,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'llora-o-se-enoja',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor se enoja más que llora. La frustración le sale como bronca: tira cosas, grita, o se va. Siente que perdió el control de la situación y eso lo desborda.',
+        whatsHappeningForProfile: 'El Impulsor suele enojarse más que llorar. La frustración tiende a salirle como bronca: tira cosas, grita, o se va. Siente que perdió el control de la situación y eso lo desborda.',
         howToAccompany: [
             'No lo enfrentes en caliente. Déjalo que se enfríe unos segundos y después acércate con tono neutro: "Cuando estés listo, hablamos".',
             'Cuando se calme, dale una vía de acción: "Ahora volvamos y hagamos bien ese ejercicio". Necesita sentir que puede recuperar el control.',
@@ -469,7 +469,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'llora-o-se-enoja',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector se quiebra cuando siente que la corrección rompió el vínculo. "¿Me está retando porque no le caigo bien?" El desborde es emocional y social a la vez.',
+        whatsHappeningForProfile: 'El Conector tiende a quebrarse cuando siente que la corrección rompió el vínculo. "¿Me está retando porque no le caigo bien?" El desborde suele ser emocional y social a la vez.',
         howToAccompany: [
             'Primero repara el vínculo: "No estoy enojado, quiero ayudarte a mejorar". Eso baja la amenaza emocional.',
             'Después de calmarse, conecta desde el afecto: una palmada, un "¿estamos bien?". para él es fundamental saber que la relación no se rompió.',
@@ -489,7 +489,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'llora-o-se-enoja',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega se frustra cuando siente que algo no tiene lógica o que la corrección fue injusta. Su desborde puede parecer "de la nada" pero viene de un acumulado de cosas que no le cerraron.',
+        whatsHappeningForProfile: 'El Estratega suele frustrarse cuando siente que algo no tiene lógica o que la corrección fue injusta. Su desborde puede parecer "de la nada" pero viene de un acumulado de cosas que no le cerraron.',
         howToAccompany: [
             'Cuando se calme, dale una explicación clara de lo que pasó: "Te corregí porque quiero que hagas esto mejor, y la forma de hacerlo es esta". La lógica lo ordena.',
             'Pregúntale qué lo frustró específicamente. Muchas veces el detonante no es lo obvio.',
@@ -503,7 +503,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'roce-con-companero',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor choca cuando siente que otro le está sacando protagonismo o frenando su ritmo. La fricción viene de la competencia por el espacio de decisión.',
+        whatsHappeningForProfile: 'El Impulsor suele chocar cuando siente que otro le está sacando protagonismo o frenando su ritmo. La fricción tiende a venir de la competencia por el espacio de decisión.',
         howToAccompany: [
             'Separa el conflicto de la persona: "Los dos quieren ganar y eso está bien. Ahora veamos cómo lo hacen juntos".',
             'Asignale un aspecto del ejercicio donde sea el que decide. Si tiene su territorio, baja la necesidad de pelear por el del otro.',
@@ -513,7 +513,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'roce-con-companero',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector vive el roce como un quiebre en la relación. Le duele más que "ya no nos llevemos bien" que el conflicto en sí. Puede reaccionar buscando aliados o poniéndose dramático.',
+        whatsHappeningForProfile: 'El Conector tiende a vivir el roce como un quiebre en la relación. Suele dolerle más que "ya no nos llevemos bien" que el conflicto en sí. Puede reaccionar buscando aliados o poniéndose dramático.',
         howToAccompany: [
             'Habla con los dos juntos y enfócate en el vínculo: "Ustedes son compañeros, esto se resuelve hablando. ¿Qué pasó?".',
             'Después del ejercicio, dale un momento al Conector para cerrar: "¿Estamos bien con tu compañero?". Necesita saber que la relación sigue.',
@@ -523,17 +523,17 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'roce-con-companero',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén evita el conflicto. Si tuvo un roce, probablemente está incomodísimo y quiere que todo vuelva a la normalidad lo antes posible. No va a confrontar. se va a cerrar.',
+        whatsHappeningForProfile: 'El Sostén suele evitar el conflicto. Si tuvo un roce, probablemente está incomodísimo y quiere que todo vuelva a la normalidad lo antes posible. Probablemente no confronte; suele cerrarse.',
         howToAccompany: [
             'No lo obligues a "hablar las cosas" frente al grupo. Acércate en privado: "Vi que hubo algo ahí, ¿estás bien?".',
             'Ayudalo a volver a su zona de confort: la misma actividad, los mismos compañeros de siempre, rutina normal.',
         ],
-        ifNotResponding: 'Deja que el tiempo haga su trabajo. El Sostén no necesita "resolver" el conflicto verbalmente. necesita sentir que todo volvió a la normalidad.',
+        ifNotResponding: 'Deja que el tiempo haga su trabajo. El Sostén no suele necesitar "resolver" el conflicto verbalmente; más bien necesita sentir que todo volvió a la normalidad.',
     },
     {
         situationId: 'roce-con-companero',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega choca cuando siente que el otro hace las cosas "mal" o sin lógica. La fricción viene de la diferencia de criterio: él quiere hacerlo bien y el otro quiere hacerlo rápido (o viceversa).',
+        whatsHappeningForProfile: 'El Estratega suele chocar cuando siente que el otro hace las cosas "mal" o sin lógica. La fricción tiende a venir de la diferencia de criterio: él quiere hacerlo bien y el otro quiere hacerlo rápido (o viceversa).',
         howToAccompany: [
             'Valida su perspectiva: "Tu forma de verlo tiene sentido". Después amplía: "Y la de tu compañero también, porque viene de otro lugar".',
             'Proponle un acuerdo de método: "Primero probemos a tu manera, después a la de él, y vemos cuál funcionó mejor".',
@@ -547,7 +547,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-castiga',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor se castiga desde la bronca: "¡Soy un desastre!". Siente que debería ser capaz de hacerlo bien siempre, y cada error es una traición a su autoimagen de líder.',
+        whatsHappeningForProfile: 'El Impulsor suele castigarse desde la bronca: "¡Soy un desastre!". Siente que debería poder hacerlo bien casi siempre, y un error puede sentirse como una traición a su autoimagen de líder.',
         howToAccompany: [
             'Interrumpe el circuito con acción: "Ok, erraste. Ahora haz 3 repeticiones y listo". La acción inmediata reemplaza la autocrítica.',
             'Usa su competitividad a favor: "Los mejores jugadores fallan, la diferencia es qué hacen después".',
@@ -557,7 +557,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-castiga',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector se castiga desde la vergüenza: "Todos me vieron fallar". Lo que le pesa no es el error técnico sino la exposición social del error.',
+        whatsHappeningForProfile: 'El Conector suele castigarse desde la vergüenza: "Todos me vieron fallar". Lo que tiende a pesarle no es el error técnico sino la exposición social del error.',
         howToAccompany: [
             'Normalizá el error frente al grupo: "Todos fallamos, así se aprende". Eso baja la vergüenza pública.',
             'Después, en privado: "A mí me importa que lo intentes, no que salga perfecto". La reconexión con el adulto lo calma.',
@@ -567,7 +567,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-castiga',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén se castiga en silencio. No grita ni se golpea, pero se queda callado, baja la cabeza, y pierde energía. Se siente culpable por no haber mantenido la consistencia que se espera de él.',
+        whatsHappeningForProfile: 'El Sostén suele castigarse en silencio. No grita ni se golpea, pero se queda callado, baja la cabeza, y pierde energía. Tiende a sentirse culpable por no haber mantenido la consistencia que se espera de él.',
         howToAccompany: [
             'Acércate con calma: "Ese error no define cómo juegas. Mira todo lo que vienes haciendo bien". Necesita que alguien le devuelva la perspectiva.',
             'En el siguiente ejercicio, ponlo en algo que domine bien para que recupere la confianza antes de volver a lo que falló.',
@@ -577,7 +577,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-castiga',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega se castiga desde el análisis: repasa el error una y otra vez buscando qué hizo mal. Se autoexige porque tiene estándares altos y siente que debería haber previsto el fallo.',
+        whatsHappeningForProfile: 'El Estratega suele castigarse desde el análisis: repasa el error una y otra vez buscando qué hizo mal. Tiende a autoexigirse porque tiene estándares altos y siente que debería haber previsto el fallo.',
         howToAccompany: [
             'Dale datos que contrarresten el error: "Fallaste esta, pero las 5 anteriores las hiciste perfecto". Los números lo sacan del loop negativo.',
             'Proponle que el error sea un dato, no un juicio: "¿Qué información te da este error? ¿Qué ajustarías?".',
@@ -591,7 +591,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-distrae',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor se distrae cuando el ejercicio no tiene suficiente intensidad o desafío. Su motor rápido necesita acción constante y si el ritmo baja, busca estímulos por su cuenta.',
+        whatsHappeningForProfile: 'El Impulsor suele distraerse cuando el ejercicio no tiene suficiente intensidad o desafío. Su motor rápido necesita acción constante y si el ritmo baja, tiende a buscar estímulos por su cuenta.',
         howToAccompany: [
             'Súbele la intensidad: "Ahora lo mismo pero en la mitad del tiempo" o "El que llega primero elige el próximo ejercicio".',
             'Dale responsabilidad dentro del ejercicio: que cuente, que arbitre, que lidere una variante.',
@@ -601,7 +601,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-distrae',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector se distrae porque lo que más le atrae es la interacción social. Si el ejercicio es individual o silencioso, su atención se va hacia el compañero de al lado.',
+        whatsHappeningForProfile: 'El Conector suele distraerse porque lo que más le atrae es la interacción social. Si el ejercicio es individual o silencioso, su atención tiende a irse hacia el compañero de al lado.',
         howToAccompany: [
             'Convertí el ejercicio en algo social: en duplas, con comunicación entre ellos, o con roles que requieran hablar.',
             'Usa su sociabilidad como herramienta: "Explícale a tu compañero cómo se hace este ejercicio".',
@@ -611,7 +611,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-distrae',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén se distrae cuando hay demasiado estímulo: mucho ruido, cambios constantes de ejercicio, o instrucciones nuevas sin pausa. Su sistema se desconecta para protegerse del caos.',
+        whatsHappeningForProfile: 'El Sostén suele distraerse cuando hay demasiado estímulo: mucho ruido, cambios constantes de ejercicio, o instrucciones nuevas sin pausa. Su sistema tiende a desconectarse para protegerse del caos.',
         howToAccompany: [
             'Baja el ritmo de cambios: deja que haga el mismo ejercicio un rato más largo antes de cambiar.',
             'Dale un espacio predecible dentro de la actividad: "Tú siempre en esta posición, tu trabajo es este".',
@@ -621,7 +621,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-distrae',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega se distrae cuando el ejercicio le parece repetitivo o sin propósito. Su mente busca algo para analizar, y si el ejercicio no se lo da, busca estímulos por otro lado.',
+        whatsHappeningForProfile: 'El Estratega suele distraerse cuando el ejercicio le parece repetitivo o sin propósito. Su mente busca algo para analizar, y si el ejercicio no se lo da, tiende a buscar estímulos por otro lado.',
         howToAccompany: [
             'Dale una capa extra al ejercicio: "Mientras haces esto, cuenta cuántas veces se repite el patrón" o "Fijate qué compañero se mueve mejor y por qué".',
             'Explícale qué estás buscando con el ejercicio: "Esto parece simple pero estamos trabajando X". El propósito lo reconecta.',
@@ -635,7 +635,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor quiere dejar cuando siente que no puede ganar, crecer o liderar. Si lleva mucho tiempo sin desafíos nuevos o sin sentir que progresa, el deporte pierde sentido para él.',
+        whatsHappeningForProfile: 'El Impulsor suele querer dejar cuando siente que no puede ganar, crecer o liderar. Si lleva mucho tiempo sin desafíos nuevos o sin sentir que progresa, el deporte tiende a perder sentido para él.',
         howToAccompany: [
             'Pregúntale qué cambiaría para que tenga ganas de volver: "Si pudieras cambiar algo del entrenamiento, ¿qué sería?". Escuchá la respuesta.',
             'Proponle un objetivo concreto y medible: "¿Y si en las próximas 3 semanas trabajamos en esto específico?".',
@@ -645,7 +645,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector quiere dejar cuando se rompieron los vínculos: si su amigo dejó, si el grupo cambió, o si siente que ya no pertenece. Para él, el deporte es el grupo, y si el grupo no lo sostiene, no tiene razón de ser.',
+        whatsHappeningForProfile: 'El Conector suele querer dejar cuando se rompieron los vínculos: si su amigo dejó, si el grupo cambió, o si siente que ya no pertenece. Para él, el deporte tiende a ser el grupo, y si el grupo no lo sostiene, puede sentir que no tiene razón de ser.',
         howToAccompany: [
             'Explora el vínculo: "¿Hay algo del grupo que te hace ruido?". Muchas veces la razon no es el deporte sino una relación social que se rompió.',
             'Si es posible, reconéctalo con un compañero cercano o cámbialo a un grupo donde tenga más afinidad.',
@@ -655,7 +655,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén quiere dejar cuando algo cambió demasiado: nuevo entrenador, nuevos compañeros, un cambio de horario o de sede. No es que no le guste el deporte. es que el contexto ya no se siente como "su lugar".',
+        whatsHappeningForProfile: 'El Sostén suele querer dejar cuando algo cambió demasiado: nuevo entrenador, nuevos compañeros, un cambio de horario o de sede. No es que no le guste el deporte. es que el contexto ya no se siente como "su lugar".',
         howToAccompany: [
             'Identifica qué cambió: "¿Hay algo que antes te gustaba y ahora no?". El Sostén puede señalar exactamente el punto de quiebre.',
             'Si puedes, restaura algo del contexto anterior: el mismo horario, el mismo grupo, las mismas rutinas.',
@@ -665,7 +665,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega quiere dejar cuando siente que no aprende nada nuevo o que el entrenamiento no tiene sentido. Si lleva semanas haciendo lo mismo sin entender para qué, su motivación se apaga.',
+        whatsHappeningForProfile: 'El Estratega suele querer dejar cuando siente que no aprende nada nuevo o que el entrenamiento no tiene sentido. Si lleva semanas haciendo lo mismo sin entender para qué, su motivación tiende a apagarse.',
         howToAccompany: [
             'Muéstrale el progreso que hizo: "Mira dónde estabas hace 3 meses y dónde estás ahora". Los datos de evolución lo reconectan con el proceso.',
             'Pregúntale qué le gustaría aprender: "¿Hay algo que te gustaría practicar?". Darle voz en el plan lo re-engancha.',
@@ -679,12 +679,12 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'jugador-nuevo',
         eje: 'D',
-        whatsHappeningForProfile: 'El Impulsor ve al nuevo como una variable a evaluar: "¿Es bueno? ¿Me va a sacar el lugar?". Puede reaccionar compitiendo para marcar territorio o ignorándolo.',
+        whatsHappeningForProfile: 'Un Impulsor puede ver al nuevo como una variable a evaluar: "¿Es bueno? ¿Me va a sacar el lugar?". Puede reaccionar compitiendo para marcar territorio o ignorándolo.',
         howToAccompany: [
             'Dale un rol de bienvenida con liderazgo: "Muéstrale cómo hacemos el calentamiento". Eso lo pone en posición de líder, no de competidor.',
             'Arma un ejercicio donde los dos se luzcan: "Uno ataca, otro defiende, después cambian".',
         ],
-        ifNotResponding: 'Deja que la competencia natural haga su trabajo. El Impulsor va a aceptar al nuevo cuando vea que eleva el nivel del grupo.',
+        ifNotResponding: 'Deja que la competencia natural haga su trabajo. El Impulsor tiende a aceptar al nuevo cuando ve que eleva el nivel del grupo.',
     },
     {
         situationId: 'jugador-nuevo',
@@ -692,29 +692,29 @@ export const SITUATION_CARDS: SituationCard[] = [
         whatsHappeningForProfile: 'El Conector probablemente va a ser el primero en acercarse al nuevo. Si no lo hace, es porque algo del nuevo lo intimida o porque siente que su lugar social en el grupo está amenazado.',
         howToAccompany: [
             'Pídele que sea el "anfitrión": "Acompáñalo hoy, explícale cómo funciona todo aquí". Es su rol natural y lo empodera.',
-            'Si el Conector se muestra reticente, hablá en privado: "¿Todo bien con la llegada de X?". Puede haber una inseguridad social que vale la pena explorar.',
+            'Si el Conector se muestra reticente, habla en privado: "¿Todo bien con la llegada de X?". Puede haber una inseguridad social que vale la pena explorar.',
         ],
         ifNotResponding: 'Arma una actividad donde tengan que cooperar obligatoriamente. La conexión del Conector se activa haciendo cosas juntos.',
     },
     {
         situationId: 'jugador-nuevo',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén es el que más siente la "ruptura" del equilibrio. Su grupo era predecible y seguro, y ahora hay alguien que cambia la dinámica. Puede mostrarse distante o incómodo.',
+        whatsHappeningForProfile: 'El Sostén suele ser el que más siente la "ruptura" del equilibrio. Su grupo era predecible y seguro, y ahora hay alguien que cambia la dinámica. Puede mostrarse distante o incómodo.',
         howToAccompany: [
             'No cambies la rutina por la llegada del nuevo. Mantenle al Sostén todo lo que puedas igual: mismo lugar, mismo ejercicio, mismos compañeros.',
             'Presenta al nuevo como una "suma" y no como un "cambio": "Se suma alguien al grupo, todo lo demás sigue igual".',
         ],
-        ifNotResponding: 'Dale tiempo. El Sostén va a aceptar al nuevo gradualmente, a medida que el nuevo se vuelva parte de la rutina. No fuerces la integración.',
+        ifNotResponding: 'Dale tiempo. El Sostén tiende a aceptar al nuevo gradualmente, a medida que el nuevo se vuelva parte de la rutina. No fuerces la integración.',
     },
     {
         situationId: 'jugador-nuevo',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega observa al nuevo con curiosidad analítica: "¿Cómo juega? ¿Dónde se va a ubicar? ¿Cómo afecta al equipo?". No se acerca enseguida porque está procesando la información.',
+        whatsHappeningForProfile: 'El Estratega suele observar al nuevo con curiosidad analítica: "¿Cómo juega? ¿Dónde se va a ubicar? ¿Cómo afecta al equipo?". Tiende a no acercarse enseguida porque está procesando la información.',
         howToAccompany: [
             'Dale información sobre el nuevo: "Viene de tal club, juega en tal posición". Los datos lo tranquilizan y le permiten ubicar al nuevo en su mapa mental.',
             'Proponle que lo ayude tácticamente: "Explicále cómo hacemos esta jugada". Eso lo conecta desde su fortaleza.',
         ],
-        ifNotResponding: 'Deja que la integración sea orgánica. El Estratega va a acercarse al nuevo cuando tenga suficiente información. No lo apures.',
+        ifNotResponding: 'Deja que la integración sea orgánica. El Estratega suele acercarse al nuevo cuando tiene suficiente información. No lo apures.',
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -726,14 +726,14 @@ export const SITUATION_CARDS: SituationCard[] = [
         whatsHappeningForProfile: 'Raro en un Impulsor, pero cuando se congela es porque la presión lo abrumó más de lo que puede manejar. Siente que si se equivoca frente a todos, pierde su estatus.',
         howToAccompany: [
             'Dile una instrucción concreta y simple: "La próxima pelota, tirá al arco". Una sola acción clara lo desbloquea.',
-            'Desde afuera, dale confianza en su capacidad: "Tú sabes hacer esto, confío en ti". El Impulsor reacciona al voto de confianza.',
+            'Desde afuera, dale confianza en su capacidad: "Tú sabes hacer esto, confío en ti". El Impulsor suele responder al voto de confianza.',
         ],
         ifNotResponding: 'Cambiale el rol temporalmente a algo menos expuesto. Cuando haga una buena jugada desde ahí, devolvelo a su posición. Necesita una victoria chica para reactivarse.',
     },
     {
         situationId: 'se-congela',
         eje: 'I',
-        whatsHappeningForProfile: 'El Conector se congela cuando siente que el error lo va a dejar "en evidencia" frente al grupo. Su bloqueo es social: tiene miedo de quedar mal ante los compañeros, no del error en sí.',
+        whatsHappeningForProfile: 'El Conector suele congelarse cuando siente que el error lo va a dejar "en evidencia" frente al grupo. Su bloqueo tiende a ser social: tiene miedo de quedar mal ante los compañeros, no del error en sí.',
         howToAccompany: [
             'Quitale la presión del resultado: "No importa si sale o no, quiero que lo intentes". El permiso para fallar lo desbloquea.',
             'Involucra a los compañeros: "Equipo, todos adentro, todos juntos". Sentirse acompañado le devuelve la seguridad.',
@@ -743,7 +743,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-congela',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén se congela porque la presión del partido rompe su base de seguridad. Lo que en el entrenamiento era predecible, en el partido es incierto. Su sistema se protege quedándose quieto.',
+        whatsHappeningForProfile: 'El Sostén suele congelarse porque la presión del partido rompe su base de seguridad. Lo que en el entrenamiento era predecible, en el partido es incierto. Su sistema tiende a protegerse quedándose quieto.',
         howToAccompany: [
             'Baja la presión con información: "Hacé lo mismo que en el entrenamiento, nada diferente". Conectarlo con lo conocido lo desbloquea.',
             'Dale una instrucción repetitiva: "Cada vez que la pelota venga, pasala a X". La tarea simple y predecible lo activa.',
@@ -753,7 +753,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'se-congela',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega se congela porque está sobreanalizando: "¿Paso o tiro? ¿Y si viene el rival? ¿Cuál es la mejor opción?". Su mente trabaja más rápido que su cuerpo, y el cuerpo se traba.',
+        whatsHappeningForProfile: 'El Estratega suele congelarse porque está sobreanalizando: "¿Paso o tiro? ¿Y si viene el rival? ¿Cuál es la mejor opción?". Su mente trabaja más rápido que su cuerpo, y el cuerpo se traba.',
         howToAccompany: [
             'Simplifica su toma de decisión: "Si estás libre, tira. Si no, pasa". Reducir las opciones lo desbloquea.',
             'Antes del próximo partido, ensaya las decisiones: "Cuando pase esto, haces aquello". La automatización previa libera la mente durante el juego.',
@@ -787,7 +787,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-ser-centro',
         eje: 'S',
-        whatsHappeningForProfile: 'Es natural en el Sostén. Su forma de aportar es desde el soporte, no desde el protagonismo. Forzarlo a ser el centro va en contra de su naturaleza y lo hace sentir vulnerable.',
+        whatsHappeningForProfile: 'Suele ser natural en el Sostén. Su forma de aportar tiende a ser desde el soporte, no desde el protagonismo. Forzarlo a ser el centro va en contra de su naturaleza y suele hacerlo sentir vulnerable.',
         howToAccompany: [
             'Proponle formas de liderazgo silencioso: "Asegúrate de que todos tengan lo que necesitan" o "Tú eres el que mantiene el ritmo".',
             'Si necesitas que se exponga, dale aviso previo: "La semana que viene te voy a pedir que muestres el ejercicio". La anticipación baja la ansiedad.',
@@ -797,7 +797,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-ser-centro',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega no quiere exponerse si no está seguro de que lo va a hacer bien. Su estándar es alto y la idea de fallar en público le genera mucha incomodidad.',
+        whatsHappeningForProfile: 'El Estratega tiende a no querer exponerse si no está seguro de que lo va a hacer bien. Su estándar suele ser alto y la idea de fallar en público le genera mucha incomodidad.',
         howToAccompany: [
             'Dale tiempo de preparación: "La semana que viene te pido que expliques esta jugada al grupo. Prepárate". Con tiempo, el Estratega se siente seguro.',
             'Ofrécele un formato que use su fortaleza: que analice una jugada en vez de demostrarla físicamente, que dibuje en una pizarra, que explique la lógica.',
@@ -821,7 +821,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'cambio-repentino',
         eje: 'I',
-        whatsHappeningForProfile: 'Un Conector que se cierra es una señal fuerte. Su naturaleza es social, así que si está callado o aislado, algo le está doliendo en el plano vincular: una pelea con amigos, un cambio en la familia, o bullying.',
+        whatsHappeningForProfile: 'Un Conector que se cierra suele ser una señal fuerte. Su naturaleza tiende a ser social, así que si está callado o aislado, algo puede estarle doliendo en el plano vincular: una pelea con amigos, un cambio en la familia, o bullying.',
         howToAccompany: [
             'Acércate desde el vínculo: "Te conozco y sé que algo te pasa. No hace falta que me cuentes, pero quiero que sepas que estoy aquí".',
             'Dale espacio para reconectarse a su ritmo. No lo fuerces a "estar contento". eso invalida lo que siente.',
@@ -831,7 +831,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'cambio-repentino',
         eje: 'S',
-        whatsHappeningForProfile: 'El Sostén que cambia repentinamente está mostrando que algo rompió su base de seguridad. Es el perfil que más "aguanta" antes de mostrar malestar, así que si ya lo ves, probablemente viene acumulando hace rato.',
+        whatsHappeningForProfile: 'El Sostén que cambia repentinamente suele estar mostrando que algo rompió su base de seguridad. Tiende a ser el perfil que más "aguanta" antes de mostrar malestar, así que si ya lo ves, probablemente viene acumulando hace rato.',
         howToAccompany: [
             'Mantenle la rutina lo más estable posible. En medio de lo que sea que esté pasando afuera, el entrenamiento puede ser su refugio de normalidad.',
             'Acércate sin drama: "¿Cómo estás hoy?" de forma natural, como parte de la rutina. Si quiere hablar, va a hablar.',
@@ -855,7 +855,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'derrota-grupal',
         eje: 'group',
-        whatsHappeningForProfile: 'Todo el grupo está procesando la derrota desde su propio perfil: los Impulsores están enojados, los Conectores sienten que fallaron como equipo, los Sostenes se cerraron, y los Estrategas están repasando cada error. El clima colectivo está bajo.',
+        whatsHappeningForProfile: 'Todo el grupo está procesando la derrota desde su propio perfil: los Impulsores probablemente estén enojados, los Conectores suelen sentir que fallaron como equipo, los Sostenes tienden a cerrarse, y los Estrategas estarán repasando cada error. El clima colectivo está bajo.',
         howToAccompany: [
             'No intentes hablar del partido inmediatamente después de perder. Dale al grupo unos minutos de silencio o de descompresión libre antes de reunirlos.',
             'Cuando los reúnas, empieza por lo que sí funcionó: "Hoy hicimos bien esto, esto y esto. Lo que no salió, lo trabajamos la semana que viene". Resultado al final, proceso al principio.',
@@ -866,14 +866,14 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: "acepta-ser-suplente",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor vive el banco como una pérdida de control y de su lugar de protagonista. Estar quieto mientras otros juegan le pesa mucho, y esa tensión suele salir como fastidio o impaciencia.",
+        whatsHappeningForProfile: "El Impulsor suele vivir el banco como una pérdida de control y de su lugar de protagonista. Estar quieto mientras otros juegan tiende a pesarle mucho, y esa tensión suele salir como fastidio o impaciencia.",
         howToAccompany: ["Dale un rol activo desde el banco: pídele que lea el partido y te avise qué pasa, por ejemplo dile: quiero tus ojos en la cancha, ¿qué ves que podemos mejorar?","Ponle un objetivo concreto para cuando entre, algo que dependa de él: dile cuando entres, esto es tuyo, te quiero marcando el ritmo."],
         ifNotResponding: "Si sigue tenso, no le exijas que lo acepte de golpe. Reconócele las ganas de jugar (se nota que quieres estar adentro y eso es bueno) y dale tiempo, su empuje se reacomoda cuando siente que cuentas con él.",
     },
     {
         situationId: "acepta-ser-suplente",
         eje: "I",
-        whatsHappeningForProfile: "El Conector teme que estar en el banco signifique que decepcionó o que ya no es parte del grupo. Más que el rol, le duele sentirse afuera del vínculo.",
+        whatsHappeningForProfile: "El Conector suele temer que estar en el banco signifique que decepcionó o que ya no es parte del grupo. Más que el rol, tiende a dolerle sentirse afuera del vínculo.",
         howToAccompany: ["Confírmale su lugar en el equipo de entrada: acércate y dile hoy arrancas afuera, pero eres parte clave de esto, te necesito conectando al grupo desde el banco.","Dale una tarea que lo mantenga unido a sus compañeros: que aliente, que reciba al que sale, que ayude a sostener el clima del equipo."],
         ifNotResponding: "Si lo notas apagado, prioriza el vínculo antes que el rol. Un gesto cercano, sentarte un momento a su lado, le devuelve la sensación de pertenecer, que es lo que más necesita.",
     },
@@ -887,77 +887,77 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: "acepta-ser-suplente",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega necesita entender por qué está en el banco. Si no tiene claro el criterio, le da vueltas y puede concluir solo que hizo algo mal o que no es lo bastante bueno.",
+        whatsHappeningForProfile: "El Estratega suele necesitar entender por qué está en el banco. Si no tiene claro el criterio, tiende a darle vueltas y puede concluir solo que hizo algo mal o que no es lo bastante bueno.",
         howToAccompany: ["Explícale el motivo de forma concreta y sin rodeos: dile esta es una decisión de equipo y de planificación, no un juicio sobre ti, y te muestro qué estoy buscando hoy.","Dale algo claro en qué enfocarse mientras espera: pídele que observe una jugada o un rival puntual y que te traiga su lectura cuando entre."],
         ifNotResponding: "Si lo ves trabado dándole vueltas, bájale la exigencia interna. Recuérdale que el rol de hoy no mide su valor y que entender lleva tiempo, sin pedirle que lo resuelva ya.",
     },
     {
         situationId: "companero-se-destaca",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor vive el logro del compañero como una competencia que está perdiendo. Su instinto es demostrar de inmediato que él también puede, y si no encuentra cómo, se frustra.",
+        whatsHappeningForProfile: "El Impulsor suele vivir el logro del compañero como una competencia que está perdiendo. Su instinto tiende a ser demostrar de inmediato que él también puede, y si no encuentra cómo, se frustra.",
         howToAccompany: ["Canaliza esa energía hacia un reto propio en vez de hacia el otro: tú tienes tu propio desafío hoy, vamos a ver hasta dónde llegas.","Reconócele algo concreto que él sí hace bien para que no sienta que pierde su lugar: en la marca nadie te gana, eso es tuyo."],
         ifNotResponding: "Dale un par de minutos para que baje la intensidad sin exigirle que aplauda al compañero. Cuando vuelva a sentirse capaz en lo suyo, la comparación pierde fuerza sola.",
     },
     {
         situationId: "companero-se-destaca",
         eje: "I",
-        whatsHappeningForProfile: "El Conector siente que el cariño y la atención del grupo se fueron hacia otro, y lo vive como que a él lo quieren menos. Le duele más el desplazamiento social que el resultado.",
+        whatsHappeningForProfile: "El Conector suele sentir que el cariño y la atención del grupo se fueron hacia otro, y tiende a vivirlo como que a él lo quieren menos. Suele dolerle más el desplazamiento social que el resultado.",
         howToAccompany: ["Devuélvele su lugar en el grupo con algo genuino: tu energía es la que levanta al equipo, eso no lo reemplaza nadie.","Invítalo a sumarse a la alegría del otro para que sienta que sigue dentro: vamos a festejarlo entre todos, eres parte de esto."],
         ifNotResponding: "No lo obligues a celebrar si todavía le cuesta. Acércate un momento a solas y hazle sentir que su lugar contigo sigue intacto, sin pedirle nada a cambio.",
     },
     {
         situationId: "companero-se-destaca",
         eje: "S",
-        whatsHappeningForProfile: "El Sostén se guarda el malestar y se corre al segundo plano sin decir nada. Por fuera parece que no le afecta, pero el fastidio se va acumulando y puede aparecer más tarde de golpe.",
+        whatsHappeningForProfile: "El Sostén suele guardarse el malestar y correrse al segundo plano sin decir nada. Por fuera parece que no le afecta, pero el fastidio se va acumulando y puede aparecer más tarde de golpe.",
         howToAccompany: ["Dale permiso para nombrar lo que siente, sin apuro: está bien que hoy te haya costado, contarlo no tiene nada de malo.","Ofrécele un lugar seguro y predecible donde volver a sentirse cómodo: ponte conmigo en este ejercicio y vamos tranquilos."],
         ifNotResponding: "No lo presiones a hablar. Quédate cerca y mantén la rutina estable. Tu constancia le devuelve la seguridad mejor que cualquier charla forzada.",
     },
     {
         situationId: "companero-se-destaca",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega se queda analizando por qué el otro lo hizo mejor y se compara punto por punto. Esa cuenta interna lo vuelve durísimo consigo mismo.",
+        whatsHappeningForProfile: "El Estratega suele quedarse analizando por qué el otro lo hizo mejor y se compara punto por punto. Esa cuenta interna tiende a volverlo durísimo consigo mismo.",
         howToAccompany: ["Saca la mirada de la comparación y ponla en su propio proceso: no se trata de quién es mejor, sino de qué puedes aprender mirándolo.","Dale un dato concreto y observable para que ordene la cabeza: fíjate cómo se perfila él antes de recibir, prueba copiar solo eso hoy."],
         ifNotResponding: "Si sigue atrapado en el bucle, bájale la exigencia. Recuérdale que cada uno avanza a su tiempo y que entender lleva su proceso, no hay apuro.",
     },
     {
         situationId: "recibe-correccion",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor confunde la corrección con perder terreno. Necesita sentir que sigue siendo capaz y que tiene margen para mejorar por su cuenta, no que lo dejaron mal parado.",
+        whatsHappeningForProfile: "El Impulsor suele confundir la corrección con perder terreno. Tiende a necesitar sentir que sigue siendo capaz y que tiene margen para mejorar por su cuenta, no que lo dejaron mal parado.",
         howToAccompany: ["Enmarca la corrección como un reto, no como una falla: tienes esto casi listo, te falta un ajuste para que sea imparable.","Dale el control del cambio: que sea él quien decida cómo corregirlo en la próxima jugada, en vez de imponérselo."],
         ifNotResponding: "Si se pone a la defensiva, baja la intensidad y déjalo probar a su modo unos minutos. Cuando vea que el ajuste le funciona, lo adopta solo y sin discutir.",
     },
     {
         situationId: "recibe-correccion",
         eje: "I",
-        whatsHappeningForProfile: "El Conector siente la corrección como un golpe al vínculo, no a la técnica. Le importa más si te decepcionó o si quedó expuesto que el detalle que le marcaste.",
+        whatsHappeningForProfile: "El Conector suele sentir la corrección como un golpe al vínculo, no a la técnica. Tiende a importarle más si te decepcionó o si quedó expuesto que el detalle que le marcaste.",
         howToAccompany: ["Corrígelo en privado y cuida el tono: empieza por el vínculo, lo tuyo con el equipo está perfecto, vamos a pulir solo este detalle.","Recuérdale que la corrección no cambia cómo lo ves: te marco esto porque confío en lo que puedes dar."],
         ifNotResponding: "Si igual se apaga, dale un gesto de cercanía y espera. Para él, sentirse aceptado pesa más que cualquier indicación, y desde ahí vuelve a escuchar.",
     },
     {
         situationId: "recibe-correccion",
         eje: "S",
-        whatsHappeningForProfile: "El Sostén asiente y parece tomarlo bien, pero por dentro se guarda el malestar. Evita el roce en el momento y la incomodidad le aparece después, más callada.",
+        whatsHappeningForProfile: "El Sostén suele asentir y parecer que lo toma bien, pero por dentro se guarda el malestar. Tiende a evitar el roce en el momento y la incomodidad le aparece después, más callada.",
         howToAccompany: ["Dale tiempo y previsibilidad: avísale con calma y sin sorpresas, quiero mostrarte algo para la próxima, sin apuro.","Confirma que está bien y abre la puerta a que hable: esto pasa todo el tiempo, si algo no te cerró me lo dices cuando quieras."],
         ifNotResponding: "Si lo notas retraído, no insistas en el momento. Acércate después, en un clima tranquilo, y dale espacio para que suelte lo que se guardó.",
     },
     {
         situationId: "recibe-correccion",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega entiende la corrección, pero se queda atascado en el detalle y se vuelve muy exigente consigo mismo. Le cuesta soltar lo que pasó para seguir jugando.",
+        whatsHappeningForProfile: "El Estratega suele entender la corrección, pero tiende a quedarse atascado en el detalle y a volverse muy exigente consigo mismo. Le cuesta soltar lo que pasó para seguir jugando.",
         howToAccompany: ["Explícale el porqué, que es lo que más lo ordena: corregimos esto porque te da más tiempo para decidir en la jugada.","Ayúdalo a pasar de página con un foco concreto: ya lo analizaste, ahora prueba solo este ajuste en la próxima y lo vemos."],
         ifNotResponding: "Si sigue dándole vueltas, dale un solo punto en el que pensar y deja el resto para después. Menos información lo libera para volver a jugar tranquilo.",
     },
     {
         situationId: "gestiona-exito",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor siente el éxito con mucha intensidad y necesita mostrarlo. Cuando ya se siente ganador, su motor de esfuerzo afloja porque cree que el desafío terminó.",
+        whatsHappeningForProfile: "El Impulsor suele sentir el éxito con mucha intensidad y necesita mostrarlo. Cuando ya se siente ganador, su motor de esfuerzo tiende a aflojar porque cree que el desafío terminó.",
         howToAccompany: ["Ponle un nuevo objetivo apenas logra algo: ya conseguiste eso, ahora a ver si sostienes ese nivel hasta el final.","Reconócele el logro y enseguida invítalo a sumar al equipo: el que ya está jugando bien hoy puede levantar a un compañero."],
         ifNotResponding: "Déjalo disfrutar el momento sin corregirlo en caliente. Cuando baje la euforia, vuelve a buscarlo con un reto concreto y su motor se reactiva solo.",
     },
     {
         situationId: "gestiona-exito",
         eje: "I",
-        whatsHappeningForProfile: "El Conector vive el éxito a través de los demás y se entusiasma cuando siente la celebración del grupo. Llevado por esa emoción, sin querer puede acaparar el momento y dejar al resto del equipo afuera.",
+        whatsHappeningForProfile: "El Conector suele vivir el éxito a través de los demás y se entusiasma cuando siente la celebración del grupo. Llevado por esa emoción, sin querer puede acaparar el momento y dejar al resto del equipo afuera.",
         howToAccompany: ["Redirige su entusiasmo hacia el equipo: buenísimo tu gol, ahora celébralo con los que te dieron el pase.","Dale un rol de contagiar la buena energía cuidando a todos: tú que estás encendido, ayuda a levantar a los que están más callados."],
         ifNotResponding: "No lo apagues delante del grupo. Más tarde, a solas, recuérdale lo lindo que es cuando el equipo entero festeja junto, y que él tiene el don de lograrlo.",
     },
@@ -971,7 +971,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: "gestiona-exito",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega analiza su buen rendimiento y puede convencerse de que ya entendió todo. Al sentir que no le queda nada por mejorar, baja la guardia sin darse cuenta.",
+        whatsHappeningForProfile: "El Estratega suele analizar su buen rendimiento y puede convencerse de que ya entendió todo. Al sentir que no le queda nada por mejorar, tiende a bajar la guardia sin darse cuenta.",
         howToAccompany: ["Valídale el análisis y abre una pregunta nueva: jugaste muy bien, ¿qué crees que podrías afinar todavía?","Muéstrale que lo bueno también se estudia: anota qué hiciste hoy que funcionó, así lo puedes repetir cuando el rival sea más difícil."],
         ifNotResponding: "Dale espacio para procesar su buen momento a su ritmo. Cuando esté listo, proponle mirar juntos el próximo desafío sin quitarle mérito a lo que ya logró.",
     },
@@ -985,7 +985,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: "rol-referente",
         eje: "I",
-        whatsHappeningForProfile: "El Conector lidera con naturalidad desde el vínculo, pero le pesa cuando el rol implica poner un límite o decidir entre amigos. No quiere decepcionar a nadie.",
+        whatsHappeningForProfile: "El Conector suele liderar con naturalidad desde el vínculo, pero tiende a pesarle cuando el rol implica poner un límite o decidir entre amigos. No quiere decepcionar a nadie.",
         howToAccompany: ["Define el rol desde su fortaleza: tu tarea de referente es que nadie quede afuera, y eso ya lo haces muy bien.","Acompáñalo en las decisiones difíciles para que no las cargue solo: si hay que elegir, lo pensamos juntos."],
         ifNotResponding: "Déjale por ahora la parte que disfruta y aligérale la que lo incomoda. Con el tiempo, el rol más completo le va a pesar menos.",
     },
@@ -999,63 +999,63 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: "rol-referente",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega duda porque todavía no tiene claro qué se espera de él, y prefiere esperar antes que ejercer el rol a medias. Le pesa la idea de equivocarse delante de todos.",
+        whatsHappeningForProfile: "El Estratega suele dudar porque todavía no tiene claro qué se espera de él, y tiende a preferir esperar antes que ejercer el rol a medias. Le pesa la idea de equivocarse delante de todos.",
         howToAccompany: ["Explícale el rol con claridad y por partes: ser referente aquí significa estas tres cosas, nada más.","Dale tiempo para observar antes de actuar: mira unos días cómo funciona el grupo y después me dices cómo lo harías tú."],
         ifNotResponding: "Proponle primero un rol más concreto, algo que pueda entender y dominar. La confianza para liderar le llega cuando siente que comprende.",
     },
     {
         situationId: "expectativa-padres",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor convierte la expectativa en una presión por ganar sí o sí. Cuando siente que el resultado define si decepcionó o no a sus padres, se exige de más y reacciona con frustración intensa ante cualquier error.",
+        whatsHappeningForProfile: "El Impulsor suele convertir la expectativa en una presión por ganar sí o sí. Cuando siente que el resultado define si decepcionó o no a sus padres, puede exigirse de más y reaccionar con frustración ante un error.",
         howToAccompany: ["Devuélvele el foco a lo que él controla: hoy no me fijo en el marcador, me fijo en cómo compites cada pelota.","Reconócele el esfuerzo más que el resultado, en voz alta y delante del grupo: me gustó cómo no bajaste los brazos cuando se complicó."],
         ifNotResponding: "Si sigue jugando para la tribuna, baja tú la importancia del resultado en tus palabras. Cuando él vea que para ti su valor no depende de ganar, empieza a soltar la presión.",
     },
     {
         situationId: "expectativa-padres",
         eje: "I",
-        whatsHappeningForProfile: "El Conector necesita sentir el orgullo de sus padres para jugar liviano. Una cara seria desde afuera lo desconecta enseguida, porque para él rendir bien y ser querido están unidos.",
+        whatsHappeningForProfile: "El Conector suele necesitar sentir el orgullo de sus padres para jugar liviano. Una cara seria desde afuera tiende a desconectarlo enseguida, porque para él rendir bien y ser querido están unidos.",
         howToAccompany: ["Recuérdale que el cariño de sus padres no se gana ni se pierde en una cancha: tu familia te quiere juegues como juegues, eso no está en juego hoy.","Dale un motivo para disfrutar con sus compañeros y no solo para los de afuera: sal a pasarla bien con tu equipo, ese es tu lugar aquí."],
         ifNotResponding: "Si sigue pendiente de la tribuna, ayúdalo a reconectar con el grupo en vez de con afuera. Cuando se siente parte del equipo, la mirada de los padres deja de ser lo único que importa.",
     },
     {
         situationId: "expectativa-padres",
         eje: "S",
-        whatsHappeningForProfile: "El Sostén se guarda la tensión por dentro y no la muestra. Sigue jugando callado, pero más rígido, y la carga se le acumula hasta aparecer de golpe en un mal momento.",
+        whatsHappeningForProfile: "El Sostén suele guardarse la tensión por dentro y no mostrarla. Sigue jugando callado, pero más rígido, y la carga se le acumula hasta aparecer de golpe en un mal momento.",
         howToAccompany: ["Acércate con calma y sin exponerlo para abrirle la puerta: si en algún momento te pesa lo de afuera, me lo puedes contar tranquilo.","Dale rutinas y referencias estables que no dependan de la tribuna: tú concéntrate en tu marca de siempre, eso ya lo sabes hacer."],
         ifNotResponding: "Si no logra soltar la carga, no lo fuerces a hablar. Mantén un clima predecible y seguro alrededor de él, y dale tiempo: confiar en ti es lo que después le permite abrirse.",
     },
     {
         situationId: "expectativa-padres",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega se mete en su cabeza tratando de descifrar qué esperan de él. Se autoexige el doble y termina jugando trabado por miedo a no estar a la altura de lo que cree que los adultos quieren ver.",
+        whatsHappeningForProfile: "El Estratega suele meterse en su cabeza tratando de descifrar qué esperan de él. Tiende a autoexigirse el doble y a terminar jugando trabado por miedo a no estar a la altura de lo que cree que los adultos quieren ver.",
         howToAccompany: ["Sácale la presión de tener que adivinar expectativas y dale un objetivo claro y propio: tu único trabajo hoy es leer bien el juego, nada más.","Ayúdalo a separar su deseo del de los padres con una pregunta concreta: dejando afuera lo que esperan ellos, a ti qué te dan ganas de probar hoy."],
         ifNotResponding: "Si sigue trabado en su análisis, reduce las variables: una sola consigna simple por vez. Cuando deja de cargar con todo lo que cree que esperan, vuelve a jugar suelto.",
     },
     {
         situationId: "sube-categoria",
         eje: "D",
-        whatsHappeningForProfile: "El Impulsor venía siendo una referencia y ahora es el nuevo entre los más grandes. Perder ese lugar de protagonismo le toca la confianza, y puede taparlo con enojo o compitiendo de más para recuperar terreno.",
+        whatsHappeningForProfile: "El Impulsor venía siendo una referencia y ahora es el nuevo entre los más grandes. Perder ese lugar de protagonismo suele tocarle la confianza, y puede taparlo con enojo o compitiendo de más para recuperar terreno.",
         howToAccompany: ["Dale un objetivo concreto para su adaptación: en estas semanas tu desafío es ganarte un lugar en este grupo, lo vamos a ver partido a partido.","Reconócele cada paso de progreso en lo nuevo: hoy aguantaste el ritmo de los más grandes, eso hace dos semanas no pasaba."],
         ifNotResponding: "Si sigue tenso, bájale la exigencia de rendir ya y déjalo enfocarse en una sola cosa por entrenamiento. Recuperar el control de a poco le devuelve la seguridad.",
     },
     {
         situationId: "sube-categoria",
         eje: "I",
-        whatsHappeningForProfile: "El Conector dejó atrás a su grupo de siempre y todavía no encontró su lugar entre los nuevos. Aunque esté rodeado de compañeros, se siente afuera, y eso le baja las ganas más que cualquier tema de juego.",
+        whatsHappeningForProfile: "El Conector dejó atrás a su grupo de siempre y todavía no encontró su lugar entre los nuevos. Aunque esté rodeado de compañeros, suele sentirse afuera, y eso tiende a bajarle las ganas más que cualquier tema de juego.",
         howToAccompany: ["Conéctalo con un compañero de la nueva categoría que lo reciba bien: te presento a Tomás, va a ser tu compañero esta semana.","Dale un rol que lo integre desde lo social, como armar un ejercicio en duplas o liderar la entrada en calor junto a otro."],
         ifNotResponding: "Si sigue replegado, no lo expongas frente al grupo. Acércate en privado y muéstrale que lo quieres ahí, sentirse esperado le devuelve las ganas.",
     },
     {
         situationId: "sube-categoria",
         eje: "S",
-        whatsHappeningForProfile: "El Sostén se desestabiliza con el cambio de rutina, de horarios y de caras conocidas. Se repliega al segundo plano y sostiene la incomodidad en silencio, hasta que un día le pesa todo junto.",
+        whatsHappeningForProfile: "El Sostén suele desestabilizarse con el cambio de rutina, de horarios y de caras conocidas. Tiende a replegarse al segundo plano y a sostener la incomodidad en silencio, hasta que un día le pesa todo junto.",
         howToAccompany: ["Dale previsibilidad sobre lo nuevo: explícale cómo va a ser el entrenamiento y qué se espera de él, paso a paso.","Ofrécele un punto de referencia estable, como un lugar fijo en la cancha o un compañero con quien siempre empieza: arranca siempre al lado de él hasta que te sientas cómodo."],
         ifNotResponding: "Si lo ves cerrado, dale más tiempo sin apurarlo y pregúntale en privado cómo se está sintiendo. A él el cambio le lleva más, y eso está bien.",
     },
     {
         situationId: "sube-categoria",
         eje: "C",
-        whatsHappeningForProfile: "El Estratega está leyendo todo el escenario nuevo: el ritmo, los códigos del grupo, dónde encaja él. Mientras procesa puede parecer apagado o dudar antes de jugar, porque todavía no entiende del todo cómo funciona esta categoría.",
+        whatsHappeningForProfile: "El Estratega suele estar leyendo todo el escenario nuevo: el ritmo, los códigos del grupo, dónde encaja él. Mientras procesa puede parecer apagado o dudar antes de jugar, porque todavía no entiende del todo cómo funciona esta categoría.",
         howToAccompany: ["Dale información clara que lo ayude a ubicarse: en esta categoría se juega más rápido, así que gana un segundo pensando antes de recibir.","Valida su forma de observar antes de meterse: tómate los primeros minutos para leer el partido, después entras con todo."],
         ifNotResponding: "Si sigue dudando, no lo presiones a soltarse antes de tiempo. Cuando termine de entender el escenario nuevo, va a empezar a jugar con confianza solo.",
     },

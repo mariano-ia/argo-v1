@@ -1,4 +1,4 @@
-# Guía Situacional — Listado definitivo de situaciones
+# Guía Situacional. Listado definitivo de situaciones
 
 ## Principios de redacción
 
@@ -56,7 +56,7 @@
 
 **Lo que ves:** El jugador no se suma al grupo. Se queda en el borde de la cancha observando, especialmente cuando es un ejercicio nuevo o un grupo que no conoce bien.
 
-**Lo que está pasando:** Está haciendo un "escaneo" del terreno. Necesita entender cómo funciona la dinámica antes de meterse. No es timidez ni cobardía — es su forma de prepararse para participar con seguridad.
+**Lo que está pasando:** Está haciendo un "escaneo" del terreno. Necesita entender cómo funciona la dinámica antes de meterse. No es timidez ni cobardía. Es su forma de prepararse para participar con seguridad.
 
 **Categoría:** Social
 
@@ -66,7 +66,7 @@
 
 **Lo que ves:** El jugador se quiebra emocionalmente durante una actividad. Puede ser llanto, enojo, o ambos. A veces es después de una corrección, a veces parece "de la nada".
 
-**Lo que está pasando:** Se le juntó todo: el cansancio, el ruido, las correcciones, la exigencia del ejercicio. Su sistema se saturó y la emoción se desbordó. No es un capricho — es que en ese momento la demanda superó lo que podía procesar.
+**Lo que está pasando:** Se le juntó todo: el cansancio, el ruido, las correcciones, la exigencia del ejercicio. Su sistema se saturó y la emoción se desbordó. No es un capricho. Es que en ese momento la demanda superó lo que podía procesar.
 
 **Categoría:** Emocional
 
@@ -76,7 +76,7 @@
 
 **Lo que ves:** Dos jugadores chocan durante un ejercicio. Puede ser una discusión, una queja, o simplemente que no logran trabajar juntos. Uno quiere hacer las cosas de una manera y el otro de otra.
 
-**Lo que está pasando:** Cada niño tiene un estilo natural de encarar las cosas. Cuando dos estilos muy distintos se encuentran sin mediación, se genera fricción. No es que uno tenga razón y el otro no — son ritmos y enfoques diferentes.
+**Lo que está pasando:** Cada niño tiene un estilo natural de encarar las cosas. Cuando dos estilos muy distintos se encuentran sin mediación, se genera fricción. No es que uno tenga razón y el otro no (son ritmos y enfoques diferentes).
 
 **Categoría:** Social
 
@@ -106,7 +106,7 @@
 
 **Lo que ves:** El jugador dice que no quiere venir más, que no le gusta, o simplemente deja de aparecer.
 
-**Lo que está pasando:** El esfuerzo emocional que le cuesta adaptarse al entorno deportivo se volvió más grande que lo que disfruta. No es que no le guste el deporte — es que algo del contexto (la presión, la dinámica, la comunicación) lo está agotando más de lo que lo llena. El objetivo no es convencerlo de quedarse a toda costa, sino ajustar el entorno para ver si el disfrute puede volver.
+**Lo que está pasando:** El esfuerzo emocional que le cuesta adaptarse al entorno deportivo se volvió más grande que lo que disfruta. No es que no le guste el deporte. Es que algo del contexto (la presión, la dinámica, la comunicación) lo está agotando más de lo que lo llena. El objetivo no es convencerlo de quedarse a toda costa, sino ajustar el entorno para ver si el disfrute puede volver.
 
 **Categoría:** Motivación
 
@@ -126,7 +126,7 @@
 
 **Lo que ves:** Un jugador que en el entrenamiento rinde bien, en el partido parece otro: no corre, no pide la pelota, no reacciona. Como si se hubiera "apagado".
 
-**Lo que está pasando:** La presión del partido activó un mecanismo de protección. Frente a la mirada del público o la importancia del momento, su cuerpo elige "no hacer nada" para evitar equivocarse. No es que no quiera — es que se bloqueó.
+**Lo que está pasando:** La presión del partido activó un mecanismo de protección. Frente a la mirada del público o la importancia del momento, su cuerpo elige "no hacer nada" para evitar equivocarse. No es que no quiera. Es que se bloqueó.
 
 **Categoría:** Presión
 
@@ -164,7 +164,7 @@
 
 ## Estructura de las fichas (situación × perfil)
 
-Para cada situación, hay 4 fichas — una por eje DISC del jugador involucrado.
+Para cada situación, hay 4 fichas (una por eje DISC del jugador involucrado).
 
 Cada ficha tiene:
 
