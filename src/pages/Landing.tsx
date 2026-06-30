@@ -880,6 +880,7 @@ export const Landing: React.FC = () => {
                     aria-hidden="true"
                     loading="eager"
                     className="absolute inset-0 w-full h-full object-cover"
+                    style={{ transform: 'translateY(-156px) scale(1.2)', transformOrigin: 'center top' }}
                 />
                 {/* Legibility overlay — darkens the left where the copy sits, keeps the sunset visible on the right */}
                 <div
@@ -888,7 +889,7 @@ export const Landing: React.FC = () => {
                     style={{ background: 'linear-gradient(100deg, rgba(25,18,45,0.88) 0%, rgba(25,18,45,0.60) 42%, rgba(25,18,45,0.24) 74%, rgba(25,18,45,0.10) 100%)' }}
                 />
                 {/* Content (same copy as before, lightened for contrast over the photo) */}
-                <div className="relative max-w-5xl mx-auto px-4 md:px-6 pt-14 pb-8 md:pt-24 md:pb-12">
+                <div className="relative max-w-5xl mx-auto px-4 md:px-6 pt-14 pb-[152px] md:pt-24 md:pb-[248px]">
                 <motion.div {...fadeUp(0)}>
                     <p
                         style={{ fontWeight: 400, letterSpacing: '0.14em', fontSize: '10px', color: 'rgba(255,255,255,0.82)' }}
@@ -987,13 +988,12 @@ export const Landing: React.FC = () => {
             </section>
 
             {/* ── LA HERRAMIENTA ── */}
-            <div id="como-funciona" style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
-                {/* Violet fill — reaches the top so the hero photo meets the violet with no white band; still ends 128px short of the bottom so the card overflows into the section below */}
-                <div style={{
-                    position: 'absolute', left: 0, right: 0,
-                    top: 0, bottom: '128px',
-                    background: '#E3E3FF',
-                }} />
+            <div id="como-funciona" className="-mt-[120px] md:-mt-[200px]" style={{ position: 'relative', paddingTop: '80px', paddingBottom: '80px', overflowX: 'clip' }}>
+                {/* Pulled up under the taller hero (negative margin) so the card overflows the violet on BOTH edges: the violet starts below the card's top (hero photo shows above it) and ends 128px short of the bottom (white shows below it) */}
+                <div
+                    className="absolute left-0 right-0 top-[110px] md:top-[140px] bottom-32"
+                    style={{ background: '#E3E3FF' }}
+                />
                 {/* Floating white card — -mx-14 expands 56px each side to match other sections' content width */}
                 <div className="max-w-5xl mx-auto px-4 md:px-6" style={{ position: 'relative', zIndex: 1 }}>
                     <motion.div
