@@ -664,15 +664,6 @@ const FlipCard: React.FC = () => {
 
 // ─── Pricing section (inline in landing) ─────────────────────────────────────
 
-const PricingFeature: React.FC<{ label: string; sub?: string }> = ({ label, sub }) => (
-    <li className="flex items-start gap-2 py-[7px] border-b border-[#F5F5F7] last:border-b-0">
-        <Check size={13} className="flex-shrink-0 mt-0.5" style={{ color: '#955FB5' }} />
-        <span style={{ fontSize: '13px', color: '#424245' }}>
-            {label}{sub && <span style={{ color: '#AEAEB2' }}> ({sub})</span>}
-        </span>
-    </li>
-);
-
 const ProductName: React.FC<{ rest: string }> = ({ rest }) => (
     <><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>{rest}</span></>
 );
@@ -692,18 +683,20 @@ const PricingSection: React.FC<{
     navigate: (path: string) => void;
     lang: string;
 }> = ({ L, navigate }) => {
-    const included = L('incluido', 'included', 'incluído');
 
     return (
         <div>
             {/* Header */}
             <div className="text-center mb-10">
-                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '12px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '10px' }}>
                     {L('Precios', 'Pricing', 'Preços')}
                 </p>
-                <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '12px' }} className="text-argo-navy">
-                    {L('Para un niño, o para todo tu equipo', 'For one child, or your whole team', 'Para uma criança, ou para todo o seu time')}
+                <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.8rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '8px' }} className="text-argo-navy">
+                    {L('Planes para cada escala', 'Plans for every scale', 'Planos para cada escala')}
                 </h2>
+                <p style={{ fontSize: '15px', color: '#86868B', lineHeight: 1.5, margin: 0 }}>
+                    {L('Del informe del niño y los adultos, a la plataforma de tu institución.', 'From a report on the child and adults, to a platform for your institution.', 'Do relatório da criança e dos adultos, à plataforma da sua instituição.')}
+                </p>
             </div>
 
             {/* Three columns */}
@@ -713,16 +706,17 @@ const PricingSection: React.FC<{
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('El informe del perfil del niño.', "The child's profile report.", 'O relatório do perfil da criança.')}
+                        {L('Informe individual del niño', "The child's individual report", 'Relatório individual da criança')}
                     </p>
-                    <p style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em', marginBottom: '18px' }}>$9.99</p>
+                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em' }}>$9.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$12.99</span></p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <ReportItem title={L('Su perfil', 'Their profile', 'Seu perfil')} desc={L('Quién es hoy, y por dónde puede crecer.', 'Who they are today, and where they can grow.', 'Quem ele é hoje, e por onde pode crescer.')} />
-                        <ReportItem title={L('Su combustible', 'Their fuel', 'Seu combustível')} desc={L('Lo que lo enciende y lo sostiene.', 'What lights them up and keeps them going.', 'O que o acende e o sustenta.')} />
-                        <ReportItem title={L('Su corazón', 'Their heart', 'Seu coração')} desc={L('Lo que necesita para crecer y estar bien.', 'What they need to grow and feel well.', 'O que ele precisa para crescer e estar bem.')} />
-                        <ReportItem title={L('Palabras puente', 'Bridge words', 'Palavras-ponte')} desc={L('Cómo hablarle para conectar.', 'How to speak so you connect.', 'Como falar com ele para conectar.')} />
-                        <ReportItem title={L('Palabras a evitar', 'Words to avoid', 'Palavras a evitar')} desc={L('Las que lo apagan, sin querer.', 'The ones that dim them, without meaning to.', 'As que o apagam, sem querer.')} />
-                        <ReportItem title={L('Guía para acompañarlo', 'A guide to support them', 'Guia para acompanhá-lo')} desc={L('Pasos concretos para el día a día.', 'Concrete steps for everyday life.', 'Passos concretos para o dia a dia.')} />
+                        <ReportItem title={L('Arquetipo', 'Archetype', 'Arquétipo')} desc={L('Su forma natural de moverse en el deporte.', 'Their natural way of moving in sport.', 'Sua forma natural de se mover no esporte.')} />
+                        <ReportItem title={L('Qué lo mueve', 'What drives them', 'O que o motiva')} desc={L('Lo que lo enciende y lo sostiene.', 'What lights them up and keeps them going.', 'O que o acende e o sustenta.')} />
+                        <ReportItem title={L('Motor de rendimiento', 'Performance engine', 'Motor de desempenho')} desc={L('A qué ritmo procesa y decide.', 'The pace at which they process and decide.', 'Em que ritmo processa e decide.')} />
+                        <ReportItem title={L('Palabras puente', 'Bridge words', 'Palavras ponte')} desc={L('Cómo hablarle para conectar.', 'How to speak so you connect.', 'Como falar com ele para conectar.')} />
+                        <ReportItem title={L('Palabras que suelen generar ruido', 'Words that tend to create noise', 'Palavras que costumam gerar ruído')} desc={L('Las que conviene cuidar.', 'The ones worth being careful with.', 'As que vale a pena cuidar.')} />
+                        <ReportItem title={L('Guía rápida', 'Quick guide', 'Guia rápido')} desc={L('Qué activar y qué considerar.', 'What to activate and what to consider.', 'O que ativar e o que considerar.')} />
+                        <ReportItem title={L('Checklist del día', 'Daily checklist', 'Checklist do dia')} desc={L('Antes, durante y después.', 'Before, during and after.', 'Antes, durante e depois.')} />
                     </ul>
                     <button
                         onClick={() => navigate('/one')}
@@ -737,48 +731,42 @@ const PricingSection: React.FC<{
                     <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                         {L('Recomendado', 'Recommended', 'Recomendado')}
                     </span>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest={L(' One + Puente', ' One + Bridge', ' One + Ponte')} /></p>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One </span><span style={{ fontWeight: 800 }}>+</span></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('El informe del niño y tu propio Puente con él.', "The child's report and your own Bridge with them.", 'O relatório da criança e a sua própria Ponte com ele.')}
+                        {L('Informe individual del niño + Informe Puente con el adulto', "The child's individual report + Bridge report with the adult", 'Relatório individual da criança + Relatório Ponte com o adulto')}
                     </p>
-                    <p style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em', marginBottom: '18px' }}>$12.99</p>
+                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em' }}>$12.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$14.99</span></p>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F', marginBottom: '8px' }}>
-                        {L('Todo el informe de Argo One, y además tu Puente:', 'The full Argo One report, plus your Bridge:', 'Todo o relatório do Argo One, e mais a sua Ponte:')}
+                        {L('Todo el informe de Argo One, y además tu Puente con el niño:', 'The full Argo One report, plus your Bridge with the child:', 'Todo o relatório do Argo One, e mais a sua Ponte com a criança:')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <ReportItem title={L('Tu perfil como adulto', 'Your profile as an adult', 'Seu perfil como adulto')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
-                        <ReportItem title={L('La previa del partido', 'Before the match', 'O pré-jogo')} desc={L('Cómo estar antes de que juegue.', 'How to be before they play.', 'Como estar antes de ele jogar.')} />
-                        <ReportItem title={L('Cuando algo no sale', 'When something goes wrong', 'Quando algo não sai')} desc={L('Acompañar la frustración con calma.', 'Holding the frustration calmly.', 'Acompanhar a frustração com calma.')} />
-                        <ReportItem title={L('La charla después del partido', 'The talk after the match', 'A conversa depois do jogo')} desc={L('Qué decir, y cuándo callar.', 'What to say, and when to stay quiet.', 'O que dizer, e quando calar.')} />
-                        <ReportItem title={L('El largo plazo', 'The long run', 'O longo prazo')} desc={L('Cuidar su gozo por el deporte.', 'Protecting their joy for sport.', 'Cuidar do prazer dele pelo esporte.')} />
+                        <ReportItem title={L('Tu estilo natural', 'Your natural style', 'Seu estilo natural')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
+                        <ReportItem title={L('La previa', 'Before the game', 'O pré-jogo')} desc={L('Cómo estar antes de que juegue.', 'How to be before they play.', 'Como estar antes de ele jogar.')} />
+                        <ReportItem title={L('La frustración', 'Frustration', 'A frustração')} desc={L('Acompañar cuando algo no sale.', 'Being there when something goes wrong.', 'Acompanhar quando algo não sai.')} />
+                        <ReportItem title={L('La conversación', 'The conversation', 'A conversa')} desc={L('Qué decir después del partido.', 'What to say after the match.', 'O que dizer depois do jogo.')} />
+                        <ReportItem title={L('El largo plazo', 'The long run', 'O longo prazo')} desc={L('Cuidar su vínculo por el deporte.', 'Protecting their bond with sport.', 'Cuidar do vínculo dele com o esporte.')} />
                     </ul>
                     <button
                         onClick={() => navigate('/one')}
                         style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
                     >
-                        {L('Comprar', 'Buy', 'Comprar')} <ProductName rest={L(' One + Puente', ' One + Bridge', ' One + Ponte')} />
+                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One </span><span style={{ fontWeight: 800 }}>+</span>
                     </button>
                 </div>
 
                 {/* ── COL 3: Argo Academy ─────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" Academy" /></p>
-                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('Para tu institución o equipo.', 'For your institution or team.', 'Para a sua instituição ou time.')}
-                    </p>
-                    <p style={{ fontSize: '15px', fontWeight: 700, color: '#955FB5', marginBottom: '2px' }}>
-                        {L('14 días de prueba', '14-day trial', '14 dias de teste')}
-                    </p>
-                    <p style={{ fontSize: '12px', color: '#AEAEB2', marginBottom: '18px' }}>
-                        {L('sin tarjeta de crédito', 'no credit card', 'sem cartão de crédito')}
+                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '18px' }}>
+                        {L('Plataforma de gestión para tu institución o equipo.', 'Management platform for your institution or team.', 'Plataforma de gestão para a sua instituição ou time.')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
-                        <PricingFeature label={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} />
-                        <PricingFeature label={L('Predictor Conductual completo', 'Full Behavioral Predictor', 'Preditor Comportamental completo')} />
-                        <PricingFeature label={L('Argo Coach', 'Argo Coach', 'Argo Coach')} sub={L('consultor con IA', 'AI consultant', 'consultor com IA')} />
-                        <PricingFeature label={L('Planteles y grupos ilimitados', 'Unlimited teams and groups', 'Plantéis e grupos ilimitados')} />
-                        <PricingFeature label={L('Re-perfilamiento cada 6 meses', 'Re-profiling every 6 months', 'Re-perfilamento a cada 6 meses')} sub={included} />
-                        <PricingFeature label={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} />
+                        <ReportItem title={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} desc={L('Todo tu equipo y su evolución en un solo lugar.', 'Your whole team and their growth in one place.', 'Todo o seu time e sua evolução em um só lugar.')} />
+                        <ReportItem title={L('El informe de cada niño', "Each child's report", 'O relatório de cada criança')} desc={L('El mismo informe individual de Argo One, para todo tu equipo.', 'The same individual report as Argo One, for your whole team.', 'O mesmo relatório individual do Argo One, para todo o seu time.')} />
+                        <ReportItem title={L('Predictor Conductual', 'Behavioral Predictor', 'Preditor Comportamental')} desc={L('Qué hacer en cada situación real del deporte.', 'What to do in every real situation in their sport.', 'O que fazer em cada situação real do esporte.')} />
+                        <ReportItem title={L('Argo Coach', 'Argo Coach', 'Argo Coach')} desc={L('Un consultor con IA para tus dudas sobre cada jugador.', 'An AI consultant for your questions about each player.', 'Um consultor com IA para suas dúvidas sobre cada jogador.')} />
+                        <ReportItem title={L('Planteles y grupos', 'Teams and groups', 'Plantéis e grupos')} desc={L('Organiza tu institución por equipos y categorías, sin límite.', 'Organize your institution by teams and categories, no limit.', 'Organize sua instituição por equipes e categorias, sem limite.')} />
+                        <ReportItem title={L('Palabras puente y checklist', 'Bridge words & checklist', 'Palavras-ponte e checklist')} desc={L('Cómo conectar con cada jugador y una guía para acompañarlo.', 'How to connect with each player and a ready-to-use guide.', 'Como conectar com cada jogador e um guia para acompanhá-lo.')} />
                     </ul>
                     <a
                         href="mailto:hola@argomethod.com"
