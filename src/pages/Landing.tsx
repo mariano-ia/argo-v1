@@ -1404,7 +1404,7 @@ export const Landing: React.FC = () => {
                     </p>
                 </motion.div>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-px"
+                <div className="grid grid-rows-3 grid-flow-col auto-cols-fr gap-px"
                      style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}>
                     {ARCHETYPES.map((arch, i) => {
                         const isSelected = selectedIdx === i;
@@ -1420,7 +1420,7 @@ export const Landing: React.FC = () => {
                                     backgroundColor: isSelected ? AXIS_COLORS[arch.eje] : '#ffffff',
                                     transition: 'background-color 0.2s ease',
                                 }}
-                                className="p-4 md:p-6"
+                                className="p-3 md:p-6"
                             >
                                 <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : AXIS_COLORS[arch.eje], marginBottom: '10px' }} />
                                 <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
