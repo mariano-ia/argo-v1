@@ -41,6 +41,8 @@ export const Demo: React.FC = () => {
     const [nombre, setNombre] = useState('');
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+    const [checking, setChecking] = useState(false);
+    const [blocked, setBlocked] = useState(false);
 
     // ── Preview mode: render the end screen directly without playing.
     // Use /demo?preview=loading or /demo?preview=ready to inspect the layout.
@@ -74,7 +76,7 @@ export const Demo: React.FC = () => {
 
     const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
-    const handleStart = (ev: React.FormEvent) => {
+    const handleStart = async (ev: React.FormEvent) => {
         ev.preventDefault();
         const cleanName = nombre.trim();
         const cleanEmail = email.trim();
@@ -87,6 +89,20 @@ export const Demo: React.FC = () => {
             return;
         }
         setError('');
+        setChecking(true);
+        // One demo per email. Fail-open: never block the funnel on an API error.
+        try {
+            const res = await fetch('/api/check-demo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: cleanEmail }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data?.already_played) { setBlocked(true); setChecking(false); return; }
+            }
+        } catch { /* fail open */ }
+        setChecking(false);
         // The demo plays as the prospect themselves: use their name as both
         // nombreAdulto and nombreNino. deporte/edad are dummies the report
         // template tolerates (the email header will say "· Argo Demo · 12 años").
@@ -107,6 +123,34 @@ export const Demo: React.FC = () => {
                 demoMode
                 initialConsent={{ token: 'demo', adultData }}
             />
+        );
+    }
+
+    // ── Already played with this email — one demo per email ─────────────────
+    if (blocked) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center px-6 py-12 bg-argo-neutral">
+                <div className="w-full max-w-sm bg-white border border-argo-border rounded-2xl p-8 shadow-argo text-center">
+                    <div className="flex items-center justify-center gap-1.5 mb-5">
+                        <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                        </span>
+                    </div>
+                    <h1 style={{ fontWeight: 300, fontSize: '1.5rem', letterSpacing: '-0.02em', color: '#1D1D1F', marginBottom: '10px' }}>
+                        {L('Ya jugaste con este email.', 'You already played with this email.', 'Você já jogou com este email.')}
+                    </h1>
+                    <p style={{ fontSize: '14px', color: '#424245', lineHeight: 1.5, marginBottom: '20px' }}>
+                        {L(
+                            'Cada email puede probar la demo una vez. Si quieres el informe completo, escríbenos a hola@argomethod.com.',
+                            'Each email can try the demo once. If you want the full report, write to us at hola@argomethod.com.',
+                            'Cada email pode testar a demo uma vez. Se quiser o relatório completo, escreva para hola@argomethod.com.',
+                        )}
+                    </p>
+                    <a href="/" className="inline-block px-6 py-3 rounded-xl text-sm font-semibold border border-argo-border text-argo-navy hover:border-argo-violet-300 transition-colors">
+                        {L('Volver al inicio', 'Back to home', 'Voltar ao início')}
+                    </a>
+                </div>
+            </div>
         );
     }
 
@@ -208,9 +252,12 @@ export const Demo: React.FC = () => {
 
                     <button
                         type="submit"
-                        className="w-full bg-argo-navy text-white font-medium py-3 rounded-lg text-sm hover:bg-argo-secondary transition-colors mt-2"
+                        disabled={checking}
+                        className="w-full bg-argo-navy text-white font-medium py-3 rounded-lg text-sm hover:bg-argo-secondary transition-colors mt-2 disabled:opacity-60"
                     >
-                        {L('Empezar la odisea', 'Start the odyssey', 'Começar a odisseia')}
+                        {checking
+                            ? L('Verificando...', 'Checking...', 'Verificando...')
+                            : L('Empezar la odisea', 'Start the odyssey', 'Começar a odisseia')}
                     </button>
                 </form>
 

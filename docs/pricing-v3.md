@@ -3,7 +3,7 @@
 > Status: Design locked (logic), implementation pending
 > Date: 2026-06-30
 > Supersedes: `docs/pricing-v2.md` (roster/subscription self-serve model)
-> Related: `docs/superpowers/plans/2026-05-13-argo-puentes.md` (original Puentes build), `docs/PAYMENTS-READINESS.md`
+> Related: `docs/DEMO-FUNNEL.md` (free "Jugar gratis" entry + demo report), `docs/superpowers/plans/2026-05-13-argo-puentes.md` (original Puentes build), `docs/PAYMENTS-READINESS.md`
 
 This document is the single source of truth for the consumer (B2C) product line: **Argo One**, **Argo Puente**, and the consultive **Argo Coach**. It replaces the self-serve subscription ladder of v2 with a transactional model built around three entities and a reusable adult profile.
 

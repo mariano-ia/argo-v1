@@ -28,6 +28,7 @@ export interface SessionData {
     ai_sections: AISections | null;
     tenant_plan?: string | null;
     full_access?: boolean;
+    is_demo?: boolean;
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -66,8 +67,9 @@ const T = {
         notFoundSub: 'El link puede haber expirado o ser inválido.',
         loading: 'Cargando informe...',
         lockedTitle: 'El informe completo incluye mucho más',
-        lockedBody: 'Motor de rendimiento · Palabras clave · Patrón de decisión · Guía de la actividad · Checklist · Ecos fuera de la cancha',
+        lockedBody: 'Palabras clave · Patrón de decisión · Guía de la actividad · Checklist · Ecos fuera de la cancha',
         lockedCta: 'Contacta con quien te compartió este link para acceder al informe completo.',
+        getFullReport: 'Obtener informe completo',
     },
     en: {
         reportTitle: 'Profile report',
@@ -102,8 +104,9 @@ const T = {
         notFoundSub: 'The link may have expired or be invalid.',
         loading: 'Loading report...',
         lockedTitle: 'The full report includes much more',
-        lockedBody: 'Performance engine · Key words · Decision pattern · Activity guide · Checklist · Echoes outside the field',
+        lockedBody: 'Key words · Decision pattern · Activity guide · Checklist · Echoes outside the field',
         lockedCta: 'Contact whoever shared this link to access the full report.',
+        getFullReport: 'Get the full report',
     },
     pt: {
         reportTitle: 'Relatório de perfil',
@@ -138,8 +141,9 @@ const T = {
         notFoundSub: 'O link pode ter expirado ou ser inválido.',
         loading: 'Carregando relatório...',
         lockedTitle: 'O relatório completo inclui muito mais',
-        lockedBody: 'Motor de desempenho · Palavras-chave · Padrão de decisão · Guia da atividade · Checklist · Ecos fora do campo',
+        lockedBody: 'Palavras-chave · Padrão de decisão · Guia da atividade · Checklist · Ecos fora do campo',
         lockedCta: 'Entre em contato com quem compartilhou este link para acessar o relatório completo.',
+        getFullReport: 'Obter o relatório completo',
     },
 };
 
@@ -310,8 +314,12 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
 
         // DEV mock — API not available locally
         if (import.meta.env.DEV) {
+            // /report/demo previews the locked demo; any other id is a full report.
+            const isDemo = sessionId === 'demo';
             setSession({
                 id: sessionId,
+                is_demo: isDemo,
+                full_access: false,
                 child_name: 'Lucas',
                 child_age: 13,
                 sport: 'Fútbol',
@@ -531,8 +539,14 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                     )}
                 </Card>
 
-                {/* ── TRIAL LOCK: show upsell after first card ── */}
-                {session.tenant_plan === 'trial' && !session.full_access ? (
+                {/* 2. Motor — shown in the demo too, before the lock */}
+                <Card>
+                    <SectionLabel>{t.motorSection}</SectionLabel>
+                    <BodyText leadBold>{report.motorDesc}</BodyText>
+                </Card>
+
+                {/* ── TRIAL LOCK: show upsell after motor ── */}
+                {(session.tenant_plan === 'trial' || session.is_demo) && !session.full_access ? (
                     <div className="bg-white rounded-[14px] shadow-argo p-8 text-center space-y-4 mb-4">
                         <div className="w-10 h-10 rounded-xl bg-argo-violet-50 border border-argo-violet-100 flex items-center justify-center mx-auto">
                             <Lock size={18} className="text-argo-violet-500" />
@@ -542,17 +556,30 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                             <p className="text-xs text-argo-grey leading-relaxed max-w-xs mx-auto">{t.lockedBody}</p>
                         </div>
                         <div className="pt-2 border-t border-argo-border">
-                            <p className="text-xs text-argo-light leading-relaxed max-w-xs mx-auto">{t.lockedCta}</p>
+                            {session.is_demo ? (
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const r = await fetch('/api/unlock-checkout', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ session_id: session.id, lang }),
+                                            });
+                                            const d = await r.json();
+                                            if (d.checkout_url) window.location.href = d.checkout_url;
+                                        } catch { /* no-op */ }
+                                    }}
+                                    className="inline-block px-6 py-3 rounded-xl text-sm font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                                >
+                                    {t.getFullReport}
+                                </button>
+                            ) : (
+                                <p className="text-xs text-argo-light leading-relaxed max-w-xs mx-auto">{t.lockedCta}</p>
+                            )}
                         </div>
                     </div>
                 ) : (
                     <>
-                        {/* 2. Motor */}
-                        <Card>
-                            <SectionLabel>{t.motorSection}</SectionLabel>
-                            <BodyText leadBold>{report.motorDesc}</BodyText>
-                        </Card>
-
                         {/* 3. Combustible */}
                         {report.combustible && (
                             <Card>

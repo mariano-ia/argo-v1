@@ -484,6 +484,38 @@ async function handlePuentesPaid(args: {
     console.info(`[one-webhook] puentes purchase paid: ${purchaseId}`);
 }
 
+/* ── Demo report unlock (paid from the demo report "Obtener informe completo" CTA) ── */
+
+async function handleUnlockPaid(args: {
+    sb: ReturnType<typeof createClient<any, any>>;
+    sessionId: string;
+    providerPaymentId: string;
+}) {
+    const { sb, sessionId, providerPaymentId } = args;
+    const { data: session } = await sb
+        .from('perfilamientos')
+        .select('id, full_access')
+        .eq('id', sessionId)
+        .maybeSingle();
+    if (!session) {
+        console.warn(`[one-webhook] unlock: session ${sessionId} not found`);
+        return;
+    }
+    if (session.full_access) {
+        console.info(`[one-webhook] unlock: session ${sessionId} already unlocked`);
+        return;
+    }
+    const { error } = await sb
+        .from('perfilamientos')
+        .update({ full_access: true })
+        .eq('id', sessionId);
+    if (error) {
+        console.error(`[one-webhook] unlock update failed for ${sessionId}:`, error.message);
+        return;
+    }
+    console.info(`[one-webhook] report unlocked: ${sessionId} (payment ${providerPaymentId})`);
+}
+
 /* ── Main handler ────────────────────────────────────────────────────────── */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -629,6 +661,14 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase_id' });
         await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: session.id });
         return res.status(200).json({ received: true, kind: 'puentes', purchase_id: puentesPurchaseId });
+    }
+
+    // Demo report unlock payment
+    if (source === 'unlock') {
+        const unlockSessionId = session.metadata?.session_id;
+        if (!unlockSessionId) return res.status(200).json({ received: true, ignored: true, reason: 'missing unlock session_id' });
+        await handleUnlockPaid({ sb, sessionId: unlockSessionId, providerPaymentId: session.id });
+        return res.status(200).json({ received: true, kind: 'unlock', session_id: unlockSessionId });
     }
 
     // Argo One payment
@@ -812,6 +852,13 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase id' });
         await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: String(resourceId) });
         return res.status(200).json({ received: true, kind: 'puentes', purchase_id: puentesPurchaseId });
+    }
+
+    // Demo report unlock: external_reference prefixed with "unlock_"
+    if (externalRef?.startsWith('unlock_')) {
+        const unlockSessionId = externalRef.slice('unlock_'.length);
+        await handleUnlockPaid({ sb, sessionId: unlockSessionId, providerPaymentId: String(resourceId) });
+        return res.status(200).json({ received: true, kind: 'unlock', session_id: unlockSessionId });
     }
 
     const purchaseId = externalRef || payment.metadata?.purchase_id;

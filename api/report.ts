@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await sb
         .from('perfilamientos')
-        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token')
+        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token, is_demo')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
         .single();

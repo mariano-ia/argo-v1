@@ -772,7 +772,7 @@ const PricingSection: React.FC<{
                         href="mailto:hola@argomethod.com"
                         style={{ display: 'block', width: '100%', padding: '13px', borderRadius: '12px', fontSize: '14px', fontWeight: 600, border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', cursor: 'pointer', textAlign: 'center', textDecoration: 'none', boxSizing: 'border-box' }}
                     >
-                        {L('Pedir más información', 'Request information', 'Pedir mais informação')}
+                        {L('Solicitar demo', 'Request a demo', 'Solicitar demo')}
                     </a>
                 </div>
             </div>
@@ -857,7 +857,7 @@ export const Landing: React.FC = () => {
                             {L('Iniciar sesión', 'Log in', 'Entrar')}
                         </button>
                         <button
-                            onClick={() => navigate('/signup')}
+                            onClick={() => navigate('/demo')}
                             style={{
                                 fontWeight: 500, fontSize: '12px', letterSpacing: '-0.01em',
                                 backgroundColor: '#955FB5', color: '#fff',
@@ -865,7 +865,7 @@ export const Landing: React.FC = () => {
                             }}
                             className="hover:opacity-90 transition-opacity"
                         >
-                            {L('14 días gratis', '14 days free', '14 dias grátis')}
+                            {L('Jugar gratis', 'Play free', 'Jogar grátis')}
                         </button>
                     </div>
                 </div>
