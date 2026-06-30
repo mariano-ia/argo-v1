@@ -20,6 +20,9 @@ Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (Postg
   - Wrong: "Compártelo con el adulto — padre, madre o tutor."
   - Correct: "Compártelo con el adulto (padre, madre o tutor)."
 
+### Framing rule (STRICT): activity, not only "training"
+Never frame copy as if Argo were only about training. The profile applies equally to matches, competitions, free play and the day-to-day of the sport, and to parents who never attend a practice. Use the umbrella **"la actividad"** (en "the activity" / pt "a atividade"), **"el deporte"**, or **"en la cancha"** instead of "el entrenamiento / training / treino". Exceptions to keep: the **coach role** ("entrenador/coach"), code identifiers / i18n keys, and the deliberate training-vs-match contrast that calms the Sostén who freezes in a match. Full vocabulary + as-built: `docs/COPY-MARCO-ACTIVIDAD.md`.
+
 ### Voseo rules (STRICT — enforced by post-edit hook)
 Never use Argentine voseo forms. Always use standard tuteo. Reference:
 
