@@ -63,6 +63,7 @@ const ReportPage        = lazy(() => import('./pages/ReportPage').then(m => ({ d
 const TermsPage         = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const PrivacyPage       = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const PricingPage       = lazy(() => import('./pages/PricingPage').then(m => ({ default: m.PricingPage })));
+const Familias          = lazy(() => import('./pages/Familias').then(m => ({ default: m.Familias })));
 const ArgoOneLanding    = lazy(() => import('./pages/ArgoOneLanding'));
 const OnePlay           = lazy(() => import('./pages/OnePlay').then(m => ({ default: m.OnePlay })));
 const OnePanel          = lazy(() => import('./pages/OnePanel').then(m => ({ default: m.OnePanel })));
@@ -250,6 +251,7 @@ function App() {
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/report/:sessionId" element={<ReportPage />} />
             <Route path="/pricing"    element={<PricingPage />} />
+            <Route path="/familias"   element={<Familias />} />
             <Route path="/one"        element={<ArgoOneLanding />} />
             <Route path="/one/:slug"  element={<OnePlay />} />
             <Route path="/one/panel"  element={<OnePanel />} />
