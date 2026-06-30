@@ -1,7 +1,23 @@
-# Descripción del cambio de perfil entre re-perfilados (spec, para decidir)
+# Descripción del cambio de perfil entre re-perfilados
 
-> Estado: **propuesta lista para decidir. NADA implementado.** Surgió ideando sobre el timeline de historial
+> Estado: **IMPLEMENTADO en develop (2026-06-30).** Surgió ideando sobre el timeline de historial
 > de perfiles (ya en producción, ver `IDENTIDAD-NINO-Y-PERFILAMIENTOS.md`). Documento autocontenido.
+
+## 0. As-built (lo que quedó construido)
+- **Función pura:** `src/lib/profileChange.ts` → `describeProfileChange(curr, prev, lang, childId, childName)`.
+  Sin IA. Implementa la matriz de §4 (vector DISC desde `answers`, `S` = intersección de histogramas,
+  `argmax Δ` = eje que asoma, motor) y el banco de §5 en es/en/pt, todo probabilístico.
+- **Datos:** `api/tenant-sessions.ts` ahora expone `answers` por item del `history` (antes no lo hacía),
+  para calcular el vector en el cliente. Se compara `history[0]` (actual) vs `history[1]` (anterior).
+- **Render:** `src/pages/tenant/TenantPlayers.tsx`. El bloque del timeline pasó a 2 columnas: historial a la
+  izquierda y, a la derecha, una tarjeta compacta destacada (ícono `Sprout`, acento violeta, `text-xs`,
+  un par de líneas) con la frase. Solo aparece cuando hay ≥2 perfilamientos resueltos.
+- **Variedad:** 3 aperturas × 2 acciones = 6 variantes por situación; se elige por `hash(child_id) mod 6`
+  (consistente por niño, variado entre niños). El idioma usado es el del dashboard del tenant (`lang`).
+- **Desvíos vs spec:** (1) la garantía anti-adyacente (§5.6) NO se implementó: la frase vive en el detalle
+  expandido (un niño a la vez), así que dos frases idénticas pegadas no son visibles; el hash ya da variedad
+  entre niños. Si en el futuro se listan varias frases juntas, agregar el dedup adyacente. (2) Umbrales de S
+  por defecto del spec (0.85 / 0.6). (3) Cláusula de motor: se muestra siempre que el motor cambie.
 
 ## 1. Para qué (contexto)
 El timeline ya muestra el cambio entre re-perfilados (ej. Olivia: Conector Rítmico → Impulsor Rítmico, con fechas).
