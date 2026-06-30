@@ -1088,20 +1088,8 @@ export const Landing: React.FC = () => {
                         ? <>Every child is unique.<br />Argo identifies tendencies in how they experience sport.</>
                         : lang === 'pt'
                         ? <>Cada criança é única.<br />O Argo identifica tendências em como vive o esporte.</>
-                        : <>Cada niño es único.<br />Argo identifica tendencias en cómo vive el deporte.</>}
+                        : <>Cada niño es único.<br />Argo identifica tendencias sobre cómo vive el deporte.</>}
                 </motion.h1>
-
-                <motion.p
-                    {...fadeUp(0.12)}
-                    style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '0.02em', color: 'rgba(255,255,255,0.82)', maxWidth: '560px' }}
-                    className="mb-6"
-                >
-                    {L(
-                        'Perfilamiento conductual DISC para deportistas juveniles de 8 a 16 años',
-                        'DISC behavioral profiling for youth athletes aged 8 to 16',
-                        'Perfil comportamental DISC para atletas juvenis de 8 a 16 anos',
-                    )}
-                </motion.p>
 
                 <motion.p
                     {...fadeUp(0.16)}
@@ -1192,7 +1180,7 @@ export const Landing: React.FC = () => {
                             <div>
                                 <SectionLabel>La herramienta · Dos experiencias</SectionLabel>
                                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
-                                    {L('Como funciona el perfilamiento Argo.', 'How Argo profiling works.', 'Como funciona o perfil Argo.')}
+                                    {L('Como funciona el Método Argo.', 'How the Argo Method works.', 'Como funciona o Método Argo.')}
                                 </h2>
                                 <div className="mt-10 space-y-7">
                                     <div>
