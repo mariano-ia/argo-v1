@@ -62,7 +62,7 @@ const PRESSURE_LABEL: Record<string, Record<string, string>> = {
 
 function getCopy(lang: string) {
     if (lang === 'en') return {
-        eyebrow: 'Argo Puentes · Navigation Chart',
+        eyebrow: 'Argo Puentes · Your bond',
         subjectPrefix: 'Your Argo Puentes — bond with',
         bondTitle: 'Your bond',
         welcome: 'Welcome',
@@ -78,11 +78,11 @@ function getCopy(lang: string) {
         emailNote: (email: string) => `This report has also been sent to ${email}. You can revisit it at the link above whenever you want.`,
         siblingsLabel: 'This Argo Puentes also includes',
         foreverNote: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
-        footer: 'Argo Method · Navigation Chart',
+        footer: 'Argo Method · Argo Puentes',
         disclaimer: 'This report is not a clinical or therapeutic service. It is an invitation to reflect.',
     };
     if (lang === 'pt') return {
-        eyebrow: 'Argo Puentes · Carta de Navegação',
+        eyebrow: 'Argo Puentes · Seu vínculo',
         subjectPrefix: 'Seu Argo Puentes — vínculo com',
         bondTitle: 'Seu vínculo',
         welcome: 'Bem-vindo',
@@ -98,11 +98,11 @@ function getCopy(lang: string) {
         emailNote: (email: string) => `Este relatório também foi enviado para ${email}. Você pode revisitá-lo no link acima quando quiser.`,
         siblingsLabel: 'Este Argo Puentes também inclui',
         foreverNote: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
-        footer: 'Argo Method · Carta de Navegação',
+        footer: 'Argo Method · Argo Puentes',
         disclaimer: 'Este relatório não é um serviço clínico nem terapêutico. É um convite à reflexão.',
     };
     return {
-        eyebrow: 'Argo Puentes · Carta de Navegación',
+        eyebrow: 'Argo Puentes · Tu vínculo',
         subjectPrefix: 'Tu Argo Puentes: vínculo con',
         bondTitle: 'Tu vínculo',
         welcome: 'Bienvenida',
@@ -118,7 +118,7 @@ function getCopy(lang: string) {
         emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Puedes volver al enlace de arriba cuando quieras.`,
         siblingsLabel: 'Este Argo Puentes también incluye a',
         foreverNote: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
-        footer: 'Argo Method · Carta de Navegación',
+        footer: 'Argo Method · Argo Puentes',
         disclaimer: 'Este informe no es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
     };
 }

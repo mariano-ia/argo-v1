@@ -104,7 +104,7 @@ function buildReminderHtml(args: {
 <p style="margin:24px 0 0;font-size:11px;color:#AEAEB2;line-height:1.6;">${t.footer}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Carta de Navegación</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puentes</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 

@@ -9,7 +9,7 @@
 **Tech Stack:** React + TypeScript + Vite + TailwindCSS + Framer Motion (UI), Supabase Postgres (DB), Vercel serverless TS (`/api/*`), Gemini 2.5 Flash (AI), Stripe + MercadoPago (payments), Resend (email).
 
 **Spec recap (validated with user):**
-- Name: **Argo Puentes** / bajada: "Carta de Navegación"
+- Name: **Argo Puentes** (sin framing de navegación: el barco es solo la metáfora de la odisea del niño)
 - Price: **$9.99 USD** / **$6.999 ARS**
 - 15 preguntas adulto: 8 DISC + 2 motor + 3 estilo bajo presión + 2 contexto
 - 4 puentes (preparación, frustración, conversación, largo plazo)
@@ -1598,7 +1598,7 @@ export function PuentesIntro({ childName, lang, onStart }: Props) {
         >
             <Card padding="lg" className="text-center">
                 <p className="text-xs uppercase tracking-widest text-argo-grey mb-4">
-                    Argo Puentes · Carta de Navegación
+                    Argo Puentes · Tu vínculo
                 </p>
                 <h1 className="text-3xl font-bold tracking-tight text-argo-navy">
                     {c.intro.title}
@@ -2368,7 +2368,7 @@ export default function PuentesCheckout() {
             <div className="max-w-md mx-auto">
                 <Card padding="lg">
                     <p className="text-xs uppercase tracking-widest text-argo-violet-500 mb-2">Argo Puentes</p>
-                    <h1 className="text-2xl font-bold text-argo-navy">Carta de Navegación</h1>
+                    <h1 className="text-2xl font-bold text-argo-navy">Tu Puente</h1>
                     <p className="mt-4 text-argo-secondary">Recibirás un enlace por email para responder el cuestionario (5-7 min).</p>
                     <div className="mt-6 space-y-4">
                         <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />

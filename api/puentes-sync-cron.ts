@@ -155,7 +155,7 @@ function buildCombinedEmail(args: {
 <a href="${args.magicLink}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:11px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.cta}</a>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;letter-spacing:0.07em;text-transform:uppercase;">Argo Method · Carta de Navegación</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;letter-spacing:0.07em;text-transform:uppercase;">Argo Method · Argo Puentes</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 

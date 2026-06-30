@@ -50,7 +50,7 @@ export interface PuentesCopy {
 export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
     es: {
         intro: {
-            eyebrow: 'Argo Puentes · Carta de Navegación',
+            eyebrow: 'Argo Puentes · Tu vínculo',
             title: 'Argo Puentes',
             subtitle: (n) => `Conoce tu propio estilo y descubre cómo se complementa con el de ${n}.`,
             startCta: 'Empezar el cuestionario',
@@ -64,7 +64,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             viewReport: 'Ver mi informe',
         },
         report: {
-            eyebrow: 'Argo Puentes · Carta de Navegación',
+            eyebrow: 'Argo Puentes · Tu vínculo',
             greetingLabel: 'Bienvenida',
             adultProfileLabel: 'Tu estilo natural',
             puenteLabel: (n) => `Puente ${n}`,
@@ -77,7 +77,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         },
         checkout: {
             eyebrow: 'Argo Puentes',
-            title: 'Carta de Navegación',
+            title: 'Tu Puente',
             description: 'Recibirás un enlace por email para responder el cuestionario (5 a 7 minutos) y descubrir 4 puentes para acompañar a tu hijo en el deporte.',
             emailLabel: 'Tu email',
             nameLabel: 'Tu nombre',
@@ -94,7 +94,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
     },
     en: {
         intro: {
-            eyebrow: 'Argo Puentes · Navigation Chart',
+            eyebrow: 'Argo Puentes · Your bond',
             title: 'Argo Puentes',
             subtitle: (n) => `Discover your own style and how it complements ${n}'s.`,
             startCta: 'Start the questionnaire',
@@ -108,7 +108,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             viewReport: 'View my report',
         },
         report: {
-            eyebrow: 'Argo Puentes · Navigation Chart',
+            eyebrow: 'Argo Puentes · Your bond',
             greetingLabel: 'Welcome',
             adultProfileLabel: 'Your natural style',
             puenteLabel: (n) => `Bridge ${n}`,
@@ -121,7 +121,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         },
         checkout: {
             eyebrow: 'Argo Puentes',
-            title: 'Navigation Chart',
+            title: 'Your Bridge',
             description: 'You will receive an email link to take the short questionnaire (5 to 7 minutes) and discover 4 bridges to accompany your child in their sport.',
             emailLabel: 'Your email',
             nameLabel: 'Your name',
@@ -138,7 +138,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
     },
     pt: {
         intro: {
-            eyebrow: 'Argo Puentes · Carta de Navegação',
+            eyebrow: 'Argo Puentes · Seu vínculo',
             title: 'Argo Puentes',
             subtitle: (n) => `Conheça seu próprio estilo e descubra como se complementa com o de ${n}.`,
             startCta: 'Começar o questionário',
@@ -152,7 +152,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             viewReport: 'Ver meu relatório',
         },
         report: {
-            eyebrow: 'Argo Puentes · Carta de Navegação',
+            eyebrow: 'Argo Puentes · Seu vínculo',
             greetingLabel: 'Bem-vindo',
             adultProfileLabel: 'Seu estilo natural',
             puenteLabel: (n) => `Ponte ${n}`,
@@ -165,7 +165,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         },
         checkout: {
             eyebrow: 'Argo Puentes',
-            title: 'Carta de Navegação',
+            title: 'Sua Ponte',
             description: 'Você receberá um link por email para responder o questionário curto (5 a 7 minutos) e descobrir 4 pontes para acompanhar seu filho no esporte.',
             emailLabel: 'Seu email',
             nameLabel: 'Seu nome',

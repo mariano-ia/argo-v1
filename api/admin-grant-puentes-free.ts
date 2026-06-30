@@ -47,7 +47,7 @@ function buildFreeInviteEmail(args: {
             : 'Includes all your children profiled with this email, at no cost.',
         cta: 'Start Argo Puentes',
         note: 'This invitation is personal. No payment is required at any step.',
-        footer: 'Argo Method · Navigation Chart',
+        footer: 'Argo Method · Argo Puentes',
     } : args.lang === 'pt' ? {
         subject: `Um convite Argo Puentes para você, sem custo`,
         eyebrow: 'Um convite · Argo Puentes',
@@ -59,7 +59,7 @@ function buildFreeInviteEmail(args: {
             : 'Inclui todos os seus filhos perfilados com este email, sem custo.',
         cta: 'Começar Argo Puentes',
         note: 'Este convite é pessoal. Não é necessário nenhum pagamento em nenhum momento.',
-        footer: 'Argo Method · Carta de Navegação',
+        footer: 'Argo Method · Argo Puentes',
     } : {
         subject: `Una invitación a Argo Puentes para ti, sin costo`,
         eyebrow: 'Una invitación · Argo Puentes',
@@ -71,7 +71,7 @@ function buildFreeInviteEmail(args: {
             : 'Incluye a todos tus hijos perfilados con este email, sin costo.',
         cta: 'Empezar Argo Puentes',
         note: 'Esta invitación es personal. No es necesario ningún pago en ningún paso.',
-        footer: 'Argo Method · Carta de Navegación',
+        footer: 'Argo Method · Argo Puentes',
     };
 
     const html = `<!DOCTYPE html><html lang="${args.lang}"><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
