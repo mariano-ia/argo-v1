@@ -183,7 +183,7 @@ CONTENIDO BASE (usa esto como esqueleto de referencia conceptual, NO lo copies t
 - Checklist Durante: ${base.checklist.durante}
 - Checklist Después: ${base.checklist.despues}
 
-TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones de entrenamiento propias de ${ctx.deporte}). Mantén la esencia del arquetipo pero haz el texto único para este perfil. Si el contenido base contiene afirmaciones categóricas sobre el niño, conviértelas a lenguaje probabilístico ("tiende a", "suele", "es probable que"); nunca afirmes una identidad fija ("es un...", "siempre", "será", "destinado a").
+TAREA: Reescribe las siguientes secciones personalizando con el deporte "${ctx.deporte}" y la edad de ${ctx.edad} años. Incluye ejemplos específicos del deporte (jugadas, momentos del partido, situaciones propias de ${ctx.deporte} en entrenamiento, partido y competencia). Mantén la esencia del arquetipo pero haz el texto único para este perfil. Si el contenido base contiene afirmaciones categóricas sobre el niño, conviértelas a lenguaje probabilístico ("tiende a", "suele", "es probable que"); nunca afirmes una identidad fija ("es un...", "siempre", "será", "destinado a").
 
 SECCIÓN ESPECIAL — "resumenPerfil" (Retrato de Sintonía):
 Este es EL momento central del informe. Un párrafo de 3-4 oraciones que capture la esencia de ${NAME_PLACEHOLDER} en el deporte. Debe ser:

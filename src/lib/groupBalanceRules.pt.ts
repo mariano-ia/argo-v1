@@ -26,7 +26,7 @@ export const GROUP_PROFILE_TEXTS_PT: Record<GroupType, GroupProfileText> = {
         ],
     },
     Social: {
-        identity: 'Um grupo onde a conexão humana é protagonista. A energia vem do vínculo entre os jogadores e o clima emocional dita o ritmo do treino.',
+        identity: 'Um grupo onde a conexão humana é protagonista. A energia vem do vínculo entre os jogadores e o clima emocional dita o ritmo da atividade.',
         strengths: [
             'Clima positivo que facilita a integração de novos jogadores',
             'Alta capacidade de motivação coletiva em momentos-chave',

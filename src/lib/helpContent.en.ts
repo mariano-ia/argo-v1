@@ -220,7 +220,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
     {
         id: 'perfil-no-coincide',
         category: 'players',
-        title: 'The profile does not match what I see in training.',
+        title: 'The profile does not match what I see in the activity.',
         body: 'The profile is a snapshot of how the child showed up during the adventure, at one specific moment. It is a reading tool, not an absolute truth.\n\nThe most valuable thing is to combine that data with your day-to-day observation. If several months have passed, it is worth re-profiling them: children change.',
     },
 
@@ -271,8 +271,8 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
     {
         id: 'usar-predictor',
         category: 'guide',
-        title: 'How do I use the Behavioral Predictor before a training session?',
-        body: 'The Predictor gathers common training situations (a child who won\'t get started, one who gets frustrated, etc.). You choose the one that interests you and it shows you what may be happening and how to support them based on the profile.',
+        title: 'How do I use the Behavioral Predictor before an activity?',
+        body: 'The Predictor gathers common situations in the sport, across training, matches and competitions (a child who won\'t get started, one who gets frustrated, etc.). You choose the one that interests you and it shows you what may be happening and how to support them based on the profile.',
         steps: [
             'Open Behavioral Predictor.',
             'Search or filter by category for the situation you care about.',

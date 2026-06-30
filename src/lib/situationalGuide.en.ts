@@ -1012,7 +1012,7 @@ export const SITUATION_CARDS_EN: SituationCard[] = [
         eje: "D",
         whatsHappeningForProfile: "The Driver used to be a reference point and now they are the newcomer among the older players. Losing that spotlight usually touches their confidence, and they may cover it up with anger or by competing too hard to win back ground.",
         howToAccompany: ["Give them a concrete goal for their adjustment: over these weeks your challenge is to earn a place in this group, and we will track it game by game.","Acknowledge every step of progress in the new setting: today you kept up with the pace of the older players, and two weeks ago that was not happening."],
-        ifNotResponding: "If they stay tense, ease off the pressure to perform right away and let them focus on one single thing per training session. Regaining control bit by bit gives them back their confidence.",
+        ifNotResponding: "If they stay tense, ease off the pressure to perform right away and let them focus on one single thing per activity. Regaining control bit by bit gives them back their confidence.",
     },
     {
         situationId: "sube-categoria",
@@ -1025,7 +1025,7 @@ export const SITUATION_CARDS_EN: SituationCard[] = [
         situationId: "sube-categoria",
         eje: "S",
         whatsHappeningForProfile: "The Supporter tends to get destabilized by the change of routine, schedule and familiar faces. They usually pull back into the background and carry the discomfort in silence, until one day it all weighs on them at once.",
-        howToAccompany: ["Give them predictability about what is new: explain how the training will go and what is expected of them, step by step.","Offer them a stable point of reference, such as a fixed spot on the field or a teammate they always start with: always start next to them until you feel comfortable."],
+        howToAccompany: ["Give them predictability about what is new: explain how the activity will go and what is expected of them, step by step.","Offer them a stable point of reference, such as a fixed spot on the field or a teammate they always start with: always start next to them until you feel comfortable."],
         ifNotResponding: "If you see them closed off, give them more time without rushing them and ask in private how they are feeling. Change takes them longer, and that is okay.",
     },
     {

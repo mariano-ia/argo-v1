@@ -49,7 +49,7 @@ const T = {
             decisionLabel: 'Patrón de decisión',
             decisionBold: 'Decide por estabilidad antes que por velocidad.',
             decisionRest: ' Antes de elegir, pesa cómo afecta su decisión al grupo.',
-            digestBold: 'Qué significa para el entrenamiento.',
+            digestBold: 'Qué significa para la actividad.',
             digestRest:
                 ' Dale tiempo para responder. Si lo apuras, tiende a pasar la jugada en lugar de asumirla.',
             commLabel: 'Comunicación',
@@ -60,14 +60,14 @@ const T = {
             secLabel: 'Tendencia secundaria · con brújula social',
             secBody:
                 'Lo social no es ruido para Joaquín. Es información. Lee gestos, tonos, cambios de ánimo del grupo. Esa sensibilidad lo convierte en un puente natural entre los que empujan y los que se quedan atrás.',
-            checklistLabel: 'Checklist de entrenamiento',
-            beforeTitle: 'Antes del entrenamiento',
+            checklistLabel: 'Checklist de la actividad',
+            beforeTitle: 'Antes',
             beforeBody:
                 'Recuérdale su rol concreto. Una frase es suficiente: "Hoy te necesito leyendo el medio".',
-            duringTitle: 'Durante la sesión',
+            duringTitle: 'Durante',
             duringBody:
                 'Ubícalo cerca de jugadores que necesiten anclaje, no de los más expansivos. Su ritmo les ordena.',
-            afterTitle: 'Después del partido',
+            afterTitle: 'Después',
             afterBody:
                 'Pregúntale qué sintió del grupo, no solo qué hizo él. Es la pregunta que más le importa.',
             echoesLabel: 'Ecos fuera de la cancha',
@@ -106,7 +106,7 @@ const T = {
                 'Cada decisión y cada reacción se traducen en dos dimensiones: cómo se comporta en grupo (conducta) y a qué tempo decide y procesa (motor). Doce arquetipos y doce tendencias secundarias resuelven la combinación.',
             step3Title: 'El adulto recibe',
             step3Body:
-                'Un informe completo con arquetipo, tendencia secundaria, combustible interno, palabras puente, checklist de entrenamiento y consejos de acompañamiento. Llega al coach y a la familia por correo.',
+                'Un informe completo con arquetipo, tendencia secundaria, combustible interno, palabras puente, checklist de la actividad y consejos de acompañamiento. Llega al coach y a la familia por correo.',
             mapLabel: 'El mapa primario',
             matrixHeaders: ['Dinámico', 'Rítmico', 'Sereno'],
             matrixAxes: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' } as Record<'D' | 'I' | 'S' | 'C', string>,
@@ -126,7 +126,7 @@ const T = {
             layer1Title: 'Argo Coach',
             layer1Body:
                 'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA trabaja con el perfil de tendencias que mostró cada niño y responde con lenguaje cercano, concreto, probabilístico, libre de jerga clínica.',
-            layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere arrancar el entrenamiento?"',
+            layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere empezar a jugar?"',
             layer2: 'Capa 2',
             layer2Title: 'Equipos Equilibrados',
             layer2Body:
@@ -219,7 +219,7 @@ const T = {
             decisionLabel: 'Decision pattern',
             decisionBold: 'He decides for stability before speed.',
             decisionRest: ' Before choosing, he weighs how the decision will affect the group.',
-            digestBold: 'What this means for training.',
+            digestBold: 'What this means for the activity.',
             digestRest:
                 ' Give him time to respond. If you rush him, he tends to pass the play instead of taking it on.',
             commLabel: 'Communication',
@@ -230,14 +230,14 @@ const T = {
             secLabel: 'Secondary tendency · with a social compass',
             secBody:
                 'The social layer isn\'t noise for Joaquín. It\'s information. He reads gestures, tones, shifts in the group\'s mood. That sensitivity makes him a natural bridge between the kids who push and the ones who fall behind.',
-            checklistLabel: 'Training checklist',
-            beforeTitle: 'Before training',
+            checklistLabel: 'Activity checklist',
+            beforeTitle: 'Before',
             beforeBody:
                 'Remind him of his concrete role. One sentence is enough: "Today I need you reading the midfield."',
-            duringTitle: 'During the session',
+            duringTitle: 'During',
             duringBody:
                 'Place him near players who need anchoring, not next to the loudest ones. His rhythm settles them.',
-            afterTitle: 'After the match',
+            afterTitle: 'After',
             afterBody:
                 'Ask him what he felt from the group, not only what he did. That\'s the question he cares about most.',
             echoesLabel: 'Echoes off the field',
@@ -276,7 +276,7 @@ const T = {
                 'Every decision and every reaction translates into two dimensions: how they behave in a group (conduct) and at what tempo they decide and process (motor). Twelve archetypes and twelve secondary tendencies resolve the combination.',
             step3Title: 'The adult receives',
             step3Body:
-                'A complete report with archetype, secondary tendency, internal fuel, bridge words, training checklist, and accompaniment advice. Delivered to the coach and the family by email.',
+                'A complete report with archetype, secondary tendency, internal fuel, bridge words, activity checklist, and accompaniment advice. Delivered to the coach and the family by email.',
             mapLabel: 'The primary map',
             matrixHeaders: ['Dynamic', 'Rhythmic', 'Serene'],
             matrixAxes: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' } as Record<'D' | 'I' | 'S' | 'C', string>,
@@ -296,7 +296,7 @@ const T = {
             layer1Title: 'Argo Coach',
             layer1Body:
                 'A conversational assistant the coach can ask anything about any player. The AI knows the real profile of every child on the team and answers in concrete, probabilistic language, free of clinical jargon.',
-            layer1Quote: '"How do I motivate a Rhythmic Sustainer who doesn\'t want to start training?"',
+            layer1Quote: '"How do I motivate a Rhythmic Sustainer who doesn\'t want to start playing?"',
             layer2: 'Layer 2',
             layer2Title: 'Balanced Teams',
             layer2Body:

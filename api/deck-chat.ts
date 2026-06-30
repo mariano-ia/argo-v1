@@ -65,7 +65,7 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 - Factor Wow (cualidad única)
 - Combustible (qué lo motiva)
 - Reseteo (cómo se recupera del estrés)
-- Predictor Conductual (qué hacer antes/durante/después del entrenamiento)
+- Predictor Conductual (qué hacer antes/durante/después de la actividad)
 - Palabras puente (cómo hablarle) y palabras ruido (qué evitar)
 - Checklist para el entrenador
 

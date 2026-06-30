@@ -139,9 +139,9 @@ export function getPatternSectionLabel(lang: string): string {
 }
 
 export function getImplicationLabel(lang: string): string {
-    if (lang === 'en') return 'What this means for training';
-    if (lang === 'pt') return 'O que isso significa no treino';
-    return 'Qué significa para el entrenamiento';
+    if (lang === 'en') return 'What this means for the activity';
+    if (lang === 'pt') return 'O que isso significa na atividade';
+    return 'Qué significa para la actividad';
 }
 
 /* ── Sparkline SVG ───────────────────────────────────────────────────────── */

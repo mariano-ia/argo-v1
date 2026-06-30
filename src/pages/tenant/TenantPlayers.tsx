@@ -464,7 +464,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 <LockedSection
                                                     label={dt.players.guiaRapida}
                                                     cta={lang === 'en' ? 'Activators and demotivators per situation. Available in paid plans.' : lang === 'pt' ? 'Ativadores e desmotivadores por situação. Disponível nos planos pagos.' : 'Activadores y desmotivadores por situación. Disponible en planes pagos.'}
-                                                    tooltip={lang === 'en' ? 'For each common training situation, see what activates and what demotivates this athlete based on their profile.' : lang === 'pt' ? 'Para cada situação comum de treino, veja o que ativa e o que desmotiva este atleta com base no seu perfil.' : 'Para cada situación habitual de entrenamiento, mira qué activa y qué desmotiva a este deportista según su perfil.'}
+                                                    tooltip={lang === 'en' ? 'For each common activity situation, see what activates and what demotivates this athlete based on their profile.' : lang === 'pt' ? 'Para cada situação comum da atividade, veja o que ativa e o que desmotiva este atleta com base no seu perfil.' : 'Para cada situación habitual de la actividad, mira qué activa y qué desmotiva a este deportista según su perfil.'}
                                                 >
                                                     <div className="space-y-2">
                                                         {reportData.guia.map((g, i) => (
@@ -481,7 +481,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 <LockedSection
                                                     label={dt.players.checklistEntrenamiento}
                                                     cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                                    tooltip={lang === 'en' ? 'A before/during/after training checklist tailored to this athlete\'s profile to optimize each session.' : lang === 'pt' ? 'Um checklist antes/durante/depois do treino adaptado ao perfil deste atleta para otimizar cada sessão.' : 'Un checklist antes, durante y después del entrenamiento adaptado al perfil de este deportista para optimizar cada sesión.'}
+                                                    tooltip={lang === 'en' ? 'A before/during/after activity checklist tailored to this athlete\'s profile to make the most of each moment.' : lang === 'pt' ? 'Um checklist antes/durante/depois da atividade adaptado ao perfil deste atleta para aproveitar cada momento.' : 'Un checklist antes, durante y después de la actividad adaptado al perfil de este deportista para aprovechar cada momento.'}
                                                 >
                                                     <div className="grid grid-cols-3 gap-2">
                                                         {[

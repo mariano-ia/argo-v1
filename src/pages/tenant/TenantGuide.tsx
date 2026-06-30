@@ -160,10 +160,10 @@ export const TenantGuide: React.FC = () => {
     /* ── Render ────────────────────────────────────────────────────────────── */
 
     const guideIntroBody = lang === 'en'
-        ? 'Common training situations, organized by category. For each one, guidance based on the athlete\'s profile.'
+        ? 'Common activity situations, organized by category. For each one, guidance based on the athlete\'s profile.'
         : lang === 'pt'
-            ? 'Situações comuns do treino, organizadas por categoria. Para cada uma, orientações com base no perfil do atleta.'
-            : 'Situaciones habituales del entrenamiento, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.';
+            ? 'Situações comuns da atividade, organizadas por categoria. Para cada uma, orientações com base no perfil do atleta.'
+            : 'Situaciones habituales de la actividad, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.';
 
     return (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>

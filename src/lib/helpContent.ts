@@ -304,7 +304,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
     {
         id: 'perfil-no-coincide',
         category: 'players',
-        title: 'El perfil no coincide con lo que veo en los entrenamientos.',
+        title: 'El perfil no coincide con lo que veo en la actividad.',
         body: 'El perfil es una foto de cómo se mostró el niño durante la aventura, en un momento puntual. Es una herramienta de lectura, no una verdad absoluta.\n\nLo más valioso es cruzar ese dato con tu observación de cada día. Si pasaron varios meses, vale la pena volver a perfilarlo: los niños cambian.',
     },
 
@@ -355,8 +355,8 @@ export const HELP_ARTICLES: HelpArticle[] = [
     {
         id: 'usar-predictor',
         category: 'guide',
-        title: '¿Cómo uso el Predictor Conductual antes de un entrenamiento?',
-        body: 'El Predictor reúne situaciones habituales del entrenamiento (un niño que no quiere arrancar, uno que se frustra, etc.). Eliges la que te interesa y te muestra qué puede estar pasando y cómo acompañar según el perfil.',
+        title: '¿Cómo uso el Predictor Conductual antes de una actividad?',
+        body: 'El Predictor reúne situaciones habituales del deporte, en entrenamientos, partidos o competencias (un niño que no quiere arrancar, uno que se frustra, etc.). Eliges la que te interesa y te muestra qué puede estar pasando y cómo acompañar según el perfil.',
         steps: [
             'Entra a Predictor Conductual.',
             'Busca o filtra por categoría la situación que te interesa.',

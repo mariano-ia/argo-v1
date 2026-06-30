@@ -53,7 +53,7 @@ const FORTALEZA: Record<Lang, Record<Axis, string>> = {
 };
 const ACCION_EMERGENTE: Record<Lang, Record<Axis, string[]>> = {
     es: {
-        D: ['Puedes invitar a {N} a proponer una jugada o a liderar un ejercicio corto.', 'Una idea: darle a {N} la oportunidad de dirigir un momento del entrenamiento.'],
+        D: ['Puedes invitar a {N} a proponer una jugada o a liderar un ejercicio corto.', 'Una idea: darle a {N} la oportunidad de dirigir un momento de la actividad.'],
         I: ['Puedes darle a {N} un rol para animar y unir al grupo.', 'Una idea: invitar a {N} a integrar a quienes están más callados.'],
         S: ['Puedes confiarle a {N} una tarea estable donde su constancia pueda lucirse.', 'Una idea: darle a {N} un rol de referente tranquilo dentro del equipo.'],
         C: ['Puedes explicarle a {N} el porqué de cada jugada o ejercicio.', 'Una idea: invitar a {N} a observar una jugada y compartir lo que nota.'],
@@ -65,7 +65,7 @@ const ACCION_EMERGENTE: Record<Lang, Record<Axis, string[]>> = {
         C: ["You can explain to {N} the why behind each play or drill.", "An idea: invite {N} to watch a play and share what they notice."],
     },
     pt: {
-        D: ['Você pode convidar {N} a propor uma jogada ou liderar um exercício curto.', 'Uma ideia: dar a {N} a chance de conduzir um momento do treino.'],
+        D: ['Você pode convidar {N} a propor uma jogada ou liderar um exercício curto.', 'Uma ideia: dar a {N} a chance de conduzir um momento da atividade.'],
         I: ['Você pode dar a {N} um papel para animar e unir o grupo.', 'Uma ideia: convidar {N} a integrar quem está mais quieto.'],
         S: ['Você pode confiar a {N} uma tarefa estável onde essa constância possa brilhar.', 'Uma ideia: dar a {N} um papel de referência tranquila no time.'],
         C: ['Você pode explicar a {N} o porquê de cada jogada ou exercício.', 'Uma ideia: convidar {N} a observar uma jogada e compartilhar o que percebe.'],
@@ -75,19 +75,19 @@ const ACCION_MANTENER: Record<Lang, Record<Axis, string[]>> = {
     es: {
         D: ['Es un buen momento para seguir dándole a {N} espacios donde liderar.', 'Puedes seguir ofreciéndole a {N} retos donde tomar la iniciativa.'],
         I: ['Es un buen momento para seguir dándole a {N} un lugar para unir al grupo.', 'Puedes seguir apoyándote en {N} para sostener el buen clima del equipo.'],
-        S: ['Es un buen momento para seguir confiándole a {N} un rol estable en los entrenamientos.', 'Puedes seguir dándole a {N} tareas donde su constancia sea protagonista.'],
+        S: ['Es un buen momento para seguir confiándole a {N} un rol estable en la actividad.', 'Puedes seguir dándole a {N} tareas donde su constancia sea protagonista.'],
         C: ['Es un buen momento para seguir explicándole a {N} el porqué de las cosas.', 'Puedes seguir invitando a {N} a analizar y proponer ideas.'],
     },
     en: {
         D: ["It's a good time to keep giving {N} chances to lead.", "You can keep offering {N} challenges where they take the initiative."],
         I: ["It's a good time to keep giving {N} a place to bring the group together.", "You can keep leaning on {N} to sustain a good team atmosphere."],
-        S: ["It's a good time to keep entrusting {N} with a steady role in training.", "You can keep giving {N} tasks where that consistency leads."],
+        S: ["It's a good time to keep entrusting {N} with a steady role in the activity.", "You can keep giving {N} tasks where that consistency leads."],
         C: ["It's a good time to keep explaining to {N} the why behind things.", "You can keep inviting {N} to analyze and suggest ideas."],
     },
     pt: {
         D: ['É um bom momento para continuar dando a {N} espaços para liderar.', 'Você pode continuar oferecendo a {N} desafios para tomar a iniciativa.'],
         I: ['É um bom momento para continuar dando a {N} um lugar para unir o grupo.', 'Você pode continuar contando com {N} para manter o bom clima do time.'],
-        S: ['É um bom momento para continuar confiando a {N} um papel estável nos treinos.', 'Você pode continuar dando a {N} tarefas onde essa constância seja protagonista.'],
+        S: ['É um bom momento para continuar confiando a {N} um papel estável na atividade.', 'Você pode continuar dando a {N} tarefas onde essa constância seja protagonista.'],
         C: ['É um bom momento para continuar explicando a {N} o porquê das coisas.', 'Você pode continuar convidando {N} a analisar e propor ideias.'],
     },
 };

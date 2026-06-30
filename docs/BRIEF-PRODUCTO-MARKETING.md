@@ -172,7 +172,7 @@ Cada informe combina lo emocional con lo accionable:
 - **Su corazón:** qué hay detrás de lo que se ve (la intención real bajo el comportamiento).
 - **Palabras puente:** las palabras y frases que lo activan y lo hacen fluir.
 - **Palabras ruido:** las palabras que lo bloquean o lo desmotivan, para evitarlas.
-- **Checklist de entrenamiento:** qué hacer antes, durante y después de la actividad.
+- **Checklist de la actividad:** qué hacer antes, durante y después de la actividad.
 - **Ecos en otros contextos:** cómo aparece esta tendencia también en casa y en la escuela.
 - **Guía de reseteo:** qué hacer cuando comete un error o nada parece funcionar.
 
@@ -189,7 +189,7 @@ Lista de todos los jugadores con su arquetipo, filtros por eje, motor y grupo, y
 Análisis automático de cada grupo: detecta si el equipo es competitivo, social, cohesivo, metódico o balanceado, muestra la distribución de ejes y motores, analiza cómo se complementan las duplas y da recomendaciones concretas de manejo. Ejemplo de salida: "Equipo competitivo y social: mucha energía y volumen. Canaliza con estructura flexible, reglas claras pero espacio para la expresión. Responde muy bien al reconocimiento público."
 
 ### Predictor Conductual (guía situacional)
-Una biblioteca de 22 situaciones reales de entrenamiento (frustración al perder, tensión pre-partido, querer abandonar, recibir una corrección, asumir un rol de suplente, etc.). Cada situación trae cuatro tarjetas, una por eje, que explican qué ve el entrenador, qué le pasa al niño por dentro, cómo acompañarlo con acciones concretas y un plan alternativo sin presionar. Todo curado, sin esperas.
+Una biblioteca de 22 situaciones reales del deporte (frustración al perder, tensión pre-partido, querer abandonar, recibir una corrección, asumir un rol de suplente, etc.). Cada situación trae cuatro tarjetas, una por eje, que explican qué ve el entrenador, qué le pasa al niño por dentro, cómo acompañarlo con acciones concretas y un plan alternativo sin presionar. Todo curado, sin esperas.
 
 ### Argo Coach (asesor con IA)
 Un chat donde el entrenador conversa en lenguaje natural sobre sus jugadores y equipos ("tengo 8 jugadores, 5 son Impulsores, ¿cómo bajo la tensión?"). El asesor conoce a todos los jugadores cargados, entiende su perfil y responde con recomendaciones prácticas, en el mismo tono cálido del producto. Tiene cinco capas de protección para no inventar ni usar lenguaje clínico, y nunca expone la identidad real de los niños al modelo de IA.
@@ -295,6 +295,6 @@ Estas reglas son obligatorias en todo material de cara al usuario.
 - **Argo One:** la versión para padres, de compra única.
 - **Argo Coach:** el asesor con IA para entrenadores.
 - **Química de Grupos:** el análisis de dinámica de equipo.
-- **Predictor Conductual:** la guía de situaciones reales de entrenamiento, con respuesta por perfil.
+- **Predictor Conductual:** la guía de situaciones reales del deporte, con respuesta por perfil.
 - **Equipo:** la capacidad de jugadores activos de un plan (en copy de usuario, nunca "roster" ni "créditos").
 - **Re-perfilamiento:** volver a perfilar a un jugador (incluido cada 6 meses en planes pagos).

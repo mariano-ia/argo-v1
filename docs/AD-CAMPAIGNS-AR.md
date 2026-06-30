@@ -211,7 +211,7 @@ Para fechas especiales (Dia del Padre, Dia de la Madre, cumpleanos de un chico d
 - **Segmento:** Audiencia 1 y 2
 - **Hook (primeros 3 seg):** Texto en pantalla: "Nueva temporada. Nuevo equipo. Mismo chico que necesita que lo entiendas." Toma de cancha vacia al amanecer o al atardecer.
 - **Texto principal (version corta):**
-  Empieza la temporada sabiendo como tu hijo vive el deporte. Argo One revela su perfil deportivo en 10 minutos. Acompanalo como necesita desde el primer entrenamiento. Precio de lanzamiento: $9.999. Pago con MercadoPago.
+  Empieza la temporada sabiendo como tu hijo vive el deporte. Argo One revela su perfil deportivo en 10 minutos. Acompanalo como necesita desde el primer dia. Precio de lanzamiento: $9.999. Pago con MercadoPago.
 - **Texto principal (version media):**
   Cada temporada trae nuevos companeros, nuevos entrenadores y nuevos desafios. Pero tu hijo sigue siendo el mismo chico con su forma unica de vivir el deporte. Antes de arrancar, descubre su perfil deportivo con Argo One. En 10 minutos, una aventura interactiva te muestra como compite, que lo motiva y como acompanarlo para que disfrute mas del juego. Sin test aburrido. Sin cuenta. Sin suscripcion. El informe llega directo a tu email. Precio de lanzamiento: $9.999 (1 informe) | $24.999 (3 informes).
 - **CTA:** Descubre su perfil antes de que empiece la temporada: argomethod.com/one

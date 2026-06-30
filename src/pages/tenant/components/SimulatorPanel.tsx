@@ -56,9 +56,9 @@ const AXIS_LOSS_RECO: Record<string, Record<string, string>> = {
 };
 
 const AXIS_PARTIAL_RECO: Record<string, string> = {
-    es: 'El impacto es moderado porque el grupo mantiene otros jugadores con ese estilo. Observa si la dinámica cambia en los primeros entrenamientos.',
-    en: 'The impact is moderate because the group retains other players with that style. Observe whether the dynamic changes in the first few training sessions.',
-    pt: 'O impacto é moderado porque o grupo mantém outros jogadores com esse estilo. Observe se a dinâmica muda nos primeiros treinos.',
+    es: 'El impacto es moderado porque el grupo mantiene otros jugadores con ese estilo. Observa si la dinámica cambia en las primeras semanas.',
+    en: 'The impact is moderate because the group retains other players with that style. Observe whether the dynamic changes in the first few weeks.',
+    pt: 'O impacto é moderado porque o grupo mantém outros jogadores com esse estilo. Observe se a dinâmica muda nas primeiras semanas.',
 };
 
 /* ── Component ──────────────────────────────────────────────────────────────── */

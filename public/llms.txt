@@ -38,7 +38,7 @@ Each archetype includes a secondary compass (brújula secundaria) creating 36 un
 9. Guía de Sintonía — situation-specific guidance
 10. Gestión del Desajuste — how to reset when things go wrong
 11. Ecos de la Nave — long-term behavioral echoes
-12. Checklist del Día — before, during, and after training
+12. Checklist del Día — before, during, and after the activity
 
 ## Scientific basis
 

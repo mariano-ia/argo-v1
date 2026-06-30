@@ -34,7 +34,7 @@ export const ADULT_INTRO_SLIDES: StorySlideData[] = [
     {
         id: 'adult_intro_3',
         title: 'El Informe de Sintonía',
-        body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo que mejor describe sus tendencias actuales, su motor de motivación, claves de comunicación y sugerencias concretas para el entrenamiento. Todo generado con inteligencia artificial.',
+        body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo que mejor describe sus tendencias actuales, su motor de motivación, claves de comunicación y sugerencias concretas para acompañarlo en su actividad. Todo generado con inteligencia artificial.',
     },
 ];
 

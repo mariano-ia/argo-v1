@@ -137,7 +137,7 @@ export const GroupBalancePanel: React.FC<Props> = ({ members, locked = false }) 
                             <LockedSection
                                 label={dt.groupBalance.secHerramientas}
                                 cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                tooltip={lang === 'en' ? 'Concrete coaching recommendations based on the group\'s behavioral composition. How to lead this specific combination of profiles.' : lang === 'pt' ? 'Recomendações concretas de treinamento baseadas na composição comportamental do grupo. Como liderar esta combinação de perfis.' : 'Recomendaciones concretas de acompañamiento basadas en la composición conductual del grupo. Cómo liderar esta combinación de perfiles.'}
+                                tooltip={lang === 'en' ? 'Concrete guidance recommendations based on the group\'s behavioral composition. How to lead this specific combination of profiles.' : lang === 'pt' ? 'Recomendações concretas de acompanhamento baseadas na composição comportamental do grupo. Como liderar esta combinação de perfis.' : 'Recomendaciones concretas de acompañamiento basadas en la composición conductual del grupo. Cómo liderar esta combinación de perfiles.'}
                             >
                                 <div className="space-y-3">
                                     {primaryText.tools.map((t, i) => (

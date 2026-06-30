@@ -9,8 +9,8 @@ import type { Situation, SituationCard } from './situationalGuide';
 export const SITUATIONS_PT: Situation[] = [
     {
         id: 'no-quiere-arrancar',
-        title: 'Custa entrar no treino',
-        whatYouSee: 'O jogador chega ao treino e não quer participar. Está apático, reclama, senta no canto ou diz "hoje não estou com vontade".',
+        title: 'Custa entrar na atividade',
+        whatYouSee: 'O jogador chega à atividade e não quer participar. Está apático, reclama, senta no canto ou diz "hoje não estou com vontade".',
         whatsHappening: 'Não é falta de comprometimento. A criança ainda está no "modo" do que estava fazendo antes (escola, casa, uma briga com um amigo). Ela precisa de um momento para fazer a transição para o esporte.',
         profilePerspectives: 'Se o jogador tem perfil {{Impulsionador}}, pode ser que não veja um desafio que o motive a começar: precisa sentir que o que vem vale a pena. Se é {{Conector}}, provavelmente falta a conexão social: se o amigo não veio ou o clima do grupo está estranho, fica difícil se engajar. Um perfil {{Sustentador}} pode precisar de mais tempo para fazer a transição, especialmente se algo na rotina mudou. E se é {{Estrategista}}, talvez esteja processando algo que aconteceu antes e precise fechar aquela ideia antes de conseguir focar em outra coisa.',
         category: 'Motivación',
@@ -54,7 +54,7 @@ export const SITUATIONS_PT: Situation[] = [
     },
     {
         id: 'llora-o-se-enoja',
-        title: 'Transborda emocionalmente no treino',
+        title: 'Transborda emocionalmente na atividade',
         whatYouSee: 'O jogador se desestabiliza emocionalmente durante uma atividade. Pode ser choro, raiva, ou os dois. Às vezes é depois de uma correção, às vezes parece "do nada".',
         whatsHappening: 'Tudo se acumulou: o cansaço, o barulho, as correções, a exigência do exercício. O sistema dele saturou e a emoção transbordou. Não é birra: é que naquele momento a demanda superou o que ele conseguia processar.',
         profilePerspectives: 'O {{Impulsionador}} tende a transbordar com raiva: grita, chuta algo, reclama em voz alta. É a forma dele soltar a pressão rápido. O {{Conector}} pode chorar se sentir que foi corrigido na frente do grupo ou se alguém o excluiu. Um {{Sustentador}} provavelmente vinha acumulando há um tempo e o colapso é a gota d\'água (o transbordamento costuma surpreender porque antes não dava sinais). O {{Estrategista}} pode se irritar consigo mesmo em silêncio e precisar de um momento sozinho para se reorganizar.',
@@ -83,7 +83,7 @@ export const SITUATIONS_PT: Situation[] = [
         id: 'se-distrae',
         title: 'Custa sustentar a atenção',
         whatYouSee: 'O jogador olha para outro lado, conversa com o colega ao lado, brinca com algo que não tem nada a ver, ou simplesmente não está "presente" no exercício.',
-        whatsHappening: 'O treino não está sintonizando com o ritmo dele. Pode ser que o exercício seja lento demais para o motor dele (fica entediado) ou caótico demais para o estilo dele (se desconecta). A distração é um sinal de que algo no formato não está chegando até ele.',
+        whatsHappening: 'A atividade não está sintonizando com o ritmo dele. Pode ser que o exercício seja lento demais para o motor dele (fica entediado) ou caótico demais para o estilo dele (se desconecta). A distração é um sinal de que algo no formato não está chegando até ele.',
         profilePerspectives: 'O {{Impulsionador}} se distrai quando o exercício é lento ou repetitivo demais: precisa de mais intensidade ou competição para se manter engajado. O {{Conector}} pode se distrair socializando porque para ele conversar com o colega É estar presente (a atenção dele funciona diferente). Um {{Sustentador}} se desconecta quando há caos, barulho ou mudanças demais: precisa de previsibilidade para se concentrar. E o {{Estrategista}} pode parecer distraído quando na verdade está pensando em outra coisa: uma jogada anterior, um padrão que detectou, algo que chamou sua atenção.',
         category: 'Concentración',
         icon: '',
@@ -153,7 +153,7 @@ export const SITUATIONS_PT: Situation[] = [
     {
         id: "companero-se-destaca",
         title: "Ele tem dificuldade quando um colega se destaca",
-        whatYouSee: "Um colega recebe parabéns, é escolhido ou faz a diferença em uma jogada, e a criança se apaga. Faz cara feia, minimiza a conquista do outro (\"ele teve sorte\"), reclama da divisão do protagonismo ou diminui a intensidade no resto do treino.",
+        whatYouSee: "Um colega recebe parabéns, é escolhido ou faz a diferença em uma jogada, e a criança se apaga. Faz cara feia, minimiza a conquista do outro (\"ele teve sorte\"), reclama da divisão do protagonismo ou diminui a intensidade no resto da atividade.",
         whatsHappening: "Não é egoísmo nem má intenção. Nessa idade, a criança ainda mede seu valor se comparando com os outros, então quando outro brilha ela sente que o seu próprio lugar fica menor. O que aparece (ciúmes, irritação, desmotivação) é na verdade medo de não ser suficiente. Ela precisa de ajuda para entender que o outro pode se destacar sem que isso tire nada dela.",
         profilePerspectives: "Cada perfil vive essa comparação à sua maneira. O {{Impulsionador}} a sente como uma competição direta pelo primeiro lugar: se o outro brilha, ele lê isso como uma derrota e reage rápido, querendo mostrar na hora que ele também pode. O {{Conector}} sofre sobretudo com o deslocamento social: dói ver a atenção e o carinho do grupo irem para outro, e pode entender isso como se já não o quisessem do mesmo jeito. O {{Sustentador}} costuma guardar o incômodo em silêncio, baixa um pouco e se afasta para o segundo plano, até que a irritação acumulada aparece mais tarde de uma vez. E o {{Estrategista}} entra em ciclo analisando por que o outro fez melhor, se comparando ponto por ponto e sendo duríssimo consigo mesmo nessa conta interna.",
         category: "Social",
@@ -189,7 +189,7 @@ export const SITUATIONS_PT: Situation[] = [
     {
         id: "expectativa-padres",
         title: "Carrega com a expectativa dos pais",
-        whatYouSee: "O jogador olha com frequência para a arquibancada durante a partida ou o treino. Fica tenso quando os pais estão presentes e joga diferente: mais nervoso, mais rígido ou preocupado com a forma como o veem de fora.",
+        whatYouSee: "O jogador olha com frequência para a arquibancada durante a atividade (partida ou treino). Fica tenso quando os pais estão presentes e joga diferente: mais nervoso, mais rígido ou preocupado com a forma como o veem de fora.",
         whatsHappening: "A criança ainda está aprendendo a jogar para si mesma e não para os outros. Sente que o seu desempenho decide algo importante para os adultos que mais ama, e essa carga pesa mais do que qualquer adversário. Não é que se importe demais com o que pensam: ela ainda não aprendeu a separar o seu próprio desejo de jogar do desejo que os pais depositam sobre ela.",
         profilePerspectives: "Cada criança carrega essa expectativa à sua maneira. O {{Impulsionador}} a transforma em uma pressão por ganhar a qualquer custo: se erra, sente que decepcionou e reage com raiva ou se exigindo demais para mostrar que é capaz. O {{Conector}} vive isso como uma questão de vínculo: precisa que os pais estejam orgulhosos e se desinfla assim que percebe uma cara séria na arquibancada, porque para ele jogar bem e ser amado se misturam. O {{Sustentador}} guarda a tensão por dentro, não a mostra, segue jogando calado mas mais rígido, até que a carga acumulada aparece de repente em um dia ruim. O {{Estrategista}} se enfia na própria cabeça: analisa o que esperam dele, se autoexige o dobro e acaba jogando travado por medo de não estar à altura do que acredita que os adultos querem ver.",
         category: "Presión",
@@ -235,7 +235,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
     {
         situationId: 'no-quiere-arrancar',
         eje: 'S',
-        whatsHappeningForProfile: 'O Sustentador costuma precisar que tudo esteja "no lugar" para se sentir seguro. Se o treino mudou de horário, se há alguém novo, ou se algo na rotina foi alterado, a transição tende a ficar mais pesada. O motor mais lento dele faz com que a troca de modo leve mais tempo.',
+        whatsHappeningForProfile: 'O Sustentador costuma precisar que tudo esteja "no lugar" para se sentir seguro. Se a atividade mudou de horário, se há alguém novo, ou se algo na rotina foi alterado, a transição tende a ficar mais pesada. O motor mais lento dele faz com que a troca de modo leve mais tempo.',
         howToAccompany: [
             'Mantenha a rotina: que faça o mesmo aquecimento de sempre, no mesmo lugar, com os mesmos colegas.',
             'Não peça que explique por que não quer. Simplesmente dê um par de minutos e diga: "Começamos quando você estiver pronto".',
@@ -282,7 +282,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
         whatsHappeningForProfile: 'O Sustentador costuma não explodir com a derrota; mais que isso, tende a guardá-la. Fica quieto, se recolhe, e pode arrastar a frustração por vários dias. A estabilidade natural dele o faz parecer "bem" por fora, mas por dentro custa soltar.',
         howToAccompany: [
             'Valide sem forçar: "Se precisar conversar, estou aqui". Não peça que processe na hora.',
-            'Nos treinos seguintes, observe se está mais quieto que o habitual. Se notar diferença, um "como você está?" sem pressão costuma abrir a porta.',
+            'Nos dias seguintes, observe se está mais quieto que o habitual. Se notar diferença, um "como você está?" sem pressão costuma abrir a porta.',
         ],
         ifNotResponding: 'Mantenha a rotina e a normalidade. O Sustentador se recupera quando sente que tudo continua igual ao redor, apesar do resultado.',
     },
@@ -548,7 +548,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
             'Chegue com calma: "Esse erro não define como você joga. Olha tudo que você vem fazendo bem". Ele precisa que alguém devolva a perspectiva.',
             'No exercício seguinte, coloque-o em algo que domina bem para recuperar a confiança antes de voltar ao que errou.',
         ],
-        ifNotResponding: 'Não insista em que "não é para tanto". Simplesmente continue o treino normalmente. O Sustentador se recupera quando sente que o ambiente não mudou por causa do erro dele.',
+        ifNotResponding: 'Não insista em que "não é para tanto". Simplesmente continue a atividade normalmente. O Sustentador se recupera quando sente que o ambiente não mudou por causa do erro dele.',
     },
     {
         situationId: 'se-castiga',
@@ -613,7 +613,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
         eje: 'D',
         whatsHappeningForProfile: 'O Impulsionador costuma querer parar quando sente que não pode ganhar, crescer ou liderar. Se ficou muito tempo sem novos desafios ou sem sentir que progride, o esporte tende a perder sentido para ele.',
         howToAccompany: [
-            'Pergunte o que mudaria para ter vontade de voltar: "Se pudesse mudar uma coisa no treino, o que seria?". Ouça a resposta.',
+            'Pergunte o que mudaria para ter vontade de voltar: "Se pudesse mudar uma coisa no esporte, o que seria?". Ouça a resposta.',
             'Proponha um objetivo concreto e mensurável: "E se nas próximas 3 semanas trabalharmos especificamente nisso?".',
         ],
         ifNotResponding: 'Não pressione. Diga: "A porta está aberta quando quiser". O Impulsionador às vezes precisa sentir falta do desafio para voltar com vontade.',
@@ -641,7 +641,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
     {
         situationId: 'quiere-dejar',
         eje: 'C',
-        whatsHappeningForProfile: 'O Estrategista costuma querer parar quando sente que não aprende nada novo ou que o treino não faz sentido. Se ficou semanas fazendo a mesma coisa sem entender para quê, a motivação tende a apagar.',
+        whatsHappeningForProfile: 'O Estrategista costuma querer parar quando sente que não aprende nada novo ou que a atividade não faz sentido. Se ficou semanas fazendo a mesma coisa sem entender para quê, a motivação tende a apagar.',
         howToAccompany: [
             'Mostre o progresso que ele fez: "Olha onde você estava 3 meses atrás e onde está agora". Os dados de evolução o reconectam com o processo.',
             'Pergunte o que gostaria de aprender: "Tem algo que você gostaria de praticar?". Dar voz no plano o re-engaja.',
@@ -809,7 +809,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
         eje: 'S',
         whatsHappeningForProfile: 'O Sustentador que muda de repente costuma estar mostrando que algo quebrou a base de segurança dele. Tende a ser o perfil que mais "aguenta" antes de mostrar desconforto, então se você já está vendo, provavelmente vem acumulando há um tempo.',
         howToAccompany: [
-            'Mantenha a rotina o mais estável possível. No meio do que quer que esteja acontecendo lá fora, o treino pode ser o refúgio de normalidade dele.',
+            'Mantenha a rotina o mais estável possível. No meio do que quer que esteja acontecendo lá fora, o esporte pode ser o refúgio de normalidade dele.',
             'Chegue sem drama: "Como você está hoje?" de forma natural, como parte da rotina. Se quiser falar, vai falar.',
         ],
         ifNotResponding: 'Contate o adulto responsável com cuidado: "Percebi que ele vem diferente essas últimas semanas, está tudo bem em casa?". O Sustentador raramente pede ajuda. É preciso ir buscar.',
@@ -1012,7 +1012,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
         eje: "D",
         whatsHappeningForProfile: "O Impulsionador vinha sendo uma referência e agora é o novato entre os mais velhos. Perder esse lugar de protagonismo costuma mexer com a confiança dele, e ele pode esconder isso com raiva ou competindo demais para recuperar terreno.",
         howToAccompany: ["Dê a ele um objetivo concreto para a sua adaptação: nestas semanas o seu desafio é conquistar um lugar neste grupo, vamos acompanhar isso jogo a jogo.","Reconheça cada passo de progresso no que é novo: hoje você aguentou o ritmo dos mais velhos, isso há duas semanas não acontecia."],
-        ifNotResponding: "Se ele continuar tenso, tire a exigência de render já e deixe que ele se concentre em uma só coisa por treino. Recuperar o controle aos poucos devolve a segurança a ele.",
+        ifNotResponding: "Se ele continuar tenso, tire a exigência de render já e deixe que ele se concentre em uma só coisa por atividade. Recuperar o controle aos poucos devolve a segurança a ele.",
     },
     {
         situationId: "sube-categoria",
@@ -1025,7 +1025,7 @@ export const SITUATION_CARDS_PT: SituationCard[] = [
         situationId: "sube-categoria",
         eje: "S",
         whatsHappeningForProfile: "O Sustentador costuma se desestabilizar com a mudança de rotina, de horários e de rostos conhecidos. Tende a recuar para o segundo plano e a sustentar o incômodo em silêncio, até que um dia tudo pesa de uma vez.",
-        howToAccompany: ["Dê a ele previsibilidade sobre o que é novo: explique como vai ser o treino e o que se espera dele, passo a passo.","Ofereça a ele um ponto de referência estável, como um lugar fixo no campo ou um colega com quem ele sempre começa: comece sempre ao lado dele até se sentir confortável."],
+        howToAccompany: ["Dê a ele previsibilidade sobre o que é novo: explique como vai ser a atividade e o que se espera dele, passo a passo.","Ofereça a ele um ponto de referência estável, como um lugar fixo no campo ou um colega com quem ele sempre começa: comece sempre ao lado dele até se sentir confortável."],
         ifNotResponding: "Se você o vê fechado, dê mais tempo a ele sem apressá-lo e pergunte em particular como ele está se sentindo. Para ele a mudança leva mais tempo, e isso está tudo bem.",
     },
     {

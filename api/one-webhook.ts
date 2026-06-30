@@ -241,7 +241,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
         features: [
             { label: 'Unlimited AI queries', desc: 'Ask whatever you need about your players, with no limit.' },
             { label: 'Bridge words and words to avoid', desc: 'Key phrases to connect with each profile and the ones that create resistance.' },
-            { label: 'Quick guide and per-player checklist', desc: 'Activators, demotivators and a checklist before, during and after training.' },
+            { label: 'Quick guide and per-player checklist', desc: 'Activators, demotivators and a checklist before, during and after the activity.' },
             { label: `Up to ${rosterLimit} active players`, desc: 'Profile and re-profile every 6 months. No credits, no usage limits.' },
             { label: 'Unlimited group chemistry with full analysis', desc: 'Coaching tools, pairing suggestions and a simulator.' },
             { label: 'Personalized Behavioral Predictor', desc: 'Guidance tailored to each player profile.' },
@@ -258,7 +258,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
         features: [
             { label: 'Consultas de IA ilimitadas', desc: 'Pergunte o que precisar sobre seus jogadores, sem restrição.' },
             { label: 'Palavras-ponte e palavras a evitar', desc: 'Frases-chave para conectar com cada perfil e as que geram resistência.' },
-            { label: 'Guia rápido e checklist por jogador', desc: 'Ativadores, desmotivadores e um checklist antes, durante e depois do treino.' },
+            { label: 'Guia rápido e checklist por jogador', desc: 'Ativadores, desmotivadores e um checklist antes, durante e depois da atividade.' },
             { label: `Até ${rosterLimit} jogadores ativos`, desc: 'Perfile e re-perfile a cada 6 meses. Sem créditos, sem limites de uso.' },
             { label: 'Química de grupos ilimitada com análise completa', desc: 'Ferramentas de coaching, sugestões de duplas e simulador.' },
             { label: 'Preditor Comportamental personalizado', desc: 'Orientações adaptadas ao perfil de cada jogador.' },
@@ -275,7 +275,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
         features: [
             { label: 'Consultas IA ilimitadas', desc: 'Pregunta lo que necesites sobre tus jugadores sin restricción.' },
             { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
-            { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después del entrenamiento.' },
+            { label: 'Guía rápida y checklist por jugador', desc: 'Activadores, desmotivadores y un checklist antes, durante y después de la actividad.' },
             { label: `Hasta ${rosterLimit} jugadores activos`, desc: 'Perfila y re-perfila cada 6 meses. Sin créditos, sin límites de uso.' },
             { label: 'Química de grupos ilimitada con análisis completo', desc: 'Herramientas de coaching, sugerencias de duplas y simulador.' },
             { label: 'Predictor Conductual personalizado', desc: 'Orientaciones adaptadas al perfil de cada jugador.' },

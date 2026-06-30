@@ -220,7 +220,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
     {
         id: 'perfil-no-coincide',
         category: 'players',
-        title: 'O perfil não combina com o que vejo nos treinos.',
+        title: 'O perfil não combina com o que vejo na atividade.',
         body: 'O perfil é uma foto de como a criança se mostrou durante a aventura, em um momento específico. É uma ferramenta de leitura, não uma verdade absoluta.\n\nO mais valioso é cruzar esse dado com a sua observação do dia a dia. Se já passaram vários meses, vale a pena refazer o perfil: as crianças mudam.',
     },
 
@@ -271,8 +271,8 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
     {
         id: 'usar-predictor',
         category: 'guide',
-        title: 'Como uso o Preditor Comportamental antes de um treino?',
-        body: 'O Preditor reúne situações comuns do treino (uma criança que não quer começar, uma que se frustra, etc.). Você escolhe a que interessa e ele mostra o que pode estar acontecendo e como acompanhar conforme o perfil.',
+        title: 'Como uso o Preditor Comportamental antes de uma atividade?',
+        body: 'O Preditor reúne situações comuns do esporte, em treinos, jogos ou competições (uma criança que não quer começar, uma que se frustra, etc.). Você escolhe a que interessa e ele mostra o que pode estar acontecendo e como acompanhar conforme o perfil.',
         steps: [
             'Abra Preditor Comportamental.',
             'Busque ou filtre por categoria a situação que interessa.',
