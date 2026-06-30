@@ -269,7 +269,7 @@ export const SITUATION_CARDS: SituationCard[] = [
     {
         situationId: 'no-quiere-arrancar',
         eje: 'C',
-        whatsHappeningForProfile: 'El Estratega suele necesitar entender qué va a pasar antes de comprometerse. Si no sabe qué va a pasar en la actividad, o si el plan cambió sin explicación, tiende a quedarse afuera procesando. Su motor de procesamiento necesita cerrar la lógica antes de arrancar.',
+        whatsHappeningForProfile: 'El Estratega suele necesitar entender qué va a pasar antes de comprometerse. Si no sabe qué van a hacer en la actividad, o si el plan cambió sin explicación, tiende a quedarse afuera procesando. Su motor de procesamiento necesita cerrar la lógica antes de arrancar.',
         howToAccompany: [
             'Cuéntale brevemente qué van a hacer hoy: "Primero calentamiento, después un ejercicio táctico, y terminamos con partido". La previsibilidad lo activa.',
             'Si cambió algo del plan habitual, explícale por qué: "Hoy vamos a hacer algo diferente porque necesitamos practicar X".',

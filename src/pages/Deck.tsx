@@ -60,7 +60,7 @@ const T = {
             secLabel: 'Tendencia secundaria · con brújula social',
             secBody:
                 'Lo social no es ruido para Joaquín. Es información. Lee gestos, tonos, cambios de ánimo del grupo. Esa sensibilidad lo convierte en un puente natural entre los que empujan y los que se quedan atrás.',
-            checklistLabel: 'Checklist de la actividad',
+            checklistLabel: 'Checklist del día',
             beforeTitle: 'Antes',
             beforeBody:
                 'Recuérdale su rol concreto. Una frase es suficiente: "Hoy te necesito leyendo el medio".',
@@ -106,7 +106,7 @@ const T = {
                 'Cada decisión y cada reacción se traducen en dos dimensiones: cómo se comporta en grupo (conducta) y a qué tempo decide y procesa (motor). Doce arquetipos y doce tendencias secundarias resuelven la combinación.',
             step3Title: 'El adulto recibe',
             step3Body:
-                'Un informe completo con arquetipo, tendencia secundaria, combustible interno, palabras puente, checklist de la actividad y consejos de acompañamiento. Llega al coach y a la familia por correo.',
+                'Un informe completo con arquetipo, tendencia secundaria, combustible interno, palabras puente, checklist del día y consejos de acompañamiento. Llega al coach y a la familia por correo.',
             mapLabel: 'El mapa primario',
             matrixHeaders: ['Dinámico', 'Rítmico', 'Sereno'],
             matrixAxes: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' } as Record<'D' | 'I' | 'S' | 'C', string>,
@@ -230,7 +230,7 @@ const T = {
             secLabel: 'Secondary tendency · with a social compass',
             secBody:
                 'The social layer isn\'t noise for Joaquín. It\'s information. He reads gestures, tones, shifts in the group\'s mood. That sensitivity makes him a natural bridge between the kids who push and the ones who fall behind.',
-            checklistLabel: 'Activity checklist',
+            checklistLabel: 'Daily checklist',
             beforeTitle: 'Before',
             beforeBody:
                 'Remind him of his concrete role. One sentence is enough: "Today I need you reading the midfield."',
@@ -276,7 +276,7 @@ const T = {
                 'Every decision and every reaction translates into two dimensions: how they behave in a group (conduct) and at what tempo they decide and process (motor). Twelve archetypes and twelve secondary tendencies resolve the combination.',
             step3Title: 'The adult receives',
             step3Body:
-                'A complete report with archetype, secondary tendency, internal fuel, bridge words, activity checklist, and accompaniment advice. Delivered to the coach and the family by email.',
+                'A complete report with archetype, secondary tendency, internal fuel, bridge words, daily checklist, and accompaniment advice. Delivered to the coach and the family by email.',
             mapLabel: 'The primary map',
             matrixHeaders: ['Dynamic', 'Rhythmic', 'Serene'],
             matrixAxes: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' } as Record<'D' | 'I' | 'S' | 'C', string>,
