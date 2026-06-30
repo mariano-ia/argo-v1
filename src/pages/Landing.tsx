@@ -1085,10 +1085,10 @@ export const Landing: React.FC = () => {
                     className="mb-8"
                 >
                     {lang === 'en'
-                        ? <>Every child is unique.<br />Argo identifies tendencies in how they experience sport.</>
+                        ? <>Every child is unique.<br />Argo identifies tendencies in how they experience sport</>
                         : lang === 'pt'
-                        ? <>Cada criança é única.<br />O Argo identifica tendências em como vive o esporte.</>
-                        : <>Cada niño es único.<br />Argo identifica tendencias sobre cómo vive el deporte.</>}
+                        ? <>Cada criança é única.<br />O Argo identifica tendências em como vive o esporte</>
+                        : <>Cada niño es único.<br />Argo identifica tendencias sobre cómo vive el deporte</>}
                 </motion.h1>
 
                 <motion.p
@@ -1180,7 +1180,7 @@ export const Landing: React.FC = () => {
                             <div>
                                 <SectionLabel>La herramienta · Dos experiencias</SectionLabel>
                                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
-                                    {L('Como funciona el Método Argo.', 'How the Argo Method works.', 'Como funciona o Método Argo.')}
+                                    {L('Como funciona el Método Argo', 'How the Argo Method works', 'Como funciona o Método Argo')}
                                 </h2>
                                 <div className="mt-10 space-y-7">
                                     <div>
@@ -1234,7 +1234,7 @@ export const Landing: React.FC = () => {
                             {L('El origen · La nave Argos', 'The origin · The Argo ship', 'A origem · O navio Argo')}
                         </SectionLabel>
                         <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                            {{ es: <>50 especialistas.<br />Una sola misión.</>, en: <>50 specialists.<br />One single mission.</>, pt: <>50 especialistas.<br />Uma única missão.</> }[lang]}
+                            {{ es: <>50 especialistas.<br />Una sola misión</>, en: <>50 specialists.<br />One single mission</>, pt: <>50 especialistas.<br />Uma única missão</> }[lang]}
                         </h2>
                         <div style={{ marginTop: '24px', display: 'inline-block', borderRadius: '12px', overflow: 'hidden', maxWidth: '280px' }}>
                             <img
@@ -1273,7 +1273,7 @@ export const Landing: React.FC = () => {
                         {L('El sistema · Tres dimensiones', 'The system · Three dimensions', 'O sistema · Três dimensões')}
                     </SectionLabel>
                     <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('Conducta + Motor: las dimensiones del Método Argo.', 'Behavior + Engine: the dimensions of the Argo Method.', 'Conduta + Motor: as dimensões do Método Argo.')}
+                        {L('Conducta + Motor: las dimensiones del Método', 'Behavior + Engine: the dimensions of the Method', 'Conduta + Motor: as dimensões do Método')}
                     </h2>
                     <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '16px', maxWidth: '640px', lineHeight: 1.75 }}>
                         {L(
@@ -1493,7 +1493,7 @@ export const Landing: React.FC = () => {
                             {L('Compromiso · Observador aliado', 'Commitment · Allied observer', 'Compromisso · Observador aliado')}
                         </SectionLabel>
                         <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', lineHeight: 1.15, letterSpacing: '-0.025em' }} className="mb-8 text-argo-navy">
-                            {L('Sin etiquetas. Sin juicios clínicos.', 'No labels. No clinical judgments.', 'Sem rótulos. Sem julgamentos clínicos.')}
+                            {L('Sin etiquetas. Sin juicios clínicos', 'No labels. No clinical judgments', 'Sem rótulos. Sem julgamentos clínicos')}
                         </h2>
                         <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', lineHeight: 1.75 }} className="mb-4">
                             {L(
@@ -1571,7 +1571,7 @@ export const Landing: React.FC = () => {
                     <motion.div {...fadeUp(0)}>
                         <SectionLabel>{L('Blog', 'Blog', 'Blog')}</SectionLabel>
                         <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }} className="text-argo-navy mb-8">
-                            {L('Herramientas para entrenadores y padres.', 'Tools for coaches and parents.', 'Ferramentas para treinadores e pais.')}
+                            {L('Herramientas para entrenadores y padres', 'Tools for coaches and parents', 'Ferramentas para treinadores e pais')}
                         </h2>
                     </motion.div>
                     <div className="space-y-0">
