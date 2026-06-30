@@ -37,7 +37,9 @@ Never use Argentine voseo forms. Always use standard tuteo. Reference:
 ## Architecture
 
 ### Current (MVP — v1.7)
-Single-instance. All sessions fall into one shared table. One admin dashboard.
+Single-instance. One admin dashboard.
+
+**Child/perfilamiento split (LIVE 2026-06-29).** The old `sessions` table was split: `children` = the persistent player/roster entity (identity + slot + `reprofile_token`); `perfilamientos` = append-only assessment history (the re-homed `sessions` table, ids preserved) with `status` (`in_flight`/`resolved`). The **current profile** is the `current_perfilamiento` VIEW (latest resolved per child) — read it for current-profile data, read `perfilamientos` by id for a specific assessment. Memberships (`group_members`/`chem_group_members`) key on `child_id`. Re-profiling appends a perfilamiento (never overwrites); duplicates are unified via `merge_children`. Full spec + as-built: `docs/IDENTIDAD-NINO-Y-PERFILAMIENTOS.md`. NOTE: after creating a table/view via raw SQL in prod, run `NOTIFY pgrst, 'reload schema';` or PostgREST 500s on the new object.
 
 ### Target (next phase): Multi-tenant SaaS
 
@@ -73,14 +75,14 @@ Single-instance. All sessions fall into one shared table. One admin dashboard.
 #### Key decisions (confirmed)
 - **Never reference "credits"** — the concept is eliminated
 - Use "equipo" (not "roster") in user-facing Spanish copy
-- Abandoned sessions occupy a slot but can be retried (no "lost credit")
+- A slot = an active child with ≥1 **resolved** perfilamiento. A child who started but never finished (in-flight only) does NOT occupy a slot; the slot is charged at the first resolved profile. Re-profiling never costs a slot. (Supersedes the old "abandoned sessions occupy a slot" rule, changed in the 2026-06-29 split.)
 - Player does NOT need a full account — lightweight form only
 - Superadmin can create Enterprise accounts with personalized welcome email
 - All admin actions logged in audit_log table
 
 #### Data model
 - `tenants` table: plan, roster_limit, ai_queries_count, slug, auth user reference, subscription_provider, subscription_id
-- `tenant_id` on `sessions` table to link each play to the tenant
+- `children` (player/roster entity, `tenant_id` links to tenant) + `perfilamientos` (append-only assessment history, was `sessions`) + `current_perfilamiento` view; see the split note above
 - `one_purchases` + `one_links` for Argo One standalone purchases
 - `admin_audit_log` for superadmin action tracking
 - Stripe handles subscription billing; webhook at `/api/one-webhook`
@@ -104,8 +106,10 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `POST /api/send-email` — send report email via Resend
 - `POST /api/generate-ai` — generate AI report sections via Gemini
 - `POST /api/create-tenant` — create tenant record on signup (idempotent)
-- `POST /api/start-play` — validate roster capacity + start play
-- `POST /api/archive-player` — archive/reactivate players
+- `POST /api/start-play` — validate roster capacity + start play (general link = NEW child)
+- `POST /api/start-reprofile` — re-profile an existing child via its `reprofile_token` (6-month hard gate, skips roster); signs the child_id into the play_token
+- `POST /api/merge-players` — unify two duplicate children into one (calls `merge_children` RPC)
+- `POST /api/archive-player` — archive/reactivate players (operates on the child)
 - `POST /api/create-subscription` — subscription checkout (Stripe or MercadoPago based on country)
 - `POST /api/cancel-subscription` — cancel active subscription (Stripe or MercadoPago)
 - `POST /api/delete-account` — delete tenant account (cancels subscription + removes auth user)

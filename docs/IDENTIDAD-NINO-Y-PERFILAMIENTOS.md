@@ -1,8 +1,97 @@
 # Identidad del niño y perfilamientos (rediseño)
 
-> Estado: **diseño aprobado, sin implementar**. Decisiones de producto bloqueadas por el owner (2026-06-29).
-> Alcance: separar "el niño" de "cada perfilamiento", eliminar el dedup destructivo por nombre+email,
-> hacer el re-perfilado explícito y con historial, y cerrar el bug del informe cruzado.
+> Estado: **EN PRODUCCIÓN desde 2026-06-29.** Construido, validado y desplegado en el mismo día que se diseñó.
+> Las secciones 1 a 13 son el **diseño** (el porqué y el qué). La sección 0 (abajo) es el **as-built**: lo que
+> efectivamente se construyó, cómo se validó, el cutover ejecutado y los arreglos post-lanzamiento.
+
+## 0. As-built (lo que se hizo)
+
+### 0.1 Estado y artefactos
+- **Código en `main` + `develop`** (commit base del split: `d633ae1`; arreglos post-lanzamiento hasta `afb69a2`).
+- **2 migraciones aplicadas a producción** (Supabase `luutdozbhinfiogugjbv`):
+  `child_perfilamiento_split` y `merge_children_fn` (archivos en `supabase/migrations/20260629_*.sql`).
+- **Backup pre-cambio**: schema `backup_pre_split_20260629` (copia de las 7 tablas afectadas:
+  sessions, group_members, chem_group_members, parental_consents, puentes_purchases, puentes_sessions, feedback).
+  Se puede borrar tras un período de verificación.
+
+### 0.2 Inventario de cambios
+**Base de datos** (migración `child_perfilamiento_split`):
+- Tabla nueva `children` (entidad persistente = cupo + identidad + `reprofile_token`).
+- `sessions` **renombrada a `perfilamientos`** (ids preservados) + columnas `child_id`, `status`
+  (`in_flight`/`resolved`), `game_metrics`.
+- Vista `current_perfilamiento` (último `resolved` por niño) = fuente única de verdad del perfil actual.
+- `group_members`/`chem_group_members`: `session_id` → `child_id` (membresía por niño).
+- `parental_consents`: + `child_id`, + `reprofile_token`.
+- RPCs: `check_roster_capacity` reescrita (cuenta niños), `check_reprofile_cooldown` reimplementada
+  (candado de 6 meses por niño). Migración `merge_children_fn`: función `merge_children()` SECURITY DEFINER.
+
+**Backend (escritura):** `session.ts` (sin dedup; niño-nuevo vs re-perfilar por `cid` firmado),
+`start-reprofile.ts` (nuevo; candado duro de 6 meses, saltea cupo), `merge-players.ts` (nuevo),
+`report-recovery-cron.ts` (defensa de eje, no recalcula motor).
+
+**Backend (lectura, ~30 endpoints reapuntados):** lecturas de perfil-actual → vista `current_perfilamiento`;
+lecturas por id → `perfilamientos`; membresías → `child_id`; conteos de cupo → niños activos; Argo One
+(`one-complete`/`one-webhook`) → niño + perfilamiento; ciclo de vida (`delete-session`, `archive-player`,
+`confirm-delete`, `request-delete`, `retention-cron`) → opera sobre el niño.
+
+**Frontend:** ruta `/play/r/:reprofileToken` + página `TenantReprofilePlay`; `OnboardingFlowV2` con
+re-perfilado pre-cargado; `TenantPlayers` (botón copiar-link a los 6 meses, línea de tiempo del historial,
+detección de duplicados + modal de unificar); hilo de consentimiento de menores de 13
+(`request-consent`/`confirm-consent`/`ConsentLanding` + cadena de props); Ayuda (es/en/pt) actualizada.
+
+### 0.3 Validación previa al cutover
+- Lógica de backfill validada **read-only** sobre los datos reales (137 niños, 0 huérfanos, 0 colisiones de FK).
+- **Ensayo transaccional** sobre producción (`BEGIN … migración completa … ROLLBACK` en una sola query):
+  corrió todo el DDL + backfill + las aserciones de integridad + RPCs + vista, sin error, y se deshizo.
+  Producción quedó intacta (verificado: `sessions` con 137 filas, `children`/`perfilamientos` inexistentes).
+- La rama de Supabase **no sirvió** (el historial de migraciones del proyecto no se re-aplica limpio desde
+  cero en una rama fresca — falla en una migración de ~2026-04-08, pre-existente y ajena a este cambio).
+  Por eso se usó el ensayo transaccional, que de hecho prueba sobre los datos reales.
+
+### 0.4 Cutover ejecutado
+1. Integrado `origin/main` en `develop` (4 commits de dashboard Planteles/Usuarios + Contactos que main tenía
+   y develop no): merge automático sin conflictos. (Un build falló por un apóstrofe pre-existente en
+   `helpContent.en.ts` dentro de un string de comillas simples → corregido.)
+2. `develop` → `main` (fast-forward). Vercel buildeó producción (~1 min); durante el build, la versión vieja
+   siguió sirviendo (código viejo + esquema viejo = OK).
+3. Apenas el deploy nuevo quedó **READY** (live en `argomethod.com`), se aplicaron las 2 migraciones.
+   Esquema nuevo + código nuevo alineados. **Ventana de ruptura: ~1 minuto.**
+4. **Gotcha de PostgREST** (importante para el futuro): tras crear la vista por SQL crudo, el REST de Supabase
+   no la veía (`Could not find the table 'public.current_perfilamiento' in the schema cache`) y `tenant-sessions`
+   dio 500 por ~1 min. Resuelto con `NOTIFY pgrst, 'reload schema';`. **Recordar esto ante cualquier creación
+   de tabla/vista por SQL crudo en prod.**
+
+### 0.5 Verificación post-cutover
+- DB: 137 children + 137 perfilamientos, 0 huérfanos, integridad de FK perfecta, vista OK, Puentes/membresías preservados.
+- `qa-monitor`: **todo verde**, incluido `coach: ground-truth gt=0/24` (el check que disparó el incidente
+  original, ahora en 0) y cada endpoint arrancando **sin 5xx**.
+- Pruebas E2E desde el servidor: re-perfilar con candado de 6 meses (403 `reprofile_too_soon` con fecha de
+  disponibilidad), token inválido (400), link de informe viejo (200, ids preservados), página `/play/r/:token`
+  (200), `merge_children` end-to-end con rollback (`{ok:true, moved_perfilamientos:1}`, sin dejar rastro).
+
+### 0.6 Arreglos post-lanzamiento (del testing manual del owner)
+- **Re-perfilar pasa por el paso del adulto**: ahora entra al registro pre-cargado (T&C + consentimiento para
+  menores de 13), igual que la primera jugada; antes saltaba a device-handoff para 13+.
+- **A re-perfilar primero**: los jugadores con 6+ meses ordenan al tope de la lista.
+- **Historial arriba**: la línea de tiempo pasó al tope del detalle expandido (full-width); los perfiles
+  anteriores se muestran más chicos y atenuados, con tag "perfil anterior"; el actual con badge verde.
+- **Palabras puente siempre verdes** (eran del color del eje; "evitar" sigue en rojo).
+
+### 0.7 Desviaciones / decisiones de implementación vs el diseño
+- **Cron**: no recalcula el motor (no es reproducible sin métricas de juego); confía en el eje/motor co-locados
+  y re-deriva **solo el eje** como defensa (skip-and-flag), tal como se acordó en §8/§12.
+- **Consentimiento menores de 13 en re-perfilado**: se thread-eó `reprofile_token` por `parental_consents`
+  para que `ConsentLanding` redirija a `/play/r/<token>` (no al link general) y el juego agregue al niño existente.
+- **Umbral COPPA**: el consentimiento parental se pide para `child_age < 13`. A los 13 no (correcto legalmente);
+  el re-perfilado de un niño de 13 pasa por registro + T&C pero no por consentimiento parental.
+
+### 0.8 Residual / pendiente (bajo riesgo)
+- Falta un E2E manual completo de: completar una odisea de re-perfilado entera, el modal de unificar usado por
+  un coach real, y el render del timeline con 2+ perfiles (requiere browser logueado). Los endpoints, RPCs y
+  páginas que esos flujos usan ya están verificados (responden bien, compilan, formas de datos correctas).
+- El historial solo se muestra cuando un niño tiene **más de un perfilamiento** (tras re-perfilar al menos una vez).
+
+---
 
 ## 1. Por qué existe este documento
 
