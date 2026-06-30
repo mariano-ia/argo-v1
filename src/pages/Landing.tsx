@@ -879,7 +879,8 @@ export const Landing: React.FC = () => {
                     alt=""
                     aria-hidden="true"
                     loading="eager"
-                    className="absolute inset-0 w-full h-full object-cover object-[50%_85%]"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    style={{ transform: 'translateY(-156px) scale(1.2)', transformOrigin: 'center top' }}
                 />
                 {/* Legibility overlay — darkens the left where the copy sits, keeps the sunset visible on the right */}
                 <div
