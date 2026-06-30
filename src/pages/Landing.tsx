@@ -522,7 +522,7 @@ const FlipCard: React.FC = () => {
                             </div>
                             <p style={{ fontSize: '13px', color: '#424245', lineHeight: 1.65, marginBottom: '20px' }}>
                                 {lang === 'es'
-                                    ? 'Argo cruza las 12 respuestas del juego con patrones conductuales para construir el perfil único de este deportista.'
+                                    ? 'Argo cruza las 12 respuestas del juego con patrones conductuales para aproximarse a las tendencias principales de este deportista.'
                                     : lang === 'pt'
                                     ? 'Argo cruza as 12 respostas do jogo com padrões comportamentais para construir o perfil único deste atleta.'
                                     : 'Argo cross-references the 12 game responses with behavioral patterns to build this athlete\'s unique profile.'}
@@ -1045,11 +1045,30 @@ export const Landing: React.FC = () => {
             </nav>
 
             {/* ── HERO ── */}
-            <section className="relative max-w-5xl mx-auto px-4 md:px-6 pt-14 pb-8 md:pt-24 md:pb-12 overflow-hidden">
+            <section className="relative overflow-hidden">
+                {/* Background image (from the institutions sales deck) */}
+                <img
+                    src="/sales/sales_hero.webp"
+                    alt=""
+                    aria-hidden="true"
+                    loading="eager"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+                {/* Legibility overlay — darkens the left where the copy sits, keeps the sunset visible on the right */}
+                <div
+                    aria-hidden="true"
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(100deg, rgba(25,18,45,0.88) 0%, rgba(25,18,45,0.60) 42%, rgba(25,18,45,0.24) 74%, rgba(25,18,45,0.10) 100%)' }}
+                />
+                {/* Content (same copy as before, lightened for contrast over the photo) */}
+                <div className="relative max-w-5xl mx-auto px-4 md:px-6 pt-14 pb-8 md:pt-24 md:pb-12">
                 <motion.div {...fadeUp(0)}>
-                    <SectionLabel>
+                    <p
+                        style={{ fontWeight: 400, letterSpacing: '0.14em', fontSize: '10px', color: 'rgba(255,255,255,0.82)' }}
+                        className="uppercase mb-6"
+                    >
                         {L('Ciencia del Comportamiento', 'Behavioral Science', 'Ciência do Comportamento')}
-                    </SectionLabel>
+                    </p>
                 </motion.div>
 
                 <motion.h1
@@ -1059,7 +1078,8 @@ export const Landing: React.FC = () => {
                         fontSize: 'clamp(1.9rem, 3.8vw, 3.2rem)',
                         lineHeight: 1.06,
                         letterSpacing: '-0.03em',
-                        color: '#1D1D1F',
+                        color: '#ffffff',
+                        textShadow: '0 1px 24px rgba(0,0,0,0.28)',
                         maxWidth: '820px',
                     }}
                     className="mb-8"
@@ -1068,12 +1088,12 @@ export const Landing: React.FC = () => {
                         ? <>Every child is unique.<br />Argo discovers their ideal way of experiencing sport.</>
                         : lang === 'pt'
                         ? <>Cada criança é única.<br />O Argo descobre sua maneira ideal de viver o esporte.</>
-                        : <>Cada niño es único.<br />Argo descubre su manera ideal de vivir el deporte.</>}
+                        : <>Cada niño es único.<br />Argo identifica tendencias en cómo vive el deporte.</>}
                 </motion.h1>
 
                 <motion.p
                     {...fadeUp(0.12)}
-                    style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '0.02em', color: '#86868B', maxWidth: '560px' }}
+                    style={{ fontWeight: 500, fontSize: '13px', letterSpacing: '0.02em', color: 'rgba(255,255,255,0.82)', maxWidth: '560px' }}
                     className="mb-6"
                 >
                     {L(
@@ -1085,7 +1105,7 @@ export const Landing: React.FC = () => {
 
                 <motion.p
                     {...fadeUp(0.16)}
-                    style={{ fontWeight: 400, fontSize: '17px', lineHeight: 1.65, color: '#424245', maxWidth: '560px' }}
+                    style={{ fontWeight: 400, fontSize: '17px', lineHeight: 1.65, color: 'rgba(255,255,255,0.92)', maxWidth: '560px' }}
                     className="mb-8"
                 >
                     {L(
@@ -1106,11 +1126,11 @@ export const Landing: React.FC = () => {
                     ].map(({ num, text }, i, arr) => (
                         <React.Fragment key={num}>
                             <div className="flex items-center gap-2">
-                                <span style={{ fontWeight: 600, fontSize: '10px', color: '#86868B', letterSpacing: '0.08em' }}>{num}</span>
-                                <span style={{ fontWeight: 400, fontSize: '13px', color: '#424245' }}>{text}</span>
+                                <span style={{ fontWeight: 600, fontSize: '10px', color: 'rgba(255,255,255,0.7)', letterSpacing: '0.08em' }}>{num}</span>
+                                <span style={{ fontWeight: 400, fontSize: '13px', color: 'rgba(255,255,255,0.9)' }}>{text}</span>
                             </div>
                             {i < arr.length - 1 && (
-                                <span style={{ color: '#D2D2D7', fontSize: '13px', lineHeight: 1 }}>→</span>
+                                <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '13px', lineHeight: 1 }}>→</span>
                             )}
                         </React.Fragment>
                     ))}
@@ -1121,10 +1141,11 @@ export const Landing: React.FC = () => {
                         onClick={() => navigate('/signup')}
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '8px',
-                            backgroundColor: '#955FB5', color: '#fff',
-                            fontWeight: 500, fontSize: '15px', letterSpacing: '-0.01em',
+                            backgroundColor: '#ffffff', color: '#1D1D1F',
+                            fontWeight: 600, fontSize: '15px', letterSpacing: '-0.01em',
                             borderRadius: '8px', padding: '14px 28px',
                             border: 'none', cursor: 'pointer',
+                            boxShadow: '0 8px 30px rgba(0,0,0,0.22)',
                         }}
                         onMouseEnter={e => (e.currentTarget.style.opacity = '0.88')}
                         onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
@@ -1137,16 +1158,17 @@ export const Landing: React.FC = () => {
                         style={{
                             display: 'inline-flex', alignItems: 'center', gap: '6px',
                             fontWeight: 500, fontSize: '13px', letterSpacing: '-0.01em',
-                            color: '#86868B', background: 'none', border: 'none', cursor: 'pointer',
+                            color: 'rgba(255,255,255,0.85)', background: 'none', border: 'none', cursor: 'pointer',
                         }}
-                        onMouseEnter={e => (e.currentTarget.style.color = '#1D1D1F')}
-                        onMouseLeave={e => (e.currentTarget.style.color = '#86868B')}
+                        onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
+                        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.85)')}
                     >
                         {L('Ver planes', 'See plans', 'Ver planos')}
                         <ArrowRight size={13} />
                     </button>
                 </motion.div>
 
+                </div>
             </section>
 
             {/* ── LA HERRAMIENTA ── */}
@@ -1178,7 +1200,7 @@ export const Landing: React.FC = () => {
                                             01 — El juego
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                            Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones revelan su perfil conductual de forma natural, sin preguntas directas.
+                                            Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones reflejan patrones conductuales de forma natural, sin preguntas directas.
                                         </p>
                                     </div>
                                     <div>
@@ -1186,7 +1208,7 @@ export const Landing: React.FC = () => {
                                             02 — La plataforma
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                            La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte desde su naturaleza.
+                                            La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte en un entorno alineado con cómo tiende a procesar.
                                         </p>
                                     </div>
                                 </div>
@@ -1245,7 +1267,7 @@ export const Landing: React.FC = () => {
                         </p>
                         <p style={{ fontWeight: 400, fontSize: '16px', lineHeight: 1.75, color: '#424245' }}>
                             {L(
-                                'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen deportistas jóvenes incorrectos. Existen deportistas fuera de sintonía. Cuando alguien no disfruta del deporte, no es por falta de capacidad, es porque está ocupando un lugar en la tripulación que no le corresponde.',
+                                'Aplicamos esta sabiduría milenaria a la ciencia del comportamiento deportivo. No existen deportistas jóvenes incorrectos. Existen deportistas fuera de sintonía. Cuando alguien no disfruta del deporte, no es por falta de capacidad, es porque el ambiente actual no está alineado con cómo tiende a procesar.',
                                 'We apply this ancient wisdom to sports behavioral science. There are no wrong children. There are children out of sync. When a child does not enjoy sport, it is not from lack of ability, it is because they are filling a role in the crew that does not match their nature.',
                                 'Aplicamos essa sabedoria milenar à ciência do comportamento esportivo. Não existem crianças incorretas. Existem crianças fora de sintonia. Quando uma criança não aproveita o esporte, não é por falta de capacidade — é porque está ocupando um lugar na tripulação que não lhe corresponde.',
                             )}
@@ -1291,7 +1313,7 @@ export const Landing: React.FC = () => {
                                 {L('Sintonía', 'Synergy', 'Sintonia')}
                             </p>
                             <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
-                                {L('El lugar exacto donde disfruta y rinde', 'The exact place where they thrive', 'O lugar exato onde aproveita e rende')}
+                                {L('Los lugares donde tiende a disfrutar y rendir', 'The exact place where they thrive', 'O lugar exato onde aproveita e rende')}
                             </p>
                         </div>
                     </div>
@@ -1397,7 +1419,7 @@ export const Landing: React.FC = () => {
                     </SectionLabel>
                     <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '8px', maxWidth: '600px', lineHeight: 1.75 }}>
                         {L(
-                            'Cada deportista tiene un ritmo y una forma única de procesar el juego. A través de la ciencia del comportamiento, identificamos estas tendencias naturales para que los adultos puedan crear el entorno de sintonía que cada niño necesita para disfrutar y permanecer en el deporte.',
+                            'Cada deportista tiene un ritmo y una forma única de procesar el juego. A través de la ciencia del comportamiento, identificamos estas tendencias naturales para que los adultos puedan crear entornos alineados con sus tendencias para disfrutar y permanecer en el deporte.',
                             'Every athlete has a unique rhythm and way of processing the game. Through behavioral science, we identify these natural tendencies so adults can create the attuned environment each child needs to enjoy and stay in sport.',
                             'Cada atleta tem um ritmo e uma forma única de processar o jogo. Através da ciência do comportamento, identificamos essas tendências naturais para que os adultos possam criar o ambiente de sintonia que cada criança precisa para aproveitar e permanecer no esporte.',
                         )}
