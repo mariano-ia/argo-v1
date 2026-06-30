@@ -159,7 +159,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // the dashboard timeline. The current one is the first entry per child.
             const { data: hist } = await sb
                 .from('perfilamientos')
-                .select('id, child_id, eje, motor, archetype_label, created_at, email_sent_at, share_token')
+                .select('id, child_id, eje, motor, archetype_label, created_at, email_sent_at, share_token, answers')
                 .in('child_id', sessIds)
                 .eq('status', 'resolved')
                 .is('deleted_at', null)

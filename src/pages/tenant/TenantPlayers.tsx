@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import { buildDownloadableReportHtml } from '../../lib/buildDownloadableReport';
 import { getDashboardT } from '../../lib/dashboardTranslations';
+import { describeProfileChange } from '../../lib/profileChange';
 import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { ContextChip } from '../../components/dashboard/ContextChip';
@@ -25,7 +26,7 @@ import {
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
-export interface PerfilamientoHistory { id: string; eje: string; motor: string; archetype_label: string; created_at: string; email_sent_at: string | null; share_token: string | null; }
+export interface PerfilamientoHistory { id: string; eje: string; motor: string; archetype_label: string; created_at: string; email_sent_at: string | null; share_token: string | null; answers?: AnswerRecord[] | null; }
 export interface SessionRow { id: string; perfilamiento_id?: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; share_token?: string | null; reprofile_token?: string | null; full_access?: boolean; email_sent_at?: string | null; perfilamiento_count?: number; archived_at?: string | null; history?: PerfilamientoHistory[]; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
@@ -154,6 +155,14 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         if (!session.answers?.length) return null;
         return classifyDecisionPattern(session.answers);
     }, [session.answers]);
+
+    // Deterministic, probabilistic description of how the profile shifted between the two
+    // most recent re-profilings (newest = history[0], previous = history[1]). No AI.
+    const changeDesc = useMemo(() => {
+        const h = session.history;
+        if (!h || h.length < 2) return null;
+        return describeProfileChange(h[0], h[1], lang, session.id, session.child_name);
+    }, [session.history, lang, session.id, session.child_name]);
 
     const handleResend = async () => {
         setResending(true);
@@ -326,28 +335,36 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
-                            {/* Profile history timeline (full width, at the top) */}
+                            {/* Profile history timeline (left) + plain-language change description (right) */}
                             {(session.history?.length ?? 0) > 1 && (
-                                <div className="mb-5 pb-4 border-b border-argo-border">
-                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">
-                                        {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
-                                    </p>
-                                    <div className="flex flex-col gap-1">
-                                        {(session.history ?? []).map((h, i) => {
-                                            const isCurrent = i === 0;
-                                            const dateStr = new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
-                                            return (
-                                                <div key={h.id} className={`flex items-center gap-2 ${isCurrent ? 'text-xs' : 'text-[10px]'}`}>
-                                                    <span className={`rounded-full flex-shrink-0 ${isCurrent ? 'w-1.5 h-1.5' : 'w-1 h-1 opacity-60'}`} style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
-                                                    <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{h.archetype_label}</span>
-                                                    <span className="text-argo-light">{dateStr}</span>
-                                                    {isCurrent
-                                                        ? <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>
-                                                        : <span className="text-[9px] font-medium text-argo-light bg-argo-bg border border-argo-border px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'previous' : lang === 'pt' ? 'anterior' : 'perfil anterior'}</span>}
-                                                </div>
-                                            );
-                                        })}
+                                <div className="mb-5 pb-4 border-b border-argo-border flex flex-col lg:flex-row lg:items-start gap-4">
+                                    <div className="lg:flex-1 min-w-0">
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">
+                                            {lang === 'en' ? 'Profile history' : lang === 'pt' ? 'Histórico de perfis' : 'Historial de perfiles'}
+                                        </p>
+                                        <div className="flex flex-col gap-1">
+                                            {(session.history ?? []).map((h, i) => {
+                                                const isCurrent = i === 0;
+                                                const dateStr = new Date(h.created_at).toLocaleDateString(sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
+                                                return (
+                                                    <div key={h.id} className={`flex items-center gap-2 ${isCurrent ? 'text-xs' : 'text-[10px]'}`}>
+                                                        <span className={`rounded-full flex-shrink-0 ${isCurrent ? 'w-1.5 h-1.5' : 'w-1 h-1 opacity-60'}`} style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
+                                                        <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{h.archetype_label}</span>
+                                                        <span className="text-argo-light">{dateStr}</span>
+                                                        {isCurrent
+                                                            ? <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>
+                                                            : <span className="text-[9px] font-medium text-argo-light bg-argo-bg border border-argo-border px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'previous' : lang === 'pt' ? 'anterior' : 'perfil anterior'}</span>}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
+                                    {changeDesc && (
+                                        <div className="lg:w-80 flex-shrink-0 rounded-xl bg-argo-violet-50 border border-argo-violet-100 p-3 flex gap-2">
+                                            <Sprout size={15} className="text-argo-violet-600 mt-0.5 flex-shrink-0" />
+                                            <p className="text-xs text-argo-violet-600 leading-relaxed">{changeDesc}</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                             {/* 2-column layout for detail */}
