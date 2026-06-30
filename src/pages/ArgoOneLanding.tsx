@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
 
 /**
- * Dedicated Argo One landing page — optimized for IG ad conversion (Argentina).
- * Route: /one
- * Mobile-first. Pricing visible without scrolling.
+ * Dedicated Argo One landing page — optimized for ad conversion.
+ * Route: /one  (/one?kind=puente preselects the combo)
+ * Mobile-first. Pricing visible without scrolling. USD via Stripe.
  */
 
-const PACKS = [
-    { n: 1, ars: 9999,  regularArs: 20699,  perArs: '',      discount: 52, popular: false, useCase: 'Para conocer a tu hijo' },
-    { n: 3, ars: 24999, regularArs: 48299,  perArs: '8.333', discount: 48, popular: true,  useCase: 'Para hermanos o repetir en el tiempo' },
-    { n: 5, ars: 34999, regularArs: 68999,  perArs: '7.000', discount: 49, popular: false, useCase: 'Para el equipo o compartir con amigos' },
+type OneKind = 'one' | 'one_puente';
+
+const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; desc: string; popular: boolean }[] = [
+    { kind: 'one',        title: 'Argo One',          price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil de tu hijo.',              popular: false },
+    { kind: 'one_puente', title: 'Argo One + Puente', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con él.',  popular: true },
 ];
 
 const FAQ_ITEMS = [
@@ -44,20 +46,22 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
 };
 
 const ArgoOneLanding: React.FC = () => {
-    const [selectedPack, setSelectedPack] = useState<number>(3);
+    const [searchParams] = useSearchParams();
+    const initialKind: OneKind = searchParams.get('kind') === 'puente' ? 'one_puente' : 'one';
+    const [selectedKind, setSelectedKind] = useState<OneKind>(initialKind);
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleBuy = async () => {
-        if (!selectedPack || !email) return;
+        if (!email) return;
         setLoading(true);
         setError('');
         try {
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, pack_size: selectedPack }),
+                body: JSON.stringify({ email, kind: selectedKind }),
             });
             const data = await res.json();
             if (data.checkout_url) {
@@ -106,50 +110,35 @@ const ArgoOneLanding: React.FC = () => {
 
                 {/* ── Pack selector with use cases ────────────────────── */}
                 <div className="flex flex-col gap-2">
-                    {PACKS.map((p, i) => (
+                    {OPTIONS.map((o, i) => (
                         <motion.button
-                            key={p.n}
+                            key={o.kind}
                             {...fade(i * 0.04)}
-                            onClick={() => setSelectedPack(p.n)}
+                            onClick={() => setSelectedKind(o.kind)}
                             style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
-                                border: selectedPack === p.n ? '2px solid #955FB5' : '1px solid #E8E8ED',
-                                background: selectedPack === p.n ? 'rgba(149,95,181,0.04)' : '#fff',
+                                border: selectedKind === o.kind ? '2px solid #955FB5' : '1px solid #E8E8ED',
+                                background: selectedKind === o.kind ? 'rgba(149,95,181,0.04)' : '#fff',
                                 transition: 'all 0.15s', position: 'relative', textAlign: 'left', width: '100%',
                             }}
                         >
-                            {p.popular && (
+                            {o.popular && (
                                 <span style={{
                                     position: 'absolute', top: '-9px', left: '14px',
                                     fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
                                     background: '#955FB5', color: '#fff', padding: '2px 10px', borderRadius: '5px',
                                 }}>
-                                    Mas elegido
+                                    Recomendado
                                 </span>
                             )}
-                            <span style={{
-                                position: 'absolute', top: '-9px', right: '14px',
-                                fontSize: '9px', fontWeight: 700,
-                                background: '#16a34a', color: '#fff', padding: '2px 8px', borderRadius: '5px',
-                            }}>
-                                -{p.discount}%
-                            </span>
-                            <div>
-                                <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>
-                                    {p.n} {p.n === 1 ? 'informe' : 'informes'}
-                                </p>
-                                <p style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>
-                                    {p.useCase}
-                                </p>
+                            <div style={{ paddingRight: '12px' }}>
+                                <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>{o.title}</p>
+                                <p style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>{o.desc}</p>
                             </div>
-                            <div style={{ textAlign: 'right' }}>
-                                <p style={{ fontSize: '11px', color: '#AEAEB2', textDecoration: 'line-through' }}>
-                                    ${p.regularArs.toLocaleString('es-AR')}
-                                </p>
-                                <p style={{ fontSize: '18px', fontWeight: 700, color: '#955FB5' }}>
-                                    ${p.ars.toLocaleString('es-AR')}
-                                </p>
+                            <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                <p style={{ fontSize: '11px', color: '#AEAEB2', textDecoration: 'line-through' }}>{o.regular}</p>
+                                <p style={{ fontSize: '18px', fontWeight: 700, color: '#955FB5' }}>{o.price}</p>
                             </div>
                         </motion.button>
                     ))}
@@ -181,7 +170,7 @@ const ArgoOneLanding: React.FC = () => {
                                 opacity: loading ? 0.6 : 1, transition: 'all 0.2s',
                             }}
                         >
-                            {loading ? 'Procesando...' : `Comprar ${selectedPack} ${selectedPack === 1 ? 'informe' : 'informes'}`}
+                            {loading ? 'Procesando...' : `Comprar ${OPTIONS.find(o => o.kind === selectedKind)?.title ?? 'Argo One'}`}
                         </button>
                         {error && <p style={{ fontSize: '12px', color: '#DC2626', textAlign: 'center' }}>{error}</p>}
                     </div>
@@ -214,7 +203,7 @@ const ArgoOneLanding: React.FC = () => {
                             <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>IC</span>
                         </div>
                         <div>
-                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>Impulsor Conectivo</p>
+                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>Impulsor Ritmico</p>
                             <p style={{ fontSize: '11px', color: '#86868B' }}>Motor Ritmico | 12 anos | Futbol</p>
                         </div>
                     </div>
@@ -256,7 +245,7 @@ const ArgoOneLanding: React.FC = () => {
                 </p>
                 <div className="flex flex-col gap-3">
                     {[
-                        { n: '1', title: 'Compras un pack', desc: 'Pagas con MercadoPago o tarjeta.' },
+                        { n: '1', title: 'Compras el informe', desc: 'Pagas con tarjeta.' },
                         { n: '2', title: 'Tu hijo juega 10 min', desc: 'Aventura interactiva. Sin cuenta ni datos.' },
                         { n: '3', title: 'Recibes el informe', desc: 'Perfil + claves de comunicacion por email.' },
                     ].map(s => (

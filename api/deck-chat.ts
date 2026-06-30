@@ -85,7 +85,7 @@ Compra única, sin suscripción. El padre compra un pack (1, 3 o 5 perfiles), re
 - PRO: $49/mes, hasta 50 jugadores
 - Academy: $89/mes, hasta 100 jugadores, multi-usuario, soporte prioritario
 - Enterprise: precio custom, jugadores ilimitados, API, soporte dedicado
-- Argo One: $14.99 (1 perfil), $34.99 (3 perfiles), $49.99 (5 perfiles)
+- Argo One: $9.99 (informe del niño). Argo One + Puente: $12.99 (informe del niño + Puente del adulto, para padres o entrenadores).
 
 El re-perfilado cada 6 meses está incluido en todos los planes. No hay costos adicionales por usar Argo Coach ni por generar reportes.
 
