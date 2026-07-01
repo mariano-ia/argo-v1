@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
+import { useLang } from '../context/LangContext';
 
 /**
  * Dedicated Argo One landing page — optimized for ad conversion.
@@ -57,6 +58,7 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
 
 const ArgoOneLanding: React.FC = () => {
     const [searchParams] = useSearchParams();
+    const { lang } = useLang();
     const initialKind: OneKind = searchParams.get('kind') === 'puente' ? 'one_puente' : 'one';
     const [selectedKind, setSelectedKind] = useState<OneKind>(initialKind);
     const [email, setEmail] = useState('');
@@ -76,7 +78,7 @@ const ArgoOneLanding: React.FC = () => {
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, kind: selectedKind }),
+                body: JSON.stringify({ email, kind: selectedKind, lang }),
             });
             const data = await res.json();
             if (data.checkout_url) {

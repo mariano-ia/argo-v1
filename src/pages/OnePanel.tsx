@@ -40,6 +40,7 @@ const T = {
         copyLink: 'Copiar link',
         copied: 'Copiado',
         viewReport: 'Ver informe',
+        buyMore: 'Comprar más informes',
         howTitle: 'Cómo funciona',
         how1: 'Genera un link para cada deportista que quieras perfilar.',
         how2: 'El adulto responsable completa el registro y le pasa el dispositivo al deportista.',
@@ -74,6 +75,7 @@ const T = {
         copyLink: 'Copy link',
         copied: 'Copied',
         viewReport: 'View report',
+        buyMore: 'Buy more reports',
         howTitle: 'How it works',
         how1: 'Generate a link for each athlete you want to profile.',
         how2: 'The responsible adult registers and hands the device to the athlete.',
@@ -108,6 +110,7 @@ const T = {
         copyLink: 'Copiar link',
         copied: 'Copiado',
         viewReport: 'Ver relatório',
+        buyMore: 'Comprar mais relatórios',
         howTitle: 'Como funciona',
         how1: 'Gere um link para cada atleta que deseja perfilar.',
         how2: 'O adulto responsável completa o registro e passa o dispositivo ao atleta.',
@@ -365,6 +368,16 @@ export const OnePanel: React.FC = () => {
                             </div>
                         </motion.div>
                     ))}
+                </div>
+
+                {/* Buy more reports */}
+                <div className="text-center mb-8">
+                    <Link
+                        to="/one"
+                        className="inline-flex items-center px-5 py-2.5 rounded-lg text-[13px] font-semibold border border-argo-border text-argo-secondary hover:border-argo-violet-300 transition-colors"
+                    >
+                        {t.buyMore}
+                    </Link>
                 </div>
 
                 {/* How it works */}
