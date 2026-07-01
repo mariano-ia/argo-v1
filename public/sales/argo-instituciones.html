@@ -1657,6 +1657,16 @@ deck.addEventListener('scroll', () => {
   if (!hintHidden && (deck.scrollTop > 50 || onLast)) { hintHidden = true; hint.classList.add('hidden'); }
 }, { passive: true });
 
+// The last slide (QR) is a dead end — never show the "Desliza" hint there.
+const lastSlideEl = slides[slides.length - 1];
+if (lastSlideEl && hint) {
+  new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { hintHidden = true; hint.classList.add('hidden'); }
+    });
+  }, { threshold: 0.5 }).observe(lastSlideEl);
+}
+
 // ═══════════════════════════════════════ SLIDE COUNTER
 function updateCounter() {
   if (isMobile) return;
