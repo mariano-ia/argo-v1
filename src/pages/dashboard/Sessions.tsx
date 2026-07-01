@@ -452,7 +452,7 @@ export const Sessions: React.FC = () => {
                         className="px-3 py-2 text-sm border border-argo-border rounded-lg bg-white focus:outline-none"
                     >
                         <option value="">Todas las cuentas</option>
-                        <option value="_none">Sin tenant (Argo One)</option>
+                        <option value="_none">Sin tenant (ArgoOne)</option>
                         {tenantList.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                     <button
@@ -514,7 +514,7 @@ export const Sessions: React.FC = () => {
                                                 ) : row.tenant_id ? (
                                                     <span className="text-xs font-medium text-gray-700 truncate max-w-[120px] block">{tenantMap[row.tenant_id] ?? '—'}</span>
                                                 ) : (
-                                                    <span className="text-[10px] text-gray-400">Argo One</span>
+                                                    <span className="text-[10px] text-gray-400">ArgoOne</span>
                                                 )}
                                             </td>
                                             <td className="px-5 py-3 text-argo-grey">{row.email}</td>

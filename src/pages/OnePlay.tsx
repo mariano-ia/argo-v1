@@ -5,7 +5,7 @@ import { takeConsentResume } from '../lib/consentStore';
 import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 
 /**
- * /one/:slug — Argo One play page.
+ * /one/:slug — ArgoOne play page.
  * Similar to TenantPlay but uses one-start-play API and one-complete API.
  * No tenant context.
  */

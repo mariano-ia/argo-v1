@@ -77,7 +77,7 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 - Link único: cada institución tiene su link para compartir
 - Multi-usuario: varios coaches, una cuenta
 
-## Argo One (para padres)
+## ArgoOne (para padres)
 Compra única, sin suscripción. El adulto compra el informe del niño (One) o el informe más el Puente del adulto (One + Puente), recibe el link de juego y el reporte llega por email. No necesita crear cuenta.
 
 ## Precios
@@ -85,7 +85,7 @@ Compra única, sin suscripción. El adulto compra el informe del niño (One) o e
 - PRO: $49/mes, hasta 50 jugadores
 - Academy: $89/mes, hasta 100 jugadores, multi-usuario, soporte prioritario
 - Enterprise: precio custom, jugadores ilimitados, API, soporte dedicado
-- Argo One: $9.99 (informe del niño). Argo One + Puente: $12.99 (informe del niño + Puente del adulto, para padres o entrenadores).
+- ArgoOne: $9.99 (informe del niño). ArgoOne + Puente: $12.99 (informe del niño + Puente del adulto, para padres o entrenadores).
 
 El re-perfilado cada 6 meses está incluido en todos los planes. No hay costos adicionales por usar Argo Coach ni por generar reportes.
 

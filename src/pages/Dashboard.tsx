@@ -12,7 +12,7 @@ const NAV_ITEMS = [
     { to: '/admin/tenants',   label: 'Tenants',   icon: Building2 },
     { to: '/admin/ai-usage',  label: 'Consumo IA', icon: Cpu },
     { to: '/admin/revenue',   label: 'Revenue',   icon: DollarSign },
-    { to: '/admin/argo-one',  label: 'Argo One',  icon: ShoppingBag },
+    { to: '/admin/argo-one',  label: 'ArgoOne',  icon: ShoppingBag },
     { to: '/admin/contactos', label: 'Contactos', icon: AtSign },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
     { to: '/admin/health',    label: 'Health',    icon: Activity },

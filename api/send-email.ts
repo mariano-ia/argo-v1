@@ -38,7 +38,7 @@ function buildHtml(params: {
     // existing report instead of charging them again.
     existingPuentesMagicLink?: string;
     // Renders the upsell price in the currency the parent previously paid
-    // in (Argo One). Undefined means "show both".
+    // in (ArgoOne). Undefined means "show both".
     preferredCurrency?: 'usd' | 'ars' | null;
     // Locked demo (is_demo && !full_access): suppress the Argo Puente block
     // entirely. We never pitch the adult Puente to someone who only has a demo
@@ -559,7 +559,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const derivedSiteUrl = hostHeader ? `${protoHeader}://${hostHeader}` : null;
         const siteUrl = derivedSiteUrl || process.env.SITE_URL || 'https://argomethod.com';
 
-        // Look up the parent's preferred currency from their Argo One
+        // Look up the parent's preferred currency from their ArgoOne
         // purchase history (if any). Lets the upsell CTA mirror the
         // currency they have already paid in (ARS-only or USD-only).
         // Safe wrapper: failure falls back to showing both currencies.

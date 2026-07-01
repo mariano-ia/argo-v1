@@ -193,7 +193,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     continue;
                 }
 
-                // Preferred currency from prior Argo One purchases (if any)
+                // Preferred currency from prior ArgoOne purchases (if any)
                 let preferredCurrency: 'usd' | 'ars' | null = null;
                 try {
                     const { data: lastPurchase } = await sb

@@ -25,14 +25,14 @@ Never frame copy as if Argo were only about training. The profile applies equall
 
 ### Product naming + buyer-neutral copy (STRICT)
 Consumer product names (match EXACTLY in checkout, emails, and the pricing card):
-- **Argo One** ($9.99) — the child's report. A One buyer is later offered a Puente proposal for the authorizing adult.
-- **Argo One +** ($12.99) — the child's report **plus** the adult's Puente (no later proposal; the Puente is delivered prepaid). Written **"Argo One +"**, never "Argo One + Puente".
+- **ArgoOne** ($9.99) — the child's report. A One buyer is later offered a Puente proposal for the authorizing adult.
+- **ArgoOne +** ($12.99) — the child's report **plus** the adult's Puente (no later proposal; the Puente is delivered prepaid). Written **"ArgoOne +"**, never "ArgoOne + Puente" / "Argo One + Puente".
 - **Argo Puente** — the adult bridge (the add-on / the upsell). **Always singular "Argo Puente", never the plural "Argo Puentes"** (aligned 2026-07-01). The DB tables `puentes_*` and the `/puentes/` route keep their names; only user-facing copy changes.
 - **Argo Academy** / **Argo Coach** — consultive dashboard, no digital checkout ("Solicitar demo").
 
-**Styled wordmark (STRICT):** whenever a product name is rendered as the *brand wordmark* (the Argo-bold treatment, like the logo — pricing cards, checkout, decks, product chips), write it **joined, with NO spaces**: `ArgoOne`, `ArgoOne+`, `ArgoAcademy`. "Argo" is `font-weight: 800`; the rest ("One" / "One+" / "Academy") is thin (`300` on web, `200` in the sales deck); the **"+" is also 800** (same weight and size as "Argo"), never thin, never spaced. Do NOT write "Argo One" / "Argo One +" with a space in a styled wordmark. (Plain running prose with no brand styling keeps the readable spaced form.)
+**Styled wordmark (STRICT):** whenever a product name is rendered as the *brand wordmark* (the Argo-bold treatment, like the logo — pricing cards, checkout, decks, product chips), write it **joined, with NO spaces**: `ArgoOne`, `ArgoOne+`, `ArgoAcademy`. "Argo" is `font-weight: 800`; the rest ("One" / "One+" / "Academy") is thin (`300` on web, `200` in the sales deck); the **"+" is also 800** (same weight and size as "Argo"), never thin, never spaced. Write it joined **everywhere** — wordmark, plain prose, labels, email subjects and headers: **"ArgoOne"**, never "Argo One" with a space (aligned 2026-07-01). **In emails, the header is the "ArgoOne" wordmark, never "Argo Method One":** do NOT append "One" or an "ONE" badge to the "Argo Method" logo. "Argo Method" is the separate **company** mark (Argo 800 + Method 100, keeps its space) used ONLY for company / tenant / Puentes / report emails, never for the ArgoOne product emails (purchase confirmation, play invite, panel access).
 
-**Buyer-neutral (STRICT):** Argo One / One + / Puente are bought by a **parent OR a coach**. Never assume the parent. Say **"el niño"** (the pricing card's term), never **"tu hijo / your son / seu filho"**; call the grown-up **"el adulto" / "quien lo acompaña"**, not only "padre/madre". Only parental-consent legal text may name "padre/madre/tutor".
+**Buyer-neutral (STRICT):** ArgoOne / ArgoOne + / Puente are bought by a **parent OR a coach**. Never assume the parent. Say **"el niño"** (the pricing card's term), never **"tu hijo / your son / seu filho"**; call the grown-up **"el adulto" / "quien lo acompaña"**, not only "padre/madre". Only parental-consent legal text may name "padre/madre/tutor".
 
 ### Voseo rules (STRICT — enforced by post-edit hook)
 Never use Argentine voseo forms. Always use standard tuteo. Reference:
@@ -83,7 +83,7 @@ Single-instance. One admin dashboard.
 - Trial: 8 players, 14 days. PRO: 50 players. Academy: 100. Enterprise: custom.
 - AI consultant included in all plans (fair use soft cap, invisible to user).
 - Enterprise gets Gemini 2.5 Pro (premium model); others get Gemini 2.5 Flash.
-- Argo One (parent OR coach): one-time purchase, no dashboard, report by email. Copy is buyer-neutral ("el niño", never "tu hijo") — see the naming rule above.
+- ArgoOne (parent OR coach): one-time purchase, no dashboard, report by email. Copy is buyer-neutral ("el niño", never "tu hijo") — see the naming rule above.
 - Full pricing docs: `docs/pricing-v3.md`
 
 #### Key decisions (confirmed)

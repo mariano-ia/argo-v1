@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
  * Body: { email, kind?: 'one' | 'one_puente', lang? }
  * Returns: { checkout_url, purchase_id }
  *
- * Single-price Argo One checkout in USD via Stripe. No packs, no ARS for now.
+ * Single-price ArgoOne checkout in USD via Stripe. No packs, no ARS for now.
  *   - one        → $9.99   (child profile report)
  *   - one_puente → $12.99  (report + a prepaid Puente for the responsible adult)
  *
@@ -15,8 +15,8 @@ import { createClient } from '@supabase/supabase-js';
  */
 
 const PRICES: Record<string, { usd_cents: number; label: string; includes_puente: boolean }> = {
-    one:        { usd_cents: 999,  label: 'Argo One',          includes_puente: false },
-    one_puente: { usd_cents: 1299, label: 'Argo One +', includes_puente: true },
+    one:        { usd_cents: 999,  label: 'ArgoOne',          includes_puente: false },
+    one_puente: { usd_cents: 1299, label: 'ArgoOne +', includes_puente: true },
 };
 
 async function createStripeCheckout(price: typeof PRICES['one'], email: string, purchaseId: string, accessToken: string): Promise<string> {

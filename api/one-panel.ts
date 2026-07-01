@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Argo One mini-panel API.
+ * ArgoOne mini-panel API.
  * Auth: via access_token query param (magic link, no Supabase auth).
  *
  * GET  /api/one-panel?token=xxx  → ALL paid purchases + links for the token's email
@@ -44,19 +44,19 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
     const PL = lang === 'en' ? {
-        subject: 'Your Argo One access link',
+        subject: 'Your ArgoOne access link',
         heading: 'Here is your access link',
         body: 'Open your panel to see your reports, the delivery status of each one, and to generate new play links.',
         cta: 'Open my reports',
         note: 'This link is personal. If you did not request it, you can ignore this email.',
     } : lang === 'pt' ? {
-        subject: 'Seu link de acesso ao Argo One',
+        subject: 'Seu link de acesso ao ArgoOne',
         heading: 'Aqui está seu link de acesso',
         body: 'Abra seu painel para ver seus relatórios, o status de envio de cada um e gerar novos links de jogo.',
         cta: 'Abrir meus relatórios',
         note: 'Este link é pessoal. Se você não o solicitou, pode ignorar este email.',
     } : {
-        subject: 'Tu link de acceso a Argo One',
+        subject: 'Tu link de acceso a ArgoOne',
         heading: 'Aquí está tu link de acceso',
         body: 'Abre tu panel para ver tus informes, el estado de envío de cada uno y generar nuevos links de juego.',
         cta: 'Abrir mis informes',
@@ -73,7 +73,7 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
 <tr><td style="background:#1D1D1F;padding:24px 28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;"> One</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span>
 </td></tr>
 <tr><td style="padding:28px;">
     <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
@@ -247,7 +247,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
 <tr><td style="background:#1D1D1F;padding:24px 28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span>
 </td></tr>
 <tr><td style="padding:28px;">
     <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>

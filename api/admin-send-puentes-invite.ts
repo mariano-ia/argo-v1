@@ -125,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (existing) return res.status(409).json({ error: 'Already purchased' });
 
-        // Mirror the currency the parent already paid in (Argo One), so the
+        // Mirror the currency the parent already paid in (ArgoOne), so the
         // upsell price line matches their previous experience.
         let preferredCurrency: 'usd' | 'ars' | null = null;
         try {

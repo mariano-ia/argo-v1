@@ -22,7 +22,7 @@ interface Contact {
 const SEGMENT_LABEL: Record<string, string> = {
     paid: 'Cliente pago',
     trial: 'Trial',
-    one: 'Argo One',
+    one: 'ArgoOne',
     puentes: 'Puentes',
     lead: 'Lead',
 };

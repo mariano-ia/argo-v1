@@ -9,7 +9,7 @@ import crypto from 'crypto';
  *
  * Creates an Argo Puente purchase record (pending) linked to the child's
  * source session. Fase 0: Stripe USD 4.99 only (MercadoPago/ARS bypassed).
- * Mirrors the Argo One checkout pattern.
+ * Mirrors the ArgoOne checkout pattern.
  */
 
 const PRICE_USD_CENTS = 499;          // $4.99 USD (Puente add-on, offered to every adult after a child's play)

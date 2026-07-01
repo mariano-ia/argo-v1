@@ -132,7 +132,7 @@ interface OnboardingV2Props {
     /** Short-lived token from /api/start-play, required to attach to a tenant. */
     playToken?: string;
     oneLinkId?: string;
-    /** Argo One: sport chosen by the buyer at link generation (shown read-only). */
+    /** ArgoOne: sport chosen by the buyer at link generation (shown read-only). */
     linkSport?: string;
     /** Club flow: institution name shown read-only as play context. */
     institutionName?: string;
@@ -987,7 +987,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.error('[Argo] AI generation failed after retries — NOT sending report email (would be non-personalized). Session left with ai_sections=null for regeneration. sessionId:', sessionIdRef.current);
             }
 
-            // Mark Argo One link as completed if applicable
+            // Mark ArgoOne link as completed if applicable
             if (oneLinkId && sessionIdRef.current) {
                 try {
                     await fetch('/api/one-complete', {

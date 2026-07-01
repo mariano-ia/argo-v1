@@ -5,7 +5,7 @@ import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 
 /**
- * Dedicated Argo One landing page — optimized for ad conversion.
+ * Dedicated ArgoOne landing page — optimized for ad conversion.
  * Route: /one  (/one?kind=puente preselects the combo)
  * Mobile-first, responsive: single column on phones, a desktop two-column
  * hero (pitch + selector left, report preview right) on lg+. USD via Stripe.
@@ -14,8 +14,8 @@ import { useLang } from '../context/LangContext';
 type OneKind = 'one' | 'one_puente';
 
 const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; desc: string; popular: boolean }[] = [
-    { kind: 'one',        title: 'Argo One',   price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',                    popular: false },
-    { kind: 'one_puente', title: 'Argo One +', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.', popular: true },
+    { kind: 'one',        title: 'ArgoOne',   price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',                    popular: false },
+    { kind: 'one_puente', title: 'ArgoOne +', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.', popular: true },
 ];
 
 // Brand-styled product name (Argo bold + One light + "+" bold), matching the home pricing card.

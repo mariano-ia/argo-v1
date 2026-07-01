@@ -36,7 +36,7 @@ export const TermsPage: React.FC = () => (
             </Section>
 
             <Section title="3. Planes y suscripciones">
-                <p><strong>Argo One:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
+                <p><strong>ArgoOne:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
                 <p><strong>Planes institucionales (PRO, Academy, Enterprise):</strong> suscripciones mensuales o anuales que incluyen acceso al dashboard, jugadores activos según el plan contratado, y Argo Coach incluido.</p>
                 <p><strong>Trial:</strong> periodo de prueba gratuito de 14 días con hasta 8 jugadores activos y funcionalidades limitadas. Al vencer el trial, el dashboard pasa a solo lectura. Los perfiles no se eliminan.</p>
             </Section>
@@ -78,7 +78,7 @@ export const TermsPage: React.FC = () => (
 
             <Section title="9. Cancelación y reembolsos">
                 <p>Las suscripciones pueden cancelarse en cualquier momento. La cancelación toma efecto al final del periodo facturado. No se realizan reembolsos por periodos parciales.</p>
-                <p>Las compras de Argo One son finales y no reembolsables una vez que el link de juego ha sido utilizado.</p>
+                <p>Las compras de ArgoOne son finales y no reembolsables una vez que el link de juego ha sido utilizado.</p>
             </Section>
 
             <Section title="10. Limitación de responsabilidad">

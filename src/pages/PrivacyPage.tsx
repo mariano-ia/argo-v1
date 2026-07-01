@@ -67,7 +67,7 @@ const ContentES: React.FC = () => (
         <Section title="7. Retención de datos">
             <p><strong>Perfiles activos:</strong> los perfiles de deportistas se conservan mientras el tenant mantenga una suscripción activa y el adulto responsable no haya solicitado su eliminación.</p>
             <p><strong>Perfiles archivados:</strong> los tenants pueden archivar perfiles para liberar lugar en el equipo activo. Los perfiles archivados se conservan por un máximo de 2 años desde la última actualización y se eliminan automáticamente después de ese plazo.</p>
-            <p><strong>Argo One (compra puntual):</strong> los datos de una sesión Argo One se conservan por un máximo de 2 años desde la fecha de compra y se eliminan automáticamente.</p>
+            <p><strong>ArgoOne (compra puntual):</strong> los datos de una sesión ArgoOne se conservan por un máximo de 2 años desde la fecha de compra y se eliminan automáticamente.</p>
             <p><strong>Tokens de consentimiento expirados:</strong> los tokens no confirmados se eliminan pasadas 24 horas. Los tokens confirmados pero no utilizados se eliminan pasadas 48 horas.</p>
         </Section>
 
@@ -136,7 +136,7 @@ const ContentEN: React.FC = () => (
         <Section title="7. Data retention">
             <p><strong>Active profiles:</strong> athlete profiles are retained while the tenant maintains an active subscription and the responsible adult has not requested their deletion.</p>
             <p><strong>Archived profiles:</strong> tenants can archive profiles to free up roster space. Archived profiles are retained for up to 2 years from the last update and automatically deleted after that period.</p>
-            <p><strong>Argo One (one-time purchase):</strong> Argo One session data is retained for up to 2 years from the purchase date and automatically deleted.</p>
+            <p><strong>ArgoOne (one-time purchase):</strong> ArgoOne session data is retained for up to 2 years from the purchase date and automatically deleted.</p>
             <p><strong>Expired consent tokens:</strong> unconfirmed tokens are deleted after 24 hours. Confirmed but unused tokens are deleted after 48 hours.</p>
         </Section>
 
@@ -205,7 +205,7 @@ const ContentPT: React.FC = () => (
         <Section title="7. Retenção de dados">
             <p><strong>Perfis ativos:</strong> os perfis de atletas são conservados enquanto o tenant mantiver uma assinatura ativa e o adulto responsável não tiver solicitado sua eliminação.</p>
             <p><strong>Perfis arquivados:</strong> os tenants podem arquivar perfis para liberar espaço no equipe ativo. Os perfis arquivados são conservados por no máximo 2 anos desde a última atualização e eliminados automaticamente após esse prazo.</p>
-            <p><strong>Argo One (compra única):</strong> os dados de uma sessão Argo One são conservados por no máximo 2 anos desde a data de compra e eliminados automaticamente.</p>
+            <p><strong>ArgoOne (compra única):</strong> os dados de uma sessão ArgoOne são conservados por no máximo 2 anos desde a data de compra e eliminados automaticamente.</p>
             <p><strong>Tokens de consentimento expirados:</strong> tokens não confirmados são eliminados após 24 horas. Tokens confirmados mas não utilizados são eliminados após 48 horas.</p>
         </Section>
 

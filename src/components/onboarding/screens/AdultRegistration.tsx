@@ -18,7 +18,7 @@ interface Props {
     flowType: 'auth' | 'tenant' | 'one';
     tenantId?: string;
     oneLinkId?: string;
-    /** When set, the sport was chosen earlier (club or Argo One link) and is shown read-only. */
+    /** When set, the sport was chosen earlier (club or ArgoOne link) and is shown read-only. */
     readOnlySport?: string;
     /** Club flow: institution name shown read-only as play context. */
     institutionName?: string;
@@ -60,7 +60,7 @@ export const AdultRegistration: React.FC<Props> = ({
     const emailFinal = userEmail || email.trim();
 
     // The sport is only asked when nobody chose it earlier. The club (tenant)
-    // defines it, and Argo One now captures it at link generation; in both
+    // defines it, and ArgoOne now captures it at link generation; in both
     // cases it arrives as readOnlySport and is shown read-only, never asked.
     const askSport = !readOnlySport && flowType !== 'tenant';
 
@@ -182,7 +182,7 @@ export const AdultRegistration: React.FC<Props> = ({
                     </div>
                 </div>
 
-                {/* Deporte — only asked outside the club flow (Argo One) */}
+                {/* Deporte — only asked outside the club flow (ArgoOne) */}
                 {askSport && (
                     <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">{ot.sport}</label>

@@ -702,7 +702,7 @@ const PricingSection: React.FC<{
             {/* Three columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
-                {/* ── COL 1: Argo One ─────────────────────────────────────── */}
+                {/* ── COL 1: ArgoOne ─────────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
@@ -726,7 +726,7 @@ const PricingSection: React.FC<{
                     </button>
                 </div>
 
-                {/* ── COL 2: Argo One + Puente (destacada) ────────────────── */}
+                {/* ── COL 2: ArgoOne + Puente (destacada) ────────────────── */}
                 <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
                     <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                         {L('Recomendado', 'Recommended', 'Recomendado')}
@@ -737,7 +737,7 @@ const PricingSection: React.FC<{
                     </p>
                     <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em' }}>$12.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$14.99</span></p>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F', marginBottom: '8px' }}>
-                        {L('Todo el informe de Argo One, y además tu Puente con el niño:', 'The full Argo One report, plus your Bridge with the child:', 'Todo o relatório do Argo One, e mais a sua Ponte com a criança:')}
+                        {L('Todo el informe de ArgoOne, y además tu Puente con el niño:', 'The full ArgoOne report, plus your Bridge with the child:', 'Todo o relatório do ArgoOne, e mais a sua Ponte com a criança:')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <ReportItem title={L('Tu estilo natural', 'Your natural style', 'Seu estilo natural')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
@@ -762,7 +762,7 @@ const PricingSection: React.FC<{
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <ReportItem title={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} desc={L('Todo tu equipo y su evolución en un solo lugar.', 'Your whole team and their growth in one place.', 'Todo o seu time e sua evolução em um só lugar.')} />
-                        <ReportItem title={L('El informe de cada niño', "Each child's report", 'O relatório de cada criança')} desc={L('El mismo informe individual de Argo One, para todo tu equipo.', 'The same individual report as Argo One, for your whole team.', 'O mesmo relatório individual do Argo One, para todo o seu time.')} />
+                        <ReportItem title={L('El informe de cada niño', "Each child's report", 'O relatório de cada criança')} desc={L('El mismo informe individual de ArgoOne, para todo tu equipo.', 'The same individual report as ArgoOne, for your whole team.', 'O mesmo relatório individual do ArgoOne, para todo o seu time.')} />
                         <ReportItem title={L('Predictor Conductual', 'Behavioral Predictor', 'Preditor Comportamental')} desc={L('Qué hacer en cada situación real del deporte.', 'What to do in every real situation in their sport.', 'O que fazer em cada situação real do esporte.')} />
                         <ReportItem title={L('Argo Coach', 'Argo Coach', 'Argo Coach')} desc={L('Un consultor con IA para tus dudas sobre cada jugador.', 'An AI consultant for your questions about each player.', 'Um consultor com IA para suas dúvidas sobre cada jogador.')} />
                         <ReportItem title={L('Planteles y grupos', 'Teams and groups', 'Plantéis e grupos')} desc={L('Organiza tu institución por equipos y categorías, sin límite.', 'Organize your institution by teams and categories, no limit.', 'Organize sua instituição por equipes e categorias, sem limite.')} />

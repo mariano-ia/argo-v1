@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(410).json({ error: 'child_inactive' });
         }
         if (!target.tenant_id) {
-            // Argo One children don't re-profile through the tenant flow.
+            // ArgoOne children don't re-profile through the tenant flow.
             return res.status(400).json({ error: 'reprofile_not_supported' });
         }
 

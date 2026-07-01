@@ -112,12 +112,12 @@ export const config = { api: { bodyParser: false } };
  * Handles payment confirmation from Stripe and MercadoPago.
  *
  * Stripe events:
- *   - checkout.session.completed (Argo One + subscriptions)
+ *   - checkout.session.completed (ArgoOne + subscriptions)
  *   - customer.subscription.deleted (subscription cancellation)
  *   - charge.refunded (refund processing)
  *
  * MercadoPago events:
- *   - payment / payment.created / payment.updated (Argo One payments)
+ *   - payment / payment.created / payment.updated (ArgoOne payments)
  *   - subscription_preapproval (subscription status changes)
  *   - subscription_authorized_payment (recurring payment processed)
  */
@@ -142,7 +142,7 @@ async function sendConfirmationEmail(
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
 
     const PL = lang === 'en' ? {
-        subject: packSize === 1 ? 'Your Argo One report is ready to use' : `Your ${packSize} Argo One reports are ready to use`,
+        subject: packSize === 1 ? 'Your ArgoOne report is ready to use' : `Your ${packSize} ArgoOne reports are ready to use`,
         packLabel: packSize === 1 ? '1 report' : `${packSize} reports`,
         badge: 'Purchase confirmed', paid: 'Payment received', nextStep: 'Your next step',
         s1t: 'Open your panel', s1b: 'From your panel you generate links for athletes to play the experience.',
@@ -152,7 +152,7 @@ async function sendConfirmationEmail(
         note: `Keep this link to come back anytime. You can also go to <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> and enter your email to see your reports, their delivery status, and generate links.`,
         footer: 'Argo Method · Behavioral profiling for young athletes',
     } : lang === 'pt' ? {
-        subject: packSize === 1 ? 'Seu relatório Argo One está pronto para usar' : `Seus ${packSize} relatórios Argo One estão prontos para usar`,
+        subject: packSize === 1 ? 'Seu relatório ArgoOne está pronto para usar' : `Seus ${packSize} relatórios ArgoOne estão prontos para usar`,
         packLabel: packSize === 1 ? '1 relatório' : `${packSize} relatórios`,
         badge: 'Compra confirmada', paid: 'Pagamento recebido', nextStep: 'Seu próximo passo',
         s1t: 'Acesse seu painel', s1b: 'No seu painel você gera links para os atletas jogarem a experiência.',
@@ -162,7 +162,7 @@ async function sendConfirmationEmail(
         note: `Guarde este link para voltar quando quiser. Você também pode acessar <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> com seu email para ver seus relatórios, o status dos envios e gerar links.`,
         footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
     } : {
-        subject: packSize === 1 ? 'Tu informe Argo One está listo para usar' : `Tus ${packSize} informes Argo One están listos para usar`,
+        subject: packSize === 1 ? 'Tu informe ArgoOne está listo para usar' : `Tus ${packSize} informes ArgoOne están listos para usar`,
         packLabel: packSize === 1 ? '1 informe' : `${packSize} informes`,
         badge: 'Compra confirmada', paid: 'Pago recibido', nextStep: 'Tu siguiente paso',
         s1t: 'Accede a tu panel', s1b: 'Desde tu panel generas links para que los deportistas jueguen la experiencia.',
@@ -182,8 +182,7 @@ async function sendConfirmationEmail(
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 
 <tr><td style="background:#1D1D1F;padding:28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-    <span style="background:#955FB5;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">ONE</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span>
     <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${PL.badge}</p>
 </td></tr>
 
@@ -700,7 +699,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         return res.status(200).json({ received: true, kind: 'unlock', session_id: unlockSessionId });
     }
 
-    // Argo One payment
+    // ArgoOne payment
     const purchaseId = session?.metadata?.purchase_id;
     if (!purchaseId || source !== 'argo_one') {
         return res.status(200).json({ received: true, ignored: true });
@@ -849,7 +848,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         return res.status(200).json({ received: true, action: 'subscription_payment_logged' });
     }
 
-    // ── Argo One payment events ─────────────────────────────────────────
+    // ── ArgoOne payment events ─────────────────────────────────────────
     if (topic !== 'payment' && topic !== 'payment.created' && topic !== 'payment.updated') {
         return res.status(200).json({ received: true, ignored: true });
     }

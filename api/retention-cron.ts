@@ -14,8 +14,8 @@ import { createClient } from '@supabase/supabase-js';
  *    older than 48h are deleted — the 24h token + 24h grace period.
  *  - children (tenant archived): rows with archived_at older than 2 years
  *    are hard-deleted along with their related feedback/chat/group rows.
- *  - children (Argo One): rows with tenant_id IS NULL and created_at older
- *    than 2 years are hard-deleted. Argo One children are identified by
+ *  - children (ArgoOne): rows with tenant_id IS NULL and created_at older
+ *    than 2 years are hard-deleted. ArgoOne children are identified by
  *    the absence of a tenant_id.
  *  - Previously soft-deleted children (deleted_at IS NOT NULL) are purged
  *    as part of the migration to hard deletes — any remaining rows older
@@ -148,7 +148,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // ── 4. Argo One children > 2 years ─────────────────────────────
+        // ── 4. ArgoOne children > 2 years ─────────────────────────────
         const { data: oldArgoOne, error: err4fetch } = await sb
             .from('children')
             .select('id')
