@@ -66,7 +66,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     try {
         const { email, kind: bodyKind, lang: bodyLang } = req.body as { email?: string; kind?: string; lang?: string };
-        const lang = typeof bodyLang === 'string' && ['es', 'en', 'pt'].includes(bodyLang) ? bodyLang : 'es';
+        // Prefer the language the client sent; otherwise fall back to the browser's
+        // Accept-Language header so an English (or Portuguese) visitor gets emails in
+        // their language even if the /one page did not pass lang. 'es' is the last resort.
+        const headerLang = (() => {
+            const al = (req.headers['accept-language'] || '').toString().toLowerCase();
+            if (al.startsWith('en')) return 'en';
+            if (al.startsWith('pt')) return 'pt';
+            return 'es';
+        })();
+        const lang = typeof bodyLang === 'string' && ['es', 'en', 'pt'].includes(bodyLang) ? bodyLang : headerLang;
         const kind = bodyKind === 'one_puente' ? 'one_puente' : 'one';
         const price = PRICES[kind];
 
