@@ -19,6 +19,7 @@ export const OnePlay: React.FC = () => {
     const [status, setStatus] = useState<Status>('loading');
     const [linkId, setLinkId] = useState<string>('');
     const [linkSport, setLinkSport] = useState<string>('');
+    const [initialAdultData, setInitialAdultData] = useState<AdultData | undefined>(undefined);
     const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
         if (!consentTokenFromUrl) return null;
         const resume = takeConsentResume(consentTokenFromUrl);
@@ -39,6 +40,18 @@ export const OnePlay: React.FC = () => {
                     const data = await res.json();
                     setLinkId(data.link_id);
                     setLinkSport(data.sport || '');
+                    // Pre-fill the child's name + the adult's email that the buyer
+                    // entered when generating this link, so the parent doesn't have
+                    // to type them again in the onboarding.
+                    if (data.child_name || data.recipient_email) {
+                        setInitialAdultData({
+                            nombreAdulto: '',
+                            email: data.recipient_email || '',
+                            nombreNino: data.child_name || '',
+                            edad: 10,
+                            deporte: data.sport || '',
+                        });
+                    }
                     setStatus('ready');
                 } else if (res.status === 404) {
                     setStatus('not_found');
@@ -75,7 +88,7 @@ export const OnePlay: React.FC = () => {
     // Ready — launch onboarding without tenant, with oneLink context.
     // The sport was chosen by the buyer at link generation, so it is shown
     // read-only and never asked again.
-    return <OnboardingFlowV2 oneLinkId={linkId} linkSport={linkSport} initialConsent={initialConsent} />;
+    return <OnboardingFlowV2 oneLinkId={linkId} linkSport={linkSport} initialConsent={initialConsent} initialAdultData={initialAdultData} />;
 };
 
 const StatusScreen: React.FC<{ title: string; message: string }> = ({ title, message }) => (

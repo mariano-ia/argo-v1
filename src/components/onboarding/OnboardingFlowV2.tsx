@@ -184,7 +184,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Re-profile goes through the adult registration screen (pre-filled), so it follows
     // the SAME flow as the first play: the responsible adult confirms identity + accepts
     // T&C, and for under-13 children the parental consent step is re-collected.
-    const reprofileStartIndex = initialAdultData ? ADULT_REGISTRATION_INDEX : null;
+    // Only a re-profile (which carries reprofileToken) skips the intro screens and
+    // jumps to the pre-filled registration. A first-time One play may ALSO receive
+    // initialAdultData (child name + adult email captured at link generation) to
+    // pre-fill the form, but it must still show the normal intro flow.
+    const reprofileStartIndex = reprofileToken ? ADULT_REGISTRATION_INDEX : null;
     // The demo (demoMode, no initialConsent) runs the SAME full onboarding as a
     // normal play — language, registration (incl. sport), parental consent — so it
     // can personalize by sport; only the end report is abridged.

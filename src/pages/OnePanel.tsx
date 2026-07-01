@@ -231,9 +231,8 @@ export const OnePanel: React.FC = () => {
             <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-argo-neutral">
                 <div className="flex items-center justify-center gap-1.5 mb-8">
                     <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One</span>
                     </span>
-                    <span style={{ background: '#955FB5', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>ONE</span>
                 </div>
                 <div className="w-6 h-6 rounded-full border-2 border-argo-violet-500 border-t-transparent animate-spin mb-4" />
                 {status === 'confirming' && (
@@ -260,9 +259,8 @@ export const OnePanel: React.FC = () => {
                 <div style={{ maxWidth: '360px' }}>
                     <div className="flex items-center justify-center gap-1.5 mb-8">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One</span>
                         </span>
-                        <span style={{ background: '#955FB5', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px' }}>ONE</span>
                     </div>
                     <h2 className="text-xl font-light text-argo-navy mb-3">{status === 'not_found' ? t.notFound : t.notPaid}</h2>
                     <p className="text-sm text-argo-grey">{status === 'not_found' ? t.notFoundDesc : t.notPaidDesc}</p>
@@ -284,9 +282,8 @@ export const OnePanel: React.FC = () => {
                 <div className="text-center mb-8">
                     <Link to="/" className="inline-flex items-center gap-1.5">
                         <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One</span>
                         </span>
-                        <span style={{ background: '#955FB5', color: '#fff', fontSize: '9px', fontWeight: 700, padding: '2px 8px', borderRadius: '4px', letterSpacing: '0.06em' }}>ONE</span>
                     </Link>
                 </div>
 
