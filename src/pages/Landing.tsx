@@ -704,7 +704,7 @@ const PricingSection: React.FC<{
 
                 {/* ── COL 1: Argo One ─────────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" One" /></p>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
                         {L('Informe individual del niño', "The child's individual report", 'Relatório individual da criança')}
                     </p>
@@ -722,7 +722,7 @@ const PricingSection: React.FC<{
                         onClick={() => navigate('/one')}
                         style={{ width: '100%', padding: '13px', borderRadius: '12px', border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
                     >
-                        {L('Comprar', 'Buy', 'Comprar')} <ProductName rest=" One" />
+                        {L('Comprar', 'Buy', 'Comprar')} <ProductName rest="One" />
                     </button>
                 </div>
 
@@ -731,7 +731,7 @@ const PricingSection: React.FC<{
                     <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                         {L('Recomendado', 'Recommended', 'Recomendado')}
                     </span>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One </span><span style={{ fontWeight: 800 }}>+</span></p>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
                         {L('Informe individual del niño + Informe Puente con el adulto', "The child's individual report + Bridge report with the adult", 'Relatório individual da criança + Relatório Ponte com o adulto')}
                     </p>
@@ -750,13 +750,13 @@ const PricingSection: React.FC<{
                         onClick={() => navigate('/one?kind=puente')}
                         style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
                     >
-                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One </span><span style={{ fontWeight: 800 }}>+</span>
+                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span>
                     </button>
                 </div>
 
                 {/* ── COL 3: Argo Academy ─────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest=" Academy" /></p>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="Academy" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '18px' }}>
                         {L('Plataforma de gestión para tu institución o equipo.', 'Management platform for your institution or team.', 'Plataforma de gestão para a sua instituição ou time.')}
                     </p>
@@ -1005,34 +1005,42 @@ export const Landing: React.FC = () => {
 
                             {/* Text */}
                             <div>
-                                <SectionLabel>La herramienta · Dos experiencias</SectionLabel>
+                                <SectionLabel>{L('La herramienta · Dos experiencias', 'The tool · Two experiences', 'A ferramenta · Duas experiências')}</SectionLabel>
                                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
                                     {L('Como funciona el Método Argo', 'How the Argo Method works', 'Como funciona o Método Argo')}
                                 </h2>
                                 <div className="mt-10 space-y-7">
                                     <div>
                                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
-                                            01. El juego
+                                            {L('01. El juego', '01. The game', '01. O jogo')}
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                            Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones reflejan patrones conductuales de forma natural, sin preguntas directas.
+                                            {L(
+                                                'Los niños experimentan una aventura gráfica de 10 minutos. Sus elecciones reflejan patrones conductuales de forma natural, sin preguntas directas.',
+                                                'Children experience a 10-minute graphic adventure. Their choices reflect behavioral patterns naturally, without direct questions.',
+                                                'As crianças vivem uma aventura gráfica de 10 minutos. Suas escolhas refletem padrões comportamentais de forma natural, sem perguntas diretas.',
+                                            )}
                                         </p>
                                     </div>
                                     <div>
                                         <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.12em', color: '#1D1D1F', textTransform: 'uppercase', marginBottom: '7px' }}>
-                                            02. La plataforma
+                                            {L('02. La plataforma', '02. The platform', '02. A plataforma')}
                                         </p>
                                         <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.75 }}>
-                                            La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte en un entorno alineado con cómo tiende a procesar.
+                                            {L(
+                                                'La institución conoce el perfil de cada deportista, consulta al asistente de IA y toma decisiones para que cada niño disfrute el deporte en un entorno alineado con cómo tiende a procesar.',
+                                                'The institution knows each athlete\'s profile, consults the AI assistant and makes decisions so every child enjoys the sport in an environment aligned with how they tend to process.',
+                                                'A instituição conhece o perfil de cada atleta, consulta o assistente de IA e toma decisões para que cada criança aproveite o esporte em um ambiente alinhado com a forma como tende a processar.',
+                                            )}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="mt-8 flex flex-wrap gap-2">
                                     {[
-                                        { label: 'Jugadores',           tip: 'El perfil conductual de cada deportista y su historial de informes.' },
-                                        { label: 'Química de grupos',    tip: 'Agrupa a tus jugadores y entiende la dinámica colectiva de cada grupo.' },
-                                        { label: 'Predictor Conductual', tip: 'Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.' },
-                                        { label: 'Argo Coach',        tip: 'Hazle consultas sobre tus deportistas y recibe consejos personalizados.' },
+                                        { label: L('Jugadores', 'Players', 'Jogadores'),                                tip: L('El perfil conductual de cada deportista y su historial de informes.', 'Each athlete\'s behavioral profile and their report history.', 'O perfil comportamental de cada atleta e seu histórico de relatórios.') },
+                                        { label: L('Química de grupos', 'Group chemistry', 'Química de grupos'),          tip: L('Agrupa a tus jugadores y entiende la dinámica colectiva de cada grupo.', 'Group your players and understand the collective dynamics of each group.', 'Agrupe seus jogadores e entenda a dinâmica coletiva de cada grupo.') },
+                                        { label: L('Predictor Conductual', 'Behavioral Predictor', 'Preditor Comportamental'), tip: L('Guía para actuar según el perfil de cada niño en situaciones concretas del deporte.', 'A guide to act on each child\'s profile in specific situations in their sport.', 'Um guia para agir segundo o perfil de cada criança em situações concretas do esporte.') },
+                                        { label: 'Argo Coach',                                                          tip: L('Hazle consultas sobre tus deportistas y recibe consejos personalizados.', 'Ask about your athletes and receive personalized advice.', 'Faça consultas sobre seus atletas e receba conselhos personalizados.') },
                                     ].map(({ label, tip }) => (
                                         <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '11px', color: '#424245', background: '#F5F5F7', border: '1px solid #E8E8ED', borderRadius: '20px', padding: '3px 8px 3px 11px' }}>
                                             {label}
@@ -1308,29 +1316,6 @@ export const Landing: React.FC = () => {
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </section>
-
-            <Divider />
-
-            {/* ── SALVAGUARDA ÉTICA ── */}
-            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
-                <div className="max-w-2xl mx-auto text-center">
-                    <motion.div {...fadeUp(0)}>
-                        <SectionLabel>
-                            {L('Compromiso · Observador aliado', 'Commitment · Allied observer', 'Compromisso · Observador aliado')}
-                        </SectionLabel>
-                        <h2 style={{ fontWeight: 300, fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', lineHeight: 1.15, letterSpacing: '-0.025em' }} className="mb-8 text-argo-navy">
-                            {L('Sin etiquetas. Sin juicios clínicos', 'No labels. No clinical judgments', 'Sem rótulos. Sem julgamentos clínicos')}
-                        </h2>
-                        <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', lineHeight: 1.75 }} className="mb-4">
-                            {L(
-                                'Argo Method no clasifica capacidades ni predice futuros. No sustituye el trabajo de psicólogos deportivos ni especialistas en desarrollo infantil.',
-                                'Argo Method does not classify abilities or predict futures. It does not replace sports psychologists or child development specialists.',
-                                'Argo Method não classifica capacidades nem prevê futuros. Não substitui o trabalho de psicólogos esportivos nem de especialistas em desenvolvimento infantil.',
-                            )}
-                        </p>
-                    </motion.div>
-                </div>
             </section>
 
             <Divider />
