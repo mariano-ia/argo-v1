@@ -60,6 +60,13 @@ const T = {
         notFoundDesc: 'Verifica el link que recibiste por email.',
         notPaid: 'Pago pendiente',
         notPaidDesc: 'Tu pago todavía no fue confirmado. Si ya pagaste, espera unos minutos e intenta de nuevo.',
+        accessTitle: 'Accede a tus informes',
+        accessDesc: 'Ingresa el email con el que compraste y te enviamos un link de acceso a tu panel.',
+        accessEmailPlaceholder: 'Tu email',
+        accessSend: 'Enviarme el link',
+        accessSending: 'Enviando...',
+        accessSentTitle: 'Revisa tu email',
+        accessSentDesc: 'Si tienes compras con ese email, te enviamos un link para acceder a tu panel.',
     },
     en: {
         title: 'My reports',
@@ -95,6 +102,13 @@ const T = {
         notFoundDesc: 'Check the link you received by email.',
         notPaid: 'Payment pending',
         notPaidDesc: 'Your payment has not been confirmed yet. If you already paid, wait a few minutes and try again.',
+        accessTitle: 'Access your reports',
+        accessDesc: 'Enter the email you purchased with and we will send you a link to your panel.',
+        accessEmailPlaceholder: 'Your email',
+        accessSend: 'Send me the link',
+        accessSending: 'Sending...',
+        accessSentTitle: 'Check your email',
+        accessSentDesc: 'If you have purchases with that email, we sent you a link to access your panel.',
     },
     pt: {
         title: 'Meus relatórios',
@@ -130,6 +144,13 @@ const T = {
         notFoundDesc: 'Verifique o link que recebeu por email.',
         notPaid: 'Pagamento pendente',
         notPaidDesc: 'Seu pagamento ainda não foi confirmado. Se já pagou, aguarde alguns minutos e tente novamente.',
+        accessTitle: 'Acesse seus relatórios',
+        accessDesc: 'Insira o email com que comprou e enviaremos um link de acesso ao seu painel.',
+        accessEmailPlaceholder: 'Seu email',
+        accessSend: 'Enviar o link',
+        accessSending: 'Enviando...',
+        accessSentTitle: 'Verifique seu email',
+        accessSentDesc: 'Se você tem compras com esse email, enviamos um link para acessar seu painel.',
     },
 };
 
@@ -142,13 +163,15 @@ export const OnePanel: React.FC = () => {
     const t = T[lang as keyof typeof T] ?? T.es;
 
     const [data, setData] = useState<PanelData | null>(null);
-    const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'not_paid' | 'confirming'>('loading');
+    const [status, setStatus] = useState<'loading' | 'ok' | 'not_found' | 'not_paid' | 'confirming' | 'need_email' | 'access_sent'>('loading');
     const [modal, setModal] = useState<string | null>(null); // link_id for modal
     const [modalEmail, setModalEmail] = useState('');
     const [modalName, setModalName] = useState('');
     const [modalSport, setModalSport] = useState('');
     const [modalSportCustom, setModalSportCustom] = useState('');
     const [sending, setSending] = useState(false);
+    const [accessEmail, setAccessEmail] = useState('');
+    const [requesting, setRequesting] = useState(false);
 
     const lastSport = t.sports[t.sports.length - 1];
     const sportFinal = modalSport === lastSport ? modalSportCustom.trim() : modalSport;
@@ -158,7 +181,7 @@ export const OnePanel: React.FC = () => {
     const isSuccess = searchParams.get('success') === '1';
 
     const fetchData = useCallback(async () => {
-        if (!token) { setStatus('not_found'); return; }
+        if (!token) { setStatus('need_email'); return; }
         try {
             const res = await fetch(`/api/one-panel?token=${token}`);
             if (res.ok) {
@@ -204,6 +227,20 @@ export const OnePanel: React.FC = () => {
         }
         return () => { if (pollRef.current) clearInterval(pollRef.current); };
     }, [status, token]);
+
+    const requestAccess = async () => {
+        if (!accessEmail.trim() || requesting) return;
+        setRequesting(true);
+        try {
+            await fetch('/api/one-panel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'request-access', email: accessEmail.trim() }),
+            });
+        } catch { /* ignore — we always show the same confirmation */ }
+        setRequesting(false);
+        setStatus('access_sent');
+    };
 
     const handleGenerate = async () => {
         if (!modal || !modalEmail || !sportFinal) return;
@@ -252,6 +289,46 @@ export const OnePanel: React.FC = () => {
                         </p>
                     </div>
                 )}
+            </div>
+        );
+    }
+
+    if (status === 'need_email' || status === 'access_sent') {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-argo-neutral">
+                <div className="w-full max-w-sm">
+                    <div className="flex items-center justify-center gap-1.5 mb-8">
+                        <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}> One</span>
+                        </span>
+                    </div>
+                    {status === 'access_sent' ? (
+                        <div className="text-center">
+                            <h2 className="text-xl font-light text-argo-navy mb-3">{t.accessSentTitle}</h2>
+                            <p className="text-sm text-argo-grey">{t.accessSentDesc}</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white rounded-[14px] shadow-argo px-6 py-7">
+                            <h2 className="text-lg font-semibold text-argo-navy mb-1.5 text-center">{t.accessTitle}</h2>
+                            <p className="text-[13px] text-argo-grey mb-5 text-center leading-relaxed">{t.accessDesc}</p>
+                            <input
+                                type="email"
+                                placeholder={t.accessEmailPlaceholder}
+                                value={accessEmail}
+                                onChange={e => setAccessEmail(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && requestAccess()}
+                                className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-3"
+                            />
+                            <button
+                                onClick={requestAccess}
+                                disabled={requesting || !accessEmail.trim()}
+                                className="w-full py-3 rounded-xl text-sm font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50"
+                            >
+                                {requesting ? t.accessSending : t.accessSend}
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         );
     }

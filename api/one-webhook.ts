@@ -133,6 +133,7 @@ async function sendConfirmationEmail(
     email: string,
     accessToken: string,
     packSize: number,
+    lang: string = 'es',
 ): Promise<void> {
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) { console.warn('[one-webhook] Missing RESEND_API_KEY, skipping email'); return; }
@@ -140,11 +141,39 @@ async function sendConfirmationEmail(
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
 
-    const subject = packSize === 1
-        ? 'Tu informe Argo One está listo para usar'
-        : `Tus ${packSize} informes Argo One están listos para usar`;
-
-    const packLabel = packSize === 1 ? '1 informe' : `${packSize} informes`;
+    const PL = lang === 'en' ? {
+        subject: packSize === 1 ? 'Your Argo One report is ready to use' : `Your ${packSize} Argo One reports are ready to use`,
+        packLabel: packSize === 1 ? '1 report' : `${packSize} reports`,
+        badge: 'Purchase confirmed', paid: 'Payment received', nextStep: 'Your next step',
+        s1t: 'Open your panel', s1b: 'From your panel you generate links for athletes to play the experience.',
+        s2t: 'Generate a link and share it', s2b: 'The responsible adult completes a short registration and hands the device to the athlete.',
+        s3t: 'Get the report', s3b: 'The athlete plays an adventure of under 10 minutes. The full report arrives at the adult\'s email.',
+        cta: 'Go to my reports',
+        note: `Keep this link to come back anytime. You can also go to <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> and enter your email to see your reports, their delivery status, and generate links.`,
+        footer: 'Argo Method · Behavioral profiling for young athletes',
+    } : lang === 'pt' ? {
+        subject: packSize === 1 ? 'Seu relatório Argo One está pronto para usar' : `Seus ${packSize} relatórios Argo One estão prontos para usar`,
+        packLabel: packSize === 1 ? '1 relatório' : `${packSize} relatórios`,
+        badge: 'Compra confirmada', paid: 'Pagamento recebido', nextStep: 'Seu próximo passo',
+        s1t: 'Acesse seu painel', s1b: 'No seu painel você gera links para os atletas jogarem a experiência.',
+        s2t: 'Gere um link e compartilhe', s2b: 'O adulto responsável completa um breve registro e passa o dispositivo ao atleta.',
+        s3t: 'Receba o relatório', s3b: 'O atleta joga uma aventura de menos de 10 minutos. O relatório completo chega no email do adulto responsável.',
+        cta: 'Ir aos meus relatórios',
+        note: `Guarde este link para voltar quando quiser. Você também pode acessar <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> com seu email para ver seus relatórios, o status dos envios e gerar links.`,
+        footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
+    } : {
+        subject: packSize === 1 ? 'Tu informe Argo One está listo para usar' : `Tus ${packSize} informes Argo One están listos para usar`,
+        packLabel: packSize === 1 ? '1 informe' : `${packSize} informes`,
+        badge: 'Compra confirmada', paid: 'Pago recibido', nextStep: 'Tu siguiente paso',
+        s1t: 'Accede a tu panel', s1b: 'Desde tu panel generas links para que los deportistas jueguen la experiencia.',
+        s2t: 'Genera un link y compártelo', s2b: 'El adulto responsable completa un breve registro y le pasa el dispositivo al deportista.',
+        s3t: 'Recibe el informe', s3b: 'El deportista juega una aventura de menos de 10 minutos. El informe completo llega al email del adulto responsable.',
+        cta: 'Ir a mis informes',
+        note: `Guarda este link para volver cuando quieras. También puedes entrar a <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> con tu email para ver tus informes, el estado de los envíos y generar links.`,
+        footer: 'Argo Method · Perfilamiento conductual para deportistas jóvenes',
+    };
+    const subject = PL.subject;
+    const packLabel = PL.packLabel;
 
     const html = `
 <!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
@@ -155,15 +184,15 @@ async function sendConfirmationEmail(
 <tr><td style="background:#1D1D1F;padding:28px;">
     <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
     <span style="background:#955FB5;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">ONE</span>
-    <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">Compra confirmada</p>
+    <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${PL.badge}</p>
 </td></tr>
 
 <tr><td style="padding:28px;">
     <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:24px;">
-        <p style="margin:0;font-size:13px;font-weight:600;color:#16a34a;">Pago recibido: ${packLabel}</p>
+        <p style="margin:0;font-size:13px;font-weight:600;color:#16a34a;">${PL.paid}: ${packLabel}</p>
     </div>
 
-    <p style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;margin:0 0 14px;">Tu siguiente paso</p>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;margin:0 0 14px;">${PL.nextStep}</p>
 
     <table width="100%" cellpadding="0" cellspacing="0">
     <tr>
@@ -171,8 +200,8 @@ async function sendConfirmationEmail(
             <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">1</div>
         </td>
         <td style="vertical-align:top;padding-left:10px;padding-bottom:14px;">
-            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Accede a tu panel</p>
-            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">Desde tu panel puedes generar links para que los deportistas jueguen la experiencia.</p>
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">${PL.s1t}</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">${PL.s1b}</p>
         </td>
     </tr>
     <tr>
@@ -180,8 +209,8 @@ async function sendConfirmationEmail(
             <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">2</div>
         </td>
         <td style="vertical-align:top;padding-left:10px;padding-bottom:14px;">
-            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Genera un link y compártelo</p>
-            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">El adulto responsable completa un breve registro y le pasa el dispositivo al deportista.</p>
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">${PL.s2t}</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">${PL.s2b}</p>
         </td>
     </tr>
     <tr>
@@ -189,23 +218,23 @@ async function sendConfirmationEmail(
             <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">3</div>
         </td>
         <td style="vertical-align:top;padding-left:10px;">
-            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">Recibe el informe</p>
-            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">El deportista juega una aventura de menos de 10 minutos. El informe completo llega al email del adulto responsable.</p>
+            <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">${PL.s3t}</p>
+            <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">${PL.s3b}</p>
         </td>
     </tr>
     </table>
 
     <div style="text-align:center;margin:28px 0 0;">
         <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">
-            Ir a mis informes
+            ${PL.cta}
         </a>
     </div>
 
-    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">Este link es personal. Guárdalo para acceder a tus informes cuando quieras.</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
 </td></tr>
 
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">${PL.footer}</p>
 </td></tr>
 
 </table></td></tr></table>
@@ -679,7 +708,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
 
     const { data: existing } = await sb
         .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token')
+        .select('id, payment_status, email, pack_size, access_token, lang')
         .eq('id', purchaseId)
         .single();
 
@@ -705,7 +734,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         relatedLogs: [`one_purchases.${purchaseId}`],
     });
 
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
+    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
 
     console.info(`[one-webhook] Stripe: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
     return res.status(200).json({ received: true, purchase_id: purchaseId });
@@ -866,7 +895,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
 
     const { data: existing } = await sb
         .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token')
+        .select('id, payment_status, email, pack_size, access_token, lang')
         .eq('id', purchaseId)
         .single();
 
@@ -892,7 +921,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         relatedLogs: [`one_purchases.${purchaseId}`],
     });
 
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size);
+    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
 
     console.info(`[one-webhook] MP: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
     return res.status(200).json({ received: true, purchase_id: purchaseId });

@@ -5,9 +5,88 @@ import { createClient } from '@supabase/supabase-js';
  * Argo One mini-panel API.
  * Auth: via access_token query param (magic link, no Supabase auth).
  *
- * GET  /api/one-panel?token=xxx                → purchase info + links
- * POST /api/one-panel?token=xxx  { action: "generate-link", link_id, recipient_email, child_name? }
+ * GET  /api/one-panel?token=xxx  → ALL paid purchases + links for the token's email
+ * POST /api/one-panel?token=xxx  { action: "generate-link", link_id, recipient_email, child_name?, sport }
+ * POST /api/one-panel            { action: "request-access", email }  → emails a fresh magic link (no token needed)
+ *
+ * The panel is unified by EMAIL: any of a buyer's access tokens resolves to the
+ * full set of their purchases, so "buy more" adds slots to the same panel.
  */
+
+function clientIp(req: VercelRequest): string {
+    const fwd = req.headers['x-forwarded-for'];
+    const raw = Array.isArray(fwd) ? fwd[0] : (fwd ?? '');
+    return raw.split(',')[0].trim() || 'unknown';
+}
+
+// Fixed-window rate limit via Vercel KV (Upstash REST). Fail-open if KV isn't
+// configured (KV_REST_API_URL / KV_REST_API_TOKEN).
+async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return false;
+    try {
+        const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, { headers: { Authorization: `Bearer ${token}` } });
+        const { result } = await incr.json();
+        if (result === 1) {
+            await fetch(`${url}/expire/${encodeURIComponent(key)}/${windowSec}`, { headers: { Authorization: `Bearer ${token}` } });
+        }
+        return typeof result === 'number' && result > limit;
+    } catch {
+        return false; // fail open — never block legit traffic on a KV hiccup
+    }
+}
+
+// Emails a fresh magic link to the buyer's panel (access recovery).
+async function sendAccessLinkEmail(email: string, accessToken: string, lang: string): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
+    const panelUrl = `${origin}/one/panel?token=${accessToken}`;
+    const PL = lang === 'en' ? {
+        subject: 'Your Argo One access link',
+        heading: 'Here is your access link',
+        body: 'Open your panel to see your reports, the delivery status of each one, and to generate new play links.',
+        cta: 'Open my reports',
+        note: 'This link is personal. If you did not request it, you can ignore this email.',
+    } : lang === 'pt' ? {
+        subject: 'Seu link de acesso ao Argo One',
+        heading: 'Aqui está seu link de acesso',
+        body: 'Abra seu painel para ver seus relatórios, o status de envio de cada um e gerar novos links de jogo.',
+        cta: 'Abrir meus relatórios',
+        note: 'Este link é pessoal. Se você não o solicitou, pode ignorar este email.',
+    } : {
+        subject: 'Tu link de acceso a Argo One',
+        heading: 'Aquí está tu link de acceso',
+        body: 'Abre tu panel para ver tus informes, el estado de envío de cada uno y generar nuevos links de juego.',
+        cta: 'Abrir mis informes',
+        note: 'Este link es personal. Si no lo solicitaste, puedes ignorar este email.',
+    };
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [email],
+            subject: PL.subject,
+            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;"> One</span>
+</td></tr>
+<tr><td style="padding:28px;">
+    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
+    <p style="font-size:14px;color:#86868B;margin:0 0 24px;line-height:1.6;">${PL.body}</p>
+    <div style="text-align:center;">
+    <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a>
+    </div>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
+        }),
+    });
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET' && req.method !== 'POST') {
@@ -19,42 +98,77 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!serviceKey || !supabaseUrl) return res.status(500).json({ error: 'Server configuration error' });
 
     const sb = createClient(supabaseUrl, serviceKey);
-    const token = req.query.token as string;
 
+    // ── POST request-access: email a fresh magic link (NO token needed) ──────
+    // Anti-enumeration: ALWAYS return { ok: true } whether or not the email has
+    // purchases, so this endpoint can't be used to probe who bought.
+    if (req.method === 'POST' && req.body?.action === 'request-access') {
+        const email = String(req.body.email || '').trim().toLowerCase();
+        const ip = clientIp(req);
+        // Cap per IP and per email to prevent spamming a victim's inbox.
+        const capped = (await rateLimited(`rl:one-access:ip:${ip}`, 20, 3600))
+            || (email && await rateLimited(`rl:one-access:email:${email}`, 5, 3600));
+        if (!capped && email && /.+@.+\..+/.test(email)) {
+            const { data: p } = await sb
+                .from('one_purchases')
+                .select('access_token, lang')
+                .ilike('email', email)
+                .eq('payment_status', 'paid')
+                .order('paid_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (p?.access_token) {
+                await sendAccessLinkEmail(email, p.access_token, (p.lang as string) || 'es');
+            }
+        }
+        return res.status(200).json({ ok: true });
+    }
+
+    const token = req.query.token as string;
     if (!token) return res.status(401).json({ error: 'Missing access token' });
 
-    // Validate token and get purchase
+    // Validate token → the owning purchase → its email.
     const { data: purchase } = await sb
         .from('one_purchases')
-        .select('id, email, pack_size, payment_status, created_at, paid_at, lang')
+        .select('id, email, payment_status, lang')
         .eq('access_token', token)
         .single();
 
     if (!purchase) return res.status(404).json({ error: 'Purchase not found' });
     if (purchase.payment_status !== 'paid') return res.status(403).json({ error: 'Payment not confirmed' });
 
-    // ── GET: return purchase + links ────────────────────────────────────
+    // Unify by email: every PAID purchase for this buyer's email.
+    const { data: purchases } = await sb
+        .from('one_purchases')
+        .select('id, pack_size, paid_at')
+        .ilike('email', purchase.email)
+        .eq('payment_status', 'paid')
+        .order('paid_at', { ascending: true });
+    const purchaseIds = (purchases ?? []).map(p => p.id);
+    const totalPack = (purchases ?? []).reduce((s, p) => s + (p.pack_size || 0), 0);
+    const earliestPaid = (purchases ?? [])[0]?.paid_at ?? null;
+
+    // ── GET: return aggregated purchase + links ──────────────────────────────
     if (req.method === 'GET') {
         const { data: links } = await sb
             .from('one_links')
             .select('id, slug, status, recipient_email, child_name, sport, completed_at, session_id')
-            .eq('purchase_id', purchase.id)
+            .in('purchase_id', purchaseIds)
             .order('created_at', { ascending: true });
-
-        const completed = (links ?? []).filter(l => l.status === 'completed').length;
+        const L = links ?? [];
 
         return res.status(200).json({
             purchase: {
                 email: purchase.email,
-                pack_size: purchase.pack_size,
-                paid_at: purchase.paid_at,
+                pack_size: totalPack,
+                paid_at: earliestPaid,
             },
-            links: links ?? [],
+            links: L,
             summary: {
-                total: purchase.pack_size,
-                completed,
-                pending: (links ?? []).filter(l => l.status === 'pending' || l.status === 'sent').length,
-                available: (links ?? []).filter(l => l.status === 'available').length,
+                total: totalPack,
+                completed: L.filter(l => l.status === 'completed').length,
+                pending: L.filter(l => l.status === 'pending' || l.status === 'sent').length,
+                available: L.filter(l => l.status === 'available').length,
             },
         });
     }
@@ -67,15 +181,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!recipient_email) return res.status(400).json({ error: 'Missing recipient_email' });
         if (!sport || !String(sport).trim()) return res.status(400).json({ error: 'Missing sport' });
 
-        // Verify link belongs to this purchase and is available
+        // The link must belong to one of THIS email's purchases and be available.
         const { data: link } = await sb
             .from('one_links')
-            .select('id, status, slug')
+            .select('id, status, slug, purchase_id')
             .eq('id', link_id)
-            .eq('purchase_id', purchase.id)
             .single();
 
-        if (!link) return res.status(404).json({ error: 'Link not found' });
+        if (!link || !purchaseIds.includes(link.purchase_id)) return res.status(404).json({ error: 'Link not found' });
         if (link.status !== 'available') return res.status(400).json({ error: 'Link already used or sent' });
 
         // Update link with recipient info
