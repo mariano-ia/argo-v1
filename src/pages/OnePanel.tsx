@@ -181,6 +181,21 @@ export const OnePanel: React.FC = () => {
     const isSuccess = searchParams.get('success') === '1';
 
     const fetchData = useCallback(async () => {
+        // DEV preview: /one/panel?demo=1 on localhost renders a sample authenticated
+        // panel (the /api is not available under Vite). No-op in production.
+        if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('demo') === '1') {
+            setData({
+                purchase: { email: 'marianonoceti@gmail.com', pack_size: 3, paid_at: new Date().toISOString() },
+                links: [
+                    { id: '1', slug: 'abc123', status: 'completed', recipient_email: 'juan@ejemplo.com', child_name: 'Lucas', sport: 'Fútbol', completed_at: new Date().toISOString(), session_id: 's1' },
+                    { id: '2', slug: 'def456', status: 'sent', recipient_email: 'ana@ejemplo.com', child_name: 'Sofía', sport: 'Hockey', completed_at: null, session_id: null },
+                    { id: '3', slug: 'ghi789', status: 'available', recipient_email: null, child_name: null, sport: null, completed_at: null, session_id: null },
+                ],
+                summary: { total: 3, completed: 1, pending: 1, available: 1 },
+            });
+            setStatus('ok');
+            return;
+        }
         if (!token) { setStatus('need_email'); return; }
         try {
             const res = await fetch(`/api/one-panel?token=${token}`);

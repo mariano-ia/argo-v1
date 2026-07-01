@@ -65,7 +65,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { email, kind: bodyKind, lang: bodyLang } = req.body as { email?: string; kind?: string; lang?: string };
+        const { email: rawEmail, kind: bodyKind, lang: bodyLang } = req.body as { email?: string; kind?: string; lang?: string };
+        const email = String(rawEmail || '').trim().toLowerCase();
         // Prefer the language the client sent; otherwise fall back to the browser's
         // Accept-Language header so an English (or Portuguese) visitor gets emails in
         // their language even if the /one page did not pass lang. 'es' is the last resort.
@@ -79,8 +80,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const kind = bodyKind === 'one_puente' ? 'one_puente' : 'one';
         const price = PRICES[kind];
 
-        if (!email) {
-            return res.status(400).json({ error: 'Missing email' });
+        // Validate + normalize: a well-formed address, already trimmed/lowercased so
+        // the panel unifies purchases reliably and a poisoned value can't reach the
+        // aggregation query.
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ error: 'Invalid email' });
         }
 
         // Create purchase record (pending). pack_size is always 1 (no packs for now).

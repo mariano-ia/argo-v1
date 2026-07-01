@@ -112,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: p } = await sb
                 .from('one_purchases')
                 .select('access_token, lang')
-                .ilike('email', email)
+                .ilike('email', email.replace(/([\\%_])/g, '\\$1'))
                 .eq('payment_status', 'paid')
                 .order('paid_at', { ascending: false })
                 .limit(1)
@@ -138,10 +138,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (purchase.payment_status !== 'paid') return res.status(403).json({ error: 'Payment not confirmed' });
 
     // Unify by email: every PAID purchase for this buyer's email.
+    // Escape LIKE metacharacters so a stored email containing % or _ can't widen
+    // this into a cross-buyer match; ilike on the escaped value is a case-
+    // insensitive EXACT match (mirrors invite-user.ts / request-delete.ts).
+    const emailPattern = purchase.email.replace(/([\\%_])/g, '\\$1');
     const { data: purchases } = await sb
         .from('one_purchases')
         .select('id, pack_size, paid_at')
-        .ilike('email', purchase.email)
+        .ilike('email', emailPattern)
         .eq('payment_status', 'paid')
         .order('paid_at', { ascending: true });
     const purchaseIds = (purchases ?? []).map(p => p.id);
