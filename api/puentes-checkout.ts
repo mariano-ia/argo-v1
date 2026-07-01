@@ -8,12 +8,12 @@ import crypto from 'crypto';
  * Returns: { checkout_url, purchase_id, provider, currency }
  *
  * Creates an Argo Puente purchase record (pending) linked to the child's
- * source session, and routes to Stripe (USD 9.99) or MercadoPago (ARS) based
- * on country. Mirrors the Argo One checkout pattern.
+ * source session. Fase 0: Stripe USD 4.99 only (MercadoPago/ARS bypassed).
+ * Mirrors the Argo One checkout pattern.
  */
 
-const PRICE_USD_CENTS = 999;          // $9.99 USD
-const PRICE_ARS = 6999;               // $6,999 ARS for Argentina
+const PRICE_USD_CENTS = 499;          // $4.99 USD (Puente add-on, offered to every adult after a child's play)
+const PRICE_ARS = 6999;               // Fase 1 TODO: set the ARS price for the $4.99 add-on (ARS path bypassed in Fase 0)
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
 function getProvider(country?: string): 'mercadopago' | 'stripe' {

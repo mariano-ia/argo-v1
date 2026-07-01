@@ -159,10 +159,10 @@ function buildHtml(params: {
     // Falls back to showing both when we have no signal.
     const priceCurrency = params.preferredCurrency;
     const priceLine = priceCurrency === 'ars'
-        ? 'ARS 6.999'
+        ? 'ARS 4.999' // Fase 1 TODO: confirm the ARS price for the $4.99 add-on
         : priceCurrency === 'usd'
-            ? 'USD 9.99'
-            : 'USD 9.99 / ARS 6.999';
+            ? 'USD 4.99'
+            : 'USD 4.99';
 
     // Two copy variants: upsell (parent has not paid) vs included (parent
     // already has Argo Puente, this child is now part of their bond report).
