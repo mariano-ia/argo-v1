@@ -217,7 +217,7 @@ strong { color: var(--text-primary); font-weight: 600; }
 
 .steps { display: flex; gap: 22px; width: 100%; position: relative; }
 .steps::before {
-  content: ''; position: absolute; top: 28px; left: 28px; right: 28px;
+  content: ''; position: absolute; top: 67px; left: 28px; right: 28px;
   height: 2px; background: var(--border); z-index: 0;
 }
 .step { flex: 1; text-align: center; position: relative; z-index: 1; }
@@ -229,9 +229,13 @@ strong { color: var(--text-primary); font-weight: 600; }
   font-family: var(--font-body);
   font-size: 1.2rem; font-weight: 600;
   color: var(--accent); background: #fff;
+  cursor: pointer; transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
 }
+.step-num:hover { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-glow); }
+.step.open .step-num { border-color: var(--accent); background: var(--accent); color: #fff; }
 .step h4 { font-size: 1.15rem; margin-bottom: 8px; }
-.step p { font-size: 0.92rem; color: var(--text-secondary); margin: 0; }
+.step p { font-size: 0.85rem; color: var(--text-secondary); margin: 0; display: none; }
+.step.open p { display: block; }
 
 .icon-list { display: flex; flex-direction: column; gap: 18px; }
 .icon-list li {
@@ -1028,8 +1032,8 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="cover-bg-overlay"></div>
   <div class="slide-content">
     <div class="deck-logo cover-logo anim"><span class="l-argo">Argo</span><span class="l-method">Method</span></div>
-    <h1 class="anim">Todos entrenan igual.<br>Ninguno juega igual.</h1>
-    <p class="subtitle anim">Argo le da a tu institución la información necesaria para que cada niño juegue en el rol que mejor le calza, asegurando que se sientan cómodos, motivados y con ganas de volver mañana.</p>
+    <h1 class="anim">Entenderlos hoy<br>para que quieran volver mañana.</h1>
+    <p class="subtitle anim">Argo transforma una experiencia de juego en información deportiva-conductual para ayudar a chicos y jóvenes a disfrutar, crecer y seguir jugando.</p>
     <p class="meta anim">Perfil conductual para deportistas de 8 a 16 años</p>
   </div>
 </section>
@@ -1042,15 +1046,12 @@ strong { color: var(--text-primary); font-weight: 600; }
       <div>
         <div class="label anim">El punto de partida</div>
         <h2 class="anim" style="font-size:2.3rem;">Cada niño vive el deporte a su manera.</h2>
-        <p class="anim" style="margin-top:16px;">Algunos se encienden con el desafío. Otros necesitan sentir que el equipo los acompaña. Ninguna forma es mejor que otra. Son simplemente distintas. Argo ayuda a entender cómo lo vive cada uno, para acompañarlos mejor y potenciar su desarrollo.</p>
+        <p class="anim" style="margin-top:22px;">Los que se encienden con el desafío y la acción.<br>Los que necesitan sentir al equipo para dar lo mejor.<br>Los que primero observan y entienden, y después juegan.<br>Ninguna forma es mejor que otra.</p>
       </div>
       <div class="anim">
-        <div class="card">
-          <ul class="icon-list">
-            <li><div>El que <strong>se enciende con el desafío</strong> y la acción.</div></li>
-            <li><div>El que <strong>necesita sentir al equipo</strong> para dar lo mejor.</div></li>
-            <li><div>El que <strong>primero observa y entiende</strong>, y después juega.</div></li>
-          </ul>
+        <div class="card card--highlight card--wash">
+          <h3 style="font-size:2rem;">4 de cada 10 deportistas abandonan el deporte antes de los 14 años.</h3>
+          <p>Entrenamos técnica, táctica y físico. Pero no siempre sabemos qué necesita escuchar cada niño.</p>
         </div>
       </div>
     </div>
@@ -1068,13 +1069,9 @@ strong { color: var(--text-primary); font-weight: 600; }
       </div>
       <div>
         <div class="label anim">Por qué importa</div>
-        <h2 class="anim" style="font-size:2.1rem; margin-bottom:14px;">Distintas maneras de jugar, una sola meta: que sigan eligiendo el deporte.</h2>
-        <p class="anim" style="margin-bottom:24px;">Argo traduce la tendencia natural de cada niño en herramientas para padres y entrenadores. Cuando sabemos qué los motiva, el disfrute es una consecuencia natural.</p>
-        <ul class="icon-list anim" style="gap:14px;">
-          <li><div>Muchos <strong>dejan el deporte</strong> cuando todavía tenían mucho por disfrutar.</div></li>
-          <li><div><strong>Familias que ven a su hijo desconectarse del juego</strong> y no saben bien cómo acompañarlo.</div></li>
-          <li><div><strong>Cada niño necesita algo distinto para sentirse parte.</strong> Lo que entusiasma a uno, puede abrumar a otro.</div></li>
-        </ul>
+        <h2 class="anim" style="font-size:2.1rem; margin-bottom:14px;">Lo importante es que sigan jugando.</h2>
+        <p class="anim" style="margin-bottom:20px;">Cada chico vive el deporte de una manera distinta. Algunos necesitan desafío, otros confianza, otros calma, pertenencia o palabras precisas en el momento justo.</p>
+        <p class="anim">Argo traduce la tendencia natural de cada niño para ayudar a padres y entrenadores a acompañar mejor, exigir mejor y cuidar mejor la experiencia deportiva.</p>
       </div>
     </div>
   </div>
@@ -1085,21 +1082,49 @@ strong { color: var(--text-primary); font-weight: 600; }
 <section class="slide" data-slide="4">
   <div class="section-num">03</div>
   <div class="slide-content">
-    <div class="label anim">Qué es Argo</div>
-    <h2 class="anim" style="font-size:2.4rem; margin-bottom:14px;">Una aventura de 10 minutos que muestra tendencias sobre cómo cada niño vive el deporte</h2>
-    <p class="anim" style="max-width:800px; margin-bottom:44px;">El niño juega una odisea náutica desde el celular. No hay respuestas correctas ni incorrectas. Detrás del juego, el modelo DISC adaptado al deporte infantil construye su perfil conductual.</p>
+    <div class="label anim">El mismo juego, para cada usuario</div>
+    <h2 class="anim" style="font-size:2.4rem; margin-bottom:14px;">Argo One, Argo One + y Argo Academy nacen de la misma odisea.</h2>
+    <p class="anim" style="max-width:800px; margin-bottom:44px;">Detrás del juego, el modelo DISC adaptado al deporte infantil construye el perfil conductual del niño. Ese mismo perfil es la base de cada versión de Argo.</p>
     <div class="steps anim">
       <div class="step">
-        <div class="step-num">1</div>
-        <div><h4>Juega 10 minutos</h4><p>Una aventura, no un examen. Nunca siente que lo están evaluando.</p></div>
+        <div class="step-head">
+          <span class="feature-chip" style="margin-bottom:12px; visibility:hidden;"><span><span style="color:var(--accent); font-weight:800;">Argo</span></span></span>
+          <div class="step-num">1</div>
+        </div>
+        <div>
+          <h4>Juega el niño</h4>
+          <p>Una odisea náutica de 10 minutos desde el celular. No hay respuestas correctas ni incorrectas.</p>
+        </div>
       </div>
       <div class="step">
-        <div class="step-num">2</div>
-        <div><h4>Se construye el perfil</h4><p>Su forma de jugar y su tempo se combinan en uno de 12 arquetipos.</p></div>
+        <div class="step-head">
+          <span class="feature-chip" style="margin-bottom:12px; color:var(--text-primary); background:var(--accent-wash); border-color:#EFE4F5;"><span><span style="color:var(--accent); font-weight:800;">Argo</span> <span style="font-weight:200;">One</span></span></span>
+          <div class="step-num">2</div>
+        </div>
+        <div>
+          <h4>Se genera su informe</h4>
+          <p>El informe llega siempre al adulto que autorizó el juego, y también al entrenador o la institución que lo solicitó.</p>
+        </div>
       </div>
       <div class="step">
-        <div class="step-num">3</div>
-        <div><h4>Tu institución recibe el informe</h4><p>Con claves para acompañar a cada niño, pensadas para el entrenador y la familia.</p></div>
+        <div class="step-head">
+          <span class="feature-chip" style="margin-bottom:12px; color:var(--text-primary); background:var(--accent-wash); border-color:#EFE4F5;"><span><span style="color:var(--accent); font-weight:800;">Argo</span> <span style="font-weight:200;">One +</span></span></span>
+          <div class="step-num">3</div>
+        </div>
+        <div>
+          <h4>Juega el adulto</h4>
+          <p>La familia o el entrenador también pueden jugar. Argo Puente ayuda a cada adulto a comprender, desde su propio estilo, cuál es la mejor manera de acompañar.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-head">
+          <span class="feature-chip" style="margin-bottom:12px; color:var(--text-primary); background:var(--accent-wash); border-color:#EFE4F5;"><span><span style="color:var(--accent); font-weight:800;">Argo</span> <span style="font-weight:200;">Academy</span></span></span>
+          <div class="step-num">4</div>
+        </div>
+        <div>
+          <h4>La institución, en un dashboard</h4>
+          <p>El club reúne el perfil de cada deportista, herramientas para acompañar a cada niño y todo lo anterior, en un solo lugar.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -1727,6 +1752,20 @@ function escapeHtml(text) {
 
   setFace(0);
   timer = setTimeout(tick, DURATIONS.game);
+})();
+
+/* ── Timeline steps: click number to reveal its paragraph (accordion: only one open) ── */
+(function() {
+  const timelineSteps = Array.from(document.querySelectorAll('.steps .step'));
+  timelineSteps.forEach(function(step) {
+    const num = step.querySelector('.step-num');
+    if (!num) return;
+    num.addEventListener('click', function() {
+      const wasOpen = step.classList.contains('open');
+      timelineSteps.forEach(function(s) { s.classList.remove('open'); });
+      if (!wasOpen) step.classList.add('open');
+    });
+  });
 })();
 </script>
 </body>
