@@ -21,8 +21,8 @@ const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; d
 const BrandName: React.FC<{ kind: OneKind }> = ({ kind }) => (
     <>
         <span style={{ fontWeight: 800 }}>Argo</span>
-        <span style={{ fontWeight: 300 }}> One</span>
-        {kind === 'one_puente' && <span style={{ fontWeight: 800 }}> +</span>}
+        <span style={{ fontWeight: 300 }}>One</span>
+        {kind === 'one_puente' && <span style={{ fontWeight: 800 }}>+</span>}
     </>
 );
 
@@ -222,9 +222,9 @@ const ArgoOneLanding: React.FC = () => {
                     </h2>
                     <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
                         {[
-                            { n: '1', title: 'Compras y recibes el enlace', desc: 'Eliges Argo One o Argo One +, pagas con tarjeta (USD) y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción.' },
+                            { n: '1', title: 'Compras y recibes el enlace', desc: <>Eliges <BrandName kind="one" /> o <BrandName kind="one_puente" />, pagas con tarjeta y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción.</> },
                             { n: '2', title: 'El niño juega 10 minutos', desc: 'Desde el celular vive una aventura náutica. No hay preguntas directas ni respuestas correctas: sus decisiones muestran cómo vive el juego, la presión y el equipo.' },
-                            { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro basado en el modelo DISC: su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañarlo en la cancha.' },
+                            { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro con su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañarlo en la cancha.' },
                         ].map(s => (
                             <div key={s.n}>
                                 <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(149,95,181,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#955FB5', marginBottom: '14px' }}>
