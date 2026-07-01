@@ -30,6 +30,8 @@ Consumer product names (match EXACTLY in checkout, emails, and the pricing card)
 - **Argo Puente** — the adult bridge (the add-on / the upsell). **Always singular "Argo Puente", never the plural "Argo Puentes"** (aligned 2026-07-01). The DB tables `puentes_*` and the `/puentes/` route keep their names; only user-facing copy changes.
 - **Argo Academy** / **Argo Coach** — consultive dashboard, no digital checkout ("Solicitar demo").
 
+**Styled wordmark (STRICT):** whenever a product name is rendered as the *brand wordmark* (the Argo-bold treatment, like the logo — pricing cards, checkout, decks, product chips), write it **joined, with NO spaces**: `ArgoOne`, `ArgoOne+`, `ArgoAcademy`. "Argo" is `font-weight: 800`; the rest ("One" / "One+" / "Academy") is thin (`300` on web, `200` in the sales deck); the **"+" is also 800** (same weight and size as "Argo"), never thin, never spaced. Do NOT write "Argo One" / "Argo One +" with a space in a styled wordmark. (Plain running prose with no brand styling keeps the readable spaced form.)
+
 **Buyer-neutral (STRICT):** Argo One / One + / Puente are bought by a **parent OR a coach**. Never assume the parent. Say **"el niño"** (the pricing card's term), never **"tu hijo / your son / seu filho"**; call the grown-up **"el adulto" / "quien lo acompaña"**, not only "padre/madre". Only parental-consent legal text may name "padre/madre/tutor".
 
 ### Voseo rules (STRICT — enforced by post-edit hook)
