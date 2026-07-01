@@ -11,7 +11,41 @@ import './index.css'
 // listener (which would loop the error event).
 (function setupClientErrorTelemetry() {
     if (typeof window === 'undefined') return;
+    // Dev (vite / `vercel dev`) writes to the prod DB via the local functions.
+    // Never beam telemetry from a dev build — it pollutes prod client_errors and
+    // trips Vigia's client_errors_per_day signal with our own local errors.
+    if (import.meta.env.DEV) return;
     const TELEMETRY_PATHS = new Set(['/api/audio-telemetry', '/api/client-errors']);
+
+    // Non-actionable browser noise — never worth persisting. Keep in sync with
+    // NOISE_MESSAGE in api/client-errors.ts.
+    const BENIGN_NOISE = /ResizeObserver loop|Lock broken by another request with the 'steal' option/i;
+    // Stale-chunk errors after a deploy: the loaded index.html references
+    // content-hashed chunks that no longer exist on the CDN. We recover by
+    // reloading ONCE (guarded) to pull the fresh build, instead of surfacing a
+    // dead lazy route. Keep in sync with STALE_CHUNK in api/client-errors.ts.
+    const STALE_CHUNK = /Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|is not a valid JavaScript MIME type|Loading chunk \S+ failed/i;
+    const RELOAD_FLAG = 'argo:stale-chunk-reload';
+
+    // Reload at most once per tab until a clean mount clears the flag, so a
+    // genuinely-missing chunk (offline / truly gone) can't loop the page.
+    const recoverFromStaleChunk = (): void => {
+        try {
+            if (sessionStorage.getItem(RELOAD_FLAG)) return;
+            sessionStorage.setItem(RELOAD_FLAG, '1');
+            window.location.reload();
+        } catch { /* storage unavailable → don't risk a reload loop */ }
+    };
+    // A successful load means the fresh build is in place — allow a future deploy
+    // to trigger another one-shot recovery.
+    window.addEventListener('load', () => {
+        try { sessionStorage.removeItem(RELOAD_FLAG); } catch { /* ignore */ }
+    });
+    // Vite dispatches this when a dynamic import / modulepreload fails.
+    window.addEventListener('vite:preloadError', (e: Event) => {
+        e.preventDefault();
+        recoverFromStaleChunk();
+    });
 
     // Strip sensitive query params + auth headers from anything that lands
     // in the DB. Catches the common Argo cases: ?token=, ?access_token=,
@@ -55,6 +89,9 @@ import './index.css'
 
     window.addEventListener('error', (e: ErrorEvent) => {
         if (isOwnTelemetry(e.filename)) return;
+        const msg = e.message ?? '';
+        if (STALE_CHUNK.test(msg)) { recoverFromStaleChunk(); return; }
+        if (BENIGN_NOISE.test(msg)) return;
         try {
             beam({
                 kind: 'error',
@@ -90,6 +127,10 @@ import './index.css'
                     message = String(reason);
                 }
             } catch { message = '[reason extraction failed]'; }
+
+            const m = message ?? '';
+            if (STALE_CHUNK.test(m)) { recoverFromStaleChunk(); return; }
+            if (BENIGN_NOISE.test(m)) return;
 
             beam({
                 kind: 'unhandledrejection',

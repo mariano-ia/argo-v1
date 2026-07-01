@@ -135,8 +135,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Same baseline as SIGNAL 3: only recent (last 72h) unsent reports are actionable.
         const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
         // email_sent_at / ai_sections are per-perfilamiento; resend acts by that id.
+        // Two exclusions keep this signal to genuinely-actionable deliveries only:
+        //   - is_demo: the "Jugar gratis" funnel shows an on-screen report and NEVER
+        //     emails by design, so an unsent demo is expected, not a failure.
+        //   - no recipient: a null/empty adult_email can't be resent (the resend would
+        //     just 400 at /api/send-email), so flagging it produces an un-actionable
+        //     incident (and more send-email noise). Require a real address.
         const { data } = await sb.from('perfilamientos')
             .select('id').not('ai_sections', 'is', null).is('email_sent_at', null)
+            .not('is_demo', 'is', true)
+            .not('adult_email', 'is', null).neq('adult_email', '')
             .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const unsent = data ?? [];
         await writeHealthCheck(sb, 'entrega', 'report_email_unsent', 'sessions', unsent.length, 1, '<', unsent.length > 0);

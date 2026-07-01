@@ -12,6 +12,19 @@ import { createClient } from '@supabase/supabase-js';
 
 const KNOWN_KINDS = new Set(['error', 'unhandledrejection']);
 
+// Server-side defense-in-depth. The client (src/main.tsx) already skips these,
+// but an outdated/other client could still POST them. Drop non-actionable noise
+// so it never inflates the client_errors_per_day signal (Vigia SIGNAL 1):
+//   - dev/localhost origins (a `vercel dev` session writes to the prod DB)
+//   - browser internals that are not bugs (ResizeObserver loop, auth lock steal)
+//   - stale-chunk errors after a deploy (the client auto-reloads; see main.tsx)
+// Keep this list in sync with BENIGN_NOISE / STALE_CHUNK in src/main.tsx.
+const NOISE_MESSAGE = /ResizeObserver loop|Lock broken by another request with the 'steal' option|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|is not a valid JavaScript MIME type|Loading chunk \S+ failed/i;
+
+function isLocalOrigin(...vals: (string | null | undefined)[]): boolean {
+    return vals.some(v => typeof v === 'string' && /(^|\/\/)(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:|\/|$)/i.test(v));
+}
+
 // Cheap DoS cap. Real error payloads are <2KB; 16KB covers oversize stacks.
 const MAX_BODY_BYTES = 16384;
 
@@ -57,6 +70,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const kind = typeof body.kind === 'string' ? body.kind : null;
         if (!kind || !KNOWN_KINDS.has(kind)) {
+            res.status(204).end();
+            return;
+        }
+
+        // Drop non-actionable noise (see NOISE_MESSAGE above). Silently accept (204)
+        // so the client stays fire-and-forget; we just don't persist it.
+        const rawMessage = typeof body.message === 'string' ? body.message : '';
+        if (
+            NOISE_MESSAGE.test(rawMessage) ||
+            isLocalOrigin(
+                typeof body.url === 'string' ? body.url : null,
+                typeof body.source === 'string' ? body.source : null,
+            )
+        ) {
             res.status(204).end();
             return;
         }

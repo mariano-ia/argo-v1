@@ -499,7 +499,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
 
         if (!toEmail || !nombreNino) {
-            console.error('[send-email] Missing required fields — toEmail:', toEmail, 'nombreNino:', nombreNino);
+            // qa-monitor CHECK 8 probes this endpoint hourly with an empty body ({}) to
+            // confirm it boots (a 4xx here = healthy, a 5xx = crashed). That inert probe
+            // must NOT surface as an error. Only log a call that actually carried a payload
+            // but was still missing required fields — that's a real malformed caller.
+            const carriedPayload = !!body && typeof body === 'object' && Object.keys(body).length > 0;
+            if (carriedPayload) {
+                console.error('[send-email] Missing required fields — toEmail:', toEmail, 'nombreNino:', nombreNino);
+            }
             return res.status(400).json({ error: 'Missing required fields: toEmail, nombreNino' });
         }
 
