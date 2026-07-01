@@ -18,6 +18,9 @@ const PRICE_USD_CENTS = 999; // $9.99
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
 function getProvider(country?: string): 'mercadopago' | 'stripe' {
+    // Fase 0: consumer payments go through Stripe (USD) only for now. Set
+    // STRIPE_ONLY='false' to re-enable MercadoPago/ARS routing in Fase 1.
+    if (process.env.STRIPE_ONLY !== 'false') return 'stripe';
     if (!country) return 'stripe';
     const cc = country.toUpperCase();
     if (cc === 'AR' && process.env.AR_VIA_STRIPE === 'true') return 'stripe';
@@ -90,9 +93,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
         const shareToken = session.share_token || '';
         const reportUrl = shareToken
-            ? `${origin}/report/${session_id}?token=${shareToken}`
+            ? `${origin}/report/${session_id}?token=${encodeURIComponent(shareToken)}`
             : `${origin}/report/${session_id}`;
-        const successUrl = `${reportUrl}${shareToken ? '&' : '?'}unlocked=1`;
+        // Build the success URL with URLSearchParams so a share_token containing a
+        // reserved char can never corrupt the query (which would 403 the report the
+        // buyer just paid to unlock).
+        const successParams = new URLSearchParams();
+        if (shareToken) successParams.set('token', shareToken);
+        successParams.set('unlocked', '1');
+        const successUrl = `${origin}/report/${session_id}?${successParams.toString()}`;
 
         let checkoutUrl: string | undefined;
 

@@ -7,7 +7,7 @@ import crypto from 'crypto';
  * Body: { source_session_id, recipient_email, recipient_name?, country?, lang?, consent_given }
  * Returns: { checkout_url, purchase_id, provider, currency }
  *
- * Creates an Argo Puentes purchase record (pending) linked to the child's
+ * Creates an Argo Puente purchase record (pending) linked to the child's
  * source session, and routes to Stripe (USD 9.99) or MercadoPago (ARS) based
  * on country. Mirrors the Argo One checkout pattern.
  */
@@ -17,6 +17,9 @@ const PRICE_ARS = 6999;               // $6,999 ARS for Argentina
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
 function getProvider(country?: string): 'mercadopago' | 'stripe' {
+    // Fase 0: consumer payments go through Stripe (USD) only for now. Set
+    // STRIPE_ONLY='false' to re-enable MercadoPago/ARS routing in Fase 1.
+    if (process.env.STRIPE_ONLY !== 'false') return 'stripe';
     if (!country) return 'stripe';
     return MP_COUNTRIES.includes(country.toUpperCase()) ? 'mercadopago' : 'stripe';
 }
@@ -71,10 +74,10 @@ async function createStripeCheckout(args: {
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
-        ? `Argo Puentes — bond with ${args.childName}`
+        ? `Argo Puente: bond with ${args.childName}`
         : args.lang === 'pt'
-            ? `Argo Puentes — vínculo com ${args.childName}`
-            : `Argo Puentes — vínculo con ${args.childName}`;
+            ? `Argo Puente: vínculo com ${args.childName}`
+            : `Argo Puente: vínculo con ${args.childName}`;
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -124,10 +127,10 @@ async function createMpCheckout(args: {
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
-        ? `Argo Puentes — bond with ${args.childName}`
+        ? `Argo Puente: bond with ${args.childName}`
         : args.lang === 'pt'
-            ? `Argo Puentes — vínculo com ${args.childName}`
-            : `Argo Puentes — vínculo con ${args.childName}`;
+            ? `Argo Puente: vínculo com ${args.childName}`
+            : `Argo Puente: vínculo con ${args.childName}`;
 
     const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
         method: 'POST',
@@ -225,7 +228,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
             return res.status(409).json({
                 error: 'already_purchased',
-                detail: 'This email already has an active Argo Puentes account.',
+                detail: 'This email already has an active Argo Puente account.',
                 existing_magic_link: `${origin}/puentes/${existing.magic_token}`,
             });
         }

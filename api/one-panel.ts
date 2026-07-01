@@ -93,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const resendKey = process.env.RESEND_API_KEY;
         if (resendKey) {
-            const childDisplay = child_name?.trim() || 'tu deportista';
+            const childDisplay = child_name?.trim() || 'el niño';
             const pl = (purchase.lang as string) || 'es';
             const PL = pl === 'en' ? {
                 subject: `Argo Method: ${childDisplay}'s experience is ready`,

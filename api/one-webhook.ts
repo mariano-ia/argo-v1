@@ -344,7 +344,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
     });
 }
 
-/* ── Argo Puentes helpers ────────────────────────────────────────────────── */
+/* ── Argo Puente helpers ────────────────────────────────────────────────── */
 
 async function sendPuentesMagicEmail(args: {
     to: string;
@@ -357,25 +357,25 @@ async function sendPuentesMagicEmail(args: {
     if (!resendKey) { console.warn('[one-webhook] Missing RESEND_API_KEY, skipping puentes email'); return; }
 
     const violet = '#955FB5';
-    const child = args.childName || (args.lang === 'en' ? 'your child' : args.lang === 'pt' ? 'seu filho' : 'tu hijo');
+    const child = args.childName || (args.lang === 'en' ? 'the child' : args.lang === 'pt' ? 'a criança' : 'el niño');
     const subject = args.lang === 'en'
-        ? `Your Argo Puentes is ready. Bond with ${child}`
+        ? `Your Argo Puente is ready. Bond with ${child}`
         : args.lang === 'pt'
-            ? `Seu Argo Puentes está pronto. Vínculo com ${child}`
-            : `Tu Argo Puentes está listo. Vínculo con ${child}`;
+            ? `Seu Argo Puente está pronto. Vínculo com ${child}`
+            : `Tu Argo Puente está listo. Vínculo con ${child}`;
 
     const t = args.lang === 'en' ? {
-        headline: 'Your Argo Puentes is ready',
+        headline: 'Your Argo Puente is ready',
         body: `You will answer 15 short questions (5 to 7 minutes) about your own style. We will then generate a personalized report with 4 bridges to deepen your bond with ${child} in sport.`,
         cta: 'Start the questionnaire',
         note: 'This link is personal and non-transferable. Save it to come back later.',
     } : args.lang === 'pt' ? {
-        headline: 'Seu Argo Puentes está pronto',
+        headline: 'Seu Argo Puente está pronto',
         body: `Você responderá 15 perguntas curtas (5 a 7 minutos) sobre seu próprio estilo. Em seguida geramos um relatório personalizado com 4 pontes para aprofundar o vínculo com ${child} no esporte.`,
         cta: 'Começar o questionário',
         note: 'Este link é pessoal e intransferível. Guarde-o para voltar depois.',
     } : {
-        headline: 'Tu Argo Puentes está listo',
+        headline: 'Tu Argo Puente está listo',
         body: `Vas a responder 15 preguntas cortas (5 a 7 minutos) sobre tu propio estilo. Después generamos un informe personalizado con 4 puentes para profundizar el vínculo con ${child} en el deporte.`,
         cta: 'Empezar el cuestionario',
         note: 'Este link es personal e intransferible. Guárdalo para volver más tarde.',
@@ -386,7 +386,7 @@ async function sendPuentesMagicEmail(args: {
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 <tr><td style="background:#1D1D1F;padding:28px;">
 <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTES</span>
+<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTE</span>
 <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${t.headline}</p>
 </td></tr>
 <tr><td style="padding:28px;">
@@ -397,7 +397,7 @@ async function sendPuentesMagicEmail(args: {
 <p style="margin:20px 0 0;font-size:11px;color:#AEAEB2;text-align:center;line-height:1.6;">${t.note}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puentes</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puente</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 
@@ -439,7 +439,7 @@ async function handlePuentesPaid(args: {
         provider_payment_id: providerPaymentId,
     }).eq('id', purchaseId);
 
-    // Multi-child support: one Argo Puentes purchase covers every child this adult
+    // Multi-child support: one Argo Puente purchase covers every child this adult
     // email already profiled (up to MAX_CHILDREN_PER_PURCHASE). current_perfilamiento
     // gives one row per child = its latest resolved perfilamiento, already filtered
     // to resolved + non-deleted. perfilamiento_id is the assessment id that
@@ -655,7 +655,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         return handleSubscription({ id: session.id, metadata: session.metadata ?? {}, subscription: subId, customer_email: session.customer_email ?? undefined }, 'stripe', res, sb);
     }
 
-    // Argo Puentes payment
+    // Argo Puente payment
     if (source === 'argo_puentes') {
         const puentesPurchaseId = session.metadata?.purchase_id;
         if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase_id' });
@@ -843,7 +843,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         return res.status(200).json({ received: true, status: payment.status });
     }
 
-    // Argo Puentes: external_reference prefixed with "puentes_"
+    // Argo Puente: external_reference prefixed with "puentes_"
     const externalRef = payment.external_reference as string | undefined;
     const isPuentes = payment.metadata?.source === 'argo_puentes' || externalRef?.startsWith('puentes_');
     if (isPuentes) {

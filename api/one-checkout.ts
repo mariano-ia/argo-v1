@@ -16,7 +16,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const PRICES: Record<string, { usd_cents: number; label: string; includes_puente: boolean }> = {
     one:        { usd_cents: 999,  label: 'Argo One',          includes_puente: false },
-    one_puente: { usd_cents: 1299, label: 'Argo One + Puente', includes_puente: true },
+    one_puente: { usd_cents: 1299, label: 'Argo One +', includes_puente: true },
 };
 
 async function createStripeCheckout(price: typeof PRICES['one'], email: string, purchaseId: string, accessToken: string): Promise<string> {

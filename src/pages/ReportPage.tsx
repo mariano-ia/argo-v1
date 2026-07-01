@@ -70,6 +70,8 @@ const T = {
         lockedBody: 'Palabras clave · Patrón de decisión · Guía de la actividad · Checklist · Ecos fuera de la cancha',
         lockedCta: 'Contacta con quien te compartió este link para acceder al informe completo.',
         getFullReport: 'Obtener informe completo',
+        unlockingTitle: 'Recibimos tu pago',
+        unlockingBody: 'Estamos desbloqueando tu informe completo. Esto puede tardar unos segundos...',
     },
     en: {
         reportTitle: 'Profile report',
@@ -107,6 +109,8 @@ const T = {
         lockedBody: 'Key words · Decision pattern · Activity guide · Checklist · Echoes outside the field',
         lockedCta: 'Contact whoever shared this link to access the full report.',
         getFullReport: 'Get the full report',
+        unlockingTitle: 'Payment received',
+        unlockingBody: 'We are unlocking your full report. This can take a few seconds...',
     },
     pt: {
         reportTitle: 'Relatório de perfil',
@@ -144,6 +148,8 @@ const T = {
         lockedBody: 'Palavras-chave · Padrão de decisão · Guia da atividade · Checklist · Ecos fora do campo',
         lockedCta: 'Entre em contato com quem compartilhou este link para acessar o relatório completo.',
         getFullReport: 'Obter o relatório completo',
+        unlockingTitle: 'Pagamento recebido',
+        unlockingBody: 'Estamos desbloqueando seu relatório completo. Isso pode levar alguns segundos...',
     },
 };
 
@@ -284,6 +290,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     const [loading, setLoading] = useState(!mockSession);
     const [notFound, setNotFound] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [unlocking, setUnlocking] = useState(false);
     // Pick a fallback language for the loading/error states (before `session`
     // is populated). Uses the browser language, falling back to Spanish.
     const browserLang: 'es' | 'en' | 'pt' = (() => {
@@ -343,18 +350,52 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
 
         // Include the share token in the request so /api/report can serve
         // this session publicly. Without it, the endpoint returns 403.
-        const qs = new URLSearchParams({ id: sessionId });
-        if (shareToken) qs.set('token', shareToken);
-        fetch(`/api/report?${qs.toString()}`)
+        const buildQs = () => {
+            const qs = new URLSearchParams({ id: sessionId });
+            if (shareToken) qs.set('token', shareToken);
+            return qs.toString();
+        };
+        const unlockedReturn = new URLSearchParams(window.location.search).get('unlocked') === '1';
+        let pollTimer: ReturnType<typeof setInterval> | undefined;
+        let cancelled = false;
+
+        fetch(`/api/report?${buildQs()}`)
             .then(r => {
-                if (!r.ok) { setNotFound(true); setLoading(false); return; }
+                if (!r.ok) { setNotFound(true); setLoading(false); return null; }
                 return r.json();
             })
             .then(data => {
+                if (cancelled) return;
                 if (data) setSession(data);
                 setLoading(false);
+                // Webhook-lag: after paying to unlock, the ?unlocked=1 return can
+                // briefly show the report still locked until the webhook flips
+                // full_access. Poll until it does (up to ~30s) instead of showing
+                // the paywall to someone who just paid.
+                const stillLocked = data && (data.tenant_plan === 'trial' || data.is_demo) && !data.full_access;
+                if (unlockedReturn && stillLocked) {
+                    setUnlocking(true);
+                    let attempts = 0;
+                    pollTimer = setInterval(async () => {
+                        attempts++;
+                        try {
+                            const rr = await fetch(`/api/report?${buildQs()}`);
+                            if (rr.ok) {
+                                const fresh = await rr.json();
+                                if (!cancelled && fresh?.full_access) {
+                                    setSession(fresh); setUnlocking(false);
+                                    if (pollTimer) clearInterval(pollTimer);
+                                    return;
+                                }
+                            }
+                        } catch { /* keep polling */ }
+                        if (attempts >= 15 && pollTimer) { setUnlocking(false); clearInterval(pollTimer); }
+                    }, 2000);
+                }
             })
-            .catch(() => { setNotFound(true); setLoading(false); });
+            .catch(() => { if (!cancelled) { setNotFound(true); setLoading(false); } });
+
+        return () => { cancelled = true; if (pollTimer) clearInterval(pollTimer); };
     }, [sessionId, shareToken]);
 
 
@@ -551,6 +592,13 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                         <div className="w-10 h-10 rounded-xl bg-argo-violet-50 border border-argo-violet-100 flex items-center justify-center mx-auto">
                             <Lock size={18} className="text-argo-violet-500" />
                         </div>
+                        {unlocking ? (
+                            <div className="space-y-2">
+                                <h3 className="text-base font-semibold text-argo-navy">{t.unlockingTitle}</h3>
+                                <p className="text-xs text-argo-grey leading-relaxed max-w-xs mx-auto">{t.unlockingBody}</p>
+                            </div>
+                        ) : (
+                        <>
                         <div className="space-y-2">
                             <h3 className="text-base font-semibold text-argo-navy">{t.lockedTitle}</h3>
                             <p className="text-xs text-argo-grey leading-relaxed max-w-xs mx-auto">{t.lockedBody}</p>
@@ -577,6 +625,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                                 <p className="text-xs text-argo-light leading-relaxed max-w-xs mx-auto">{t.lockedCta}</p>
                             )}
                         </div>
+                        </>
+                        )}
                     </div>
                 ) : (
                     <>

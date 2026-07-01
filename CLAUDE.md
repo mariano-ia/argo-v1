@@ -23,6 +23,15 @@ Deployed on Vercel (argomethod.com). Email via Resend. Database: Supabase (Postg
 ### Framing rule (STRICT): activity, not only "training"
 Never frame copy as if Argo were only about training. The profile applies equally to matches, competitions, free play and the day-to-day of the sport, and to parents who never attend a practice. Use the umbrella **"la actividad"** (en "the activity" / pt "a atividade"), **"el deporte"**, or **"en la cancha"** instead of "el entrenamiento / training / treino". Exceptions to keep: the **coach role** ("entrenador/coach"), code identifiers / i18n keys, and the deliberate training-vs-match contrast that calms the Sostén who freezes in a match. Full vocabulary + as-built: `docs/COPY-MARCO-ACTIVIDAD.md`.
 
+### Product naming + buyer-neutral copy (STRICT)
+Consumer product names (match EXACTLY in checkout, emails, and the pricing card):
+- **Argo One** ($9.99) — the child's report. A One buyer is later offered a Puente proposal for the authorizing adult.
+- **Argo One +** ($12.99) — the child's report **plus** the adult's Puente (no later proposal; the Puente is delivered prepaid). Written **"Argo One +"**, never "Argo One + Puente".
+- **Argo Puente** — the adult bridge (the add-on / the upsell). **Always singular "Argo Puente", never the plural "Argo Puentes"** (aligned 2026-07-01). The DB tables `puentes_*` and the `/puentes/` route keep their names; only user-facing copy changes.
+- **Argo Academy** / **Argo Coach** — consultive dashboard, no digital checkout ("Solicitar demo").
+
+**Buyer-neutral (STRICT):** Argo One / One + / Puente are bought by a **parent OR a coach**. Never assume the parent. Say **"el niño"** (the pricing card's term), never **"tu hijo / your son / seu filho"**; call the grown-up **"el adulto" / "quien lo acompaña"**, not only "padre/madre". Only parental-consent legal text may name "padre/madre/tutor".
+
 ### Voseo rules (STRICT — enforced by post-edit hook)
 Never use Argentine voseo forms. Always use standard tuteo. Reference:
 
@@ -72,8 +81,8 @@ Single-instance. One admin dashboard.
 - Trial: 8 players, 14 days. PRO: 50 players. Academy: 100. Enterprise: custom.
 - AI consultant included in all plans (fair use soft cap, invisible to user).
 - Enterprise gets Gemini 2.5 Pro (premium model); others get Gemini 2.5 Flash.
-- Argo One (parents): one-time purchase, no dashboard, report by email.
-- Full pricing docs: `docs/pricing-v2.md`
+- Argo One (parent OR coach): one-time purchase, no dashboard, report by email. Copy is buyer-neutral ("el niño", never "tu hijo") — see the naming rule above.
+- Full pricing docs: `docs/pricing-v3.md`
 
 #### Key decisions (confirmed)
 - **Never reference "credits"** — the concept is eliminated

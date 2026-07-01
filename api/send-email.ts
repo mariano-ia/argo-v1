@@ -33,14 +33,14 @@ function buildHtml(params: {
     lang?: string;
     resumenPerfil?: string;
     siteUrl?: string;
-    // If the parent already purchased Argo Puentes, we swap the upsell CTA
+    // If the parent already purchased Argo Puente, we swap the upsell CTA
     // for a "your bridges now include {nombre}" message linking to their
     // existing report instead of charging them again.
     existingPuentesMagicLink?: string;
     // Renders the upsell price in the currency the parent previously paid
     // in (Argo One). Undefined means "show both".
     preferredCurrency?: 'usd' | 'ars' | null;
-    // Locked demo (is_demo && !full_access): suppress the Argo Puentes block
+    // Locked demo (is_demo && !full_access): suppress the Argo Puente block
     // entirely. We never pitch the adult Puente to someone who only has a demo
     // report; it only appears once they have a full report (paid or gifted).
     suppressPuentes?: boolean;
@@ -97,7 +97,7 @@ function buildHtml(params: {
             headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} años`,
             eyebrow: 'Arquetipo',
             bridgeLabel: 'Palabras que lo activan',
-            ctaSub: 'El informe completo incluye patrón de decisión, guía de comunicación, checklist del día, brújula secundaria y más.',
+            ctaSub: 'El informe completo incluye patrón de decisión, guía de comunicación, checklist del día, tendencia secundaria y más.',
             ctaBtn: 'Ver informe completo →',
             security: '🔒 Este link es personal e intransferible. Solo tú lo recibiste.',
             privacyLink: 'Política de Privacidad de Argo Method',
@@ -115,7 +115,7 @@ function buildHtml(params: {
             headerSub: `For ${params.nombreAdulto} · ${params.deporte} · ${params.edad} years`,
             eyebrow: 'Archetype',
             bridgeLabel: 'Activating words',
-            ctaSub: 'The full report includes decision pattern, communication guide, daily checklist, secondary compass, and more.',
+            ctaSub: 'The full report includes decision pattern, communication guide, daily checklist, secondary tendency, and more.',
             ctaBtn: 'View full report →',
             security: '🔒 This link is personal and non-transferable. Only you received it.',
             privacyLink: 'Argo Method Privacy Policy',
@@ -133,7 +133,7 @@ function buildHtml(params: {
             headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} anos`,
             eyebrow: 'Arquétipo',
             bridgeLabel: 'Palavras que o ativam',
-            ctaSub: 'O relatório completo inclui padrão de decisão, guia de comunicação, checklist do dia, bússola secundária e mais.',
+            ctaSub: 'O relatório completo inclui padrão de decisão, guia de comunicação, checklist do dia, tendência secundária e mais.',
             ctaBtn: 'Ver relatório completo →',
             security: '🔒 Este link é pessoal e intransferível. Só você o recebeu.',
             privacyLink: 'Política de Privacidade do Argo Method',
@@ -149,7 +149,7 @@ function buildHtml(params: {
     };
     const c = copy[langAttr] ?? copy.es;
 
-    // Argo Puentes upsell CTA (shown only when we have a sessionId so the
+    // Argo Puente upsell CTA (shown only when we have a sessionId so the
     // user can be tied back to their source child session).
     const puentesCheckoutUrl = params.sessionId
         ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${langAttr}`
@@ -165,56 +165,56 @@ function buildHtml(params: {
             : 'USD 9.99 / ARS 6.999';
 
     // Two copy variants: upsell (parent has not paid) vs included (parent
-    // already has Argo Puentes, this child is now part of their bond report).
+    // already has Argo Puente, this child is now part of their bond report).
     // The upsell copy follows Variant A: anchor on the moment, propose the
     // next step, surface the "one purchase forever, all children" value.
     const upsellCopy = {
         es: {
-            eyebrow: 'Argo Puentes · Tu complemento',
+            eyebrow: 'Argo Puente · Tu complemento',
             title: `Ahora que conoces a ${params.nombreNino}, conócete a ti.`,
             body: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.`,
-            highlight: 'Una compra cubre a todos tus hijos, para siempre.',
-            cta: 'Empezar mi Argo Puentes',
+            highlight: 'Una compra te cubre para cada niño, para siempre.',
+            cta: 'Empezar mi Argo Puente',
             price: priceLine,
         },
         en: {
-            eyebrow: 'Argo Puentes · Your companion piece',
+            eyebrow: 'Argo Puente · Your companion piece',
             title: `Now that you know ${params.nombreNino}, get to know yourself.`,
             body: `A five-minute questionnaire. Your own profile, with four specific bridges to better accompany ${params.nombreNino} in sport.`,
-            highlight: 'One purchase covers all your children, forever.',
-            cta: 'Start my Argo Puentes',
+            highlight: 'One purchase covers you for every child, forever.',
+            cta: 'Start my Argo Puente',
             price: priceLine,
         },
         pt: {
-            eyebrow: 'Argo Puentes · Seu complemento',
+            eyebrow: 'Argo Puente · Seu complemento',
             title: `Agora que conhece ${params.nombreNino}, conheça a si.`,
             body: `Cinco minutos de questionário. Seu próprio relatório, com quatro pontes específicas para acompanhar ${params.nombreNino} melhor no esporte.`,
-            highlight: 'Uma compra cobre todos os seus filhos, para sempre.',
-            cta: 'Começar meu Argo Puentes',
+            highlight: 'Uma compra cobre você para cada criança, para sempre.',
+            cta: 'Começar meu Argo Puente',
             price: priceLine,
         },
     };
     const includedCopy = {
         es: {
-            eyebrow: 'Tu Argo Puentes ahora incluye más',
+            eyebrow: 'Tu Argo Puente ahora incluye más',
             title: `Sumamos a ${params.nombreNino} a tu informe`,
-            body: `Como ya tienes Argo Puentes activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora los incluye a todos en un solo lugar, sin volver a cobrarte.`,
+            body: `Como ya tienes Argo Puente activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora los incluye a todos en un solo lugar, sin volver a cobrarte.`,
             highlight: '',
             cta: 'Ver mi informe actualizado',
             price: '',
         },
         en: {
-            eyebrow: 'Your Argo Puentes now includes more',
+            eyebrow: 'Your Argo Puente now includes more',
             title: `${params.nombreNino} has been added to your report`,
-            body: `Since you already have Argo Puentes active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers all of your children in one place, with no extra charge.`,
+            body: `Since you already have Argo Puente active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers every child in one place, with no extra charge.`,
             highlight: '',
             cta: 'View my updated report',
             price: '',
         },
         pt: {
-            eyebrow: 'Seu Argo Puentes agora inclui mais',
+            eyebrow: 'Seu Argo Puente agora inclui mais',
             title: `${params.nombreNino} foi adicionado(a) ao seu relatório`,
-            body: `Como você já tem Argo Puentes ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos eles em um só lugar, sem cobrança adicional.`,
+            body: `Como você já tem Argo Puente ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos eles em um só lugar, sem cobrança adicional.`,
             highlight: '',
             cta: 'Ver meu relatório atualizado',
             price: '',
@@ -580,8 +580,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             preferredCurrency = null;
         }
 
-        // Argo Puentes multi-child: if this adult email already has a paid
-        // Argo Puentes purchase, we replace the upsell with "included" copy
+        // Argo Puente multi-child: if this adult email already has a paid
+        // Argo Puente purchase, we replace the upsell with "included" copy
         // and AUTO-CREATE the puentes_session for this child + trigger
         // generation, so the parent gets the new bridges automatically.
         //
@@ -590,7 +590,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // email itself. If it fails we just fall back to showing the
         // standard upsell CTA.
         // Locked demo: the adult only has a demo report, so never pitch (or
-        // auto-create) Argo Puentes. The Puente only makes sense once they have a
+        // auto-create) Argo Puente. The Puente only makes sense once they have a
         // full report (after paying $9.99 to unlock, or an admin full_access gift).
         const isLockedDemo = Boolean(sessionRow?.is_demo) && !sessionRow?.full_access;
         let existingPuentesMagicLink: string | undefined;

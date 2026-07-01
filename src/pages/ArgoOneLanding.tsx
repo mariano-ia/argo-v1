@@ -12,17 +12,17 @@ import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
 type OneKind = 'one' | 'one_puente';
 
 const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; desc: string; popular: boolean }[] = [
-    { kind: 'one',        title: 'Argo One',          price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil de tu hijo.',              popular: false },
-    { kind: 'one_puente', title: 'Argo One + Puente', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con él.',  popular: true },
+    { kind: 'one',        title: 'Argo One',          price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',              popular: false },
+    { kind: 'one_puente', title: 'Argo One +',       price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.',  popular: true },
 ];
 
 const FAQ_ITEMS = [
-    { q: '¿En que se diferencia de un test psicologico?', a: 'Un test psicologico diagnostica y clasifica. Argo no. Es una herramienta de comunicacion basada en el modelo DISC que te muestra como tu hijo procesa decisiones y presion en el deporte, para que puedas acompanarlo mejor.' },
-    { q: '¿Es un test psicologico?', a: 'No. No diagnostica, no clasifica, no predice. Es una herramienta para entender y comunicarte mejor.' },
-    { q: '¿Que edad debe tener?', a: 'Entre 8 y 16 anos.' },
-    { q: '¿Cuanto toma?', a: '10 a 12 minutos de aventura interactiva.' },
-    { q: '¿Necesito crear cuenta?', a: 'No. Solo un email para recibir el informe. Sin suscripcion, sin compromisos.' },
-    { q: '¿Es seguro?', a: 'Si. No recopilamos datos sensibles del menor. El informe se envia solo al adulto responsable.' },
+    { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañarlo mejor.' },
+    { q: '¿Es un test psicológico?', a: 'No. No diagnostica, no clasifica, no predice. Es una herramienta para entender y comunicarte mejor.' },
+    { q: '¿Qué edad debe tener?', a: 'Entre 8 y 16 años.' },
+    { q: '¿Cuánto toma?', a: '10 a 12 minutos de aventura interactiva.' },
+    { q: '¿Necesito crear cuenta?', a: 'No. Solo un email para recibir el informe. Sin suscripción, sin compromisos.' },
+    { q: '¿Es seguro?', a: 'Sí. No recopilamos datos sensibles del menor. El informe se envía solo al adulto responsable.' },
 ];
 
 const fade = (delay = 0) => ({
@@ -71,7 +71,7 @@ const ArgoOneLanding: React.FC = () => {
                 setLoading(false);
             }
         } catch {
-            setError('Error de conexion. Intenta de nuevo.');
+            setError('Error de conexión. Intenta de nuevo.');
             setLoading(false);
         }
     };
@@ -99,10 +99,10 @@ const ArgoOneLanding: React.FC = () => {
               <div style={{ maxWidth: '480px', margin: '0 auto' }}>
                 <motion.div {...fade()} style={{ textAlign: 'center', marginBottom: '16px' }}>
                     <h1 style={{ fontWeight: 700, fontSize: 'clamp(1.4rem, 5vw, 1.85rem)', lineHeight: 1.2, letterSpacing: '-0.025em', color: '#1D1D1F', marginBottom: '10px' }}>
-                        Tu hijo vive el deporte a su manera. Conoce sus tendencias en 10 minutos y ayudalo a disfrutar mas del juego.
+                        Cada niño vive el deporte a su manera. Conoce sus tendencias en 10 minutos y ayúdalo a disfrutar más del juego.
                     </h1>
                     <p style={{ fontSize: '14px', color: '#424245', lineHeight: 1.5 }}>
-                        Cada chico vive el deporte a su manera. El informe te da las claves para acompanarlo mejor y que disfrute mas.
+                        El informe te da las claves para acompañarlo mejor y que disfrute más.
                     </p>
                 </motion.div>
 
@@ -181,7 +181,7 @@ const ArgoOneLanding: React.FC = () => {
                     {[
                         { icon: <Shield size={12} />, text: 'Pago seguro' },
                         { icon: <Clock size={12} />, text: 'Acceso inmediato' },
-                        { icon: <Mail size={12} />, text: 'Sin cuenta ni suscripcion' },
+                        { icon: <Mail size={12} />, text: 'Sin cuenta ni suscripción' },
                     ].map((b, i) => (
                         <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#86868B' }}>
                             {b.icon} {b.text}
@@ -203,15 +203,15 @@ const ArgoOneLanding: React.FC = () => {
                             <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>IC</span>
                         </div>
                         <div>
-                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>Impulsor Ritmico</p>
-                            <p style={{ fontSize: '11px', color: '#86868B' }}>Motor Ritmico | 12 anos | Futbol</p>
+                            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>Impulsor Rítmico</p>
+                            <p style={{ fontSize: '11px', color: '#86868B' }}>Motor Rítmico | 12 años | Fútbol</p>
                         </div>
                     </div>
                     {/* Mock sections */}
                     {[
                         { title: 'Resumen del perfil', lines: 3, color: '#f97316' },
                         { title: 'Palabras puente', lines: 2, color: '#22c55e' },
-                        { title: 'Combustible y corazon', lines: 2, color: '#f59e0b' },
+                        { title: 'Combustible y corazón', lines: 2, color: '#f59e0b' },
                         { title: 'Orientaciones para el adulto', lines: 3, color: '#6366f1' },
                     ].map((s, i) => (
                         <div key={i} style={{ marginBottom: i < 3 ? '14px' : 0 }}>
@@ -241,13 +241,13 @@ const ArgoOneLanding: React.FC = () => {
             {/* ── How it works (compact) ──────────────────────────────── */}
             <section style={{ padding: '0 20px 32px', maxWidth: '480px', margin: '0 auto' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#86868B', marginBottom: '14px', textAlign: 'center' }}>
-                    Como funciona
+                    Cómo funciona
                 </p>
                 <div className="flex flex-col gap-3">
                     {[
                         { n: '1', title: 'Compras el informe', desc: 'Pagas con tarjeta.' },
-                        { n: '2', title: 'Tu hijo juega 10 min', desc: 'Aventura interactiva. Sin cuenta ni datos.' },
-                        { n: '3', title: 'Recibes el informe', desc: 'Perfil + claves de comunicacion por email.' },
+                        { n: '2', title: 'El niño juega 10 min', desc: 'Aventura interactiva. Sin cuenta ni datos.' },
+                        { n: '3', title: 'Recibes el informe', desc: 'Perfil + claves de comunicación por email.' },
                     ].map(s => (
                         <div key={s.n} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                             <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(149,95,181,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#955FB5', flexShrink: 0 }}>
@@ -279,7 +279,7 @@ const ArgoOneLanding: React.FC = () => {
                     <span style={{ fontSize: '13px', fontWeight: 100, color: '#1D1D1F' }}>Method</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                    <a href="/terms" style={{ fontSize: '11px', color: '#86868B', textDecoration: 'none' }}>Terminos</a>
+                    <a href="/terms" style={{ fontSize: '11px', color: '#86868B', textDecoration: 'none' }}>Términos</a>
                     <a href="/privacy" style={{ fontSize: '11px', color: '#86868B', textDecoration: 'none' }}>Privacidad</a>
                 </div>
             </footer>
