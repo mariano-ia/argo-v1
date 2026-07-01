@@ -27,8 +27,8 @@ const BrandName: React.FC<{ kind: OneKind }> = ({ kind }) => (
 );
 
 const FAQ_ITEMS = [
-    { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañarlo mejor.' },
     { q: '¿Es un test psicológico?', a: 'No. No diagnostica, no clasifica, no predice. Es una herramienta para entender y comunicarte mejor.' },
+    { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañarlo mejor.' },
     { q: '¿Qué edad debe tener?', a: 'Entre 8 y 16 años.' },
     { q: '¿Cuánto toma?', a: '10 a 12 minutos de aventura interactiva.' },
     { q: '¿Necesito crear cuenta?', a: 'No. Solo un email para recibir el informe. Sin suscripción, sin compromisos.' },
@@ -55,54 +55,6 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
     );
 };
 
-const ReportPreview: React.FC = () => (
-    <div>
-        <p className="text-center lg:text-left" style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#86868B', marginBottom: '14px' }}>
-            Esto es lo que vas a recibir
-        </p>
-        <div style={{ background: '#fff', borderRadius: '14px', padding: '20px', boxShadow: '0 2px 12px rgba(0,0,0,0.06)', border: '1px solid #E8E8ED' }}>
-            {/* Mock report header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid #F0F0F5' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: 'linear-gradient(135deg, #f97316 0%, #f59e0b 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>IC</span>
-                </div>
-                <div>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#1D1D1F' }}>Impulsor Rítmico</p>
-                    <p style={{ fontSize: '11px', color: '#86868B' }}>Motor Rítmico | 12 años | Fútbol</p>
-                </div>
-            </div>
-            {/* Mock sections */}
-            {[
-                { title: 'Resumen del perfil', lines: 3, color: '#f97316' },
-                { title: 'Palabras puente', lines: 2, color: '#22c55e' },
-                { title: 'Combustible y corazón', lines: 2, color: '#f59e0b' },
-                { title: 'Orientaciones para el adulto', lines: 3, color: '#6366f1' },
-            ].map((s, i) => (
-                <div key={i} style={{ marginBottom: i < 3 ? '14px' : 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                        <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.color, flexShrink: 0 }} />
-                        <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F' }}>{s.title}</p>
-                    </div>
-                    {Array.from({ length: s.lines }).map((_, j) => (
-                        <div key={j} style={{
-                            height: '8px', borderRadius: '4px',
-                            background: '#F0F0F5',
-                            width: j === s.lines - 1 ? '60%' : '100%',
-                            marginBottom: '5px', marginLeft: '14px',
-                        }} />
-                    ))}
-                </div>
-            ))}
-            {/* Blur overlay hint */}
-            <div style={{ textAlign: 'center', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #F0F0F5' }}>
-                <p style={{ fontSize: '11px', color: '#955FB5', fontWeight: 500 }}>
-                    Informe completo generado por IA para cada perfil
-                </p>
-            </div>
-        </div>
-    </div>
-);
-
 const ArgoOneLanding: React.FC = () => {
     const [searchParams] = useSearchParams();
     const initialKind: OneKind = searchParams.get('kind') === 'puente' ? 'one_puente' : 'one';
@@ -110,6 +62,7 @@ const ArgoOneLanding: React.FC = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const selected = OPTIONS.find(o => o.kind === selectedKind) ?? OPTIONS[0];
 
     // Navigating here from the home pricing card carries the previous scroll
     // position; reset so the buyer lands on the hero (price + email + CTA).
@@ -143,7 +96,7 @@ const ArgoOneLanding: React.FC = () => {
 
             {/* ── Header (minimal, no competing CTA) ──────────────────── */}
             <header style={{ background: '#fff', borderBottom: '1px solid #E8E8ED' }}>
-                <div className="max-w-6xl mx-auto flex items-center justify-between" style={{ padding: '12px 20px' }}>
+                <div className="max-w-5xl mx-auto flex items-center justify-between" style={{ padding: '12px 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <span style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Argo</span>
                         <span style={{ fontSize: '18px', fontWeight: 100, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Method</span>
@@ -151,62 +104,67 @@ const ArgoOneLanding: React.FC = () => {
                 </div>
             </header>
 
-            {/* ── Hero: pitch + selector + CTA (left) · report preview (right) ── */}
-            <section className="px-5 py-8 lg:py-16" style={{ background: 'linear-gradient(180deg, #F3EDF7 0%, #FAFAFA 100%)' }}>
-                <div className="max-w-5xl mx-auto grid gap-10 lg:grid-cols-2 lg:gap-14 lg:items-center">
+            {/* ── Hero: headline + checkout card (single, centered focal point) ── */}
+            <section className="px-5 py-12 lg:py-16" style={{ background: 'linear-gradient(180deg, #F3EDF7 0%, #FAFAFA 100%)' }}>
+                <div className="max-w-xl mx-auto">
 
-                    {/* LEFT column: pitch + selector + CTA */}
-                    <div className="w-full max-w-[480px] mx-auto lg:mx-0">
-                        <motion.div {...fade()} className="text-center lg:text-left" style={{ marginBottom: '16px' }}>
-                            <h1 style={{ fontWeight: 700, fontSize: 'clamp(1.5rem, 4vw, 2.35rem)', lineHeight: 1.15, letterSpacing: '-0.025em', color: '#1D1D1F', marginBottom: '10px' }}>
-                                Cada niño vive el deporte a su manera. Conoce sus tendencias en 10 minutos y ayúdalo a disfrutar más del juego.
-                            </h1>
-                            <p style={{ fontSize: '15px', color: '#424245', lineHeight: 1.55 }}>
-                                El informe te da las claves para acompañarlo mejor y que disfrute más.
+                    {/* Headline — home style: eyebrow + thin heading */}
+                    <motion.div {...fade()} className="text-center" style={{ marginBottom: '26px' }}>
+                        <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '14px' }}>
+                            El informe del niño
+                        </p>
+                        <h1 className="text-argo-navy" style={{ fontWeight: 300, fontSize: 'clamp(1.9rem, 4vw, 2.7rem)', lineHeight: 1.12, letterSpacing: '-0.03em', marginBottom: '14px' }}>
+                            Cada niño vive el deporte a su manera.
+                        </h1>
+                        <p style={{ fontSize: '16px', color: '#424245', lineHeight: 1.6 }}>
+                            Conoce sus tendencias en 10 minutos. El informe te da las claves para acompañarlo mejor y que disfrute más del juego.
+                        </p>
+                    </motion.div>
+
+                    {/* Checkout card — the single focal point */}
+                    <motion.div {...fade(0.1)}>
+                        <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #EDE4F5', boxShadow: '0 14px 48px rgba(149,95,181,0.14)', padding: '24px' }}>
+                            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#86868B', marginBottom: '14px' }}>
+                                Elige tu opción
                             </p>
-                        </motion.div>
 
-                        <div className="mx-auto lg:mx-0" style={{ width: '40px', height: '1px', background: '#D2D2D7', marginBottom: '16px' }} />
+                            {/* Selector */}
+                            <div className="flex flex-col gap-2.5">
+                                {OPTIONS.map((o) => (
+                                    <button
+                                        key={o.kind}
+                                        onClick={() => setSelectedKind(o.kind)}
+                                        style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
+                                            border: selectedKind === o.kind ? '2px solid #955FB5' : '1px solid #E8E8ED',
+                                            background: selectedKind === o.kind ? 'rgba(149,95,181,0.05)' : '#fff',
+                                            transition: 'all 0.15s', position: 'relative', textAlign: 'left', width: '100%',
+                                        }}
+                                    >
+                                        {o.popular && (
+                                            <span style={{
+                                                position: 'absolute', top: '-9px', left: '14px',
+                                                fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+                                                background: '#955FB5', color: '#fff', padding: '2px 10px', borderRadius: '5px',
+                                            }}>
+                                                Recomendado
+                                            </span>
+                                        )}
+                                        <div style={{ paddingRight: '12px' }}>
+                                            <p style={{ fontSize: '15px', color: '#1D1D1F' }}><BrandName kind={o.kind} /></p>
+                                            <p style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>{o.desc}</p>
+                                        </div>
+                                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                                            <p style={{ fontSize: '11px', color: '#AEAEB2', textDecoration: 'line-through' }}>{o.regular}</p>
+                                            <p style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: o.kind === 'one_puente' ? '#955FB5' : '#1D1D1F' }}>{o.price}</p>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
 
-                        {/* Selector */}
-                        <div className="flex flex-col gap-2">
-                            {OPTIONS.map((o, i) => (
-                                <motion.button
-                                    key={o.kind}
-                                    {...fade(i * 0.04)}
-                                    onClick={() => setSelectedKind(o.kind)}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
-                                        border: selectedKind === o.kind ? '2px solid #955FB5' : '1px solid #E8E8ED',
-                                        background: selectedKind === o.kind ? 'rgba(149,95,181,0.04)' : '#fff',
-                                        transition: 'all 0.15s', position: 'relative', textAlign: 'left', width: '100%',
-                                    }}
-                                >
-                                    {o.popular && (
-                                        <span style={{
-                                            position: 'absolute', top: '-9px', left: '14px',
-                                            fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-                                            background: '#955FB5', color: '#fff', padding: '2px 10px', borderRadius: '5px',
-                                        }}>
-                                            Recomendado
-                                        </span>
-                                    )}
-                                    <div style={{ paddingRight: '12px' }}>
-                                        <p style={{ fontSize: '14px', color: '#1D1D1F' }}><BrandName kind={o.kind} /></p>
-                                        <p style={{ fontSize: '11px', color: '#86868B', marginTop: '1px' }}>{o.desc}</p>
-                                    </div>
-                                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                        <p style={{ fontSize: '11px', color: '#AEAEB2', textDecoration: 'line-through' }}>{o.regular}</p>
-                                        <p style={{ fontSize: '18px', fontWeight: 700, color: '#955FB5' }}>{o.price}</p>
-                                    </div>
-                                </motion.button>
-                            ))}
-                        </div>
-
-                        {/* Email + buy CTA */}
-                        <motion.div {...fade(0.12)} style={{ marginTop: '14px' }}>
-                            <div className="flex flex-col gap-2">
+                            {/* Email + buy CTA */}
+                            <div className="flex flex-col gap-2.5" style={{ marginTop: '16px' }}>
                                 <input
                                     type="email"
                                     placeholder="Tu email (para recibir el informe)"
@@ -214,7 +172,7 @@ const ArgoOneLanding: React.FC = () => {
                                     onChange={e => setEmail(e.target.value)}
                                     onKeyDown={e => e.key === 'Enter' && handleBuy()}
                                     style={{
-                                        width: '100%', padding: '12px 14px', borderRadius: '10px',
+                                        width: '100%', padding: '13px 14px', borderRadius: '12px',
                                         border: '1px solid #D2D2D7', fontSize: '14px', outline: 'none',
                                         boxSizing: 'border-box',
                                     }}
@@ -223,61 +181,57 @@ const ArgoOneLanding: React.FC = () => {
                                     onClick={handleBuy}
                                     disabled={loading || !email}
                                     style={{
-                                        width: '100%', padding: '14px', borderRadius: '10px', border: 'none',
+                                        width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
                                         fontSize: '15px', fontWeight: 600,
                                         background: email ? '#955FB5' : '#D2D2D7', color: '#fff',
                                         cursor: email ? 'pointer' : 'default',
                                         opacity: loading ? 0.6 : 1, transition: 'all 0.2s',
+                                        boxShadow: email ? '0 4px 18px rgba(149,95,181,0.25)' : 'none',
                                     }}
                                 >
-                                    {loading ? 'Procesando...' : <>Comprar <BrandName kind={selectedKind} /></>}
+                                    {loading ? 'Procesando...' : <>Comprar <BrandName kind={selectedKind} /> · {selected.price}</>}
                                 </button>
                                 {error && <p style={{ fontSize: '12px', color: '#DC2626', textAlign: 'center' }}>{error}</p>}
                             </div>
-                        </motion.div>
 
-                        {/* Trust badges */}
-                        <div className="flex justify-center lg:justify-start" style={{ gap: '16px', marginTop: '12px' }}>
-                            {[
-                                { icon: <Shield size={12} />, text: 'Pago seguro' },
-                                { icon: <Clock size={12} />, text: 'Acceso inmediato' },
-                                { icon: <Mail size={12} />, text: 'Sin cuenta ni suscripción' },
-                            ].map((b, i) => (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#86868B' }}>
-                                    {b.icon} {b.text}
-                                </div>
-                            ))}
+                            {/* Trust badges */}
+                            <div className="flex flex-wrap items-center justify-center" style={{ gap: '16px', marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #F0F0F5' }}>
+                                {[
+                                    { icon: <Shield size={12} />, text: 'Pago seguro' },
+                                    { icon: <Clock size={12} />, text: 'Acceso inmediato' },
+                                    { icon: <Mail size={12} />, text: 'Sin suscripción' },
+                                ].map((b, i) => (
+                                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#86868B' }}>
+                                        {b.icon} {b.text}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-
-                    {/* RIGHT column: report preview */}
-                    <motion.div {...fade(0.16)} className="w-full max-w-[480px] mx-auto lg:mx-0">
-                        <ReportPreview />
                     </motion.div>
-
                 </div>
             </section>
 
-            {/* ── How it works: stacked on mobile, 3-up on desktop ─────── */}
-            <section className="px-5 py-10 lg:py-14">
+            {/* ── How it works ─────────────────────────────────────────── */}
+            <section className="px-5 py-12 lg:py-16">
                 <div className="max-w-4xl mx-auto">
-                    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#86868B', marginBottom: '20px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#AEAEB2', marginBottom: '8px', textAlign: 'center' }}>
                         Cómo funciona
                     </p>
-                    <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
+                    <h2 className="text-argo-navy" style={{ fontWeight: 300, fontSize: 'clamp(1.5rem, 3vw, 2.1rem)', lineHeight: 1.15, letterSpacing: '-0.03em', textAlign: 'center', marginBottom: '38px' }}>
+                        De un juego de 10 minutos a un informe que puedes usar.
+                    </h2>
+                    <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
                         {[
-                            { n: '1', title: 'Compras el informe', desc: 'Pagas con tarjeta.' },
-                            { n: '2', title: 'El niño juega 10 min', desc: 'Aventura interactiva. Sin cuenta ni datos.' },
-                            { n: '3', title: 'Recibes el informe', desc: 'Perfil + claves de comunicación por email.' },
+                            { n: '1', title: 'Compras y recibes el enlace', desc: 'Eliges Argo One o Argo One +, pagas con tarjeta (USD) y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción.' },
+                            { n: '2', title: 'El niño juega 10 minutos', desc: 'Desde el celular vive una aventura náutica. No hay preguntas directas ni respuestas correctas: sus decisiones muestran cómo vive el juego, la presión y el equipo.' },
+                            { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro basado en el modelo DISC: su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañarlo en la cancha.' },
                         ].map(s => (
-                            <div key={s.n} className="flex-1 flex items-center gap-3 lg:flex-col lg:items-start lg:gap-2">
-                                <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(149,95,181,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#955FB5', flexShrink: 0 }}>
+                            <div key={s.n}>
+                                <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(149,95,181,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#955FB5', marginBottom: '14px' }}>
                                     {s.n}
                                 </div>
-                                <div>
-                                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#1D1D1F' }}>{s.title}</span>
-                                    <span style={{ fontSize: '13px', color: '#86868B' }}> {s.desc}</span>
-                                </div>
+                                <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1D1D1F', letterSpacing: '-0.01em', marginBottom: '7px' }}>{s.title}</h3>
+                                <p style={{ fontSize: '14px', color: '#86868B', lineHeight: 1.6 }}>{s.desc}</p>
                             </div>
                         ))}
                     </div>
