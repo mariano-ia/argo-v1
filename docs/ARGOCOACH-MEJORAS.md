@@ -26,6 +26,11 @@ semanal antes de construir. **16 se agranda**: no solo arreglar el chat en
 mobile; pensar una versión exclusiva mobile de TODA la herramienta, quizás
 reducida (workstream de diseño nuevo, pendiente de exploración).
 
+Estructural: **aprobados: 20 ("muy importante"), 21, 22, 23** (el 23 recién
+después de tener el seguimiento de telemetría/costos funcionando, como A/B).
+**Diferidos: 19 (streaming) y 24 (thinking budget)**, para más adelante.
+Higiene menor: va como batch de mantenimiento junto a los quick wins.
+
 ## 1. Quick wins (alto impacto, esfuerzo chico)
 
 1. **Trial cap por consulta, no por mensaje.** El cap de 10 cuenta cada mensaje
