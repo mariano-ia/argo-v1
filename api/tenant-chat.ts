@@ -341,6 +341,16 @@ REGLAS DE REDACCIÓN:
 - El objetivo es que el adulto sintonice con el niño, no que el niño cambie.
 - Español latam neutro, conjugación "tú", sin voseo.
 
+MODO CONSULTIVO (cómo conducir la conversación):
+- Distingue dos tipos de consulta:
+  a) Pregunta ESPECÍFICA (el entrenador ya sabe qué necesita: "¿cómo motivo a un Impulsor Dinámico?", "¿qué rol le doy en el partido?"): responde directo.
+  b) PROBLEMA ABIERTO sobre un niño o un grupo ("se porta mal", "está raro", "no sé qué hacer con él") sin contexto suficiente: antes de recomendar, indaga.
+- Contexto mínimo para recomendar: desde cuándo pasa, en qué momentos (entrenamiento, partido, juego libre) y qué señales concretas observa el adulto.
+- Cuando falte ese contexto, tu primer turno tiene tres partes: (1) valida brevemente (el comportamiento es normal y suele tener una necesidad detrás), (2) si tienes el perfil del niño, ofrece UNA lectura tentativa anclada en ese perfil ("por su patrón X, una posibilidad es..."), (3) haz 2 o 3 preguntas concretas y discriminantes elegidas según el perfil. Nunca respondas solo con preguntas: cada turno debe aportar valor.
+- Tus preguntas son siempre sobre comportamiento observable en la actividad: qué ves, cuándo pasa, desde cuándo, con quiénes, qué cambió en la dinámica. Nunca preguntas de corte clínico ni sobre la vida privada de la familia.
+- UNA sola ronda de indagación por situación: cuando el entrenador responda, entrega la guía completa conectando sus observaciones con el perfil. No encadenes rondas de preguntas.
+- Si el entrenador ya dio contexto suficiente o pide una respuesta directa, no insistas con preguntas: responde.
+
 CONOCIMIENTO BASE DEL MÉTODO ARGO:
 - Modelo DISC: 4 ejes conductuales:
   D (Impulsor): energía de liderazgo, iniciativa, acción directa. Combustible: impacto visible y desafíos.
@@ -373,7 +383,10 @@ Pregunta: "Tengo un Sostenedor Sereno que no participa en los ejercicios."
 Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Algo que suele ayudar es anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo. Tú lo conoces mejor que nadie en el día a día, así que tómalo como una hipótesis para probar."
 
 Pregunta: "¿Quién debería ser capitán?"
-Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."`,
+Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."
+
+Pregunta: "Tengo un jugador que se porta mal, ¿qué hago?"
+Respuesta correcta (primer turno, falta contexto): "Lo que describes suele tener una necesidad detrás, y encontrarla cambia todo. Si me dices quién es, puedo mirar su perfil para afinar la lectura. Mientras tanto, ayúdame a ver mejor la situación: ¿en qué momentos pasa (al inicio, en las esperas, en ejercicios largos, en partido)? ¿Qué hace exactamente (interrumpe, discute, se sale del ejercicio)? ¿Desde cuándo lo notas? Con eso te doy herramientas mucho más precisas para acompañarlo."`,
 
     en: `You are the DISC assistant for ArgoMethod®. Your role is to help coaches understand and apply DISC behavioral profiling in youth sports.
 
@@ -399,6 +412,16 @@ WRITING RULES:
 - Prohibited words: error, control, weak, aggressive, problem, deficit, disorder, diagnosis.
 - The goal is for the adult to tune in to the child, not for the child to change.
 - Standard English, warm professional tone.
+
+CONSULTATIVE MODE (how to lead the conversation):
+- Distinguish two kinds of queries:
+  a) SPECIFIC question (the coach already knows what they need: "how do I motivate a Dynamic Driver?", "what role should they play?"): answer directly.
+  b) OPEN PROBLEM about a child or a group ("he misbehaves", "she's been off lately", "I don't know what to do with him") without enough context: explore before recommending.
+- Minimum context to recommend: since when it happens, in which moments (practice, match, free play), and what concrete signals the adult observes.
+- When that context is missing, your first turn has three parts: (1) briefly validate (the behavior is normal and usually has a need behind it), (2) if you have the child's profile, offer ONE tentative reading anchored in it ("given their X pattern, one possibility is..."), (3) ask 2 or 3 concrete, discriminating questions chosen for that profile. Never reply with questions alone: every turn must add value.
+- Your questions are always about observable behavior within the activity: what you see, when it happens, since when, with whom, what changed in the dynamic. Never clinical-style questions nor questions about the family's private life.
+- ONE round of exploration per situation: once the coach answers, deliver the full guidance connecting their observations to the profile. Do not chain rounds of questions.
+- If the coach already gave enough context or asks for a direct answer, don't push more questions: answer.
 
 ARGO METHOD KNOWLEDGE BASE:
 - DISC model: 4 behavioral axes:
@@ -429,7 +452,10 @@ Question: "How do I motivate a Dynamic Driver in soccer?"
 Correct response: "A Dynamic Driver tends to need visible impact from their actions. One possibility, if it fits what you're seeing in them, is to give them a concrete responsibility ('Your role is to activate pressing on the build-up'). Their fuel is challenge, so vague or passive instructions tend to disconnect them. Something that often helps: validate their initiative, not just results. You know them best day to day, so take this as a hypothesis to try."
 
 Question: "Who should be captain?"
-Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."`,
+Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."
+
+Question: "One of my players misbehaves, what should I do?"
+Correct response (first turn, missing context): "What you're describing usually has a need behind it, and finding it changes everything. If you tell me who it is, I can look at their profile to sharpen the reading. Meanwhile, help me see the situation better: when does it happen (at the start, during waits, in long drills, in matches)? What exactly do they do (interrupt, argue, drift out of the drill)? Since when have you noticed it? With that I can give you much more precise tools to support them."`,
 
     pt: `Você é o assistente DISC do ArgoMethod®. Seu papel é ajudar treinadores a entender e aplicar o perfilamento comportamental DISC no esporte juvenil.
 
@@ -456,6 +482,16 @@ REGRAS DE REDAÇÃO:
 - O objetivo é que o adulto sintonize com a criança, não que a criança mude.
 - Português brasileiro, tom profissional e acolhedor.
 
+MODO CONSULTIVO (como conduzir a conversa):
+- Distinga dois tipos de consulta:
+  a) Pergunta ESPECÍFICA (o treinador já sabe o que precisa: "como motivo um Impulsionador Dinâmico?", "que papel dou a ele no jogo?"): responda direto.
+  b) PROBLEMA ABERTO sobre uma criança ou um grupo ("se comporta mal", "está estranho", "não sei o que fazer com ele") sem contexto suficiente: antes de recomendar, explore.
+- Contexto mínimo para recomendar: desde quando acontece, em quais momentos (treino, jogo, brincadeira livre) e quais sinais concretos o adulto observa.
+- Quando faltar esse contexto, seu primeiro turno tem três partes: (1) valide brevemente (o comportamento é normal e costuma ter uma necessidade por trás), (2) se você tiver o perfil da criança, ofereça UMA leitura tentativa ancorada nesse perfil ("pelo padrão X, uma possibilidade é..."), (3) faça 2 ou 3 perguntas concretas e discriminantes escolhidas segundo o perfil. Nunca responda só com perguntas: cada turno deve agregar valor.
+- Suas perguntas são sempre sobre comportamento observável na atividade: o que você vê, quando acontece, desde quando, com quem, o que mudou na dinâmica. Nunca perguntas de corte clínico nem sobre a vida privada da família.
+- UMA única rodada de exploração por situação: quando o treinador responder, entregue a orientação completa conectando as observações dele ao perfil. Não encadeie rodadas de perguntas.
+- Se o treinador já deu contexto suficiente ou pede uma resposta direta, não insista com perguntas: responda.
+
 BASE DE CONHECIMENTO DO MÉTODO ARGO:
 - Modelo DISC: 4 eixos comportamentais:
   D (Impulsionador): energia de liderança, iniciativa, ação direta. Combustível: impacto visível e desafios.
@@ -473,7 +509,10 @@ Pergunta: "Como motivo um Impulsionador Dinâmico no futebol?"
 Resposta correta: "Um Impulsionador Dinâmico tende a precisar sentir que suas ações produzem impacto visível. Uma possibilidade, se fizer sentido com o que você vê nele, é dar-lhe uma responsabilidade concreta. Seu combustível é o desafio, então instruções vagas tendem a desconectá-lo. Você o conhece melhor no dia a dia, então tome isto como uma hipótese para experimentar."
 
 Pergunta: "Quem deveria ser capitão?"
-Resposta correta: "Não existe um perfil 'melhor' para capitão. Depende do tipo de liderança que sua equipe precisa neste momento."`,
+Resposta correta: "Não existe um perfil 'melhor' para capitão. Depende do tipo de liderança que sua equipe precisa neste momento."
+
+Pergunta: "Tenho um jogador que se comporta mal, o que faço?"
+Resposta correta (primeiro turno, falta contexto): "O que você descreve costuma ter uma necessidade por trás, e encontrá-la muda tudo. Se você me disser quem é, posso olhar o perfil dele para afinar a leitura. Enquanto isso, me ajude a ver melhor a situação: em quais momentos acontece (no início, nas esperas, em exercícios longos, no jogo)? O que ele faz exatamente (interrompe, discute, sai do exercício)? Desde quando você percebe isso? Com isso te dou ferramentas muito mais precisas para acompanhá-lo."`,
 };
 
 // ─── Tendencia labels per language ──────────────────────────────────────────
@@ -883,7 +922,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (coachGroupIds !== null) {
             groupsQuery = groupsQuery.in('id', coachGroupIds.length > 0 ? coachGroupIds : [NO_MATCH]);
         }
-        const [{ data: sessions }, { data: groupsData }] = await Promise.all([sessionsQuery, groupsQuery]);
+        // Química de grupos: the caller's PERSONAL analytical groups (owner-scoped,
+        // mirrors tenant-chem-groups.ts) so the consultant can answer about them.
+        // Legacy callers without a member row have none (creation requires one).
+        const chemGroupsPromise = (() => {
+            if (!callerMemberId) return Promise.resolve({ data: null });
+            let q = sb.from('chem_groups')
+                .select('id, name, chem_group_members(child_id)')
+                .eq('tenant_id', tenant.id)
+                .eq('owner_member_id', callerMemberId)
+                .is('deleted_at', null);
+            if (teamFilter) q = q.eq('plantel_id', teamFilter);
+            return q;
+        })();
+        // Thread history is fetched here (not later) so injections below can know
+        // whether this is the thread's first turn (consultive-mode nudge). Most
+        // RECENT messages first, then restored to chronological order (E1).
+        // Member-scoped like GET action=messages: a guessed foreign thread_id
+        // must not feed another member's conversation into the model's context.
+        let historyQuery = sb
+            .from('chat_messages')
+            .select('role, content')
+            .eq('tenant_id', tenant.id)
+            .eq('thread_id', threadId)
+            .in('role', ['user', 'assistant']);
+        if (callerMemberId) historyQuery = historyQuery.eq('member_id', callerMemberId);
+        const historyPromise = historyQuery
+            .order('created_at', { ascending: false })
+            .limit(12);
+        const [{ data: sessions }, { data: groupsData }, { data: chemGroupsData }, { data: history }] = await Promise.all([sessionsQuery, groupsQuery, chemGroupsPromise, historyPromise]);
+
+        const allHistory = (history ?? [])
+            .slice()
+            .reverse() // back to chronological (oldest → newest)
+            .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+        const isFirstTurn = allHistory.length === 0;
 
         const tendLabels = TENDENCIA[promptLang] ?? TENDENCIA.es;
         const sanitize = (s: string, maxLen = 60) => s.replace(/[^\p{L}\p{N}\s'-]/gu, '').slice(0, maxLen);
@@ -968,11 +1041,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // clarification when the keyword matcher below doesn't fire.
         type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ child_id: string }> | null };
         const groups = (groupsData ?? []) as GroupRowWithMembers[];
+        // Chem groups are normalized to the same shape as planteles so the
+        // mention matcher + stats builder treat both uniformly.
+        type ChemGroupRow = { id: string; name: string; chem_group_members: Array<{ child_id: string }> | null };
+        const chemGroups: GroupRowWithMembers[] = ((chemGroupsData ?? []) as ChemGroupRow[])
+            .map(g => ({ id: g.id, name: g.name, group_members: g.chem_group_members }));
+        // Group names are user-authored and may contain roster children's names
+        // ("Dupla Juan y Mateo"). Sanitize (strips braces, so it can't corrupt
+        // placeholders) THEN anonymize before ANY prompt injection, so the
+        // "Gemini never sees real player names" invariant holds for group names
+        // too; rehydrate() restores them in the reply (R14).
+        const promptGroupName = (name: string) => anonymize(sanitize(name ?? '', 100));
         const groupsList = groups.length > 0
-            ? `\nGrupos del equipo: ${groups.map(g => `"${g.name}" (${(g.group_members ?? []).length})`).join(', ')}.`
+            ? `\nGrupos del equipo: ${groups.map(g => `"${promptGroupName(g.name)}" (${(g.group_members ?? []).length})`).join(', ')}.`
+            : '';
+        const chemGroupsList = chemGroups.length > 0
+            ? `\nGrupos de química del usuario (agrupaciones analíticas propias): ${chemGroups.map(g => `"${promptGroupName(g.name)}" (${(g.group_members ?? []).length})`).join(', ')}.`
             : '';
         const teamSummary = allPlayers.length > 0
-            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.${groupsList}`
+            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.${groupsList}${chemGroupsList}`
             : '\n\nEl entrenador todavía no tiene jugadores registrados.';
 
         // ── Context injection based on message content ──────────────────
@@ -1084,9 +1171,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const after = new RegExp(`(?<![\\p{L}\\p{N}])${escaped}(?![\\p{L}\\p{N}])[^.]{0,30}?(?<![\\p{L}\\p{N}])(?:${TRIGGER_WORDS})(?![\\p{L}\\p{N}])`, 'u');
             return before.test(normGroupMsg) || after.test(normGroupMsg);
         };
-        const strongGroupMatches: GroupRowWithMembers[] = [];
-        const weakGroupMatches: GroupRowWithMembers[] = [];
-        for (const g of groups) {
+        // Planteles and chem groups share one matching pool; the kind label
+        // lets the model tell them apart in the injected context.
+        type MatchableGroup = GroupRowWithMembers & { kind: 'plantel' | 'quimica' };
+        const kindLabel = (g: MatchableGroup) => g.kind === 'quimica' ? 'grupo de química del usuario' : 'plantel';
+        const matchableGroups: MatchableGroup[] = [
+            ...groups.map(g => ({ ...g, kind: 'plantel' as const })),
+            ...chemGroups.map(g => ({ ...g, kind: 'quimica' as const })),
+        ];
+        const strongGroupMatches: MatchableGroup[] = [];
+        const weakGroupMatches: MatchableGroup[] = [];
+        for (const g of matchableGroups) {
             const n = g.name?.trim();
             if (!n || n.length < 3) continue;
             if (!groupNameInMsg(n)) continue;
@@ -1124,7 +1219,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 groupDominantAxis = stats.dominantAxis;
                 const distText = `D ${stats.axisDist.D}% · I ${stats.axisDist.I}% · S ${stats.axisDist.S}% · C ${stats.axisDist.C}%`;
                 const motorText = `Rápido ${stats.motorDist.Rápido}% · Medio ${stats.motorDist.Medio}% · Lento ${stats.motorDist.Lento}%`;
-                extraContext += `\n\nGRUPO MENCIONADO: "${mentionedGroup.name}" (${stats.count} jugadores)\n- Distribución por eje: ${distText}\n- Motores: ${motorText}\n- Perfil grupal: ${primaryType}${stats.groupTypes.length > 1 ? ` (+${stats.groupTypes.slice(1).join(', ')})` : ''}\n- ${typeText.identity}\n- Herramientas: ${typeText.tools.join(' ')}`;
+                extraContext += `\n\nGRUPO MENCIONADO: "${promptGroupName(mentionedGroup.name)}" (${kindLabel(mentionedGroup)}, ${stats.count} jugadores)\n- Distribución por eje: ${distText}\n- Motores: ${motorText}\n- Perfil grupal: ${primaryType}${stats.groupTypes.length > 1 ? ` (+${stats.groupTypes.slice(1).join(', ')})` : ''}\n- ${typeText.identity}\n- Herramientas: ${typeText.tools.join(' ')}`;
             }
         } else if (strongGroupMatches.length >= 2) {
             // Multiple strong matches → give Gemini compact stats for each
@@ -1133,21 +1228,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             for (const g of strongGroupMatches) {
                 const stats = buildGroupStats(g);
                 if (!stats) {
-                    lines.push(`- "${g.name}": sin jugadores asignados todavía`);
+                    lines.push(`- "${promptGroupName(g.name)}" (${kindLabel(g)}): sin jugadores asignados todavía`);
                     continue;
                 }
                 const distText = `D ${stats.axisDist.D}% · I ${stats.axisDist.I}% · S ${stats.axisDist.S}% · C ${stats.axisDist.C}%`;
-                lines.push(`- "${g.name}" (${stats.count} jug., perfil ${stats.groupTypes[0]}, ${distText})`);
+                lines.push(`- "${promptGroupName(g.name)}" (${kindLabel(g)}, ${stats.count} jug., perfil ${stats.groupTypes[0]}, ${distText})`);
             }
-            extraContext += `\n\nGRUPOS MENCIONADOS (varios en el mismo mensaje):\n${lines.join('\n')}\n\nCLARIFICACIÓN: el entrenador mencionó más de un grupo. Si su pregunta requiere datos específicos de un solo grupo, pregúntale explícitamente a cuál se refiere antes de responder (ej: "¿Te refieres a ${strongGroupMatches[0].name} o a ${strongGroupMatches[1].name}?"). Si el mensaje deja claro que quiere comparar o hablar de todos, responde directamente usando los datos de arriba.`;
+            // The kind label goes INSIDE the example question: a plantel and a chem
+            // group can share the same name ("Sub 15" twice reads as a broken bot).
+            extraContext += `\n\nGRUPOS MENCIONADOS (varios en el mismo mensaje):\n${lines.join('\n')}\n\nCLARIFICACIÓN: el entrenador mencionó más de un grupo. Si su pregunta requiere datos específicos de un solo grupo, pregúntale explícitamente a cuál se refiere antes de responder (ej: "¿Te refieres a ${promptGroupName(strongGroupMatches[0].name)} (${kindLabel(strongGroupMatches[0])}) o a ${promptGroupName(strongGroupMatches[1].name)} (${kindLabel(strongGroupMatches[1])})?"). Si el mensaje deja claro que quiere comparar o hablar de todos, responde directamente usando los datos de arriba.`;
         } else if (weakGroupMatches.length >= 2) {
             // 2+ weak matches: the message contains multiple group names but
             // none with a proximity trigger. The coincidence of having two
             // different group names in the same message suggests real intent,
             // but we can't be sure. Tell Gemini to confirm before answering
             // with specific group data.
-            const names = weakGroupMatches.map(g => `"${g.name}"`).join(', ');
-            extraContext += `\n\nPOSIBLE REFERENCIA A GRUPOS: el mensaje contiene los nombres de varios grupos del tenant (${names}) pero sin contexto claro ("grupo", "equipo", etc.). Puede ser una mención real o una coincidencia de palabras. Antes de dar una respuesta con datos específicos de alguno de ellos, pregúntale al entrenador si se está refiriendo a esos grupos y a cuál (ej: "¿Estás hablando del grupo ${weakGroupMatches[0].name}?"). Si la conversación sugiere que no, ignora esos nombres y responde normalmente.`;
+            const names = weakGroupMatches.map(g => `"${promptGroupName(g.name)}" (${kindLabel(g)})`).join(', ');
+            extraContext += `\n\nPOSIBLE REFERENCIA A GRUPOS: el mensaje contiene los nombres de varios grupos del tenant (${names}) pero sin contexto claro ("grupo", "equipo", etc.). Puede ser una mención real o una coincidencia de palabras. Antes de dar una respuesta con datos específicos de alguno de ellos, pregúntale al entrenador si se está refiriendo a esos grupos y a cuál (ej: "¿Estás hablando del grupo ${promptGroupName(weakGroupMatches[0].name)}?"). Si la conversación sugiere que no, ignora esos nombres y responde normalmente.`;
         }
 
         // ── Situation card injection ────────────────────────────────────────
@@ -1169,37 +1266,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (bestSituation) {
             const sitId = bestSituation.id;
             const cards = SITUATION_CARDS_DATA[sitId];
+            // On a thread's first turn the card is a hypothesis map for asking
+            // better questions, not a recipe to recite (consultive mode).
+            const cardUse = isFirstTurn
+                ? '; si aún falta contexto, usa esta guía como mapa de hipótesis para elegir tus preguntas y entrega sus herramientas cuando el contexto esté confirmado'
+                : '';
             if (!cards) {
                 extraContext += `\n\n[Situación: "${sitId}"]`;
             } else {
                 const targetEje = mentionedPlayer?.eje ?? groupDominantAxis ?? null;
                 if (targetEje && cards[targetEje]) {
-                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}):\n${cards[targetEje]}`;
+                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}${cardUse}):\n${cards[targetEje]}`;
                 } else {
                     // No player/group context → give all 4 perspectives compactly.
                     const all = Object.entries(cards).map(([eje, text]) => `- ${eje}: ${text}`).join('\n');
-                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}):\n${all}`;
+                    extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}${cardUse}):\n${all}`;
                 }
             }
         }
 
-        // ── OPT 1 + 3: Build conversation history (8 max, summarize older) ──
-        // Fetch the most RECENT messages (descending + limit) then restore
-        // chronological order. ascending + limit returned the OLDEST messages,
-        // so long threads silently lost all recent context (E1).
-        const { data: history } = await sb
-            .from('chat_messages')
-            .select('role, content')
-            .eq('tenant_id', tenant.id)
-            .eq('thread_id', threadId)
-            .in('role', ['user', 'assistant'])
-            .order('created_at', { ascending: false })
-            .limit(12);
+        // ── Consultive-mode nudge (first turn of a thread) ───────────────────
+        // When a thread OPENS with a situation about a child or group, remind the
+        // model to check for minimum context and explore before prescribing. The
+        // sufficiency judgment stays with the model; this injection just makes the
+        // prompt's MODO CONSULTIVO reliable on Flash at the moment it matters.
+        if (isFirstTurn && (mentionedPlayer || mentionedPlayers.length >= 2 || bestSituation || strongGroupMatches.length > 0)) {
+            extraContext += `\n\nPRIMERA CONSULTA DE ESTE HILO SOBRE UNA SITUACIÓN: antes de recomendar, evalúa si el entrenador ya dio el contexto mínimo (desde cuándo pasa, en qué momentos, qué señales concretas observa). Si falta, aplica el MODO CONSULTIVO: valida brevemente, ofrece UNA lectura tentativa basada en el perfil real de arriba (si lo tienes) y haz 2 o 3 preguntas concretas para entender mejor antes de dar la guía completa. Si el contexto ya es suficiente o la pregunta es específica (no describe un problema abierto), responde directo.`;
+        }
 
-        const allHistory = (history ?? [])
-            .slice()
-            .reverse() // back to chronological (oldest → newest)
-            .map(m => ({ role: m.role as 'user' | 'assistant', content: m.content }));
+        // ── OPT 1 + 3: Build conversation history (8 max, summarize older) ──
+        // allHistory was fetched above (with the sessions/groups batch) so the
+        // consultive-mode injections could see whether this is the first turn.
         let historyMessages: { role: 'user' | 'assistant'; content: string }[];
 
         if (allHistory.length > 8) {

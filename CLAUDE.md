@@ -144,8 +144,10 @@ The AI consultant (`tenant-chat.ts`) has 5 anti-hallucination layers:
 1. **Expanded knowledge base**: all 12 Argo archetypes with axis descriptions and combustible
 2. **Full report injection**: when a player is mentioned, their ai_sections are injected (resumenPerfil, combustible, corazon, palabras puente/ruido)
 3. **Prohibited words filter**: 35+ terms scanned post-generation (clinical, negative labeling, deterministic language). If found, response is regenerated.
-4. **Few-shot examples**: 3 correct Q&A per language showing expected tone, format, and probabilistic language
+4. **Few-shot examples**: 4 correct Q&A per language showing expected tone, format, and probabilistic language (incl. the consultive first-turn example)
 5. **Ground truth validation**: post-generation check verifies the response doesn't attribute the wrong DISC axis to a named player
+
+Consultive mode (2026-07-02): when a thread OPENS with a vague problem about a child/group, the assistant explores first (validate + ONE tentative profile-anchored reading + 2-3 observable-behavior questions, single round) instead of prescribing; specific questions are still answered directly. Enforced by a MODO CONSULTIVO prompt section + a deterministic first-turn nudge injected when a player/group/situation is detected. The chat also knows the caller's chem groups (`chem_groups`, owner-scoped) in the same mention matcher as planteles. As-built: `docs/ARGOCOACH-MODO-CONSULTIVO.md`.
 
 Report generation (`generate-ai.ts`) has retry resilience: 1 retry on API failure + 1 retry on JSON parse failure.
 Admin can grant `full_access` on any session — regenerates AI if missing before sending full report email.
