@@ -6,6 +6,16 @@
 > (`docs/ARGOCOACH-MODO-CONSULTIVO.md`). Impacto/esfuerzo según los analistas,
 > deduplicado. Nada de esto está construido salvo que se indique.
 
+## Decisiones del owner (2026-07-02)
+
+Quick wins: **aprobados para implementar: 2, 3, 5, 6, 7, 8, 9, 10** (el 9 con
+la condición de no perder eficacia ni seguridad). **Descartados: 1 y 4** (la
+prueba gratis no se está usando hoy). Sobre el 8: la visión es memoria
+persistente por niño (que el asistente "ya conozca al niño" cuando el
+entrenador vuelve); se viene una feature de notas sobre el niño que debe
+alimentar esa misma memoria; encarar por etapas. Sobre el 10: se aprueba
+además el like/dislike del usuario sobre cada respuesta (item 18).
+
 ## 1. Quick wins (alto impacto, esfuerzo chico)
 
 1. **Trial cap por consulta, no por mensaje.** El cap de 10 cuenta cada mensaje
