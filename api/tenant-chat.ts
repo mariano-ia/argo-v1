@@ -233,7 +233,7 @@ export const COMMON_WORD_NAMES = new Set([
     'sol', 'luna', 'leon', 'rosa', 'mar', 'cruz', 'pilar', 'angel', 'luz', 'paz',
     'cielo', 'flor', 'vida', 'alba', 'nieve', 'estrella', 'azul', 'blanca', 'gloria',
     'victoria', 'esperanza', 'consuelo', 'soledad', 'rocio', 'perla', 'salvador',
-    'jesus', 'milagros', 'dolores', 'remedios', 'abril', 'mayo', 'olivia', 'aurora',
+    'jesus', 'milagros', 'dolores', 'remedios', 'abril', 'mayo', 'aurora',
 ]);
 
 /**

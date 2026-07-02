@@ -53,6 +53,14 @@ test('nameIsMentioned: common-word names require capitalization', () => {
     assert.equal(nameIsMentioned('León', 'qué hago con León'), true);
 });
 
+test('nameIsMentioned: real names (not common words) match in lowercase', () => {
+    // Regression: "olivia" is a proper name, not an everyday word. It was
+    // wrongly listed as a common-word name, so a coach typing it lowercase
+    // ("crees que olivia...") failed to inject the player's report.
+    assert.equal(nameIsMentioned('Olivia', 'crees que olivia puede ser buena capitana?'), true);
+    assert.equal(nameIsMentioned('Olivia', '¿cómo está Olivia hoy?'), true);
+});
+
 test('nameIsMentioned: full names match', () => {
     assert.equal(nameIsMentioned('Juan Pérez', '¿qué hago con Juan Pérez?'), true);
 });
