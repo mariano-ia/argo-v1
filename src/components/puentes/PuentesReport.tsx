@@ -355,7 +355,7 @@ export function PuentesReport({
                     {/* ── 1. BRÚJULA: shared adult header (white card, like the child report) ── */}
                     <div className="bg-white rounded-[14px] shadow-argo p-7">
                         <div className="text-[28px] tracking-tight leading-tight">
-                            <span className="font-[800] text-argo-navy">Argo</span><span className="font-[100] text-argo-grey">Puentes</span>
+                            <span className="font-[800] text-argo-navy">Argo</span><span className="font-[100] text-argo-grey">Puente®</span>
                         </div>
 
                 {adultProfile && (

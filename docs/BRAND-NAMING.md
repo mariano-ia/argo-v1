@@ -51,11 +51,19 @@ covers **all rendered surfaces**:
 - **`index.html`** visible title / og:title / twitter:title / og:site_name / noscript `<h1>`,
   and **`manifest.json`** name.
 
-### The gotcha that caused the missed round
-`ProductName` and `BrandName` render `Argo` + `{rest}` across **separate spans**, so the
-contiguous string `"ArgoOne"` never appears in source — a string regex/grep will not find
-them. The `®` had to be added **inside the component**. Any new dynamic wordmark component
-has the same trap.
+### The gotcha that caused the missed rounds
+Wordmarks are rendered as **split spans** (`<span 800>Argo</span><span thin>One|Puentes|Method|…</span>`),
+often via dynamic components (`ProductName`, `BrandName`) where the tail is `{rest}`/`{kind}`.
+The contiguous string (`"ArgoOne"`, `"Argo Puentes"`) never appears in source, so a
+plain string regex/grep will NOT find them — the `®` must be added inside the span/component.
+This bit twice: first the `ProductName` component, then the hardcoded `Argo`+`Puentes`
+header in `PuentesReport.tsx` (a grep that only checked `>One<`/`>Method<` tails missed `>Puentes<`).
+**Definitive audit — check EVERY tail at once:**
+```
+grep -rnoE "Argo</span><span[^>]*>(Puentes?|One|Method|Academy)</span>" src public api | grep -v ®
+```
+Every hit without a trailing `®` is a miss, EXCEPT `ArgoOne+®` (there the `®` correctly
+follows the `+` span, so the `One` span has no `®` — verify with a `(?!<span[^>]*>\+)` lookahead).
 
 ### Deliberately left as-is (not a miss)
 JSON-LD / schema.org in `index.html` (structured-data entity = `"Argo Method"`); email From
