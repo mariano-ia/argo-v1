@@ -529,7 +529,7 @@ function hasDeterministicLanguage(text: string, patterns: RegExp[]): boolean {
  */
 
 // ─── System prompts by language ─────────────────────────────────────────────
-
+// >>> GENERATED:COACH_PROMPTS — edit scripts/coach-prompt-source.ts, then run `npm run gen:coach`. Do not hand-edit.
 const SYSTEM_PROMPTS: Record<string, string> = {
     es: `Eres el asistente DISC de ArgoMethod®. Tu rol es ayudar al entrenador a entender y aplicar el perfilamiento conductual DISC en el contexto deportivo juvenil.
 
@@ -597,8 +597,17 @@ Respuesta correcta: "Un Impulsor Dinámico tiende a necesitar sentir que sus acc
 Pregunta: "Tengo un Sostenedor Sereno que no participa en los ejercicios."
 Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y tiempo. Es probable que no sea falta de interés, sino su ritmo natural de procesamiento. Algo que suele ayudar es anticiparle la dinámica antes de empezar: 'Ahora vamos a hacer X, tu rol va a ser Y'. Eso le da estructura y tiende a reducir la incertidumbre que puede estar frenándolo. Tú lo conoces mejor que nadie en el día a día, así que tómalo como una hipótesis para probar."
 
+Pregunta: "¿Por qué mi Estratega pregunta tanto en vez de hacer el ejercicio?"
+Respuesta correcta: "Un Estratega tiende a comprometerse a través de la comprensión: preguntar suele ser su forma de entrar en la tarea, no una resistencia. Es probable que necesite el 'para qué' antes de moverse. Algo que suele funcionar es darle el propósito en una frase ('este ejercicio entrena la reacción lateral') y, si sigue preguntando, invitarlo: 'pruébalo una vez y después me cuentas qué viste'. Su análisis puede volverse una fortaleza para el grupo si le das un momento para compartirlo."
+
 Pregunta: "¿Quién debería ser capitán?"
 Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."
+
+Pregunta: "¿Cómo manejo un grupo donde la mayoría son Sostenedores?"
+Respuesta correcta: "Un grupo con mayoría de Sostenedores tiende a rendir desde la confianza y la previsibilidad: los cambios bruscos suelen costarle más que a otros grupos. Suele ayudar introducir las novedades de manera gradual y explicar el porqué, y desafiar con metas progresivas en vez de saltos grandes. La lealtad interna es su gran fortaleza: los rituales de equipo (un cierre de sesión, una rutina compartida) tienden a potenciarla."
+
+Pregunta: "¿Cómo acompaño a {{P2}} en la actividad de hoy?"
+Respuesta correcta: "Por el perfil de {{P2}}, que mostró un patrón Conector Rítmico, una posibilidad es apoyarte en lo social: ubicarlo con un compañero con el que tenga afinidad tiende a activarlo. Si hoy la actividad es nueva, dale una señal de pertenencia al arrancar ('me alegra que estés, te tengo un rol pensado'). Tú lo ves en el día a día: toma esto como hipótesis y ajusta según lo que observes."
 
 Pregunta: "Tengo un jugador que se porta mal, ¿qué hago?"
 Respuesta correcta (primer turno, falta contexto): "Lo que describes suele tener una necesidad detrás, y encontrarla cambia todo. Si me dices quién es, puedo mirar su perfil para afinar la lectura. Mientras tanto, ayúdame a ver mejor la situación: ¿en qué momentos pasa (al inicio, en las esperas, en ejercicios largos, en partido)? ¿Qué hace exactamente (interrumpe, discute, se sale del ejercicio)? ¿Desde cuándo lo notas? Con eso te doy herramientas mucho más precisas para acompañarlo."`,
@@ -666,8 +675,20 @@ EXAMPLE CORRECT RESPONSES:
 Question: "How do I motivate a Dynamic Driver in soccer?"
 Correct response: "A Dynamic Driver tends to need visible impact from their actions. One possibility, if it fits what you're seeing in them, is to give them a concrete responsibility ('Your role is to activate pressing on the build-up'). Their fuel is challenge, so vague or passive instructions tend to disconnect them. Something that often helps: validate their initiative, not just results. You know them best day to day, so take this as a hypothesis to try."
 
+Question: "I have a Serene Sustainer who doesn't join the drills."
+Correct response: "A Serene Sustainer tends to need predictability and time. It's probably not lack of interest but their natural processing rhythm. Something that often helps is previewing the dynamic before starting: 'Now we're doing X, your role will be Y'. That gives structure and tends to reduce the uncertainty that may be holding them back. You know them better than anyone day to day, so take it as a hypothesis to try."
+
+Question: "Why does my Strategist ask so many questions instead of doing the drill?"
+Correct response: "A Strategist tends to commit through understanding: asking is usually their way INTO the task, not resistance. They probably need the 'what for' before moving. Something that often works is giving the purpose in one sentence ('this drill trains lateral reaction') and, if they keep asking, inviting them: 'try it once and then tell me what you saw'. Their analysis can become a strength for the group if you give them a moment to share it."
+
 Question: "Who should be captain?"
 Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."
+
+Question: "How do I manage a group where most players are Sustainers?"
+Correct response: "A group with mostly Sustainers tends to perform from trust and predictability: abrupt changes usually cost them more than other groups. It often helps to introduce novelty gradually and explain the why, and to challenge with progressive goals instead of big jumps. Internal loyalty is their great strength: team rituals (a session close, a shared routine) tend to amplify it."
+
+Question: "How do I support {{P2}} in today's activity?"
+Correct response: "Given {{P2}}'s profile, which showed a Rhythmic Connector pattern, one possibility is to lean on the social side: pairing them with a teammate they click with tends to switch them on. If today's activity is new, give them a belonging signal at the start ('glad you're here, I have a role in mind for you'). You see them day to day: take this as a hypothesis and adjust to what you observe."
 
 Question: "One of my players misbehaves, what should I do?"
 Correct response (first turn, missing context): "What you're describing usually has a need behind it, and finding it changes everything. If you tell me who it is, I can look at their profile to sharpen the reading. Meanwhile, help me see the situation better: when does it happen (at the start, during waits, in long drills, in matches)? What exactly do they do (interrupt, argue, drift out of the drill)? Since when have you noticed it? With that I can give you much more precise tools to support them."`,
@@ -713,9 +734,21 @@ BASE DE CONHECIMENTO DO MÉTODO ARGO:
   I (Conector): energia social, entusiasmo, coesão. Combustível: reconhecimento e pertencimento.
   S (Sustentador): energia de estabilidade, lealdade, constância. Combustível: segurança e rotinas previsíveis.
   C (Estrategista): energia analítica, precisão, observação. Combustível: compreensão e tempo para processar.
-- Motor: Rápido (Dinâmico), Médio (Rítmico), Lento (Sereno). Nenhum motor é melhor ou pior.
-- 12 arquétipos = 4 eixos × 3 motores
-- Bússola secundária: o segundo eixo mais forte matiza o perfil principal
+- Motor (tempo de decisão): Rápido (Dinâmico), Médio (Rítmico), Lento (Sereno). Nenhum motor é melhor ou pior.
+- 12 arquétipos (eixo + motor):
+  D+Rápido: Impulsionador Dinâmico (ação direta, resolução imediata)
+  D+Médio: Impulsionador Rítmico (iniciativa estratégica, execução com propósito)
+  D+Lento: Impulsionador Sereno (determinação constante, resiliência)
+  I+Rápido: Conector Dinâmico (entusiasmo contagiante, coesão pela energia)
+  I+Médio: Conector Rítmico (vínculo equilibrado, coesão em ritmo firme)
+  I+Lento: Conector Sereno (coesão profunda, observação do clima do grupo)
+  S+Rápido: Sustentador Dinâmico (auxílio veloz, apoio dinâmico)
+  S+Médio: Sustentador Rítmico (consistência serena, apoio estruturado)
+  S+Lento: Sustentador Sereno (resistência imperturbável, calma estrutural)
+  C+Rápido: Estrategista Dinâmico (precisão instantânea, ajuste tático veloz)
+  C+Médio: Estrategista Rítmico (processamento técnico, execução com propósito)
+  C+Lento: Estrategista Observador (análise profunda, precisão lógica)
+- Bússola secundária: o segundo eixo mais forte matiza o perfil principal (ex: Impulsionador com bússola social = lidera mas busca consenso)
 - Não existem crianças incorretas, apenas adultos que ainda não encontraram a sintonia certa
 
 EXEMPLOS DE RESPOSTAS CORRETAS:
@@ -723,12 +756,26 @@ EXEMPLOS DE RESPOSTAS CORRETAS:
 Pergunta: "Como motivo um Impulsionador Dinâmico no futebol?"
 Resposta correta: "Um Impulsionador Dinâmico tende a precisar sentir que suas ações produzem impacto visível. Uma possibilidade, se fizer sentido com o que você vê nele, é dar-lhe uma responsabilidade concreta. Seu combustível é o desafio, então instruções vagas tendem a desconectá-lo. Você o conhece melhor no dia a dia, então tome isto como uma hipótese para experimentar."
 
+Pergunta: "Tenho um Sustentador Sereno que não participa dos exercícios."
+Resposta correta: "Um Sustentador Sereno tende a precisar de previsibilidade e tempo. Provavelmente não é falta de interesse, e sim seu ritmo natural de processamento. Algo que costuma ajudar é antecipar a dinâmica antes de começar: 'Agora vamos fazer X, seu papel vai ser Y'. Isso dá estrutura e tende a reduzir a incerteza que pode estar travando ele. Você o conhece melhor que ninguém no dia a dia, então tome isto como uma hipótese para experimentar."
+
+Pergunta: "Por que meu Estrategista pergunta tanto em vez de fazer o exercício?"
+Resposta correta: "Um Estrategista tende a se comprometer através da compreensão: perguntar costuma ser a forma dele de ENTRAR na tarefa, não uma resistência. Provavelmente precisa do 'para quê' antes de se mover. Algo que costuma funcionar é dar o propósito em uma frase ('este exercício treina a reação lateral') e, se continuar perguntando, convidá-lo: 'experimente uma vez e depois me conta o que viu'. A análise dele pode virar uma força para o grupo se você der um momento para compartilhá-la."
+
 Pergunta: "Quem deveria ser capitão?"
-Resposta correta: "Não existe um perfil 'melhor' para capitão. Depende do tipo de liderança que sua equipe precisa neste momento."
+Resposta correta: "Não existe um perfil 'melhor' para capitão. Um Impulsionador tende a liderar pela ação, um Conector pelo vínculo, um Sustentador pela estabilidade emocional, e um Estrategista pela leitura tática. Depende do tipo de liderança que sua equipe precisa neste momento."
+
+Pergunta: "Como conduzo um grupo onde a maioria é Sustentador?"
+Resposta correta: "Um grupo com maioria de Sustentadores tende a render pela confiança e pela previsibilidade: mudanças bruscas costumam custar mais para ele que para outros grupos. Costuma ajudar introduzir as novidades gradualmente e explicar o porquê, e desafiar com metas progressivas em vez de saltos grandes. A lealdade interna é a grande força: os rituais de equipe (um fechamento de sessão, uma rotina compartilhada) tendem a potencializá-la."
+
+Pergunta: "Como acompanho {{P2}} na atividade de hoje?"
+Resposta correta: "Pelo perfil de {{P2}}, que mostrou um padrão Conector Rítmico, uma possibilidade é se apoiar no social: colocá-lo com um colega com quem tenha afinidade tende a ativá-lo. Se a atividade de hoje for nova, dê um sinal de pertencimento ao começar ('que bom que você veio, tenho um papel pensado para você'). Você o vê no dia a dia: tome isto como hipótese e ajuste conforme o que observar."
 
 Pergunta: "Tenho um jogador que se comporta mal, o que faço?"
 Resposta correta (primeiro turno, falta contexto): "O que você descreve costuma ter uma necessidade por trás, e encontrá-la muda tudo. Se você me disser quem é, posso olhar o perfil dele para afinar a leitura. Enquanto isso, me ajude a ver melhor a situação: em quais momentos acontece (no início, nas esperas, em exercícios longos, no jogo)? O que ele faz exatamente (interrompe, discute, sai do exercício)? Desde quando você percebe isso? Com isso te dou ferramentas muito mais precisas para acompanhá-lo."`,
+
 };
+// <<< GENERATED:COACH_PROMPTS
 
 // ─── Tendencia labels per language ──────────────────────────────────────────
 
@@ -738,22 +785,6 @@ const TENDENCIA: Record<string, Record<string, string>> = {
     pt: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
 };
 
-// ─── Keyword matching for context injection ─────────────────────────────────
-
-const SITUATION_KEYWORDS: Record<string, string[]> = {
-    'no-quiere-arrancar': ['no quiere', 'no quiere entrenar', 'doesn\'t want to train', 'não quer treinar', 'desgana', 'apático', 'sin ganas'],
-    'se-frustra-cuando-pierde': ['frustra', 'frustration', 'pierde', 'loses', 'perde', 'enoja cuando pierde', 'angry when losing'],
-    'no-hace-lo-que-pido': ['no hace caso', 'no escucha', 'doesn\'t listen', 'não obedece', 'ignora', 'instrucción', 'instruction'],
-    'raro-antes-del-partido': ['nervioso', 'nervous', 'ansioso', 'antes del partido', 'before the game', 'antes do jogo'],
-    'mira-desde-afuera': ['no se suma', 'mira desde afuera', 'watching from outside', 'observando', 'no participa'],
-    'llora-o-se-enoja': ['llora', 'cries', 'chora', 'se enoja', 'se quiebra', 'desborde'],
-    'roce-con-companero': ['pelea', 'conflicto', 'roce', 'fight', 'conflict', 'briga', 'compañero'],
-    'se-castiga': ['se castiga', 'autocrítica', 'self-critical', 'soy un desastre', 'se golpea'],
-    'se-distrae': ['distrae', 'distracted', 'distraído', 'no presta atención', 'no se concentra'],
-    'quiere-dejar': ['quiere dejar', 'wants to quit', 'quer sair', 'abandonar', 'no quiere venir'],
-    'se-congela': ['se congela', 'freezes', 'se bloquea', 'no reacciona', 'paraliza'],
-    'cambio-repentino': ['cambió', 'changed', 'mudou', 'diferente', 'distinto', 'de un día para el otro'],
-};
 
 // ─── Group type texts (compact inline from src/lib/groupBalanceRules.ts) ────
 // Five base profile types. Vercel serverless can't import between files.
@@ -797,83 +828,624 @@ const GROUP_TYPE_TEXTS: Record<string, GroupTypeText> = {
     },
 };
 
-// ─── Situation cards (compact inline from src/lib/situationalGuide.ts) ──────
-// 12 situations × 4 ejes = 48 cards. Each card condenses whatsHappeningForProfile
-// + primary howToAccompany tip + ifNotResponding fallback.
-const SITUATION_CARDS_DATA: Record<string, Record<string, string>> = {
-    'no-quiere-arrancar': {
-        D: 'El Impulsor necesita sentir que lo que viene vale la pena. Propónle un mini-desafío personal para los primeros 5 minutos o dale un rol activo desde el inicio (armar los conos, elegir el primer ejercicio). Si no arranca, déjalo mirar: su instinto competitivo se activa solo cuando ve al grupo en acción.',
-        I: 'El Conector necesita conexión social para activarse. Acércate y pregúntale algo personal (¿cómo estuvo el día?). Esa micro-conexión es su interruptor. Si no responde, súmalo a una actividad grupal divertida y no técnica; un juego donde se ría suele ser suficiente.',
-        S: 'El Sostén necesita previsibilidad. Mantenlo en la rutina (mismo calentamiento, mismos compañeros) y dile "Arrancamos cuando estés listo", sin presión. Si no responde, dale una tarea pequeña y predecible al costado para que entre en ritmo sin saltar al grupo.',
-        C: 'El Estratega necesita entender qué va a pasar antes de comprometerse. Cuéntale brevemente el plan del día (primero calentamiento, después táctico, después partido). Si cambió algo del plan habitual, explícale por qué. Si no entra, déjalo observar la primera actividad hasta que entienda la lógica.',
-    },
-    'se-frustra-cuando-pierde': {
-        D: 'Para el Impulsor, perder es personal: siente que el resultado define su valor. Primero valida (entiendo que estás enojado, es normal), después redirige la energía: "¿qué harías diferente si pudieras repetir?". Si no escucha, dale un momento a solas para procesar en privado antes de cualquier consejo.',
-        I: 'El Conector siente la derrota como un quiebre social (le fallé al grupo). Valida desde lo vincular (se nota que te importa el equipo) y sepáralo del "yo fallé" con datos: "mira todo lo que el equipo logró, tú fuiste parte". Si no se recupera, pídele a un compañero de confianza que le hable.',
-        S: 'El Sostén no explota con la derrota, la guarda en silencio y la arrastra varios días. Valida sin forzar (si necesitas hablar, aquí estoy). No le pidas que procese en el momento. Las próximas veces que lo veas observa si está más callado: un "¿cómo estás?" sin presión abre la puerta.',
-        C: 'El Estratega analiza la derrota en loop buscando el error exacto. Valida su análisis pero ponle límite (está bien pensarlo, elijamos una sola cosa para trabajar). Ofrécele datos concretos (en 10 jugadas acertaste 7): los números lo sacan del circuito emocional.',
-    },
-    'no-hace-lo-que-pido': {
-        D: 'El Impulsor escuchó la instrucción pero ya decidió hacerla a su manera: su motor lo lanza a la acción antes de que termines de hablar. Dale instrucciones cortas y directas, en una frase (pase al pivote, tiro al arco). Si hizo algo diferente pero funcionó, reconócelo. Si no, dale el "por qué" competitivo: "esto te da una herramienta más para ganar".',
-        I: 'El Conector probablemente estaba socializando cuando diste la instrucción. Asegúrate de tener su atención primero (contacto visual, nombre, después la consigna). Dale la instrucción en clave social: "tú y tu compañero van a hacer esto juntos". Si no, pídele que se la explique a otro compañero: al traducirla, la ejecuta.',
-        S: 'El Sostén escuchó todo, pero su motor necesita más tiempo para cerrar la lógica antes de arrancar. Dale la instrucción paso a paso, no todo junto. Dale unos segundos después de la consigna antes de esperar que arranque: ese silencio es su tiempo de procesamiento. Si no, haz una demostración rápida; procesa mejor viendo que escuchando.',
-        C: 'El Estratega está procesando la lógica de la instrucción. Si le dijiste algo que contradice lo anterior, se frena. Explica el "para qué" del ejercicio (trabaja la reacción lateral). Si pregunta "por qué", no lo tomes como cuestionamiento: es su forma de comprometerse. Si no arranca, dile "pruébalo una vez y después me dices".',
-    },
-    'raro-antes-del-partido': {
-        D: 'El Impulsor canaliza los nervios con hiperactividad: habla más, se mueve mucho, o se pone irritable. La incertidumbre le molesta porque quiere controlar el resultado. Dale una tarea concreta de control (calienta con 20 tiros). Háblale en clave de plan: "tu rol es X, si pasa Y haces Z". Si no, déjalo calentar solo.',
-        I: 'El Conector busca contención social: habla con todos, hace chistes. Si está más callado de lo normal, algo le pesa. Genera un momento grupal de conexión (ronda, grito de equipo). Si no, dale un rol social: "encárgate de que todos estén arriba"; transforma su ansiedad en energía positiva.',
-        S: 'El Sostén se cierra y se pega a la rutina. Mantén la rutina pre-partido lo más igual posible (mismo calentamiento, mismo lugar, mismos compañeros cerca). Dile algo que le dé seguridad: "hoy jugamos como en el entrenamiento, nada raro". No lo fuerces a estar animado: compite bien desde la calma.',
-        C: 'El Estratega piensa en todos los escenarios posibles. Dale información concreta (rival, plan de juego, su rol): los datos reemplazan la incertidumbre. Pregúntale "¿tienes alguna duda sobre lo que vamos a hacer?". Si sigue trabado, dile "pensaste mucho y eso está bien, ahora confía en lo que ya preparaste".',
-    },
-    'mira-desde-afuera': {
-        D: 'Raro en un Impulsor. Cuando pasa, es porque no se siente seguro de poder dominar la situación. Dale un rol desde el borde (mira y dime qué harías diferente). Propónle un desafío con puerta de salida: "¿te animas? Si no te convence, vuelves". Si no, invítalo directo después de que mire una ronda: "¿listo?".',
-        I: 'El Conector observa desde afuera hasta identificar a "su persona". Preséntale a alguien con afinidad (él está en tu misma posición, entrenen juntos). Inclúyelo en una dupla antes del grupo grande. Si no, dale un rol social desde afuera (ayúdame a contar los puntos): lo conecta sin forzar exposición.',
-        S: 'Es el comportamiento más natural del Sostén ante lo nuevo: está haciendo su lectura de seguridad. No lo apures. "Cuando estés listo, súmate" sin presión es lo que más funciona. Si puedes, ponlo a hacer la actividad al costado en paralelo, sin exposición grupal. Déjalo mirar toda la sesión si hace falta.',
-        C: 'El Estratega analiza las reglas del juego desde afuera. Explícale el ejercicio brevemente mientras observa (la idea es que hagas esto cuando pasa aquello). Pregúntale "¿quieres que te lo explique?". Si sigue afuera, dile "hazlo una vez de prueba, no cuenta": el primer intento sin evaluación lo desbloquea.',
-    },
-    'llora-o-se-enoja': {
-        D: 'El Impulsor se enoja más que llora: siente que perdió el control. No lo enfrentes en caliente; déjalo que se enfríe unos segundos y acércate con tono neutro: "cuando estés listo, hablamos". Cuando se calme, dale una vía de acción: "ahora volvamos y hagamos bien ese ejercicio". Necesita sentir que puede recuperar el control.',
-        I: 'El Conector se quiebra cuando siente que la corrección rompió el vínculo (¿me está retando porque no le caigo bien?). Repara primero: "no estoy enojado, quiero ayudarte a mejorar". Después conecta desde el afecto (una palmada, un "¿estamos bien?"). Si no se calma, pídele a un compañero de confianza que lo acompañe.',
-        S: 'El Sostén rara vez se desborda, así que si llora es que se saturó hace rato. Dale pausa sin obligarlo a explicar (siéntate aquí un momento, no pasa nada). No le preguntes "¿qué te pasa?" en el momento. Mantenlo cerca pero sin actividad: la cercanía sin demanda es su forma de recuperarse.',
-        C: 'El Estratega se frustra cuando algo no tiene lógica o la corrección se sintió injusta. Cuando se calme, dale una explicación clara (te corregí porque quiero que hagas esto mejor, y la forma es esta). Pregúntale qué lo frustró específicamente: el detonante no siempre es lo obvio. Si no, déjalo solo unos minutos para ordenar.',
-    },
-    'roce-con-companero': {
-        D: 'El Impulsor choca cuando siente que otro le saca protagonismo. Separa el conflicto de la persona (los dos quieren ganar y eso está bien). Asígnale un aspecto del ejercicio donde él sea el que decide: con su territorio, baja la necesidad de pelear por el del otro. Si no, cámbialos de dupla temporalmente.',
-        I: 'El Conector vive el roce como un quiebre en la relación. Habla con los dos juntos enfocándote en el vínculo (ustedes son compañeros, esto se resuelve hablando). Después del ejercicio, dale al Conector un momento de cierre: "¿estamos bien?". Necesita saber que la relación sigue. Si no, dale un rol de puente social.',
-        S: 'El Sostén evita el conflicto y si tuvo un roce está incomodísimo. No lo obligues a "hablar las cosas" frente al grupo. Acércate en privado: "vi que hubo algo ahí, ¿estás bien?". Ayúdalo a volver a su zona de confort (la rutina de siempre). Si no, deja que el tiempo haga su trabajo; no necesita resolver verbalmente.',
-        C: 'El Estratega choca cuando siente que el otro hace algo "mal" o sin lógica. Valida su perspectiva (tu forma de verlo tiene sentido) y amplía con la del otro (la de tu compañero también, viene de otro lugar). Propón un acuerdo de método: "primero a tu manera, después a la de él". Si no, dale una tarea individual breve.',
-    },
-    'se-castiga': {
-        D: 'El Impulsor se castiga desde la bronca (¡soy un desastre!): cada error amenaza su autoimagen de líder. Interrumpe el circuito con acción: "ok, fallaste. Ahora haz 3 repeticiones y listo". Usa su competitividad: "los mejores jugadores fallan, la diferencia es qué hacen después". Si no, sácalo del ejercicio y dale una tarea física simple.',
-        I: 'El Conector se castiga desde la vergüenza pública (todos me vieron fallar). Normaliza el error frente al grupo: "todos fallamos, así se aprende". En privado después: "a mí me importa que lo intentes, no que salga perfecto". Si no, ponlo en una actividad donde el error sea parte del juego: diluye la sensación de ser "el único".',
-        S: 'El Sostén se castiga en silencio: se queda callado, baja la cabeza, pierde energía. Acércate con calma y devuélvele perspectiva: "ese error no define cómo juegas, mira todo lo que vienes haciendo bien". En el siguiente ejercicio ponlo en algo que domine para recuperar confianza. Si no, no insistas: se recupera cuando siente que el entorno no cambió.',
-        C: 'El Estratega se castiga desde el análisis: repasa el error en loop. Dale datos que contrarresten: "fallaste esta, pero las 5 anteriores las hiciste perfecto". Los números lo sacan del loop. Propón que el error sea un dato, no un juicio: "¿qué información te da? ¿qué ajustarías?". Si no, dile "suficiente análisis por hoy".',
-    },
-    'se-distrae': {
-        D: 'El Impulsor se distrae cuando el ejercicio no tiene suficiente intensidad. Sube el ritmo: "ahora en la mitad del tiempo" o "el que llega primero elige el próximo". Dale responsabilidad dentro del ejercicio: que cuente, que arbitre, que lidere una variante. Si no, propón un desafío paralelo: "mientras esperas, haz esto otro". No tolera el vacío.',
-        I: 'El Conector se va hacia lo social porque su atención va primero a las personas. Convierte el ejercicio en algo social (en duplas con comunicación entre ellos). Usa su sociabilidad como herramienta: "explícale a tu compañero cómo se hace este ejercicio". Si no, ponlo de ayudante tuyo: la cercanía con el adulto recaptura su atención.',
-        S: 'El Sostén se desconecta por exceso de estímulo (mucho ruido, cambios constantes). Baja el ritmo de cambios: que haga el mismo ejercicio más tiempo antes de pasar al siguiente. Dale un espacio predecible: "tú siempre en esta posición, tu trabajo es este". Si no, acércate y reconéctalo con calma y contacto personal.',
-        C: 'El Estratega se distrae cuando el ejercicio le parece repetitivo o sin propósito. Dale una capa extra: "fíjate qué patrón se repite" o "qué compañero se mueve mejor y por qué". Explícale qué estás buscando con el ejercicio. Si no, propón que invente una variante: se concentra cuando puede diseñar.',
-    },
-    'quiere-dejar': {
-        D: 'El Impulsor quiere dejar cuando siente que no puede ganar, crecer o liderar. Pregúntale qué cambiaría: "si pudieras cambiar algo del deporte, ¿qué sería?". Escucha la respuesta. Propón un objetivo concreto y medible a 3 semanas. Si no, no lo presiones: a veces necesita extrañar el desafío para volver con ganas.',
-        I: 'El Conector quiere dejar cuando se rompieron los vínculos. Explora: "¿hay algo del grupo que te hace ruido?". Muchas veces la razón no es el deporte, es una relación social que se rompió. Si es posible, reconéctalo con un compañero cercano o cámbialo a un grupo con más afinidad. Si no, habla con el adulto responsable.',
-        S: 'El Sostén quiere dejar cuando algo cambió demasiado del contexto. Identifica qué cambió: "¿hay algo que antes te gustaba y ahora no?". El Sostén puede señalar exactamente el punto de quiebre. Si puedes, restaura algo del contexto anterior. Si no, dale tiempo sin pedirle decisión definitiva: "no hace falta que decidas ahora".',
-        C: 'El Estratega quiere dejar cuando no aprende nada nuevo o la actividad no tiene sentido. Muéstrale el progreso: "mira dónde estabas hace 3 meses y dónde estás ahora". Pregúntale qué le gustaría aprender. Si no, propón un desafío intelectual dentro del deporte (analizar video, planificar jugada).',
-    },
-    'se-congela': {
-        D: 'Raro en un Impulsor, pero cuando se congela es porque la presión lo abrumó. Dale una instrucción concreta y simple: "la próxima pelota, tira al arco". Una sola acción clara lo desbloquea. Desde afuera, dale confianza: "tú sabes hacer esto, confío en ti". Si no, cámbialo de rol temporalmente a algo menos expuesto.',
-        I: 'El Conector se congela por miedo a quedar mal frente al grupo: el bloqueo es social, no técnico. Quítale presión del resultado: "no importa si sale, quiero que lo intentes". Involucra a los compañeros (equipo, todos adentro). Si no, ponlo en una jugada grupal donde el éxito sea del equipo, no individual.',
-        S: 'El Sostén se congela porque la presión del partido rompe su base de seguridad. Baja la presión con info: "haz lo mismo que en el entrenamiento, nada diferente". Dale una instrucción repetitiva y predecible (cada vez que la pelota venga, pásala a X). Si no, sácalo unos minutos: "respira, mira, y cuando estés listo vuelves".',
-        C: 'El Estratega se congela por sobreanálisis: su mente trabaja más rápido que su cuerpo. Simplifica su toma de decisión: "si estás libre, tira. Si no, pasa". Reducir opciones lo desbloquea. Si sigue trabado, dile literal "no pienses, juega": necesita permiso explícito para apagar el análisis.',
-    },
-    'cambio-repentino': {
-        D: 'Un Impulsor que se apaga perdió algo que lo hacía sentir poderoso (un rol, una relación, una seguridad fuera de la cancha). Observa unos días. Si persiste, acércate con algo concreto: "te noto diferente, ¿puedo ayudar?". Si no quiere hablar, habla con el adulto responsable: suele ser señal de algo importante fuera de la cancha.',
-        I: 'Un Conector que se cierra es una señal fuerte. Algo le está doliendo en el plano vincular (familia, amigos, bullying). Acércate desde el vínculo: "te conozco y sé que algo te pasa. No hace falta que me cuentes, pero estoy aquí". Dale espacio a su ritmo. Si persiste, contacta al adulto responsable.',
-        S: 'El Sostén es el que más aguanta antes de mostrar malestar, así que si ya lo ves, viene acumulando hace rato. Mantenlo en rutina estable (la actividad de siempre como refugio de normalidad). Acércate sin drama: "¿cómo estás hoy?", como parte natural de la rutina. Si no, contacta al adulto con delicadeza: rara vez pide ayuda, hay que ir a buscarla.',
-        C: 'Un Estratega que cambia puede estar procesando algo internamente que no logra resolver (un problema familiar, una injusticia percibida). Ofrécele espacio para ordenar: "¿quieres contarme qué está pasando por tu cabeza?". Si no quiere, respétalo: propón que lo escriba. Si persiste, contacta al adulto responsable.',
-    },
+// ─── Situations: keywords + per-lang cards (from src/lib/situationalGuide*.ts) ──
+// >>> GENERATED:COACH_SITUATIONS — generated from src/lib/situationalGuide*.ts + scripts/coach-prompt-source.ts via `npm run gen:coach`. Do not hand-edit.
+const SITUATION_KEYWORDS: Record<string, string[]> = {
+ "no-quiere-arrancar": [
+  "no quiere",
+  "no quiere entrenar",
+  "doesn't want to train",
+  "não quer treinar",
+  "desgana",
+  "apático",
+  "sin ganas",
+  "sem vontade",
+  "no quiere participar"
+ ],
+ "se-frustra-cuando-pierde": [
+  "frustra",
+  "frustration",
+  "pierde",
+  "loses",
+  "perde",
+  "enoja cuando pierde",
+  "angry when losing",
+  "se frustra"
+ ],
+ "no-hace-lo-que-pido": [
+  "no hace caso",
+  "no escucha",
+  "doesn't listen",
+  "não obedece",
+  "ignora",
+  "instrucción",
+  "instruction",
+  "não escuta",
+  "consigna"
+ ],
+ "raro-antes-del-partido": [
+  "nervioso",
+  "nervous",
+  "ansioso",
+  "antes del partido",
+  "before the game",
+  "antes do jogo",
+  "la previa"
+ ],
+ "mira-desde-afuera": [
+  "no se suma",
+  "mira desde afuera",
+  "watching from outside",
+  "observando",
+  "no participa",
+  "fica de fora"
+ ],
+ "llora-o-se-enoja": [
+  "llora",
+  "cries",
+  "chora",
+  "se enoja",
+  "se quiebra",
+  "desborde",
+  "se desborda"
+ ],
+ "roce-con-companero": [
+  "pelea",
+  "conflicto",
+  "roce",
+  "fight",
+  "conflict",
+  "briga",
+  "compañero",
+  "discutió con"
+ ],
+ "se-castiga": [
+  "se castiga",
+  "autocrítica",
+  "self-critical",
+  "soy un desastre",
+  "se golpea",
+  "se cobra",
+  "duro consigo"
+ ],
+ "se-distrae": [
+  "distrae",
+  "distracted",
+  "distraído",
+  "no presta atención",
+  "no se concentra",
+  "distraído",
+  "desatento"
+ ],
+ "quiere-dejar": [
+  "quiere dejar",
+  "wants to quit",
+  "quer sair",
+  "abandonar",
+  "no quiere venir",
+  "quer largar"
+ ],
+ "se-congela": [
+  "se congela",
+  "freezes",
+  "se bloquea",
+  "no reacciona",
+  "paraliza",
+  "trava",
+  "se paraliza"
+ ],
+ "cambio-repentino": [
+  "cambió",
+  "changed",
+  "mudou",
+  "diferente",
+  "distinto",
+  "de un día para el otro",
+  "está raro"
+ ],
+ "jugador-nuevo": [
+  "jugador nuevo",
+  "recién llegó",
+  "se acaba de sumar",
+  "new player",
+  "just joined",
+  "jogador novo",
+  "acabou de chegar",
+  "nuevo en el equipo",
+  "recién se sumó"
+ ],
+ "no-quiere-ser-centro": [
+  "no quiere ser el centro",
+  "le da vergüenza",
+  "no le gusta que lo miren",
+  "evita exponerse",
+  "shy of attention",
+  "avoids the spotlight",
+  "vergonha de aparecer",
+  "não gosta de aparecer"
+ ],
+ "derrota-grupal": [
+  "perdimos",
+  "derrota",
+  "el equipo perdió",
+  "we lost",
+  "defeat",
+  "perdemos",
+  "derrota do time",
+  "después de perder"
+ ],
+ "acepta-ser-suplente": [
+  "suplente",
+  "banco",
+  "no es titular",
+  "substitute",
+  "bench",
+  "not starting",
+  "reserva",
+  "banco de suplentes"
+ ],
+ "companero-se-destaca": [
+  "se destaca",
+  "celos",
+  "envidia",
+  "se compara",
+  "jealous",
+  "teammate stands out",
+  "ciúmes",
+  "inveja",
+  "compara con"
+ ],
+ "expectativa-padres": [
+  "presión de los padres",
+  "expectativa de los padres",
+  "los padres le exigen",
+  "el padre le exige",
+  "parents pressure",
+  "parental expectations",
+  "pressão dos pais",
+  "expectativa dos pais"
+ ],
+ "gestiona-exito": [
+  "le va muy bien",
+  "se agranda",
+  "sobrado",
+  "figura del equipo",
+  "gets cocky",
+  "handling success",
+  "se acha",
+  "está voando",
+  "racha ganadora"
+ ],
+ "recibe-correccion": [
+  "lo corrijo",
+  "corrección",
+  "se lo toma mal",
+  "no acepta correcciones",
+  "when I correct",
+  "takes correction badly",
+  "correção",
+  "quando corrijo",
+  "se lo toma personal"
+ ],
+ "rol-referente": [
+  "referente",
+  "capitán del equipo",
+  "líder del grupo",
+  "role model",
+  "team leader",
+  "referência do grupo",
+  "líder do grupo",
+  "los demás lo siguen"
+ ],
+ "sube-categoria": [
+  "subió de categoría",
+  "categoría superior",
+  "cambio de categoría",
+  "moved up a division",
+  "higher category",
+  "subiu de categoria",
+  "categoria de cima",
+  "con los más grandes"
+ ]
 };
+
+// lang → situationId → eje → condensed card ('group' key = group-level card).
+const SITUATION_CARDS_DATA: Record<string, Record<string, Record<string, string>>> = {
+ "es": {
+  "no-quiere-arrancar": {
+   "D": "El Impulsor suele necesitar sentir que lo que viene vale la pena. Si no ve un desafío claro, la transición tiende a costarle más. Su motor lo empuja a la acción, pero solo cuando el objetivo lo motiva. Proponle un mini-desafío personal para los primeros 5 minutos: \"A ver si hoy arrancas más rápido que la última vez\". Si no responde: Déjalo mirar los primeros minutos sin presionarlo. Cuando vea al grupo en acción, su instinto competitivo suele activarse solo.",
+   "I": "El Conector suele necesitar conexión social para activarse. Si llegó solo, si su amigo no vino, o si el clima del grupo está raro, tiende a costarle engancharse. Su energía se enciende con las personas, no con la actividad en sí. Acércate y pregúntale algo personal: \"¿Cómo estuvo el día?\". Esa micro-conexión es su interruptor de encendido. Si no responde: Súmalo a una actividad grupal divertida (no técnica). Un juego de calentamiento donde se ría suele ser suficiente para que entre.",
+   "S": "El Sostén suele necesitar que todo esté \"en su lugar\" para sentirse seguro. Si la actividad cambió de horario, si hay gente nueva, o si algo en su rutina se alteró, la transición tiende a hacerse más pesada. Su motor más lento hace que el cambio de chip le tome más tiempo. Mantenlo en la rutina: que haga el mismo calentamiento de siempre, en el mismo lugar, con los mismos compañeros. Si no responde: Dale una tarea pequeña y predecible (\"Hazme 10 toques de pelota aquí al lado\") para que entre en el ritmo sin saltar al grupo directamente.",
+   "C": "El Estratega suele necesitar entender qué va a pasar antes de comprometerse. Si no sabe qué van a hacer en la actividad, o si el plan cambió sin explicación, tiende a quedarse afuera procesando. Su motor de procesamiento necesita cerrar la lógica antes de arrancar. Cuéntale brevemente qué van a hacer hoy: \"Primero calentamiento, después un ejercicio táctico, y terminamos con partido\". La previsibilidad lo activa. Si no responde: Déjalo que observe la primera actividad desde afuera. Cuando entienda la lógica del ejercicio, es probable que se sume solo."
+  },
+  "se-frustra-cuando-pierde": {
+   "D": "Para el Impulsor, perder es personal. Siente que el resultado define su valor. Su energía de liderazgo se vuelve contra sí mismo o contra los demás cuando el marcador no lo acompaña. Primero valida: \"Entiendo que estás enojado, es normal cuando das todo\". No minimices lo que siente. Si no responde: Dale un momento a solas. El Impulsor necesita procesar la frustración en privado antes de poder escuchar cualquier consejo.",
+   "I": "El Conector tiende a vivir la derrota como un quiebre social: \"le fallé al grupo\", \"no fui suficiente para el equipo\". Su frustración suele venir más del impacto en los demás que del resultado en sí. Valida la emoción desde lo vincular: \"Se nota que te importa mucho el equipo, eso habla bien de ti\". Si no responde: Pídele a un compañero de confianza que le hable. El Conector se recupera más rápido con el apoyo de un par que con la palabra del adulto.",
+   "S": "El Sostén no suele explotar con la derrota; más bien tiende a guardarla. Se queda callado, se retrae, y puede arrastrar la frustración por varios días. Su estabilidad natural lo hace parecer \"bien\" por fuera, pero por dentro le cuesta soltar. Valida sin forzar: \"Si necesitas hablar, aquí estoy\". No le pidas que procese en el momento. Si no responde: Mantenle la rutina y la normalidad. El Sostén se recupera cuando siente que todo sigue igual alrededor, a pesar del resultado.",
+   "C": "El Estratega suele analizar la derrota en loop: repasa cada error, cada jugada, buscando el momento exacto donde todo salió mal. Su frustración tiende a ser más cerebral que emocional, pero igual lo paraliza. Valida su análisis: \"Está bien que pienses en lo que pasó, eso te va a hacer mejorar\". Después ponle límite al loop: \"Elijamos una sola cosa para trabajar la próxima\". Si no responde: Proponle que escriba o dibuje lo que sintió. El Estratega procesa mejor cuando puede ordenar sus pensamientos fuera de su cabeza."
+  },
+  "no-hace-lo-que-pido": {
+   "D": "El Impulsor probablemente escuchó la instrucción, pero ya decidió cómo hacerla a su manera. No es desobediencia. es que su motor rápido suele lanzarlo a la acción antes de que termines de hablar, y confía en su instinto. Dile la instrucción corta y directa, en una frase. \"Pase al pivote, tiro al arco.\" Menos palabras, más acción. Si no responde: Dale el \"por qué\" competitivo: \"Si practicas esto, vas a tener una herramienta más para ganar\". El Impulsor hace lo que entiende que lo hace mejor.",
+   "I": "El Conector probablemente estaba hablando con alguien cuando diste la instrucción, o se enganchó con la dinámica social y perdió el foco. No es falta de respeto. es que su atención va primero a las personas y después a la tarea. Asegúrate de tener su atención antes de dar la instrucción: contacto visual, nombre, y después la consigna. Si no responde: Pídele que le explique la consigna a otro compañero. Al traducirla, la procesa y la ejecuta.",
+   "S": "El Sostén escuchó todo, pero si la instrucción fue compleja o nueva, su motor de procesamiento necesita más tiempo para cerrar la lógica antes de arrancar. No es lentitud. es que quiere hacerlo bien. Dile la instrucción paso a paso: \"Primero hacemos esto... bien, ahora esto otro\". No todo junto. Si no responde: Hacé una demostración rápida del ejercicio. El Sostén procesa mucho mejor viendo que escuchando.",
+   "C": "El Estratega está procesando la instrucción a fondo. Si le dijiste algo que no tiene lógica para él, o que contradice lo que hicieron antes, se frena. Su motor necesita cerrar la lógica de la primera instrucción antes de poder arrancar la segunda. Explica el \"para qué\" del ejercicio: \"Hacemos esto porque trabaja la reacción lateral\". Con el propósito claro, ejecuta. Si no responde: Dile: \"Pruebalo una vez y después me dices qué te parece\". Al Estratega lo desbloquea la experiencia directa más que la explicación verbal."
+  },
+  "raro-antes-del-partido": {
+   "D": "El Impulsor suele mostrar los nervios con hiperactividad: habla más de la cuenta, se mueve mucho, o al revés, se pone irritable y callado. La incertidumbre le molesta porque quiere controlar el resultado y no puede. Dale una tarea concreta que lo haga sentir en control: \"Calienta con pelota, haz 20 tiros\". La acción física canaliza la ansiedad. Si no responde: Déjalo calentar solo con música o en un espacio aparte. El Impulsor procesa la presión moviéndose, no hablando.",
+   "I": "El Conector suele buscar contención social: habla con todos, hace chistes, o se pega a su persona de confianza. Los nervios tiende a procesarlos a través del vínculo. Si está callado, algo le pesa más de lo normal. Genera un momento grupal de conexión: una ronda de manos, un grito de equipo, un \"¿cómo venimos?\". Eso lo centra. Si no responde: Pídele que anime al grupo. Darle un rol social (\"Tú encargarte de que todos estén arriba\") transforma su ansiedad en energía positiva.",
+   "S": "El Sostén suele cerrarse. Está más callado, más pegado a la rutina, hace exactamente lo mismo que siempre como para sentir que algo no cambió. La incertidumbre del partido le pega en su base de seguridad. Mantenle la rutina pre-partido lo más igual posible: mismo calentamiento, mismo lugar, mismos compañeros cerca. Si no responde: No lo fuerces a \"estar animado\". El Sostén compite bien desde la calma. Déjalo que entre a la cancha a su ritmo.",
+   "C": "El Estratega está pensando en todos los escenarios posibles: \"¿Y si me toca marcar al más grande?\", \"¿Qué pasa si erramos en la salida?\". Su mente analítica se convierte en una máquina de preocupaciones cuando no tiene datos suficientes. Dale información concreta: el rival, el plan de juego, su rol específico. Los datos reemplazan la incertidumbre. Si no responde: Dile: \"Pensaste mucho y eso está bien. Ahora confia en lo que ya preparaste y juega\". El permiso para soltar el análisis lo libera."
+  },
+  "mira-desde-afuera": {
+   "D": "Raro en un Impulsor, pero cuando pasa, es porque no se siente seguro de poder dominar la situación. Si el ejercicio o el grupo son nuevos, prefiere esperar hasta tener claro cómo puede destacarse. Dale un rol desde el borde: \"Mira y decime qué harías diferente\". Eso lo mantiene activo mientras observa. Si no responde: Déjalo mirar una ronda completa y después pregúntale directamente: \"¿Listo?\". El Impulsor suele responder bien a la invitación directa.",
+   "I": "El Conector suele observar desde afuera cuando no conoce a nadie o cuando siente que el clima social no es seguro. Tiende a necesitar identificar a \"su persona\" dentro del grupo antes de entrar. Preséntale a alguien: \"Él es Mateo, está en tu misma posición. Entrenen juntos\". Un aliado es su puerta de entrada. Si no responde: Dale un rol social desde afuera: \"Ayudame a contar los puntos\" o \"Avisame cuando terminen\". Eso lo conecta con el grupo sin forzar la exposición.",
+   "S": "Es el comportamiento más natural del Sostén ante lo nuevo. Está haciendo su lectura de seguridad: quién está, cómo se mueven, cuáles son las reglas. No está perdiendo el tiempo. se está preparando. No lo apures. Dale el tiempo de observación que necesita. Un \"Cuando estés listo, súmate\" sin presión es lo que más funciona. Si no responde: Déjalo mirar toda la sesión si es necesario. La próxima vez suele entrar más rápido. El Sostén construye seguridad acumulando experiencias positivas de observación.",
+   "C": "El Estratega está analizando las reglas del juego desde afuera. Quiere entender la lógica del ejercicio antes de ejecutarlo. No entra hasta que tiene claro el \"cómo\". Explícale el ejercicio brevemente mientras observa: \"Mira, la idea es que hagas esto cuando pasa aquello\". Con la lógica clara, entra. Si no responde: Dile: \"Hazlo una vez de prueba, no cuenta\". El Estratega se anima cuando sabe que el primer intento es sin evaluación."
+  },
+  "llora-o-se-enoja": {
+   "D": "El Impulsor suele enojarse más que llorar. La frustración tiende a salirle como bronca: tira cosas, grita, o se va. Siente que perdió el control de la situación y eso lo desborda. No lo enfrentes en caliente. Déjalo que se enfríe unos segundos y después acércate con tono neutro: \"Cuando estés listo, hablamos\". Si no responde: Sácalo de la actividad brevemente (\"Toma agua, respira\") y deja que vuelva solo. El Impulsor necesita sentir que la decisión de volver fue suya.",
+   "I": "El Conector tiende a quebrarse cuando siente que la corrección rompió el vínculo. \"¿Me está retando porque no le caigo bien?\" El desborde suele ser emocional y social a la vez. Primero repara el vínculo: \"No estoy enojado, quiero ayudarte a mejorar\". Eso baja la amenaza emocional. Si no responde: Pídele a un compañero de confianza que lo acompañe un momento. El Conector se regula mejor con un par que con una figura de autoridad.",
+   "S": "El Sostén no suele desbordarse, así que si llora, es que realmente se saturó. Probablemente acumuló cansancio, frustración o incomodidad durante un buen rato antes de explotar. Dale pausa sin obligarlo a explicar: \"Siéntate aquí un momento, no pasa nada\". La ausencia de presión es lo que más lo ayuda. Si no responde: Mantenlo cerca pero sin actividad. Que se quede sentado a tu lado viendo al grupo. La cercanía sin demanda es su forma de recuperarse.",
+   "C": "El Estratega suele frustrarse cuando siente que algo no tiene lógica o que la corrección fue injusta. Su desborde puede parecer \"de la nada\" pero viene de un acumulado de cosas que no le cerraron. Cuando se calme, dale una explicación clara de lo que pasó: \"Te corregí porque quiero que hagas esto mejor, y la forma de hacerlo es esta\". La lógica lo ordena. Si no responde: Déjalo solo con sus pensamientos unos minutos. El Estratega necesita ordenar internamente lo que pasó antes de poder hablar."
+  },
+  "roce-con-companero": {
+   "D": "El Impulsor suele chocar cuando siente que otro le está sacando protagonismo o frenando su ritmo. La fricción tiende a venir de la competencia por el espacio de decisión. Separa el conflicto de la persona: \"Los dos quieren ganar y eso está bien. Ahora veamos cómo lo hacen juntos\". Si no responde: Cambialos de dupla temporalmente. A veces la mejor mediación es la distancia breve.",
+   "I": "El Conector tiende a vivir el roce como un quiebre en la relación. Suele dolerle más que \"ya no nos llevemos bien\" que el conflicto en sí. Puede reaccionar buscando aliados o poniéndose dramático. Habla con los dos juntos y enfócate en el vínculo: \"Ustedes son compañeros, esto se resuelve hablando. ¿Qué pasó?\". Si no responde: Dale un rol de puente: \"Ayudame a que el grupo funcione bien\". Convertir el conflicto en misión social lo saca de la herida personal.",
+   "S": "El Sostén suele evitar el conflicto. Si tuvo un roce, probablemente está incomodísimo y quiere que todo vuelva a la normalidad lo antes posible. Probablemente no confronte; suele cerrarse. No lo obligues a \"hablar las cosas\" frente al grupo. Acércate en privado: \"Vi que hubo algo ahí, ¿estás bien?\". Si no responde: Deja que el tiempo haga su trabajo. El Sostén no suele necesitar \"resolver\" el conflicto verbalmente; más bien necesita sentir que todo volvió a la normalidad.",
+   "C": "El Estratega suele chocar cuando siente que el otro hace las cosas \"mal\" o sin lógica. La fricción tiende a venir de la diferencia de criterio: él quiere hacerlo bien y el otro quiere hacerlo rápido (o viceversa). Valida su perspectiva: \"Tu forma de verlo tiene sentido\". Después amplía: \"Y la de tu compañero también, porque viene de otro lugar\". Si no responde: Dale una tarea individual breve. El Estratega procesa mejor los conflictos interpersonales cuando tiene un momento a solas para ordenar sus ideas."
+  },
+  "se-castiga": {
+   "D": "El Impulsor suele castigarse desde la bronca: \"¡Soy un desastre!\". Siente que debería poder hacerlo bien casi siempre, y un error puede sentirse como una traición a su autoimagen de líder. Interrumpe el circuito con acción: \"Ok, erraste. Ahora haz 3 repeticiones y listo\". La acción inmediata reemplaza la autocrítica. Si no responde: Sácalo del ejercicio un momento y dale una tarea física simple (correr, picar la pelota). El Impulsor regula la frustración moviéndose.",
+   "I": "El Conector suele castigarse desde la vergüenza: \"Todos me vieron fallar\". Lo que tiende a pesarle no es el error técnico sino la exposición social del error. Normalizá el error frente al grupo: \"Todos fallamos, así se aprende\". Eso baja la vergüenza pública. Si no responde: Ponlo en una actividad donde el error sea parte del juego (un ejercicio donde todos fallan). Eso diluye la sensación de ser \"el único\".",
+   "S": "El Sostén suele castigarse en silencio. No grita ni se golpea, pero se queda callado, baja la cabeza, y pierde energía. Tiende a sentirse culpable por no haber mantenido la consistencia que se espera de él. Acércate con calma: \"Ese error no define cómo juegas. Mira todo lo que vienes haciendo bien\". Necesita que alguien le devuelva la perspectiva. Si no responde: No le insistas en que \"no es para tanto\". Simplemente sigue con la actividad con normalidad. El Sostén se recupera cuando siente que el entorno no cambió por su error.",
+   "C": "El Estratega suele castigarse desde el análisis: repasa el error una y otra vez buscando qué hizo mal. Tiende a autoexigirse porque tiene estándares altos y siente que debería haber previsto el fallo. Dale datos que contrarresten el error: \"Fallaste esta, pero las 5 anteriores las hiciste perfecto\". Los números lo sacan del loop negativo. Si no responde: Dile: \"Suficiente análisis por hoy. Mañana lo miramos con la cabeza fría\". A veces el Estratega necesita permiso para dejar de pensar."
+  },
+  "se-distrae": {
+   "D": "El Impulsor suele distraerse cuando el ejercicio no tiene suficiente intensidad o desafío. Su motor rápido necesita acción constante y si el ritmo baja, tiende a buscar estímulos por su cuenta. Súbele la intensidad: \"Ahora lo mismo pero en la mitad del tiempo\" o \"El que llega primero elige el próximo ejercicio\". Si no responde: Proponle un desafío paralelo: \"Mientras esperas tu turno, haz esto otro\". El Impulsor no tolera el vacío de actividad.",
+   "I": "El Conector suele distraerse porque lo que más le atrae es la interacción social. Si el ejercicio es individual o silencioso, su atención tiende a irse hacia el compañero de al lado. Convertí el ejercicio en algo social: en duplas, con comunicación entre ellos, o con roles que requieran hablar. Si no responde: Ponlo en un rol de ayudante tuyo: \"Vení, ayudame a organizar esto\". La cercanía social con el adulto recaptura su atención.",
+   "S": "El Sostén suele distraerse cuando hay demasiado estímulo: mucho ruido, cambios constantes de ejercicio, o instrucciones nuevas sin pausa. Su sistema tiende a desconectarse para protegerse del caos. Baja el ritmo de cambios: deja que haga el mismo ejercicio un rato más largo antes de cambiar. Si no responde: Acércate y reconéctalo con calma: \"¿Estás conmigo? Bien. Lo próximo que hacemos es esto\". El contacto personal lo trae de vuelta.",
+   "C": "El Estratega suele distraerse cuando el ejercicio le parece repetitivo o sin propósito. Su mente busca algo para analizar, y si el ejercicio no se lo da, tiende a buscar estímulos por otro lado. Dale una capa extra al ejercicio: \"Mientras haces esto, cuenta cuántas veces se repite el patrón\" o \"Fijate qué compañero se mueve mejor y por qué\". Si no responde: Proponle que invente una variante del ejercicio. El Estratega se concentra cuando puede diseñar."
+  },
+  "quiere-dejar": {
+   "D": "El Impulsor suele querer dejar cuando siente que no puede ganar, crecer o liderar. Si lleva mucho tiempo sin desafíos nuevos o sin sentir que progresa, el deporte tiende a perder sentido para él. Pregúntale qué cambiaría para que tenga ganas de volver: \"Si pudieras cambiar algo del deporte, ¿qué sería?\". Escucha la respuesta. Si no responde: No lo presiones. Dile: \"La puerta está abierta cuando quieras\". El Impulsor a veces necesita extrañar el desafío para volver con ganas.",
+   "I": "El Conector suele querer dejar cuando se rompieron los vínculos: si su amigo dejó, si el grupo cambió, o si siente que ya no pertenece. Para él, el deporte tiende a ser el grupo, y si el grupo no lo sostiene, puede sentir que no tiene razón de ser. Explora el vínculo: \"¿Hay algo del grupo que te hace ruido?\". Muchas veces la razon no es el deporte sino una relación social que se rompió. Si no responde: Habla con el adulto responsable. El abandono del Conector suele tener una raíz social que se puede resolver si se identifica a tiempo.",
+   "S": "El Sostén suele querer dejar cuando algo cambió demasiado: nuevo entrenador, nuevos compañeros, un cambio de horario o de sede. No es que no le guste el deporte. es que el contexto ya no se siente como \"su lugar\". Identifica qué cambió: \"¿Hay algo que antes te gustaba y ahora no?\". El Sostén puede señalar exactamente el punto de quiebre. Si no responde: Dale tiempo. No le pidas una decisión definitiva. \"No hace falta que decidas ahora. Vení la semana que viene y vemos\". El Sostén necesita procesar los cambios lentamente.",
+   "C": "El Estratega suele querer dejar cuando siente que no aprende nada nuevo o que la actividad no tiene sentido. Si lleva semanas haciendo lo mismo sin entender para qué, su motivación tiende a apagarse. Muéstrale el progreso que hizo: \"Mira dónde estabas hace 3 meses y dónde estás ahora\". Los datos de evolución lo reconectan con el proceso. Si no responde: Proponle un desafío intelectual dentro del deporte: analizar un video, planificar una jugada, observar un partido profesional. A veces el Estratega necesita conectar con el deporte desde la cabeza, no solo desde el cuerpo."
+  },
+  "jugador-nuevo": {
+   "D": "Un Impulsor puede ver al nuevo como una variable a evaluar: \"¿Es bueno? ¿Me va a sacar el lugar?\". Puede reaccionar compitiendo para marcar territorio o ignorándolo. Dale un rol de bienvenida con liderazgo: \"Muéstrale cómo hacemos el calentamiento\". Eso lo pone en posición de líder, no de competidor. Si no responde: Deja que la competencia natural haga su trabajo. El Impulsor tiende a aceptar al nuevo cuando ve que eleva el nivel del grupo.",
+   "I": "El Conector probablemente va a ser el primero en acercarse al nuevo. Si no lo hace, es porque algo del nuevo lo intimida o porque siente que su lugar social en el grupo está amenazado. Pídele que sea el \"anfitrión\": \"Acompáñalo hoy, explícale cómo funciona todo aquí\". Es su rol natural y lo empodera. Si no responde: Arma una actividad donde tengan que cooperar obligatoriamente. La conexión del Conector se activa haciendo cosas juntos.",
+   "S": "El Sostén suele ser el que más siente la \"ruptura\" del equilibrio. Su grupo era predecible y seguro, y ahora hay alguien que cambia la dinámica. Puede mostrarse distante o incómodo. No cambies la rutina por la llegada del nuevo. Mantenle al Sostén todo lo que puedas igual: mismo lugar, mismo ejercicio, mismos compañeros. Si no responde: Dale tiempo. El Sostén tiende a aceptar al nuevo gradualmente, a medida que el nuevo se vuelva parte de la rutina. No fuerces la integración.",
+   "C": "El Estratega suele observar al nuevo con curiosidad analítica: \"¿Cómo juega? ¿Dónde se va a ubicar? ¿Cómo afecta al equipo?\". Tiende a no acercarse enseguida porque está procesando la información. Dale información sobre el nuevo: \"Viene de tal club, juega en tal posición\". Los datos lo tranquilizan y le permiten ubicar al nuevo en su mapa mental. Si no responde: Deja que la integración sea orgánica. El Estratega suele acercarse al nuevo cuando tiene suficiente información. No lo apures."
+  },
+  "se-congela": {
+   "D": "Raro en un Impulsor, pero cuando se congela es porque la presión lo abrumó más de lo que puede manejar. Siente que si se equivoca frente a todos, pierde su estatus. Dile una instrucción concreta y simple: \"La próxima pelota, tirá al arco\". Una sola acción clara lo desbloquea. Si no responde: Cambiale el rol temporalmente a algo menos expuesto. Cuando haga una buena jugada desde ahí, devolvelo a su posición. Necesita una victoria chica para reactivarse.",
+   "I": "El Conector suele congelarse cuando siente que el error lo va a dejar \"en evidencia\" frente al grupo. Su bloqueo tiende a ser social: tiene miedo de quedar mal ante los compañeros, no del error en sí. Quitale la presión del resultado: \"No importa si sale o no, quiero que lo intentes\". El permiso para fallar lo desbloquea. Si no responde: Ponlo en una jugada grupal donde el éxito sea del equipo, no individual. El Conector se reactiva cuando la responsabilidad es compartida.",
+   "S": "El Sostén suele congelarse porque la presión del partido rompe su base de seguridad. Lo que en el entrenamiento era predecible, en el partido es incierto. Su sistema tiende a protegerse quedándose quieto. Baja la presión con información: \"Haz lo mismo que en el entrenamiento, nada diferente\". Conectarlo con lo conocido lo desbloquea. Si no responde: Sácalo unos minutos si es posible. Dile: \"Respira, mira cómo va el juego, y cuando estés listo vuelves\". El Sostén se recupera con la pausa.",
+   "C": "El Estratega suele congelarse porque está sobreanalizando: \"¿Paso o tiro? ¿Y si viene el rival? ¿Cuál es la mejor opción?\". Su mente trabaja más rápido que su cuerpo, y el cuerpo se traba. Simplifica su toma de decisión: \"Si estás libre, tira. Si no, pasa\". Reducir las opciones lo desbloquea. Si no responde: Dile: \"No pienses, juega\". A veces el Estratega necesita permiso explícito para apagar el análisis y confiar en el instinto."
+  },
+  "no-quiere-ser-centro": {
+   "D": "Muy raro en un Impulsor. Si pasa, probablemente se siente inseguro sobre esa actividad específica. No quiere exponerse donde no se siente fuerte. Ofrécele liderar algo donde se sienta seguro: \"¿Quieres mostrar el ejercicio que mejor te sale?\". El Impulsor se expone cuando sabe que va a brillar. Si no responde: No lo fuerces. Dile: \"Cuando estés listo, la oportunidad está\". El Impulsor vuelve solo cuando se siente preparado.",
+   "I": "El Conector puede disfrutar la atención social pero no la atención evaluativa. Si siente que lo están \"examinando\" en vez de \"acompañando\", se retrae. Convertí la exposición en algo social: \"Hazlo con tu compañero\" o \"Explicaselo al grupo mientras lo haces\". Si no responde: Déjalo participar desde un rol social: que elija quién pasa, que comente la jugada, que anime. Es su forma de estar presente sin estar expuesto.",
+   "S": "Suele ser natural en el Sostén. Su forma de aportar tiende a ser desde el soporte, no desde el protagonismo. Forzarlo a ser el centro va en contra de su naturaleza y suele hacerlo sentir vulnerable. Proponle formas de liderazgo silencioso: \"Asegúrate de que todos tengan lo que necesitan\" o \"Tú eres el que mantiene el ritmo\". Si no responde: No insistas. Busca otra forma de que participe donde se sienta cómodo. El Sostén aporta más desde su zona de seguridad que desde la exposición forzada.",
+   "C": "El Estratega tiende a no querer exponerse si no está seguro de que lo va a hacer bien. Su estándar suele ser alto y la idea de fallar en público le genera mucha incomodidad. Dale tiempo de preparación: \"La semana que viene te pido que expliques esta jugada al grupo. Prepárate\". Con tiempo, el Estratega se siente seguro. Si no responde: Proponle que lo haga por escrito o dibujado. El Estratega se expresa mejor cuando puede organizar sus ideas antes de compartirlas."
+  },
+  "cambio-repentino": {
+   "D": "Un Impulsor que se apaga probablemente perdió algo que lo hacía sentir poderoso: un rol, una relación, una seguridad fuera de la cancha. Su energía vital se está yendo en otra pelea. No le preguntes \"¿qué te pasa?\" de entrada. Primero observa unos días. Si persiste, acércate con algo concreto: \"Te noto diferente, ¿puedo ayudar en algo?\". Si no responde: Habla con el adulto responsable (padre, madre). El cambio persistente en un Impulsor suele ser señal de algo importante fuera de la cancha.",
+   "I": "Un Conector que se cierra suele ser una señal fuerte. Su naturaleza tiende a ser social, así que si está callado o aislado, algo puede estarle doliendo en el plano vincular: una pelea con amigos, un cambio en la familia, o bullying. Acércate desde el vínculo: \"Te conozco y sé que algo te pasa. No hace falta que me cuentes, pero quiero que sepas que estoy aquí\". Si no responde: Contacta al adulto responsable. El cambio sostenido en un Conector suele estar vinculado a una situación relacional que requiere atención fuera de la cancha.",
+   "S": "El Sostén que cambia repentinamente suele estar mostrando que algo rompió su base de seguridad. Tiende a ser el perfil que más \"aguanta\" antes de mostrar malestar, así que si ya lo ves, probablemente viene acumulando hace rato. Mantenle la rutina lo más estable posible. En medio de lo que sea que esté pasando afuera, el deporte puede ser su refugio de normalidad. Si no responde: Contacta al adulto responsable con delicadeza: \"Noté que viene diferente estas últimas semanas, ¿está todo bien en casa?\". El Sostén rara vez pide ayuda. hay que ir a buscarla.",
+   "C": "Un Estratega que cambia de comportamiento puede estar procesando algo internamente que no logra resolver. Su mente analítica puede estar en loop con una situacion que no tiene solución lógica (un problema familiar, una injusticia percibida). Ofrécele un espacio para ordenar lo que piensa: \"¿Quieres contarme qué está pasando por tu cabeza? A veces ayuda decirlo en voz alta\". Si no responde: Contacta al adulto responsable. Los cambios sostenidos en el Estratega, especialmente si se vuelve irritable o distante, suelen indicar una situacion que necesita contencion profesional."
+  },
+  "derrota-grupal": {
+   "group": "Todo el grupo está procesando la derrota desde su propio perfil: los Impulsores probablemente estén enojados, los Conectores suelen sentir que fallaron como equipo, los Sostenes tienden a cerrarse, y los Estrategas estarán repasando cada error. El clima colectivo está bajo. No intentes hablar del partido inmediatamente después de perder. Dale al grupo unos minutos de silencio o de descompresión libre antes de reunirlos. Si no responde: No fuerces la positividad. A veces el grupo necesita estar triste un rato. Dile: \"Hoy duele, y está bien que duela. Mañana arrancamos de nuevo\". El permiso para sentir la derrota es el primer paso para superarla."
+  },
+  "acepta-ser-suplente": {
+   "D": "El Impulsor suele vivir el banco como una pérdida de control y de su lugar de protagonista. Estar quieto mientras otros juegan tiende a pesarle mucho, y esa tensión suele salir como fastidio o impaciencia. Dale un rol activo desde el banco: pídele que lea el partido y te avise qué pasa, por ejemplo dile: quiero tus ojos en la cancha, ¿qué ves que podemos mejorar? Si no responde: Si sigue tenso, no le exijas que lo acepte de golpe. Reconócele las ganas de jugar (se nota que quieres estar adentro y eso es bueno) y dale tiempo, su empuje se reacomoda cuando siente que cuentas con él.",
+   "I": "El Conector suele temer que estar en el banco signifique que decepcionó o que ya no es parte del grupo. Más que el rol, tiende a dolerle sentirse afuera del vínculo. Confírmale su lugar en el equipo de entrada: acércate y dile hoy arrancas afuera, pero eres parte clave de esto, te necesito conectando al grupo desde el banco. Si no responde: Si lo notas apagado, prioriza el vínculo antes que el rol. Un gesto cercano, sentarte un momento a su lado, le devuelve la sensación de pertenecer, que es lo que más necesita.",
+   "S": "El Sostén suele aceptar el banco sin protestar, pero eso no quiere decir que no le duela. Guarda el malestar en silencio y puede acumularlo hasta que aparece más adelante como desánimo. Anticípale el rol con calma y claridad para que no lo tome por sorpresa: dile hoy entras en el segundo tiempo, quiero que estés listo y tranquilo para ese momento. Si no responde: Si responde con un todo bien y se cierra, respétale el silencio sin darlo por resuelto. Vuelve a buscarlo en otro momento tranquilo, suele abrirse cuando siente que hay confianza y nada de apuro.",
+   "C": "El Estratega suele necesitar entender por qué está en el banco. Si no tiene claro el criterio, tiende a darle vueltas y puede concluir solo que hizo algo mal o que no es lo bastante bueno. Explícale el motivo de forma concreta y sin rodeos: dile esta es una decisión de equipo y de planificación, no un juicio sobre ti, y te muestro qué estoy buscando hoy. Si no responde: Si lo ves trabado dándole vueltas, bájale la exigencia interna. Recuérdale que el rol de hoy no mide su valor y que entender lleva tiempo, sin pedirle que lo resuelva ya."
+  },
+  "companero-se-destaca": {
+   "D": "El Impulsor suele vivir el logro del compañero como una competencia que está perdiendo. Su instinto tiende a ser demostrar de inmediato que él también puede, y si no encuentra cómo, se frustra. Canaliza esa energía hacia un reto propio en vez de hacia el otro: tú tienes tu propio desafío hoy, vamos a ver hasta dónde llegas. Si no responde: Dale un par de minutos para que baje la intensidad sin exigirle que aplauda al compañero. Cuando vuelva a sentirse capaz en lo suyo, la comparación pierde fuerza sola.",
+   "I": "El Conector suele sentir que el cariño y la atención del grupo se fueron hacia otro, y tiende a vivirlo como que a él lo quieren menos. Suele dolerle más el desplazamiento social que el resultado. Devuélvele su lugar en el grupo con algo genuino: tu energía es la que levanta al equipo, eso no lo reemplaza nadie. Si no responde: No lo obligues a celebrar si todavía le cuesta. Acércate un momento a solas y hazle sentir que su lugar contigo sigue intacto, sin pedirle nada a cambio.",
+   "S": "El Sostén suele guardarse el malestar y correrse al segundo plano sin decir nada. Por fuera parece que no le afecta, pero el fastidio se va acumulando y puede aparecer más tarde de golpe. Dale permiso para nombrar lo que siente, sin apuro: está bien que hoy te haya costado, contarlo no tiene nada de malo. Si no responde: No lo presiones a hablar. Quédate cerca y mantén la rutina estable. Tu constancia le devuelve la seguridad mejor que cualquier charla forzada.",
+   "C": "El Estratega suele quedarse analizando por qué el otro lo hizo mejor y se compara punto por punto. Esa cuenta interna tiende a volverlo durísimo consigo mismo. Saca la mirada de la comparación y ponla en su propio proceso: no se trata de quién es mejor, sino de qué puedes aprender mirándolo. Si no responde: Si sigue atrapado en el bucle, bájale la exigencia. Recuérdale que cada uno avanza a su tiempo y que entender lleva su proceso, no hay apuro."
+  },
+  "recibe-correccion": {
+   "D": "El Impulsor suele confundir la corrección con perder terreno. Tiende a necesitar sentir que sigue siendo capaz y que tiene margen para mejorar por su cuenta, no que lo dejaron mal parado. Enmarca la corrección como un reto, no como una falla: tienes esto casi listo, te falta un ajuste para que sea imparable. Si no responde: Si se pone a la defensiva, baja la intensidad y déjalo probar a su modo unos minutos. Cuando vea que el ajuste le funciona, lo adopta solo y sin discutir.",
+   "I": "El Conector suele sentir la corrección como un golpe al vínculo, no a la técnica. Tiende a importarle más si te decepcionó o si quedó expuesto que el detalle que le marcaste. Corrígelo en privado y cuida el tono: empieza por el vínculo, lo tuyo con el equipo está perfecto, vamos a pulir solo este detalle. Si no responde: Si igual se apaga, dale un gesto de cercanía y espera. Para él, sentirse aceptado pesa más que cualquier indicación, y desde ahí vuelve a escuchar.",
+   "S": "El Sostén suele asentir y parecer que lo toma bien, pero por dentro se guarda el malestar. Tiende a evitar el roce en el momento y la incomodidad le aparece después, más callada. Dale tiempo y previsibilidad: avísale con calma y sin sorpresas, quiero mostrarte algo para la próxima, sin apuro. Si no responde: Si lo notas retraído, no insistas en el momento. Acércate después, en un clima tranquilo, y dale espacio para que suelte lo que se guardó.",
+   "C": "El Estratega suele entender la corrección, pero tiende a quedarse atascado en el detalle y a volverse muy exigente consigo mismo. Le cuesta soltar lo que pasó para seguir jugando. Explícale el porqué, que es lo que más lo ordena: corregimos esto porque te da más tiempo para decidir en la jugada. Si no responde: Si sigue dándole vueltas, dale un solo punto en el que pensar y deja el resto para después. Menos información lo libera para volver a jugar tranquilo."
+  },
+  "gestiona-exito": {
+   "D": "El Impulsor suele sentir el éxito con mucha intensidad y necesita mostrarlo. Cuando ya se siente ganador, su motor de esfuerzo tiende a aflojar porque cree que el desafío terminó. Ponle un nuevo objetivo apenas logra algo: ya conseguiste eso, ahora a ver si sostienes ese nivel hasta el final. Si no responde: Déjalo disfrutar el momento sin corregirlo en caliente. Cuando baje la euforia, vuelve a buscarlo con un reto concreto y su motor se reactiva solo.",
+   "I": "El Conector suele vivir el éxito a través de los demás y se entusiasma cuando siente la celebración del grupo. Llevado por esa emoción, sin querer puede acaparar el momento y dejar al resto del equipo afuera. Redirige su entusiasmo hacia el equipo: buenísimo tu gol, ahora celébralo con los que te dieron el pase. Si no responde: No lo apagues delante del grupo. Más tarde, a solas, recuérdale lo lindo que es cuando el equipo entero festeja junto, y que él tiene el don de lograrlo.",
+   "S": "El Sostén suele vivir el éxito por dentro, sin mostrarlo demasiado. Pero al sentir que la presión bajó, puede relajarse de más y soltar la constancia que lo venía sosteniendo. Reconócele su buen momento con calma y dale continuidad: estás muy bien, mantengamos esa misma forma de jugar el resto del partido. Si no responde: No lo presiones para que demuestre más. Acompáñalo en silencio, cerca, y recuérdale con un gesto que confías en que va a sostener su nivel sin sobreexigirse.",
+   "C": "El Estratega suele analizar su buen rendimiento y puede convencerse de que ya entendió todo. Al sentir que no le queda nada por mejorar, tiende a bajar la guardia sin darse cuenta. Valídale el análisis y abre una pregunta nueva: jugaste muy bien, ¿qué crees que podrías afinar todavía? Si no responde: Dale espacio para procesar su buen momento a su ritmo. Cuando esté listo, proponle mirar juntos el próximo desafío sin quitarle mérito a lo que ya logró."
+  },
+  "rol-referente": {
+   "D": "El Impulsor suele tomar el rol con ganas, pero puede vivirlo como mandar más que como guiar. Si el grupo no responde a su intensidad, lo siente como algo personal. Dale una misión de líder que dependa de los demás: hoy tu trabajo es que tus compañeros lleguen al final del ejercicio, no llegar tú primero. Si no responde: Bájale la exposición un tiempo y dale liderazgos cortos y concretos. Cuando sienta que puede hacerlo bien, va a querer más.",
+   "I": "El Conector suele liderar con naturalidad desde el vínculo, pero tiende a pesarle cuando el rol implica poner un límite o decidir entre amigos. No quiere decepcionar a nadie. Define el rol desde su fortaleza: tu tarea de referente es que nadie quede afuera, y eso ya lo haces muy bien. Si no responde: Déjale por ahora la parte que disfruta y aligérale la que lo incomoda. Con el tiempo, el rol más completo le va a pesar menos.",
+   "S": "El Sostén suele preferir el segundo plano y le incomoda quedar expuesto. Igual sostiene al grupo en silencio, aunque no lo busque. Nómbrale el liderazgo que ya ejerce, sin pedirle nada nuevo: cuando estás tú, el grupo está más tranquilo, eso es liderar. Si no responde: No lo empujes al centro. Déjalo liderar a su manera, desde el costado, y respeta su ritmo para tomar más espacio.",
+   "C": "El Estratega suele dudar porque todavía no tiene claro qué se espera de él, y tiende a preferir esperar antes que ejercer el rol a medias. Le pesa la idea de equivocarse delante de todos. Explícale el rol con claridad y por partes: ser referente aquí significa estas tres cosas, nada más. Si no responde: Proponle primero un rol más concreto, algo que pueda entender y dominar. La confianza para liderar le llega cuando siente que comprende."
+  },
+  "expectativa-padres": {
+   "D": "El Impulsor suele convertir la expectativa en una presión por ganar sí o sí. Cuando siente que el resultado define si decepcionó o no a sus padres, puede exigirse de más y reaccionar con frustración ante un error. Devuélvele el foco a lo que él controla: hoy no me fijo en el marcador, me fijo en cómo compites cada pelota. Si no responde: Si sigue jugando para la tribuna, baja tú la importancia del resultado en tus palabras. Cuando él vea que para ti su valor no depende de ganar, empieza a soltar la presión.",
+   "I": "El Conector suele necesitar sentir el orgullo de sus padres para jugar liviano. Una cara seria desde afuera tiende a desconectarlo enseguida, porque para él rendir bien y ser querido están unidos. Recuérdale que el cariño de sus padres no se gana ni se pierde en una cancha: tu familia te quiere juegues como juegues, eso no está en juego hoy. Si no responde: Si sigue pendiente de la tribuna, ayúdalo a reconectar con el grupo en vez de con afuera. Cuando se siente parte del equipo, la mirada de los padres deja de ser lo único que importa.",
+   "S": "El Sostén suele guardarse la tensión por dentro y no mostrarla. Sigue jugando callado, pero más rígido, y la carga se le acumula hasta aparecer de golpe en un mal momento. Acércate con calma y sin exponerlo para abrirle la puerta: si en algún momento te pesa lo de afuera, me lo puedes contar tranquilo. Si no responde: Si no logra soltar la carga, no lo fuerces a hablar. Mantén un clima predecible y seguro alrededor de él, y dale tiempo: confiar en ti es lo que después le permite abrirse.",
+   "C": "El Estratega suele meterse en su cabeza tratando de descifrar qué esperan de él. Tiende a autoexigirse el doble y a terminar jugando trabado por miedo a no estar a la altura de lo que cree que los adultos quieren ver. Sácale la presión de tener que adivinar expectativas y dale un objetivo claro y propio: tu único trabajo hoy es leer bien el juego, nada más. Si no responde: Si sigue trabado en su análisis, reduce las variables: una sola consigna simple por vez. Cuando deja de cargar con todo lo que cree que esperan, vuelve a jugar suelto."
+  },
+  "sube-categoria": {
+   "D": "El Impulsor venía siendo una referencia y ahora es el nuevo entre los más grandes. Perder ese lugar de protagonismo suele tocarle la confianza, y puede taparlo con enojo o compitiendo de más para recuperar terreno. Dale un objetivo concreto para su adaptación: en estas semanas tu desafío es ganarte un lugar en este grupo, lo vamos a ver partido a partido. Si no responde: Si sigue tenso, bájale la exigencia de rendir ya y déjalo enfocarse en una sola cosa por actividad. Recuperar el control de a poco le devuelve la seguridad.",
+   "I": "El Conector dejó atrás a su grupo de siempre y todavía no encontró su lugar entre los nuevos. Aunque esté rodeado de compañeros, suele sentirse afuera, y eso tiende a bajarle las ganas más que cualquier tema de juego. Conéctalo con un compañero de la nueva categoría que lo reciba bien: te presento a Tomás, va a ser tu compañero esta semana. Si no responde: Si sigue replegado, no lo expongas frente al grupo. Acércate en privado y muéstrale que lo quieres ahí, sentirse esperado le devuelve las ganas.",
+   "S": "El Sostén suele desestabilizarse con el cambio de rutina, de horarios y de caras conocidas. Tiende a replegarse al segundo plano y a sostener la incomodidad en silencio, hasta que un día le pesa todo junto. Dale previsibilidad sobre lo nuevo: explícale cómo va a ser la actividad y qué se espera de él, paso a paso. Si no responde: Si lo ves cerrado, dale más tiempo sin apurarlo y pregúntale en privado cómo se está sintiendo. A él el cambio le lleva más, y eso está bien.",
+   "C": "El Estratega suele estar leyendo todo el escenario nuevo: el ritmo, los códigos del grupo, dónde encaja él. Mientras procesa puede parecer apagado o dudar antes de jugar, porque todavía no entiende del todo cómo funciona esta categoría. Dale información clara que lo ayude a ubicarse: en esta categoría se juega más rápido, así que gana un segundo pensando antes de recibir. Si no responde: Si sigue dudando, no lo presiones a soltarse antes de tiempo. Cuando termine de entender el escenario nuevo, va a empezar a jugar con confianza solo."
+  }
+ },
+ "en": {
+  "no-quiere-arrancar": {
+   "D": "The Driver tends to need to feel like what's coming is worth it. If they don't see a clear challenge, the transition is usually harder. Their motor pushes them to action, but only when the goal is motivating. Offer a mini personal challenge for the first 5 minutes: \"Let's see if you can get going faster than last time.\" If they don't respond: Let them watch the first few minutes without pressure. Once they see the group in action, their competitive instinct usually kicks in on its own.",
+   "I": "The Connector tends to need social connection to get activated. If they arrived alone, if their friend didn't come, or if the group vibe is off, it's usually hard for them to get going. Their energy turns on through people, not through the activity itself. Go up and ask something personal: \"How was your day?\" That small connection is their on-switch. If they don't respond: Add them to a fun group activity (not a technical one). A warm-up game where they laugh is usually enough to get them in.",
+   "S": "The Supporter tends to need everything to feel \"in its place\" before they feel secure. If practice changed times, if there are new people, or if anything in their routine shifted, the transition usually gets harder. Their slower processing pace means the gear-switch takes more time. Keep them in their routine: the same warm-up as always, in the same spot, with the same teammates nearby. If they don't respond: Give them a small, predictable task (\"Do 10 ball touches right here\") so they can ease into the rhythm without jumping straight into the group.",
+   "C": "The Strategist tends to need to understand what's going to happen before they commit. If they don't know what's being trained, or if the plan changed without explanation, they'd usually rather stay out and process. Their processing engine needs to close the logic before starting. Give them a brief overview of what you're doing today: \"First warm-up, then a tactical drill, and we'll wrap up with a scrimmage.\" Predictability activates them. If they don't respond: Let them watch the first activity from the sideline. Once they understand the logic of the drill, they usually join on their own."
+  },
+  "se-frustra-cuando-pierde": {
+   "D": "For the Driver, losing is personal. They feel like the result defines their worth. Their leadership energy turns against themselves or others when the scoreboard doesn't go their way. Validate first: \"I get that you're angry, that's normal when you give everything you have.\" Don't minimize what they feel. If they don't respond: Give them a moment alone. The Driver needs to process frustration privately before they can hear any advice.",
+   "I": "The Connector tends to feel the loss as a social rupture: \"I let the team down,\" \"I wasn't enough for the team.\" Their frustration usually comes more from the impact on others than from the result itself. Validate the emotion through the relational lens: \"It's obvious how much you care about this team, that says a lot about you.\" If they don't respond: Ask a trusted teammate to talk to them. The Connector recovers faster with peer support than with a word from the adult.",
+   "S": "The Supporter usually doesn't explode after a loss; they tend to hold it in. They go quiet, pull back, and can carry that frustration for several days. Their natural stability makes them look fine on the outside, but inside it's hard to let go. Validate without forcing: \"If you need to talk, I'm here.\" Don't ask them to process it on the spot. If they don't respond: Keep their routine and normalcy intact. The Supporter recovers when they feel everything around them is still the same, despite the result.",
+   "C": "The Strategist tends to analyze the loss on a loop: they replay every mistake, every play, looking for the exact moment things went wrong. Their frustration is usually more cognitive than emotional, but it still paralyzes them. Validate their analysis: \"It's good that you think about what happened, that's what makes you better.\" Then set a limit on the loop: \"Let's pick one thing to work on next time.\" If they don't respond: Suggest they write or draw what they felt. The Strategist processes better when they can organize their thoughts outside of their head."
+  },
+  "no-hace-lo-que-pido": {
+   "D": "The Driver probably heard the instruction, but they've already decided to do it their way. It's not disobedience: their quick motor often launches them into action before you finish talking, and they trust their instinct. Keep the instruction short and direct, in one sentence. \"Pass to the pivot, shoot on goal.\" Fewer words, more action. If they don't respond: Give them the competitive \"why\": \"If you practice this, you'll have one more tool to win.\" The Driver does what they understand will make them better.",
+   "I": "The Connector was probably talking to someone when you gave the instruction, or got caught up in the social dynamic and lost focus. It's not disrespect: their attention goes to people first and the task second. Make sure you have their attention before giving the instruction: eye contact, name, then the instruction. If they don't respond: Ask them to explain the instruction to another teammate. When they translate it, they process it and execute it.",
+   "S": "The Supporter heard everything, but if the instruction was complex or new, their processing engine needs more time to close the logic before starting. It's not slowness: they want to get it right. Give the instruction step by step: \"First we do this... good, now this next part.\" Not everything at once. If they don't respond: Do a quick demonstration of the drill. The Supporter processes much better watching than listening.",
+   "C": "The Strategist is processing the instruction thoroughly. If you told them something that doesn't make sense to them, or contradicts what they've done before, they stop. Their engine needs to close the logic of the first instruction before starting the second. Explain the \"why\" of the drill: \"We're doing this because it trains lateral reaction.\" With a clear purpose, they execute. If they don't respond: Say: \"Try it once and then tell me what you think.\" The Strategist gets unblocked by direct experience more than verbal explanation."
+  },
+  "raro-antes-del-partido": {
+   "D": "The Driver tends to show nerves through hyperactivity: talks too much, can't stay still, or goes the opposite way (irritable and quiet). The uncertainty bothers them because they want to control the result and can't. Give them a concrete task that makes them feel in control: \"Warm up with a ball, take 20 shots.\" Physical action channels the anxiety. If they don't respond: Let them warm up alone with music or in a separate space. The Driver processes pressure by moving, not by talking.",
+   "I": "The Connector tends to seek social containment: they talk to everyone, crack jokes, or stick close to their trusted person. They usually process nerves through connection. If they're quiet, something is weighing on them more than usual. Create a group connection moment: a team huddle, a group cheer, a \"how are we feeling?\" check-in. That centers them. If they don't respond: Ask them to pump up the group. Giving them a social role (\"Your job is to make sure everyone's fired up\") turns their anxiety into positive energy.",
+   "S": "The Supporter tends to shut down. They go quieter, stick closer to their routine, and do exactly what they always do as if to hold onto something that hasn't changed. The uncertainty of the game hits their sense of security. Keep their pre-game routine as close to normal as possible: same warm-up, same spot, same teammates nearby. If they don't respond: Don't push them to \"look excited.\" The Supporter competes well from a calm state. Let them come onto the field at their own pace.",
+   "C": "The Strategist is thinking through every possible scenario: \"What if I have to mark the biggest guy?\" \"What if we mess up the kickoff?\" Their analytical mind turns into a worry machine when they don't have enough information. Give them concrete information: the opponent, the game plan, their specific role. Data replaces uncertainty. If they don't respond: Tell them: \"You've thought it through and that's good. Now trust what you've prepared and just play.\" The permission to let go of the analysis sets them free."
+  },
+  "mira-desde-afuera": {
+   "D": "Unusual for a Driver, but when it happens it's because they don't feel confident they can dominate the situation. If the drill or the group are new, they'd rather wait until they see how they can stand out. Give them a role from the sideline: \"Watch and tell me what you would do differently.\" That keeps them active while they observe. If they don't respond: Let them watch a full round and then ask directly: \"Ready?\" The Driver usually responds well to a direct invitation.",
+   "I": "The Connector tends to watch from outside when they don't know anyone or when the social climate doesn't feel safe. They usually need to identify \"their person\" within the group before joining. \"Let me introduce you to someone: this is Mateo, he plays the same position as you. Train together.\" An ally is their way in. If they don't respond: Give them a social role from the outside: \"Help me keep score\" or \"Let me know when they're done.\" That connects them to the group without forcing exposure.",
+   "S": "This is the most natural behavior of the Supporter when facing something new. They're doing their safety read: who's there, how people move, what the rules are. They're not wasting time: they're preparing. Don't rush them. Give them the observation time they need. A simple \"Join in when you're ready\" without pressure is what works best. If they don't respond: Let them watch the whole session if needed. Next time they usually join faster. The Supporter builds confidence by accumulating positive observation experiences.",
+   "C": "The Strategist is analyzing the rules of the game from the outside. They want to understand the logic of the drill before executing it. They won't join until they have the \"how\" figured out. Explain the drill briefly while they watch: \"Look, the idea is you do this when that happens.\" With the logic clear, they'll join. If they don't respond: Say: \"Just try it once, it doesn't count.\" The Strategist is more willing when they know the first attempt isn't being evaluated."
+  },
+  "llora-o-se-enoja": {
+   "D": "The Driver tends to get angry more than they cry. Frustration usually comes out as aggression: they throw something, shout, or walk off. They feel like they've lost control of the situation and that's what overwhelms them. Don't confront them in the heat of the moment. Let them cool down for a few seconds and then approach with a neutral tone: \"When you're ready, let's talk.\" If they don't respond: Remove them briefly from the activity (\"Grab some water, take a breath\") and let them come back on their own. The Driver needs to feel like the decision to return was theirs.",
+   "I": "The Connector tends to break down when they feel the correction ruptured the bond. \"Is the coach upset at me because they don't like me?\" The overflow is usually emotional and social at the same time. Repair the bond first: \"I'm not upset, I want to help you get better.\" That lowers the emotional threat. If they don't respond: Ask a trusted teammate to be with them for a moment. The Connector regulates better with a peer than with an authority figure.",
+   "S": "The Supporter rarely breaks down, so if they're crying, they are genuinely overloaded. They've probably been accumulating fatigue, frustration, or discomfort for a while before reaching this point. Give them a break without requiring explanation: \"Come sit here for a minute, it's okay.\" The absence of pressure is what helps them most. If they don't respond: Keep them close but without any task. Let them sit next to you and watch the group. Closeness without demands is how they recover.",
+   "C": "The Strategist tends to get frustrated when something doesn't make sense or when a correction feels unfair. Their breakdown can seem like it comes out of nowhere, but it comes from an accumulation of things that didn't add up. Once they calm down, give them a clear explanation of what happened: \"I corrected you because I want you to do this better, and here's how.\" The logic re-orients them. If they don't respond: Leave them alone with their thoughts for a few minutes. The Strategist needs to internally organize what happened before they can talk."
+  },
+  "roce-con-companero": {
+   "D": "The Driver tends to clash when they feel someone else is taking the spotlight or slowing their pace. The friction usually comes from competing for decision-making space. Separate the conflict from the person: \"You both want to win, and that's good. Now let's figure out how to do it together.\" If they don't respond: Switch up the pair temporarily. Sometimes the best mediation is a brief bit of distance.",
+   "I": "The Connector tends to experience the clash as a rupture in the relationship. What hurts more than the conflict is usually \"we don't get along anymore.\" They may react by seeking allies or getting dramatic. Talk to both of them together and focus on the bond: \"You're teammates, this gets resolved by talking. What happened?\" If they don't respond: Give them a bridge role: \"Help me keep the group running smoothly.\" Turning the conflict into a social mission pulls them out of the personal hurt.",
+   "S": "The Supporter tends to avoid conflict. If there was a clash, they're probably extremely uncomfortable and want things back to normal as fast as possible. They probably won't confront; they usually shut down. Don't make them \"talk it out\" in front of the group. Pull them aside privately: \"I noticed something happened there, are you okay?\" If they don't respond: Let time do its work. The Supporter usually doesn't need to \"resolve\" the conflict verbally; they tend to need to feel like things have returned to normal.",
+   "C": "The Strategist tends to clash when they feel the other person is doing things \"wrong\" or without logic. The friction usually comes from a difference in standards: they want to do it right, the other wants to do it fast (or vice versa). Validate their perspective: \"Your way of seeing it makes sense.\" Then expand: \"And so does your teammate's, it just comes from a different place.\" If they don't respond: Give them a brief individual task. The Strategist processes interpersonal conflicts better when they have a moment alone to sort their thoughts."
+  },
+  "se-castiga": {
+   "D": "The Driver tends to beat themselves up through anger: \"I'm such a mess!\" They feel they should be capable almost always, and a mistake can feel like a betrayal of their self-image as a leader. Break the loop with action: \"Okay, you missed. Now do 3 reps and we move on.\" Immediate action replaces self-criticism. If they don't respond: Pull them out of the drill for a moment and give them a simple physical task (a run, juggling the ball). The Driver regulates frustration through movement.",
+   "I": "The Connector tends to beat themselves up through shame: \"Everyone saw me mess up.\" What weighs on them usually isn't the technical error: it's the social exposure of the mistake. Normalize the error in front of the group: \"We all mess up, that's how we learn.\" That reduces the public shame. If they don't respond: Put them in an activity where mistakes are built into the game (a drill where everyone fails). That dilutes the feeling of being \"the only one.\"",
+   "S": "The Supporter tends to beat themselves up quietly. They don't shout or hit themselves; they go quiet, drop their head, and lose energy. They usually feel guilty for not maintaining the consistency they expect of themselves. Approach calmly: \"That mistake doesn't define how you play. Look at everything you've been doing well.\" They need someone to give them perspective. If they don't respond: Don't push the \"it's not a big deal\" line. Just keep going with practice as if nothing changed. The Supporter recovers when they feel the environment didn't shift because of their mistake.",
+   "C": "The Strategist tends to beat themselves up through analysis: they replay the mistake over and over looking for what they did wrong. They're usually hard on themselves because they have high standards and feel they should have anticipated the failure. Give them data that counterbalances the mistake: \"You missed this one, but the 5 before it were perfect.\" Numbers pull them out of the negative loop. If they don't respond: Tell them: \"Enough analysis for today. Tomorrow we look at it with fresh eyes.\" Sometimes the Strategist needs explicit permission to stop thinking."
+  },
+  "se-distrae": {
+   "D": "The Driver tends to get distracted when the drill doesn't have enough intensity or challenge. Their quick motor needs constant action, and when the pace drops, they usually look for stimulation on their own. \"Same drill but now in half the time\" or \"First one there gets to pick the next drill.\" Turn it up. If they don't respond: Offer a parallel challenge: \"While you wait for your turn, do this.\" The Driver can't handle a gap in activity.",
+   "I": "The Connector tends to get distracted because what draws them most is social interaction. If the drill is individual or quiet, their attention usually drifts toward the person next to them. Make the drill social: pairs, communication between them, or roles that require talking. If they don't respond: Make them your assistant: \"Come help me organize this.\" The social closeness with you recaptures their attention.",
+   "S": "The Supporter tends to get distracted when there's too much stimulus: lots of noise, constant drill changes, or new instructions without a pause. Their system usually disengages to protect itself from the chaos. Slow down the pace of changes: let them stay with the same drill a bit longer before switching. If they don't respond: Go up and reconnect with them calmly: \"Still with me? Good. Next thing we're doing is this.\" Personal contact brings them back.",
+   "C": "The Strategist tends to get distracted when the drill feels repetitive or pointless. Their mind looks for something to analyze, and if the drill doesn't give it to them, they usually find stimulation elsewhere. Add a layer to the drill: \"While you do this, count how many times the pattern repeats\" or \"Notice which teammate moves best and why.\" If they don't respond: Ask them to invent a variation of the drill. The Strategist focuses when they get to design."
+  },
+  "quiere-dejar": {
+   "D": "The Driver tends to want to quit when they feel they can't win, grow, or lead. If they've gone a long time without new challenges or a sense of progress, the sport usually loses its meaning for them. \"If you could change one thing about practice, what would it be?\" Ask and actually listen to the answer. If they don't respond: Don't push it. Say: \"The door is open whenever you want.\" The Driver sometimes needs to miss the challenge before they come back motivated.",
+   "I": "The Connector tends to want to quit when the bonds broke: if their friend left, if the group changed, or if they feel like they no longer belong. For them, the sport is usually the group, and if the group isn't holding them, they may feel there's no reason to be there. \"Is there something about the group that's bothering you?\" Explore the bond. Often the real reason isn't the sport, it's a social relationship that broke down. If they don't respond: Talk to the parent or guardian. The Connector's departure usually has a social root that can be addressed if it's caught early.",
+   "S": "The Supporter tends to want to quit when too much changed: a new coach, new teammates, a schedule or location change. It's not that they don't like the sport: the environment no longer feels like \"their place.\" \"Is there something you used to like that you don't anymore?\" The Supporter can usually identify the exact breaking point. If they don't respond: Give it time. Don't ask for a final decision. \"You don't have to decide right now. Come next week and we'll see.\" The Supporter needs to process changes slowly.",
+   "C": "The Strategist tends to want to quit when they feel they're not learning anything new or that practice doesn't make sense. If they've been doing the same thing for weeks without understanding why, their motivation usually shuts off. \"Look where you were 3 months ago versus where you are now.\" Show them the progress. Evolution data reconnects them to the process. If they don't respond: Offer them an intellectual challenge within the sport: analyze a video, plan a play, watch a professional game. Sometimes the Strategist needs to connect with the sport through their mind, not just their body."
+  },
+  "jugador-nuevo": {
+   "D": "A Driver may see the new player as a variable to evaluate: \"Are they good? Are they going to take my spot?\" They may react by competing to mark their territory or by ignoring them. Give them a leadership welcome role: \"Show them how we do the warm-up.\" That puts them in the position of leader, not competitor. If they don't respond: Let the natural competition do its work. The Driver tends to accept the new player once they see they raise the level of the group.",
+   "I": "The Connector will probably be the first to go up to the new player. If they don't, it's because something about the new person intimidates them or because they feel their social place in the group is threatened. \"Be their host today, walk them through how everything works here.\" It's their natural role and it empowers them. If they don't respond: Set up an activity where they have to cooperate. The Connector's connection activates when doing things together.",
+   "S": "The Supporter tends to be the one who feels the \"disruption\" most. Their group was predictable and safe, and now someone is changing the dynamic. They may seem distant or uncomfortable. Don't change the routine because of the new player. Keep everything as consistent as possible for the Supporter: same spot, same drill, same teammates. If they don't respond: Give it time. The Supporter tends to accept the new player gradually as that person becomes part of the routine. Don't force the integration.",
+   "C": "The Strategist tends to observe the new player with analytical curiosity: \"How do they play? Where are they going to fit? How do they affect the team?\" They usually won't approach right away because they're still processing the information. Give them background on the new player: \"They come from this club, they play this position.\" Data helps them place the new player in their mental map. If they don't respond: Let the integration happen organically. The Strategist tends to approach the new player once they have enough information. Don't rush it."
+  },
+  "se-congela": {
+   "D": "Unusual for a Driver, but when they freeze it's because the pressure overwhelmed them more than they can handle. They feel that if they make a mistake in front of everyone, they lose their status. \"Next ball, shoot on goal.\" One clear, simple action is what unblocks them. If they don't respond: Temporarily move them to a less exposed role. Once they make a good play from there, put them back in their position. They need a small win to get going again.",
+   "I": "The Connector tends to freeze when they feel a mistake will put them \"on blast\" in front of the group. Their block is usually social: they're afraid of looking bad to their teammates, not of the mistake itself. \"It doesn't matter if it works or not, I just want you to try.\" Permission to fail unblocks them. If they don't respond: Put them in a group play where success belongs to the team, not to one individual. The Connector gets going again when responsibility is shared.",
+   "S": "The Supporter tends to freeze because the pressure of the game breaks their sense of security. What was predictable in practice becomes uncertain in the game. Their system usually protects itself by going still. \"Do exactly what we do in practice, nothing different.\" Connecting them to the familiar is what unblocks them. If they don't respond: Sub them out for a few minutes if you can. \"Take a breath, watch how the game is going, and come back in when you're ready.\" The Supporter recovers with the break.",
+   "C": "The Strategist tends to freeze because they're over-analyzing: \"Do I pass or shoot? What if the defender comes? What's the best option?\" Their mind runs faster than their body, and the body locks up. \"If you're open, shoot. If you're not, pass.\" Reducing the options unblocks them. If they don't respond: Tell them: \"Stop thinking, just play.\" Sometimes the Strategist needs explicit permission to turn off the analysis and trust their instincts."
+  },
+  "no-quiere-ser-centro": {
+   "D": "Very unusual for a Driver. If it's happening, they probably feel insecure about this specific activity. They don't want to be exposed in an area where they don't feel strong. \"Do you want to demonstrate the drill you're best at?\" The Driver exposes themselves when they know they're going to shine. If they don't respond: Don't force it. \"When you're ready, the opportunity is there.\" The Driver will come back on their own when they feel prepared.",
+   "I": "The Connector may enjoy social attention but not evaluative attention. If they feel they're being \"examined\" rather than \"supported,\" they pull back. Make the exposure social: \"Do it with your teammate\" or \"Walk the group through it while you do it.\" If they don't respond: Let them participate through a social role: they choose who goes next, they comment on the play, they cheer the group on. That's their way of being present without being exposed.",
+   "S": "This is usually natural for the Supporter. Their way of contributing tends to be through support, not through the spotlight. Forcing them to be the center goes against their nature and usually makes them feel vulnerable. Offer forms of quiet leadership: \"Make sure everyone has what they need\" or \"You're the one who keeps the rhythm.\" If they don't respond: Don't push it. Find another way for them to participate where they feel comfortable. The Supporter contributes more from their comfort zone than from forced exposure.",
+   "C": "The Strategist tends not to want to be exposed unless they're sure they're going to do it right. Their standards are usually high and the idea of failing in public causes real discomfort. \"Next week I'm going to ask you to explain this play to the group. Prepare for it.\" With time, the Strategist feels secure. If they don't respond: Suggest they do it in writing or as a diagram. The Strategist expresses themselves better when they can organize their ideas before sharing them."
+  },
+  "cambio-repentino": {
+   "D": "A Driver who goes quiet has probably lost something that made them feel powerful: a role, a relationship, a sense of security outside of the field. Their vital energy is being spent on another fight. Don't open with \"what's wrong?\" First, observe for a few days. If it persists, approach with something specific: \"I've noticed you seem different lately, is there anything I can do?\" If they don't respond: Talk to the parent or guardian. A persistent change in a Driver is usually a sign of something significant happening outside of the field.",
+   "I": "A Connector who shuts down is usually a strong signal. Their nature tends to be social, so if they're quiet or pulling away from the group, something may be hurting them in the relational realm: a fight with friends, a family change, or bullying. \"I know you, and I can tell something's going on. You don't have to tell me, but I want you to know I'm here.\" If they don't respond: Reach out to the parent or guardian. A sustained change in a Connector is usually linked to a relational situation that needs attention outside of practice.",
+   "S": "A Supporter who changes suddenly is usually showing that something broke their sense of security. They tend to be the profile that holds it together the longest before showing distress, so if you're seeing it, they've probably been accumulating this for a while. Keep their routine as stable as possible. Whatever is going on outside, practice can be their refuge of normalcy. If they don't respond: Reach out to the parent or guardian carefully: \"I've noticed they seem different lately, is everything okay at home?\" The Supporter rarely asks for help; you have to go looking for it.",
+   "C": "A Strategist who changes behavior may be processing something internally that they can't resolve. Their analytical mind can get stuck in a loop on a situation that has no logical solution (a family problem, a perceived injustice). \"Do you want to tell me what's been going on in your head? Sometimes it helps to say it out loud.\" If they don't respond: Contact the parent or guardian. Sustained changes in the Strategist (especially if they become irritable or distant) usually indicate a situation that needs professional support."
+  },
+  "derrota-grupal": {
+   "group": "The whole group is processing the loss through their own profile: the Drivers are probably angry, the Connectors usually feel like they failed as a team, the Supporters tend to shut down, and the Strategists will be replaying every mistake. The collective mood is low. Don't try to talk about the game right after the loss. Give the group a few minutes of silence or free decompression before bringing them together. If they don't respond: Don't force positivity. Sometimes the group needs to be sad for a bit. Say: \"Today it hurts, and it's okay that it hurts. Tomorrow we start again.\" Permission to feel the loss is the first step to getting over it."
+  },
+  "acepta-ser-suplente": {
+   "D": "The Driver tends to experience the bench as a loss of control and of their place in the spotlight. Sitting still while others play usually weighs heavily on them, and that tension often comes out as frustration or impatience. Give them an active role from the bench: ask them to read the game and tell you what's going on, for example say to them: I want your eyes on the field, what do you see that we can improve? If they don't respond: If they stay tense, don't demand that they accept it right away. Acknowledge their drive to play (I can tell you want to be out there and that's a good thing) and give them time. Their drive settles back in when they feel that you're counting on them.",
+   "I": "The Connector tends to fear that being on the bench means they let someone down or that they're no longer part of the group. More than the role, it usually hurts to feel left out of the bond. Confirm their place on the team right from the start: come over and say to them today you start off the field, but you're a key part of this, I need you connecting the group from the bench. If they don't respond: If you notice them down, prioritize the bond before the role. A warm gesture, sitting next to them for a moment, gives them back that sense of belonging, which is what they need most.",
+   "S": "The Supporter usually accepts the bench without protesting, but that doesn't mean it doesn't hurt. They keep the discomfort silent and can bottle it up until it surfaces later as low spirits. Let them know their role ahead of time, calmly and clearly, so it doesn't catch them off guard: tell them today you come in for the second half, I want you ready and at ease for that moment. If they don't respond: If they answer with an it's all fine and shut down, respect the silence without treating it as resolved. Come back to them at another calm moment. They tend to open up when they feel there's trust and no rush.",
+   "C": "The Strategist tends to need to understand why they're on the bench. If the criteria aren't clear, they usually turn it over and over and can conclude on their own that they did something wrong or that they're not good enough. Explain the reason concretely and without beating around the bush: tell them this is a team and planning decision, not a judgment about you, and let me show you what I'm looking for today. If they don't respond: If you see them stuck turning it over, ease the internal pressure. Remind them that today's role doesn't measure their worth and that understanding takes time, without asking them to resolve it right now."
+  },
+  "companero-se-destaca": {
+   "D": "The Driver tends to experience the teammate's achievement as a competition they are losing. Their instinct is usually to prove right away that they can do it too, and if they cannot find a way, they get frustrated. Channel that energy toward a challenge of their own instead of toward the other: you have your own challenge today, let's see how far you can go. If they don't respond: Give them a couple of minutes to bring the intensity down without demanding that they applaud their teammate. Once they feel capable again at their own thing, the comparison loses its grip on its own.",
+   "I": "The Connector tends to feel the group's affection and attention went to someone else, and they may take it to mean they are liked less. The social displacement usually hurts more than the result. Give them back their place in the group with something genuine: your energy is what lifts the team, nobody replaces that. If they don't respond: Don't force them to celebrate if it is still hard for them. Come over for a moment one on one and make them feel that their place with you is still intact, without asking for anything in return.",
+   "S": "The Supporter tends to keep the discomfort to themselves and step into the background without saying a word. On the outside it looks like it doesn't affect them, but the irritation keeps building and can surface later all at once. Give them permission to name what they feel, no rush: it's okay that today was hard for you, there's nothing wrong with talking about it. If they don't respond: Don't pressure them to talk. Stay close and keep the routine steady. Your consistency gives them back their sense of safety better than any forced conversation.",
+   "C": "The Strategist tends to stay stuck analyzing why the other did it better and to compare themselves point by point. That internal tally usually makes them incredibly hard on themselves. Take their focus off the comparison and put it on their own process: it's not about who is better, but about what you can learn by watching them. If they don't respond: If they stay caught in the loop, ease the pressure on them. Remind them that everyone progresses at their own pace and that understanding takes its own process, there's no rush."
+  },
+  "recibe-correccion": {
+   "D": "The Driver tends to confuse a correction with losing ground. They usually need to feel that they are still capable and that they have room to improve on their own, not that they were left looking bad. Frame the correction as a challenge, not a flaw: you've got this almost ready, you just need one adjustment to make it unstoppable. If they don't respond: If they get defensive, lower the intensity and let them try it their own way for a few minutes. When they see that the adjustment works for them, they adopt it on their own and without arguing.",
+   "I": "The Connector tends to feel the correction as a blow to the relationship, not to the technique. They usually care more about whether they let you down or got exposed than about the detail you pointed out. Correct them in private and mind your tone: start with the relationship, things between you and the team are perfect, let's polish just this one detail. If they don't respond: If they still deflate, give them a sign of closeness and wait. For them, feeling accepted matters more than any instruction, and from there they start listening again.",
+   "S": "The Supporter usually nods and seems to take it well, but inside they hold on to the discomfort. They tend to avoid friction in the moment and the unease shows up later, more quietly. Give them time and predictability: let them know calmly and without surprises, I want to show you something for next time, no rush. If they don't respond: If you notice them withdrawing, don't push in the moment. Approach them later, in a calm setting, and give them room to let out what they held back.",
+   "C": "The Strategist usually understands the correction, but tends to get stuck on the detail and to become very demanding with themselves. They find it hard to let go of what happened and keep playing. Explain the why, which is what settles them most: we're correcting this because it gives you more time to decide on the play. If they don't respond: If they keep dwelling on it, give them a single point to think about and leave the rest for later. Less information frees them up to go back to playing calmly."
+  },
+  "gestiona-exito": {
+   "D": "The Driver tends to feel success with a lot of intensity and needs to show it. Once they feel like a winner, their effort engine usually eases off because they believe the challenge is over. Set a new goal as soon as they achieve something: you got that, now let's see if you can hold that level all the way to the end. If they don't respond: Let them enjoy the moment without correcting them in the heat of it. When the euphoria settles, come back to them with a concrete challenge and their engine reactivates on its own.",
+   "I": "The Connector tends to experience success through others and gets excited when they feel the group celebrating. Carried away by that emotion, they can unintentionally take over the moment and leave the rest of the team out. Redirect their excitement toward the team: great goal, now celebrate it with the ones who gave you the pass. If they don't respond: Do not shut them down in front of the group. Later, one on one, remind them how great it is when the whole team celebrates together, and that they have the gift to make it happen.",
+   "S": "The Supporter usually experiences success on the inside, without showing it much. But when they sense the pressure has dropped, they can relax too much and let go of the steadiness that had been carrying them. Acknowledge their good moment calmly and give it continuity: you are doing really well, let's keep that same way of playing for the rest of the match. If they don't respond: Do not pressure them to show more. Stay with them quietly, close by, and remind them with a gesture that you trust them to hold their level without overstraining.",
+   "C": "The Strategist tends to analyze their good performance and can convince themselves that they have already figured it all out. Sensing there is nothing left to improve, they tend to let their guard down without realizing it. Validate their analysis and open a new question: you played really well, what do you think you could still fine-tune? If they don't respond: Give them space to process their good moment at their own pace. When they are ready, suggest looking at the next challenge together without taking away from what they have already achieved."
+  },
+  "rol-referente": {
+   "D": "The Driver usually takes on the role eagerly, but they may experience it as bossing rather than guiding. If the group doesn't respond to their intensity, they take it personally. Give them a leadership mission that depends on others: today your job is to get your teammates to the end of the drill, not to finish first yourself. If they don't respond: Lower their exposure for a while and give them short, concrete leadership tasks. Once they feel they can do it well, they'll want more.",
+   "I": "The Connector usually leads naturally through connection, but it tends to weigh on them when the role means setting a limit or deciding between friends. They don't want to let anyone down. Define the role from their strength: your job as a leader is to make sure no one is left out, and you already do that really well. If they don't respond: For now, let them keep the part they enjoy and ease off the part that makes them uncomfortable. Over time, the fuller role will weigh on them less.",
+   "S": "The Supporter usually prefers the background and feels uncomfortable being exposed. They still hold the group together quietly, even when they're not looking to. Name the leadership they already show, without asking anything new of them: when you're here, the group is calmer, that's leading. If they don't respond: Don't push them to the center. Let them lead in their own way, from the side, and respect their pace for taking on more space.",
+   "C": "The Strategist tends to hesitate because they're still not clear on what's expected of them, and they'd usually rather wait than carry out the role halfway. The idea of getting it wrong in front of everyone weighs on them. Explain the role clearly and in parts: being a leader here means these three things, nothing more. If they don't respond: Offer them a more concrete role first, something they can understand and master. The confidence to lead comes once they feel they understand."
+  },
+  "expectativa-padres": {
+   "D": "The Driver tends to turn the expectation into pressure to win no matter what. When they feel the result decides whether or not they let their parents down, they may overdemand from themselves and react with frustration to a mistake. Bring their focus back to what they control: today I am not looking at the scoreboard, I am looking at how you compete for every ball. If they don't respond: If they keep playing for the stands, lower the importance of the result in your own words. When they see that for you their worth does not depend on winning, they start to release the pressure.",
+   "I": "The Connector tends to need to feel their parents' pride in order to play freely. A serious face from the outside usually disconnects them right away, because for them performing well and being loved are linked together. Remind them that their parents' love is not won or lost on a field: your family loves you no matter how you play, that is not at stake today. If they don't respond: If they stay fixated on the stands, help them reconnect with the group instead of with the outside. When they feel part of the team, their parents' eyes stop being the only thing that matters.",
+   "S": "The Supporter tends to keep the tension inside and not show it. They keep playing quietly, but more rigidly, and the weight builds up until it surfaces all at once at a bad moment. Come close calmly and without exposing them, to open the door: if at any point the outside gets heavy for you, you can tell me, no rush. If they don't respond: If they cannot release the weight, do not force them to talk. Keep a predictable, safe atmosphere around them and give them time: trusting you is what later lets them open up.",
+   "C": "The Strategist tends to get stuck inside their head trying to figure out what is expected of them. They usually demand twice as much from themselves and end up playing tight out of fear of not living up to what they believe the adults want to see. Take away the pressure of having to guess expectations and give them a clear goal of their own: your only job today is to read the game well, nothing more. If they don't respond: If they stay stuck in their analysis, reduce the variables: one simple instruction at a time. When they stop carrying everything they think is expected, they go back to playing freely."
+  },
+  "sube-categoria": {
+   "D": "The Driver used to be a reference point and now they are the newcomer among the older players. Losing that spotlight usually touches their confidence, and they may cover it up with anger or by competing too hard to win back ground. Give them a concrete goal for their adjustment: over these weeks your challenge is to earn a place in this group, and we will track it game by game. If they don't respond: If they stay tense, ease off the pressure to perform right away and let them focus on one single thing per activity. Regaining control bit by bit gives them back their confidence.",
+   "I": "The Connector left their usual group behind and has not yet found their place among the new ones. Even surrounded by teammates, they usually feel left out, and that tends to drain their motivation more than any matter of play. Connect them with a teammate from the new category who will welcome them well: let me introduce you to Tomás, he will be your partner this week. If they don't respond: If they stay withdrawn, do not put them on the spot in front of the group. Approach them privately and show them that you want them there. Feeling expected brings their motivation back.",
+   "S": "The Supporter tends to get destabilized by the change of routine, schedule and familiar faces. They usually pull back into the background and carry the discomfort in silence, until one day it all weighs on them at once. Give them predictability about what is new: explain how the activity will go and what is expected of them, step by step. If they don't respond: If you see them closed off, give them more time without rushing them and ask in private how they are feeling. Change takes them longer, and that is okay.",
+   "C": "The Strategist tends to be reading the whole new setting: the pace, the group's unspoken rules, where they fit in. While they process, they can seem switched off or hesitate before playing, because they do not yet fully understand how this category works. Give them clear information that helps them get their bearings: in this category the play is faster, so gain a second by thinking before you receive. If they don't respond: If they keep hesitating, do not pressure them to loosen up before they are ready. Once they finish understanding the new setting, they will start playing with confidence on their own."
+  }
+ },
+ "pt": {
+  "no-quiere-arrancar": {
+   "D": "O Impulsionador costuma precisar sentir que o que vem vale a pena. Se não vê um desafio claro, a transição tende a custar mais. O motor dele o empurra à ação, mas só quando o objetivo o motiva. Proponha um mini-desafio pessoal para os primeiros 5 minutos: \"Vamos ver se você começa mais rápido do que da última vez\". Se não responder: Deixe-o observar os primeiros minutos sem pressão. Quando vir o grupo em ação, o instinto competitivo dele costuma se ativar sozinho.",
+   "I": "O Conector costuma precisar de conexão social para se ativar. Se chegou sozinho, se o amigo não veio, ou se o clima do grupo está estranho, tende a ficar difícil se engajar. A energia dele se acende nas pessoas, não na atividade em si. Chegue perto e pergunte algo pessoal: \"Como foi o dia?\". Essa micro-conexão é o interruptor de ignição dele. Se não responder: Inclua-o em uma atividade grupal divertida (não técnica). Uma brincadeira de aquecimento onde ele ria costuma ser suficiente para entrar.",
+   "S": "O Sustentador costuma precisar que tudo esteja \"no lugar\" para se sentir seguro. Se a atividade mudou de horário, se há alguém novo, ou se algo na rotina foi alterado, a transição tende a ficar mais pesada. O motor mais lento dele faz com que a troca de modo leve mais tempo. Mantenha a rotina: que faça o mesmo aquecimento de sempre, no mesmo lugar, com os mesmos colegas. Se não responder: Dê uma tarefa pequena e previsível (\"Faça 10 toques de bola aqui do meu lado\") para que entre no ritmo sem pular direto para o grupo.",
+   "C": "O Estrategista costuma precisar entender o que vai acontecer antes de se comprometer. Se não sabe o que vai ser treinado, ou se o plano mudou sem explicação, tende a ficar de fora processando. O motor de processamento dele precisa fechar a lógica antes de começar. Conte brevemente o que vão fazer hoje: \"Primeiro aquecimento, depois um exercício tático, e terminamos com jogo\". A previsibilidade o ativa. Se não responder: Deixe-o observar a primeira atividade de fora. Quando entender a lógica do exercício, é provável que entre sozinho."
+  },
+  "se-frustra-cuando-pierde": {
+   "D": "Para o Impulsionador, perder é pessoal. Ele sente que o resultado define o próprio valor. A energia de liderança dele se vira contra si mesmo ou contra os outros quando o placar não o acompanha. Primeiro valide: \"Entendo que está com raiva, é normal quando você dá tudo\". Não minimize o que ele sente. Se não responder: Dê um momento sozinho. O Impulsionador precisa processar a frustração em privado antes de conseguir ouvir qualquer conselho.",
+   "I": "O Conector tende a viver a derrota como uma ruptura social: \"falhei com o grupo\", \"não fui suficiente para o time\". A frustração dele costuma vir mais do impacto nos outros do que do resultado em si. Valide a emoção pelo lado do vínculo: \"Dá para ver o quanto você se importa com o time, isso diz muito de você\". Se não responder: Peça para um colega de confiança conversar com ele. O Conector se recupera mais rápido com o apoio de um par do que com a palavra do adulto.",
+   "S": "O Sustentador costuma não explodir com a derrota; mais que isso, tende a guardá-la. Fica quieto, se recolhe, e pode arrastar a frustração por vários dias. A estabilidade natural dele o faz parecer \"bem\" por fora, mas por dentro custa soltar. Valide sem forçar: \"Se precisar conversar, estou aqui\". Não peça que processe na hora. Se não responder: Mantenha a rotina e a normalidade. O Sustentador se recupera quando sente que tudo continua igual ao redor, apesar do resultado.",
+   "C": "O Estrategista tende a analisar a derrota em loop: revisa cada erro, cada jogada, buscando o momento exato onde tudo saiu errado. A frustração dele costuma ser mais cerebral do que emocional, mas ainda assim o paralisa. Valide a análise: \"Está certo pensar no que aconteceu, isso vai te fazer melhorar\". Depois limite o loop: \"Vamos escolher apenas uma coisa para trabalhar na próxima vez\". Se não responder: Proponha que escreva ou desenhe o que sentiu. O Estrategista processa melhor quando pode organizar os pensamentos fora da cabeça."
+  },
+  "no-hace-lo-que-pido": {
+   "D": "O Impulsionador provavelmente ouviu a instrução, mas já decidiu como fazer do jeito dele. Não é desobediência: é que o motor rápido costuma lançá-lo à ação antes de você terminar de falar, e ele confia no instinto. Dê a instrução curta e direta, em uma frase. \"Passe para o pivô, chute ao gol.\" Menos palavras, mais ação. Se não responder: Dê o \"porquê\" competitivo: \"Se você praticar isso, vai ter mais uma ferramenta para ganhar\". O Impulsionador faz o que entende que o deixa melhor.",
+   "I": "O Conector provavelmente estava conversando com alguém quando você deu a instrução, ou se prendeu na dinâmica social e perdeu o foco. Não é falta de respeito: é que a atenção dele vai primeiro para as pessoas e depois para a tarefa. Garanta a atenção dele antes de dar a instrução: contato visual, nome, e depois a consigna. Se não responder: Peça para ele explicar a consigna para outro colega. Ao traduzir, processa e executa.",
+   "S": "O Sustentador ouviu tudo, mas se a instrução foi complexa ou nova, o motor de processamento dele precisa de mais tempo para fechar a lógica antes de começar. Não é lentidão: é que quer fazer certo. Dê a instrução passo a passo: \"Primeiro fazemos isso... bem, agora isso outro\". Não tudo de uma vez. Se não responder: Faça uma demonstração rápida do exercício. O Sustentador processa muito melhor vendo do que ouvindo.",
+   "C": "O Estrategista está processando a instrução a fundo. Se você disse algo que não faz lógica para ele, ou que contradiz o que fizeram antes, ele trava. O motor dele precisa fechar a lógica da primeira instrução antes de poder começar a segunda. Explique o \"para quê\" do exercício: \"Fazemos isso porque trabalha a reação lateral\". Com o propósito claro, ele executa. Se não responder: Diga: \"Tenta uma vez e depois me fala o que achou\". O Estrategista se desbloqueia com a experiência direta mais do que com a explicação verbal."
+  },
+  "raro-antes-del-partido": {
+   "D": "O Impulsionador costuma mostrar o nervosismo com hiperatividade: fala além da conta, se move muito, ou ao contrário, fica irritado e quieto. A incerteza o incomoda porque quer controlar o resultado e não pode. Dê uma tarefa concreta que o faça sentir no controle: \"Aquece com bola, faz 20 chutes\". A ação física canaliza a ansiedade. Se não responder: Deixe-o aquecer sozinho com música ou em um espaço separado. O Impulsionador processa a pressão se movendo, não falando.",
+   "I": "O Conector costuma buscar contenção social: fala com todos, faz piadas, ou se cola na pessoa de confiança. Os nervos ele tende a processar pelo vínculo. Se está quieto, algo pesa mais do que o normal. Gere um momento grupal de conexão: uma roda de mãos, um grito de time, um \"como estamos?\". Isso o centra. Se não responder: Peça para ele animar o grupo. Dar um papel social (\"Você fica responsável por manter todo mundo ligado\") transforma a ansiedade em energia positiva.",
+   "S": "O Sustentador costuma se fechar. Está mais quieto, mais apegado à rotina, faz exatamente o mesmo de sempre como para sentir que algo não mudou. A incerteza do jogo bate na base de segurança dele. Mantenha a rotina pré-jogo o mais igual possível: mesmo aquecimento, mesmo lugar, mesmos colegas por perto. Se não responder: Não force a \"animação\". O Sustentador compete bem a partir da calma. Deixe-o entrar em campo no próprio ritmo.",
+   "C": "O Estrategista está pensando em todos os cenários possíveis: \"E se me tocarem marcar o maior?\", \"O que acontece se erramos na saída?\". A mente analítica dele vira uma máquina de preocupações quando não tem dados suficientes. Dê informação concreta: o adversário, o plano de jogo, o papel específico dele. Os dados substituem a incerteza. Se não responder: Diga: \"Você pensou bastante e isso está ótimo. Agora confie no que já preparou e jogue\". A permissão para soltar a análise o libera."
+  },
+  "mira-desde-afuera": {
+   "D": "Raro em um Impulsionador, mas quando acontece é porque não se sente seguro de dominar a situação. Se o exercício ou o grupo são novos, prefere esperar até ter claro como pode se destacar. Dê um papel pela borda: \"Olha e me diz o que faria diferente\". Isso o mantém ativo enquanto observa. Se não responder: Deixe-o observar uma rodada completa e depois pergunte diretamente: \"Pronto?\". O Impulsionador costuma responder bem ao convite direto.",
+   "I": "O Conector costuma observar de fora quando não conhece ninguém ou quando sente que o clima social não é seguro. Tende a precisar identificar \"a pessoa dele\" dentro do grupo antes de entrar. Apresente-o a alguém: \"Ele é o Mateus, joga na mesma posição que você. Treinem juntos\". Um aliado é a porta de entrada dele. Se não responder: Dê um papel social de fora: \"Me ajuda a contar os pontos\" ou \"Me avisa quando terminarem\". Isso o conecta ao grupo sem forçar a exposição.",
+   "S": "É o comportamento mais natural do Sustentador diante do novo. Está fazendo a leitura de segurança: quem está, como se movem, quais são as regras. Não está perdendo tempo: está se preparando. Não apresse. Dê o tempo de observação que precisa. Um \"Quando estiver pronto, entra\" sem pressão é o que mais funciona. Se não responder: Deixe-o observar a sessão inteira se necessário. Na próxima vez costuma entrar mais rápido. O Sustentador constrói segurança acumulando experiências positivas de observação.",
+   "C": "O Estrategista está analisando as regras do jogo de fora. Quer entender a lógica do exercício antes de executá-lo. Não entra até ter claro o \"como\". Explique o exercício brevemente enquanto observa: \"Olha, a ideia é fazer isso quando acontece aquilo\". Com a lógica clara, ele entra. Se não responder: Diga: \"Faz uma vez de teste, não conta\". O Estrategista se anima quando sabe que a primeira tentativa é sem avaliação."
+  },
+  "llora-o-se-enoja": {
+   "D": "O Impulsionador costuma se irritar mais do que chorar. A frustração tende a sair como raiva: joga coisas, grita, ou vai embora. Ele sente que perdeu o controle da situação e isso o desequilibra. Não enfrente no calor do momento. Deixe esfriar alguns segundos e depois chegue com tom neutro: \"Quando estiver pronto, a gente conversa\". Se não responder: Tire-o da atividade brevemente (\"Bebe água, respira\") e deixe-o voltar por conta própria. O Impulsionador precisa sentir que a decisão de voltar foi dele.",
+   "I": "O Conector tende a se abalar quando sente que a correção rompeu o vínculo. \"Está me repreendendo porque não gosta de mim?\" O colapso costuma ser emocional e social ao mesmo tempo. Primeiro repare o vínculo: \"Não estou com raiva, quero te ajudar a melhorar\". Isso baixa a ameaça emocional. Se não responder: Peça a um colega de confiança que fique com ele um momento. O Conector se regula melhor com um par do que com uma figura de autoridade.",
+   "S": "O Sustentador raramente se desestabiliza, então se chora, é que realmente saturou. Provavelmente acumulou cansaço, frustração ou desconforto por um bom tempo antes de explodir. Dê pausa sem obrigá-lo a explicar: \"Senta aqui um momento, não tem problema\". A ausência de pressão é o que mais ajuda. Se não responder: Mantenha-o por perto mas sem atividade. Que fique sentado ao seu lado vendo o grupo. A proximidade sem demanda é a forma dele se recuperar.",
+   "C": "O Estrategista costuma se frustrar quando sente que algo não tem lógica ou que a correção foi injusta. O colapso pode parecer \"do nada\", mas vem de um acumulado de coisas que não fecharam para ele. Quando se acalmar, dê uma explicação clara do que aconteceu: \"Corrigi porque quero que você faça isso melhor, e o jeito de fazer é este\". A lógica o organiza. Se não responder: Deixe-o sozinho com os pensamentos por alguns minutos. O Estrategista precisa organizar internamente o que aconteceu antes de conseguir falar."
+  },
+  "roce-con-companero": {
+   "D": "O Impulsionador costuma entrar em atrito quando sente que outro está tomando o protagonismo dele ou freando o ritmo. O atrito tende a vir da competição pelo espaço de decisão. Separe o conflito da pessoa: \"Os dois querem ganhar e isso está ótimo. Agora vamos ver como fazem isso juntos\". Se não responder: Troque-os de dupla temporariamente. Às vezes a melhor mediação é a distância breve.",
+   "I": "O Conector tende a viver o atrito como uma ruptura na relação. Costuma doer mais o \"já não somos amigos\" do que o conflito em si. Pode reagir buscando aliados ou dramatizando. Fale com os dois juntos e foque no vínculo: \"Vocês são colegas, isso se resolve conversando. O que aconteceu?\". Se não responder: Dê um papel de ponte: \"Me ajuda a fazer o grupo funcionar bem\". Transformar o conflito em missão social o tira da mágoa pessoal.",
+   "S": "O Sustentador costuma evitar o conflito. Se teve um atrito, provavelmente está muito desconfortável e quer que tudo volte ao normal o quanto antes. Provavelmente não vai confrontar; costuma se fechar. Não force a \"conversa\" na frente do grupo. Chegue em particular: \"Vi que aconteceu algo aí, você está bem?\". Se não responder: Deixe o tempo fazer o trabalho. O Sustentador costuma não precisar \"resolver\" o conflito verbalmente; mais que isso, precisa sentir que tudo voltou ao normal.",
+   "C": "O Estrategista costuma entrar em atrito quando sente que o outro faz as coisas \"errado\" ou sem lógica. O atrito tende a vir da diferença de critério: ele quer fazer bem e o outro quer fazer rápido (ou vice-versa). Valide a perspectiva dele: \"Sua forma de ver faz sentido\". Depois amplie: \"E a do seu colega também, porque vem de outro lugar\". Se não responder: Dê uma tarefa individual breve. O Estrategista processa melhor os conflitos interpessoais quando tem um momento sozinho para organizar as ideias."
+  },
+  "se-castiga": {
+   "D": "O Impulsionador costuma se punir com raiva: \"Sou um desastre!\". Sente que deveria conseguir fazer certo quase sempre, e um erro pode soar como uma traição à autoimagem de líder. Interrompa o circuito com ação: \"Ok, errou. Agora faz 3 repetições e pronto\". A ação imediata substitui a autocrítica. Se não responder: Tire-o do exercício um momento e dê uma tarefa física simples (correr, quicar a bola). O Impulsionador regula a frustração se movendo.",
+   "I": "O Conector costuma se punir pela vergonha: \"Todo mundo me viu errar\". O que tende a pesar não é o erro técnico, mas a exposição social do erro. Normalize o erro na frente do grupo: \"Todo mundo erra, é assim que se aprende\". Isso baixa a vergonha pública. Se não responder: Coloque-o em uma atividade onde o erro faz parte do jogo (um exercício onde todos erram). Isso dilui a sensação de ser \"o único\".",
+   "S": "O Sustentador costuma se punir em silêncio. Não grita nem se bate, mas fica quieto, abaixa a cabeça, e perde energia. Tende a sentir culpa por não ter mantido a consistência que se espera dele. Chegue com calma: \"Esse erro não define como você joga. Olha tudo que você vem fazendo bem\". Ele precisa que alguém devolva a perspectiva. Se não responder: Não insista em que \"não é para tanto\". Simplesmente continue a atividade normalmente. O Sustentador se recupera quando sente que o ambiente não mudou por causa do erro dele.",
+   "C": "O Estrategista costuma se punir pela análise: revisa o erro uma e outra vez buscando o que fez errado. Tende a se autoexigir porque tem padrões altos e sente que deveria ter previsto a falha. Dê dados que contrabalanciem o erro: \"Errou esse, mas os 5 anteriores fez perfeitamente\". Os números o tiram do loop negativo. Se não responder: Diga: \"Chega de análise por hoje. Amanhã a gente olha com a cabeça fria\". Às vezes o Estrategista precisa de permissão para parar de pensar."
+  },
+  "se-distrae": {
+   "D": "O Impulsionador costuma se distrair quando o exercício não tem intensidade ou desafio suficiente. O motor rápido dele precisa de ação constante e, se o ritmo cai, tende a buscar estímulos por conta própria. Suba a intensidade: \"Agora o mesmo mas na metade do tempo\" ou \"Quem chegar primeiro escolhe o próximo exercício\". Se não responder: Proponha um desafio paralelo: \"Enquanto espera a vez, faz isso aqui\". O Impulsionador não tolera o vazio de atividade.",
+   "I": "O Conector costuma se distrair porque o que mais o atrai é a interação social. Se o exercício é individual ou silencioso, a atenção tende a ir para o colega ao lado. Transforme o exercício em algo social: em duplas, com comunicação entre eles, ou com papéis que exijam conversar. Se não responder: Coloque-o no papel de assistente seu: \"Vem, me ajuda a organizar isso\". A proximidade social com o adulto recupera a atenção dele.",
+   "S": "O Sustentador costuma se distrair quando há estímulo demais: muito barulho, mudanças constantes de exercício, ou instruções novas sem pausa. O sistema dele tende a se desconectar para se proteger do caos. Reduza o ritmo das mudanças: deixe que faça o mesmo exercício por mais tempo antes de trocar. Se não responder: Chegue e reconecte com calma: \"Está com a gente? Ótimo. O próximo que fazemos é isso\". O contato pessoal o traz de volta.",
+   "C": "O Estrategista costuma se distrair quando o exercício parece repetitivo ou sem propósito. A mente dele busca algo para analisar e, se o exercício não oferece isso, tende a buscar estímulos em outro lugar. Adicione uma camada ao exercício: \"Enquanto faz isso, conta quantas vezes o padrão se repete\" ou \"Vê qual colega se move melhor e por quê\". Se não responder: Proponha que ele invente uma variação do exercício. O Estrategista se concentra quando pode criar."
+  },
+  "quiere-dejar": {
+   "D": "O Impulsionador costuma querer parar quando sente que não pode ganhar, crescer ou liderar. Se ficou muito tempo sem novos desafios ou sem sentir que progride, o esporte tende a perder sentido para ele. Pergunte o que mudaria para ter vontade de voltar: \"Se pudesse mudar uma coisa no esporte, o que seria?\". Ouça a resposta. Se não responder: Não pressione. Diga: \"A porta está aberta quando quiser\". O Impulsionador às vezes precisa sentir falta do desafio para voltar com vontade.",
+   "I": "O Conector costuma querer parar quando os vínculos se romperam: se o amigo foi embora, se o grupo mudou, ou se sente que não pertence mais. Para ele, o esporte tende a ser o grupo, e se o grupo não o sustenta, pode sentir que não há razão para estar. Explore o vínculo: \"Tem algo no grupo que te incomoda?\". Muitas vezes a razão não é o esporte, mas uma relação social que se quebrou. Se não responder: Fale com o adulto responsável. O abandono do Conector costuma ter uma raiz social que pode ser resolvida se identificada a tempo.",
+   "S": "O Sustentador costuma querer parar quando algo mudou demais: novo treinador, novos colegas, mudança de horário ou de local. Não é que não goste do esporte: é que o contexto não se sente mais como \"o lugar dele\". Identifique o que mudou: \"Tem algo que antes você gostava e agora não?\". O Sustentador pode apontar exatamente o ponto de virada. Se não responder: Dê tempo. Não peça uma decisão definitiva. \"Não precisa decidir agora. Vem semana que vem e a gente vê\". O Sustentador precisa processar as mudanças com calma.",
+   "C": "O Estrategista costuma querer parar quando sente que não aprende nada novo ou que a atividade não faz sentido. Se ficou semanas fazendo a mesma coisa sem entender para quê, a motivação tende a apagar. Mostre o progresso que ele fez: \"Olha onde você estava 3 meses atrás e onde está agora\". Os dados de evolução o reconectam com o processo. Se não responder: Proponha um desafio intelectual dentro do esporte: analisar um vídeo, planejar uma jogada, assistir a uma partida profissional. Às vezes o Estrategista precisa se conectar com o esporte pela cabeça, não só pelo corpo."
+  },
+  "jugador-nuevo": {
+   "D": "Um Impulsionador pode ver o novo como uma variável a avaliar: \"É bom? Vai me tirar o lugar?\". Pode reagir competindo para marcar território ou ignorando-o. Dê um papel de boas-vindas com liderança: \"Mostra para ele como fazemos o aquecimento\". Isso o coloca em posição de líder, não de competidor. Se não responder: Deixe a competição natural fazer o trabalho. O Impulsionador tende a aceitar o novo quando vê que eleva o nível do grupo.",
+   "I": "O Conector provavelmente vai ser o primeiro a se aproximar do novo. Se não o fizer, é porque algo no novo o intimida ou porque sente que o lugar social dele no grupo está ameaçado. Peça que seja o \"anfitrião\": \"Acompanha ele hoje, explica como tudo funciona aqui\". É o papel natural dele e o empodera. Se não responder: Monte uma atividade onde os dois precisem cooperar obrigatoriamente. A conexão do Conector se ativa fazendo coisas junto.",
+   "S": "O Sustentador costuma ser o que mais sente a \"ruptura\" do equilíbrio. O grupo dele era previsível e seguro, e agora tem alguém que muda a dinâmica. Pode se mostrar distante ou desconfortável. Não mude a rotina por causa da chegada do novo. Mantenha para o Sustentador tudo o que puder igual: mesmo lugar, mesmo exercício, mesmos colegas. Se não responder: Dê tempo. O Sustentador tende a aceitar o novo gradualmente, à medida que ele se torna parte da rotina. Não force a integração.",
+   "C": "O Estrategista costuma observar o novo com curiosidade analítica: \"Como ele joga? Onde vai se posicionar? Como afeta o time?\". Tende a não chegar logo porque está processando as informações. Dê informação sobre o novo: \"Vem de tal clube, joga em tal posição\". Os dados o tranquilizam e permitem que ele posicione o novo no mapa mental. Se não responder: Deixe a integração ser orgânica. O Estrategista costuma se aproximar do novo quando tem informação suficiente. Não apresse."
+  },
+  "se-congela": {
+   "D": "Raro em um Impulsionador, mas quando trava é porque a pressão o sobrecarregou além do que consegue lidar. Sente que se errar na frente de todos, perde o status. Dê uma instrução concreta e simples: \"Na próxima bola, chuta ao gol\". Uma única ação clara o desbloqueia. Se não responder: Mude temporariamente o papel dele para algo menos exposto. Quando fizer uma boa jogada a partir daí, devolva à posição original. Ele precisa de uma pequena vitória para se reativar.",
+   "I": "O Conector costuma travar quando sente que o erro vai deixá-lo \"em evidência\" diante do grupo. O bloqueio dele tende a ser social: tem medo de passar vergonha na frente dos colegas, não do erro em si. Retire a pressão do resultado: \"Não importa se sai ou não, quero que você tente\". A permissão para errar o desbloqueia. Se não responder: Coloque-o em uma jogada coletiva onde o sucesso seja do time, não individual. O Conector se reativa quando a responsabilidade é compartilhada.",
+   "S": "O Sustentador costuma travar porque a pressão do jogo quebra a base de segurança. O que no treino era previsível, no jogo é incerto. O sistema dele tende a se proteger ficando parado. Reduza a pressão com informação: \"Faz o mesmo que no treino, nada diferente\". Conectá-lo ao que já conhece o desbloqueia. Se não responder: Tire-o alguns minutos se possível. Diga: \"Respira, observa como está o jogo, e quando estiver pronto volta\". O Sustentador se recupera com a pausa.",
+   "C": "O Estrategista costuma travar porque está sobreanalisando: \"Passo ou chuto? E se vier o adversário? Qual é a melhor opção?\". A mente dele trabalha mais rápido do que o corpo, e o corpo trava. Simplifique a tomada de decisão: \"Se você estiver livre, chuta. Se não, passa\". Reduzir as opções o desbloqueia. Se não responder: Diga: \"Para de pensar, joga\". Às vezes o Estrategista precisa de permissão explícita para desligar a análise e confiar no instinto."
+  },
+  "no-quiere-ser-centro": {
+   "D": "Muito raro em um Impulsionador. Se acontece, provavelmente ele se sente inseguro nessa atividade específica. Não quer se expor onde não se sente forte. Ofereça-lhe liderar algo onde se sinta seguro: \"Quer mostrar o exercício que você manda mais?\". O Impulsionador se expõe quando sabe que vai brilhar. Se não responder: Não force. Diga: \"Quando estiver pronto, a oportunidade está aqui\". O Impulsionador volta sozinho quando se sentir preparado.",
+   "I": "O Conector pode curtir a atenção social, mas não a atenção avaliativa. Se sente que estão \"examinando\" em vez de \"acompanhando\", se retrai. Transforme a exposição em algo social: \"Faz com o seu colega\" ou \"Explica para o grupo enquanto faz\". Se não responder: Deixe-o participar de um papel social: que escolha quem passa, que comente a jogada, que anime. É a forma dele estar presente sem estar exposto.",
+   "S": "Costuma ser natural no Sustentador. A forma de contribuir dele tende a ser pelo suporte, não pelo protagonismo. Forçá-lo a ser o centro vai contra a natureza dele e costuma fazê-lo sentir vulnerável. Proponha formas de liderança silenciosa: \"Garante que todos tenham o que precisam\" ou \"Você é o que mantém o ritmo\". Se não responder: Não insista. Busque outra forma de ele participar onde se sinta confortável. O Sustentador contribui mais a partir da zona de segurança do que da exposição forçada.",
+   "C": "O Estrategista tende a não querer se expor se não está seguro de que vai fazer bem. O padrão dele costuma ser alto e a ideia de errar em público gera muito desconforto. Dê tempo de preparação: \"Semana que vem te peço para explicar essa jogada ao grupo. Vai se preparando\". Com tempo, o Estrategista se sente seguro. Se não responder: Proponha que faça por escrito ou desenhado. O Estrategista se expressa melhor quando pode organizar as ideias antes de compartilhá-las."
+  },
+  "cambio-repentino": {
+   "D": "Um Impulsionador que apaga provavelmente perdeu algo que o fazia sentir poderoso: um papel, uma relação, uma segurança fora da quadra. A energia vital está indo para outra briga. Não pergunte \"o que aconteceu?\" de cara. Primeiro observe alguns dias. Se persistir, chegue com algo concreto: \"Estou te achando diferente, posso ajudar em algo?\". Se não responder: Fale com o adulto responsável (pai, mãe). A mudança persistente num Impulsionador costuma ser sinal de algo importante fora da quadra.",
+   "I": "Um Conector que se fecha costuma ser um sinal forte. A natureza dele tende a ser social, então se está quieto ou isolado, algo pode estar doendo no plano vincular: uma briga com amigos, uma mudança na família, ou bullying. Chegue pelo vínculo: \"Eu te conheço e sei que algo está acontecendo. Não precisa me contar, mas quero que saiba que estou aqui\". Se não responder: Contate o adulto responsável. A mudança sustentada num Conector costuma estar ligada a uma situação relacional que precisa de atenção fora da quadra.",
+   "S": "O Sustentador que muda de repente costuma estar mostrando que algo quebrou a base de segurança dele. Tende a ser o perfil que mais \"aguenta\" antes de mostrar desconforto, então se você já está vendo, provavelmente vem acumulando há um tempo. Mantenha a rotina o mais estável possível. No meio do que quer que esteja acontecendo lá fora, o esporte pode ser o refúgio de normalidade dele. Se não responder: Contate o adulto responsável com cuidado: \"Percebi que ele vem diferente essas últimas semanas, está tudo bem em casa?\". O Sustentador raramente pede ajuda. É preciso ir buscar.",
+   "C": "Um Estrategista que muda de comportamento pode estar processando internamente algo que não consegue resolver. A mente analítica dele pode estar em loop com uma situação sem solução lógica (um problema familiar, uma injustiça percebida). Ofereça espaço para organizar o que pensa: \"Quer me contar o que está passando pela cabeça? Às vezes ajuda dizer em voz alta\". Se não responder: Contate o adulto responsável. Mudanças sustentadas no Estrategista, especialmente se ficar irritado ou distante, costumam indicar uma situação que precisa de suporte profissional."
+  },
+  "derrota-grupal": {
+   "group": "O grupo inteiro está processando a derrota a partir do próprio perfil: os Impulsionadores provavelmente estão com raiva, os Conectores costumam sentir que falharam como time, os Sustentadores tendem a se fechar, e os Estrategistas estarão revisando cada erro. O clima coletivo está baixo. Não tente falar do jogo imediatamente depois de perder. Dê ao grupo alguns minutos de silêncio ou de descompressão livre antes de reuni-los. Se não responder: Não force a positividade. Às vezes o grupo precisa ficar triste um tempo. Diga: \"Hoje dói, e está tudo bem que doa. Amanhã começamos de novo\". A permissão para sentir a derrota é o primeiro passo para superá-la."
+  },
+  "acepta-ser-suplente": {
+   "D": "O Impulsionador costuma viver o banco como uma perda de controle e do seu lugar de protagonista. Ficar parado enquanto outros jogam tende a pesar muito para ele, e essa tensão costuma sair como irritação ou impaciência. Dê a ele um papel ativo no banco: peça que leia o jogo e te avise o que está acontecendo, por exemplo diga: quero os seus olhos no campo, o que você vê que podemos melhorar? Se não responder: Se ele continuar tenso, não exija que aceite de uma vez. Reconheça a vontade de jogar (dá para ver que você quer estar dentro e isso é bom) e dê tempo, o impulso dele se reorganiza quando sente que você conta com ele.",
+   "I": "O Conector costuma temer que estar no banco signifique que decepcionou ou que já não faz parte do grupo. Mais do que o papel, tende a doer nele sentir-se fora do vínculo. Confirme o lugar dele no time logo de cara: aproxime-se e diga hoje você começa de fora, mas é parte essencial disso, preciso de você conectando o grupo a partir do banco. Se não responder: Se você o notar apagado, priorize o vínculo antes do papel. Um gesto próximo, sentar-se um momento ao lado dele, devolve a sensação de pertencer, que é o que ele mais precisa.",
+   "S": "O Sustentador costuma aceitar o banco sem protestar, mas isso não quer dizer que não doa. Ele guarda o mal-estar em silêncio e pode acumulá-lo até aparecer mais adiante como desânimo. Antecipe o papel com calma e clareza para que não o pegue de surpresa: diga hoje você entra no segundo tempo, quero que esteja pronto e tranquilo para esse momento. Se não responder: Se ele responder com um está tudo bem e se fechar, respeite o silêncio sem dar por resolvido. Volte a procurá-lo em outro momento tranquilo, ele costuma se abrir quando sente que há confiança e nenhuma pressa.",
+   "C": "O Estrategista costuma precisar entender por que está no banco. Se não tem claro o critério, tende a ficar remoendo e pode concluir sozinho que fez algo errado ou que não é bom o bastante. Explique o motivo de forma concreta e sem rodeios: diga esta é uma decisão de time e de planejamento, não um julgamento sobre você, e te mostro o que estou buscando hoje. Se não responder: Se você o vir travado, remoendo, alivie a exigência interna dele. Lembre-o de que o papel de hoje não mede o valor dele e que entender leva tempo, sem pedir que resolva já."
+  },
+  "companero-se-destaca": {
+   "D": "O Impulsionador costuma viver a conquista do colega como uma competição que está perdendo. Seu instinto tende a ser mostrar na hora que ele também pode, e se não encontra como, se frustra. Canalize essa energia para um desafio próprio em vez de para o outro: você tem o seu próprio desafio hoje, vamos ver até onde você chega. Se não responder: Dê alguns minutos para que baixe a intensidade sem exigir que ele aplauda o colega. Quando voltar a se sentir capaz no que é dele, a comparação perde força sozinha.",
+   "I": "O Conector costuma sentir que o carinho e a atenção do grupo foram para outro, e tende a viver isso como se gostassem menos dele. Costuma doer mais o deslocamento social do que o resultado. Devolva o lugar dele no grupo com algo genuíno: a sua energia é a que levanta o time, isso ninguém substitui. Se não responder: Não o obrigue a comemorar se ainda está difícil. Aproxime-se um momento a sós e faça-o sentir que o lugar dele com você continua intacto, sem pedir nada em troca.",
+   "S": "O Sustentador costuma guardar o incômodo e se afastar para o segundo plano sem dizer nada. Por fora parece que não o afeta, mas a irritação vai se acumulando e pode aparecer mais tarde de uma vez. Dê permissão para ele nomear o que sente, sem pressa: tudo bem que hoje tenha sido difícil para você, contar não tem nada de errado. Se não responder: Não o pressione a falar. Fique por perto e mantenha a rotina estável. A sua constância devolve a segurança melhor do que qualquer conversa forçada.",
+   "C": "O Estrategista costuma ficar analisando por que o outro fez melhor e se compara ponto por ponto. Essa conta interna tende a torná-lo duríssimo consigo mesmo. Tire o olhar da comparação e coloque-o no próprio processo dele: não se trata de quem é melhor, mas do que você pode aprender observando. Se não responder: Se continuar preso no ciclo, baixe a exigência. Lembre-o de que cada um avança no seu tempo e que entender leva seu processo, não há pressa."
+  },
+  "recibe-correccion": {
+   "D": "O Impulsionador costuma confundir a correção com perder terreno. Ele tende a precisar sentir que continua sendo capaz e que tem margem para melhorar por conta própria, não que o deixaram em má posição. Apresente a correção como um desafio, não como uma falha: você está quase lá com isto, falta um ajuste para ficar imparável. Se não responder: Se ele ficar na defensiva, baixe a intensidade e deixe ele tentar do jeito dele por alguns minutos. Quando perceber que o ajuste funciona, ele o adota sozinho e sem discutir.",
+   "I": "O Conector costuma sentir a correção como um golpe no vínculo, não na técnica. Tende a importar mais para ele se decepcionou você ou se ficou exposto do que o detalhe que você apontou. Corrija em particular e cuide do tom: comece pelo vínculo, a sua relação com o time está perfeita, vamos só lapidar este detalhe. Se não responder: Se ainda assim ele desanimar, ofereça um gesto de proximidade e espere. Para ele, sentir-se aceito pesa mais do que qualquer indicação, e é a partir daí que ele volta a escutar.",
+   "S": "O Sustentador costuma concordar e parecer levar numa boa, mas por dentro guarda o incômodo. Tende a evitar o atrito na hora e o desconforto aparece depois, de um jeito mais calado. Dê tempo e previsibilidade: avise com calma e sem surpresas, quero te mostrar uma coisa para a próxima, sem pressa. Se não responder: Se você notá-lo retraído, não insista na hora. Aproxime-se depois, num clima tranquilo, e dê espaço para que ele solte o que guardou.",
+   "C": "O Estrategista costuma entender a correção, mas tende a ficar preso no detalhe e a se tornar muito exigente consigo mesmo. Tem dificuldade para soltar o que aconteceu e voltar a jogar. Explique o porquê, que é o que mais o organiza: corrigimos isto porque te dá mais tempo para decidir na jogada. Se não responder: Se ele continuar dando voltas, dê um único ponto para pensar e deixe o resto para depois. Menos informação o libera para voltar a jogar tranquilo."
+  },
+  "gestiona-exito": {
+   "D": "O Impulsionador costuma sentir o sucesso com muita intensidade e precisa mostrá-lo. Quando já se sente vencedor, seu motor de esforço tende a afrouxar porque acredita que o desafio terminou. Proponha um novo objetivo assim que ele conquistar algo: você já conseguiu isso, agora vamos ver se sustenta esse nível até o final. Se não responder: Deixe-o aproveitar o momento sem corrigi-lo no calor da hora. Quando a euforia baixar, volte a procurá-lo com um desafio concreto e o motor dele se reativa sozinho.",
+   "I": "O Conector costuma viver o sucesso através dos outros e se entusiasma quando sente a comemoração do grupo. Levado por essa emoção, sem querer pode monopolizar o momento e deixar o resto do time de fora. Redirecione o entusiasmo dele para o time: que ótimo o seu gol, agora comemore com quem te deu o passe. Se não responder: Não o apague na frente do grupo. Mais tarde, a sós, lembre-o de como é lindo quando o time inteiro comemora junto, e que ele tem o dom de fazer isso acontecer.",
+   "S": "O Sustentador costuma viver o sucesso por dentro, sem mostrar demais. Mas ao sentir que a pressão diminuiu, pode relaxar demais e soltar a constância que vinha sustentando. Reconheça o bom momento dele com calma e dê continuidade: você está muito bem, vamos manter essa mesma forma de jogar no resto da partida. Se não responder: Não o pressione para que demonstre mais. Acompanhe-o em silêncio, por perto, e lembre-o com um gesto de que você confia que ele vai sustentar o nível dele sem se sobrecarregar.",
+   "C": "O Estrategista costuma analisar seu bom rendimento e pode se convencer de que já entendeu tudo. Ao sentir que não tem mais nada a melhorar, tende a baixar a guarda sem perceber. Valide a análise dele e abra uma nova pergunta: você jogou muito bem, o que acha que ainda poderia afinar? Se não responder: Dê espaço para que ele processe o bom momento no ritmo dele. Quando estiver pronto, proponha olhar juntos o próximo desafio sem tirar o mérito do que ele já conquistou."
+  },
+  "rol-referente": {
+   "D": "O Impulsionador costuma assumir o papel com vontade, mas pode vivê-lo como mandar mais do que como guiar. Se o grupo não responde à sua intensidade, sente isso como algo pessoal. Dê a ele uma missão de líder que dependa dos outros: hoje o seu trabalho é fazer com que seus colegas cheguem ao fim do exercício, não chegar você primeiro. Se não responder: Diminua a exposição por um tempo e dê a ele lideranças curtas e concretas. Quando sentir que consegue fazer bem, vai querer mais.",
+   "I": "O Conector costuma liderar com naturalidade a partir do vínculo, mas tende a pesar quando o papel implica colocar um limite ou decidir entre amigos. Ele não quer decepcionar ninguém. Defina o papel a partir da sua força: a sua tarefa de referência é fazer com que ninguém fique de fora, e isso você já faz muito bem. Se não responder: Deixe por enquanto a parte que ele aproveita e alivie a que o incomoda. Com o tempo, o papel mais completo vai pesar menos para ele.",
+   "S": "O Sustentador costuma preferir o segundo plano e fica desconfortável ao ficar exposto. Mesmo assim sustenta o grupo em silêncio, ainda que não busque isso. Nomeie a liderança que ele já exerce, sem pedir nada novo: quando você está, o grupo fica mais tranquilo, isso é liderar. Se não responder: Não o empurre para o centro. Deixe-o liderar do seu jeito, pelo lado, e respeite o ritmo dele para tomar mais espaço.",
+   "C": "O Estrategista costuma hesitar porque ainda não tem clareza do que se espera dele, e tende a preferir esperar a exercer o papel pela metade. Pesa para ele a ideia de errar na frente de todos. Explique o papel com clareza e por partes: ser referência aqui significa estas três coisas, nada mais. Se não responder: Proponha primeiro um papel mais concreto, algo que ele consiga entender e dominar. A confiança para liderar chega quando ele sente que compreende."
+  },
+  "expectativa-padres": {
+   "D": "O Impulsionador costuma transformar a expectativa em uma pressão por ganhar de qualquer jeito. Quando sente que o resultado define se decepcionou ou não os pais, pode se exigir demais e reagir com frustração diante de um erro. Devolva o foco para aquilo que ele controla: hoje não olho para o placar, olho para como você disputa cada bola. Se não responder: Se continuar jogando para a arquibancada, seja você quem diminui a importância do resultado nas suas palavras. Quando ele perceber que, para você, o valor dele não depende de ganhar, começa a soltar a pressão.",
+   "I": "O Conector costuma precisar sentir o orgulho dos pais para jogar leve. Uma cara séria lá de fora tende a desconectá-lo na hora, porque para ele render bem e ser amado estão unidos. Lembre-o de que o carinho dos pais não se ganha nem se perde em uma quadra: sua família te ama jogue como jogar, isso não está em jogo hoje. Se não responder: Se continuar preocupado com a arquibancada, ajude-o a se reconectar com o grupo em vez de com o lado de fora. Quando se sente parte do time, o olhar dos pais deixa de ser a única coisa que importa.",
+   "S": "O Sustentador costuma guardar a tensão por dentro e não a mostrar. Segue jogando calado, mas mais rígido, e a carga vai se acumulando até aparecer de repente em um momento ruim. Aproxime-se com calma e sem expô-lo para abrir a porta: se em algum momento o que vem de fora te pesar, você pode me contar tranquilo. Se não responder: Se não conseguir soltar a carga, não o force a falar. Mantenha um clima previsível e seguro ao redor dele, e dê tempo: confiar em você é o que depois permite que ele se abra.",
+   "C": "O Estrategista costuma se enfiar na própria cabeça tentando decifrar o que esperam dele. Tende a se autoexigir o dobro e a acabar jogando travado por medo de não estar à altura do que acredita que os adultos querem ver. Tire dele a pressão de ter que adivinhar expectativas e dê um objetivo claro e próprio: seu único trabalho hoje é ler bem o jogo, nada mais. Se não responder: Se continuar travado na sua análise, reduza as variáveis: uma única instrução simples por vez. Quando para de carregar com tudo o que acredita que esperam, volta a jogar solto."
+  },
+  "sube-categoria": {
+   "D": "O Impulsionador vinha sendo uma referência e agora é o novato entre os mais velhos. Perder esse lugar de protagonismo costuma mexer com a confiança dele, e ele pode esconder isso com raiva ou competindo demais para recuperar terreno. Dê a ele um objetivo concreto para a sua adaptação: nestas semanas o seu desafio é conquistar um lugar neste grupo, vamos acompanhar isso jogo a jogo. Se não responder: Se ele continuar tenso, tire a exigência de render já e deixe que ele se concentre em uma só coisa por atividade. Recuperar o controle aos poucos devolve a segurança a ele.",
+   "I": "O Conector deixou para trás o seu grupo de sempre e ainda não encontrou o seu lugar entre os novos. Mesmo cercado de colegas, ele costuma se sentir de fora, e isso tende a reduzir a vontade dele mais do que qualquer questão de jogo. Conecte-o com um colega da nova categoria que o receba bem: te apresento o Tomás, ele vai ser o seu parceiro esta semana. Se não responder: Se ele continuar recolhido, não o exponha diante do grupo. Aproxime-se em particular e mostre que você o quer ali, sentir-se esperado devolve a vontade a ele.",
+   "S": "O Sustentador costuma se desestabilizar com a mudança de rotina, de horários e de rostos conhecidos. Tende a recuar para o segundo plano e a sustentar o incômodo em silêncio, até que um dia tudo pesa de uma vez. Dê a ele previsibilidade sobre o que é novo: explique como vai ser a atividade e o que se espera dele, passo a passo. Se não responder: Se você o vê fechado, dê mais tempo a ele sem apressá-lo e pergunte em particular como ele está se sentindo. Para ele a mudança leva mais tempo, e isso está tudo bem.",
+   "C": "O Estrategista costuma estar lendo todo o cenário novo: o ritmo, os códigos do grupo, onde ele se encaixa. Enquanto processa pode parecer apagado ou hesitar antes de jogar, porque ainda não entende totalmente como funciona esta categoria. Dê a ele informação clara que o ajude a se posicionar: nesta categoria se joga mais rápido, então ganhe um segundo pensando antes de receber. Se não responder: Se ele continuar em dúvida, não o pressione a se soltar antes da hora. Quando terminar de entender o cenário novo, ele vai começar a jogar com confiança sozinho."
+  }
+ }
+};
+// <<< GENERATED:COACH_SITUATIONS
 
 // ─── Deterministic helpers for group balance (inline from groupBalance.ts) ──
 function computeAxisDistribution(players: Array<{ eje: string }>): Record<string, number> {
@@ -1246,8 +1818,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Canonical motor display names (Dinámico/Rítmico/Sereno), not internal
         // keys (Rápido/Medio/Lento) which are jargon the user never sees.
         const motorSummary = Object.entries(motorCounts).map(([k, v]) => `${v} ${canonicalMotorDisplay('D', k, promptLang)}`).join(', ');
-        // Player list uses per-session placeholders instead of real names.
-        const playerListForPrompt = allPlayers.map(p => placeholderForId(p.id)).join(', ');
+        // Player list uses per-session placeholders instead of real names, and is
+        // annotated with axis/motor/age so roster-composition questions ("¿cuáles
+        // de mis jugadores son Estrategas?", "arma duplas equilibradas") become
+        // answerable. Enterprise rosters are capped: 1000 bare placeholders are
+        // token noise, and the count is disclosed instead of silently truncated.
+        const ROSTER_LIST_CAP = 150;
+        const rosterLang = safeLang(promptLang);
+        const playerListForPrompt = allPlayers.slice(0, ROSTER_LIST_CAP)
+            .map(p => `${placeholderForId(p.id)}:${p.eje}/${canonicalMotorDisplay(p.eje, p.motor, rosterLang)}${p.child_age ? `,${p.child_age}a` : ''}`)
+            .join(', ')
+            + (allPlayers.length > ROSTER_LIST_CAP ? ` y ${allPlayers.length - ROSTER_LIST_CAP} jugadores más no listados` : '');
         // Team-level group awareness: list all groups so Gemini can ask for
         // clarification when the keyword matcher below doesn't fire.
         type GroupRowWithMembers = { id: string; name: string; group_members: Array<{ child_id: string }> | null };
@@ -1270,7 +1851,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? `\nGrupos de química del usuario (agrupaciones analíticas propias): ${chemGroups.map(g => `"${promptGroupName(g.name)}" (${(g.group_members ?? []).length})`).join(', ')}.`
             : '';
         const teamSummary = allPlayers.length > 0
-            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores: ${playerListForPrompt}.${groupsList}${chemGroupsList}`
+            ? `\n\nEQUIPO: ${allPlayers.length} jugadores. Distribución: ${axisSummary}. Motores: ${motorSummary}.\nJugadores (formato placeholder:eje/motor,edad): ${playerListForPrompt}.${groupsList}${chemGroupsList}`
             : '\n\nEl entrenador todavía no tiene jugadores registrados.';
 
         // ── Context injection based on message content ──────────────────
@@ -1316,14 +1897,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Re-fetch ai_sections on-demand for the child's CURRENT profile
             // (tenant-scoped: defense in depth, R12). mp.id is the CHILD id, so this
             // reads the same current_perfilamiento row that produced the player list.
-            const { data: reportRow } = await sb
-                .from('current_perfilamiento')
-                .select('ai_sections')
-                .eq('id', mp.id)
-                .eq('tenant_id', tenant.id)
-                .is('deleted_at', null)
-                .maybeSingle();
-            const ai = reportRow?.ai_sections;
+            // In the same round trip, fetch the child's perfilamiento HISTORY (#8):
+            // profile evolution anchors reads like "cambió de un día para el otro".
+            const [reportRes, histRes] = await Promise.all([
+                sb.from('current_perfilamiento')
+                    .select('ai_sections')
+                    .eq('id', mp.id)
+                    .eq('tenant_id', tenant.id)
+                    .is('deleted_at', null)
+                    .maybeSingle(),
+                sb.from('perfilamientos')
+                    .select('eje, motor, created_at')
+                    .eq('child_id', mp.id)
+                    .eq('tenant_id', tenant.id)
+                    .eq('status', 'resolved')
+                    .is('deleted_at', null)
+                    .order('created_at', { ascending: true })
+                    .limit(6),
+            ]);
+            const ai = reportRes.data?.ai_sections;
             let aiContext = '';
             if (ai && typeof ai === 'object') {
                 // Tolerant extraction: a malformed field is skipped, never thrown (E12).
@@ -1338,10 +1930,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         if (items.length) parts.push(`${label}: ${items.join(', ')}`);
                     }
                 };
-                pushStr('Resumen', a.resumenPerfil, 200);
-                pushStr('Combustible', a.combustible, 150);
-                pushStr('Lenguaje de intención', a.corazon, 150);
-                pushStr('Gestión del desajuste', a.reseteo, 150);
+                // Caps raised from 200/150 (the model worked from ~700 chars of a
+                // report the product already paid to generate); motorDesc + ecos
+                // added — ecos (how the pattern shows day to day) is exactly what
+                // the consultive questions should anchor on.
+                pushStr('Resumen', a.resumenPerfil, 500);
+                pushStr('Momento wow', a.wow, 300);
+                pushStr('Motor', a.motorDesc, 400);
+                pushStr('Combustible', a.combustible, 400);
+                pushStr('Lenguaje de intención', a.corazon, 400);
+                pushStr('Gestión del desajuste', a.reseteo, 400);
+                pushStr('Ecos en el día a día', a.ecos, 400);
                 pushArr('Palabras puente', a.palabrasPuente);
                 pushArr('Palabras a evitar', a.palabrasRuido);
                 aiContext = parts.length ? '\n' + parts.join('\n') : '';
@@ -1357,7 +1956,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
             const axisDisp = AXIS_DISPLAY[lang][mp.eje] ?? mp.eje;
             const secDisp = mp.eje_secundario ? (AXIS_DISPLAY[lang][mp.eje_secundario] ?? mp.eje_secundario) : 'N/A';
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${anonymize(ownScrubbed)}`;
+            // Profile evolution line (only when there is more than one resolved
+            // perfilamiento): lets the model reason about stability vs change.
+            const histRows = (histRes.data ?? []) as Array<{ eje: string; motor: string; created_at: string }>;
+            const historyLine = histRows.length > 1
+                ? `\n- Historial de perfilamientos (viejo → actual): ${histRows.map(r => `${String(r.created_at).slice(0, 7)} ${canonicalArchetype(r.eje, r.motor, lang)}`).join(' → ')}. El perfil vigente es el último; si cambió, considera qué pudo cambiar en su contexto.`
+                : '';
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${anonymize(ownScrubbed)}`;
         } else if (mentionedPlayers.length >= 2) {
             // Ambiguous: the message matches several players (e.g. two "Juan").
             const names = mentionedPlayers.map(p => placeholderForId(p.id)).join(', ');
@@ -1492,7 +2097,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         if (bestSituation) {
             const sitId = bestSituation.id;
-            const cards = SITUATION_CARDS_DATA[sitId];
+            // Cards are per-language now (an en/pt coach no longer gets the guide
+            // injected in Spanish); es is the fallback for any translation gap.
+            const cardsByLang = SITUATION_CARDS_DATA[safeLang(promptLang)] ?? SITUATION_CARDS_DATA.es;
+            const cards = cardsByLang[sitId] ?? SITUATION_CARDS_DATA.es[sitId];
             // On a thread's first turn the card is a hypothesis map for asking
             // better questions, not a recipe to recite (consultive mode).
             const cardUse = isFirstTurn
@@ -1505,8 +2113,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (targetEje && cards[targetEje]) {
                     extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}, perfil ${targetEje}${cardUse}):\n${cards[targetEje]}`;
                 } else {
-                    // No player/group context → give all 4 perspectives compactly.
-                    const all = Object.entries(cards).map(([eje, text]) => `- ${eje}: ${text}`).join('\n');
+                    // No player/group context → give every available perspective
+                    // compactly ('group' = the group-level card, e.g. derrota-grupal).
+                    const all = Object.entries(cards).map(([eje, text]) => `- ${eje === 'group' ? 'grupo' : eje}: ${text}`).join('\n');
                     extraContext += `\n\nGUÍA PARA ESTA SITUACIÓN (${sitId}${cardUse}):\n${all}`;
                 }
             }
