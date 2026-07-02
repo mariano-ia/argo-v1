@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Printer } from 'lucide-react';
+import { Printer, Link2, CheckCircle } from 'lucide-react';
 import { AXIS_COLORS, AXIS_LABELS, AXIS_CHIP } from '../../lib/designTokens';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
 import type {
@@ -58,6 +58,18 @@ const PRINT_LABEL: Record<Lang, string> = {
     es: 'Imprimir',
     en: 'Print',
     pt: 'Imprimir',
+};
+
+const SHARE_LABEL: Record<Lang, string> = {
+    es: 'Compartir',
+    en: 'Share',
+    pt: 'Compartilhar',
+};
+
+const COPIED_LABEL: Record<Lang, string> = {
+    es: 'Copiado',
+    en: 'Copied',
+    pt: 'Copiado',
 };
 
 const COMPOSITION_LABEL: Record<Lang, string> = {
@@ -304,6 +316,13 @@ export function PuentesReport({
 }: Props) {
     const c = getPuentesCopy(lang);
     const [activeIdx, setActiveIdx] = useState(0);
+    const [copied, setCopied] = useState(false);
+    const handleCopy = () => {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
 
     // Filter children that have ai_sections — those that don't are still
     // generating; we still show them in the switcher with a pending state.
@@ -327,12 +346,23 @@ export function PuentesReport({
                     <span className="font-[800] text-base text-argo-navy">Argo</span>
                     <span className="font-[100] text-base text-argo-grey">Method®</span>
                 </div>
-                <button
-                    onClick={() => window.print()}
-                    className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
-                >
-                    <Printer size={13} />{PRINT_LABEL[lang]}
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleCopy}
+                        className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
+                    >
+                        {copied
+                            ? <><CheckCircle size={13} className="text-green-600" />{COPIED_LABEL[lang]}</>
+                            : <><Link2 size={13} />{SHARE_LABEL[lang]}</>
+                        }
+                    </button>
+                    <button
+                        onClick={() => window.print()}
+                        className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
+                    >
+                        <Printer size={13} />{PRINT_LABEL[lang]}
+                    </button>
+                </div>
             </div>
 
             <div className="max-w-lg mx-auto px-4 py-8">

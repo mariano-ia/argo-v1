@@ -417,8 +417,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     if (notFound || !session) {
         return (
             <div className="min-h-screen bg-argo-neutral flex flex-col items-center justify-center p-6 text-center">
-                <div className="mb-6 flex items-center gap-1.5">
-                    <span className="font-[800] text-lg tracking-tight text-argo-navy">Argo</span>
+                <div className="mb-6 flex items-center tracking-tight">
+                    <span className="font-[800] text-lg text-argo-navy">Argo</span>
                     <span className="font-[100] text-lg text-argo-grey">Method®</span>
                 </div>
                 <p className="text-base font-semibold text-argo-navy mb-2">{preSessionT.notFound}</p>
@@ -508,10 +508,10 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
 
             {/* Top bar */}
             <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                    <span className="font-[800] text-base tracking-tight text-argo-navy">Argo</span>
+                <div className="flex items-center tracking-tight">
+                    <span className="font-[800] text-base text-argo-navy">Argo</span>
                     <span className="font-[100] text-base text-argo-grey">Method®</span>
-                                    </div>
+                </div>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={handleCopy}

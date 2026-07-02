@@ -100,7 +100,7 @@ const ArgoOneLanding: React.FC = () => {
             {/* ── Header (minimal, no competing CTA) ──────────────────── */}
             <header style={{ background: '#fff', borderBottom: '1px solid #E8E8ED' }}>
                 <div className="max-w-5xl mx-auto flex items-center justify-between" style={{ padding: '12px 20px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0' }}>
                         <span style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Argo</span>
                         <span style={{ fontSize: '18px', fontWeight: 100, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Method®</span>
                     </div>
@@ -255,7 +255,7 @@ const ArgoOneLanding: React.FC = () => {
 
             {/* ── Footer ──────────────────────────────────────────────── */}
             <footer style={{ padding: '20px', borderTop: '1px solid #E8E8ED', textAlign: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0', marginBottom: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F' }}>Argo</span>
                     <span style={{ fontSize: '13px', fontWeight: 100, color: '#1D1D1F' }}>Method®</span>
                 </div>
