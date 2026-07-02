@@ -227,30 +227,179 @@ function wordBoundaryTest(haystack: string, needle: string, caseSensitive = fals
     return new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegexStr(needle)}(?![\\p{L}\\p{N}])`, flags).test(haystack);
 }
 
-/** First names that are also everyday es/pt words; these require a capitalized
- *  proper-noun form so "hace mucho sol" doesn't trigger a player named "Sol". */
-export const COMMON_WORD_NAMES = new Set([
+// ─── Roster-name matching (roster-anchored, match-by-default, veto-not-gate) ──
+// Candidates are always names that exist in the tenant's roster, so a message
+// containing a roster name is overwhelmingly ABOUT that player. We therefore
+// MATCH by default (lowercase included) and only VETO a name that is also an
+// everyday word when grammatical context proves literal-noun use ("hace mucho
+// sol"). Capitalization is a soft PERSON signal, NEVER a requirement — the old
+// "require a capital" gate silently missed lowercase mentions (the Olivia bug).
+
+/** Names that are also everyday es/pt words. Matched by default; a common-noun
+ *  usage is vetoed by context (see classifyNameMention). A real proper name must
+ *  NEVER be added here just to silence a false positive — that is exactly what
+ *  broke 'olivia'. It belongs in PROPER_NAME_DENYLIST; the lint test enforces it. */
+export const COMMON_WORD_NAMES_ES_PT = new Set([
     'sol', 'luna', 'leon', 'rosa', 'mar', 'cruz', 'pilar', 'angel', 'luz', 'paz',
     'cielo', 'flor', 'vida', 'alba', 'nieve', 'estrella', 'azul', 'blanca', 'gloria',
     'victoria', 'esperanza', 'consuelo', 'soledad', 'rocio', 'perla', 'salvador',
-    'jesus', 'milagros', 'dolores', 'remedios', 'abril', 'mayo', 'aurora',
+    'jesus', 'milagros', 'dolores', 'remedios', 'abril', 'mayo', 'aurora', 'bella',
+    'ceu', 'estrela', 'vitoria', // pt-specific
+]);
+/** English word-names (the app also serves an en UI). */
+export const COMMON_WORD_NAMES_EN = new Set([
+    'sky', 'hope', 'grace', 'faith', 'sunny', 'summer', 'autumn', 'rain',
+    'star', 'joy', 'dawn', 'may', 'april', 'rose', 'pearl', 'crystal',
+]);
+/** Real proper names that must NEVER be classed as common words. The lint test
+ *  asserts none of these appears in the common-word sets, so the Olivia-class
+ *  regression (a lowercase real name silently missed) cannot ship again. */
+export const PROPER_NAME_DENYLIST = new Set([
+    'olivia', 'emma', 'mia', 'lucas', 'mateo', 'thiago', 'bruno', 'ciro', 'keven',
+    'kevin', 'ivan', 'jose', 'leo', 'mel', 'sofia', 'juan', 'ana', 'benjamin',
+    'martina', 'valentina', 'lautaro', 'joaquin', 'santiago', 'camila',
 ]);
 
-/**
- * Whether `name` (a player's first or full name, original casing) is mentioned
- * in `message`. Accent-insensitive. Single-word names that collide with common
- * words require the capitalized (proper-noun) form to avoid false positives.
- */
-export function nameIsMentioned(name: string, message: string): boolean {
-    if (!name || !message) return false;
-    const trimmed = name.trim();
-    const norm = normalizeName(trimmed);
-    const isSingle = !/\s/.test(trimmed);
-    if (isSingle && COMMON_WORD_NAMES.has(norm)) {
-        // Require the capitalized stored form in the original (un-normalized) text.
-        return wordBoundaryTest(message, trimmed, true);
+function commonWordSetFor(lang: string): Set<string> {
+    if (lang === 'en') return COMMON_WORD_NAMES_EN;
+    if (lang === 'es' || lang === 'pt') return COMMON_WORD_NAMES_ES_PT;
+    return new Set([...COMMON_WORD_NAMES_ES_PT, ...COMMON_WORD_NAMES_EN]); // unknown → union
+}
+
+// Determiners/quantifiers that, right before a name, mark literal-noun use.
+// NOTE: Spanish "a" is the PERSONAL A (a person marker), NOT an article, so it is
+// deliberately absent from the es/union set; in pt/en "a" IS an article.
+const DETERMINER_ES = ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'lo', 'del', 'al', 'mucho', 'mucha', 'muchos', 'muchas', 'poco', 'poca', 'tanto', 'tanta', 'esta', 'este', 'ese', 'esa', 'media', 'medio', 'hay', 'sin', 'con'];
+const DETERMINER_PT = ['o', 'a', 'os', 'as', 'um', 'uma', 'uns', 'umas', 'do', 'da', 'dos', 'das', 'no', 'na', 'nos', 'nas', 'faz', 'ha', 'muito', 'muita', 'pouco', 'pouca'];
+const DETERMINER_EN = ['the', 'a', 'an', 'much', 'no', 'some', 'under', 'over'];
+function determinerSetFor(lang: string): Set<string> {
+    if (lang === 'en') return new Set(DETERMINER_EN);
+    if (lang === 'pt') return new Set(DETERMINER_PT);
+    return new Set(DETERMINER_ES); // es + union: bias to es primary (keep personal-a matchable)
+}
+// Adjectives/quantifiers that can sit between a determiner and the noun ("un solo pilar").
+const ADJ_FILLER = new Set(['solo', 'sola', 'mismo', 'misma', 'buen', 'buena', 'gran', 'mejor', 'peor', 'unico', 'unica', 'simple', 'clear', 'real', 'bright', 'nice', 'great', 'good', 'totally']);
+
+// Person-intent cues (normalized substrings): presence flips a common-word name to a strong match.
+const PERSON_CUES = [
+    'perfil de', 'ficha de', 'arquetipo de', 'como motivo a', 'como ayudo a', 'como la ayudo', 'como lo ayudo', 'como hablo con', 'como trato a', 'trabajo con', 'trabajar con', 'dirijo a', 'motivar a', 'ayudar a', 'hablar con', 'hablarle a', 'decirle a', 'me preocupa', 'jugadora', 'jugador', 'deportista',
+    'profile of', 'talk to', 'how do i', 'how should i',
+    'falar com', 'como motivo', 'trabalho com', 'jogador', 'jogadora',
+];
+// Collocations that PROVE literal common-noun use of a name-word. Normalized at
+// load so accented forms ("señal de la cruz") match the accent-stripped message.
+const IDIOM_COLLOCATIONS: string[] = [
+    'hace sol', 'hacia sol', 'hace mucho sol', 'tomar sol', 'al sol', 'pleno sol', 'bajo el sol', 'rayos de sol', 'sol radiante',
+    'luna llena', 'media luna', 'luna nueva', 'luna de miel', 'claro de luna', 'bajo la luna',
+    'en paz', 'dejar en paz', 'descanse en paz', 'mas paz', 'haya mas paz', 'poco de paz', 'jugaron en paz',
+    'la cruz', 'señal de la cruz', 'cruz roja', 'santa cruz',
+    'una flor', 'en flor', 'flor de piel', 'color rosa', 'una rosa', 'rosa palido', 'regalaron una flor', 'regalamos una rosa',
+    'al mar', 'frente al mar', 'junto al mar', 'alta mar', 'mar adentro',
+    'la luz', 'se corto la luz', 'luz verde', 'a la luz', 'dar a luz', 'falto luz', 'faltou luz', 'se corto luz',
+    'al alba', 'de la mañana', 'todos al alba',
+    'como un leon', 'garra de un leon', 'como un angel', 'como un angel toda',
+    'la victoria', 'una victoria', 'merecian la victoria', 'de milagros', 'de la vida', 'asi es la vida', 'partido de milagros',
+    'del rocio', 'rocio de la', 'solo pilar', 'un solo pilar',
+    'en abril', 'de abril', 'hasta abril', 'para abril', 'en mayo', 'de mayo', 'hasta mayo', 'para mayo',
+    'la bella', 'bella jugada',
+    'a vitoria', 'uma vitoria', 'vitoria suada', 'o ceu', 'uma estrela', 'no ceu',
+    'i hope', 'we hope', 'you hope', 'they hope', 'hope she', 'hope he', 'hope they', 'hope to', 'hope the',
+    'with grace', 'real grace', 'such grace', 'moves with',
+    'have faith', 'keep faith', 'lost faith', 'more faith', 'need to have faith',
+    'sunny afternoon', 'sunny day', 'a sunny',
+    'over summer', 'summer break', 'this summer', 'last summer', 'in summer',
+    'clear sky', 'the sky', 'blue sky', 'sky was', 'a clear sky',
+].map(normalizeName);
+
+interface MsgToken { raw: string; norm: string; start: number; end: number; }
+/** Split into whole-word tokens (Unicode-safe) with raw form, normalized form,
+ *  and raw offsets. Word-splitting makes substring matches ("ana" in "mariana")
+ *  impossible by construction. */
+export function tokenizeMessage(raw: string): MsgToken[] {
+    const out: MsgToken[] = [];
+    const re = /[\p{L}\p{N}]+/gu;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(raw))) out.push({ raw: m[0], norm: normalizeName(m[0]), start: m.index, end: m.index + m[0].length });
+    return out;
+}
+// Anchored idiom check: the collocation must align with THIS occurrence (text
+// before ends with the idiom's left part, text after starts with its right part).
+// A fat symmetric window would let one occurrence's idiom ("a clear sky") wrongly
+// veto a later real mention ("...but sky needs to press higher").
+function idiomHitsHere(rawMsg: string, tok: MsgToken, nameNorm: string): boolean {
+    const before = normalizeName(rawMsg.slice(Math.max(0, tok.start - 24), tok.start));
+    const after = normalizeName(rawMsg.slice(tok.end, tok.end + 24));
+    for (const c of IDIOM_COLLOCATIONS) {
+        const idx = c.indexOf(nameNorm);
+        if (idx < 0) continue;
+        const pre = c.slice(0, idx);
+        const post = c.slice(idx + nameNorm.length);
+        if ((pre === '' || before.endsWith(pre)) && (post === '' || after.startsWith(post))) return true;
     }
-    return wordBoundaryTest(normalizeName(message), norm, true);
+    return false;
+}
+function isCapMidSentence(rawMsg: string, tokens: MsgToken[], i: number): boolean {
+    const tok = tokens[i];
+    if (!/^[A-ZÁÉÍÓÚÑÜ]/.test(tok.raw)) return false;
+    if (i === 0) return false; // sentence start
+    const between = rawMsg.slice(tokens[i - 1].end, tok.start);
+    if (/[.!?\n¿¡]/.test(between)) return false; // new sentence
+    return true;
+}
+
+export interface NameMentionMatch { match: boolean; confidence: 'strong' | 'weak'; }
+export interface NameMatchCtx { normMsg?: string; tokens?: MsgToken[]; siblingMatched?: boolean; }
+
+/**
+ * Whether the roster player `name` is referred to in `message`, and how confident.
+ * Accent-insensitive, lowercase-friendly. Multi-word and non-common names match on
+ * a word boundary. A name that is also an everyday word matches by default unless a
+ * determiner/idiom proves literal-noun use; a person cue or mid-sentence capital
+ * forces a strong match. Never requires capitalization. `lang` is the resolved UI
+ * language ('es'|'en'|'pt'); '' uses the union of all sets.
+ */
+export function classifyNameMention(name: string, message: string, lang = '', ctx: NameMatchCtx = {}): NameMentionMatch {
+    if (!name || !message) return { match: false, confidence: 'strong' };
+    const trimmed = name.trim();
+    const nameNorm = normalizeName(trimmed);
+    const isSingle = !/\s/.test(trimmed);
+    const normMsg = ctx.normMsg ?? normalizeName(message);
+
+    // Multi-word names are never common nouns → plain accent-insensitive boundary test.
+    if (!isSingle) {
+        return { match: wordBoundaryTest(normMsg, nameNorm, true), confidence: 'strong' };
+    }
+
+    const tokens = ctx.tokens ?? tokenizeMessage(message);
+    const occ: number[] = [];
+    for (let i = 0; i < tokens.length; i++) if (tokens[i].norm === nameNorm) occ.push(i);
+    if (occ.length === 0) return { match: false, confidence: 'strong' };
+
+    // Ordinary name (not a common word) → match by boundary, lowercase OK. This is
+    // the branch that fixes the Olivia class.
+    if (!commonWordSetFor(lang).has(nameNorm)) return { match: true, confidence: 'strong' };
+
+    // Common-word name → default MATCH, veto only on a positive literal-noun cue.
+    const personCue = ctx.siblingMatched === true || PERSON_CUES.some(c => normMsg.includes(c));
+    const detSet = determinerSetFor(lang);
+    let sawStrong = false, sawWeak = false;
+    for (const i of occ) {
+        const tok = tokens[i];
+        if (personCue || isCapMidSentence(message, tokens, i)) { sawStrong = true; continue; }
+        const prev = tokens[i - 1]?.norm ?? '';
+        const prev2 = tokens[i - 2]?.norm ?? '';
+        const detVeto = detSet.has(prev) || (ADJ_FILLER.has(prev) && detSet.has(prev2));
+        if (detVeto || idiomHitsHere(message, tok, nameNorm)) continue; // reject this occurrence
+        sawWeak = true;
+    }
+    if (sawStrong) return { match: true, confidence: 'strong' };
+    if (sawWeak) return { match: true, confidence: 'weak' };
+    return { match: false, confidence: 'strong' };
+}
+
+/** Boolean convenience wrapper over classifyNameMention (group/situation callers). */
+export function nameIsMentioned(name: string, message: string, lang = ''): boolean {
+    return classifyNameMention(name, message, lang).match;
 }
 
 // Vocabulary that must NOT be treated as an "unknown player name" by the
@@ -1065,20 +1214,36 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ── Context injection based on message content ──────────────────
         let extraContext = '';
         // Quality signals captured through the flow for best-effort telemetry (Wave E).
-        const qa = { contextMiss: false, groundtruthViolation: false, labelViolation: false, prohibitedHit: false, prohibitedAfterRetry: false };
+        const qa = { contextMiss: false, contextWeak: false, groundtruthViolation: false, labelViolation: false, prohibitedHit: false, prohibitedAfterRetry: false };
 
         // ── Player mention detection (accent-insensitive, homonym-safe) ─────
         // Prefer explicit full-name matches; only fall back to first names when
         // no full name was written. A first name shared by 2+ players is treated
         // as ambiguous (ask) rather than guessing the wrong child (E2/E3/E6).
+        // Roster names match by default (lowercase included); a name that is also
+        // an everyday word ("Sol"/"Paz") is only vetoed on literal-noun context —
+        // see classifyNameMention. Tokens/normMsg are computed once and reused.
+        const matchLang = safeLang(promptLang);
+        const matchCtx = { normMsg: normalizeName(trimmedMsg), tokens: tokenizeMessage(trimmedMsg) };
         const fullNameMatches = allPlayers.filter(p => {
             const full = p.child_name.trim();
-            return /\s/.test(full) && nameIsMentioned(full, trimmedMsg);
+            return /\s/.test(full) && classifyNameMention(full, trimmedMsg, matchLang, matchCtx).match;
         });
-        const firstNameMatches = allPlayers.filter(p => nameIsMentioned(p.child_name.trim().split(/\s+/)[0], trimmedMsg));
+        const firstNameResults = allPlayers.map(p => ({ p, r: classifyNameMention(p.child_name.trim().split(/\s+/)[0], trimmedMsg, matchLang, matchCtx) }));
+        const firstNameMatches = firstNameResults.filter(x => x.r.match).map(x => x.p);
         const mentionedSet = fullNameMatches.length > 0 ? fullNameMatches : firstNameMatches;
         const mentionedPlayers = mentionedSet.filter((p, i, a) => a.findIndex(q => q.id === p.id) === i);
         const mentionedPlayer = mentionedPlayers.length === 1 ? mentionedPlayers[0] : null;
+        // Telemetry: a recall-biased "weak" accept (a common-word name with no
+        // person cue and no literal-noun veto) — surfaced so a real player named
+        // Sol/Luna/Paz repeatedly landing here is visible to ops.
+        if (mentionedPlayer && !fullNameMatches.some(p => p.id === mentionedPlayer.id)) {
+            const chosen = firstNameResults.find(x => x.p.id === mentionedPlayer.id);
+            if (chosen?.r.confidence === 'weak') {
+                qa.contextWeak = true;
+                console.info(`[tenant-chat] weak name match: tenant=${tenant.id} player=${mentionedPlayer.id}`);
+            }
+        }
         // Capitalized tokens that aren't roster vocabulary ⇒ unknown proper noun.
         const unknownTokens = unknownNameTokens(trimmedMsg);
 
