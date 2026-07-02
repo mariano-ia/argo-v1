@@ -16,6 +16,16 @@ entrenador vuelve); se viene una feature de notas sobre el niño que debe
 alimentar esa misma memoria; encarar por etapas. Sobre el 10: se aprueba
 además el like/dislike del usuario sobre cada respuesta (item 18).
 
+Apuestas de producto: **aprobados: 11 (en fila, "muy importante"), 12, 13, 17,
+18**. **Descartado: 14** (postura del owner: no leer los mensajes de los
+clientes ni meterse ahí; no habrá detección server-side ni registro auditable
+de señales de derivación. La regla 12 del prompt sigue vigente: el modelo
+sigue manejando esos casos con calidez, pero sin detección ni log nuestro).
+**15 aprobado en concepto**: desarrollar una propuesta detallada del digest
+semanal antes de construir. **16 se agranda**: no solo arreglar el chat en
+mobile; pensar una versión exclusiva mobile de TODA la herramienta, quizás
+reducida (workstream de diseño nuevo, pendiente de exploración).
+
 ## 1. Quick wins (alto impacto, esfuerzo chico)
 
 1. **Trial cap por consulta, no por mensaje.** El cap de 10 cuenta cada mensaje
