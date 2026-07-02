@@ -46,11 +46,21 @@ async function resolveTenantContext(
 // ─── Inline AI provider (Vercel serverless can't import between api files) ──
 
 interface AIMessage { role: 'system' | 'user' | 'assistant'; content: string; }
-interface AIResponse { content: string; inputTokens: number; outputTokens: number; totalTokens: number; provider: 'gemini' | 'openai'; }
+interface AIResponse { content: string; inputTokens: number; outputTokens: number; cachedInputTokens: number; totalTokens: number; provider: 'gemini' | 'openai'; model: string; }
 
-function getCostUsd(r: AIResponse): number {
-    const rate = 0.15 / 1_000_000;
-    return r.inputTokens * rate + r.outputTokens * (0.60 / 1_000_000);
+// USD per 1M tokens, keyed by model. Cached input bills at a discount (Gemini
+// implicit caching ~75% off input; OpenAI cached input ~50% off). Rates as of
+// 2026-07; unknown models fall back to Flash rates rather than zero.
+const MODEL_RATES: Record<string, { input: number; cachedInput: number; output: number }> = {
+    'gemini-2.5-flash': { input: 0.30, cachedInput: 0.075, output: 2.50 },
+    'gemini-2.5-pro': { input: 1.25, cachedInput: 0.3125, output: 10.00 },
+    'gpt-4o-mini': { input: 0.15, cachedInput: 0.075, output: 0.60 },
+};
+
+function getCostUsd(model: string, inputTokens: number, outputTokens: number, cachedInputTokens = 0): number {
+    const rate = MODEL_RATES[model] ?? MODEL_RATES['gemini-2.5-flash'];
+    const freshInput = Math.max(0, inputTokens - cachedInputTokens);
+    return (freshInput * rate.input + cachedInputTokens * rate.cachedInput + outputTokens * rate.output) / 1_000_000;
 }
 
 async function callGemini(messages: AIMessage[], opts: { temperature: number; maxTokens: number; model: string }): Promise<AIResponse> {
@@ -87,7 +97,17 @@ async function callGemini(messages: AIMessage[], opts: { temperature: number; ma
     }
 
     const usage = data.usageMetadata ?? {};
-    return { content, inputTokens: usage.promptTokenCount ?? 0, outputTokens: usage.candidatesTokenCount ?? 0, totalTokens: usage.totalTokenCount ?? 0, provider: 'gemini' };
+    return {
+        content,
+        inputTokens: usage.promptTokenCount ?? 0,
+        outputTokens: usage.candidatesTokenCount ?? 0,
+        // Implicit-cache hits on the (mostly static) system prompt; needed for
+        // real cost accounting and to verify prompt caching is firing at all.
+        cachedInputTokens: usage.cachedContentTokenCount ?? 0,
+        totalTokens: usage.totalTokenCount ?? 0,
+        provider: 'gemini',
+        model: opts.model,
+    };
 }
 
 async function callOpenAI(messages: AIMessage[], opts: { temperature: number; maxTokens: number }): Promise<AIResponse> {
@@ -114,8 +134,10 @@ async function callOpenAI(messages: AIMessage[], opts: { temperature: number; ma
         content,
         inputTokens: data.usage?.prompt_tokens ?? 0,
         outputTokens: data.usage?.completion_tokens ?? 0,
+        cachedInputTokens: data.usage?.prompt_tokens_details?.cached_tokens ?? 0,
         totalTokens: data.usage?.total_tokens ?? 0,
         provider: 'openai',
+        model: 'gpt-4o-mini',
     };
 }
 
@@ -214,6 +236,50 @@ export const FORBIDDEN_OLD_LABELS = [
 ];
 
 const escapeRegexStr = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** Prohibited vocabulary (clinical, negative labeling, deterministic). The QA
+ *  scorer list (scripts/qa/lib/scoring.mjs) must stay a strict SUBSET of this
+ *  one — enforced by a unit test in scripts/qa/coach-helpers.test.ts. */
+export const PROHIBITED_WORDS = [
+    // Clinical/diagnostic
+    'déficit', 'deficit', 'trastorno', 'disorder', 'transtorno',
+    'diagnóstico', 'diagnostico', 'diagnosis', 'diagnóstica', 'diagnostica', 'diagnostic',
+    'patología', 'pathology', 'patologia', 'síndrome', 'syndrome', 'sindrome',
+    'tdah', 'adhd', 'autismo', 'autism', 'terapia', 'therapy',
+    'enfermedad', 'illness', 'doença', 'doenca',
+    'disfunción', 'disfuncion', 'dysfunction', 'disfunção', 'disfuncao',
+    'depresión', 'depresion', 'depression', 'depressão', 'depressao', 'bipolar',
+    'medicación', 'medicacion', 'medication', 'medicação', 'medicacao',
+    // Negative labeling
+    'agresivo', 'aggressive', 'agressivo', 'violento', 'violent',
+    'problemático', 'problematico', 'problematic',
+    'débil', 'weak', 'fraco', 'incapaz', 'incapable',
+    'fracaso', 'failure', 'fracasso', 'inútil', 'useless',
+    'vago', 'lazy', 'preguiçoso', 'torpe', 'clumsy',
+    'lento de mente', 'slow-minded', 'retrasado', 'retarded',
+    'anormal', 'abnormal', 'defecto', 'defect', 'defeito', 'condenado', 'fracasado',
+    // Deterministic
+    'siempre será', 'will always be', 'nunca podrá', 'will never',
+    'nació para', 'born to', 'está destinado', 'is destined',
+];
+
+/** Prohibited-word scan: single tokens use the accent-safe word boundary
+ *  (avoids "weak" firing on "tweak" or "vago" on "divagó" — each false
+ *  positive costs a full regeneration); multi-word phrases keep substring
+ *  matching. Exported for tests. */
+export function scanProhibited(text: string): string[] {
+    const lower = text.toLowerCase();
+    return PROHIBITED_WORDS.filter(w => w.includes(' ') ? lower.includes(w) : wordBoundaryTest(lower, w, true));
+}
+
+/** Leading [[modo:consultivo|directo]] telemetry tag: extract it, then strip
+ *  every occurrence from the visible text. Exported for tests. */
+const MODE_TAG_ANY_RE = /\[\[modo:(consultivo|directo)\]\]\s*/gi;
+export function extractModeTag(text: string): { mode: 'consultivo' | 'directo' | null; text: string } {
+    const m = /^\s*\[\[modo:(consultivo|directo)\]\]/i.exec(text);
+    const mode = m ? (m[1].toLowerCase() as 'consultivo' | 'directo') : null;
+    return { mode, text: text.replace(MODE_TAG_ANY_RE, '').replace(/^\s+/, '') };
+}
 
 /** Remove diacritics + lowercase for accent-insensitive comparisons. */
 export function normalizeName(s: string): string {
@@ -429,9 +495,9 @@ export function unknownNameTokens(message: string): string[] {
 // scopes the name-tied patterns to that child; the response text is already
 // rehydrated to real names, so the real first name is used here.
 const escapeDetStr = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-function buildDeterministicPatterns(playerName: string | null): RegExp[] {
-    const first = (playerName || '').trim().split(/\s+/)[0];
-    const namePart = first ? `${escapeDetStr(first)}|` : '';
+function buildDeterministicPatterns(playerNames: string[]): RegExp[] {
+    const firsts = Array.from(new Set(playerNames.map(n => (n || '').trim().split(/\s+/)[0]).filter(Boolean)));
+    const namePart = firsts.length ? `${firsts.map(escapeDetStr).join('|')}|` : '';
     return [
         new RegExp(`(?:${namePart}él|ella|el niño|la niña|el deportista)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
         new RegExp(`(?:${namePart}he|she|the athlete|the child)\\s+is\\s+a\\s+\\p{L}`, 'iu'),
@@ -995,46 +1061,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Message required' });
         }
 
-        // Fair use: increment AI query counter and check soft cap.
-        // Intentionally non-blocking (the soft cap is invisible to the user by
-        // design) and fail-open: a telemetry hiccup must never block a paying
-        // coach. We surface the signal to ops instead of enforcing here (R4/E14).
-        const { data: fairUseData, error: fairUseErr } = await sb.rpc('increment_ai_queries', { p_tenant_id: tenant.id });
-        if (fairUseErr) {
-            console.error('[tenant-chat] Fair use check error (failing open):', fairUseErr.message);
+        // Pre-AI gates run as ONE parallel batch (were 3-4 serial round trips,
+        // ~200-400ms of p50). The trial total is a cheap head count fired
+        // unconditionally and only consulted when plan === 'trial'. Check
+        // ordering below is unchanged: trial gates before rate limit.
+        const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
+        const [fairUseRes, planRes, trialCountRes, rateCountRes] = await Promise.all([
+            // Fair use: increment AI query counter and check soft cap.
+            // Intentionally non-blocking (the soft cap is invisible to the user
+            // by design) and fail-open: a telemetry hiccup must never block a
+            // paying coach; the signal goes to ops instead (R4/E14).
+            sb.rpc('increment_ai_queries', { p_tenant_id: tenant.id }),
+            sb.from('tenants').select('plan, trial_expires_at, roster_limit').eq('id', tenant.id).maybeSingle(),
+            sb.from('chat_messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('role', 'user'),
+            sb.from('chat_messages').select('id', { count: 'exact', head: true }).eq('tenant_id', tenant.id).eq('role', 'user').gt('created_at', oneHourAgo),
+        ]);
+        if (fairUseRes.error) {
+            console.error('[tenant-chat] Fair use check error (failing open):', fairUseRes.error.message);
         }
-        const fairUseExceeded = fairUseData?.fair_use_exceeded === true;
+        const fairUseExceeded = fairUseRes.data?.fair_use_exceeded === true;
         if (fairUseExceeded) {
             console.info(`[tenant-chat] Fair-use soft cap exceeded for tenant ${tenant.id} (non-blocking by design)`);
         }
 
         // Trial plan: check expiration + hard cap at 10 total user messages
-        const { data: tenantPlan } = await sb.from('tenants').select('plan, trial_expires_at, roster_limit').eq('id', tenant.id).maybeSingle();
+        const tenantPlan = planRes.data;
         if (tenantPlan?.plan === 'trial') {
-            // Check trial expiration
             if (tenantPlan.trial_expires_at && new Date(tenantPlan.trial_expires_at) < new Date()) {
                 return res.status(403).json({ error: 'trial_expired', message: 'Tu periodo de prueba ha finalizado. Actualiza tu plan para seguir usando el asistente.' });
             }
-            const { count: totalMessages } = await sb
-                .from('chat_messages')
-                .select('id', { count: 'exact', head: true })
-                .eq('tenant_id', tenant.id)
-                .eq('role', 'user');
-            if ((totalMessages ?? 0) >= 10) {
+            if ((trialCountRes.count ?? 0) >= 10) {
                 return res.status(403).json({ error: 'Trial message limit reached' });
             }
         }
 
         // Rate limiting: max 60 messages per tenant per hour
-        const oneHourAgo = new Date(Date.now() - 3600_000).toISOString();
-        const { count: recentCount } = await sb
-            .from('chat_messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('tenant_id', tenant.id)
-            .eq('role', 'user')
-            .gt('created_at', oneHourAgo);
-
-        if ((recentCount ?? 0) >= 60) {
+        if ((rateCountRes.count ?? 0) >= 60) {
             return res.status(429).json({ error: 'Rate limit exceeded. Try again later.' });
         }
 
@@ -1494,9 +1556,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         };
         const coachInstruction = noGreeting[safeLang(promptLang)];
 
+        // Machine-readable mode tag so ai_events can record whether the model
+        // explored or answered directly; stripped before display/storage.
+        const modeTagInstruction = `\n\nETIQUETA DE MODO (interna, obligatoria): comienza tu respuesta con exactamente una etiqueta en su propia línea: [[modo:consultivo]] si en este turno principalmente indagas (haces preguntas antes de dar la guía completa) o [[modo:directo]] si principalmente respondes. La etiqueta se elimina antes de mostrar la respuesta; nunca la menciones ni la expliques.`;
+
         const systemPrompt = (SYSTEM_PROMPTS[promptLang] ?? SYSTEM_PROMPTS.es)
             + coachInstruction
             + privacyInstruction
+            + modeTagInstruction
             + teamSummary
             + extraContext;
 
@@ -1537,63 +1604,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // cost/usage isn't under-counted (E13).
         let totalInputTokens = aiResult.inputTokens;
         let totalOutputTokens = aiResult.outputTokens;
+        let totalCachedTokens = aiResult.cachedInputTokens;
         let servedProvider = aiResult.provider; // tracks which provider produced the SERVED content (may change on retry)
+        let servedModel = aiResult.model;
+        // Extract + strip the [[modo:...]] telemetry tag before anything else
+        // sees the text. servedRaw keeps the pre-rehydration form (placeholders
+        // intact) to detect which players the reply actually discusses.
+        const firstTag = extractModeTag(aiResult.content);
+        const servedMode = firstTag.mode;
+        let servedRaw = firstTag.text;
         // Rehydrate placeholders with real names for display + storage.
-        let assistantContent = rehydrate(aiResult.content);
+        let assistantContent = rehydrate(servedRaw);
 
         // ── Post-processing: scan for prohibited words ────────────────────
-        // Mejora 3: expanded prohibited words (30+ terms)
-        const PROHIBITED_WORDS = [
-            // Clinical/diagnostic
-            'déficit', 'deficit', 'trastorno', 'disorder', 'transtorno',
-            'diagnóstico', 'diagnosis', 'diagnóstica', 'diagnostic',
-            'patología', 'pathology', 'patologia', 'síndrome', 'syndrome',
-            'tdah', 'adhd', 'autismo', 'autism', 'terapia', 'therapy',
-            // Negative labeling
-            'agresivo', 'aggressive', 'agressivo', 'violento', 'violent',
-            'problemático', 'problematic', 'problemático',
-            'débil', 'weak', 'fraco', 'incapaz', 'incapable',
-            'fracaso', 'failure', 'fracasso', 'inútil', 'useless',
-            'vago', 'lazy', 'preguiçoso', 'torpe', 'clumsy',
-            'lento de mente', 'slow-minded', 'retrasado', 'retarded',
-            // Deterministic
-            'siempre será', 'will always be', 'nunca podrá', 'will never',
-            'nació para', 'born to', 'está destinado', 'is destined',
-        ];
-        const contentLower = assistantContent.toLowerCase();
-        const foundProhibited = PROHIBITED_WORDS.filter(w => contentLower.includes(w));
-        // Deterministic-language scan flows through the SAME retry + safe-fallback
-        // path as prohibited words. Scoped to the mentioned player's real first name
-        // when a single player was matched (mirrors the ground-truth scoping below);
-        // otherwise only the standalone categorical phrases apply.
-        const detPatterns = buildDeterministicPatterns(mentionedPlayer ? mentionedPlayer.child_name : null);
+        // Word-boundary scan against the module-level PROHIBITED_WORDS list
+        // (kept a strict superset of the QA scorer's list; see the unit test).
+        const foundProhibited = scanProhibited(assistantContent);
+        // Every roster player the reply references via their {{Pn}} placeholder
+        // is "discussed": the deterministic-language and ground-truth checks
+        // cover each of them, not only the explicitly mentioned player (a
+        // multi-player answer can assert a fixed identity about any of them).
+        const discussedPlayers = allPlayers.filter(p => servedRaw.includes(placeholderForId(p.id)));
+        if (mentionedPlayer && !discussedPlayers.some(p => p.id === mentionedPlayer.id)) discussedPlayers.push(mentionedPlayer);
+        const detPatterns = buildDeterministicPatterns(discussedPlayers.map(p => p.child_name));
         const foundDeterministic = hasDeterministicLanguage(assistantContent, detPatterns);
 
         if (foundProhibited.length > 0 || foundDeterministic) {
             qa.prohibitedHit = qa.prohibitedHit || foundProhibited.length > 0 || foundDeterministic;
             if (foundProhibited.length > 0) console.warn('[tenant-chat] Prohibited words found in response:', foundProhibited.join(', '));
             if (foundDeterministic) console.warn('[tenant-chat] Deterministic language found in response');
-            // The retry sends the original (still-anonymized) assistant content
-            // back to Gemini, not the rehydrated one. Use aiResult.content which
-            // still has placeholders.
-            const retryMessages = [
-                ...aiMessages,
-                { role: 'assistant' as const, content: aiResult.content },
-                { role: 'user' as const, content: `SYSTEM: Tu respuesta anterior contenía lenguaje que no se permite${foundProhibited.length > 0 ? ` (palabras prohibidas: ${foundProhibited.join(', ')})` : ''}${foundDeterministic ? ` y afirmaciones deterministas sobre el niño ("X es un...", "siempre/nunca", "será", "destinado a")` : ''}. Reformula usando lenguaje probabilístico ("tiende a", "suele", "es probable que", "podría"); nunca afirmes una identidad fija sobre el niño. Recuerda: siempre desde la fortaleza, nunca desde el déficit.` },
+            // Slim rewrite call: fixing the wording doesn't need the roster or
+            // conversation context, so we send only a rewrite instruction plus
+            // the flagged (still-anonymized) text — ~80% less input than
+            // replaying the whole conversation. Localized so an en/pt thread
+            // never gets its reply flipped into Spanish. Output cap matches the
+            // original call so a long clean rewrite is never truncated (was 800).
+            const rl = safeLang(promptLang);
+            const REWRITE_SYS: Record<string, string> = {
+                es: 'Eres un editor de estilo de ArgoMethod®. Reescribes textos para entrenadores manteniendo el significado, el idioma y el formato, con lenguaje probabilístico ("tiende a", "suele", "podría"), siempre desde la fortaleza, sin términos clínicos ni etiquetas fijas sobre el niño. Los marcadores {{P1}}, {{P2}}... son nombres de jugadores: consérvalos exactamente como están. Responde SOLO con el texto reescrito.',
+                en: 'You are a style editor for ArgoMethod®. Rewrite texts for coaches keeping the meaning, language and format, using probabilistic language ("tends to", "often", "might"), always from strength, with no clinical terms or fixed labels about the child. Markers {{P1}}, {{P2}}... are player names: keep them exactly as they are. Reply ONLY with the rewritten text.',
+                pt: 'Você é um editor de estilo do ArgoMethod®. Reescreva textos para treinadores mantendo o significado, o idioma e o formato, com linguagem probabilística ("tende a", "costuma", "poderia"), sempre pela força, sem termos clínicos nem rótulos fixos sobre a criança. Os marcadores {{P1}}, {{P2}}... são nomes de jogadores: preserve-os exatamente. Responda APENAS com o texto reescrito.',
+            };
+            const REWRITE_ASK: Record<string, string> = {
+                es: `Reescribe el siguiente texto${foundProhibited.length > 0 ? ` eliminando estas palabras: ${foundProhibited.join(', ')}` : ''}${foundDeterministic ? `${foundProhibited.length > 0 ? ' y' : ''} quitando las afirmaciones deterministas sobre el niño ("es un...", "siempre", "nunca", "será", "destinado a")` : ''}. Mantén todo lo demás igual.`,
+                en: `Rewrite the following text${foundProhibited.length > 0 ? ` removing these words: ${foundProhibited.join(', ')}` : ''}${foundDeterministic ? `${foundProhibited.length > 0 ? ' and' : ''} removing deterministic claims about the child ("is a...", "always", "never", "will be", "destined to")` : ''}. Keep everything else the same.`,
+                pt: `Reescreva o texto a seguir${foundProhibited.length > 0 ? ` eliminando estas palavras: ${foundProhibited.join(', ')}` : ''}${foundDeterministic ? `${foundProhibited.length > 0 ? ' e' : ''} removendo as afirmações deterministas sobre a criança ("é um...", "sempre", "nunca", "será", "destinado a")` : ''}. Mantenha todo o resto igual.`,
+            };
+            const retryMessages: AIMessage[] = [
+                { role: 'system', content: REWRITE_SYS[rl] },
+                { role: 'user', content: `${REWRITE_ASK[rl]}\n\n${servedRaw}` },
             ];
             let cleaned: string | null = null;
             try {
-                const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 800, model: aiModel });
+                const retryResult = await callAI(retryMessages, { temperature: 0.3, maxTokens: 2000, model: aiModel });
                 totalInputTokens += retryResult.inputTokens;
                 totalOutputTokens += retryResult.outputTokens;
-                const candidate = rehydrate(retryResult.content);
+                totalCachedTokens += retryResult.cachedInputTokens;
+                const candidateTag = extractModeTag(retryResult.content);
+                const candidate = rehydrate(candidateTag.text);
                 // Re-scan the retried text; only accept it if it's actually clean (R5):
                 // free of BOTH prohibited words and deterministic language.
                 if (candidate
-                    && !PROHIBITED_WORDS.some(w => candidate.toLowerCase().includes(w))
+                    && scanProhibited(candidate).length === 0
                     && !hasDeterministicLanguage(candidate, detPatterns)) {
                     cleaned = candidate;
+                    servedRaw = candidateTag.text;
                     servedProvider = retryResult.provider;
+                    servedModel = retryResult.model;
                 }
             } catch (retryErr) {
                 console.warn('[tenant-chat] Prohibited-words retry failed:', retryErr instanceof Error ? retryErr.message : retryErr);
@@ -1612,6 +1689,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     pt: 'Prefiro reformular isso com mais cuidado. Você pode me contar um pouco mais sobre a situação para eu focar em como acompanhar melhor a criança?',
                 };
                 assistantContent = SAFE_FALLBACK[safeLang(promptLang)];
+                servedRaw = ''; // fallback references no players; keep ground truth consistent
             }
         }
 
@@ -1621,8 +1699,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // forward-only). Motor-level validation lives in the daily canary, where
         // controlled fixtures avoid the false positives that motor words
         // ("dinámico", "rítmico") would cause in free-form advice.
-        if (mentionedPlayer) {
-            const mp = mentionedPlayer;
+        {
+            // Runs for EVERY player the served reply references via their {{Pn}}
+            // placeholder (was: only the single explicitly mentioned player).
+            const finalDiscussed = allPlayers.filter(p => servedRaw.includes(placeholderForId(p.id)));
+            if (mentionedPlayer && !finalDiscussed.some(p => p.id === mentionedPlayer.id)) finalDiscussed.push(mentionedPlayer);
             const wrongAxis: Record<string, string[]> = {
                 D: ['conector', 'connector', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
                 I: ['impulsor', 'driver', 'sostén', 'sostenedor', 'sustainer', 'estratega', 'strategist'],
@@ -1636,66 +1717,95 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 D: ['impulsor', 'driver'], I: ['conector', 'connector'],
                 S: ['sostén', 'sostenedor', 'sustainer'], C: ['estratega', 'strategist'],
             };
-            const secondaryWords = mp.eje_secundario ? (axisWords[mp.eje_secundario] ?? []) : [];
-            const wrongLabels = (wrongAxis[mp.eje] ?? []).filter(w => !secondaryWords.includes(w));
-            const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
+            const gtLang = safeLang(promptLang);
+            // The note IS shown to the coach (localized), so the real name is fine here.
+            const NOTE: Record<string, (n: string, a: string, e: string, m: string) => string> = {
+                es: (n, a, e, m) => `_Nota: el perfil registrado de ${n} corresponde a un patrón ${a} (eje ${e}, motor ${m}). Las recomendaciones se basan en ese perfil._`,
+                en: (n, a, e, m) => `_Note: ${n}'s recorded profile corresponds to a ${a} pattern (axis ${e}, engine ${m}). Recommendations are based on that profile._`,
+                pt: (n, a, e, m) => `_Nota: o perfil registrado de ${n} corresponde a um padrão ${a} (eixo ${e}, motor ${m}). As recomendações se baseiam nesse perfil._`,
+            };
+            const playerNote = (mp: typeof allPlayers[number]) =>
+                NOTE[gtLang](mp.child_name, canonicalArchetype(mp.eje, mp.motor, gtLang), mp.eje, canonicalMotorDisplay(mp.eje, mp.motor, gtLang));
             const sentences = assistantContent.split(/[.!?]+/);
-            let factualError = false;
-            for (const sentence of sentences) {
-                const sLower = sentence.toLowerCase();
-                if (sLower.includes(playerNameLower) && wrongLabels.some(w => sLower.includes(w))) {
-                    factualError = true;
-                    break;
+            const notes: string[] = [];
+            for (const mp of finalDiscussed) {
+                const secondaryWords = mp.eje_secundario ? (axisWords[mp.eje_secundario] ?? []) : [];
+                const wrongLabels = (wrongAxis[mp.eje] ?? []).filter(w => !secondaryWords.includes(w));
+                const playerNameLower = mp.child_name.toLowerCase().split(' ')[0];
+                let factualError = false;
+                for (const sentence of sentences) {
+                    const sLower = sentence.toLowerCase();
+                    if (sLower.includes(playerNameLower) && wrongLabels.some(w => sLower.includes(w))) {
+                        factualError = true;
+                        break;
+                    }
+                }
+                if (factualError) {
+                    qa.groundtruthViolation = true;
+                    // Log the placeholder, never the child's real name (R2 — no PII in logs).
+                    console.warn(`[tenant-chat] Ground truth violation for ${placeholderForId(mp.id)} (eje=${mp.eje}, motor=${mp.motor})`);
+                    notes.push(playerNote(mp));
                 }
             }
             const forbiddenLabel = FORBIDDEN_OLD_LABELS.find(l => assistantContent.toLowerCase().includes(l));
-            if (factualError || forbiddenLabel) {
-                qa.groundtruthViolation = factualError;
-                qa.labelViolation = !!forbiddenLabel;
-                // Log the placeholder, never the child's real name (R2 — no PII in logs).
-                console.warn(`[tenant-chat] Ground truth violation for ${placeholderForId(mp.id)} (eje=${mp.eje}, motor=${mp.motor})${forbiddenLabel ? ` forbidden-label="${forbiddenLabel}"` : ''}`);
-                const lang = safeLang(promptLang);
-                const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
-                const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
-                // The note IS shown to the coach, so the real name is fine here.
-                assistantContent += `\n\n_Nota: el perfil registrado de ${mp.child_name} corresponde a un patrón ${archetype} (eje ${mp.eje}, motor ${motorDisp}). Las recomendaciones se basan en ese perfil._`;
+            if (forbiddenLabel) {
+                qa.labelViolation = true;
+                console.warn(`[tenant-chat] Forbidden old label in response: "${forbiddenLabel}"`);
+                // Anchor the correction note to the single discussed player when
+                // unambiguous (mirrors the previous single-player behavior).
+                if (notes.length === 0 && finalDiscussed.length === 1) notes.push(playerNote(finalDiscussed[0]));
             }
+            if (notes.length > 0) assistantContent += `\n\n${notes.join('\n')}`;
         }
 
-        // ── Save both turns (only on success, so a failed AI call doesn't
-        // consume a trial query and leaves no dangling question in the thread) ──
-        await sb.from('chat_messages').insert([
-            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter },
-            { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens, plantel_id: teamFilter },
+        // Cost uses the served model's rates; when the retry switched models the
+        // blend is approximated by the served one (retry input is tiny post-slim).
+        const costUsd = getCostUsd(servedModel, totalInputTokens, totalOutputTokens, totalCachedTokens);
+
+        // ── Save both turns + telemetry in one parallel batch (only on success,
+        // so a failed AI call doesn't consume a trial query and leaves no
+        // dangling question in the thread). ai_events stays best-effort. ──
+        await Promise.all([
+            sb.from('chat_messages').insert([
+                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter },
+                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens, plantel_id: teamFilter },
+            ]).then(({ error }) => {
+                // Losing a turn breaks thread history + the trial count: log loudly.
+                if (error) console.error('[tenant-chat] chat_messages insert failed:', error.message);
+            }),
+            // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
+            // Stores only non-PII signals (placeholders/flags), never the child name.
+            // If the ai_events table isn't migrated yet, the insert simply no-ops.
+            (async () => {
+                try {
+                    await sb.from('ai_events').insert({
+                        tenant_id: tenant.id,
+                        thread_id: threadId,
+                        source: 'tenant-chat',
+                        provider: servedProvider,
+                        model: servedModel,
+                        lang: promptLang,
+                        tokens_in: totalInputTokens,
+                        tokens_out: totalOutputTokens,
+                        tokens_cached: totalCachedTokens,
+                        cost_usd: costUsd,
+                        latency_ms: Date.now() - t0,
+                        mentioned_player: !!mentionedPlayer,
+                        groundtruth_violation: qa.groundtruthViolation,
+                        label_violation: qa.labelViolation,
+                        prohibited_hit: qa.prohibitedHit,
+                        prohibited_after_retry: qa.prohibitedAfterRetry,
+                        context_miss: qa.contextMiss,
+                        fair_use_exceeded: fairUseExceeded,
+                        group_ids: coachGroupIds, // per-plantel attribution for coaches; null for owner/admin
+                        mode: servedMode, // consultivo | directo | null (model skipped the tag)
+                        situation_matched: bestSituation?.id ?? null, // measures the keyword matcher's hit rate (#21a)
+                    });
+                } catch (telemetryErr) {
+                    console.warn('[tenant-chat] ai_events telemetry insert failed (non-fatal):', telemetryErr instanceof Error ? telemetryErr.message : telemetryErr);
+                }
+            })(),
         ]);
-
-        // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
-        // Stores only non-PII signals (placeholders/flags), never the child name.
-        // If the ai_events table isn't migrated yet, the insert simply no-ops.
-        try {
-            await sb.from('ai_events').insert({
-                tenant_id: tenant.id,
-                thread_id: threadId,
-                source: 'tenant-chat',
-                provider: servedProvider,
-                model: aiModel,
-                lang: promptLang,
-                tokens_in: totalInputTokens,
-                tokens_out: totalOutputTokens,
-                cost_usd: getCostUsd({ ...aiResult, inputTokens: totalInputTokens, outputTokens: totalOutputTokens }),
-                latency_ms: Date.now() - t0,
-                mentioned_player: !!mentionedPlayer,
-                groundtruth_violation: qa.groundtruthViolation,
-                label_violation: qa.labelViolation,
-                prohibited_hit: qa.prohibitedHit,
-                prohibited_after_retry: qa.prohibitedAfterRetry,
-                context_miss: qa.contextMiss,
-                fair_use_exceeded: fairUseExceeded,
-                group_ids: coachGroupIds, // per-plantel attribution for coaches; null for owner/admin
-            });
-        } catch (telemetryErr) {
-            console.warn('[tenant-chat] ai_events telemetry insert failed (non-fatal):', telemetryErr instanceof Error ? telemetryErr.message : telemetryErr);
-        }
 
         return res.status(200).json({
             thread_id: threadId,
@@ -1703,7 +1813,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             usage: {
                 tokensIn: totalInputTokens,
                 tokensOut: totalOutputTokens,
-                costUsd: getCostUsd({ ...aiResult, inputTokens: totalInputTokens, outputTokens: totalOutputTokens }),
+                costUsd,
             },
             fair_use_exceeded: fairUseExceeded,
         });

@@ -221,3 +221,36 @@ test('lint: every common-word entry is normalized (lowercase, no accents)', () =
         }
     }
 });
+
+// ─── F0: prohibited-words scan (word boundaries + QA-scorer subset) ──────────
+// The runtime filter must be a strict SUPERSET of the QA scorer's list, or a
+// response can pass production and fail eval (or worse, the reverse).
+import { PROHIBITED_WORDS, scanProhibited, extractModeTag } from '../../api/tenant-chat.ts';
+import { PROHIBITED_WORDS as SCORER_PROHIBITED } from './lib/scoring.mjs';
+
+test('QA scorer prohibited list is a strict subset of the runtime filter', () => {
+    for (const w of SCORER_PROHIBITED) {
+        assert.ok(PROHIBITED_WORDS.includes(w), `scorer term "${w}" missing from runtime PROHIBITED_WORDS`);
+    }
+});
+
+test('scanProhibited: word boundaries kill the classic false positives', () => {
+    assert.deepEqual(scanProhibited('a small tweak to the drill'), []);          // not "weak"
+    assert.deepEqual(scanProhibited('el niño divagó un momento'), []);           // not "vago"
+    assert.deepEqual(scanProhibited('hablamos de la terapia deportiva'), ['terapia']); // real hit still fires
+    assert.deepEqual(scanProhibited('se siente débil hoy'), ['débil']);
+});
+
+test('scanProhibited: multi-word phrases still match as substrings', () => {
+    assert.deepEqual(scanProhibited('él siempre será así'), ['siempre será']);
+    assert.deepEqual(scanProhibited('parece lento de mente'), ['lento de mente']);
+});
+
+test('extractModeTag: pulls the leading tag and strips every occurrence', () => {
+    const r = extractModeTag('[[modo:consultivo]]\nHola, cuéntame más.');
+    assert.equal(r.mode, 'consultivo');
+    assert.equal(r.text, 'Hola, cuéntame más.');
+    const r2 = extractModeTag('Sin etiqueta al inicio [[modo:directo]] en el medio.');
+    assert.equal(r2.mode, null);
+    assert.equal(r2.text.includes('[[modo:'), false);
+});

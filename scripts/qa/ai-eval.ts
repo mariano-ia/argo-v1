@@ -60,22 +60,49 @@ export async function runEval(): Promise<number> {
   if (!token) {
     lines.push('- SKIP: no se pudo autenticar el tenant de prueba (revisar QA_TENANT_EMAIL/PASSWORD).');
   } else {
+    // tenant-chat returns { thread_id, message: { role, content }, usage }. Extract the text.
+    const extractAnswer = (body: { message?: unknown; reply?: unknown; content?: unknown }): string => {
+      const m = body.message;
+      return typeof m === 'string'
+        ? m
+        : String((m as { content?: unknown })?.content ?? body.reply ?? body.content ?? '');
+    };
+    const countQuestions = (t: string) => (t.match(/\?/g) ?? []).length;
+    const sendChat = async (message: string, threadId?: string) => {
+      const r = await fetch(`${BASE}/api/tenant-chat`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ message, lang: 'es', ...(threadId ? { thread_id: threadId } : {}) }),
+      });
+      const body = await r.json() as { thread_id?: string; message?: unknown; reply?: unknown; content?: unknown };
+      return { status: r.status, threadId: body.thread_id, answer: extractAnswer(body) };
+    };
     for (const c of CHAT_CASES) {
       const issues: string[] = [];
       try {
-        const r = await fetch(`${BASE}/api/tenant-chat`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ message: c.message, lang: 'es' }),
-        });
-        const body = await r.json() as { message?: unknown; reply?: unknown; content?: unknown };
-        // tenant-chat returns { thread_id, message: { role, content }, usage }. Extract the text.
-        const m = body.message;
-        const answer = typeof m === 'string'
-          ? m
-          : String((m as { content?: unknown })?.content ?? body.reply ?? body.content ?? '');
+        const { status, threadId, answer } = await sendChat(c.message);
         const s = scoreText(answer, { requireProbabilistic: c.requireProbabilistic });
-        if (r.status !== 200) issues.push(`status ${r.status}`);
+        if (status !== 200) issues.push(`status ${status}`);
         if (!s.ok) issues.push(...s.issues);
+        // Consultive-mode heuristics (F0): question count + substance.
+        if (c.expectQuestions) {
+          if (countQuestions(answer) < 2) issues.push(`expected exploratory questions, got ${countQuestions(answer)}`);
+          if (answer.length < 200) issues.push('exploratory turn too thin (must add value, not only ask)');
+        }
+        if (c.expectDirect && countQuestions(answer) > 1) {
+          issues.push(`expected a direct answer, got ${countQuestions(answer)} questions`);
+        }
+        if (c.followUp && threadId) {
+          const f = await sendChat(c.followUp.message, threadId);
+          const s2 = scoreText(f.answer, { requireProbabilistic: false });
+          if (f.status !== 200) issues.push(`follow-up status ${f.status}`);
+          if (!s2.ok) issues.push(...s2.issues.map(i => `follow-up: ${i}`));
+          if (c.followUp.expectNoReAsk && countQuestions(f.answer) > 1) {
+            issues.push(`follow-up re-asked (${countQuestions(f.answer)} questions) instead of delivering guidance`);
+          }
+          if (c.followUp.expectNoReAsk && f.answer.length < 300) {
+            issues.push('follow-up guidance too short after context was given');
+          }
+        }
       } catch (e) { issues.push(`request error: ${e}`); }
       const ok = issues.length === 0;
       if (!ok) failed++;
