@@ -19,7 +19,7 @@ const GoogleIcon: React.FC = () => (
 const Logo: React.FC = () => (
     <div className="flex items-center justify-center gap-1.5">
         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
         </span>
             </div>
 );
@@ -117,7 +117,7 @@ export const UserAuthGate: React.FC<Props> = ({ onAuthenticated }) => {
                             Ya completaste tus {MAX_PLAYS} experiencias
                         </h2>
                         <p style={{ fontWeight: 400, fontSize: '14px', color: '#86868B', lineHeight: 1.7, margin: 0 }}>
-                            Cada cuenta puede usar Argo Method hasta {MAX_PLAYS} veces. Si necesitas más sesiones, contáctanos.
+                            Cada cuenta puede usar ArgoMethod® hasta {MAX_PLAYS} veces. Si necesitas más sesiones, contáctanos.
                         </p>
                     </div>
                 ) : (

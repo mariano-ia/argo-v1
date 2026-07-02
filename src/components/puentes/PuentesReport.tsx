@@ -325,7 +325,7 @@ export function PuentesReport({
             <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
                 <div className="flex items-center tracking-tight">
                     <span className="font-[800] text-base text-argo-navy">Argo</span>
-                    <span className="font-[100] text-base text-argo-grey"> Method</span>
+                    <span className="font-[100] text-base text-argo-grey">Method®</span>
                 </div>
                 <button
                     onClick={() => window.print()}
@@ -441,10 +441,10 @@ export function PuentesReport({
                         <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-grey">{SectionIcons.info}</span>
                         <p className="text-[11px] text-argo-grey leading-relaxed m-0">
                             {lang === 'en'
-                                ? 'Argo Puentes is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
+                                ? 'ArgoPuente® is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
                                 : lang === 'pt'
-                                    ? 'Argo Puentes não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
-                                    : 'Argo Puentes no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con tu hijo en el deporte.'}
+                                    ? 'ArgoPuente® não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
+                                    : 'ArgoPuente® no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con tu hijo en el deporte.'}
                         </p>
                     </div>
                 </Card>

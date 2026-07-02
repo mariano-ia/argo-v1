@@ -326,7 +326,7 @@ export const TenantSignup: React.FC = () => {
                 <div className="text-center">
                     <Link to="/" className="inline-flex items-center justify-center gap-1.5 mb-2">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                                             </Link>
                     <p style={{ fontSize: '15px', fontWeight: 600, color: '#1D1D1F', marginBottom: '2px' }}>

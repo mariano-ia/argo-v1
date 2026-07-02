@@ -10,9 +10,9 @@ const SUGGESTIONS = [
 ];
 
 const WELCOME: Record<string, string> = {
-    es: 'Hola. Soy el asistente de Argo Method. Puedo responder preguntas sobre el producto, precios, cómo funciona y más. ¿En qué puedo ayudarte?',
-    en: 'Hi! I\'m the Argo Method assistant. I can answer questions about the product, pricing, how it works, and more. How can I help?',
-    pt: 'Olá! Sou o assistente do Argo Method. Posso responder perguntas sobre o produto, preços, como funciona e mais. Como posso ajudar?',
+    es: 'Hola. Soy el asistente de ArgoMethod®. Puedo responder preguntas sobre el producto, precios, cómo funciona y más. ¿En qué puedo ayudarte?',
+    en: 'Hi! I\'m the ArgoMethod® assistant. I can answer questions about the product, pricing, how it works, and more. How can I help?',
+    pt: 'Olá! Sou o assistente do ArgoMethod®. Posso responder perguntas sobre o produto, preços, como funciona e mais. Como posso ajudar?',
 };
 
 const PLACEHOLDER: Record<string, string> = {

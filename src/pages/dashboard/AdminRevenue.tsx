@@ -63,9 +63,9 @@ export const AdminRevenue: React.FC = () => {
                 </div>
             </div>
 
-            {/* ArgoOne */}
+            {/* ArgoOne® */}
             <div>
-                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">One-time (ArgoOne)</p>
+                <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">One-time (ArgoOne®)</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Stat label="Revenue total" value={`$${argo_one.total_revenue_usd.toFixed(2)}`} accent />
                     <Stat label="Compras" value={argo_one.purchase_count} />
@@ -74,7 +74,7 @@ export const AdminRevenue: React.FC = () => {
                 </div>
                 {oneMonths.length > 0 && (
                     <div className="bg-white rounded-lg border border-gray-200 mt-3 p-4">
-                        <p className="text-xs font-semibold text-gray-500 mb-2">Revenue ArgoOne por mes</p>
+                        <p className="text-xs font-semibold text-gray-500 mb-2">Revenue ArgoOne® por mes</p>
                         <div className="flex items-end gap-2 h-24">
                             {oneMonths.map(([month, amount]) => {
                                 const maxVal = Math.max(...oneMonths.map(([, v]) => v));

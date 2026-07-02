@@ -1,4 +1,4 @@
-// Portuguese (Brazilian) translations for Argo Method archetype content
+// Portuguese (Brazilian) translations for ArgoMethod® archetype content
 
 export interface ArchetypeTranslation {
   label: string;

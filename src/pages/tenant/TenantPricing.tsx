@@ -26,7 +26,7 @@ const T = {
         currentPlan: 'Tu plan actual',
         contactSales: 'Contactar ventas',
         familiesLabel: 'Padres y familias',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
         report: 'informe',
         reports: 'informes',
@@ -64,7 +64,7 @@ const T = {
         currentPlan: 'Your current plan',
         contactSales: 'Contact sales',
         familiesLabel: 'Parents & families',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
         report: 'report',
         reports: 'reports',
@@ -102,7 +102,7 @@ const T = {
         currentPlan: 'Seu plano atual',
         contactSales: 'Contatar vendas',
         familiesLabel: 'Pais e famílias',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
         report: 'relatório',
         reports: 'relatórios',
@@ -327,8 +327,8 @@ export const TenantPricing: React.FC = () => {
                     </div>
                     <div className="flex gap-3 flex-shrink-0">
                         {[
-                            { name: 'ArgoOne', price: '$9.99' },
-                            { name: 'ArgoOne +', price: '$12.99' },
+                            { name: 'ArgoOne®', price: '$9.99' },
+                            { name: 'ArgoOne+®', price: '$12.99' },
                         ].map(p => (
                             <button
                                 key={p.name}

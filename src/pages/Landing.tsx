@@ -172,35 +172,35 @@ const ROTATING_PROFILES = [
 // ─── FAQs per language ───────────────────────────────────────────────────────
 const FAQS: Record<Lang, { q: string; a: string }[]> = {
     es: [
-        { q: '¿Qué es Argo Method?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. Argo Method es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
+        { q: '¿Qué es ArgoMethod®?', a: 'No hay deportistas jóvenes incorrectos, hay deportistas que todavía no encontraron un adulto que los entienda. ArgoMethod® es una herramienta de perfilamiento conductual para atletas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia gamificada de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en contextos deportivos.' },
         { q: '¿Qué es el modelo DISC?', a: 'DISC es un modelo de comportamiento observable utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales: Impulsor (orientado a la acción y los resultados), Conector (orientado a las personas y la energía), Sostenedor (orientado a la estabilidad y el equipo) y Estratega (orientado al análisis y la precisión). Argo adapta este marco al deporte juvenil con lenguaje para niños, gamificación y una capa adicional (el Motor) que mide el ritmo de procesamiento de cada deportista.' },
         { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al atleta: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el menor, es una herramienta para que el adulto pueda acompañar mejor.' },
         { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
         { q: '¿Cuánto dura la experiencia?', a: 'Aproximadamente 10 minutos. Una aventura interactiva con mini-juegos y decisiones, presentada con temática náutica. Se responden a solas, en un ambiente tranquilo.' },
         { q: '¿Hay respuestas correctas o incorrectas?', a: 'No. Cada respuesta refleja una tendencia conductual, no un acierto ni un error. No se miden capacidades ni se emiten diagnósticos. Todas las respuestas son válidas.' },
-        { q: '¿Es un test psicológico?', a: 'No. Argo Method no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
+        { q: '¿Es un test psicológico?', a: 'No. ArgoMethod® no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
         { q: '¿Cuánto cuesta?', a: 'La experiencia es gratuita durante esta etapa.' },
         { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del menor, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' },
     ],
     en: [
-        { q: 'What is Argo Method?', a: 'There are no incorrect children. Only children who haven\'t yet found an adult who understands them. Argo Method is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 12-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
+        { q: 'What is ArgoMethod®?', a: 'There are no incorrect children. Only children who haven\'t yet found an adult who understands them. ArgoMethod® is a behavioral profiling tool for young athletes (ages 8 to 16) based on the DISC model. Through a 12-minute gamified experience, it generates a personalized report that helps the responsible adult understand how the child thinks, feels, and reacts in sports contexts.' },
         { q: 'What is the DISC model?', a: 'DISC is a behavioral observation model used worldwide for over 30 years. It describes four behavioral patterns: Driver (action and results oriented), Connector (people and energy oriented), Sustainer (stability and team oriented), and Strategist (analysis and precision oriented). Argo adapts this framework to youth sports with child-friendly language, gamification, and an additional layer (the Engine) that measures each athlete\'s processing pace.' },
         { q: 'Who receives the report?', a: 'The adult who accompanies the athlete: coaches, parents, or representatives of sports institutions. The report is sent by email when the experience ends. It\'s not a report for the child. It\'s a tool for the adult to better support them.' },
         { q: 'Does the child need to create an account?', a: 'No. Only a brief form with name, age, and sport is needed. No passwords, no downloads, no installations.' },
         { q: 'How long does the experience take?', a: 'About 12 minutes. An interactive adventure with mini-games and decisions, presented with a nautical theme. The child answers them alone, in a quiet environment.' },
         { q: 'Are there correct or incorrect answers?', a: 'No. Each answer reflects a behavioral tendency, not a right or wrong choice. No abilities are measured and no diagnoses are issued. All answers are valid.' },
-        { q: 'Is it a psychological test?', a: 'No. Argo Method does not replace sports psychologists or child development specialists. It\'s a behavioral observation tool that offers a starting point for individualizing sports coaching.' },
+        { q: 'Is it a psychological test?', a: 'No. ArgoMethod® does not replace sports psychologists or child development specialists. It\'s a behavioral observation tool that offers a starting point for individualizing sports coaching.' },
         { q: 'How much does it cost?', a: 'The experience is free during this stage.' },
         { q: 'What data do you collect?', a: 'Adult\'s name, email, child\'s name, age, and sport. Game answers are used exclusively to generate the report. We do not sell or share data with third parties.' },
     ],
     pt: [
-        { q: 'O que é o Argo Method?', a: 'Não existem crianças incorretas. Existem crianças que ainda não encontraram um adulto que as compreenda. Argo Method é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 10 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
+        { q: 'O que é o ArgoMethod®?', a: 'Não existem crianças incorretas. Existem crianças que ainda não encontraram um adulto que as compreenda. ArgoMethod® é uma ferramenta de perfilamento comportamental para jovens atletas (8 a 16 anos) baseada no modelo DISC. Através de uma experiência gamificada de 10 minutos, gera um relatório personalizado que ajuda o adulto responsável a entender como a criança pensa, sente e reage em contextos esportivos.' },
         { q: 'O que é o modelo DISC?', a: 'DISC é um modelo de comportamento observável utilizado em todo o mundo há mais de 30 anos. Descreve quatro padrões comportamentais: Impulsionador (orientado à ação e resultados), Conector (orientado às pessoas e energia), Sustentador (orientado à estabilidade e equipe) e Estrategista (orientado à análise e precisão). Argo adapta esse modelo ao esporte juvenil com linguagem para crianças, gamificação e uma camada adicional (o Motor) que mede o ritmo de processamento de cada atleta.' },
         { q: 'Para quem é o relatório?', a: 'Para o adulto que acompanha o atleta: treinadores, pais, mães ou representantes de instituições esportivas. O relatório chega por email ao finalizar a experiência. Não é um relatório para a criança. É uma ferramenta para que o adulto possa acompanhá-la melhor.' },
         { q: 'A criança precisa criar uma conta?', a: 'Não. Apenas um formulário breve com nome, idade e esporte. Sem senhas, sem downloads, sem instalar nada.' },
         { q: 'Quanto tempo dura a experiência?', a: 'Aproximadamente 10 minutos. Uma aventura interativa com mini-jogos e decisões, apresentada com temática náutica. A criança responde sozinha, em um ambiente tranquilo.' },
         { q: 'Existem respostas certas ou erradas?', a: 'Não. Cada resposta reflete uma tendência comportamental, não um acerto ou erro. Não se medem capacidades nem se emitem diagnósticos. Todas as respostas são válidas.' },
-        { q: 'É um teste psicológico?', a: 'Não. Argo Method não substitui psicólogos esportivos nem especialistas em desenvolvimento infantil. É uma ferramenta de observação comportamental que oferece um ponto de partida para individualizar o acompanhamento esportivo.' },
+        { q: 'É um teste psicológico?', a: 'Não. ArgoMethod® não substitui psicólogos esportivos nem especialistas em desenvolvimento infantil. É uma ferramenta de observação comportamental que oferece um ponto de partida para individualizar o acompanhamento esportivo.' },
         { q: 'Quanto custa?', a: 'A experiência é gratuita durante esta etapa.' },
         { q: 'Quais dados são coletados?', a: 'Nome do adulto, email, nome da criança, idade e esporte. As respostas do jogo são usadas exclusivamente para gerar o relatório. Não vendemos nem compartilhamos dados com terceiros.' },
     ],
@@ -702,7 +702,7 @@ const PricingSection: React.FC<{
             {/* Three columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
-                {/* ── COL 1: ArgoOne ─────────────────────────────────────── */}
+                {/* ── COL 1: ArgoOne® ─────────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
@@ -726,18 +726,18 @@ const PricingSection: React.FC<{
                     </button>
                 </div>
 
-                {/* ── COL 2: ArgoOne + Puente (destacada) ────────────────── */}
+                {/* ── COL 2: ArgoOne+® Puente (destacada) ────────────────── */}
                 <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
                     <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
                         {L('Recomendado', 'Recommended', 'Recomendado')}
                     </span>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span></p>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span><span style={{ fontWeight: 300 }}>®</span></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
                         {L('Informe individual del niño + Informe Puente con el adulto', "The child's individual report + Bridge report with the adult", 'Relatório individual da criança + Relatório Ponte com o adulto')}
                     </p>
                     <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em' }}>$12.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$14.99</span></p>
                     <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F', marginBottom: '8px' }}>
-                        {L('Todo el informe de ArgoOne, y además tu Puente con el niño:', 'The full ArgoOne report, plus your Bridge with the child:', 'Todo o relatório do ArgoOne, e mais a sua Ponte com a criança:')}
+                        {L('Todo el informe de ArgoOne®, y además tu Puente con el niño:', 'The full ArgoOne® report, plus your Bridge with the child:', 'Todo o relatório do ArgoOne®, e mais a sua Ponte com a criança:')}
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <ReportItem title={L('Tu estilo natural', 'Your natural style', 'Seu estilo natural')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
@@ -750,7 +750,7 @@ const PricingSection: React.FC<{
                         onClick={() => navigate('/one?kind=puente')}
                         style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
                     >
-                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span>
+                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span><span style={{ fontWeight: 300 }}>®</span>
                     </button>
                 </div>
 
@@ -762,7 +762,7 @@ const PricingSection: React.FC<{
                     </p>
                     <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
                         <ReportItem title={L('Dashboard completo', 'Full dashboard', 'Dashboard completo')} desc={L('Todo tu equipo y su evolución en un solo lugar.', 'Your whole team and their growth in one place.', 'Todo o seu time e sua evolução em um só lugar.')} />
-                        <ReportItem title={L('El informe de cada niño', "Each child's report", 'O relatório de cada criança')} desc={L('El mismo informe individual de ArgoOne, para todo tu equipo.', 'The same individual report as ArgoOne, for your whole team.', 'O mesmo relatório individual do ArgoOne, para todo o seu time.')} />
+                        <ReportItem title={L('El informe de cada niño', "Each child's report", 'O relatório de cada criança')} desc={L('El mismo informe individual de ArgoOne®, para todo tu equipo.', 'The same individual report as ArgoOne®, for your whole team.', 'O mesmo relatório individual do ArgoOne®, para todo o seu time.')} />
                         <ReportItem title={L('Predictor Conductual', 'Behavioral Predictor', 'Preditor Comportamental')} desc={L('Qué hacer en cada situación real del deporte.', 'What to do in every real situation in their sport.', 'O que fazer em cada situação real do esporte.')} />
                         <ReportItem title={L('Argo Coach', 'Argo Coach', 'Argo Coach')} desc={L('Un consultor con IA para tus dudas sobre cada jugador.', 'An AI consultant for your questions about each player.', 'Um consultor com IA para suas dúvidas sobre cada jogador.')} />
                         <ReportItem title={L('Planteles y grupos', 'Teams and groups', 'Plantéis e grupos')} desc={L('Organiza tu institución por equipos y categorías, sin límite.', 'Organize your institution by teams and categories, no limit.', 'Organize sua instituição por equipes e categorias, sem limite.')} />
@@ -831,7 +831,7 @@ export const Landing: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
                     <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1.5" style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                                             </button>
                     <div className="flex items-center gap-3">
@@ -1007,7 +1007,7 @@ export const Landing: React.FC = () => {
                             <div>
                                 <SectionLabel>{L('La herramienta · Dos experiencias', 'The tool · Two experiences', 'A ferramenta · Duas experiências')}</SectionLabel>
                                 <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.08, letterSpacing: '-0.025em' }}>
-                                    {L('Como funciona el Método Argo', 'How the Argo Method works', 'Como funciona o Método Argo')}
+                                    {L('Como funciona el Método Argo', 'How the ArgoMethod® works', 'Como funciona o Método Argo')}
                                 </h2>
                                 <div className="mt-10 space-y-7">
                                     <div>
@@ -1436,7 +1436,7 @@ export const Landing: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                         <CoppaBadge />
                     </div>

@@ -22,7 +22,7 @@ export const NotFound: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center">
                     <Link to="/" className="flex items-center gap-1.5 no-underline">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                     </Link>
                 </div>

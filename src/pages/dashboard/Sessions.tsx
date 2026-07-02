@@ -71,7 +71,7 @@ interface LeadRow {
 function mergeRows(sessions: SessionRow[], leads: LeadRow[], puentesPurchases: PuentesPurchaseLite[]): UnifiedRow[] {
     const sessionEmails = new Set(sessions.map(s => s.adult_email?.toLowerCase()));
     // "Purchased" is keyed by the parent's email, not by source_session_id.
-    // Under the new model a single Argo Puentes purchase covers all the
+    // Under the new model a single ArgoPuente® purchase covers all the
     // parent's children, and the source_session_id only flags which child
     // session triggered the original CTA — it does NOT mean "this parent
     // paid". Matching by recipient_email keeps the dashboard truthful even
@@ -276,7 +276,7 @@ export const Sessions: React.FC = () => {
 
     const handleGrantPuentesFree = async (row: UnifiedRow) => {
         if (row.status !== 'completed' || row.puentes_state === 'purchased') return;
-        const confirm = window.confirm(`¿Invitar gratis a Argo Puentes a ${row.email}? Se le enviará un email con acceso completo sin pago.`);
+        const confirm = window.confirm(`¿Invitar gratis a ArgoPuente® a ${row.email}? Se le enviará un email con acceso completo sin pago.`);
         if (!confirm) return;
         setPuentesFreeId(row.id);
         try {
@@ -297,7 +297,7 @@ export const Sessions: React.FC = () => {
                     ? { ...r, puentes_state: 'purchased' }
                     : r));
             } else if (res.status === 409 && data.magic_link) {
-                setPuentesFreeMsg({ ok: true, detail: 'Ya tenía Argo Puentes activo' });
+                setPuentesFreeMsg({ ok: true, detail: 'Ya tenía ArgoPuente® activo' });
                 setRows(prev => prev.map(r => r.email?.toLowerCase() === row.email?.toLowerCase()
                     ? { ...r, puentes_state: 'purchased' }
                     : r));
@@ -416,7 +416,7 @@ export const Sessions: React.FC = () => {
                 <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl text-sm font-medium shadow-lg ${
                     puentesInviteMsg.ok ? 'bg-argo-violet-500 text-white' : 'bg-red-600 text-white'
                 }`}>
-                    {puentesInviteMsg.ok ? 'Invitación a Argo Puentes enviada' : `Error: ${puentesInviteMsg.detail || 'desconocido'}`}
+                    {puentesInviteMsg.ok ? 'Invitación a ArgoPuente® enviada' : `Error: ${puentesInviteMsg.detail || 'desconocido'}`}
                 </div>
             )}
             {puentesFreeMsg && (
@@ -452,7 +452,7 @@ export const Sessions: React.FC = () => {
                         className="px-3 py-2 text-sm border border-argo-border rounded-lg bg-white focus:outline-none"
                     >
                         <option value="">Todas las cuentas</option>
-                        <option value="_none">Sin tenant (ArgoOne)</option>
+                        <option value="_none">Sin tenant (ArgoOne®)</option>
                         {tenantList.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                     <button
@@ -514,7 +514,7 @@ export const Sessions: React.FC = () => {
                                                 ) : row.tenant_id ? (
                                                     <span className="text-xs font-medium text-gray-700 truncate max-w-[120px] block">{tenantMap[row.tenant_id] ?? '—'}</span>
                                                 ) : (
-                                                    <span className="text-[10px] text-gray-400">ArgoOne</span>
+                                                    <span className="text-[10px] text-gray-400">ArgoOne®</span>
                                                 )}
                                             </td>
                                             <td className="px-5 py-3 text-argo-grey">{row.email}</td>
@@ -573,7 +573,7 @@ export const Sessions: React.FC = () => {
                                                     </button>
                                                     {row.puentes_state === 'purchased' ? (
                                                         <span
-                                                            title="Argo Puentes activo (compró o invitado free)"
+                                                            title="ArgoPuente® activo (compró o invitado free)"
                                                             className="text-green-600 p-1 inline-flex items-center"
                                                         >
                                                             <ShoppingBag size={14} />
@@ -591,7 +591,7 @@ export const Sessions: React.FC = () => {
                                                             <button
                                                                 onClick={() => handleSendPuentesInvite(row)}
                                                                 disabled={puentesInviteId === row.id || !row.email}
-                                                                title="Enviar invitación a Argo Puentes (con pago)"
+                                                                title="Enviar invitación a ArgoPuente® (con pago)"
                                                                 className="text-argo-grey/40 hover:text-argo-violet-500 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                             >
                                                                 {puentesInviteId === row.id
@@ -603,7 +603,7 @@ export const Sessions: React.FC = () => {
                                                         <button
                                                             onClick={() => handleGrantPuentesFree(row)}
                                                             disabled={puentesFreeId === row.id || !row.email}
-                                                            title="Invitar free a Argo Puentes (sin pago)"
+                                                            title="Invitar free a ArgoPuente® (sin pago)"
                                                             className="text-argo-grey/40 hover:text-emerald-600 transition-colors p-1 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             {puentesFreeId === row.id

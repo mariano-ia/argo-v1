@@ -12,7 +12,7 @@ const NAV_ITEMS = [
     { to: '/admin/tenants',   label: 'Tenants',   icon: Building2 },
     { to: '/admin/ai-usage',  label: 'Consumo IA', icon: Cpu },
     { to: '/admin/revenue',   label: 'Revenue',   icon: DollarSign },
-    { to: '/admin/argo-one',  label: 'ArgoOne',  icon: ShoppingBag },
+    { to: '/admin/argo-one',  label: 'ArgoOne®',  icon: ShoppingBag },
     { to: '/admin/contactos', label: 'Contactos', icon: AtSign },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
     { to: '/admin/health',    label: 'Health',    icon: Activity },
@@ -43,7 +43,7 @@ export const Dashboard: React.FC = () => {
                 <div className={`flex items-center ${isCollapsed ? 'justify-center h-14 px-0' : 'gap-1 px-6 pt-7 pb-8'}`}>
                     <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>A</span>
-                        {!isCollapsed && <><span style={{ fontWeight: 800 }}>rgo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span></>}
+                        {!isCollapsed && <><span style={{ fontWeight: 800 }}>rgo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span></>}
                     </span>
                     {!isCollapsed && (
                         <span className="ml-1.5 text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">admin</span>
@@ -141,7 +141,7 @@ export const Dashboard: React.FC = () => {
                         <Menu size={20} />
                     </button>
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
                     <span className="text-[9px] font-semibold bg-argo-violet-100 text-argo-violet-500 px-1.5 py-0.5 rounded tracking-wide">admin</span>
                 </div>

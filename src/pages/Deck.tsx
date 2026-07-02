@@ -13,7 +13,7 @@ const T = {
             headlineA: 'Entrenamos a personas.',
             headlineB: 'No las conocemos.',
             subhead:
-                'Argo Method traduce cincuenta años de ciencia conductual al deporte infantil. Un sistema que el niño juega y el adulto entiende.',
+                'ArgoMethod® traduce cincuenta años de ciencia conductual al deporte infantil. Un sistema que el niño juega y el adulto entiende.',
             beforeArgo: 'Antes de Argo',
             leftTitle: 'Lo que un coach sabe hoy de un niño.',
             withArgo: 'Con Argo',
@@ -170,7 +170,7 @@ const T = {
         },
         dashboard: { team: 'Equipo Sub-12' },
         email: {
-            from: 'De: Argo Method',
+            from: 'De: ArgoMethod®',
             subject: 'El perfil de Joaquín está listo',
             archetype: 'Sostenedor Rítmico',
             body: 'Joaquín tiende a leer al grupo antes de moverse…',
@@ -183,7 +183,7 @@ const T = {
             headlineA: 'We train people.',
             headlineB: 'We don\'t know them.',
             subhead:
-                'Argo Method translates fifty years of behavioral science into youth sport. A system the child plays and the adult understands.',
+                'ArgoMethod® translates fifty years of behavioral science into youth sport. A system the child plays and the adult understands.',
             beforeArgo: 'Before Argo',
             leftTitle: 'What a coach knows about a child today.',
             withArgo: 'With Argo',
@@ -340,7 +340,7 @@ const T = {
         },
         dashboard: { team: 'Under-12 team' },
         email: {
-            from: 'From: Argo Method',
+            from: 'From: ArgoMethod®',
             subject: 'Joaquín\'s profile is ready',
             archetype: 'Rhythmic Sustainer',
             body: 'Joaquín tends to read the group before he moves…',
@@ -405,7 +405,7 @@ const Nav: React.FC = () => {
             <Link to="/" className="flex items-center gap-2 text-argo-navy">
                 <span style={{ fontSize: 18, letterSpacing: '-0.02em' }}>
                     <span style={{ fontWeight: 800 }}>Argo</span>
-                    <span style={{ fontWeight: 100 }}> Method</span>
+                    <span style={{ fontWeight: 100 }}>Method®</span>
                 </span>
                 <span className="hidden sm:inline-block text-[10px] tracking-widest uppercase text-argo-grey font-medium ml-2">
                     {t.nav.deckLabel}
@@ -1255,7 +1255,7 @@ const Footer: React.FC = () => (
             <div className="flex items-center gap-2 text-argo-navy">
                 <span style={{ fontSize: 14, letterSpacing: '-0.02em' }}>
                     <span style={{ fontWeight: 800 }}>Argo</span>
-                    <span style={{ fontWeight: 100 }}> Method</span>
+                    <span style={{ fontWeight: 100 }}>Method®</span>
                 </span>
             </div>
             <div className="text-argo-grey" style={{ fontSize: 12 }}>argomethod.com</div>
@@ -1268,7 +1268,7 @@ export const Deck: React.FC = () => {
     const [lang, setLang] = useState<Lang>('es');
 
     React.useEffect(() => {
-        document.title = lang === 'es' ? 'Argo Method · Investor Deck' : 'Argo Method · Investor Deck';
+        document.title = lang === 'es' ? 'ArgoMethod® · Investor Deck' : 'ArgoMethod® · Investor Deck';
         document.documentElement.lang = lang;
     }, [lang]);
 

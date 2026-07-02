@@ -61,7 +61,7 @@ export default function PuentesCheckout() {
             });
             const data = await res.json();
 
-            // If this email already has Argo Puentes, redirect to their
+            // If this email already has ArgoPuente®, redirect to their
             // existing report instead of charging them again.
             if (res.status === 409 && data.existing_magic_link) {
                 window.location.href = data.existing_magic_link;

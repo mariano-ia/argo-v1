@@ -135,7 +135,7 @@ export const FeedbackForm: React.FC = () => {
                     <div className="mb-6 flex items-center justify-center gap-1.5">
                         <span className="font-display text-2xl tracking-tight">
                             <span className="font-extrabold">Argo</span>
-                            <span className="font-extralight"> Method</span>
+                            <span className="font-extralight">Method®</span>
                         </span>
                                             </div>
                     <h1 className="font-quest text-2xl font-bold text-gray-900 mb-2">
@@ -164,7 +164,7 @@ export const FeedbackForm: React.FC = () => {
                     <div className="flex items-center gap-1.5 mb-1">
                         <span className="font-display text-lg tracking-tight">
                             <span className="font-extrabold">Argo</span>
-                            <span className="font-extralight"> Method</span>
+                            <span className="font-extralight">Method®</span>
                         </span>
                                             </div>
                     <h1 className="font-quest text-xl font-bold text-gray-900 mt-4">

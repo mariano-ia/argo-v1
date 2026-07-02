@@ -33,7 +33,7 @@ export const LanguageSelect: React.FC<Props> = ({ onContinue }) => {
             <div className="flex items-center gap-2">
                 <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                     <span style={{ fontWeight: 800 }}>Argo</span>
-                    <span style={{ fontWeight: 100 }}> Method</span>
+                    <span style={{ fontWeight: 100 }}>Method®</span>
                 </span>
                             </div>
 

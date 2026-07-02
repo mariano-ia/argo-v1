@@ -132,7 +132,7 @@ interface OnboardingV2Props {
     /** Short-lived token from /api/start-play, required to attach to a tenant. */
     playToken?: string;
     oneLinkId?: string;
-    /** ArgoOne: sport chosen by the buyer at link generation (shown read-only). */
+    /** ArgoOne®: sport chosen by the buyer at link generation (shown read-only). */
     linkSport?: string;
     /** Club flow: institution name shown read-only as play context. */
     institutionName?: string;
@@ -952,7 +952,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             // shown on-screen (DemoEndScreen), and the full report is only ever
             // delivered later when the player unlocks it ($9.99) or we gift it
             // (admin full_access grant). This avoids (a) emailing the full report
-            // for free and (b) pitching Argo Puentes to someone who only has a demo.
+            // for free and (b) pitching ArgoPuente® to someone who only has a demo.
             if (demoMode) {
                 console.log('[Argo] Demo play: skipping auto report email. sessionId:', sessionIdRef.current);
             } else if (finalSections) {
@@ -987,7 +987,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.error('[Argo] AI generation failed after retries — NOT sending report email (would be non-personalized). Session left with ai_sections=null for regeneration. sessionId:', sessionIdRef.current);
             }
 
-            // Mark ArgoOne link as completed if applicable
+            // Mark ArgoOne® link as completed if applicable
             if (oneLinkId && sessionIdRef.current) {
                 try {
                     await fetch('/api/one-complete', {

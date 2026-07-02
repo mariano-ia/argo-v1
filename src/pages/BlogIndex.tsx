@@ -33,9 +33,9 @@ export const BlogIndex: React.FC = () => {
     // SEO meta tags for blog listing
     useEffect(() => {
         const titles: Record<string, string> = {
-            es: 'Blog | Argo Method — Perfilamiento conductual DISC para deportistas',
-            en: 'Blog | Argo Method — DISC behavioral profiling for athletes',
-            pt: 'Blog | Argo Method — Perfil comportamental DISC para atletas',
+            es: 'Blog | ArgoMethod® — Perfilamiento conductual DISC para deportistas',
+            en: 'Blog | ArgoMethod® — DISC behavioral profiling for athletes',
+            pt: 'Blog | ArgoMethod® — Perfil comportamental DISC para atletas',
         };
         const descriptions: Record<string, string> = {
             es: 'Articulos sobre perfilamiento conductual DISC, coaching deportivo juvenil y herramientas para entrenadores y padres.',
@@ -47,7 +47,7 @@ export const BlogIndex: React.FC = () => {
         if (descEl) descEl.setAttribute('content', descriptions[lang] ?? descriptions.es);
         const canonicalEl = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
         if (canonicalEl) canonicalEl.href = 'https://argomethod.com/blog';
-        return () => { document.title = 'Argo Method'; };
+        return () => { document.title = 'ArgoMethod®'; };
     }, [lang]);
 
     const formatDate = (date: string) =>
@@ -65,7 +65,7 @@ export const BlogIndex: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-1.5 no-underline">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                                             </Link>
                     <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ export const BlogIndex: React.FC = () => {
             {/* Footer */}
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-8 px-4 text-center">
                 <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.05em' }}>
-                    &copy; 2026 Argo Method
+                    &copy; 2026 ArgoMethod®
                 </span>
             </footer>
         </div>

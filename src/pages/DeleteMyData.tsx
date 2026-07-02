@@ -8,7 +8,7 @@ type Status = 'idle' | 'submitting' | 'sent' | 'error';
 const COPY = {
     es: {
         title: 'Eliminar mis datos',
-        intro: 'Puedes solicitar la eliminación permanente de los datos recolectados por Argo Method en cualquier momento. Completa el formulario y te enviaremos un email con un enlace de confirmación.',
+        intro: 'Puedes solicitar la eliminación permanente de los datos recolectados por ArgoMethod® en cualquier momento. Completa el formulario y te enviaremos un email con un enlace de confirmación.',
         warning: 'Esta acción es irreversible. Una vez confirmada, eliminamos todas las respuestas, perfiles generados, secciones de IA y registros asociados.',
         emailLabel: 'Tu email',
         emailPlaceholder: 'el email que usaste para registrarte',
@@ -27,7 +27,7 @@ const COPY = {
     },
     en: {
         title: 'Delete my data',
-        intro: 'You can request permanent deletion of the data Argo Method has collected at any time. Fill out the form and we will send you an email with a confirmation link.',
+        intro: 'You can request permanent deletion of the data ArgoMethod® has collected at any time. Fill out the form and we will send you an email with a confirmation link.',
         warning: 'This action is irreversible. Once confirmed, we delete all answers, generated profiles, AI sections, and related records.',
         emailLabel: 'Your email',
         emailPlaceholder: 'the email you used to register',
@@ -46,7 +46,7 @@ const COPY = {
     },
     pt: {
         title: 'Excluir meus dados',
-        intro: 'Você pode solicitar a exclusão permanente dos dados coletados pelo Argo Method a qualquer momento. Preencha o formulário e enviaremos um email com um link de confirmação.',
+        intro: 'Você pode solicitar a exclusão permanente dos dados coletados pelo ArgoMethod® a qualquer momento. Preencha o formulário e enviaremos um email com um link de confirmação.',
         warning: 'Esta ação é irreversível. Uma vez confirmada, excluímos todas as respostas, perfis gerados, seções de IA e registros associados.',
         emailLabel: 'Seu email',
         emailPlaceholder: 'o email que você usou para se registrar',
@@ -103,7 +103,7 @@ export const DeleteMyData: React.FC = () => {
                 <div className="flex items-center justify-between mb-8">
                     <Link to="/" className="inline-flex items-center gap-1.5">
                         <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                         </span>
                     </Link>
                     <div className="flex items-center gap-1 text-[11px] uppercase tracking-widest text-argo-grey">

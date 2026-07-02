@@ -110,7 +110,7 @@ export const translations = {
             lang: 'PT',
         },
         hero: {
-            eyebrow: 'Argo Method · Sports Behavioral Profiling',
+            eyebrow: 'ArgoMethod® · Sports Behavioral Profiling',
             headline: 'Your athlete has a code.',
             headlineAccent: 'Learn to read it.',
             sub: 'Argo reveals the behavioral profile of each young athlete so the coach or parent knows exactly how to communicate, motivate, and support them.',

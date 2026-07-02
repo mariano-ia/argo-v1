@@ -168,7 +168,7 @@ export const SetPassword: React.FC = () => {
                     <div className="flex items-center justify-center gap-1.5">
                         <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                             <span style={{ fontWeight: 800 }}>Argo</span>
-                            <span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                            <span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                         </span>
                     </div>
                     <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mx-auto">
@@ -196,7 +196,7 @@ export const SetPassword: React.FC = () => {
                 <div className="flex items-center gap-1.5">
                     <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span>
-                        <span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        <span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
                                     </div>
 

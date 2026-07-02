@@ -319,7 +319,7 @@ export const Familias: React.FC = () => {
             <header className="w-full max-w-md px-6 pt-7 pb-2 relative flex items-center justify-center">
                 <span style={{ fontSize: '17px', letterSpacing: '-0.02em' }} className="text-argo-navy">
                     <span style={{ fontWeight: 800 }}>Argo</span>
-                    <span style={{ fontWeight: 100 }}> Method</span>
+                    <span style={{ fontWeight: 100 }}>Method®</span>
                 </span>
                 <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                     {LANGS.map(l => (

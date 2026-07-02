@@ -20,7 +20,7 @@ const T = {
         startTrial: 'Comenzar trial gratuito',
         contactSales: 'Contactar ventas',
         familiesLabel: 'Padres y familias',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
         report: 'informe',
         reports: 'informes',
@@ -58,7 +58,7 @@ const T = {
         startTrial: 'Start free trial',
         contactSales: 'Contact sales',
         familiesLabel: 'Parents & families',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
         report: 'report',
         reports: 'reports',
@@ -96,7 +96,7 @@ const T = {
         startTrial: 'Começar trial gratuito',
         contactSales: 'Contatar vendas',
         familiesLabel: 'Pais e famílias',
-        familiesTitle: 'ArgoOne',
+        familiesTitle: 'ArgoOne®',
         familiesDesc: 'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
         report: 'relatório',
         reports: 'relatórios',
@@ -148,7 +148,7 @@ export const PricingPage: React.FC = () => {
                 {/* Logo */}
                 <Link to="/" className="inline-flex items-center gap-1.5 mb-12">
                     <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
                 </Link>
 
@@ -289,8 +289,8 @@ export const PricingPage: React.FC = () => {
                         </div>
                         <div className="flex gap-3 flex-shrink-0">
                             {[
-                                { name: 'ArgoOne', price: '$9.99' },
-                                { name: 'ArgoOne +', price: '$12.99' },
+                                { name: 'ArgoOne®', price: '$9.99' },
+                                { name: 'ArgoOne+®', price: '$12.99' },
                             ].map(p => (
                                 <div key={p.name} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
                                     <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>

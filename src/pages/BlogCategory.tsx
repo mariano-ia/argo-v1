@@ -30,10 +30,10 @@ export const BlogCategory: React.FC = () => {
 
     // SEO
     useEffect(() => {
-        document.title = `${catLabel} | Blog — Argo Method`;
+        document.title = `${catLabel} | Blog — ArgoMethod®`;
         const descEl = document.querySelector('meta[name="description"]');
-        if (descEl) descEl.setAttribute('content', `Articulos sobre ${catLabel.toLowerCase()} en el blog de Argo Method.`);
-        return () => { document.title = 'Argo Method'; };
+        if (descEl) descEl.setAttribute('content', `Articulos sobre ${catLabel.toLowerCase()} en el blog de ArgoMethod®.`);
+        return () => { document.title = 'ArgoMethod®'; };
     }, [catLabel]);
 
     const formatDate = (date: string) =>
@@ -50,7 +50,7 @@ export const BlogCategory: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-1.5 no-underline">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                     </Link>
                     <div className="flex items-center gap-3">
@@ -138,7 +138,7 @@ export const BlogCategory: React.FC = () => {
 
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-8 px-4 text-center">
                 <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.05em' }}>
-                    &copy; 2026 Argo Method
+                    &copy; 2026 ArgoMethod®
                 </span>
             </footer>
         </div>

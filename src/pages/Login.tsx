@@ -66,7 +66,7 @@ export const Login: React.FC = () => {
                 <div className="text-center mb-10">
                     <div className="flex items-center justify-center gap-1.5 mb-1">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                                             </div>
                     <h1 className="font-display text-2xl font-bold text-argo-navy">Plataforma</h1>

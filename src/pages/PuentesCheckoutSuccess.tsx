@@ -20,10 +20,10 @@ const SUCCESS_COPY: Record<Lang, {
     backToHome: string;
 }> = {
     es: {
-        eyebrow: 'Argo Puentes',
+        eyebrow: 'ArgoPuente®',
         pollingTitle: 'Confirmando el pago...',
         pollingBody: 'Esto suele tardar 2 a 5 segundos. No cierres esta pantalla.',
-        readyTitle: (child) => `Tu Argo Puentes para ${child} está activo`,
+        readyTitle: (child) => `Tu ArgoPuente® para ${child} está activo`,
         readyBody: (email) => `Te enviamos el enlace a ${email} para que puedas volver más tarde. Si quieres, empieza el cuestionario ahora.`,
         cta: 'Empezar ahora',
         timeoutTitle: 'Aún estamos confirmando el pago',
@@ -31,10 +31,10 @@ const SUCCESS_COPY: Record<Lang, {
         backToHome: 'Volver al inicio',
     },
     en: {
-        eyebrow: 'Argo Puentes',
+        eyebrow: 'ArgoPuente®',
         pollingTitle: 'Confirming your payment...',
         pollingBody: 'This usually takes 2 to 5 seconds. Please keep this screen open.',
-        readyTitle: (child) => `Your Argo Puentes for ${child} is ready`,
+        readyTitle: (child) => `Your ArgoPuente® for ${child} is ready`,
         readyBody: (email) => `We sent the link to ${email} so you can come back later. If you want, start the questionnaire now.`,
         cta: 'Start now',
         timeoutTitle: 'Still confirming your payment',
@@ -42,10 +42,10 @@ const SUCCESS_COPY: Record<Lang, {
         backToHome: 'Back to home',
     },
     pt: {
-        eyebrow: 'Argo Puentes',
+        eyebrow: 'ArgoPuente®',
         pollingTitle: 'Confirmando o pagamento...',
         pollingBody: 'Isto geralmente leva 2 a 5 segundos. Por favor mantenha esta tela aberta.',
-        readyTitle: (child) => `Seu Argo Puentes para ${child} está pronto`,
+        readyTitle: (child) => `Seu ArgoPuente® para ${child} está pronto`,
         readyBody: (email) => `Enviamos o link para ${email} para que você possa voltar depois. Se quiser, comece o questionário agora.`,
         cta: 'Começar agora',
         timeoutTitle: 'Ainda confirmando o pagamento',

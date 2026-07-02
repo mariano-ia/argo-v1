@@ -5,7 +5,7 @@ import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 
 /**
- * Dedicated ArgoOne landing page — optimized for ad conversion.
+ * Dedicated ArgoOne® landing page — optimized for ad conversion.
  * Route: /one  (/one?kind=puente preselects the combo)
  * Mobile-first, responsive: single column on phones, a desktop two-column
  * hero (pitch + selector left, report preview right) on lg+. USD via Stripe.
@@ -14,8 +14,8 @@ import { useLang } from '../context/LangContext';
 type OneKind = 'one' | 'one_puente';
 
 const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; desc: string; popular: boolean }[] = [
-    { kind: 'one',        title: 'ArgoOne',   price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',                    popular: false },
-    { kind: 'one_puente', title: 'ArgoOne +', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.', popular: true },
+    { kind: 'one',        title: 'ArgoOne®',   price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',                    popular: false },
+    { kind: 'one_puente', title: 'ArgoOne+®', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.', popular: true },
 ];
 
 // Brand-styled product name (Argo bold + One light + "+" bold), matching the home pricing card.
@@ -24,6 +24,7 @@ const BrandName: React.FC<{ kind: OneKind }> = ({ kind }) => (
         <span style={{ fontWeight: 800 }}>Argo</span>
         <span style={{ fontWeight: 300 }}>One</span>
         {kind === 'one_puente' && <span style={{ fontWeight: 800 }}>+</span>}
+        <span style={{ fontWeight: 300 }}>®</span>
     </>
 );
 
@@ -101,7 +102,7 @@ const ArgoOneLanding: React.FC = () => {
                 <div className="max-w-5xl mx-auto flex items-center justify-between" style={{ padding: '12px 20px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                         <span style={{ fontSize: '18px', fontWeight: 800, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Argo</span>
-                        <span style={{ fontSize: '18px', fontWeight: 100, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Method</span>
+                        <span style={{ fontSize: '18px', fontWeight: 100, color: '#1D1D1F', letterSpacing: '-0.02em' }}>Method®</span>
                     </div>
                 </div>
             </header>
@@ -256,7 +257,7 @@ const ArgoOneLanding: React.FC = () => {
             <footer style={{ padding: '20px', borderTop: '1px solid #E8E8ED', textAlign: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', marginBottom: '6px' }}>
                     <span style={{ fontSize: '13px', fontWeight: 800, color: '#1D1D1F' }}>Argo</span>
-                    <span style={{ fontSize: '13px', fontWeight: 100, color: '#1D1D1F' }}>Method</span>
+                    <span style={{ fontSize: '13px', fontWeight: 100, color: '#1D1D1F' }}>Method®</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
                     <a href="/terms" style={{ fontSize: '11px', color: '#86868B', textDecoration: 'none' }}>Términos</a>

@@ -52,6 +52,74 @@ export default function PuentesFlow() {
             setErrorMsg('Missing token');
             return;
         }
+        // DEV mock — the /api/* functions do not run under `vite dev`, so
+        // /puentes/demo renders a full sample Puente report with fake data
+        // (mirrors ReportPage's dev mock). Any other token still hits the API.
+        if (import.meta.env.DEV && token === 'demo') {
+            setLang('es');
+            setRecipientName('Marcelo García');
+            setRecipientEmail('marcelo@example.com');
+            setAdultProfile({
+                eje_primary: 'C',
+                eje_secondary: 'S',
+                motor: 'profundo',
+                pressure_style: 'regulado',
+                history: 'ex_competitive',
+                dominant_emotion: 'orgullo',
+                axis_counts: { D: 1, I: 1, S: 3, C: 3 },
+            });
+            setChildren([
+                {
+                    puentes_session_id: 'demo-1',
+                    source_session_id: 'demo-src-1',
+                    child_name: 'Lucas',
+                    child_profile: {
+                        eje: 'D',
+                        motor: 'Rápido',
+                        archetype_label: 'Impulsor Dinámico',
+                        sport: 'Fútbol',
+                    },
+                    status: 'generated',
+                    ai_sections: {
+                        saludo: 'Hola Marcelo. Preparamos algo pensado para ti y para Lucas. No es un manual ni una lista de correcciones: son ideas para acompañarlo mejor en la actividad, tal como es.',
+                        perfil_adulto_breve: 'Tiendes a observar antes de actuar y a cuidar los detalles. Buscas que las cosas tengan orden y sentido, y sueles sostener la calma cuando otros se aceleran. Esa mirada tranquila es un ancla valiosa para un niño que va a mil por hora.',
+                        puentes: [
+                            {
+                                titulo: 'Cuando él arranca sin frenar',
+                                como_esta_el: 'Lucas suele lanzarse a la acción con mucha energía, a veces antes de tener todo el panorama claro. Le cuesta esperar.',
+                                lo_que_traes: 'Tú prefieres mirar el conjunto antes de moverte y anticipar lo que puede salir distinto.',
+                                el_puente: 'En vez de frenarlo, puedes darle una meta corta y clara hacia dónde apuntar esa energía. Él necesita dirección, no un freno.',
+                                pregunta_reflexion: '¿En qué momento de la semana podrías darle un pequeño desafío que canalice esa velocidad?',
+                            },
+                            {
+                                titulo: 'Cuando algo no sale',
+                                como_esta_el: 'Ante un traspié, Lucas puede reaccionar rápido y con intensidad, y le cuesta volver a la calma solo.',
+                                lo_que_traes: 'Tu tendencia a regularte bajo presión es justo lo que a él le falta en ese instante.',
+                                el_puente: 'Tu tono tranquilo baja el suyo. Un par de palabras firmes y serenas valen más que una explicación larga cuando está encendido.',
+                                pregunta_reflexion: '¿Cómo suena tu voz cuando algo no sale y quién de los dos la ajusta primero?',
+                            },
+                            {
+                                titulo: 'Cuando busca tu mirada',
+                                como_esta_el: 'Aunque parezca muy independiente, Lucas te busca después de cada jugada para ver qué te pareció.',
+                                lo_que_traes: 'Tu atención al detalle puede volverse una devolución muy precisa, para bien o para mal.',
+                                el_puente: 'Elige una cosa concreta que hizo bien y nómbrala antes que cualquier corrección. Lo que ve en tu cara pesa más que el resultado.',
+                                pregunta_reflexion: '¿Qué fue lo último que le dijiste al salir de la cancha?',
+                            },
+                            {
+                                titulo: 'Cuando el ritmo no coincide',
+                                como_esta_el: 'Él vive el deporte a una velocidad alta y quiere que todo pase ya.',
+                                lo_que_traes: 'Tú disfrutas el proceso, los tiempos largos, la construcción paciente.',
+                                el_puente: 'No tienes que igualar su ritmo ni él el tuyo. Alterna: momentos de acción para él, momentos de charla tranquila para los dos.',
+                                pregunta_reflexion: '¿Dónde podrían encontrarse a mitad de camino esta semana?',
+                            },
+                        ],
+                        cierre: 'Nada de esto es una fórmula fija. Lucas va a cambiar y tú también. Quédate con una sola idea de todas estas y probala sin apuro. Ya es un montón.',
+                    },
+                },
+            ]);
+            setStage('report');
+            return;
+        }
         (async () => {
             try {
                 const res = await fetch('/api/puentes-start', {

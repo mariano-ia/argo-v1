@@ -1,4 +1,4 @@
-// Argo Method. Archetype editorial content
+// ArgoMethod®. Archetype editorial content
 // Reviewed: probabilistic language, accompaniment framing, strength-based descriptors
 
 export type EjeType = 'D' | 'I' | 'S' | 'C';

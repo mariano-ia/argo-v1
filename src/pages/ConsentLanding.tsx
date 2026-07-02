@@ -86,7 +86,7 @@ export const ConsentLanding: React.FC = () => {
             <div className="max-w-md w-full text-center space-y-6 py-12">
                 <div className="flex items-center justify-center gap-1.5 mb-8">
                     <span style={{ fontSize: 18, letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                     </span>
                 </div>
 

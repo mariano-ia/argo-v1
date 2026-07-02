@@ -16,7 +16,7 @@ export const TermsPage: React.FC = () => (
             <div className="mb-12">
                 <Link to="/" className="inline-flex items-center gap-1.5 mb-8">
                     <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
@@ -27,16 +27,16 @@ export const TermsPage: React.FC = () => (
             </div>
 
             <Section title="1. Aceptación de los términos">
-                <p>Al acceder y utilizar Argo Method ("la Plataforma"), aceptas estos Términos de Servicio. Si no estás de acuerdo, no utilices la Plataforma.</p>
+                <p>Al acceder y utilizar ArgoMethod® ("la Plataforma"), aceptas estos Términos de Servicio. Si no estás de acuerdo, no utilices la Plataforma.</p>
             </Section>
 
             <Section title="2. Descripción del servicio">
-                <p>Argo Method es una herramienta de perfilamiento conductual basada en el modelo DISC, diseñada para deportistas de 8 a 16 años. La Plataforma genera informes personalizados a partir de una experiencia interactiva completada por el deportista.</p>
-                <p>Argo Method no es un diagnóstico clínico, psicológico ni médico. Los informes son orientativos y reflejan tendencias conductuales del momento presente, no etiquetas permanentes.</p>
+                <p>ArgoMethod® es una herramienta de perfilamiento conductual basada en el modelo DISC, diseñada para deportistas de 8 a 16 años. La Plataforma genera informes personalizados a partir de una experiencia interactiva completada por el deportista.</p>
+                <p>ArgoMethod® no es un diagnóstico clínico, psicológico ni médico. Los informes son orientativos y reflejan tendencias conductuales del momento presente, no etiquetas permanentes.</p>
             </Section>
 
             <Section title="3. Planes y suscripciones">
-                <p><strong>ArgoOne:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
+                <p><strong>ArgoOne®:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
                 <p><strong>Planes institucionales (PRO, Academy, Enterprise):</strong> suscripciones mensuales o anuales que incluyen acceso al dashboard, jugadores activos según el plan contratado, y Argo Coach incluido.</p>
                 <p><strong>Trial:</strong> periodo de prueba gratuito de 14 días con hasta 8 jugadores activos y funcionalidades limitadas. Al vencer el trial, el dashboard pasa a solo lectura. Los perfiles no se eliminan.</p>
             </Section>
@@ -48,22 +48,22 @@ export const TermsPage: React.FC = () => (
 
             <Section title="5. Argo Coach y política de uso justo">
                 <p>El Argo Coach está incluido en todos los planes institucionales. Su uso está sujeto a una política de uso justo que contempla hasta 500 consultas mensuales en el plan PRO y hasta 1000 en el plan Academy.</p>
-                <p>Argo Method se reserva el derecho de contactar a usuarios que excedan consistentemente estos límites para ofrecerles un plan más adecuado a su volumen de uso.</p>
+                <p>ArgoMethod® se reserva el derecho de contactar a usuarios que excedan consistentemente estos límites para ofrecerles un plan más adecuado a su volumen de uso.</p>
                 <p>El Argo Coach proporciona orientaciones basadas en la metodología Argo y los perfiles registrados. Las respuestas son orientativas y no reemplazan el criterio profesional del entrenador o adulto responsable.</p>
             </Section>
 
-            <Section title="6. Argo Puentes (servicio complementario)">
-                <p>Tras la entrega del informe del deportista, podemos ofrecerte el servicio complementario "Argo Puentes", que consiste en un cuestionario breve para el adulto responsable y un informe personalizado de cuatro puentes de vínculo entre tu estilo y el del deportista.</p>
-                <p>Argo Puentes:</p>
+            <Section title="6. ArgoPuente® (servicio complementario)">
+                <p>Tras la entrega del informe del deportista, podemos ofrecerte el servicio complementario "ArgoPuente®", que consiste en un cuestionario breve para el adulto responsable y un informe personalizado de cuatro puentes de vínculo entre tu estilo y el del deportista.</p>
+                <p>ArgoPuente®:</p>
                 <p>(a) No constituye un servicio clínico, terapéutico ni de diagnóstico psicológico.</p>
                 <p>(b) Es un material de auto-conocimiento e invitación a la reflexión, basado en el modelo DISC.</p>
                 <p>(c) Reutiliza el perfil del deportista (ya recolectado al momento del informe del menor) para generar contenido específico.</p>
                 <p>(d) Puede ofrecerse en hasta dos comunicaciones por correo electrónico tras la entrega del informe principal: una en el propio email del informe y una segunda comunicación tres días más tarde si la propuesta no ha sido aceptada.</p>
                 <p>(e) Puedes solicitar dejar de recibir esta propuesta en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
-                <p>Las compras de Argo Puentes son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
+                <p>Las compras de ArgoPuente® son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
                 <p><strong>Cobertura multi-hijo y conservación del perfil:</strong></p>
-                <p>(f) Una compra de Argo Puentes cubre a todos los hijos del adulto responsable identificados por el mismo correo electrónico, hasta un máximo de 5 niños por compra. Si tienes más hijos perfilados, escríbenos a hola@argomethod.com.</p>
-                <p>(g) El perfil del adulto generado por Argo Puentes se conserva indefinidamente, para poder generar puentes con futuros hijos perfilados con el mismo correo electrónico sin cobrarte nuevamente. Si un hijo ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, los puentes con el adulto se actualizan automáticamente.</p>
+                <p>(f) Una compra de ArgoPuente® cubre a todos los hijos del adulto responsable identificados por el mismo correo electrónico, hasta un máximo de 5 niños por compra. Si tienes más hijos perfilados, escríbenos a hola@argomethod.com.</p>
+                <p>(g) El perfil del adulto generado por ArgoPuente® se conserva indefinidamente, para poder generar puentes con futuros hijos perfilados con el mismo correo electrónico sin cobrarte nuevamente. Si un hijo ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, los puentes con el adulto se actualizan automáticamente.</p>
                 <p>(h) Para solicitar la eliminación del perfil del adulto y todos los puentes asociados, escríbenos a hola@argomethod.com. La eliminación es definitiva y no se puede revertir.</p>
             </Section>
 
@@ -73,16 +73,16 @@ export const TermsPage: React.FC = () => (
             </Section>
 
             <Section title="8. Propiedad intelectual">
-                <p>La metodología Argo, los arquetipos, el contenido de los informes, y el diseño de la Plataforma son propiedad de Argo Method. Los datos de los deportistas perfilados son propiedad del adulto responsable y del tenant que los registró.</p>
+                <p>La metodología Argo, los arquetipos, el contenido de los informes, y el diseño de la Plataforma son propiedad de ArgoMethod®. Los datos de los deportistas perfilados son propiedad del adulto responsable y del tenant que los registró.</p>
             </Section>
 
             <Section title="9. Cancelación y reembolsos">
                 <p>Las suscripciones pueden cancelarse en cualquier momento. La cancelación toma efecto al final del periodo facturado. No se realizan reembolsos por periodos parciales.</p>
-                <p>Las compras de ArgoOne son finales y no reembolsables una vez que el link de juego ha sido utilizado.</p>
+                <p>Las compras de ArgoOne® son finales y no reembolsables una vez que el link de juego ha sido utilizado.</p>
             </Section>
 
             <Section title="10. Limitación de responsabilidad">
-                <p>Argo Method se proporciona "tal cual". No garantizamos que los informes serán exactos, completos o adecuados para decisiones específicas. El uso de los informes es responsabilidad del adulto que los recibe.</p>
+                <p>ArgoMethod® se proporciona "tal cual". No garantizamos que los informes serán exactos, completos o adecuados para decisiones específicas. El uso de los informes es responsabilidad del adulto que los recibe.</p>
             </Section>
 
             <Section title="11. Modificaciones">

@@ -44,7 +44,7 @@ export const BlogPost: React.FC = () => {
     useEffect(() => {
         if (!post) return;
         const seoTitle = post.seo_title || post.title;
-        document.title = `${seoTitle} — Argo Method Blog`;
+        document.title = `${seoTitle} — ArgoMethod® Blog`;
         const setMeta = (name: string, content: string) => {
             let el = document.querySelector(`meta[name="${name}"]`) || document.querySelector(`meta[property="${name}"]`);
             if (!el) {
@@ -121,7 +121,7 @@ export const BlogPost: React.FC = () => {
         scriptEl.textContent = JSON.stringify(schemas);
 
         return () => {
-            document.title = 'Argo Method';
+            document.title = 'ArgoMethod®';
             const el = document.querySelector('script[data-blog-schema]');
             if (el) el.remove();
             hreflangEls.forEach(el => el.remove());
@@ -170,7 +170,7 @@ export const BlogPost: React.FC = () => {
                 <div className="max-w-5xl mx-auto px-4 md:px-6 h-12 flex items-center justify-between">
                     <Link to="/" className="flex items-center gap-1.5 no-underline">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                                             </Link>
                     <div className="flex items-center gap-3">
@@ -304,7 +304,7 @@ export const BlogPost: React.FC = () => {
             {/* Footer */}
             <footer style={{ borderTop: '1px solid #D2D2D7' }} className="py-8 px-4 text-center">
                 <span style={{ fontSize: '11px', color: '#86868B', letterSpacing: '0.05em' }}>
-                    &copy; 2026 Argo Method
+                    &copy; 2026 ArgoMethod®
                 </span>
             </footer>
         </div>

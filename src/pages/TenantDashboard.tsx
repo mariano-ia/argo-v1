@@ -401,7 +401,7 @@ export const TenantDashboard: React.FC = () => {
                         <div className="flex items-center justify-between px-6 pt-7 pb-4">
                             <div className="flex items-center gap-1.5">
                                 <span style={{ fontSize: '17px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                                 </span>
                                                             </div>
                             {!mobile && (
@@ -640,7 +640,7 @@ export const TenantDashboard: React.FC = () => {
                         </button>
                     </Tooltip>
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
                                     </div>
 

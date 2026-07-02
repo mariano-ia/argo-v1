@@ -5,7 +5,7 @@ import { takeConsentResume } from '../lib/consentStore';
 import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 
 /**
- * /one/:slug — ArgoOne play page.
+ * /one/:slug — ArgoOne® play page.
  * Similar to TenantPlay but uses one-start-play API and one-complete API.
  * No tenant context.
  */
@@ -97,7 +97,7 @@ const StatusScreen: React.FC<{ title: string; message: string }> = ({ title, mes
         <div style={{ maxWidth: '360px' }}>
             <div className="flex items-center justify-center gap-1.5 mb-8">
                 <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                    <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                 </span>
             </div>
             <h2 style={{ fontWeight: 300, fontSize: '24px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>{title}</h2>

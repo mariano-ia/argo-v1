@@ -65,7 +65,7 @@ export const Demo: React.FC = () => {
                 <div className="w-full max-w-sm bg-white border border-argo-border rounded-2xl p-8 shadow-argo text-center">
                     <div className="flex items-center justify-center gap-1.5 mb-5">
                         <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                            <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                         </span>
                     </div>
                     <h1 style={{ fontWeight: 300, fontSize: '1.5rem', letterSpacing: '-0.02em', color: '#1D1D1F', marginBottom: '10px' }}>

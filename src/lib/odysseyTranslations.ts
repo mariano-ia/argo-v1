@@ -205,13 +205,13 @@ const es: OdysseyTranslations = {
     sports: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro'],
     philosophicalAgreement: 'Acuerdo filosófico',
     checks: [
-        (name) => `Entiendo que Argo Method es una "fotografía del presente" y no una etiqueta permanente para ${name || 'mi deportista'}.`,
+        (name) => `Entiendo que ArgoMethod® es una "fotografía del presente" y no una etiqueta permanente para ${name || 'mi deportista'}.`,
         (name) => `Acepto que el objetivo de este informe es priorizar el disfrute y el bienestar de ${name || 'mi deportista'} por sobre el rendimiento competitivo.`,
         () => 'Comprendo que esta herramienta no es un diagnóstico clínico ni médico.',
         () => 'Confirmo que soy mayor de 18 años.',
     ],
     consentBullets: [
-        (name) => `Argo Method es una "fotografía del presente", no una etiqueta permanente para ${name || 'tu deportista'}.`,
+        (name) => `ArgoMethod® es una "fotografía del presente", no una etiqueta permanente para ${name || 'tu deportista'}.`,
         (name) => `El objetivo es priorizar el disfrute y el bienestar de ${name || 'tu deportista'} sobre el rendimiento competitivo.`,
         () => 'No es un diagnóstico clínico ni médico.',
     ],
@@ -275,7 +275,7 @@ const es: OdysseyTranslations = {
     motorTag: 'Motor',
     generatingAI: 'Generando...',
     aiTag: 'IA',
-    designedBy: 'Diseñado bajo los principios de seguridad emocional de Argo Method',
+    designedBy: 'Diseñado bajo los principios de seguridad emocional de ArgoMethod®',
     dominantAxis: 'Eje dominante',
     discLabels: { D: 'Dominio', I: 'Influencia', S: 'Estabilidad', C: 'Conciencia' },
 
@@ -319,7 +319,7 @@ const es: OdysseyTranslations = {
     emailHeader: 'Informe de Sintonía',
     emailPreparedFor: (name) => `Preparado para ${name}`,
     emailArchetypeOf: (name) => `Arquetipo de ${name}`,
-    emailFooter: 'Argo Method · Este informe es una fotografía del presente, no una etiqueta permanente.',
+    emailFooter: 'ArgoMethod® · Este informe es una fotografía del presente, no una etiqueta permanente.',
     emailMaturationTitle: 'Nota: Maduración Temprana',
     emailMaturationBody: 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.',
 
@@ -377,13 +377,13 @@ const en: OdysseyTranslations = {
     sports: ['Soccer', 'Hockey', 'Basketball', 'Rugby', 'Tennis', 'Swimming', 'Volleyball', 'Track & Field', 'Handball', 'Baseball', 'Other'],
     philosophicalAgreement: 'Philosophical agreement',
     checks: [
-        (name) => `I understand that Argo Method is a "snapshot of the present" and not a permanent label for ${name || 'my child'}.`,
+        (name) => `I understand that ArgoMethod® is a "snapshot of the present" and not a permanent label for ${name || 'my child'}.`,
         (name) => `I accept that this report's goal is to prioritize ${name || 'my child'}'s enjoyment and well-being over competitive performance.`,
         () => 'I understand that this tool is not a clinical or medical diagnosis.',
         () => 'I confirm that I am over 18 years old.',
     ],
     consentBullets: [
-        (name) => `Argo Method is a "snapshot of the present," not a permanent label for ${name || 'your athlete'}.`,
+        (name) => `ArgoMethod® is a "snapshot of the present," not a permanent label for ${name || 'your athlete'}.`,
         (name) => `The goal is to prioritize ${name || 'your athlete'}'s enjoyment and well-being over competitive performance.`,
         () => 'This is not a clinical or medical diagnosis.',
     ],
@@ -395,7 +395,7 @@ const en: OdysseyTranslations = {
     consentWaitingStatus: 'Waiting for confirmation...',
     consentWaitingResend: 'Resend email',
     consentWaitingChangeEmail: 'Change email',
-    consentWaitingCoppaFooter: 'Argo Method complies with the Children\'s Online Privacy Protection Act (COPPA).',
+    consentWaitingCoppaFooter: 'ArgoMethod® complies with the Children\'s Online Privacy Protection Act (COPPA).',
     consentWaitingExpired: 'This link has expired. For security, you must start over.',
     consentWaitingInvalid: 'This link is not valid.',
     consentWaitingRestart: 'Start over',
@@ -447,7 +447,7 @@ const en: OdysseyTranslations = {
     motorTag: 'Motor',
     generatingAI: 'Generating...',
     aiTag: 'AI',
-    designedBy: 'Designed under the emotional safety principles of Argo Method',
+    designedBy: 'Designed under the emotional safety principles of ArgoMethod®',
     dominantAxis: 'Dominant axis',
     discLabels: { D: 'Dominance', I: 'Influence', S: 'Steadiness', C: 'Conscientiousness' },
 
@@ -491,7 +491,7 @@ const en: OdysseyTranslations = {
     emailHeader: 'Tuning Report',
     emailPreparedFor: (name) => `Prepared for ${name}`,
     emailArchetypeOf: (name) => `${name}'s Archetype`,
-    emailFooter: 'Argo Method · This report is a snapshot of the present, not a permanent label.',
+    emailFooter: 'ArgoMethod® · This report is a snapshot of the present, not a permanent label.',
     emailMaturationTitle: 'Note: Early Maturation',
     emailMaturationBody: 'DISC profiles in early childhood (under 7 years) are highly plastic. We recommend revisiting this profile in 6 months to observe the evolution of tendencies.',
 
@@ -549,13 +549,13 @@ const pt: OdysseyTranslations = {
     sports: ['Futebol', 'Hóquei', 'Basquete', 'Rugby', 'Tênis', 'Natação', 'Vôlei', 'Atletismo', 'Handebol', 'Beisebol', 'Outro'],
     philosophicalAgreement: 'Acordo filosófico',
     checks: [
-        (name) => `Entendo que o Argo Method é uma "fotografia do presente" e não um rótulo permanente para ${name || 'meu filho/a'}.`,
+        (name) => `Entendo que o ArgoMethod® é uma "fotografia do presente" e não um rótulo permanente para ${name || 'meu filho/a'}.`,
         (name) => `Aceito que o objetivo deste relatório é priorizar o prazer e o bem-estar de ${name || 'meu filho/a'} acima do desempenho competitivo.`,
         () => 'Compreendo que esta ferramenta não é um diagnóstico clínico ou médico.',
         () => 'Confirmo que tenho mais de 18 anos.',
     ],
     consentBullets: [
-        (name) => `Argo Method é uma "fotografia do presente", não um rótulo permanente para ${name || 'seu atleta'}.`,
+        (name) => `ArgoMethod® é uma "fotografia do presente", não um rótulo permanente para ${name || 'seu atleta'}.`,
         (name) => `O objetivo é priorizar o prazer e bem-estar de ${name || 'seu atleta'} sobre o rendimento competitivo.`,
         () => 'Não é um diagnóstico clínico nem médico.',
     ],
@@ -619,7 +619,7 @@ const pt: OdysseyTranslations = {
     motorTag: 'Motor',
     generatingAI: 'Gerando...',
     aiTag: 'IA',
-    designedBy: 'Projetado sob os princípios de segurança emocional do Argo Method',
+    designedBy: 'Projetado sob os princípios de segurança emocional do ArgoMethod®',
     dominantAxis: 'Eixo dominante',
     discLabels: { D: 'Domínio', I: 'Influência', S: 'Estabilidade', C: 'Consciência' },
 
@@ -663,7 +663,7 @@ const pt: OdysseyTranslations = {
     emailHeader: 'Relatório de Sintonia',
     emailPreparedFor: (name) => `Preparado para ${name}`,
     emailArchetypeOf: (name) => `Arquétipo de ${name}`,
-    emailFooter: 'Argo Method · Este relatório é uma fotografia do presente, não um rótulo permanente.',
+    emailFooter: 'ArgoMethod® · Este relatório é uma fotografia do presente, não um rótulo permanente.',
     emailMaturationTitle: 'Nota: Maturação Precoce',
     emailMaturationBody: 'Os perfis DISC na primeira infância (menores de 7 anos) são altamente plásticos. Recomenda-se revisitar este perfil em 6 meses para observar a evolução das tendências.',
 

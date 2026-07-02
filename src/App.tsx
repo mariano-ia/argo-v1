@@ -99,9 +99,9 @@ const TEST_EMAILS = ['marianonoceti@gmail.com'];
 // ─── Blocked screen ───────────────────────────────────────────────────────────
 
 const BLOCKED_I18N: Record<string, { title: string; message: string }> = {
-    es: { title: `Ya completaste tus ${MAX_PLAYS} experiencias`, message: `Cada cuenta puede usar Argo Method hasta ${MAX_PLAYS} veces. Si necesitas mas sesiones, contactanos.` },
-    en: { title: `You've completed your ${MAX_PLAYS} experiences`, message: `Each account can use Argo Method up to ${MAX_PLAYS} times. Contact us if you need more sessions.` },
-    pt: { title: `Voce completou suas ${MAX_PLAYS} experiencias`, message: `Cada conta pode usar o Argo Method ate ${MAX_PLAYS} vezes. Entre em contato se precisar de mais sessoes.` },
+    es: { title: `Ya completaste tus ${MAX_PLAYS} experiencias`, message: `Cada cuenta puede usar ArgoMethod® hasta ${MAX_PLAYS} veces. Si necesitas mas sesiones, contactanos.` },
+    en: { title: `You've completed your ${MAX_PLAYS} experiences`, message: `Each account can use ArgoMethod® up to ${MAX_PLAYS} times. Contact us if you need more sessions.` },
+    pt: { title: `Voce completou suas ${MAX_PLAYS} experiencias`, message: `Cada conta pode usar o ArgoMethod® ate ${MAX_PLAYS} vezes. Entre em contato se precisar de mais sessoes.` },
 };
 
 const BlockedView: React.FC = () => {
@@ -113,7 +113,7 @@ const BlockedView: React.FC = () => {
             <div style={{ maxWidth: '360px' }}>
                 <div className="flex items-center justify-center gap-1.5 mb-8">
                     <span style={{ fontSize: '18px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}> Method</span>
+                        <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 100 }}>Method®</span>
                     </span>
                                     </div>
                 <h2 style={{ fontWeight: 300, fontSize: '24px', color: '#1D1D1F', letterSpacing: '-0.02em', marginBottom: '12px' }}>
