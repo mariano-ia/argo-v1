@@ -316,7 +316,7 @@ function hasDeterministicLanguage(text: string, patterns: RegExp[]): boolean {
 // ─── System prompts by language ─────────────────────────────────────────────
 
 const SYSTEM_PROMPTS: Record<string, string> = {
-    es: `Eres el asistente DISC de Argo Method. Tu rol es ayudar al entrenador a entender y aplicar el perfilamiento conductual DISC en el contexto deportivo juvenil.
+    es: `Eres el asistente DISC de ArgoMethod®. Tu rol es ayudar al entrenador a entender y aplicar el perfilamiento conductual DISC en el contexto deportivo juvenil.
 
 REGLAS ESTRICTAS:
 1. Solo responde sobre temas relacionados con DISC, deporte juvenil, comunicación con niños deportistas, y dinámica de equipo.
@@ -375,7 +375,7 @@ Respuesta correcta: "Un Sostenedor Sereno tiende a necesitar previsibilidad y ti
 Pregunta: "¿Quién debería ser capitán?"
 Respuesta correcta: "No hay un perfil 'mejor' para capitán. Un Impulsor tiende a liderar desde la acción, un Conector desde el vínculo, un Sostén desde la estabilidad emocional, y un Estratega desde la lectura táctica. Depende de qué tipo de liderazgo necesita tu equipo en este momento."`,
 
-    en: `You are the DISC assistant for Argo Method. Your role is to help coaches understand and apply DISC behavioral profiling in youth sports.
+    en: `You are the DISC assistant for ArgoMethod®. Your role is to help coaches understand and apply DISC behavioral profiling in youth sports.
 
 STRICT RULES:
 1. Only respond about DISC, youth sports, communication with young athletes, and team dynamics.
@@ -431,7 +431,7 @@ Correct response: "A Dynamic Driver tends to need visible impact from their acti
 Question: "Who should be captain?"
 Correct response: "There's no 'best' profile for captain. A Driver tends to lead through action, a Connector through bonds, a Sustainer through emotional stability, and a Strategist through tactical reading. It depends on what type of leadership your team needs right now."`,
 
-    pt: `Você é o assistente DISC do Argo Method. Seu papel é ajudar treinadores a entender e aplicar o perfilamento comportamental DISC no esporte juvenil.
+    pt: `Você é o assistente DISC do ArgoMethod®. Seu papel é ajudar treinadores a entender e aplicar o perfilamento comportamental DISC no esporte juvenil.
 
 REGRAS ESTRITAS:
 1. Responda apenas sobre DISC, esporte juvenil, comunicação com jovens atletas e dinâmica de equipe.

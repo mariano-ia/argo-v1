@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 /**
  * GET /api/admin-revenue
- * Returns revenue metrics: MRR from subscriptions + ArgoOne sales.
+ * Returns revenue metrics: MRR from subscriptions + ArgoOne® sales.
  */
 
 async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient<any, any>>): Promise<boolean> {
@@ -48,7 +48,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             mrrEstimate += PLAN_MRR[t.plan] ?? 0;
         }
 
-        // ArgoOne revenue
+        // ArgoOne® revenue
         const { data: purchases } = await sb
             .from('one_purchases')
             .select('id, pack_size, amount_cents, currency, payment_status, created_at, paid_at')

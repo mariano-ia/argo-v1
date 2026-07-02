@@ -54,9 +54,9 @@ async function getArsRate(): Promise<number> {
 }
 
 const LABELS: Record<string, string> = {
-    es: 'ArgoOne · Informe completo',
-    en: 'ArgoOne · Full report',
-    pt: 'ArgoOne · Relatório completo',
+    es: 'ArgoOne® · Informe completo',
+    en: 'ArgoOne® · Full report',
+    pt: 'ArgoOne® · Relatório completo',
 };
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

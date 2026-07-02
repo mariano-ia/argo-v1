@@ -14,15 +14,15 @@ async function sendWelcomeEmail(to: string, lang: string, displayName: string, s
     const dashUrl = `${site}/dashboard`;
     const L = lang === 'en' || lang === 'pt' ? lang : 'es';
     const t = {
-        es: { subject: 'Bienvenido a Argo Method', heading: `Bienvenido, ${displayName}`,
+        es: { subject: 'Bienvenido a ArgoMethod®', heading: `Bienvenido, ${displayName}`,
               b1: 'Tu cuenta ya está activa con 14 días de prueba. Desde tu panel puedes invitar a tus deportistas y ver sus perfiles a medida que completan la experiencia.',
               b2: `Tu link para compartir con las familias es <a href="${playUrl}" style="color:#955FB5;">${playUrl}</a>.`,
               cta: 'Ir a mi panel' },
-        en: { subject: 'Welcome to Argo Method', heading: `Welcome, ${displayName}`,
+        en: { subject: 'Welcome to ArgoMethod®', heading: `Welcome, ${displayName}`,
               b1: 'Your account is active with a 14-day trial. From your dashboard you can invite your athletes and see their profiles as they complete the experience.',
               b2: `Your link to share with families is <a href="${playUrl}" style="color:#955FB5;">${playUrl}</a>.`,
               cta: 'Go to my dashboard' },
-        pt: { subject: 'Bem-vindo ao Argo Method', heading: `Bem-vindo, ${displayName}`,
+        pt: { subject: 'Bem-vindo ao ArgoMethod®', heading: `Bem-vindo, ${displayName}`,
               b1: 'Sua conta está ativa com 14 dias de teste. No seu painel você pode convidar seus atletas e ver os perfis conforme eles completam a experiência.',
               b2: `Seu link para compartilhar com as famílias é <a href="${playUrl}" style="color:#955FB5;">${playUrl}</a>.`,
               cta: 'Ir ao meu painel' },
@@ -37,7 +37,7 @@ async function sendWelcomeEmail(to: string, lang: string, displayName: string, s
 <p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${t.b2}</p>
 <a href="${dashUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;margin-top:4px;">${t.cta}</a>
 </td></tr>
-<tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p></td></tr>
+<tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · Perfilamiento conductual para deportistas jóvenes</p></td></tr>
 </table></td></tr></table></body></html>`;
     try {
         const r = await fetch('https://api.resend.com/emails', {

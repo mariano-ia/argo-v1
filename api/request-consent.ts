@@ -66,7 +66,7 @@ function consentEmailES(args: TemplateArgs): EmailTemplate {
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Hola ${aName},</h1>
-      <p>${cName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${cName}.</p>
+      <p>${cName} está a punto de comenzar su odisea en ArgoMethod®. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirmar y continuar</a>
       <p class="fallback">O copia este enlace en tu navegador:<br>${cUrl}</p>
       <p class="note">⏱ Este enlace expira en 24 horas. Si no lo usas a tiempo, deberás empezar de nuevo.</p>
@@ -75,12 +75,12 @@ function consentEmailES(args: TemplateArgs): EmailTemplate {
       <p class="note">Si no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
       <a href="https://argomethod.com/privacy">Política de Privacidad</a> · <a href="https://argomethod.com/terms">Términos</a>
     </div>
   </div>
 </body></html>`,
-        text: `Hola ${adultName},\n\n${childName} está a punto de comenzar su odisea en Argo Method. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${childName}.\n\nConfirma aquí:\n${confirmUrl}\n\nEste enlace expira en 24 horas.\n\n¿Por qué? Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${childName}.\n\nSi no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.\n\nArgo Method. hola@argomethod.com`,
+        text: `Hola ${adultName},\n\n${childName} está a punto de comenzar su odisea en ArgoMethod®. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${childName}.\n\nConfirma aquí:\n${confirmUrl}\n\nEste enlace expira en 24 horas.\n\n¿Por qué? Para proteger la privacidad de los menores, necesitamos verificar que eres el adulto responsable antes de recopilar cualquier dato de ${childName}.\n\nSi no reconoces este email, puedes ignorarlo. No se recopilará ningún dato hasta que confirmes.\n\nArgoMethod®. hola@argomethod.com`,
     };
 }
 
@@ -96,7 +96,7 @@ function consentEmailEN(args: TemplateArgs): EmailTemplate {
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Hi ${aName},</h1>
-      <p>${cName} is about to start their odyssey on Argo Method. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${cName}.</p>
+      <p>${cName} is about to start their odyssey on ArgoMethod®. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirm and continue</a>
       <p class="fallback">Or copy this link into your browser:<br>${cUrl}</p>
       <p class="note">⏱ This link expires in 24 hours. If you don't use it in time, you'll need to start over.</p>
@@ -105,12 +105,12 @@ function consentEmailEN(args: TemplateArgs): EmailTemplate {
       <p class="note">If you don't recognize this email, you can ignore it. No data will be collected until you confirm.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
       <a href="https://argomethod.com/privacy">Privacy Policy</a> · <a href="https://argomethod.com/terms">Terms</a>
     </div>
   </div>
 </body></html>`,
-        text: `Hi ${adultName},\n\n${childName} is about to start their odyssey on Argo Method. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${childName}.\n\nConfirm here:\n${confirmUrl}\n\nThis link expires in 24 hours.\n\nWhy? To comply with COPPA (U.S. Children's Online Privacy Protection Act), we need to verify you are the responsible adult before collecting any data about ${childName}.\n\nIf you don't recognize this email, you can ignore it. No data will be collected until you confirm.\n\nArgo Method — hola@argomethod.com`,
+        text: `Hi ${adultName},\n\n${childName} is about to start their odyssey on ArgoMethod®. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${childName}.\n\nConfirm here:\n${confirmUrl}\n\nThis link expires in 24 hours.\n\nWhy? To comply with COPPA (U.S. Children's Online Privacy Protection Act), we need to verify you are the responsible adult before collecting any data about ${childName}.\n\nIf you don't recognize this email, you can ignore it. No data will be collected until you confirm.\n\nArgoMethod® — hola@argomethod.com`,
     };
 }
 
@@ -126,7 +126,7 @@ function consentEmailPT(args: TemplateArgs): EmailTemplate {
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Olá ${aName},</h1>
-      <p>${cName} está prestes a começar sua odisseia no Argo Method. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${cName}.</p>
+      <p>${cName} está prestes a começar sua odisseia no ArgoMethod®. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirmar e continuar</a>
       <p class="fallback">Ou copie este link no seu navegador:<br>${cUrl}</p>
       <p class="note">⏱ Este link expira em 24 horas. Se não for usado a tempo, será necessário começar de novo.</p>
@@ -135,12 +135,12 @@ function consentEmailPT(args: TemplateArgs): EmailTemplate {
       <p class="note">Se você não reconhece este email, pode ignorá-lo. Nenhum dado será coletado até sua confirmação.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a><br>
       <a href="https://argomethod.com/privacy">Política de Privacidade</a> · <a href="https://argomethod.com/terms">Termos</a>
     </div>
   </div>
 </body></html>`,
-        text: `Olá ${adultName},\n\n${childName} está prestes a começar sua odisseia no Argo Method. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${childName}.\n\nConfirme aqui:\n${confirmUrl}\n\nEste link expira em 24 horas.\n\nPor quê? Para proteger a privacidade dos menores, precisamos verificar que você é o responsável antes de coletar qualquer dado de ${childName}.\n\nSe você não reconhece este email, pode ignorá-lo. Nenhum dado será coletado até sua confirmação.\n\nArgo Method — hola@argomethod.com`,
+        text: `Olá ${adultName},\n\n${childName} está prestes a começar sua odisseia no ArgoMethod®. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${childName}.\n\nConfirme aqui:\n${confirmUrl}\n\nEste link expira em 24 horas.\n\nPor quê? Para proteger a privacidade dos menores, precisamos verificar que você é o responsável antes de coletar qualquer dado de ${childName}.\n\nSe você não reconhece este email, pode ignorá-lo. Nenhum dado será coletado até sua confirmação.\n\nArgoMethod® — hola@argomethod.com`,
     };
 }
 

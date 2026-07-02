@@ -79,7 +79,7 @@ async function generateTopicIdea(
     const archetypeContext = archetype ? `\nIncluye referencia al arquetipo "${ARCHETYPE_LABELS[archetype] ?? archetype}".` : '';
     const recentList = recentTitles.length > 0 ? `\n\nTemas ya publicados (NO repitas):\n- ${recentTitles.join('\n- ')}` : '';
 
-    const prompt = `Genera UNA idea de articulo para el blog de Argo Method (perfilamiento conductual DISC para deportistas juveniles 8-16 anos).
+    const prompt = `Genera UNA idea de articulo para el blog de ArgoMethod® (perfilamiento conductual DISC para deportistas juveniles 8-16 anos).
 
 Pilar: ${pillar}. Audiencia: ${audience}. Formato: ${format}.${archetypeContext}${recentList}
 

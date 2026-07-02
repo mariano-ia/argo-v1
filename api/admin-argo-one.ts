@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 
 /**
  * GET /api/admin-argo-one
- * Returns all ArgoOne purchases with their link statuses.
+ * Returns all ArgoOne® purchases with their link statuses.
  */
 
 async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClient<any, any>>): Promise<boolean> {

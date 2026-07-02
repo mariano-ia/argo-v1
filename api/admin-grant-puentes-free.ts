@@ -6,7 +6,7 @@ import crypto from 'crypto';
  * POST /api/admin-grant-puentes-free
  * Body: { session_id }
  *
- * Admin-only: creates a complimentary (comp) Argo Puentes purchase for the
+ * Admin-only: creates a complimentary (comp) ArgoPuente® purchase for the
  * adult_email of the given session, including all their already-perfilados
  * children (multi-child rule, cap 5). Sends an "invitación free" email
  * with the magic link directly into the questionnaire — no paywall.
@@ -37,41 +37,41 @@ function buildFreeInviteEmail(args: {
     const navy = '#1D1D1F';
 
     const t = args.lang === 'en' ? {
-        subject: `An Argo Puentes invitation for you, no cost`,
-        eyebrow: 'An invitation · Argo Puentes',
+        subject: `An ArgoPuente® invitation for you, no cost`,
+        eyebrow: 'An invitation · ArgoPuente®',
         title: `We have a companion piece for you, on us.`,
-        intro: `A few days ago you received the Argo report for ${args.childName}. As a thank-you, we want to invite you to Argo Puentes — completely free.`,
-        what: `Argo Puentes is a short questionnaire (about five minutes) that reveals your own DISC style as an adult and proposes four specific bridges to better accompany ${args.childName} in sport.`,
+        intro: `A few days ago you received the Argo report for ${args.childName}. As a thank-you, we want to invite you to ArgoPuente® — completely free.`,
+        what: `ArgoPuente® is a short questionnaire (about five minutes) that reveals your own DISC style as an adult and proposes four specific bridges to better accompany ${args.childName} in sport.`,
         highlight: args.siblingsNames.length > 0
             ? `Your invitation also covers ${args.siblingsNames.join(', ')}.`
             : 'Includes all your children profiled with this email, at no cost.',
-        cta: 'Start Argo Puentes',
+        cta: 'Start ArgoPuente®',
         note: 'This invitation is personal. No payment is required at any step.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
     } : args.lang === 'pt' ? {
-        subject: `Um convite Argo Puentes para você, sem custo`,
-        eyebrow: 'Um convite · Argo Puentes',
+        subject: `Um convite ArgoPuente® para você, sem custo`,
+        eyebrow: 'Um convite · ArgoPuente®',
         title: `Temos um complemento para você, por nossa conta.`,
-        intro: `Há alguns dias você recebeu o relatório Argo de ${args.childName}. Como agradecimento, queremos convidá-lo para o Argo Puentes — totalmente gratuito.`,
-        what: `Argo Puentes é um questionário curto (cerca de cinco minutos) que revela seu próprio estilo DISC como adulto e propõe quatro pontes específicas para acompanhar ${args.childName} melhor no esporte.`,
+        intro: `Há alguns dias você recebeu o relatório Argo de ${args.childName}. Como agradecimento, queremos convidá-lo para o ArgoPuente® — totalmente gratuito.`,
+        what: `ArgoPuente® é um questionário curto (cerca de cinco minutos) que revela seu próprio estilo DISC como adulto e propõe quatro pontes específicas para acompanhar ${args.childName} melhor no esporte.`,
         highlight: args.siblingsNames.length > 0
             ? `Seu convite também inclui ${args.siblingsNames.join(', ')}.`
             : 'Inclui todos os seus filhos perfilados com este email, sem custo.',
-        cta: 'Começar Argo Puentes',
+        cta: 'Começar ArgoPuente®',
         note: 'Este convite é pessoal. Não é necessário nenhum pagamento em nenhum momento.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
     } : {
-        subject: `Una invitación a Argo Puentes para ti, sin costo`,
-        eyebrow: 'Una invitación · Argo Puentes',
+        subject: `Una invitación a ArgoPuente® para ti, sin costo`,
+        eyebrow: 'Una invitación · ArgoPuente®',
         title: `Tenemos un complemento para ti, sin costo.`,
-        intro: `Hace unos días recibiste el informe Argo de ${args.childName}. Como agradecimiento, queremos invitarte a Argo Puentes, totalmente gratis.`,
-        what: `Argo Puentes es un cuestionario corto (unos cinco minutos) que revela tu propio estilo DISC como adulto y propone cuatro puentes específicos para acompañar a ${args.childName} mejor en su deporte.`,
+        intro: `Hace unos días recibiste el informe Argo de ${args.childName}. Como agradecimiento, queremos invitarte a ArgoPuente®, totalmente gratis.`,
+        what: `ArgoPuente® es un cuestionario corto (unos cinco minutos) que revela tu propio estilo DISC como adulto y propone cuatro puentes específicos para acompañar a ${args.childName} mejor en su deporte.`,
         highlight: args.siblingsNames.length > 0
             ? `Tu invitación también incluye a ${args.siblingsNames.join(', ')}.`
             : 'Incluye a todos tus hijos perfilados con este email, sin costo.',
-        cta: 'Empezar Argo Puentes',
+        cta: 'Empezar ArgoPuente®',
         note: 'Esta invitación es personal. No es necesario ningún pago en ningún paso.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
     };
 
     const html = `<!DOCTYPE html><html lang="${args.lang}"><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
@@ -144,7 +144,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (existing) {
             return res.status(409).json({
                 error: 'already_active',
-                detail: `This email already has an active Argo Puentes (${existing.provider}).`,
+                detail: `This email already has an active ArgoPuente® (${existing.provider}).`,
                 magic_link: `${origin}/puentes/${existing.magic_token}`,
             });
         }

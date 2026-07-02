@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 /**
  * POST /api/one-start-play
  * Body: { slug }
- * Validates an ArgoOne link slug is valid and not used.
+ * Validates an ArgoOne® link slug is valid and not used.
  * Returns: { ok, link_id, purchase_email }
  */
 

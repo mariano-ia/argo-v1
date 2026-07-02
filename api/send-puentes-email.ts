@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/send-puentes-email
  * Body: { puentes_session_id }
  *
- * Sends the final Argo Puentes report to the recipient_email via Resend.
+ * Sends the final ArgoPuente® report to the recipient_email via Resend.
  * Visual language mirrors the child report email (brújula card with eje
  * pills + axis bars, content cards with section titles, sub-blocks with
  * coloured stripes for child/adult/bridge, reflection callout, plus an
@@ -62,8 +62,8 @@ const PRESSURE_LABEL: Record<string, Record<string, string>> = {
 
 function getCopy(lang: string) {
     if (lang === 'en') return {
-        eyebrow: 'Argo Puentes · Your bond',
-        subjectPrefix: 'Your Argo Puentes — bond with',
+        eyebrow: 'ArgoPuente® · Your bond',
+        subjectPrefix: 'Your ArgoPuente® — bond with',
         bondTitle: 'Your bond',
         welcome: 'Welcome',
         yourStyle: 'Your natural style',
@@ -76,14 +76,14 @@ function getCopy(lang: string) {
         pressure: 'Style under pressure',
         viewOnline: 'View report online',
         emailNote: (email: string) => `This report has also been sent to ${email}. You can revisit it at the link above whenever you want.`,
-        siblingsLabel: 'This Argo Puentes also includes',
+        siblingsLabel: 'This ArgoPuente® also includes',
         foreverNote: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'This report is not a clinical or therapeutic service. It is an invitation to reflect.',
     };
     if (lang === 'pt') return {
-        eyebrow: 'Argo Puentes · Seu vínculo',
-        subjectPrefix: 'Seu Argo Puentes — vínculo com',
+        eyebrow: 'ArgoPuente® · Seu vínculo',
+        subjectPrefix: 'Seu ArgoPuente® — vínculo com',
         bondTitle: 'Seu vínculo',
         welcome: 'Bem-vindo',
         yourStyle: 'Seu estilo natural',
@@ -96,14 +96,14 @@ function getCopy(lang: string) {
         pressure: 'Estilo sob pressão',
         viewOnline: 'Ver relatório online',
         emailNote: (email: string) => `Este relatório também foi enviado para ${email}. Você pode revisitá-lo no link acima quando quiser.`,
-        siblingsLabel: 'Este Argo Puentes também inclui',
+        siblingsLabel: 'Este ArgoPuente® também inclui',
         foreverNote: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este relatório não é um serviço clínico nem terapêutico. É um convite à reflexão.',
     };
     return {
-        eyebrow: 'Argo Puentes · Tu vínculo',
-        subjectPrefix: 'Tu Argo Puentes: vínculo con',
+        eyebrow: 'ArgoPuente® · Tu vínculo',
+        subjectPrefix: 'Tu ArgoPuente®: vínculo con',
         bondTitle: 'Tu vínculo',
         welcome: 'Bienvenida',
         yourStyle: 'Tu estilo natural',
@@ -116,9 +116,9 @@ function getCopy(lang: string) {
         pressure: 'Estilo bajo presión',
         viewOnline: 'Ver informe en línea',
         emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Puedes volver al enlace de arriba cuando quieras.`,
-        siblingsLabel: 'Este Argo Puentes también incluye a',
+        siblingsLabel: 'Este ArgoPuente® también incluye a',
         foreverNote: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
-        footer: 'Argo Method · Argo Puentes',
+        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este informe no es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
     };
 }
@@ -308,7 +308,7 @@ function buildHtml(args: {
             <tr><td style="padding:24px 26px;">
                 ${sectionTitle(t.eyebrow, brujulaIcon())}
                 <h1 style="margin:0;font-size:26px;font-weight:300;letter-spacing:-0.02em;color:#1D1D1F;line-height:1.2;">${t.bondTitle}</h1>
-                <p style="margin:4px 0 0;font-size:13px;color:${violet};font-style:italic;">Argo Puentes</p>
+                <p style="margin:4px 0 0;font-size:13px;color:${violet};font-style:italic;">ArgoPuente®</p>
                 ${pillsHtml}
                 ${axisBarsHtml}
                 ${pressureHtml}

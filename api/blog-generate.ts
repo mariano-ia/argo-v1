@@ -120,7 +120,7 @@ const DISC_AXES = {
 
 // ─── Brand voice system prompt ──────────────────────────────────────────────
 
-const BRAND_VOICE_SYSTEM = `Eres el redactor senior de Argo Method, una herramienta de perfilamiento conductual para deportistas juveniles (8-16 anos) basada en el modelo DISC.
+const BRAND_VOICE_SYSTEM = `Eres el redactor senior de ArgoMethod®, una herramienta de perfilamiento conductual para deportistas juveniles (8-16 anos) basada en el modelo DISC.
 
 TU VOZ:
 - Directa, calida, con opinion. No eres un chatbot generico.
@@ -309,7 +309,7 @@ async function generateBlogPost(input: GenerateInput, autoPublish: boolean): Pro
 
     if (isTranslation) {
         // Translation is much cheaper: ~40% fewer tokens than full generation
-        const translatePrompt = `Adapta este articulo de blog de Argo Method al ${lang === 'en' ? 'ingles' : 'portugues brasileiro'}.
+        const translatePrompt = `Adapta este articulo de blog de ArgoMethod® al ${lang === 'en' ? 'ingles' : 'portugues brasileiro'}.
 
 NO es una traduccion literal. El articulo debe sentirse nativo en ${lang === 'en' ? 'ingles' : 'portugues'}. Adapta expresiones, ejemplos y tono cultural.
 
@@ -336,14 +336,14 @@ Devuelve un JSON con esta estructura exacta:
 Devuelve SOLO el JSON, sin markdown ni backticks.`;
 
         genResponse = await callAI([
-            { role: 'system', content: 'Eres un traductor y adaptador cultural experto para Argo Method (perfilamiento conductual DISC para deportistas juveniles). Mantiene la voz de marca, el lenguaje de probabilidad, y la terminologia Argo. Adapta nombres de arquetipos: en ingles usa traducciones entre parentesis en la primera mencion.' },
+            { role: 'system', content: 'Eres un traductor y adaptador cultural experto para ArgoMethod® (perfilamiento conductual DISC para deportistas juveniles). Mantiene la voz de marca, el lenguaje de probabilidad, y la terminologia Argo. Adapta nombres de arquetipos: en ingles usa traducciones entre parentesis en la primera mencion.' },
             { role: 'user', content: translatePrompt },
         ], { temperature: 0.5, maxTokens: 16000 });
         totalInputTokens += genResponse.inputTokens;
         totalOutputTokens += genResponse.outputTokens;
     } else {
         // Full generation mode (Spanish or no source content)
-        let userPrompt = `Escribe un articulo de blog para Argo Method sobre:\n\n"${input.prompt}"`;
+        let userPrompt = `Escribe un articulo de blog para ArgoMethod® sobre:\n\n"${input.prompt}"`;
 
         if (input.pillar) userPrompt += `\n\nPilar tematico: ${input.pillar}`;
         if (input.audience) userPrompt += `\nAudiencia principal: ${input.audience}`;
@@ -391,7 +391,7 @@ Devuelve SOLO el JSON, sin markdown ni backticks.`;
         // Retry once — re-send the same messages with stricter instruction
         const retryMessages = isTranslation
             ? [
-                { role: 'system' as const, content: 'Eres un traductor y adaptador cultural experto para Argo Method. Devuelve SOLO JSON valido.' },
+                { role: 'system' as const, content: 'Eres un traductor y adaptador cultural experto para ArgoMethod®. Devuelve SOLO JSON valido.' },
                 { role: 'user' as const, content: genResponse.content + '\n\nEl texto anterior no es JSON valido. Extrae el contenido y devuelve SOLO un JSON valido con: title, seo_title, slug, meta_description, category, tags, reading_time, content. Sin backticks.' },
               ]
             : [

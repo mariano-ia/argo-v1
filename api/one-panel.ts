@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * ArgoOne mini-panel API.
+ * ArgoOne® mini-panel API.
  * Auth: via access_token query param (magic link, no Supabase auth).
  *
  * GET  /api/one-panel?token=xxx  → ALL paid purchases + links for the token's email
@@ -44,19 +44,19 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
     const PL = lang === 'en' ? {
-        subject: 'Your ArgoOne access link',
+        subject: 'Your ArgoOne® access link',
         heading: 'Here is your access link',
         body: 'Open your panel to see your reports, the delivery status of each one, and to generate new play links.',
         cta: 'Open my reports',
         note: 'This link is personal. If you did not request it, you can ignore this email.',
     } : lang === 'pt' ? {
-        subject: 'Seu link de acesso ao ArgoOne',
+        subject: 'Seu link de acesso ao ArgoOne®',
         heading: 'Aqui está seu link de acesso',
         body: 'Abra seu painel para ver seus relatórios, o status de envio de cada um e gerar novos links de jogo.',
         cta: 'Abrir meus relatórios',
         note: 'Este link é pessoal. Se você não o solicitou, pode ignorar este email.',
     } : {
-        subject: 'Tu link de acceso a ArgoOne',
+        subject: 'Tu link de acceso a ArgoOne®',
         heading: 'Aquí está tu link de acceso',
         body: 'Abre tu panel para ver tus informes, el estado de envío de cada uno y generar nuevos links de juego.',
         cta: 'Abrir mis informes',
@@ -213,21 +213,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const childDisplay = child_name?.trim() || 'el niño';
             const pl = (purchase.lang as string) || 'es';
             const PL = pl === 'en' ? {
-                subject: `Argo Method: ${childDisplay}'s experience is ready`,
+                subject: `ArgoMethod®: ${childDisplay}'s experience is ready`,
                 heading: `${childDisplay}'s experience is ready`,
                 body1: `Someone invited ${childDisplay} to play an interactive adventure of under 10 minutes. When it ends, you'll receive a personalized behavioral profile report at this email.`,
                 body2: 'Complete the registration, hand the device to the athlete, and you are done.',
                 cta: 'Start the experience',
                 note: 'This link is single-use. Once the experience is completed, it cannot be used again.',
             } : pl === 'pt' ? {
-                subject: `Argo Method: a experiência de ${childDisplay} está pronta`,
+                subject: `ArgoMethod®: a experiência de ${childDisplay} está pronta`,
                 heading: `A experiência de ${childDisplay} está pronta`,
                 body1: `Alguém convidou ${childDisplay} para jogar uma aventura interativa de menos de 10 minutos. Ao terminar, você receberá um relatório de perfil comportamental personalizado neste email.`,
                 body2: 'Complete o registro, passe o dispositivo ao atleta, e pronto.',
                 cta: 'Começar a experiência',
                 note: 'Este link é de uso único. Uma vez completada a experiência, não poderá ser usado novamente.',
             } : {
-                subject: `Argo Method: la experiencia de ${childDisplay} está lista`,
+                subject: `ArgoMethod®: la experiencia de ${childDisplay} está lista`,
                 heading: `La experiencia de ${childDisplay} está lista`,
                 body1: `Alguien te invitó a que ${childDisplay} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.`,
                 body2: 'Completa el registro, pásale el dispositivo al deportista, y listo.',
@@ -259,7 +259,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;">${PL.note}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · Perfilamiento conductual para deportistas jóvenes</p>
 </td></tr>
 </table></td></tr></table>
 </body></html>`,

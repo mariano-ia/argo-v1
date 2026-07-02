@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
  * Body: { magic_token }
  *
  * Validates the magic link token and returns the full purchase state with
- * all children's puentes_sessions. One Argo Puentes purchase covers every
+ * all children's puentes_sessions. One ArgoPuente® purchase covers every
  * child of the same adult (multi-child support).
  *
  * Response shape:

@@ -100,7 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // ── Tenant attribution gate ──────────────────────────────────────
             // To attach to a tenant the caller must present a valid play_token. We
             // trust the tenant_id, team_id, and (for re-profile) child_id from the
-            // SIGNED token, never the body. ArgoOne / self-play (no tenant) needs no token.
+            // SIGNED token, never the body. ArgoOne® / self-play (no tenant) needs no token.
             let effectiveTenantId: string | null = null;
             let effectiveTeamId: string | null = null;
             let reproChildId: string | null = null;

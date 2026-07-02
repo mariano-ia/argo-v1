@@ -48,24 +48,24 @@ async function resolveTenantContext(
 const INVITE_COPY: Record<string, { headline: (n: string) => string; sub: string; body: string; hint: string; cta: string; disclaimer: string }> = {
     es: {
         headline: (n) => `Te invitaron a unirte a <strong style="font-weight:700;">${n}</strong>`,
-        sub: 'Crea tu contraseña para acceder al dashboard de Argo Method.',
-        body: 'Argo Method es una plataforma de perfilado conductual para deportistas jóvenes. Desde el dashboard puedes ver los perfiles de tus jugadores, analizar la química de tus grupos y consultar al asistente Argo.',
+        sub: 'Crea tu contraseña para acceder al dashboard de ArgoMethod®.',
+        body: 'ArgoMethod® es una plataforma de perfilado conductual para deportistas jóvenes. Desde el dashboard puedes ver los perfiles de tus jugadores, analizar la química de tus grupos y consultar al asistente Argo.',
         hint: 'Haz clic en el botón de abajo para crear tu contraseña y acceder.',
         cta: 'Crear contraseña →',
         disclaimer: 'Este enlace es personal e intransferible. Si no esperabas esta invitación, puedes ignorar este mensaje.',
     },
     en: {
         headline: (n) => `You've been invited to join <strong style="font-weight:700;">${n}</strong>`,
-        sub: 'Create your password to access the Argo Method dashboard.',
-        body: 'Argo Method is a behavioral profiling platform for young athletes. From the dashboard you can view your players\' profiles, analyze your group chemistry, and consult the Argo assistant.',
+        sub: 'Create your password to access the ArgoMethod® dashboard.',
+        body: 'ArgoMethod® is a behavioral profiling platform for young athletes. From the dashboard you can view your players\' profiles, analyze your group chemistry, and consult the Argo assistant.',
         hint: 'Click the button below to create your password and get started.',
         cta: 'Create password →',
         disclaimer: 'This link is personal and non-transferable. If you weren\'t expecting this invitation, you can safely ignore this message.',
     },
     pt: {
         headline: (n) => `Você foi convidado a entrar em <strong style="font-weight:700;">${n}</strong>`,
-        sub: 'Crie sua senha para acessar o dashboard do Argo Method.',
-        body: 'O Argo Method é uma plataforma de perfilamento comportamental para atletas jovens. No dashboard você pode ver os perfis dos seus jogadores, analisar a química dos seus grupos e consultar o assistente Argo.',
+        sub: 'Crie sua senha para acessar o dashboard do ArgoMethod®.',
+        body: 'O ArgoMethod® é uma plataforma de perfilamento comportamental para atletas jovens. No dashboard você pode ver os perfis dos seus jogadores, analisar a química dos seus grupos e consultar o assistente Argo.',
         hint: 'Clique no botão abaixo para criar sua senha e começar.',
         cta: 'Criar senha →',
         disclaimer: 'Este link é pessoal e intransferível. Se você não esperava este convite, pode ignorar esta mensagem.',
@@ -81,7 +81,7 @@ function buildInviteEmail(tenantName: string, actionLink: string, lang = 'es'): 
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Argo Method</title>
+<title>ArgoMethod®</title>
 </head>
 <body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 
@@ -130,7 +130,7 @@ function buildInviteEmail(tenantName: string, actionLink: string, lang = 'es'): 
   <tr>
     <td style="background:#F5F5F7;border-top:1px solid #E8E8ED;padding:18px 28px;text-align:center;">
       <p style="margin:0;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">
-        Argo Method · Dashboard
+        ArgoMethod® · Dashboard
       </p>
     </td>
   </tr>
@@ -151,13 +151,13 @@ function buildAddedEmail(tenantName: string, dashUrl: string, lang = 'es'): stri
     const violet = '#955FB5';
     const violetShadow = 'rgba(149,95,181,0.28)';
     const copy: Record<string, { headline: string; sub: string; body: string; hint: string; cta: string; disclaimer: string }> = {
-        es: { headline: `Te sumaron a ${tenantName}`, sub: 'Ya tienes acceso con tu cuenta de Argo', body: `Un administrador de ${tenantName} te agregó a su equipo en Argo Method.`, hint: 'Entra con tu cuenta actual. Vas a ver esta institución en el selector, arriba a la izquierda.', cta: 'Abrir mi panel', disclaimer: 'Si no esperabas esto, puedes ignorar este email.' },
-        en: { headline: `You've been added to ${tenantName}`, sub: 'You already have access with your Argo account', body: `An admin at ${tenantName} added you to their team on Argo Method.`, hint: 'Sign in with your current account. This institution will appear in the selector, top left.', cta: 'Open my dashboard', disclaimer: 'If you did not expect this, you can ignore this email.' },
-        pt: { headline: `Você foi adicionado a ${tenantName}`, sub: 'Você já tem acesso com sua conta Argo', body: `Um administrador de ${tenantName} adicionou você à equipe no Argo Method.`, hint: 'Entre com sua conta atual. Esta instituição aparecerá no seletor, no canto superior esquerdo.', cta: 'Abrir meu painel', disclaimer: 'Se você não esperava isso, pode ignorar este email.' },
+        es: { headline: `Te sumaron a ${tenantName}`, sub: 'Ya tienes acceso con tu cuenta de Argo', body: `Un administrador de ${tenantName} te agregó a su equipo en ArgoMethod®.`, hint: 'Entra con tu cuenta actual. Vas a ver esta institución en el selector, arriba a la izquierda.', cta: 'Abrir mi panel', disclaimer: 'Si no esperabas esto, puedes ignorar este email.' },
+        en: { headline: `You've been added to ${tenantName}`, sub: 'You already have access with your Argo account', body: `An admin at ${tenantName} added you to their team on ArgoMethod®.`, hint: 'Sign in with your current account. This institution will appear in the selector, top left.', cta: 'Open my dashboard', disclaimer: 'If you did not expect this, you can ignore this email.' },
+        pt: { headline: `Você foi adicionado a ${tenantName}`, sub: 'Você já tem acesso com sua conta Argo', body: `Um administrador de ${tenantName} adicionou você à equipe no ArgoMethod®.`, hint: 'Entre com sua conta atual. Esta instituição aparecerá no seletor, no canto superior esquerdo.', cta: 'Abrir meu painel', disclaimer: 'Se você não esperava isso, pode ignorar este email.' },
     };
     const c = copy[lang] ?? copy.es;
     return `<!DOCTYPE html>
-<html lang="${lang}"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Argo Method</title></head>
+<html lang="${lang}"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>ArgoMethod®</title></head>
 <body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
@@ -175,7 +175,7 @@ function buildAddedEmail(tenantName: string, dashUrl: string, lang = 'es'): stri
     <p style="margin:16px auto 0;font-size:11px;color:#AEAEB2;max-width:380px;line-height:1.7;">${c.disclaimer}</p>
   </td></tr>
   <tr><td style="background:#F5F5F7;border-top:1px solid #E8E8ED;padding:18px 28px;text-align:center;">
-    <p style="margin:0;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">Argo Method · Dashboard</p>
+    <p style="margin:0;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">ArgoMethod® · Dashboard</p>
   </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -285,9 +285,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     body: JSON.stringify({
                         from: 'Argo Method <hola@argomethod.com>',
                         to: [normalizedEmail],
-                        subject: emailLang === 'en' ? `You've been added to ${tenantName} on Argo Method`
-                            : emailLang === 'pt' ? `Você foi adicionado a ${tenantName} no Argo Method`
-                            : `Te agregaron a ${tenantName} en Argo Method`,
+                        subject: emailLang === 'en' ? `You've been added to ${tenantName} on ArgoMethod®`
+                            : emailLang === 'pt' ? `Você foi adicionado a ${tenantName} no ArgoMethod®`
+                            : `Te agregaron a ${tenantName} en ArgoMethod®`,
                         html: buildAddedEmail(tenantName, dashUrl, emailLang),
                     }),
                 }).catch(() => { /* best-effort */ });
@@ -370,10 +370,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     from: 'Argo Method <hola@argomethod.com>',
                     to: [normalizedEmail],
                     subject: emailLang === 'en'
-                        ? `You've been invited to manage ${tenantName} on Argo Method`
+                        ? `You've been invited to manage ${tenantName} on ArgoMethod®`
                         : emailLang === 'pt'
-                        ? `Você foi convidado a gerenciar ${tenantName} no Argo Method`
-                        : `Te invitaron a gestionar ${tenantName} en Argo Method`,
+                        ? `Você foi convidado a gerenciar ${tenantName} no ArgoMethod®`
+                        : `Te invitaron a gestionar ${tenantName} en ArgoMethod®`,
                     html,
                 }),
             });

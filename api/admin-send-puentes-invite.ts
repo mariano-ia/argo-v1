@@ -5,11 +5,11 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/admin-send-puentes-invite
  * Body: { session_id }
  *
- * Admin-only: sends an Argo Puentes invite email to the parent of a given
+ * Admin-only: sends an ArgoPuente® invite email to the parent of a given
  * completed session, mirroring the +3 day reminder cron template. Sets
  * sessions.puentes_reminder_sent_at so the cron does not double-send.
  *
- * Returns 409 if the parent already purchased Argo Puentes for that
+ * Returns 409 if the parent already purchased ArgoPuente® for that
  * session, or 409 if an invite was already sent.
  */
 
@@ -32,26 +32,26 @@ function buildHtml(args: {
 
     const t = args.lang === 'en' ? {
         subject: `One more idea for accompanying ${args.childName}`,
-        eyebrow: 'A follow-up · Argo Puentes',
+        eyebrow: 'A follow-up · ArgoPuente®',
         title: `One more idea for accompanying ${args.childName}`,
-        body: `A few days ago you received ${args.childName}'s Argo report. Some parents and coaches have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements ${args.childName}'s.`,
-        cta: 'Explore Argo Puentes',
+        body: `A few days ago you received ${args.childName}'s Argo report. Some parents and coaches have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements ${args.childName}'s.`,
+        cta: 'Explore ArgoPuente®',
         price: priceLine,
         footer: 'You can ignore this email. We will not send another reminder.',
     } : args.lang === 'pt' ? {
         subject: `Mais uma ideia para acompanhar ${args.childName}`,
-        eyebrow: 'Continuação · Argo Puentes',
+        eyebrow: 'Continuação · ArgoPuente®',
         title: `Mais uma ideia para acompanhar ${args.childName}`,
-        body: `Alguns dias atrás você recebeu o relatório Argo de ${args.childName}. Alguns pais e treinadores acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${args.childName}.`,
-        cta: 'Explorar Argo Puentes',
+        body: `Alguns dias atrás você recebeu o relatório Argo de ${args.childName}. Alguns pais e treinadores acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${args.childName}.`,
+        cta: 'Explorar ArgoPuente®',
         price: priceLine,
         footer: 'Você pode ignorar este email. Não enviaremos outro lembrete.',
     } : {
         subject: `Una idea más para acompañar a ${args.childName}`,
-        eyebrow: 'Una continuación · Argo Puentes',
+        eyebrow: 'Una continuación · ArgoPuente®',
         title: `Una idea más para acompañar a ${args.childName}`,
-        body: `Hace unos días recibiste el informe Argo de ${args.childName}. Algunos padres y entrenadores encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${args.childName}.`,
-        cta: 'Conocer Argo Puentes',
+        body: `Hace unos días recibiste el informe Argo de ${args.childName}. Algunos padres y entrenadores encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${args.childName}.`,
+        cta: 'Conocer ArgoPuente®',
         price: priceLine,
         footer: 'Puedes ignorar este email. No enviaremos otro recordatorio.',
     };
@@ -74,7 +74,7 @@ function buildHtml(args: {
 <p style="margin:24px 0 0;font-size:11px;color:#AEAEB2;line-height:1.6;">${t.footer}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puentes</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · ArgoPuente®</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 
@@ -125,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (existing) return res.status(409).json({ error: 'Already purchased' });
 
-        // Mirror the currency the parent already paid in (ArgoOne), so the
+        // Mirror the currency the parent already paid in (ArgoOne®), so the
         // upsell price line matches their previous experience.
         let preferredCurrency: 'usd' | 'ars' | null = null;
         try {

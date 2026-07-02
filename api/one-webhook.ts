@@ -20,7 +20,7 @@ async function logActivity(sb: { from: (table: string) => { insert: (values: unk
 }
 
 function lifecycleShell(heading: string, body: string, cta: string, url: string): string {
-    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);"><tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span></td></tr><tr><td style="padding:28px;"><h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 12px;">${heading}</h2><p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${body}</p><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;margin-top:4px;">${cta}</a></td></tr><tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p></td></tr></table></td></tr></table></body></html>`;
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);"><tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span></td></tr><tr><td style="padding:28px;"><h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 12px;">${heading}</h2><p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${body}</p><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;margin-top:4px;">${cta}</a></td></tr><tr><td style="background:#F5F5F7;padding:16px 28px;text-align:center;border-top:1px solid #E8E8ED;"><p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · Perfilamiento conductual para deportistas jóvenes</p></td></tr></table></td></tr></table></body></html>`;
 }
 function paymentFailedEmail(lang: string): { subject: string; html: string } {
     const url = `${process.env.SITE_URL || 'https://argomethod.com'}/dashboard`;
@@ -112,12 +112,12 @@ export const config = { api: { bodyParser: false } };
  * Handles payment confirmation from Stripe and MercadoPago.
  *
  * Stripe events:
- *   - checkout.session.completed (ArgoOne + subscriptions)
+ *   - checkout.session.completed (ArgoOne+® subscriptions)
  *   - customer.subscription.deleted (subscription cancellation)
  *   - charge.refunded (refund processing)
  *
  * MercadoPago events:
- *   - payment / payment.created / payment.updated (ArgoOne payments)
+ *   - payment / payment.created / payment.updated (ArgoOne® payments)
  *   - subscription_preapproval (subscription status changes)
  *   - subscription_authorized_payment (recurring payment processed)
  */
@@ -142,7 +142,7 @@ async function sendConfirmationEmail(
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
 
     const PL = lang === 'en' ? {
-        subject: packSize === 1 ? 'Your ArgoOne report is ready to use' : `Your ${packSize} ArgoOne reports are ready to use`,
+        subject: packSize === 1 ? 'Your ArgoOne® report is ready to use' : `Your ${packSize} ArgoOne® reports are ready to use`,
         packLabel: packSize === 1 ? '1 report' : `${packSize} reports`,
         badge: 'Purchase confirmed', paid: 'Payment received', nextStep: 'Your next step',
         s1t: 'Open your panel', s1b: 'From your panel you generate links for athletes to play the experience.',
@@ -150,9 +150,9 @@ async function sendConfirmationEmail(
         s3t: 'Get the report', s3b: 'The athlete plays an adventure of under 10 minutes. The full report arrives at the adult\'s email.',
         cta: 'Go to my reports',
         note: `Keep this link to come back anytime. You can also go to <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> and enter your email to see your reports, their delivery status, and generate links.`,
-        footer: 'Argo Method · Behavioral profiling for young athletes',
+        footer: 'ArgoMethod® · Behavioral profiling for young athletes',
     } : lang === 'pt' ? {
-        subject: packSize === 1 ? 'Seu relatório ArgoOne está pronto para usar' : `Seus ${packSize} relatórios ArgoOne estão prontos para usar`,
+        subject: packSize === 1 ? 'Seu relatório ArgoOne® está pronto para usar' : `Seus ${packSize} relatórios ArgoOne® estão prontos para usar`,
         packLabel: packSize === 1 ? '1 relatório' : `${packSize} relatórios`,
         badge: 'Compra confirmada', paid: 'Pagamento recebido', nextStep: 'Seu próximo passo',
         s1t: 'Acesse seu painel', s1b: 'No seu painel você gera links para os atletas jogarem a experiência.',
@@ -160,9 +160,9 @@ async function sendConfirmationEmail(
         s3t: 'Receba o relatório', s3b: 'O atleta joga uma aventura de menos de 10 minutos. O relatório completo chega no email do adulto responsável.',
         cta: 'Ir aos meus relatórios',
         note: `Guarde este link para voltar quando quiser. Você também pode acessar <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> com seu email para ver seus relatórios, o status dos envios e gerar links.`,
-        footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
+        footer: 'ArgoMethod® · Perfilamento comportamental para atletas jovens',
     } : {
-        subject: packSize === 1 ? 'Tu informe ArgoOne está listo para usar' : `Tus ${packSize} informes ArgoOne están listos para usar`,
+        subject: packSize === 1 ? 'Tu informe ArgoOne® está listo para usar' : `Tus ${packSize} informes ArgoOne® están listos para usar`,
         packLabel: packSize === 1 ? '1 informe' : `${packSize} informes`,
         badge: 'Compra confirmada', paid: 'Pago recibido', nextStep: 'Tu siguiente paso',
         s1t: 'Accede a tu panel', s1b: 'Desde tu panel generas links para que los deportistas jueguen la experiencia.',
@@ -170,7 +170,7 @@ async function sendConfirmationEmail(
         s3t: 'Recibe el informe', s3b: 'El deportista juega una aventura de menos de 10 minutos. El informe completo llega al email del adulto responsable.',
         cta: 'Ir a mis informes',
         note: `Guarda este link para volver cuando quieras. También puedes entrar a <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> con tu email para ver tus informes, el estado de los envíos y generar links.`,
-        footer: 'Argo Method · Perfilamiento conductual para deportistas jóvenes',
+        footer: 'ArgoMethod® · Perfilamiento conductual para deportistas jóvenes',
     };
     const subject = PL.subject;
     const packLabel = PL.packLabel;
@@ -258,14 +258,14 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const planLabel = plan === 'pro' ? 'PRO' : 'Academy';
     const L = lang === 'en' ? {
-        subject: `Your ${planLabel} plan on Argo Method is active`,
+        subject: `Your ${planLabel} plan on ArgoMethod® is active`,
         heroTitle: 'Your plan is active.',
         badgeLabel: `${planLabel} plan active`,
         badgeBody: `Up to ${rosterLimit} active players. Every feature unlocked.`,
         unlockedLabel: 'What your plan unlocked',
         closing: 'Your dashboard already reflects the unlocked features.',
         cta: 'Go to dashboard',
-        footer: 'Argo Method · Behavioral profiling for young athletes',
+        footer: 'ArgoMethod® · Behavioral profiling for young athletes',
         features: [
             { label: 'Unlimited AI queries', desc: 'Ask whatever you need about your players, with no limit.' },
             { label: 'Bridge words and words to avoid', desc: 'Key phrases to connect with each profile and the ones that create resistance.' },
@@ -275,14 +275,14 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
             { label: 'Personalized Behavioral Predictor', desc: 'Guidance tailored to each player profile.' },
         ],
     } : lang === 'pt' ? {
-        subject: `Seu plano ${planLabel} no Argo Method está ativo`,
+        subject: `Seu plano ${planLabel} no ArgoMethod® está ativo`,
         heroTitle: 'Seu plano está ativo.',
         badgeLabel: `Plano ${planLabel} ativo`,
         badgeBody: `Até ${rosterLimit} jogadores ativos. Todas as funções desbloqueadas.`,
         unlockedLabel: 'O que seu plano desbloqueou',
         closing: 'Seu dashboard já reflete as funções desbloqueadas.',
         cta: 'Ir ao dashboard',
-        footer: 'Argo Method · Perfilamento comportamental para atletas jovens',
+        footer: 'ArgoMethod® · Perfilamento comportamental para atletas jovens',
         features: [
             { label: 'Consultas de IA ilimitadas', desc: 'Pergunte o que precisar sobre seus jogadores, sem restrição.' },
             { label: 'Palavras-ponte e palavras a evitar', desc: 'Frases-chave para conectar com cada perfil e as que geram resistência.' },
@@ -292,14 +292,14 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
             { label: 'Preditor Comportamental personalizado', desc: 'Orientações adaptadas ao perfil de cada jogador.' },
         ],
     } : {
-        subject: `Tu plan ${planLabel} en Argo Method está activo`,
+        subject: `Tu plan ${planLabel} en ArgoMethod® está activo`,
         heroTitle: 'Tu plan está activo.',
         badgeLabel: `Plan ${planLabel} activo`,
         badgeBody: `Hasta ${rosterLimit} jugadores activos. Todas las funcionalidades desbloqueadas.`,
         unlockedLabel: 'Qué se desbloqueó con tu plan',
         closing: 'Tu dashboard ya refleja las funcionalidades desbloqueadas.',
         cta: 'Ir al dashboard',
-        footer: 'Argo Method · Perfilamiento conductual para deportistas jóvenes',
+        footer: 'ArgoMethod® · Perfilamiento conductual para deportistas jóvenes',
         features: [
             { label: 'Consultas IA ilimitadas', desc: 'Pregunta lo que necesites sobre tus jugadores sin restricción.' },
             { label: 'Palabras puente y palabras a evitar', desc: 'Frases clave para conectar con cada perfil y las que generan resistencia.' },
@@ -354,7 +354,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
 </td></tr>
 
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-    <p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Perfilamiento conductual para deportistas jóvenes</p>
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · Perfilamiento conductual para deportistas jóvenes</p>
 </td></tr>
 
 </table></td></tr></table>
@@ -372,7 +372,7 @@ async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number
     });
 }
 
-/* ── Argo Puente helpers ────────────────────────────────────────────────── */
+/* ── ArgoPuente® helpers ────────────────────────────────────────────────── */
 
 async function sendPuentesMagicEmail(args: {
     to: string;
@@ -387,23 +387,23 @@ async function sendPuentesMagicEmail(args: {
     const violet = '#955FB5';
     const child = args.childName || (args.lang === 'en' ? 'the child' : args.lang === 'pt' ? 'a criança' : 'el niño');
     const subject = args.lang === 'en'
-        ? `Your Argo Puente is ready. Bond with ${child}`
+        ? `Your ArgoPuente® is ready. Bond with ${child}`
         : args.lang === 'pt'
-            ? `Seu Argo Puente está pronto. Vínculo com ${child}`
-            : `Tu Argo Puente está listo. Vínculo con ${child}`;
+            ? `Seu ArgoPuente® está pronto. Vínculo com ${child}`
+            : `Tu ArgoPuente® está listo. Vínculo con ${child}`;
 
     const t = args.lang === 'en' ? {
-        headline: 'Your Argo Puente is ready',
+        headline: 'Your ArgoPuente® is ready',
         body: `You will answer 15 short questions (5 to 7 minutes) about your own style. We will then generate a personalized report with 4 bridges to deepen your bond with ${child} in sport.`,
         cta: 'Start the questionnaire',
         note: 'This link is personal and non-transferable. Save it to come back later.',
     } : args.lang === 'pt' ? {
-        headline: 'Seu Argo Puente está pronto',
+        headline: 'Seu ArgoPuente® está pronto',
         body: `Você responderá 15 perguntas curtas (5 a 7 minutos) sobre seu próprio estilo. Em seguida geramos um relatório personalizado com 4 pontes para aprofundar o vínculo com ${child} no esporte.`,
         cta: 'Começar o questionário',
         note: 'Este link é pessoal e intransferível. Guarde-o para voltar depois.',
     } : {
-        headline: 'Tu Argo Puente está listo',
+        headline: 'Tu ArgoPuente® está listo',
         body: `Vas a responder 15 preguntas cortas (5 a 7 minutos) sobre tu propio estilo. Después generamos un informe personalizado con 4 puentes para profundizar el vínculo con ${child} en el deporte.`,
         cta: 'Empezar el cuestionario',
         note: 'Este link es personal e intransferible. Guárdalo para volver más tarde.',
@@ -425,7 +425,7 @@ async function sendPuentesMagicEmail(args: {
 <p style="margin:20px 0 0;font-size:11px;color:#AEAEB2;text-align:center;line-height:1.6;">${t.note}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puente</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · ArgoPuente®</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 
@@ -467,7 +467,7 @@ async function handlePuentesPaid(args: {
         provider_payment_id: providerPaymentId,
     }).eq('id', purchaseId);
 
-    // Multi-child support: one Argo Puente purchase covers every child this adult
+    // Multi-child support: one ArgoPuente® purchase covers every child this adult
     // email already profiled (up to MAX_CHILDREN_PER_PURCHASE). current_perfilamiento
     // gives one row per child = its latest resolved perfilamiento, already filtered
     // to resolved + non-deleted. perfilamiento_id is the assessment id that
@@ -683,7 +683,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         return handleSubscription({ id: session.id, metadata: session.metadata ?? {}, subscription: subId, customer_email: session.customer_email ?? undefined }, 'stripe', res, sb);
     }
 
-    // Argo Puente payment
+    // ArgoPuente® payment
     if (source === 'argo_puentes') {
         const puentesPurchaseId = session.metadata?.purchase_id;
         if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase_id' });
@@ -699,7 +699,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         return res.status(200).json({ received: true, kind: 'unlock', session_id: unlockSessionId });
     }
 
-    // ArgoOne payment
+    // ArgoOne® payment
     const purchaseId = session?.metadata?.purchase_id;
     if (!purchaseId || source !== 'argo_one') {
         return res.status(200).json({ received: true, ignored: true });
@@ -848,7 +848,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         return res.status(200).json({ received: true, action: 'subscription_payment_logged' });
     }
 
-    // ── ArgoOne payment events ─────────────────────────────────────────
+    // ── ArgoOne® payment events ─────────────────────────────────────────
     if (topic !== 'payment' && topic !== 'payment.created' && topic !== 'payment.updated') {
         return res.status(200).json({ received: true, ignored: true });
     }
@@ -871,7 +871,7 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         return res.status(200).json({ received: true, status: payment.status });
     }
 
-    // Argo Puente: external_reference prefixed with "puentes_"
+    // ArgoPuente®: external_reference prefixed with "puentes_"
     const externalRef = payment.external_reference as string | undefined;
     const isPuentes = payment.metadata?.source === 'argo_puentes' || externalRef?.startsWith('puentes_');
     if (isPuentes) {

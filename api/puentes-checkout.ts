@@ -7,9 +7,9 @@ import crypto from 'crypto';
  * Body: { source_session_id, recipient_email, recipient_name?, country?, lang?, consent_given }
  * Returns: { checkout_url, purchase_id, provider, currency }
  *
- * Creates an Argo Puente purchase record (pending) linked to the child's
+ * Creates an ArgoPuente® purchase record (pending) linked to the child's
  * source session. Fase 0: Stripe USD 4.99 only (MercadoPago/ARS bypassed).
- * Mirrors the ArgoOne checkout pattern.
+ * Mirrors the ArgoOne® checkout pattern.
  */
 
 const PRICE_USD_CENTS = 499;          // $4.99 USD (Puente add-on, offered to every adult after a child's play)
@@ -74,10 +74,10 @@ async function createStripeCheckout(args: {
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
-        ? `Argo Puente: bond with ${args.childName}`
+        ? `ArgoPuente®: bond with ${args.childName}`
         : args.lang === 'pt'
-            ? `Argo Puente: vínculo com ${args.childName}`
-            : `Argo Puente: vínculo con ${args.childName}`;
+            ? `ArgoPuente®: vínculo com ${args.childName}`
+            : `ArgoPuente®: vínculo con ${args.childName}`;
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -127,10 +127,10 @@ async function createMpCheckout(args: {
         ? `https://${process.env.VERCEL_URL}`
         : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
     const productLabel = args.lang === 'en'
-        ? `Argo Puente: bond with ${args.childName}`
+        ? `ArgoPuente®: bond with ${args.childName}`
         : args.lang === 'pt'
-            ? `Argo Puente: vínculo com ${args.childName}`
-            : `Argo Puente: vínculo con ${args.childName}`;
+            ? `ArgoPuente®: vínculo com ${args.childName}`
+            : `ArgoPuente®: vínculo con ${args.childName}`;
 
     const res = await fetch('https://api.mercadopago.com/checkout/preferences', {
         method: 'POST',
@@ -228,7 +228,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
             return res.status(409).json({
                 error: 'already_purchased',
-                detail: 'This email already has an active Argo Puente account.',
+                detail: 'This email already has an active ArgoPuente® account.',
                 existing_magic_link: `${origin}/puentes/${existing.magic_token}`,
             });
         }

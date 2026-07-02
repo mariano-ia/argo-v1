@@ -6,7 +6,7 @@ import crypto from 'crypto';
  * POST /api/one-complete
  * Body: { link_id, session_data }
  *
- * Called when an ArgoOne odyssey is completed.
+ * Called when an ArgoOne® odyssey is completed.
  * Creates a child (no tenant_id) + a resolved perfilamiento (no tenant_id),
  * marks the link as completed (one_links.session_id = the perfilamiento id, so
  * the /report/:id link stays valid), and triggers the report email.
@@ -57,15 +57,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (!link) return res.status(404).json({ error: 'Link not found' });
         if (link.status === 'completed') return res.status(400).json({ error: 'Already completed' });
 
-        // ArgoOne: a completed play creates a CHILD (tenant_id NULL = persistent
+        // ArgoOne®: a completed play creates a CHILD (tenant_id NULL = persistent
         // roster/identity entity) plus a resolved PERFILAMIENTO (the assessment).
-        // 1:1 here — each ArgoOne link yields exactly one child + one perfilamiento.
+        // 1:1 here — each ArgoOne® link yields exactly one child + one perfilamiento.
         const lang = session_data.lang || 'es';
 
         const { data: child, error: childErr } = await sb
             .from('children')
             .insert({
-                tenant_id: null,  // ArgoOne: no tenant
+                tenant_id: null,  // ArgoOne®: no tenant
                 adult_name: session_data.adult_name,
                 adult_email: session_data.adult_email,
                 child_name: session_data.child_name,
@@ -81,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Failed to save session' });
         }
 
-        // Save the perfilamiento, the assessment (no tenant_id — this is ArgoOne).
+        // Save the perfilamiento, the assessment (no tenant_id — this is ArgoOne®).
         // Identity columns are still present + populated per row.
         const { data: perfilamiento, error: perfErr } = await sb
             .from('perfilamientos')
@@ -103,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_tokens_output: session_data.ai_tokens_output || 0,
                 ai_cost_usd: session_data.ai_cost_usd || 0,
                 lang,
-                tenant_id: null,  // ArgoOne: no tenant
+                tenant_id: null,  // ArgoOne®: no tenant
                 last_profiled_at: new Date().toISOString(),
             })
             .select('id')
@@ -124,9 +124,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             completed_at: new Date().toISOString(),
         }).eq('id', link_id);
 
-        // ── ArgoOne + Puente combo: deliver the prepaid Puente ───────────────
+        // ── ArgoOne+® Puente combo: deliver the prepaid Puente ───────────────
         // If this purchase is the combo (one_purchases.includes_puente), create a
-        // complimentary ($0, comp) Argo Puentes purchase for the responsible adult
+        // complimentary ($0, comp) ArgoPuente® purchase for the responsible adult
         // so it is already PAID when the report email is sent. send-email then shows
         // the prepaid Puente magic link (instead of the $4.99 upsell) and creates the
         // puentes_session itself. Skips if the adult already has a paid purchase, to

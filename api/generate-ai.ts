@@ -507,7 +507,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const langLabel = LANG_LABELS[langCode] || LANG_LABELS.es;
 
         const systemContent = langCode !== 'es'
-            ? `You are an expert writer for the Argo Method. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
+            ? `You are an expert writer for the ArgoMethod®. Respond ONLY with valid JSON, no markdown or additional explanations. Write all text values in ${langLabel}. Every single string in the response must be in ${langLabel} — no Spanish whatsoever.`
             : 'Eres un experto redactor del Método Argo. Respondes SOLO con JSON válido, sin markdown ni explicaciones adicionales.';
 
         const messages: AIMsg[] = [

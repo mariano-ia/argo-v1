@@ -58,7 +58,7 @@ async function resolveTenantContext(
 
 const PLANS: Record<string, { monthly_usd_cents: number; annual_usd_cents: number; roster_limit: number; label_en: string; label_es: string }> = {
     pro:     { monthly_usd_cents: 4900, annual_usd_cents: 48000, roster_limit: 50,  label_en: 'Argo PRO',     label_es: 'Argo PRO' },
-    academy: { monthly_usd_cents: 8900, annual_usd_cents: 84000, roster_limit: 100, label_en: 'Argo Academy', label_es: 'Argo Academy' },
+    academy: { monthly_usd_cents: 8900, annual_usd_cents: 84000, roster_limit: 100, label_en: 'ArgoAcademy®', label_es: 'ArgoAcademy®' },
 };
 
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];

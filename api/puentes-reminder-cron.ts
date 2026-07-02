@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 /**
  * GET /api/puentes-reminder-cron
  *
- * Daily cron (Vercel cron) that sends a soft reminder of Argo Puentes to
+ * Daily cron (Vercel cron) that sends a soft reminder of ArgoPuente® to
  * adults whose child session was completed 3+ days ago but who haven't
  * purchased the upsell. Tracks via sessions.puentes_reminder_sent_at to
  * avoid double-sending.
@@ -56,32 +56,32 @@ function buildReminderHtml(args: {
         subject: isMulti
             ? `One more idea for accompanying ${namesText}`
             : `One more idea for accompanying ${namesText}`,
-        eyebrow: 'A follow-up · Argo Puentes',
+        eyebrow: 'A follow-up · ArgoPuente®',
         title: `One more idea for accompanying ${namesText}`,
         body: isMulti
-            ? `A few days ago you received the Argo reports of ${namesText}. Some parents have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements each of your children's. One purchase covers all of them.`
-            : `A few days ago you received ${namesText}'s Argo report. Some parents and coaches have found Argo Puentes useful as a follow-up: a short questionnaire about your own style and how it complements ${namesText}'s.`,
-        cta: 'Explore Argo Puentes',
+            ? `A few days ago you received the Argo reports of ${namesText}. Some parents have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements each of your children's. One purchase covers all of them.`
+            : `A few days ago you received ${namesText}'s Argo report. Some parents and coaches have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements ${namesText}'s.`,
+        cta: 'Explore ArgoPuente®',
         price: priceLine,
         footer: 'You can ignore this email. We will not send another reminder.',
     } : args.lang === 'pt' ? {
         subject: `Mais uma ideia para acompanhar ${namesText}`,
-        eyebrow: 'Continuação · Argo Puentes',
+        eyebrow: 'Continuação · ArgoPuente®',
         title: `Mais uma ideia para acompanhar ${namesText}`,
         body: isMulti
-            ? `Alguns dias atrás você recebeu os relatórios Argo de ${namesText}. Alguns pais acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de cada um dos seus filhos. Uma compra cobre todos eles.`
-            : `Alguns dias atrás você recebeu o relatório Argo de ${namesText}. Alguns pais e treinadores acharam o Argo Puentes útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${namesText}.`,
-        cta: 'Explorar Argo Puentes',
+            ? `Alguns dias atrás você recebeu os relatórios Argo de ${namesText}. Alguns pais acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de cada um dos seus filhos. Uma compra cobre todos eles.`
+            : `Alguns dias atrás você recebeu o relatório Argo de ${namesText}. Alguns pais e treinadores acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${namesText}.`,
+        cta: 'Explorar ArgoPuente®',
         price: priceLine,
         footer: 'Você pode ignorar este email. Não enviaremos outro lembrete.',
     } : {
         subject: `Una idea más para acompañar a ${namesText}`,
-        eyebrow: 'Una continuación · Argo Puentes',
+        eyebrow: 'Una continuación · ArgoPuente®',
         title: `Una idea más para acompañar a ${namesText}`,
         body: isMulti
-            ? `Hace unos días recibiste los informes Argo de ${namesText}. Algunos padres encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de cada uno de tus hijos. Una compra cubre a todos.`
-            : `Hace unos días recibiste el informe Argo de ${namesText}. Algunos padres y entrenadores encontraron útil Argo Puentes como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${namesText}.`,
-        cta: 'Conocer Argo Puentes',
+            ? `Hace unos días recibiste los informes Argo de ${namesText}. Algunos padres encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de cada uno de tus hijos. Una compra cubre a todos.`
+            : `Hace unos días recibiste el informe Argo de ${namesText}. Algunos padres y entrenadores encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${namesText}.`,
+        cta: 'Conocer ArgoPuente®',
         price: priceLine,
         footer: 'Puedes ignorar este email. No enviaremos otro recordatorio.',
     };
@@ -104,7 +104,7 @@ function buildReminderHtml(args: {
 <p style="margin:24px 0 0;font-size:11px;color:#AEAEB2;line-height:1.6;">${t.footer}</p>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;">Argo Method · Argo Puentes</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;">ArgoMethod® · ArgoPuente®</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 
@@ -193,7 +193,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     continue;
                 }
 
-                // Preferred currency from prior ArgoOne purchases (if any)
+                // Preferred currency from prior ArgoOne® purchases (if any)
                 let preferredCurrency: 'usd' | 'ars' | null = null;
                 try {
                     const { data: lastPurchase } = await sb

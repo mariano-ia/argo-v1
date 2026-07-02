@@ -201,7 +201,7 @@ function buildPrompt(args: {
         'El largo plazo: sostener su vínculo con el deporte',
     ];
 
-    return `Tarea: Generar un informe "Argo Puentes" para un adulto responsable de ${childName} (deporte: ${sport}).
+    return `Tarea: Generar un informe "ArgoPuente®" para un adulto responsable de ${childName} (deporte: ${sport}).
 El informe es un upsell tras el informe del niño y propone 4 PUENTES (no diagnósticos) entre el estilo natural del adulto y el del niño.
 
 PERFIL DEL NIÑO (ya conocido):
@@ -332,10 +332,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const lang = (pSession.lang || 'es') as 'es' | 'en' | 'pt';
         const systemContent = lang === 'es'
-            ? 'Eres un especialista en DISC aplicado a la psicología deportiva juvenil. Trabajas para Argo Method. Respondes SOLO con JSON válido, sin markdown ni explicaciones. Tono adulto a adulto, lenguaje probabilístico, sin etiquetas clínicas.'
+            ? 'Eres un especialista en DISC aplicado a la psicología deportiva juvenil. Trabajas para ArgoMethod®. Respondes SOLO con JSON válido, sin markdown ni explicaciones. Tono adulto a adulto, lenguaje probabilístico, sin etiquetas clínicas.'
             : lang === 'pt'
-                ? 'Você é um especialista em DISC aplicado à psicologia esportiva juvenil. Trabalha para o Argo Method. Responde SOMENTE com JSON válido, sem markdown nem explicações. Tom adulto a adulto, linguagem probabilística, sem rótulos clínicos.'
-                : 'You are a specialist in DISC applied to youth sports psychology. You work for Argo Method. Respond ONLY with valid JSON, no markdown or explanations. Adult to adult tone, probabilistic language, no clinical labels.';
+                ? 'Você é um especialista em DISC aplicado à psicologia esportiva juvenil. Trabalha para o ArgoMethod®. Responde SOMENTE com JSON válido, sem markdown nem explicações. Tom adulto a adulto, linguagem probabilística, sem rótulos clínicos.'
+                : 'You are a specialist in DISC applied to youth sports psychology. You work for ArgoMethod®. Respond ONLY with valid JSON, no markdown or explanations. Adult to adult tone, probabilistic language, no clinical labels.';
 
         const userContent = buildPrompt({
             childProfile: {

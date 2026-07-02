@@ -37,28 +37,40 @@ Even in the frontend, keep the **spaced, ®-less** form in:
 3. **Email sender / From display-names** — `from: 'Argo Method <hola@argomethod.com>'`. A ®
    in a From header renders oddly across mail clients. (These all live in `api/`.)
 
-## Scope: frontend only (as of this pass)
+## Scope: every rendered surface (round 2, 2026-07-02)
 
-The 2026-07-02 pass changed **`src/` only** (owner: "hacé el cambio solo en front"). The
-backend **`api/`** (email templates, crons, webhooks) still carries the OLD forms
-(`Argo Puentes`, `Argo Method`, `ArgoOne`, no ®). **This is a known inconsistency:**
-web UI shows `ArgoPuente®` / `ArgoMethod®`, emails still show `Argo Puentes` / `Argo Method`.
-Align `api/` in a dedicated follow-up before it matters for live sends (respecting the
-three exceptions above — especially the From display-names).
+Round 1 changed `src/` only ("front"), which left real gaps the owner then caught. Round 2
+covers **all rendered surfaces**:
+- **`src/`** — incl. the shared dynamic wordmark components `ProductName` (Landing) and
+  `BrandName` (ArgoOneLanding). See the gotcha below.
+- **`public/sales/argo-instituciones.html`** — the institutions sales deck (all wordmarks,
+  `®` after the `+` on `ArgoOne+®`).
+- **`api/`** — email templates, crons, AND the Puente report + its AI-generation prompt
+  (`generate-puentes.ts`), so new reports/emails say `ArgoPuente®`, not `Argo Puentes`.
+  From display-names protected.
+- **`index.html`** visible title / og:title / twitter:title / og:site_name / noscript `<h1>`,
+  and **`manifest.json`** name.
 
-## As-built (2026-07-02)
+### The gotcha that caused the missed round
+`ProductName` and `BrandName` render `Argo` + `{rest}` across **separate spans**, so the
+contiguous string `"ArgoOne"` never appears in source — a string regex/grep will not find
+them. The `®` had to be added **inside the component**. Any new dynamic wordmark component
+has the same trap.
 
-- 46 `src/` files updated. Verified: `tsc --noEmit` clean, `vite build` green, no identifier
-  corruption, no `®®`, JSON-LD preserved.
-- Bulk pass was deterministic (idempotent regex); context-sensitive span wordmarks
-  (`ArgoOne` / `ArgoOne+` split spans, the `BrandName` component with a conditional `+`)
-  were edited by hand so the `®` lands after the `+`.
-- Reusable script: `scripts/brandify-frontend.mjs` (walks `src/`, applies the span-join
-  and contiguous-string rules; excludes `BlogPost.tsx` contiguous strings for the JSON-LD
-  exception). Re-run is safe (idempotent). **It does not handle the split-span One/One+
-  wordmarks** — those stay manual.
+### Deliberately left as-is (not a miss)
+JSON-LD / schema.org in `index.html` (structured-data entity = `"Argo Method"`); email From
+display-names; `public/llms.txt` (machine doc); internal-only `preview/*.html`,
+`design-system/`, `docs/*.md`, `supabase/migrations`.
 
-## Rendered-form counts after the pass (src/)
+## As-built
 
-`ArgoMethod®` ×92 · `ArgoPuente®` ×36 · `ArgoOne®` ×39 · `ArgoOne+®` ×4
-(plus the split-span wordmarks in `OnePanel`, `Landing`, `ArgoOneLanding`).
+- Round 1: 48 `src/` files (`scripts/brandify-frontend.mjs`).
+- Round 2: `ProductName` ® fix + `public/sales/argo-instituciones.html` (manual span edits) +
+  36 `api/` files (`scripts/brandify-api.mjs`, protects From-names) + `index.html` +
+  `manifest.json` + `assets/ads/concept-a/*.html`.
+- Verified each round: `tsc` (src + `typecheck:api`) clean, `vite build` green,
+  `check:api-imports` OK, no identifier corruption, no `®®`, and a Playwright brand smoke
+  (Landing / one / pricing / report / puentes / the deck) 6/6 green.
+- Reusable idempotent scripts: `scripts/brandify-frontend.mjs`, `scripts/brandify-api.mjs`.
+  Neither handles the split-span One/One+ wordmarks nor the dynamic components — those stay
+  manual.

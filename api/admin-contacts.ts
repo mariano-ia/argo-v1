@@ -191,7 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }, 'sessions');
 
-        // 4) ArgoOne purchases — parent buyers (one-time)
+        // 4) ArgoOne® purchases — parent buyers (one-time)
         await safe(async () => {
             const rows = await fetchAll(sb, 'one_purchases', 'email, lang, created_at, paid_at');
             for (const r of rows) {
@@ -205,7 +205,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }, 'one_purchases');
 
-        // 5) ArgoOne links — recipients (may differ from buyer)
+        // 5) ArgoOne® links — recipients (may differ from buyer)
         await safe(async () => {
             const rows = await fetchAll(sb, 'one_links', 'recipient_email, child_name, sport, created_at, completed_at');
             for (const r of rows) {
@@ -220,7 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }, 'one_links');
 
-        // 6) Argo Puentes purchases — adults who bought the bridge report
+        // 6) ArgoPuente® purchases — adults who bought the bridge report
         await safe(async () => {
             const rows = await fetchAll(sb, 'puentes_purchases', 'recipient_email, recipient_name, lang, created_at, paid_at');
             for (const r of rows) {

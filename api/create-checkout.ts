@@ -85,7 +85,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     currency: 'usd',
                     product_data: {
                         name: pack.label,
-                        description: `${pack.credits} créditos para Argo Method`,
+                        description: `${pack.credits} créditos para ArgoMethod®`,
                     },
                     unit_amount: pack.priceUsd,
                 },

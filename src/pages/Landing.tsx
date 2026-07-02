@@ -665,7 +665,7 @@ const FlipCard: React.FC = () => {
 // ─── Pricing section (inline in landing) ─────────────────────────────────────
 
 const ProductName: React.FC<{ rest: string }> = ({ rest }) => (
-    <><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>{rest}</span></>
+    <><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>{rest}</span><span style={{ fontWeight: 300 }}>®</span></>
 );
 
 const ReportItem: React.FC<{ title: string; desc: string }> = ({ title, desc }) => (

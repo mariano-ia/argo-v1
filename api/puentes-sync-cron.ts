@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js';
  * Catches three multi-child scenarios that the synchronous flows (webhook,
  * send-email) might miss:
  *
- *   1. New sibling: a parent who already has paid Argo Puentes has a new
+ *   1. New sibling: a parent who already has paid ArgoPuente® has a new
  *      child who completed an Argo session. Auto-generates the bridge for
  *      that child silently.
  *   2. Re-profile: a child whose puentes_session already exists plays again
@@ -59,9 +59,9 @@ function buildCombinedEmail(args: {
     const t = args.lang === 'en' ? (() => {
         if (hasNew && hasRep) {
             return {
-                subject: `Your Argo Puentes has been updated`,
-                eyebrow: 'Updated · Argo Puentes',
-                title: `Your Argo Puentes has been updated`,
+                subject: `Your ArgoPuente® has been updated`,
+                eyebrow: 'Updated · ArgoPuente®',
+                title: `Your ArgoPuente® has been updated`,
                 body: `${newNames} ${args.newSiblings.length > 1 ? 'have' : 'has'} been added to your report, and we refreshed the bridges with ${repNames} using their latest Argo profile${args.reprofiles.length > 1 ? 's' : ''}.`,
                 cta: 'View updated report',
             };
@@ -69,10 +69,10 @@ function buildCombinedEmail(args: {
         if (hasNew) {
             const verb = args.newSiblings.length > 1 ? 'have' : 'has';
             return {
-                subject: `${newNames} ${verb} been added to your Argo Puentes`,
-                eyebrow: 'Your Argo Puentes now includes more',
+                subject: `${newNames} ${verb} been added to your ArgoPuente®`,
+                eyebrow: 'Your ArgoPuente® now includes more',
                 title: `${newNames} ${verb} been added`,
-                body: `Since you already have Argo Puentes active, we just generated the bridges with ${newNames}. Your report now covers ${args.newSiblings.length > 1 ? 'them all too' : 'them too'}, no extra charge.`,
+                body: `Since you already have ArgoPuente® active, we just generated the bridges with ${newNames}. Your report now covers ${args.newSiblings.length > 1 ? 'them all too' : 'them too'}, no extra charge.`,
                 cta: 'View updated report',
             };
         }
@@ -80,7 +80,7 @@ function buildCombinedEmail(args: {
         const verb = args.reprofiles.length > 1 ? 'are' : 'is';
         return {
             subject: `${repNames} ${verb} growing, and so are their bridges`,
-            eyebrow: 'Updated · Argo Puentes',
+            eyebrow: 'Updated · ArgoPuente®',
             title: `${repNames} ${verb} growing, and so are their bridges`,
             body: `We refreshed the bridges with ${repNames} based on their latest Argo profile${args.reprofiles.length > 1 ? 's' : ''}. Children evolve, and so do the conversations.`,
             cta: 'View updated bridges',
@@ -88,25 +88,25 @@ function buildCombinedEmail(args: {
     })() : args.lang === 'pt' ? (() => {
         if (hasNew && hasRep) {
             return {
-                subject: `Seu Argo Puentes foi atualizado`,
-                eyebrow: 'Atualizado · Argo Puentes',
-                title: `Seu Argo Puentes foi atualizado`,
+                subject: `Seu ArgoPuente® foi atualizado`,
+                eyebrow: 'Atualizado · ArgoPuente®',
+                title: `Seu ArgoPuente® foi atualizado`,
                 body: `${newNames} ${args.newSiblings.length > 1 ? 'foram adicionados' : 'foi adicionado(a)'} ao seu relatório, e atualizamos as pontes com ${repNames} com base em seu${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 's' : ''} Argo mais recente${args.reprofiles.length > 1 ? 's' : ''}.`,
                 cta: 'Ver relatório atualizado',
             };
         }
         if (hasNew) {
             return {
-                subject: `${newNames} foi adicionado(a) ao seu Argo Puentes`,
-                eyebrow: 'Seu Argo Puentes agora inclui mais',
+                subject: `${newNames} foi adicionado(a) ao seu ArgoPuente®`,
+                eyebrow: 'Seu ArgoPuente® agora inclui mais',
                 title: `${newNames} ${args.newSiblings.length > 1 ? 'foram adicionados' : 'foi adicionado(a)'}`,
-                body: `Como você já tem Argo Puentes ativo, geramos automaticamente as pontes com ${newNames}. Seu relatório agora cobre ${args.newSiblings.length > 1 ? 'todos eles' : 'mais um(a)'} sem cobrança adicional.`,
+                body: `Como você já tem ArgoPuente® ativo, geramos automaticamente as pontes com ${newNames}. Seu relatório agora cobre ${args.newSiblings.length > 1 ? 'todos eles' : 'mais um(a)'} sem cobrança adicional.`,
                 cta: 'Ver relatório atualizado',
             };
         }
         return {
             subject: `${repNames} está crescendo, e as pontes com você também`,
-            eyebrow: 'Atualizado · Argo Puentes',
+            eyebrow: 'Atualizado · ArgoPuente®',
             title: `${repNames} está crescendo, e as pontes com você também`,
             body: `Atualizamos as pontes com ${repNames} com base em seu${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 's' : ''} Argo mais recente${args.reprofiles.length > 1 ? 's' : ''}. As crianças evoluem, e as conversas também.`,
             cta: 'Ver pontes atualizadas',
@@ -114,19 +114,19 @@ function buildCombinedEmail(args: {
     })() : (() => {
         if (hasNew && hasRep) {
             return {
-                subject: `Tu Argo Puentes se actualizó`,
-                eyebrow: 'Actualizado · Argo Puentes',
-                title: `Tu Argo Puentes se actualizó`,
+                subject: `Tu ArgoPuente® se actualizó`,
+                eyebrow: 'Actualizado · ArgoPuente®',
+                title: `Tu ArgoPuente® se actualizó`,
                 body: `Sumamos a ${newNames} a tu informe y actualizamos los puentes con ${repNames} usando su${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 'es' : ''} más reciente${args.reprofiles.length > 1 ? 's' : ''}.`,
                 cta: 'Ver informe actualizado',
             };
         }
         if (hasNew) {
             return {
-                subject: `Sumamos a ${newNames} a tu Argo Puentes`,
-                eyebrow: 'Tu Argo Puentes ahora incluye más',
+                subject: `Sumamos a ${newNames} a tu ArgoPuente®`,
+                eyebrow: 'Tu ArgoPuente® ahora incluye más',
                 title: `Sumamos a ${newNames} a tu informe`,
-                body: `Como ya tienes Argo Puentes activo, acabamos de generar los puentes con ${newNames}. Tu informe ahora ${args.newSiblings.length > 1 ? 'los' : 'lo'} incluye ${args.newSiblings.length > 1 ? 'a todos' : ''}, sin cobrarte de nuevo.`,
+                body: `Como ya tienes ArgoPuente® activo, acabamos de generar los puentes con ${newNames}. Tu informe ahora ${args.newSiblings.length > 1 ? 'los' : 'lo'} incluye ${args.newSiblings.length > 1 ? 'a todos' : ''}, sin cobrarte de nuevo.`,
                 cta: 'Ver informe actualizado',
             };
         }
@@ -134,7 +134,7 @@ function buildCombinedEmail(args: {
         const possessive = args.reprofiles.length > 1 ? 'sus' : 'sus';
         return {
             subject: `${repNames} ${verb} creciendo, y sus puentes contigo también`,
-            eyebrow: 'Actualizado · Argo Puentes',
+            eyebrow: 'Actualizado · ArgoPuente®',
             title: `${repNames} ${verb} creciendo, y ${possessive} puentes contigo también`,
             body: `Actualizamos los puentes con ${repNames} usando su${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 'es' : ''} Argo más reciente${args.reprofiles.length > 1 ? 's' : ''}. Los chicos evolucionan, y las conversaciones también.`,
             cta: 'Ver puentes actualizados',
@@ -155,7 +155,7 @@ function buildCombinedEmail(args: {
 <a href="${args.magicLink}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:13px 26px;border-radius:11px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.cta}</a>
 </td></tr>
 <tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
-<p style="font-size:11px;color:#AEAEB2;margin:0;letter-spacing:0.07em;text-transform:uppercase;">Argo Method · Argo Puentes</p>
+<p style="font-size:11px;color:#AEAEB2;margin:0;letter-spacing:0.07em;text-transform:uppercase;">ArgoMethod® · ArgoPuente®</p>
 </td></tr>
 </table></td></tr></table></body></html>`;
 

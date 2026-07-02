@@ -63,13 +63,13 @@ function deleteEmailES(args: TemplateArgs): EmailTemplate {
         ? `los datos de <strong>${cName}</strong>`
         : 'todos los datos de los deportistas asociados a este email';
     return {
-        subject: 'Confirma la eliminación de tus datos en Argo Method',
+        subject: 'Confirma la eliminación de tus datos en ArgoMethod®',
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirmar eliminación</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Solicitud de eliminación</h1>
-      <p>Recibimos una solicitud para eliminar permanentemente ${scope} de los sistemas de Argo Method.</p>
+      <p>Recibimos una solicitud para eliminar permanentemente ${scope} de los sistemas de ArgoMethod®.</p>
       <div class="warn"><strong>Esta acción es irreversible.</strong> Una vez confirmada, todos los datos se borran de forma permanente: respuestas del deportista, perfil generado, secciones de IA y registros relacionados.</div>
       <p>Si tú solicitaste esto, confirma haciendo click en el botón:</p>
       <a class="cta" href="${cUrl}">Confirmar y eliminar datos</a>
@@ -79,11 +79,11 @@ function deleteEmailES(args: TemplateArgs): EmailTemplate {
       <p class="note"><strong>Si no fuiste tú</strong>, puedes ignorar este email. No se eliminará nada mientras no hagas click.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
     </div>
   </div>
 </body></html>`,
-        text: `Recibimos una solicitud para eliminar permanentemente ${childName ? `los datos de ${childName}` : 'todos los datos asociados a este email'} de los sistemas de Argo Method.\n\nEsta acción es IRREVERSIBLE. Una vez confirmada, todos los datos se borran de forma permanente.\n\nSi tú solicitaste esto, confirma aquí:\n${confirmUrl}\n\nEste enlace expira en 1 hora.\n\nSi no fuiste tú, ignora este email. No se eliminará nada mientras no hagas click.\n\nArgo Method · hola@argomethod.com`,
+        text: `Recibimos una solicitud para eliminar permanentemente ${childName ? `los datos de ${childName}` : 'todos los datos asociados a este email'} de los sistemas de ArgoMethod®.\n\nEsta acción es IRREVERSIBLE. Una vez confirmada, todos los datos se borran de forma permanente.\n\nSi tú solicitaste esto, confirma aquí:\n${confirmUrl}\n\nEste enlace expira en 1 hora.\n\nSi no fuiste tú, ignora este email. No se eliminará nada mientras no hagas click.\n\nArgoMethod® · hola@argomethod.com`,
     };
 }
 
@@ -95,13 +95,13 @@ function deleteEmailEN(args: TemplateArgs): EmailTemplate {
         ? `the data for <strong>${cName}</strong>`
         : 'all athlete data associated with this email';
     return {
-        subject: 'Confirm deletion of your Argo Method data',
+        subject: 'Confirm deletion of your ArgoMethod® data',
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirm deletion</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Data deletion request</h1>
-      <p>We received a request to permanently delete ${scope} from Argo Method's systems.</p>
+      <p>We received a request to permanently delete ${scope} from ArgoMethod®'s systems.</p>
       <div class="warn"><strong>This action is irreversible.</strong> Once confirmed, all data is permanently deleted: athlete answers, generated profile, AI sections, and related records.</div>
       <p>If you requested this, confirm by clicking the button:</p>
       <a class="cta" href="${cUrl}">Confirm and delete data</a>
@@ -111,11 +111,11 @@ function deleteEmailEN(args: TemplateArgs): EmailTemplate {
       <p class="note"><strong>If this wasn't you</strong>, you can ignore this email. Nothing will be deleted unless you click.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
     </div>
   </div>
 </body></html>`,
-        text: `We received a request to permanently delete ${childName ? `the data for ${childName}` : 'all athlete data associated with this email'} from Argo Method.\n\nThis action is IRREVERSIBLE. Once confirmed, all data is permanently deleted.\n\nIf you requested this, confirm here:\n${confirmUrl}\n\nThis link expires in 1 hour.\n\nIf this wasn't you, ignore this email. Nothing will be deleted unless you click.\n\nArgo Method — hola@argomethod.com`,
+        text: `We received a request to permanently delete ${childName ? `the data for ${childName}` : 'all athlete data associated with this email'} from ArgoMethod®.\n\nThis action is IRREVERSIBLE. Once confirmed, all data is permanently deleted.\n\nIf you requested this, confirm here:\n${confirmUrl}\n\nThis link expires in 1 hour.\n\nIf this wasn't you, ignore this email. Nothing will be deleted unless you click.\n\nArgoMethod® — hola@argomethod.com`,
     };
 }
 
@@ -127,13 +127,13 @@ function deleteEmailPT(args: TemplateArgs): EmailTemplate {
         ? `os dados de <strong>${cName}</strong>`
         : 'todos os dados de atletas associados a este email';
     return {
-        subject: 'Confirme a eliminação dos seus dados no Argo Method',
+        subject: 'Confirme a eliminação dos seus dados no ArgoMethod®',
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirmar eliminação</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
       <div class="brand"><b>Argo</b><span> Method</span></div>
       <h1>Solicitação de eliminação</h1>
-      <p>Recebemos uma solicitação para eliminar permanentemente ${scope} dos sistemas do Argo Method.</p>
+      <p>Recebemos uma solicitação para eliminar permanentemente ${scope} dos sistemas do ArgoMethod®.</p>
       <div class="warn"><strong>Esta ação é irreversível.</strong> Uma vez confirmada, todos os dados são eliminados permanentemente: respostas do atleta, perfil gerado, seções de IA e registros relacionados.</div>
       <p>Se você solicitou isso, confirme clicando no botão:</p>
       <a class="cta" href="${cUrl}">Confirmar e eliminar dados</a>
@@ -143,11 +143,11 @@ function deleteEmailPT(args: TemplateArgs): EmailTemplate {
       <p class="note"><strong>Se não foi você</strong>, ignore este email. Nada será eliminado enquanto você não clicar.</p>
     </div>
     <div class="footer">
-      Argo Method · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
+      ArgoMethod® · <a href="mailto:hola@argomethod.com">hola@argomethod.com</a>
     </div>
   </div>
 </body></html>`,
-        text: `Recebemos uma solicitação para eliminar permanentemente ${childName ? `os dados de ${childName}` : 'todos os dados de atletas associados a este email'} do Argo Method.\n\nEsta ação é IRREVERSÍVEL. Uma vez confirmada, todos os dados são eliminados permanentemente.\n\nSe você solicitou isso, confirme aqui:\n${confirmUrl}\n\nEste link expira em 1 hora.\n\nSe não foi você, ignore este email. Nada será eliminado enquanto você não clicar.\n\nArgo Method — hola@argomethod.com`,
+        text: `Recebemos uma solicitação para eliminar permanentemente ${childName ? `os dados de ${childName}` : 'todos os dados de atletas associados a este email'} do ArgoMethod®.\n\nEsta ação é IRREVERSÍVEL. Uma vez confirmada, todos os dados são eliminados permanentemente.\n\nSe você solicitou isso, confirme aqui:\n${confirmUrl}\n\nEste link expira em 1 hora.\n\nSe não foi você, ignore este email. Nada será eliminado enquanto você não clicar.\n\nArgoMethod® — hola@argomethod.com`,
     };
 }
 
