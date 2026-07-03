@@ -149,6 +149,8 @@ The AI consultant (`tenant-chat.ts`) has 5 anti-hallucination layers:
 
 Consultive mode (2026-07-02): when a thread OPENS with a vague problem about a child/group, the assistant explores first (validate + ONE tentative profile-anchored reading + 2-3 observable-behavior questions, single round) instead of prescribing; specific questions are still answered directly. Enforced by a MODO CONSULTIVO prompt section + a deterministic first-turn nudge injected when a player/group/situation is detected. The chat also knows the caller's chem groups (`chem_groups`, owner-scoped) in the same mention matcher as planteles. As-built: `docs/ARGOCOACH-MODO-CONSULTIVO.md`.
 
+**GENERATED regions (STRICT, 2026-07-02):** `api/tenant-chat.ts` contains two machine-generated regions fenced by `// >>> GENERATED:COACH_PROMPTS` and `// >>> GENERATED:COACH_SITUATIONS` markers. NEVER hand-edit inside them: edit `scripts/coach-prompt-source.ts` (prompts es/en/pt + situation keywords) or `src/lib/situationalGuide*.ts` (situation cards), then run `npm run gen:coach`. `npm run check:coach-gen` (part of `qa:unit`) fails when the file drifts from its sources. Chat telemetry lands in `ai_events` (mode consultivo/directo, situation_matched, tokens_cached, model-aware cost_usd) and per-response ratings in `chat_messages.rating`. Full execution log: `docs/ARGOCOACH-MEJORAS.md`.
+
 Report generation (`generate-ai.ts`) has retry resilience: 1 retry on API failure + 1 retry on JSON parse failure.
 Admin can grant `full_access` on any session — regenerates AI if missing before sending full report email.
 
