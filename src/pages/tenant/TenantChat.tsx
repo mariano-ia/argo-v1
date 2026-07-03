@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Plus, Loader2, MessageCircle, PanelLeftClose, PanelLeftOpen, Lock } from 'lucide-react';
+import { Send, Plus, Loader2, MessageCircle, PanelLeftClose, PanelLeftOpen, Lock, Trash2, ThumbsUp, ThumbsDown, Search } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { getDashboardT } from '../../lib/dashboardTranslations';
@@ -10,8 +10,9 @@ import { useLang } from '../../context/LangContext';
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
-interface Thread { thread_id: string; content: string; created_at: string; }
-interface ChatMessage { role: 'user' | 'assistant'; content: string; created_at?: string; }
+interface Thread { thread_id: string; content: string; created_at: string; matched_player?: string | null; }
+interface ChatMessage { id?: number | string | null; role: 'user' | 'assistant'; content: string; created_at?: string; rating?: number | null; }
+interface Suggestions { players: string[]; chem_group: string | null; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -80,7 +81,10 @@ export const TenantChat: React.FC = () => {
     const [messagesLoading, setMessagesLoading] = useState(false);
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
-    const [panelOpen, setPanelOpen] = useState(true);
+    // On phones the 280px sidebar squeezes the chat into a sliver: start closed.
+    const [panelOpen, setPanelOpen] = useState(() => (typeof window === 'undefined' ? true : window.innerWidth >= 768));
+    const [threadSearch, setThreadSearch] = useState('');
+    const [suggestions, setSuggestions] = useState<Suggestions | null>(null);
     const [searchParams, setSearchParams] = useSearchParams();
     const [autoSent, setAutoSent] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -89,8 +93,27 @@ export const TenantChat: React.FC = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
-    const prompts = SUGGESTED_PROMPTS[lang as keyof typeof SUGGESTED_PROMPTS] ?? SUGGESTED_PROMPTS.es;
-    const groupedThreads = useMemo(() => groupThreadsByDate(threads, lang), [threads, lang]);
+    // Personalized empty-state prompts (#3): real roster/group names teach the
+    // coach that the assistant knows THEIR team; static prompts fill the gaps.
+    const prompts = useMemo(() => {
+        const base = SUGGESTED_PROMPTS[lang as keyof typeof SUGGESTED_PROMPTS] ?? SUGGESTED_PROMPTS.es;
+        const out: string[] = [];
+        const [p1, p2] = suggestions?.players ?? [];
+        if (p1) out.push(lang === 'en' ? `How do I support ${p1} in the activity?` : lang === 'pt' ? `Como acompanho ${p1} na atividade?` : `¿Cómo acompaño a ${p1} en la actividad?`);
+        if (p2) out.push(lang === 'en' ? `What role fits ${p2} in the next match?` : lang === 'pt' ? `Que papel dou a ${p2} no próximo jogo?` : `¿Qué rol le doy a ${p2} en el próximo partido?`);
+        if (suggestions?.chem_group) out.push(lang === 'en' ? `How is the chemistry of group "${suggestions.chem_group}"?` : lang === 'pt' ? `Como é a química do grupo "${suggestions.chem_group}"?` : `¿Cómo es la química del grupo "${suggestions.chem_group}"?`);
+        for (const b of base) { if (out.length >= 3) break; out.push(b); }
+        return out.slice(0, 3);
+    }, [suggestions, lang]);
+    // Sidebar search (#17): filter by content or matched player, accent-insensitive.
+    const filteredThreads = useMemo(() => {
+        const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        const q = norm(threadSearch.trim());
+        if (!q) return threads;
+        return threads.filter(t =>
+            norm(t.content).includes(q) || norm(t.matched_player ?? '').includes(q));
+    }, [threads, threadSearch]);
+    const groupedThreads = useMemo(() => groupThreadsByDate(filteredThreads, lang), [filteredThreads, lang]);
 
     const scrollToBottom = () => setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
 
@@ -112,6 +135,7 @@ export const TenantChat: React.FC = () => {
                 const data = await res.json();
                 setThreads(data.threads);
                 setTotalUserMessages(data.total_user_messages ?? 0);
+                if (data.suggestions) setSuggestions(data.suggestions);
             }
         } finally { setThreadsLoading(false); }
     }, [tenant?.id, effectiveTeamId]);
@@ -128,6 +152,7 @@ export const TenantChat: React.FC = () => {
         if (ctxInitRef.current) { ctxInitRef.current = false; return; }
         setActiveThreadId(null);
         setMessages([]);
+        setThreadSearch('');
         persistThread(null);
     }, [effectiveTeamId, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -177,6 +202,36 @@ export const TenantChat: React.FC = () => {
 
     const startNewThread = () => { setActiveThreadId(null); setMessages([]); setInput(''); setErrorMsg(null); persistThread(null); inputRef.current?.focus(); };
 
+    /* ── Delete thread (#17) ──────────────────────────────────────────────── */
+
+    const deleteThread = async (threadId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const ok = window.confirm(lang === 'en' ? 'Delete this conversation?' : lang === 'pt' ? 'Excluir esta conversa?' : '¿Eliminar esta conversación?');
+        if (!ok) return;
+        const token = await getToken();
+        if (!token) return;
+        await fetch('/api/tenant-chat', {
+            method: 'POST', headers: authHeaders(token),
+            body: JSON.stringify({ action: 'delete_thread', thread_id: threadId, tenant_id: tenant?.id }),
+        }).catch(() => { /* list refresh below surfaces the state either way */ });
+        if (activeThreadId === threadId) startNewThread();
+        fetchThreads();
+    };
+
+    /* ── Rate message (#18) ───────────────────────────────────────────────── */
+
+    const rateMessage = async (msg: ChatMessage, value: 1 | -1) => {
+        if (!msg.id) return;
+        const next = msg.rating === value ? 0 : value; // tap again to clear
+        setMessages(prev => prev.map(m => (m.id === msg.id ? { ...m, rating: next === 0 ? null : next } : m)));
+        const token = await getToken();
+        if (!token) return;
+        fetch('/api/tenant-chat', {
+            method: 'POST', headers: authHeaders(token),
+            body: JSON.stringify({ action: 'rate', message_id: msg.id, rating: next, tenant_id: tenant?.id }),
+        }).catch(() => { /* optimistic; a lost rating is not worth an error banner */ });
+    };
+
     /* ── Send message ─────────────────────────────────────────────────────── */
 
     const sendMessage = async (text?: string) => {
@@ -218,7 +273,7 @@ export const TenantChat: React.FC = () => {
                     fail(dt.chat.errorIA);
                 } else {
                     if (!activeThreadId && data.thread_id) { setActiveThreadId(data.thread_id); persistThread(data.thread_id); }
-                    setMessages(prev => [...prev, { role: 'assistant', content }]);
+                    setMessages(prev => [...prev, { id: data.message?.id ?? null, role: 'assistant', content }]);
                     setTotalUserMessages(prev => prev + 1);
                     fetchThreads();
                     scrollToBottom();
@@ -259,7 +314,7 @@ export const TenantChat: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="flex h-[calc(100vh-7rem)] bg-white rounded-[14px] shadow-argo overflow-hidden"
+            className="flex h-[calc(100dvh-10.5rem)] md:h-[calc(100dvh-7rem)] bg-white rounded-[14px] shadow-argo overflow-hidden"
         >
             {/* ═══ LEFT PANEL — Thread history ═══ */}
             <div className={`flex-shrink-0 border-r border-argo-border flex flex-col transition-all duration-200 ${panelOpen ? 'w-[280px]' : 'w-[48px]'}`}>
@@ -284,6 +339,21 @@ export const TenantChat: React.FC = () => {
                     </Tooltip>
                 </div>
 
+                {/* Thread search (#17) — only when expanded and there is history */}
+                {panelOpen && threads.length > 0 && (
+                    <div className="px-3 pb-1 flex-shrink-0">
+                        <div className="relative">
+                            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-argo-light pointer-events-none" />
+                            <input
+                                value={threadSearch}
+                                onChange={e => setThreadSearch(e.target.value)}
+                                placeholder={lang === 'en' ? 'Search conversations' : lang === 'pt' ? 'Buscar conversas' : 'Buscar conversaciones'}
+                                className="w-full text-[12px] pl-8 pr-2.5 py-1.5 rounded-lg border border-argo-border bg-argo-bg outline-none focus:border-argo-violet-200 transition-colors"
+                            />
+                        </div>
+                    </div>
+                )}
+
                 {/* Thread list — only when expanded */}
                 {panelOpen && (
                     <div className="flex-1 overflow-y-auto px-2 pb-3">
@@ -296,6 +366,10 @@ export const TenantChat: React.FC = () => {
                                 <MessageCircle size={20} className="text-argo-border mb-2" />
                                 <p className="text-xs text-argo-light">{dt.chat.sinConversaciones}</p>
                             </div>
+                        ) : filteredThreads.length === 0 ? (
+                            <p className="text-xs text-argo-light text-center pt-6 px-3">
+                                {lang === 'en' ? 'No conversations match.' : lang === 'pt' ? 'Nenhuma conversa encontrada.' : 'Ninguna conversación coincide.'}
+                            </p>
                         ) : (
                             groupedThreads.map(group => (
                                 <div key={group.label} className="mb-3">
@@ -303,17 +377,30 @@ export const TenantChat: React.FC = () => {
                                         {group.label}
                                     </p>
                                     {group.items.map(t => (
-                                        <button
-                                            key={t.thread_id}
-                                            onClick={() => openThread(t.thread_id)}
-                                            className={`w-full text-left px-3 py-2 rounded-lg text-[12px] truncate transition-all ${
-                                                activeThreadId === t.thread_id
-                                                    ? 'bg-argo-violet-50 text-argo-violet-500 font-medium'
-                                                    : 'text-argo-secondary hover:bg-argo-bg'
-                                            }`}
-                                        >
-                                            {t.content}
-                                        </button>
+                                        <div key={t.thread_id} className="relative">
+                                            <button
+                                                onClick={() => openThread(t.thread_id)}
+                                                className={`w-full text-left pl-3 pr-8 py-2 rounded-lg text-[12px] truncate transition-all ${
+                                                    activeThreadId === t.thread_id
+                                                        ? 'bg-argo-violet-50 text-argo-violet-500 font-medium'
+                                                        : 'text-argo-secondary hover:bg-argo-bg'
+                                                }`}
+                                            >
+                                                {t.matched_player ? (
+                                                    <>
+                                                        <span className="font-semibold">{t.matched_player}</span>
+                                                        <span> · {t.content}</span>
+                                                    </>
+                                                ) : t.content}
+                                            </button>
+                                            <button
+                                                onClick={e => deleteThread(t.thread_id, e)}
+                                                aria-label={lang === 'en' ? 'Delete conversation' : lang === 'pt' ? 'Excluir conversa' : 'Eliminar conversación'}
+                                                className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 rounded text-argo-light/60 hover:text-red-500 hover:bg-red-50 active:text-red-500 transition-colors"
+                                            >
+                                                <Trash2 size={12} />
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                             ))
@@ -361,12 +448,31 @@ export const TenantChat: React.FC = () => {
                         <>
                             {messages.map((msg, i) => (
                                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                                    <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 py-3 ${
                                         msg.role === 'user'
                                             ? 'bg-argo-navy text-white rounded-br-md'
                                             : 'bg-argo-bg text-argo-navy rounded-bl-md'
                                     }`}>
                                         <p className="text-[13px] leading-relaxed whitespace-pre-wrap">{renderMd(msg.content)}</p>
+                                        {/* Like/dislike (#18): quality signal per assistant reply */}
+                                        {msg.role === 'assistant' && msg.id != null && (
+                                            <div className="flex items-center gap-1 mt-2 -mb-0.5">
+                                                <button
+                                                    onClick={() => rateMessage(msg, 1)}
+                                                    aria-label={lang === 'en' ? 'Helpful' : lang === 'pt' ? 'Útil' : 'Útil'}
+                                                    className={`p-1 rounded transition-colors ${msg.rating === 1 ? 'text-argo-violet-500 bg-argo-violet-50' : 'text-argo-light hover:text-argo-grey hover:bg-white active:bg-white'}`}
+                                                >
+                                                    <ThumbsUp size={12} />
+                                                </button>
+                                                <button
+                                                    onClick={() => rateMessage(msg, -1)}
+                                                    aria-label={lang === 'en' ? 'Not helpful' : lang === 'pt' ? 'Não útil' : 'No útil'}
+                                                    className={`p-1 rounded transition-colors ${msg.rating === -1 ? 'text-red-500 bg-red-50' : 'text-argo-light hover:text-argo-grey hover:bg-white active:bg-white'}`}
+                                                >
+                                                    <ThumbsDown size={12} />
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ))}

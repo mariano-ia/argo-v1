@@ -317,6 +317,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     'puentes-sync-cron': 2880,      // daily
     'trial-lifecycle-cron': 2880,   // daily
     'journey-canary': 2880,         // daily (full play→report→email end-to-end)
+    'child-memory-cron': 2880,      // daily (per-child memory consolidation)
     'blog-cron': 11520,             // Mon/Thu
   };
   for (const [ref, maxMin] of Object.entries(CRON_MAX_STALE_MIN)) {

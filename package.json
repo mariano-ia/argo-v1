@@ -12,10 +12,12 @@
     "test:monkey": "playwright test e2e/monkey-odyssey.spec.ts e2e/monkey-signup.spec.ts",
     "qa:monitor": "node scripts/qa/lib/run-monitor.mjs",
     "qa:ai-eval": "tsx scripts/qa/ai-eval.ts",
-    "qa:unit": "node scripts/qa/lib/scoring.test.mjs && node scripts/qa/lib/qa-env.test.mjs && node scripts/qa/lint-content.test.mjs && tsx --test scripts/qa/coach-helpers.test.ts",
+    "qa:unit": "node scripts/qa/lib/scoring.test.mjs && node scripts/qa/lib/qa-env.test.mjs && node scripts/qa/lint-content.test.mjs && tsx --test scripts/qa/coach-helpers.test.ts && npm run check:coach-gen",
     "lint:content": "node scripts/qa/lint-content.mjs",
     "check:api-imports": "node scripts/qa/check-api-imports.mjs",
-    "typecheck:api": "tsc -p tsconfig.api.json"
+    "typecheck:api": "tsc -p tsconfig.api.json",
+    "gen:coach": "tsx scripts/gen-coach-knowledge.ts",
+    "check:coach-gen": "tsx scripts/gen-coach-knowledge.ts --check"
   },
   "dependencies": {
     "@react-three/fiber": "^8.18.0",

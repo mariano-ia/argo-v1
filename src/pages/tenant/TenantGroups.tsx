@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil, Check, Trash2, Loader2, Layers, MoreHorizontal, UserCheck, Users } from 'lucide-react';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Layers, MoreHorizontal, UserCheck, Users, MessageCircle } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
@@ -45,6 +45,7 @@ export const TenantGroups: React.FC = () => {
     const { lang } = useLang();
     const dt = getDashboardT(lang);
     const { toast } = useToast();
+    const navigate = useNavigate();
     const isAdmin = (role ?? 'owner') !== 'coach';
 
     // List
@@ -365,6 +366,20 @@ export const TenantGroups: React.FC = () => {
                                                     <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
                                                     <p className="text-[11px] text-argo-light mt-0.5">{plantelSessions.length} {plantelSessions.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                                                 </div>
+                                                {/* Ask ArgoCoach about this plantel (#2): the name in the prompt
+                                                    fires the chat's group-mention matcher + composition injection. */}
+                                                {detailGroup && (
+                                                    <button
+                                                        onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(tt(lang,
+                                                            `¿Cómo trabajo con el plantel "${detailGroup.name}" según sus perfiles?`,
+                                                            `How do I work with the "${detailGroup.name}" team based on their profiles?`,
+                                                            `Como trabalho com o plantel "${detailGroup.name}" segundo os perfis?`))}`)}
+                                                        className="flex items-center gap-1.5 text-[11px] font-semibold text-argo-violet-500 border border-argo-violet-100 hover:bg-argo-violet-50 active:bg-argo-violet-50 px-3 py-1.5 rounded-full transition-colors mr-1"
+                                                    >
+                                                        <MessageCircle size={12} />
+                                                        {tt(lang, 'Consultar al asistente', 'Ask the assistant', 'Consultar o assistente')}
+                                                    </button>
+                                                )}
                                                 {isAdmin && (
                                                     <div className="relative">
                                                         <Tooltip text={tt(lang, 'Opciones', 'Options', 'Opções')}>
@@ -475,7 +490,7 @@ export const TenantGroups: React.FC = () => {
                                     ) : (
                                         <div>
                                             {plantelSessions.map(s => (
-                                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} canManage={false} />
+                                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} canManage={false} />
                                             ))}
                                         </div>
                                     )}

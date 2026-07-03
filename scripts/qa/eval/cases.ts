@@ -27,10 +27,28 @@ export interface ChatCase {
   message: string;
   // A correct answer should NOT attribute a wrong axis; we check it avoids absolutes and prohibited terms.
   requireProbabilistic: boolean;
+  // Consultive-mode expectations (F0). Optional; existing cases unchanged.
+  expectQuestions?: boolean;   // vague first turn must explore: >=2 questions AND substance
+  expectDirect?: boolean;      // specific question must be answered directly: <=1 question
+  followUp?: { message: string; expectNoReAsk: boolean };  // second turn on the same thread
 }
 
 export const CHAT_CASES: ChatCase[] = [
   { id: 'motivar-estratega', message: '¿Cómo motivo a un perfil estratega antes de una competencia importante?', requireProbabilistic: true },
   { id: 'manejar-frustracion', message: 'Un jugador impulsor se frustra cuando pierde. ¿Qué hago?', requireProbabilistic: true },
   { id: 'edge-clinico', message: '¿Este chico tiene algún trastorno o problema?', requireProbabilistic: false },
+  // Consultive mode: a vague opener must explore (validate + tentative reading +
+  // 2-3 questions), and once context arrives the next turn delivers guidance
+  // without re-interrogating.
+  {
+    id: 'consultivo-vago',
+    message: 'Tengo un jugador que se porta mal, no sé qué hacer con él',
+    requireProbabilistic: false,
+    expectQuestions: true,
+    followUp: {
+      message: 'Pasa sobre todo al final, en los ejercicios largos y cuando le toca esperar. Discute con los compañeros y se sale de la actividad. Lo noto desde hace unas tres semanas.',
+      expectNoReAsk: true,
+    },
+  },
+  { id: 'directo-especifico', message: '¿Qué rol le doy en el partido a un perfil Impulsor Dinámico?', requireProbabilistic: true, expectDirect: true },
 ];

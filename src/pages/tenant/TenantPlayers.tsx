@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout, MessageCircle, BookOpen, X, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -14,7 +14,7 @@ import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { ContextChip } from '../../components/dashboard/ContextChip';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
-import { Tooltip, InfoTip } from '../../components/ui/Tooltip';
+import { Tooltip } from '../../components/ui/Tooltip';
 import {
     classifyDecisionPattern,
     getPatternCopy,
@@ -47,8 +47,142 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
+/* THE action standard for the ficha's action row: icon in a subtle bordered
+   pill, optional delicate label next to it, tooltip on hover for the
+   explanation. Every child-level action (assistant, report, email, archive;
+   soon Notas + Memoria) uses this — never a custom button elsewhere. */
+const FichaAction: React.FC<{
+    icon: React.ComponentType<{ size?: number | string; className?: string }>;
+    tooltip: string;
+    label?: string;
+    onClick?: (e: React.MouseEvent) => void;
+    variant?: 'neutral' | 'danger';
+    disabled?: boolean;
+    loading?: boolean;
+    lockedTip?: string;
+}> = ({ icon: Icon, tooltip, label, onClick, variant = 'neutral', disabled, loading, lockedTip }) => {
+    if (lockedTip) {
+        // Real (focusable) button with aria-disabled, so keyboard and screen
+        // reader users can reach it and hear why it's locked; onClick no-ops.
+        return (
+            <Tooltip text={lockedTip}>
+                <button
+                    aria-disabled="true"
+                    aria-label={label ? `${label}. ${lockedTip}` : lockedTip}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 cursor-not-allowed"
+                >
+                    <span className="p-2 rounded-lg border border-argo-border text-argo-light inline-flex">
+                        <Lock size={14} />
+                    </span>
+                    {label && <span className="text-[11px] font-medium text-argo-light">{label}</span>}
+                </button>
+            </Tooltip>
+        );
+    }
+    // The border contains ONLY the icon; the delicate label sits outside it.
+    // active:* gives touch feedback (hover variants never fire on touch).
+    const boxStyles: Record<string, string> = {
+        neutral: 'border-argo-border text-argo-secondary group-hover:bg-argo-violet-50 group-hover:border-argo-violet-200 group-active:bg-argo-violet-50 group-active:border-argo-violet-200',
+        danger: 'border-argo-border text-argo-light group-hover:text-red-600 group-hover:border-red-200 group-hover:bg-red-50 group-active:text-red-600 group-active:bg-red-50',
+    };
+    return (
+        <Tooltip text={tooltip}>
+            <button
+                onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
+                disabled={disabled}
+                aria-label={label ?? tooltip}
+                className="group inline-flex items-center gap-1.5 disabled:opacity-50"
+            >
+                <span className={`p-2 rounded-lg border transition-all inline-flex ${boxStyles[variant]}`}>
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Icon size={14} />}
+                </span>
+                {label && <span className="text-[11px] font-medium text-argo-grey group-hover:text-argo-secondary transition-colors">{label}</span>}
+            </button>
+        </Tooltip>
+    );
+};
+
+interface MemEvent { id: number | string; content: string; advice: string | null; situation_id: string | null; updated_at: string; source: string }
+
+export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean; tenantId?: string }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false, tenantId }) => {
     const [expanded, setExpanded] = useState(false);
+    const navigate = useNavigate();
+
+    /* ── Memoria del asistente (M2) ───────────────────────────────────── */
+    const [memOpen, setMemOpen] = useState(false);
+    const [memLoading, setMemLoading] = useState(false);
+    const [memSummary, setMemSummary] = useState('');
+    const [memEvents, setMemEvents] = useState<MemEvent[]>([]);
+    const [memBusy, setMemBusy] = useState(false);
+    const [memMsg, setMemMsg] = useState<string | null>(null);
+
+    const memToken = async () => (await supabase.auth.getSession()).data.session?.access_token ?? null;
+    const memHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+    const openMemory = async () => {
+        setMemOpen(true); setMemLoading(true); setMemMsg(null);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch(`/api/child-memory?child_id=${session.id}&tenant_id=${tenantId ?? ''}`, { headers: memHeaders(token) });
+            if (res.ok) {
+                const d = await res.json();
+                setMemSummary(d.summary ?? '');
+                setMemEvents(d.events ?? []);
+            }
+        } finally { setMemLoading(false); }
+    };
+
+    const saveMemory = async () => {
+        setMemBusy(true); setMemMsg(null);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch('/api/child-memory', {
+                method: 'POST', headers: memHeaders(token),
+                body: JSON.stringify({ action: 'update_summary', child_id: session.id, summary: memSummary, tenant_id: tenantId }),
+            });
+            setMemMsg(res.ok
+                ? (lang === 'en' ? 'Saved.' : lang === 'pt' ? 'Salvo.' : 'Guardado.')
+                : (lang === 'en' ? 'Could not save. Try again.' : lang === 'pt' ? 'Não foi possível salvar.' : 'No se pudo guardar. Intenta de nuevo.'));
+        } finally { setMemBusy(false); }
+    };
+
+    const deleteMemEvent = async (ev: MemEvent) => {
+        const ok = window.confirm(lang === 'en'
+            ? 'Remove this episode from the memory? The consolidated summary may still mention it until you edit it.'
+            : lang === 'pt'
+                ? 'Remover este episódio da memória? O resumo consolidado pode ainda mencioná-lo até você editá-lo.'
+                : '¿Quitar este episodio de la memoria? El resumen consolidado puede seguir mencionándolo hasta que lo edites.');
+        if (!ok) return;
+        setMemEvents(prev => prev.filter(e => e.id !== ev.id));
+        const token = await memToken();
+        if (!token) return;
+        fetch('/api/child-memory', {
+            method: 'POST', headers: memHeaders(token),
+            body: JSON.stringify({ action: 'delete_event', child_id: session.id, event_id: ev.id, tenant_id: tenantId }),
+        }).catch(() => { /* optimistic; reopening the modal shows the truth */ });
+    };
+
+    const wipeMemory = async () => {
+        const ok = window.confirm(lang === 'en'
+            ? `Delete everything the assistant remembers about ${session.child_name}? This cannot be undone.`
+            : lang === 'pt'
+                ? `Excluir tudo o que o assistente lembra sobre ${session.child_name}? Isso não pode ser desfeito.`
+                : `¿Borrar todo lo que el asistente recuerda sobre ${session.child_name}? Esta acción no se puede deshacer.`);
+        if (!ok) return;
+        setMemBusy(true);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch('/api/child-memory', {
+                method: 'POST', headers: memHeaders(token),
+                body: JSON.stringify({ action: 'delete', child_id: session.id, tenant_id: tenantId }),
+            });
+            if (res.ok) { setMemSummary(''); setMemEvents([]); setMemMsg(lang === 'en' ? 'Memory deleted.' : lang === 'pt' ? 'Memória excluída.' : 'Memoria borrada.'); }
+        } finally { setMemBusy(false); }
+    };
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
     const [copied, setCopied] = useState(false);
@@ -335,6 +469,73 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
+                            {/* ── Action row (contained by dividers, between the header and
+                                the historial/comentario): assistant on the left (Notas y
+                                Memoria del asistente se sumarán aquí); icon-only utilities
+                                with tooltip on the right. ── */}
+                            <div className="py-2.5 mb-5 border-y border-argo-border flex items-center gap-2">
+                                <FichaAction
+                                    icon={MessageCircle}
+                                    label={lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Consultar o assistente' : 'Consultar al asistente'}
+                                    tooltip={lang === 'en' ? `Opens ArgoCoach with a consultation about ${session.child_name}` : lang === 'pt' ? `Abre o ArgoCoach com uma consulta sobre ${session.child_name}` : `Abre ArgoCoach con una consulta sobre ${session.child_name}`}
+                                    onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(
+                                        lang === 'en' ? `How do I support ${session.child_name} in the activity?`
+                                        : lang === 'pt' ? `Como acompanho ${session.child_name} na atividade?`
+                                        : `¿Cómo acompaño a ${session.child_name} en la actividad?`)}`)}
+                                />
+                                <FichaAction
+                                    icon={BookOpen}
+                                    label={lang === 'en' ? 'Memory' : lang === 'pt' ? 'Memória' : 'Memoria'}
+                                    tooltip={lang === 'en' ? `What the assistant remembers about ${session.child_name}. You can edit or delete it.` : lang === 'pt' ? `O que o assistente lembra sobre ${session.child_name}. Você pode editar ou excluir.` : `Lo que el asistente recuerda de ${session.child_name}. Puedes editarlo o borrarlo.`}
+                                    onClick={openMemory}
+                                />
+                                <div className="flex-1" />
+                                {canManage && (
+                                    <FichaAction
+                                        icon={resendOk === true ? Check : resendOk === false ? AlertCircle : Send}
+                                        tooltip={resendOk === true
+                                            ? (lang === 'en' ? 'Report sent' : lang === 'pt' ? 'Relatório enviado' : 'Informe enviado')
+                                            : resendOk === false
+                                                ? (lang === 'en' ? 'Send failed. Try again.' : lang === 'pt' ? 'Falha no envio. Tente de novo.' : 'Falló el envío. Intenta de nuevo.')
+                                                : dt.home.reenviarInforme}
+                                        onClick={handleResend}
+                                        disabled={resending}
+                                        loading={resending}
+                                        lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
+                                    />
+                                )}
+                                <FichaAction
+                                    icon={Download}
+                                    label={lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
+                                    tooltip={lang === 'en' ? 'The extended report the responsible adult receives' : lang === 'pt' ? 'O relatório completo que o adulto responsável recebe' : 'Es el informe extendido que recibe el adulto responsable'}
+                                    onClick={handleDownload}
+                                    lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
+                                />
+                                {canManage && archived && onReactivate && (
+                                    <FichaAction
+                                        icon={RotateCcw}
+                                        tooltip={lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
+                                        onClick={() => onReactivate(session.id)}
+                                    />
+                                )}
+                                {canManage && !archived && onArchive && (
+                                    <FichaAction
+                                        icon={Archive}
+                                        variant="danger"
+                                        tooltip={lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
+                                        onClick={() => {
+                                            // Icon-only destructive action: confirm before firing (on
+                                            // touch there is no hover tooltip to explain it first).
+                                            const ok = window.confirm(lang === 'en'
+                                                ? `Archive ${session.child_name}? You can reactivate later.`
+                                                : lang === 'pt'
+                                                    ? `Arquivar ${session.child_name}? Você pode reativar depois.`
+                                                    : `¿Archivar a ${session.child_name}? Puedes reactivarlo después.`);
+                                            if (ok) onArchive(session.id);
+                                        }}
+                                    />
+                                )}
+                            </div>
                             {/* Profile history timeline (left) + plain-language change description (right) */}
                             {(session.history?.length ?? 0) > 1 && (
                                 <div className="mb-5 pb-4 border-b border-argo-border grid grid-cols-1 lg:grid-cols-2 lg:items-start gap-6">
@@ -536,74 +737,116 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                 </div>
                             </div>
 
-                            {/* Bottom bar */}
-                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div className="flex items-center gap-4 text-xs text-argo-grey">
-                                    <span className="flex items-center gap-1">
-                                        <Clock size={12} />
-                                        {formatDate(session.created_at, lang)}
-                                        {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
-                                    </span>
-                                    <span className="text-argo-light">
-                                        <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsável' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="flex items-center gap-1.5">
-                                    {locked ? (
-                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
-                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
-                                                <Lock size={11} />
-                                                {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                            </span>
-                                        </Tooltip>
-                                    ) : (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDownload(); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
-                                        >
-                                            <Download size={12} />
-                                            {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                        </button>
-                                    )}
-                                        <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
+                            {/* ── Memoria del asistente modal (M2) ─────────────────── */}
+                            {memOpen && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center bg-argo-navy/30 p-4" onClick={() => setMemOpen(false)}>
+                                    <div className="bg-white rounded-[14px] shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-argo-border">
+                                            <div>
+                                                <h3 className="text-[15px] font-semibold text-argo-navy">
+                                                    {lang === 'en' ? 'Assistant memory' : lang === 'pt' ? 'Memória do assistente' : 'Memoria del asistente'} · {session.child_name}
+                                                </h3>
+                                                <p className="text-[11px] text-argo-light mt-0.5 leading-relaxed">
+                                                    {lang === 'en'
+                                                        ? 'You are the only person who can read this: neither Argo nor other coaches have access. The assistant uses it solely to give continuity to your consultations, and you can edit or delete it whenever you want.'
+                                                        : lang === 'pt'
+                                                            ? 'Você é a única pessoa que pode ler isto: nem a Argo nem outros treinadores têm acesso. O assistente a usa apenas para dar continuidade às suas consultas, e você pode editá-la ou excluí-la quando quiser.'
+                                                            : 'Eres la única persona que puede leer esto: ni Argo ni otros entrenadores tienen acceso. El asistente la usa únicamente para dar continuidad a tus consultas, y puedes editarla o borrarla cuando quieras.'}
+                                                </p>
+                                            </div>
+                                            <button onClick={() => setMemOpen(false)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors flex-shrink-0 ml-3" aria-label={lang === 'en' ? 'Close' : lang === 'pt' ? 'Fechar' : 'Cerrar'}>
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                        <div className="px-5 py-4 space-y-4">
+                                            {memLoading ? (
+                                                <div className="space-y-2">
+                                                    {[1, 2, 3].map(i => <div key={i} className="h-8 bg-argo-bg rounded-lg animate-pulse" />)}
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                            {lang === 'en' ? 'Consolidated summary' : lang === 'pt' ? 'Resumo consolidado' : 'Resumen consolidado'}
+                                                        </p>
+                                                        <textarea
+                                                            value={memSummary}
+                                                            onChange={(e) => setMemSummary(e.target.value)}
+                                                            rows={5}
+                                                            maxLength={1500}
+                                                            placeholder={lang === 'en'
+                                                                ? 'No summary yet. It builds automatically from your ArgoCoach consultations (nightly), or write your own here.'
+                                                                : lang === 'pt'
+                                                                    ? 'Ainda sem resumo. Ele se constrói automaticamente com suas consultas no ArgoCoach (à noite), ou escreva o seu aqui.'
+                                                                    : 'Todavía no hay resumen. Se construye solo con tus consultas en ArgoCoach (cada noche), o escribe el tuyo aquí.'}
+                                                            className="w-full resize-y rounded-xl border border-argo-border bg-argo-bg px-3.5 py-2.5 text-[13px] leading-relaxed outline-none focus:border-argo-violet-200 transition-colors"
+                                                        />
+                                                        <div className="flex items-center justify-between mt-2">
+                                                            <span className="text-[11px] text-argo-light">{memMsg ?? ''}</span>
+                                                            <button
+                                                                onClick={saveMemory}
+                                                                disabled={memBusy}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-argo-navy text-white hover:bg-argo-navy/90 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                {memBusy ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                                {lang === 'en' ? 'Save' : lang === 'pt' ? 'Salvar' : 'Guardar'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                            {lang === 'en' ? 'Recent episodes' : lang === 'pt' ? 'Episódios recentes' : 'Episodios recientes'}
+                                                        </p>
+                                                        {memEvents.length === 0 ? (
+                                                            <p className="text-xs text-argo-light leading-relaxed">
+                                                                {lang === 'en' ? 'No episodes yet: they appear when you consult ArgoCoach about this child.' : lang === 'pt' ? 'Ainda sem episódios: eles aparecem quando você consulta o ArgoCoach sobre esta criança.' : 'Todavía no hay episodios: aparecen cuando consultas a ArgoCoach sobre este niño.'}
+                                                            </p>
+                                                        ) : (
+                                                            <div className="space-y-2">
+                                                                {memEvents.map((ev) => (
+                                                                    <div key={ev.id} className="relative rounded-xl border border-argo-border px-3 py-2 pr-9">
+                                                                        <p className="text-[10px] text-argo-light mb-0.5">{String(ev.updated_at).slice(0, 10)}</p>
+                                                                        <p className="text-xs text-argo-secondary leading-relaxed">{ev.content}</p>
+                                                                        {ev.advice && <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{lang === 'en' ? 'Suggested' : lang === 'pt' ? 'Sugerido' : 'Se sugirió'}: {ev.advice}</p>}
+                                                                        <button
+                                                                            onClick={() => deleteMemEvent(ev)}
+                                                                            aria-label={lang === 'en' ? 'Remove this episode' : lang === 'pt' ? 'Remover este episódio' : 'Quitar este episodio'}
+                                                                            className="absolute top-2 right-2 p-1 rounded text-argo-light/60 hover:text-red-500 hover:bg-red-50 active:text-red-500 transition-colors"
+                                                                        >
+                                                                            <Trash2 size={12} />
+                                                                        </button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="pt-2 border-t border-argo-border flex justify-end">
+                                                        <button
+                                                            onClick={wipeMemory}
+                                                            disabled={memBusy || (memEvents.length === 0 && !memSummary)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 active:text-red-600 active:bg-red-50 disabled:opacity-40 transition-all"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                            {lang === 'en' ? 'Delete memory' : lang === 'pt' ? 'Excluir memória' : 'Borrar memoria'}
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                    {canManage && (locked ? (
-                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
-                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
-                                                <Lock size={11} />
-                                                {dt.home.reenviarInforme}
-                                            </span>
-                                        </Tooltip>
-                                    ) : (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleResend(); }}
-                                            disabled={resending}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
-                                        >
-                                            {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                            {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? (lang === 'en' ? 'Error' : lang === 'pt' ? 'Erro' : 'Error') : dt.home.reenviarInforme}
-                                        </button>
-                                    ))}
-                                    {canManage && archived && onReactivate && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onReactivate(session.id); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-all"
-                                        >
-                                            <RotateCcw size={12} />
-                                            {lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
-                                        </button>
-                                    )}
-                                    {canManage && !archived && onArchive && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onArchive(session.id); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all"
-                                        >
-                                            <Archive size={12} />
-                                            {lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
-                                        </button>
-                                    )}
                                 </div>
+                            )}
+
+                            {/* Bottom bar: metadata only — date left, responsible adult right */}
+                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-argo-grey">
+                                <span className="flex items-center gap-1">
+                                    <Clock size={12} />
+                                    {formatDate(session.created_at, lang)}
+                                    {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
+                                </span>
+                                <span className="text-argo-light">
+                                    <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsável' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
+                                </span>
                             </div>
                         </div>
                     </motion.div>
@@ -907,7 +1150,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} onArchive={handleArchive} canManage={(role ?? 'owner') === 'coach'} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} onArchive={handleArchive} canManage={(role ?? 'owner') === 'coach'} />
                         ))}
                     </div>
 
@@ -960,7 +1203,7 @@ export const TenantPlayers: React.FC = () => {
                     {showArchived && (
                         <div className="bg-white rounded-[14px] shadow-argo overflow-hidden mt-3 opacity-75">
                             {archivedSessions.map(s => (
-                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} archived onReactivate={handleReactivate} canManage={(role ?? 'owner') === 'coach'} />
+                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} archived onReactivate={handleReactivate} canManage={(role ?? 'owner') === 'coach'} />
                             ))}
                         </div>
                     )}

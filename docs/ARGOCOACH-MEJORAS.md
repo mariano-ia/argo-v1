@@ -16,6 +16,42 @@ entrenador vuelve); se viene una feature de notas sobre el niño que debe
 alimentar esa misma memoria; encarar por etapas. Sobre el 10: se aprueba
 además el like/dislike del usuario sobre cada respuesta (item 18).
 
+Apuestas de producto: **aprobados: 11 (en fila, "muy importante"), 12, 13, 17,
+18**. **Descartado: 14** (postura del owner: no leer los mensajes de los
+clientes ni meterse ahí; no habrá detección server-side ni registro auditable
+de señales de derivación. La regla 12 del prompt sigue vigente: el modelo
+sigue manejando esos casos con calidez, pero sin detección ni log nuestro).
+**15 aprobado en concepto**: desarrollar una propuesta detallada del digest
+semanal antes de construir. **16 se agranda**: no solo arreglar el chat en
+mobile; pensar una versión exclusiva mobile de TODA la herramienta, quizás
+reducida (workstream de diseño nuevo, pendiente de exploración).
+
+Estructural: **aprobados: 20 ("muy importante"), 21, 22, 23** (el 23 recién
+después de tener el seguimiento de telemetría/costos funcionando, como A/B).
+**Diferidos: 19 (streaming) y 24 (thinking budget)**, para más adelante.
+Higiene menor: va como batch de mantenimiento junto a los quick wins.
+
+## Estado de ejecución (2026-07-02, en develop)
+
+**SHIPPED** (commits 1e36771, 595c639, e7184d5, fb8eefe): items 2, 3, 5, 6, 7,
+8, 9, 10, 11a (recap cross-thread), 12, 13, 17, 18, 20, 21a (telemetría
+situation_matched), 22 (LLM-judge report-only), 23 (mecanismo A/B detrás de
+`COACH_FLASH_LITE_PCT`, apagado hasta tener baseline) + todo el batch de
+higiene menor + fixes mobile básicos del chat. Migraciones aplicadas:
+`ai_events` +mode/situation_matched/tokens_cached; `chat_messages`
++rating/deleted_at/matched_player + índice parcial.
+
+**DOCUMENTADO para decisión**: 15 (`docs/ARGOCOACH-DIGEST-SEMANAL.md`),
+16 (`docs/ARGO-MOBILE-EXPLORACION.md`).
+
+**PENDIENTE**: 11b (notas del niño, espera la feature de notas), 11c (cierre
+de loop), 21b (matcher semántico: decidir con 2+ semanas de datos de
+situation_matched), habilitar el A/B del 23, y los diferidos 19/24.
+
+Cómo se decide el 21b: si sobre mensajes que describen situaciones el
+hit-rate de `situation_matched` queda bajo (< ~50%), construir el pre-call
+clasificador; si no, el keyword matcher alcanza.
+
 ## 1. Quick wins (alto impacto, esfuerzo chico)
 
 1. **Trial cap por consulta, no por mensaje.** El cap de 10 cuenta cada mensaje

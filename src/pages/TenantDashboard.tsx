@@ -9,9 +9,9 @@ import { TenantOnboarding } from './tenant/TenantOnboarding';
 import { TrialEndModal } from '../components/dashboard/TrialEndModal';
 import type { Session } from '@supabase/supabase-js';
 import {
-    LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    LayoutDashboard, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
     Users, Compass, MessageCircle, Layers, UserPlus, User, Shield, HelpCircle,
-    ChevronsUpDown, Check,
+    ChevronsUpDown, Check, Share2,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -96,6 +96,11 @@ export const TenantDashboard: React.FC = () => {
     const [memberships, setMemberships] = useState<Membership[]>([]);
     const [activeContext, setActiveContextState] = useState<ActiveContext | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    // Mobile share-link snackbar (tab bar): visible ~4s after copying.
+    const [linkCopied, setLinkCopied] = useState(false);
+    const linkSnackTimer = useRef<ReturnType<typeof setTimeout>>();
+    // Mobile plantel/hat switcher (topbar, right edge).
+    const [mobileHatOpen, setMobileHatOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
@@ -112,8 +117,12 @@ export const TenantDashboard: React.FC = () => {
     useEffect(() => {
         if (devBypass) {
             setSession({} as Session);
-            const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', roster_limit: 8, active_players_count: 3, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
+            const params = new URLSearchParams(window.location.search);
+            const forceOnboarding = params.has('onboarding');
+            // Default to an unlocked plan so the UI is fully visible; append
+            // &plan=trial to preview the locked/trial states.
+            const devPlan = params.get('plan') ?? 'pro';
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: devPlan, roster_limit: devPlan === 'trial' ? 8 : 50, active_players_count: 3, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -614,43 +623,147 @@ export const TenantDashboard: React.FC = () => {
                 onClose={() => setShowTrialModal(false)}
             />
         )}
-        <div className="flex h-screen bg-argo-bg overflow-hidden">
+        <div className="flex h-[100dvh] bg-argo-bg overflow-hidden">
             {/* Desktop sidebar */}
             <div className="hidden md:flex">
                 <Sidebar />
             </div>
 
-            {/* Mobile overlay */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 z-40 flex md:hidden">
-                    <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-                    <div className="relative z-50 flex">
-                        <Sidebar mobile />
-                    </div>
-                </div>
-            )}
+            {/* Mobile drawer removed (Modo Cancha): on the phone only the bottom
+                tab bar surfaces exist; settings/admin/context switching live on
+                desktop by design. */}
 
             {/* Main */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                {/* Mobile topbar */}
-                <div className="md:hidden h-14 flex items-center gap-3 px-4 bg-white border-b border-argo-border">
-                    <Tooltip text="Menu" position="bottom">
-                        <button onClick={() => setSidebarOpen(true)} className="text-argo-grey">
-                            <Menu size={20} />
-                        </button>
-                    </Tooltip>
+                {/* Mobile topbar: brand left, plantel/hat switcher right (no
+                    hamburger — Modo Cancha keeps only field surfaces on mobile) */}
+                <div className="md:hidden h-14 flex items-center justify-between px-4 bg-white border-b border-argo-border relative">
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
-                                    </div>
+                    {tenant && tenant.onboarding_completed && (() => {
+                        const hats: Array<{ key: string; label: string; hat: ContextHat }> = [
+                            ...(role !== 'coach' ? [{ key: 'admin', label: lang === 'en' ? 'Administration' : lang === 'pt' ? 'Administração' : 'Administración', hat: 'admin' as ContextHat }] : []),
+                            ...teams.map(t => ({ key: t.id, label: t.name, hat: { plantelId: t.id } as ContextHat })),
+                        ];
+                        if (hats.length < 2) return null;
+                        const currentKey = currentHat === 'admin' ? 'admin' : currentHat.plantelId;
+                        const currentLabel = hats.find(h => h.key === currentKey)?.label ?? hats[0].label;
+                        return (
+                            <>
+                                <button
+                                    onClick={() => setMobileHatOpen(v => !v)}
+                                    className="flex items-center gap-1.5 max-w-[55%] px-2.5 py-1.5 rounded-full border border-argo-border bg-white text-[12px] font-medium text-argo-secondary active:bg-argo-bg transition-colors"
+                                >
+                                    <span className="truncate">{currentLabel}</span>
+                                    <ChevronsUpDown size={13} className="text-argo-grey flex-shrink-0" />
+                                </button>
+                                {mobileHatOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setMobileHatOpen(false)} />
+                                        <div className="absolute right-3 top-[52px] z-50 w-56 bg-white rounded-xl shadow-argo-hover border border-argo-border py-1">
+                                            {hats.map(h => (
+                                                <button
+                                                    key={h.key}
+                                                    onClick={() => { setActiveContext({ tenantId: activeContext?.tenantId ?? tenant.id, hat: h.hat }); setMobileHatOpen(false); }}
+                                                    className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left text-[13px] text-argo-secondary active:bg-argo-bg transition-colors"
+                                                >
+                                                    <span className="truncate">{h.label}</span>
+                                                    {h.key === currentKey && <Check size={14} className="text-argo-violet-500 flex-shrink-0" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        );
+                    })()}
+                </div>
 
-                <main className="flex-1 overflow-y-auto p-6 md:px-12 md:py-10">
+                <main className="flex-1 overflow-y-auto p-6 pb-24 md:px-12 md:py-10">
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
                         <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass, memberships, activeContext, setActiveContext, effectiveTeamId, isAdminView }} />
                     )}
                 </main>
+
+                {/* ── Mobile bottom tab bar (Modo Cancha B1): the 4 core surfaces
+                    plus the raised SHARE LINK button in the center — the single
+                    most-used field action (share the play link on WhatsApp).
+                    Secondary nav (Guía, Ajustes, Ayuda, admin, logout) lives in
+                    the topbar drawer; no "Más" tab (it duplicated the drawer). ── */}
+                {tenant && tenant.onboarding_completed && (() => {
+                    const activeTeam = (teams ?? []).find(tm => tm.id === effectiveTeamId) ?? null;
+                    const rosterFull = tenant.active_players_count >= tenant.roster_limit;
+                    const playUrl = `${window.location.origin}/play/${tenant.slug}${activeTeam ? `/${activeTeam.slug}` : ''}`;
+                    // Tap = copy + snackbar confirmation (owner-specified UX).
+                    const copyPlayLink = async () => {
+                        if (rosterFull) {
+                            window.alert(lang === 'en'
+                                ? 'Your team is full: new players cannot register with this link. Free a slot or upgrade your plan.'
+                                : lang === 'pt'
+                                    ? 'Sua equipe está completa: novos jogadores não podem se registrar com este link. Libere uma vaga ou atualize seu plano.'
+                                    : 'Tu equipo está completo: no pueden registrarse jugadores nuevos con este link. Libera un lugar o actualiza tu plan.');
+                            return;
+                        }
+                        try { await navigator.clipboard.writeText(playUrl); } catch { /* clipboard denied: snackbar still confirms intent */ }
+                        setLinkCopied(true);
+                        clearTimeout(linkSnackTimer.current);
+                        linkSnackTimer.current = setTimeout(() => setLinkCopied(false), 4000);
+                    };
+                    const tabs = [
+                        { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
+                        { to: '/dashboard/players', label: dt.nav.jugadores, icon: Users, end: false },
+                        { to: '/dashboard/chat', label: 'Coach', icon: MessageCircle, end: false },
+                        { to: '/dashboard/grupos', label: dt.nav.grupos, icon: Layers, end: false },
+                    ];
+                    const TabLink = ({ t }: { t: typeof tabs[number] }) => (
+                        <NavLink
+                            to={t.to}
+                            end={t.end}
+                            className={({ isActive }) =>
+                                `flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-medium transition-colors active:bg-argo-bg ${
+                                    isActive ? 'text-argo-violet-500' : 'text-argo-grey'
+                                }`}
+                        >
+                            <t.icon size={18} />
+                            <span className="truncate max-w-full px-0.5">{t.label}</span>
+                        </NavLink>
+                    );
+                    return (
+                        <>
+                            {/* Snackbar: floats just above the share button */}
+                            {linkCopied && (
+                                <div className="md:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] inset-x-0 z-50 flex justify-center pointer-events-none px-4">
+                                    <div className="pointer-events-auto bg-argo-navy text-white text-[12px] font-medium px-4 py-2.5 rounded-full shadow-lg">
+                                        {lang === 'en' ? 'Link copied. Ready to share.' : lang === 'pt' ? 'Link copiado. Já pode compartilhar.' : 'Link copiado. Ya puedes compartirlo.'}
+                                    </div>
+                                </div>
+                            )}
+                            <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
+                                <TabLink t={tabs[0]} />
+                                <TabLink t={tabs[1]} />
+                                <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
+                                    <button
+                                        onClick={copyPlayLink}
+                                        aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
+                                        className={`-mt-7 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                                            rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
+                                        }`}
+                                    >
+                                        <Share2 size={20} />
+                                    </button>
+                                    <span className="text-[10px] font-medium text-argo-grey -mt-0.5 whitespace-nowrap">
+                                        {lang === 'en' ? 'Share link' : lang === 'pt' ? 'Compartilhar' : 'Compartir link'}
+                                    </span>
+                                </div>
+                                <TabLink t={tabs[2]} />
+                                <TabLink t={tabs[3]} />
+                            </nav>
+                        </>
+                    );
+                })()}
             </div>
         </div>
         </ToastProvider>
