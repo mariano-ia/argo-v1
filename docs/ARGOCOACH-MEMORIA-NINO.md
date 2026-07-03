@@ -106,11 +106,27 @@ M3, cierre de loop).
   memoria" con confirmación, y la nota de privacidad ("esta memoria es tuya,
   nadie más la lee").
 
+## M3/M4 as-built (2026-07-03)
+
+- **Cierre de loop (M3a)**: regla de Continuidad en MODO CONSULTIVO (es/en/pt,
+  vía `coach-prompt-source.ts` + gen): si la memoria muestra una guía previa,
+  el asistente la reconoce y pregunta cómo resultó antes de sumar guía nueva.
+  La respuesta del entrenador entra al diario como cualquier turno, cerrando
+  el ciclo guía → resultado → memoria.
+- **merge_children fusiona memorias**: eventos re-apuntados al superviviente
+  (descartando duplicados de hilo por el índice único) y resúmenes fusionados
+  por miembro con watermark al más viejo (el cron re-consolida la historia
+  unida). Auditado en system_activity_log como el resto del merge.
+- **M4 poda jerárquica**: tras cada consolidación exitosa, los episodios ya
+  reflejados en el resumen (<= watermark) y con más de 90 días se borran; el
+  prompt del cron conserva lo viejo útil comprimido como contexto histórico
+  ("la temporada pasada..."). El diario queda acotado para siempre.
+
 ## Pendiente
 
-- **M3**: cierre de loop explícito + integración de la feature de notas
-  (los eventos `source='nota'` ya tienen su lugar en el modelo).
-- **M4**: consolidación jerárquica + poda (>3 meses).
+- **M3b**: integración de la feature de notas cuando exista (los eventos
+  `source='nota'` ya tienen su lugar en el modelo y la UI del modal los
+  mostrará sin cambios).
 - Decisiones abiertas del owner: memoria compartida por institución (hoy por
   miembro); comportamiento al archivar (propuesta: congelar); confirmación
   del formato visible/editable en M2.

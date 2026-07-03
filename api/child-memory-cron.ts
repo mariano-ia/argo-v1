@@ -79,6 +79,7 @@ REGLAS ESTRICTAS:
 - Solo comportamiento observable en la actividad deportiva. Nada clínico, nada de la vida privada de la familia.
 - No inventes nada que no esté en la memoria actual o en los eventos nuevos.
 - Nombra al niño siempre como "el niño" y a cualquier otro jugador como "un compañero". NUNCA uses nombres propios.
+- Si la memoria actual contiene información de hace meses que sigue siendo útil, consérvala comprimida como contexto histórico en una frase ("hace unos meses...", "la temporada pasada..."); nunca la descartes solo por vieja.
 - Escribe en el MISMO idioma en que están escritas las consultas de los eventos.
 - Texto plano, sin títulos ni markdown. Máximo 120 palabras.
 - Estructura: primero las situaciones en las que se acompaña al niño y las señales observadas; después qué se sugirió y, si se sabe, cómo resultó.
@@ -223,6 +224,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     if (error) { stats.errors++; console.warn('[child-memory-cron] insert failed:', error.message); continue; }
                 }
                 if (newSummary) stats.consolidated++;
+
+                // M4 hierarchical consolidation: episodes that are BOTH already
+                // reflected in a summary (<= watermark) and older than 90 days
+                // are pruned — the summary is the long-term carrier, the diary
+                // stays bounded (~30 KB per active child, forever).
+                if (newSummary) {
+                    const pruneBefore = new Date(Date.now() - 90 * 86400_000).toISOString();
+                    let pruneQ = sb.from('child_memory_events').delete()
+                        .eq('tenant_id', g.tenant_id)
+                        .eq('child_id', g.child_id)
+                        .lte('updated_at', watermark)
+                        .lt('updated_at', pruneBefore);
+                    pruneQ = g.member_id ? pruneQ.eq('member_id', g.member_id) : pruneQ.is('member_id', null);
+                    const { error: pruneErr } = await pruneQ;
+                    if (pruneErr) console.warn('[child-memory-cron] prune failed (non-fatal):', pruneErr.message);
+                }
 
                 // 6. Cost telemetry (best-effort; flash-lite rates).
                 if (result) {
