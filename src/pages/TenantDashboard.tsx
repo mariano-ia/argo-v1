@@ -11,7 +11,7 @@ import type { Session } from '@supabase/supabase-js';
 import {
     LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
     Users, Compass, MessageCircle, Layers, UserPlus, User, Shield, HelpCircle,
-    ChevronsUpDown, Check,
+    ChevronsUpDown, Check, Share2,
 } from 'lucide-react';
 
 export interface TenantData {
@@ -657,38 +657,74 @@ export const TenantDashboard: React.FC = () => {
                 </main>
 
                 {/* ── Mobile bottom tab bar (Modo Cancha B1): the 4 core surfaces
-                    one thumb away; "Más" opens the existing drawer for the rest
-                    (Guía, Ajustes, Ayuda, administración, logout). ── */}
-                {tenant && tenant.onboarding_completed && (
-                    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
-                        {[
-                            { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
-                            { to: '/dashboard/players', label: dt.nav.jugadores, icon: Users, end: false },
-                            { to: '/dashboard/chat', label: 'Coach', icon: MessageCircle, end: false },
-                            { to: '/dashboard/grupos', label: dt.nav.grupos, icon: Layers, end: false },
-                        ].map(t => (
-                            <NavLink
-                                key={t.to}
-                                to={t.to}
-                                end={t.end}
-                                className={({ isActive }) =>
-                                    `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors active:bg-argo-bg ${
-                                        isActive ? 'text-argo-violet-500' : 'text-argo-grey'
-                                    }`}
-                            >
-                                <t.icon size={18} />
-                                <span className="truncate max-w-full px-0.5">{t.label}</span>
-                            </NavLink>
-                        ))}
-                        <button
-                            onClick={() => setSidebarOpen(true)}
-                            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-argo-grey active:bg-argo-bg transition-colors"
+                    plus the raised SHARE LINK button in the center — the single
+                    most-used field action (share the play link on WhatsApp).
+                    Secondary nav (Guía, Ajustes, Ayuda, admin, logout) lives in
+                    the topbar drawer; no "Más" tab (it duplicated the drawer). ── */}
+                {tenant && tenant.onboarding_completed && (() => {
+                    const activeTeam = (teams ?? []).find(tm => tm.id === effectiveTeamId) ?? null;
+                    const rosterFull = tenant.active_players_count >= tenant.roster_limit;
+                    const sharePlayLink = async () => {
+                        if (rosterFull) {
+                            window.alert(lang === 'en'
+                                ? 'Your team is full: new players cannot register with this link. Free a slot or upgrade your plan.'
+                                : lang === 'pt'
+                                    ? 'Sua equipe está completa: novos jogadores não podem se registrar com este link. Libere uma vaga ou atualize seu plano.'
+                                    : 'Tu equipo está completo: no pueden registrarse jugadores nuevos con este link. Libera un lugar o actualiza tu plan.');
+                            return;
+                        }
+                        const url = `${window.location.origin}/play/${tenant.slug}${activeTeam ? `/${activeTeam.slug}` : ''}`;
+                        const title = activeTeam
+                            ? (lang === 'en' ? `Argo link · ${activeTeam.name}` : lang === 'pt' ? `Link Argo · ${activeTeam.name}` : `Link de Argo · ${activeTeam.name}`)
+                            : (lang === 'en' ? `Argo link · ${tenant.display_name}` : lang === 'pt' ? `Link Argo · ${tenant.display_name}` : `Link de Argo · ${tenant.display_name}`);
+                        try {
+                            if (navigator.share) { await navigator.share({ title, url }); return; }
+                        } catch { return; /* user closed the share sheet */ }
+                        try {
+                            await navigator.clipboard.writeText(url);
+                            window.alert(lang === 'en' ? 'Link copied.' : lang === 'pt' ? 'Link copiado.' : 'Link copiado.');
+                        } catch { /* nothing else to fall back to */ }
+                    };
+                    const tabs = [
+                        { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
+                        { to: '/dashboard/players', label: dt.nav.jugadores, icon: Users, end: false },
+                        { to: '/dashboard/chat', label: 'Coach', icon: MessageCircle, end: false },
+                        { to: '/dashboard/grupos', label: dt.nav.grupos, icon: Layers, end: false },
+                    ];
+                    const TabLink = ({ t }: { t: typeof tabs[number] }) => (
+                        <NavLink
+                            to={t.to}
+                            end={t.end}
+                            className={({ isActive }) =>
+                                `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors active:bg-argo-bg ${
+                                    isActive ? 'text-argo-violet-500' : 'text-argo-grey'
+                                }`}
                         >
-                            <Menu size={18} />
-                            {lang === 'en' ? 'More' : lang === 'pt' ? 'Mais' : 'Más'}
-                        </button>
-                    </nav>
-                )}
+                            <t.icon size={18} />
+                            <span className="truncate max-w-full px-0.5">{t.label}</span>
+                        </NavLink>
+                    );
+                    return (
+                        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
+                            <TabLink t={tabs[0]} />
+                            <TabLink t={tabs[1]} />
+                            <div className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2">
+                                <button
+                                    onClick={sharePlayLink}
+                                    aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
+                                    className={`-mt-6 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                                        rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
+                                    }`}
+                                >
+                                    <Share2 size={20} />
+                                </button>
+                                <span className="text-[10px] font-medium text-argo-grey -mt-0.5">Link</span>
+                            </div>
+                            <TabLink t={tabs[2]} />
+                            <TabLink t={tabs[3]} />
+                        </nav>
+                    );
+                })()}
             </div>
         </div>
         </ToastProvider>
