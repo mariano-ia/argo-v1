@@ -1569,9 +1569,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // Chat history is personal: each user (coach or admin) sees only
                 // their own threads. Legacy callers without a member row see all.
                 let threadsQ = sb.from('chat_messages')
-                    .select('thread_id, content, created_at')
+                    .select('thread_id, content, created_at, matched_player')
                     .eq('tenant_id', tenant.id)
-                    .eq('role', 'user');
+                    .eq('role', 'user')
+                    .is('deleted_at', null);
+                // The trial-cap count intentionally IGNORES soft-deleted threads'
+                // absence: deleting a thread must not refund trial queries.
                 let countQ = sb.from('chat_messages')
                     .select('id', { count: 'exact', head: true })
                     .eq('tenant_id', tenant.id)
@@ -1585,20 +1588,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // The count is NOT plantel-scoped (it stays per-member, powering the
                 // trial query limit) so switching plantel never resets the cap.
                 threadsQ = teamFilter ? threadsQ.eq('plantel_id', teamFilter) : threadsQ.is('plantel_id', null);
-                const [{ data: threads }, { count: totalUserMessages }] = await Promise.all([
+                // Personalized empty-state suggestions (#3): a few real roster names
+                // + the caller's newest chem group, scoped exactly like the POST
+                // player list (coach bound + plantel hat).
+                let suggestQ = sb.from('current_perfilamiento')
+                    .select('child_name')
+                    .eq('tenant_id', tenant.id)
+                    .is('deleted_at', null)
+                    .not('eje', 'eq', '_pending')
+                    .order('current_profile_date', { ascending: false })
+                    .limit(3);
+                if (coachChildIds !== null) {
+                    suggestQ = suggestQ.in('id', coachChildIds.length > 0 ? coachChildIds : ['00000000-0000-0000-0000-000000000000']);
+                }
+                const chemSuggestPromise = (() => {
+                    if (!callerMemberId) return Promise.resolve({ data: null });
+                    let q = sb.from('chem_groups').select('name')
+                        .eq('tenant_id', tenant.id)
+                        .eq('owner_member_id', callerMemberId)
+                        .is('deleted_at', null)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
+                    if (teamFilter) q = q.eq('plantel_id', teamFilter);
+                    return q;
+                })();
+                const [{ data: threads }, { count: totalUserMessages }, suggestRes, chemSuggestRes] = await Promise.all([
                     threadsQ.order('created_at', { ascending: false }),
                     countQ,
+                    suggestQ,
+                    chemSuggestPromise,
                 ]);
 
-                // Deduplicate by thread_id, keep most recent
+                // Newest non-null matched player per thread → auto-titles (#17).
+                type ThreadRow = { thread_id: string; content: string; created_at: string; matched_player?: string | null };
+                const rows = (threads ?? []) as ThreadRow[];
+                const matchedByThread = new Map<string, string>();
+                for (const t of rows) {
+                    if (t.matched_player && !matchedByThread.has(t.thread_id)) matchedByThread.set(t.thread_id, t.matched_player);
+                }
+                // Deduplicate by thread_id, keep most recent (cap raised 20 → 50).
                 const seen = new Set<string>();
-                const unique = (threads ?? []).filter(t => {
+                const unique = rows.filter(t => {
                     if (seen.has(t.thread_id)) return false;
                     seen.add(t.thread_id);
                     return true;
-                }).slice(0, 20);
+                }).slice(0, 50).map(t => ({ ...t, matched_player: matchedByThread.get(t.thread_id) ?? null }));
 
-                return res.status(200).json({ threads: unique, total_user_messages: totalUserMessages ?? 0 });
+                const suggestions = {
+                    players: ((suggestRes.data ?? []) as Array<{ child_name: string }>)
+                        .map(r => (r.child_name ?? '').trim().split(/\s+/)[0])
+                        .filter(Boolean),
+                    chem_group: ((chemSuggestRes.data ?? []) as Array<{ name: string }>)[0]?.name ?? null,
+                };
+
+                return res.status(200).json({ threads: unique, total_user_messages: totalUserMessages ?? 0, suggestions });
             }
 
             if (action === 'messages') {
@@ -1607,9 +1650,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
                 let msgsQ = sb
                     .from('chat_messages')
-                    .select('role, content, created_at')
+                    .select('id, role, content, created_at, rating')
                     .eq('tenant_id', tenant.id)
                     .eq('thread_id', threadId)
+                    .is('deleted_at', null)
                     .in('role', ['user', 'assistant']);
                 // Prevent reading another member's thread by guessing its id.
                 if (callerMemberId) msgsQ = msgsQ.eq('member_id', callerMemberId);
@@ -1624,8 +1668,49 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // POST: Send message
+        // POST: Send message (+ light sub-actions that never touch the AI)
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+        // ── rate (#18): thumbs up/down on an assistant message ──────────────
+        if (req.body?.action === 'rate') {
+            const messageId = req.body?.message_id;
+            const rating = req.body?.rating;
+            if (!messageId || ![1, -1, 0].includes(rating)) {
+                return res.status(400).json({ error: 'message_id and rating (1 | -1 | 0) required' });
+            }
+            let rateQ = sb.from('chat_messages')
+                .update({ rating: rating === 0 ? null : rating })
+                .eq('id', messageId)
+                .eq('tenant_id', tenant.id)
+                .eq('role', 'assistant');
+            if (callerMemberId) rateQ = rateQ.eq('member_id', callerMemberId);
+            const { error: rateErr } = await rateQ;
+            if (rateErr) {
+                console.error('[tenant-chat] rate failed:', rateErr.message);
+                return res.status(500).json({ error: 'Failed to save rating' });
+            }
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── delete_thread (#17): soft-delete a whole conversation ───────────
+        if (req.body?.action === 'delete_thread') {
+            const delThreadId = req.body?.thread_id;
+            if (!delThreadId || typeof delThreadId !== 'string') {
+                return res.status(400).json({ error: 'thread_id required' });
+            }
+            let delQ = sb.from('chat_messages')
+                .update({ deleted_at: new Date().toISOString() })
+                .eq('tenant_id', tenant.id)
+                .eq('thread_id', delThreadId)
+                .is('deleted_at', null);
+            if (callerMemberId) delQ = delQ.eq('member_id', callerMemberId);
+            const { error: delErr } = await delQ;
+            if (delErr) {
+                console.error('[tenant-chat] delete_thread failed:', delErr.message);
+                return res.status(500).json({ error: 'Failed to delete thread' });
+            }
+            return res.status(200).json({ ok: true });
+        }
 
         const t0 = Date.now(); // for latency telemetry
         const { thread_id, message, lang = 'es' } = req.body ?? {};
@@ -1728,6 +1813,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .select('role, content')
             .eq('tenant_id', tenant.id)
             .eq('thread_id', threadId)
+            .is('deleted_at', null)
             .in('role', ['user', 'assistant']);
         if (callerMemberId) historyQuery = historyQuery.eq('member_id', callerMemberId);
         const historyPromise = historyQuery
@@ -2374,13 +2460,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ── Save both turns + telemetry in one parallel batch (only on success,
         // so a failed AI call doesn't consume a trial query and leaves no
         // dangling question in the thread). ai_events stays best-effort. ──
+        let assistantMessageId: number | string | null = null;
         await Promise.all([
             sb.from('chat_messages').insert([
-                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter },
+                // matched_player powers thread auto-titles ("Sobre Fede: ...") in
+                // the sidebar (#17); it's the child's first name, same PII level
+                // as the message content itself.
+                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter, matched_player: mentionedPlayer ? mentionedPlayer.child_name.trim().split(/\s+/)[0] : null },
                 { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens, plantel_id: teamFilter },
-            ]).then(({ error }) => {
+            ]).select('id, role').then(({ data, error }) => {
                 // Losing a turn breaks thread history + the trial count: log loudly.
                 if (error) console.error('[tenant-chat] chat_messages insert failed:', error.message);
+                assistantMessageId = ((data ?? []) as Array<{ id: number | string; role: string }>).find(r => r.role === 'assistant')?.id ?? null;
             }),
             // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
             // Stores only non-PII signals (placeholders/flags), never the child name.
@@ -2418,7 +2509,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         return res.status(200).json({
             thread_id: threadId,
-            message: { role: 'assistant', content: assistantContent },
+            message: { id: assistantMessageId, role: 'assistant', content: assistantContent },
             usage: {
                 tokensIn: totalInputTokens,
                 tokensOut: totalOutputTokens,

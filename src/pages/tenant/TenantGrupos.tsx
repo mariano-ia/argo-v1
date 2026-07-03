@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal } from 'lucide-react';
+import { Plus, X, Pencil, Check, Trash2, Loader2, Search, Layers, MoreHorizontal, MessageCircle } from 'lucide-react';
 import { Tooltip } from '../../components/ui/Tooltip';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/ui/Toast';
@@ -32,6 +32,7 @@ export const TenantGrupos: React.FC = () => {
     const { tenant, effectiveTeamId } = useOutletContext<{ tenant: TenantData | null; devBypass?: boolean; effectiveTeamId?: string | null }>();
     const { lang } = useLang();
     const { toast } = useToast();
+    const navigate = useNavigate();
 
     // Chem groups belong to a plantel. The effective plantel is the active hat,
     // or — in the Administración hat — one the admin picks below (so the tool is
@@ -300,6 +301,20 @@ export const TenantGrupos: React.FC = () => {
                                                     <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
                                                     <p className="text-[11px] text-argo-light mt-0.5">{members.length} {members.length === 1 ? jugador : jugadores}</p>
                                                 </div>
+                                                {/* Ask ArgoCoach about this chem group (#2): the group name in the
+                                                    prompt fires the chat's group-mention matcher + stats injection. */}
+                                                {detailGroup && (
+                                                    <button
+                                                        onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(tt(lang,
+                                                            `¿Cómo es la química del grupo "${detailGroup.name}"?`,
+                                                            `How is the chemistry of group "${detailGroup.name}"?`,
+                                                            `Como é a química do grupo "${detailGroup.name}"?`))}`)}
+                                                        className="flex items-center gap-1.5 text-[11px] font-semibold text-argo-violet-500 border border-argo-violet-100 hover:bg-argo-violet-50 active:bg-argo-violet-50 px-3 py-1.5 rounded-full transition-colors mr-1"
+                                                    >
+                                                        <MessageCircle size={12} />
+                                                        {tt(lang, 'Consultar al asistente', 'Ask the assistant', 'Consultar o assistente')}
+                                                    </button>
+                                                )}
                                                 <div className="relative">
                                                     <Tooltip text={tt(lang, 'Opciones', 'Options', 'Opções')}>
                                                         <button onClick={() => setShowMenu(v => !v)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors"><MoreHorizontal size={16} /></button>

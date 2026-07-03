@@ -357,18 +357,29 @@ export const TenantHome: React.FC = () => {
                         {lang === 'en' ? 'Ask anything about your athletes' : lang === 'pt' ? 'Pergunte qualquer coisa sobre seus atletas' : 'Consulta lo que necesites sobre tus deportistas'}
                     </p>
 
-                    {/* Example prompts */}
+                    {/* Example prompts — clickable, with real roster names when available (#3) */}
                     <div className="space-y-1.5 mb-4">
-                        {(lang === 'en'
-                            ? ['How do I motivate a player who doesn\'t want to train?', 'Explain the profiles of Mateo and Allegra']
-                            : lang === 'pt'
-                                ? ['Como motivo um jogador que nao quer treinar?', 'Me explique o perfil de Mateo e Allegra']
-                                : ['¿Como motivo a un jugador que no quiere entrenar?', 'Explicame el perfil de Mateo y Allegra']
-                        ).map((p, i) => (
-                            <div key={i} className="px-3 py-2 rounded-lg border border-argo-border text-[11px] text-argo-light cursor-default">
-                                {p}
-                            </div>
-                        ))}
+                        {(() => {
+                            const names = Array.from(new Set((sessions ?? []).map(s => (s.child_name ?? '').trim().split(/\s+/)[0]).filter(Boolean))).slice(0, 2);
+                            const profilesPrompt = names.length === 2
+                                ? (lang === 'en' ? `Explain the profiles of ${names[0]} and ${names[1]}` : lang === 'pt' ? `Me explique os perfis de ${names[0]} e ${names[1]}` : `Explícame los perfiles de ${names[0]} y ${names[1]}`)
+                                : names.length === 1
+                                    ? (lang === 'en' ? `Explain ${names[0]}'s profile` : lang === 'pt' ? `Me explique o perfil de ${names[0]}` : `Explícame el perfil de ${names[0]}`)
+                                    : (lang === 'en' ? 'How do I read my players\' profiles?' : lang === 'pt' ? 'Como leio os perfis dos meus jogadores?' : '¿Cómo leo los perfiles de mis jugadores?');
+                            const prompts = [
+                                lang === 'en' ? 'How do I motivate a player who struggles to get going?' : lang === 'pt' ? 'Como motivo um jogador que custa a engatar na atividade?' : '¿Cómo motivo a un jugador al que le cuesta arrancar en la actividad?',
+                                profilesPrompt,
+                            ];
+                            return prompts.map((p, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(p)}`)}
+                                    className="block w-full text-left px-3 py-2 rounded-lg border border-argo-border text-[11px] text-argo-secondary hover:border-argo-violet-200 hover:bg-argo-bg active:bg-argo-bg transition-colors"
+                                >
+                                    {p}
+                                </button>
+                            ));
+                        })()}
                     </div>
 
                     <form

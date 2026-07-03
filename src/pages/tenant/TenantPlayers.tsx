@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout, MessageCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -49,6 +49,7 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
     const [expanded, setExpanded] = useState(false);
+    const navigate = useNavigate();
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
     const [copied, setCopied] = useState(false);
@@ -335,6 +336,20 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
+                            {/* Ask ArgoCoach about this child (#2): the exact stored name
+                                guarantees the chat's mention matcher + full profile injection. */}
+                            <div className="mb-4 flex justify-end">
+                                <button
+                                    onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(
+                                        lang === 'en' ? `How do I support ${session.child_name} in the activity?`
+                                        : lang === 'pt' ? `Como acompanho ${session.child_name} na atividade?`
+                                        : `¿Cómo acompaño a ${session.child_name} en la actividad?`)}`)}
+                                    className="flex items-center gap-1.5 text-[11px] font-semibold text-argo-violet-500 border border-argo-violet-100 hover:bg-argo-violet-50 active:bg-argo-violet-50 px-3 py-1.5 rounded-full transition-colors"
+                                >
+                                    <MessageCircle size={12} />
+                                    {lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Consultar o assistente' : 'Consultar al asistente'}
+                                </button>
+                            </div>
                             {/* Profile history timeline (left) + plain-language change description (right) */}
                             {(session.history?.length ?? 0) > 1 && (
                                 <div className="mb-5 pb-4 border-b border-argo-border grid grid-cols-1 lg:grid-cols-2 lg:items-start gap-6">
