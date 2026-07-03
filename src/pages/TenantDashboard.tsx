@@ -697,11 +697,7 @@ export const TenantDashboard: React.FC = () => {
                     const activeTeam = (teams ?? []).find(tm => tm.id === effectiveTeamId) ?? null;
                     const rosterFull = tenant.active_players_count >= tenant.roster_limit;
                     const playUrl = `${window.location.origin}/play/${tenant.slug}${activeTeam ? `/${activeTeam.slug}` : ''}`;
-                    const shareTitle = activeTeam
-                        ? (lang === 'en' ? `Argo link · ${activeTeam.name}` : lang === 'pt' ? `Link Argo · ${activeTeam.name}` : `Link de Argo · ${activeTeam.name}`)
-                        : (lang === 'en' ? `Argo link · ${tenant.display_name}` : lang === 'pt' ? `Link Argo · ${tenant.display_name}` : `Link de Argo · ${tenant.display_name}`);
-                    // Tap = copy + snackbar confirmation (owner-specified UX); the
-                    // snackbar offers the native share sheet as its action.
+                    // Tap = copy + snackbar confirmation (owner-specified UX).
                     const copyPlayLink = async () => {
                         if (rosterFull) {
                             window.alert(lang === 'en'
@@ -711,14 +707,10 @@ export const TenantDashboard: React.FC = () => {
                                     : 'Tu equipo está completo: no pueden registrarse jugadores nuevos con este link. Libera un lugar o actualiza tu plan.');
                             return;
                         }
-                        try { await navigator.clipboard.writeText(playUrl); } catch { /* still show the share path */ }
+                        try { await navigator.clipboard.writeText(playUrl); } catch { /* clipboard denied: snackbar still confirms intent */ }
                         setLinkCopied(true);
                         clearTimeout(linkSnackTimer.current);
                         linkSnackTimer.current = setTimeout(() => setLinkCopied(false), 4000);
-                    };
-                    const shareNative = async () => {
-                        setLinkCopied(false);
-                        try { await navigator.share({ title: shareTitle, url: playUrl }); } catch { /* user closed the sheet */ }
                     };
                     const tabs = [
                         { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
@@ -744,13 +736,8 @@ export const TenantDashboard: React.FC = () => {
                             {/* Snackbar: floats just above the share button */}
                             {linkCopied && (
                                 <div className="md:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] inset-x-0 z-50 flex justify-center pointer-events-none px-4">
-                                    <div className="pointer-events-auto flex items-center gap-3 bg-argo-navy text-white text-[12px] font-medium px-4 py-2.5 rounded-full shadow-lg">
-                                        <span>{lang === 'en' ? 'Link copied. Ready to share.' : lang === 'pt' ? 'Link copiado. Já pode compartilhar.' : 'Link copiado. Ya puedes compartirlo.'}</span>
-                                        {typeof navigator !== 'undefined' && 'share' in navigator && (
-                                            <button onClick={shareNative} className="font-bold text-argo-violet-200 active:opacity-70 flex-shrink-0">
-                                                {lang === 'en' ? 'Share' : lang === 'pt' ? 'Compartilhar' : 'Compartir'}
-                                            </button>
-                                        )}
+                                    <div className="pointer-events-auto bg-argo-navy text-white text-[12px] font-medium px-4 py-2.5 rounded-full shadow-lg">
+                                        {lang === 'en' ? 'Link copied. Ready to share.' : lang === 'pt' ? 'Link copiado. Já pode compartilhar.' : 'Link copiado. Ya puedes compartirlo.'}
                                     </div>
                                 </div>
                             )}
