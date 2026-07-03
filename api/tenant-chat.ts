@@ -1709,6 +1709,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error('[tenant-chat] delete_thread failed:', delErr.message);
                 return res.status(500).json({ error: 'Failed to delete thread' });
             }
+            // Deleting a conversation must also delete the child-memory events
+            // derived from it (deletion intent covers derived minors' data):
+            // otherwise the recap keeps resurfacing content the user removed.
+            let memDelQ = sb.from('child_memory_events')
+                .delete()
+                .eq('tenant_id', tenant.id)
+                .eq('thread_id', delThreadId);
+            if (callerMemberId) memDelQ = memDelQ.eq('member_id', callerMemberId);
+            const { error: memDelErr } = await memDelQ;
+            if (memDelErr) console.error('[tenant-chat] delete_thread memory cleanup failed:', memDelErr.message);
             return res.status(200).json({ ok: true });
         }
 
@@ -1758,7 +1768,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         const trimmedMsg = message.trim().slice(0, 2000); // Cap at 2000 chars
-        const threadId = thread_id || crypto.randomUUID();
+        // thread_id is client-provided and now interpolated into a PostgREST
+        // .or() filter (memory recap): accept only a well-formed UUID; anything
+        // else starts a fresh thread instead of reaching a filter string.
+        const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const threadId = (typeof thread_id === 'string' && UUID_RE.test(thread_id)) ? thread_id : crypto.randomUUID();
         const promptLang = (['es', 'en', 'pt'].includes(lang) ? lang : 'es') as string;
 
         // ── Fetch tenant's players for context ────────────────────────────
@@ -1984,22 +1998,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // (tenant-scoped: defense in depth, R12). mp.id is the CHILD id, so this
             // reads the same current_perfilamiento row that produced the player list.
             // Same round trip: the child's perfilamiento HISTORY (#8, profile
-            // evolution) and the caller's PAST consultations about this child in
-            // OTHER threads (#11a, cross-thread memory — member-scoped so a coach
-            // never sees another member's conversations). Recap matching uses the
-            // matched_player column (first name), so it accrues from 2026-07-02 on;
-            // homonym first names within a tenant may mix, same as thread titles.
+            // evolution) and the child's MEMORY (M1, docs/ARGOCOACH-MEMORIA-NINO.md):
+            // the episodic log replaces the raw chat_messages recap — each event
+            // carries what the coach reported AND the gist of the guidance given.
+            // Member-scoped: a coach never sees another member's consultations.
+            // thread_id null = future 'nota' events; they must not be dropped by
+            // the current-thread exclusion.
             const recapPromise = (() => {
-                let q = sb.from('chat_messages')
-                    .select('content, created_at')
+                let q = sb.from('child_memory_events')
+                    .select('content, advice, source, updated_at')
                     .eq('tenant_id', tenant.id)
-                    .eq('role', 'user')
-                    // Keyed by CHILD ID (review fix C2): first names mixed homonym
-                    // children's behavioral histories into the wrong child's context.
-                    .eq('matched_child_id', mp.id)
-                    .neq('thread_id', threadId)
-                    .is('deleted_at', null)
-                    .order('created_at', { ascending: false })
+                    .eq('child_id', mp.id)
+                    .or(`thread_id.is.null,thread_id.neq.${threadId}`)
+                    .order('updated_at', { ascending: false })
                     .limit(3);
                 if (callerMemberId) q = q.eq('member_id', callerMemberId);
                 return q;
@@ -2092,9 +2103,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const anon = anonymize(text);
                 return outOfScopeRe ? anon.replace(outOfScopeRe, '[otro jugador]') : anon;
             };
-            const recapRows = (recapRes.data ?? []) as Array<{ content: string; created_at: string }>;
+            const recapRows = (recapRes.data ?? []) as Array<{ content: string; advice: string | null; source: string; updated_at: string }>;
             const recapLine = recapRows.length > 0
-                ? `\n- Consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.created_at).slice(0, 10)}] "${scrubRecap(r.content).slice(0, 90)}"`).join(' · ')}. Úsalas como contexto de continuidad: no vuelvas a preguntar lo que el entrenador ya contó ahí.`
+                ? `\n- Memoria de consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.updated_at).slice(0, 10)}] consultó: "${scrubRecap(r.content).slice(0, 110)}"${r.advice ? `; se le sugirió: "${scrubRecap(r.advice).slice(0, 110)}"` : ''}`).join(' · ')}. Úsala como continuidad: no vuelvas a preguntar lo que el entrenador ya contó y, si hubo una guía previa reciente, puedes abrir preguntando brevemente cómo resultó.`
                 : '';
             extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${recapLine}${anonymize(ownScrubbed)}`;
         } else if (mentionedPlayers.length >= 2) {
@@ -2537,6 +2548,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (error) console.error('[tenant-chat] chat_messages insert failed:', error.message);
                 assistantMessageId = ((data ?? []) as Array<{ id: number | string; role: string }>).find(r => r.role === 'assistant')?.id ?? null;
             }),
+            // ── Per-child memory M1: one episodic event per (thread, child),
+            // updated to the latest SUBSTANTIVE turn. Skipped for safe-fallback
+            // turns and thin replies so an apology or an "ok" never clobbers a
+            // stored guidance. Only the event's own writer updates it: the owner
+            // continuing a coach's thread must not flip the event's member scope
+            // (review M1-4). Best-effort: memory must never break the chat. ──
+            (async () => {
+                if (!mentionedPlayer) return;
+                if (qa.prohibitedAfterRetry) return; // fallback text is not guidance
+                if (assistantContent.length < 180) return; // no substance to remember
+                try {
+                    const event = {
+                        content: trimmedMsg.slice(0, 240),
+                        advice: assistantContent.slice(0, 240),
+                        situation_id: bestSituation?.id ?? null,
+                        updated_at: new Date().toISOString(),
+                    };
+                    const { data: existing, error: selErr } = await sb.from('child_memory_events')
+                        .select('id, member_id')
+                        .eq('tenant_id', tenant.id)
+                        .eq('thread_id', threadId)
+                        .eq('child_id', mentionedPlayer.id)
+                        .maybeSingle();
+                    if (selErr) { console.warn('[tenant-chat] memory select failed (non-fatal):', selErr.message); return; }
+                    if (existing) {
+                        if ((existing.member_id ?? null) !== (callerMemberId ?? null)) return; // another writer's event
+                        const { error } = await sb.from('child_memory_events').update(event).eq('id', existing.id);
+                        if (error) console.warn('[tenant-chat] memory update failed (non-fatal):', error.message);
+                    } else {
+                        const { error } = await sb.from('child_memory_events').insert({
+                            tenant_id: tenant.id,
+                            member_id: callerMemberId,
+                            child_id: mentionedPlayer.id,
+                            source: 'chat',
+                            thread_id: threadId,
+                            ...event,
+                        });
+                        // A concurrent-turn unique violation is benign (the other
+                        // turn's event won); anything else is worth a warning.
+                        if (error && error.code !== '23505') console.warn('[tenant-chat] memory insert failed (non-fatal):', error.message);
+                    }
+                } catch (memErr) {
+                    console.warn('[tenant-chat] child_memory_events write failed (non-fatal):', memErr instanceof Error ? memErr.message : memErr);
+                }
+            })(),
             // ── Best-effort quality telemetry (Wave E) — never breaks the chat ──
             // Stores only non-PII signals (placeholders/flags), never the child name.
             // If the ai_events table isn't migrated yet, the insert simply no-ops.

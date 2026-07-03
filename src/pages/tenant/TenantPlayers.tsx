@@ -14,7 +14,7 @@ import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { ContextChip } from '../../components/dashboard/ContextChip';
 import { LockedSection } from '../../components/dashboard/LockedSection';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
-import { Tooltip, InfoTip } from '../../components/ui/Tooltip';
+import { Tooltip } from '../../components/ui/Tooltip';
 import {
     classifyDecisionPattern,
     getPatternCopy,
@@ -47,43 +47,59 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
-/* One pill in the ficha's action area. Every child-level action (assistant,
-   report, email, archive; soon Notas + Memoria) is ONE <FichaAction> in the
-   bar at the top of the expanded detail — never a floating button elsewhere. */
+/* THE action standard for the ficha's action row: icon in a subtle bordered
+   pill, optional delicate label next to it, tooltip on hover for the
+   explanation. Every child-level action (assistant, report, email, archive;
+   soon Notas + Memoria) uses this — never a custom button elsewhere. */
 const FichaAction: React.FC<{
     icon: React.ComponentType<{ size?: number | string; className?: string }>;
-    label: string;
+    tooltip: string;
+    label?: string;
     onClick?: (e: React.MouseEvent) => void;
-    variant?: 'primary' | 'neutral' | 'positive' | 'danger';
+    variant?: 'neutral' | 'danger';
     disabled?: boolean;
     loading?: boolean;
     lockedTip?: string;
-}> = ({ icon: Icon, label, onClick, variant = 'neutral', disabled, loading, lockedTip }) => {
+}> = ({ icon: Icon, tooltip, label, onClick, variant = 'neutral', disabled, loading, lockedTip }) => {
     if (lockedTip) {
+        // Real (focusable) button with aria-disabled, so keyboard and screen
+        // reader users can reach it and hear why it's locked; onClick no-ops.
         return (
             <Tooltip text={lockedTip}>
-                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
-                    <Lock size={11} />
-                    {label}
-                </span>
+                <button
+                    aria-disabled="true"
+                    aria-label={label ? `${label}. ${lockedTip}` : lockedTip}
+                    onClick={(e) => e.stopPropagation()}
+                    className="inline-flex items-center gap-1.5 cursor-not-allowed"
+                >
+                    <span className="p-2 rounded-lg border border-argo-border text-argo-light inline-flex">
+                        <Lock size={14} />
+                    </span>
+                    {label && <span className="text-[11px] font-medium text-argo-light">{label}</span>}
+                </button>
             </Tooltip>
         );
     }
-    const styles: Record<string, string> = {
-        primary: 'border-argo-violet-100 text-argo-violet-500 font-semibold hover:bg-argo-violet-50 active:bg-argo-violet-50',
-        neutral: 'border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200',
-        positive: 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100',
-        danger: 'border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50',
+    // The border contains ONLY the icon; the delicate label sits outside it.
+    // active:* gives touch feedback (hover variants never fire on touch).
+    const boxStyles: Record<string, string> = {
+        neutral: 'border-argo-border text-argo-secondary group-hover:bg-argo-violet-50 group-hover:border-argo-violet-200 group-active:bg-argo-violet-50 group-active:border-argo-violet-200',
+        danger: 'border-argo-border text-argo-light group-hover:text-red-600 group-hover:border-red-200 group-hover:bg-red-50 group-active:text-red-600 group-active:bg-red-50',
     };
     return (
-        <button
-            onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
-            disabled={disabled}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-50 ${styles[variant]}`}
-        >
-            {loading ? <Loader2 size={12} className="animate-spin" /> : <Icon size={12} />}
-            {label}
-        </button>
+        <Tooltip text={tooltip}>
+            <button
+                onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
+                disabled={disabled}
+                aria-label={label ?? tooltip}
+                className="group inline-flex items-center gap-1.5 disabled:opacity-50"
+            >
+                <span className={`p-2 rounded-lg border transition-all inline-flex ${boxStyles[variant]}`}>
+                    {loading ? <Loader2 size={14} className="animate-spin" /> : <Icon size={14} />}
+                </span>
+                {label && <span className="text-[11px] font-medium text-argo-grey group-hover:text-argo-secondary transition-colors">{label}</span>}
+            </button>
+        </Tooltip>
     );
 };
 
@@ -376,43 +392,46 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
-                            {/* ── Action area: every child-level action lives HERE (Notas y
-                                Memoria del asistente se sumarán como FichaAction). ── */}
-                            <div className="mb-5 pb-4 border-b border-argo-border flex flex-wrap items-center gap-2">
+                            {/* ── Action row (contained by dividers, between the header and
+                                the historial/comentario): assistant on the left (Notas y
+                                Memoria del asistente se sumarán aquí); icon-only utilities
+                                with tooltip on the right. ── */}
+                            <div className="py-2.5 mb-5 border-y border-argo-border flex items-center gap-2">
                                 <FichaAction
                                     icon={MessageCircle}
-                                    variant="primary"
                                     label={lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Consultar o assistente' : 'Consultar al asistente'}
+                                    tooltip={lang === 'en' ? `Opens ArgoCoach with a consultation about ${session.child_name}` : lang === 'pt' ? `Abre o ArgoCoach com uma consulta sobre ${session.child_name}` : `Abre ArgoCoach con una consulta sobre ${session.child_name}`}
                                     onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(
                                         lang === 'en' ? `How do I support ${session.child_name} in the activity?`
                                         : lang === 'pt' ? `Como acompanho ${session.child_name} na atividade?`
                                         : `¿Cómo acompaño a ${session.child_name} en la actividad?`)}`)}
                                 />
-                                <div className="flex items-center gap-1.5">
-                                    <FichaAction
-                                        icon={Download}
-                                        label={lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                        onClick={handleDownload}
-                                        lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
-                                    />
-                                    <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
-                                </div>
+                                <div className="flex-1" />
                                 {canManage && (
                                     <FichaAction
-                                        icon={Send}
-                                        label={resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? (lang === 'en' ? 'Error' : lang === 'pt' ? 'Erro' : 'Error') : dt.home.reenviarInforme}
+                                        icon={resendOk === true ? Check : resendOk === false ? AlertCircle : Send}
+                                        tooltip={resendOk === true
+                                            ? (lang === 'en' ? 'Report sent' : lang === 'pt' ? 'Relatório enviado' : 'Informe enviado')
+                                            : resendOk === false
+                                                ? (lang === 'en' ? 'Send failed. Try again.' : lang === 'pt' ? 'Falha no envio. Tente de novo.' : 'Falló el envío. Intenta de nuevo.')
+                                                : dt.home.reenviarInforme}
                                         onClick={handleResend}
                                         disabled={resending}
                                         loading={resending}
                                         lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
                                     />
                                 )}
-                                <div className="flex-1" />
+                                <FichaAction
+                                    icon={Download}
+                                    label={lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
+                                    tooltip={lang === 'en' ? 'The extended report the responsible adult receives' : lang === 'pt' ? 'O relatório completo que o adulto responsável recebe' : 'Es el informe extendido que recibe el adulto responsable'}
+                                    onClick={handleDownload}
+                                    lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
+                                />
                                 {canManage && archived && onReactivate && (
                                     <FichaAction
                                         icon={RotateCcw}
-                                        variant="positive"
-                                        label={lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
+                                        tooltip={lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
                                         onClick={() => onReactivate(session.id)}
                                     />
                                 )}
@@ -420,8 +439,17 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     <FichaAction
                                         icon={Archive}
                                         variant="danger"
-                                        label={lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
-                                        onClick={() => onArchive(session.id)}
+                                        tooltip={lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
+                                        onClick={() => {
+                                            // Icon-only destructive action: confirm before firing (on
+                                            // touch there is no hover tooltip to explain it first).
+                                            const ok = window.confirm(lang === 'en'
+                                                ? `Archive ${session.child_name}? You can reactivate later.`
+                                                : lang === 'pt'
+                                                    ? `Arquivar ${session.child_name}? Você pode reativar depois.`
+                                                    : `¿Archivar a ${session.child_name}? Puedes reactivarlo después.`);
+                                            if (ok) onArchive(session.id);
+                                        }}
                                     />
                                 )}
                             </div>
@@ -626,8 +654,8 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                 </div>
                             </div>
 
-                            {/* Bottom bar: metadata only — actions live in the action area above */}
-                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-wrap items-center gap-4 text-xs text-argo-grey">
+                            {/* Bottom bar: metadata only — date left, responsible adult right */}
+                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-argo-grey">
                                 <span className="flex items-center gap-1">
                                     <Clock size={12} />
                                     {formatDate(session.created_at, lang)}

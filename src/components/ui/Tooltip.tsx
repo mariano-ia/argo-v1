@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 
@@ -14,13 +14,6 @@ interface TooltipProps {
     maxWidth?: number;
 }
 
-const positionClasses: Record<Position, string> = {
-    top:    'bottom-full left-1/2 -translate-x-1/2 mb-1.5',
-    bottom: 'top-full left-1/2 -translate-x-1/2 mt-1.5',
-    left:   'right-full top-1/2 -translate-y-1/2 mr-1.5',
-    right:  'left-full top-1/2 -translate-y-1/2 ml-1.5',
-};
-
 export const Tooltip: React.FC<TooltipProps> = ({
     text,
     children,
@@ -28,30 +21,84 @@ export const Tooltip: React.FC<TooltipProps> = ({
     delay = 200,
     maxWidth,
 }) => {
-    const [visible, setVisible] = useState(false);
+    // Rendered in a portal with fixed positioning (same pattern as InfoTip) so
+    // an ancestor's overflow-hidden (e.g. the animated expanding ficha) can't
+    // clip it, and clamped to the viewport so it never runs off an edge.
+    // Two passes: render offscreen to measure, then place.
+    const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
+    const [placed, setPlaced] = useState<React.CSSProperties | null>(null);
     const timerRef = useRef<ReturnType<typeof setTimeout>>();
+    const anchorRef = useRef<HTMLSpanElement>(null);
+    const tipRef = useRef<HTMLSpanElement>(null);
 
     const show = () => {
-        timerRef.current = setTimeout(() => setVisible(true), delay);
+        // Hover-only devices: on touch, iOS synthesizes mouseenter on tap and
+        // never fires mouseleave until the NEXT tap elsewhere, leaving a stale
+        // bubble floating after every action (mirrors hoverOnlyWhenSupported).
+        if (typeof window !== 'undefined' && window.matchMedia && !window.matchMedia('(hover: hover)').matches) return;
+        timerRef.current = setTimeout(() => {
+            if (anchorRef.current) setAnchorRect(anchorRef.current.getBoundingClientRect());
+        }, delay);
     };
 
     const hide = () => {
         clearTimeout(timerRef.current);
-        setVisible(false);
+        setAnchorRect(null);
+        setPlaced(null);
     };
 
     useEffect(() => () => clearTimeout(timerRef.current), []);
 
+    // A fixed-position tooltip doesn't track its anchor: hide it as soon as
+    // anything scrolls (capture catches inner scrollers) or the window resizes.
+    useEffect(() => {
+        if (!anchorRect) return;
+        const onMove = () => hide();
+        window.addEventListener('scroll', onMove, true);
+        window.addEventListener('resize', onMove);
+        return () => {
+            window.removeEventListener('scroll', onMove, true);
+            window.removeEventListener('resize', onMove);
+        };
+    }, [anchorRect]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useLayoutEffect(() => {
+        if (!anchorRect || !tipRef.current) return;
+        const t = tipRef.current.getBoundingClientRect();
+        const GAP = 6, MARGIN = 8;
+        let top: number, left: number;
+        if (position === 'top' || position === 'bottom') {
+            left = anchorRect.left + anchorRect.width / 2 - t.width / 2;
+            top = position === 'top' ? anchorRect.top - t.height - GAP : anchorRect.bottom + GAP;
+        } else {
+            top = anchorRect.top + anchorRect.height / 2 - t.height / 2;
+            left = position === 'left' ? anchorRect.left - t.width - GAP : anchorRect.right + GAP;
+        }
+        left = Math.min(Math.max(left, MARGIN), window.innerWidth - t.width - MARGIN);
+        top = Math.min(Math.max(top, MARGIN), window.innerHeight - t.height - MARGIN);
+        setPlaced({ top, left });
+        // text/maxWidth are deps: a tooltip whose text changes WHILE visible
+        // (e.g. "Reenviar informe" → "Informe enviado") must re-measure, or it
+        // keeps the old box's centering and clamping.
+    }, [anchorRect, position, text, maxWidth]);
+
     return (
-        <span className="relative inline-flex" onMouseEnter={show} onMouseLeave={hide}>
+        <span ref={anchorRef} className="relative inline-flex" onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
             {children}
-            {visible && (
+            {anchorRect && createPortal(
                 <span
-                    className={`absolute z-50 px-2.5 py-1.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed font-medium shadow-lg pointer-events-none ${maxWidth ? '' : 'whitespace-nowrap'} ${positionClasses[position]}`}
-                    style={maxWidth ? { maxWidth, whiteSpace: 'normal' } : undefined}
+                    ref={tipRef}
+                    style={{
+                        position: 'fixed',
+                        zIndex: 9999,
+                        ...(placed ?? { top: -9999, left: -9999 }),
+                        ...(maxWidth ? { maxWidth, whiteSpace: 'normal' } : {}),
+                    }}
+                    className={`px-2.5 py-1.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed font-medium shadow-lg pointer-events-none ${maxWidth ? '' : 'whitespace-nowrap'}`}
                 >
                     {text}
-                </span>
+                </span>,
+                document.body,
             )}
         </span>
     );

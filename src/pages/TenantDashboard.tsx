@@ -112,8 +112,12 @@ export const TenantDashboard: React.FC = () => {
     useEffect(() => {
         if (devBypass) {
             setSession({} as Session);
-            const forceOnboarding = new URLSearchParams(window.location.search).has('onboarding');
-            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: 'trial', roster_limit: 8, active_players_count: 3, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
+            const params = new URLSearchParams(window.location.search);
+            const forceOnboarding = params.has('onboarding');
+            // Default to an unlocked plan so the UI is fully visible; append
+            // &plan=trial to preview the locked/trial states.
+            const devPlan = params.get('plan') ?? 'pro';
+            setTenant({ id: 'dev-tenant-000', slug: 'dev', display_name: 'Dev Tenant', plan: devPlan, roster_limit: devPlan === 'trial' ? 8 : 50, active_players_count: 3, onboarding_completed: !forceOnboarding, trial_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() });
             return;
         }
         supabase.auth.getSession().then(({ data }) => setSession(data.session));
