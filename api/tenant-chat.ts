@@ -53,6 +53,7 @@ interface AIResponse { content: string; inputTokens: number; outputTokens: numbe
 // 2026-07; unknown models fall back to Flash rates rather than zero.
 const MODEL_RATES: Record<string, { input: number; cachedInput: number; output: number }> = {
     'gemini-2.5-flash': { input: 0.30, cachedInput: 0.075, output: 2.50 },
+    'gemini-2.5-flash-lite': { input: 0.10, cachedInput: 0.025, output: 0.40 },
     'gemini-2.5-pro': { input: 1.25, cachedInput: 0.3125, output: 10.00 },
     'gpt-4o-mini': { input: 0.15, cachedInput: 0.075, output: 0.60 },
 };
@@ -1983,9 +1984,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Re-fetch ai_sections on-demand for the child's CURRENT profile
             // (tenant-scoped: defense in depth, R12). mp.id is the CHILD id, so this
             // reads the same current_perfilamiento row that produced the player list.
-            // In the same round trip, fetch the child's perfilamiento HISTORY (#8):
-            // profile evolution anchors reads like "cambió de un día para el otro".
-            const [reportRes, histRes] = await Promise.all([
+            // Same round trip: the child's perfilamiento HISTORY (#8, profile
+            // evolution) and the caller's PAST consultations about this child in
+            // OTHER threads (#11a, cross-thread memory — member-scoped so a coach
+            // never sees another member's conversations). Recap matching uses the
+            // matched_player column (first name), so it accrues from 2026-07-02 on;
+            // homonym first names within a tenant may mix, same as thread titles.
+            const mpFirstName = mp.child_name.trim().split(/\s+/)[0];
+            const recapPromise = (() => {
+                let q = sb.from('chat_messages')
+                    .select('content, created_at')
+                    .eq('tenant_id', tenant.id)
+                    .eq('role', 'user')
+                    .eq('matched_player', mpFirstName)
+                    .neq('thread_id', threadId)
+                    .is('deleted_at', null)
+                    .order('created_at', { ascending: false })
+                    .limit(3);
+                if (callerMemberId) q = q.eq('member_id', callerMemberId);
+                return q;
+            })();
+            const [reportRes, histRes, recapRes] = await Promise.all([
                 sb.from('current_perfilamiento')
                     .select('ai_sections')
                     .eq('id', mp.id)
@@ -2000,6 +2019,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .is('deleted_at', null)
                     .order('created_at', { ascending: true })
                     .limit(6),
+                recapPromise,
             ]);
             const ai = reportRes.data?.ai_sections;
             let aiContext = '';
@@ -2048,7 +2068,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const historyLine = histRows.length > 1
                 ? `\n- Historial de perfilamientos (viejo → actual): ${histRows.map(r => `${String(r.created_at).slice(0, 7)} ${canonicalArchetype(r.eje, r.motor, lang)}`).join(' → ')}. El perfil vigente es el último; si cambió, considera qué pudo cambiar en su contexto.`
                 : '';
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${anonymize(ownScrubbed)}`;
+            // Cross-thread recap (#11a): extractive, anonymized before Gemini.
+            const recapRows = (recapRes.data ?? []) as Array<{ content: string; created_at: string }>;
+            const recapLine = recapRows.length > 0
+                ? `\n- Consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.created_at).slice(0, 10)}] "${anonymize(r.content).slice(0, 90)}"`).join(' · ')}. Úsalas como contexto de continuidad: no vuelvas a preguntar lo que el entrenador ya contó ahí.`
+                : '';
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${recapLine}${anonymize(ownScrubbed)}`;
         } else if (mentionedPlayers.length >= 2) {
             // Ambiguous: the message matches several players (e.g. two "Juan").
             const names = mentionedPlayers.map(p => placeholderForId(p.id)).join(', ');
@@ -2277,7 +2302,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ];
 
         // ── Call AI provider (Gemini → retry → OpenAI fallback) ─────────
-        const aiModel = tenantPlan?.plan === 'enterprise' ? 'gemini-2.5-pro' : 'gemini-2.5-flash';
+        // Flash-Lite A/B (#23): OFF by default; enable by setting the Vercel env
+        // var COACH_FLASH_LITE_PCT (0-100) once ai_events has baseline data to
+        // compare violation/latency rates (owner-gated). The bucket is a
+        // deterministic hash of tenant.id so each tenant's experience is stable
+        // and ai_events.model cleanly separates the two cohorts.
+        const abPct = Math.max(0, Math.min(100, Number(process.env.COACH_FLASH_LITE_PCT ?? '0') || 0));
+        const tenantBucket = Array.from(tenant.id).reduce((h, c) => (h * 31 + c.charCodeAt(0)) % 100, 7);
+        const aiModel = tenantPlan?.plan === 'enterprise'
+            ? 'gemini-2.5-pro'
+            : (abPct > 0 && tenantBucket < abPct ? 'gemini-2.5-flash-lite' : 'gemini-2.5-flash');
         let aiResult: AIResponse;
         try {
             aiResult = await callAI(aiMessages, { temperature: 0.4, maxTokens: 2000, model: aiModel });

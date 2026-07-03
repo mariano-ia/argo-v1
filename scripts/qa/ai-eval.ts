@@ -60,6 +60,36 @@ export async function runEval(): Promise<number> {
   if (!token) {
     lines.push('- SKIP: no se pudo autenticar el tenant de prueba (revisar QA_TENANT_EMAIL/PASSWORD).');
   } else {
+    // LLM-judge (#22): scores each chat answer on a small rubric. Report-only
+    // (never fails the run — regex checks stay the hard gate); a low dimension
+    // shows as WARN so quality regressions are visible before they're urgent.
+    const judgeAnswer = async (question: string, answer: string): Promise<Record<string, number> | null> => {
+      const key = process.env.GEMINI_API_KEY;
+      if (!key) return null;
+      const judgePrompt = `Eres un juez de calidad para un asistente DISC de deporte juvenil (niños 8-16). Evalúa la RESPUESTA a la PREGUNTA del entrenador con esta rúbrica (1-5 cada una):
+- anclaje: usa correctamente el marco DISC/perfiles, sin inventar datos.
+- accionable: el adulto termina sabiendo qué hacer o qué observar.
+- consultivo: si la pregunta era vaga, indaga con 2-3 preguntas concretas ADEMÁS de aportar una lectura; si era específica, responde directo sin interrogar.
+- tono: valida, habla desde la fortaleza, lenguaje probabilístico, nunca etiqueta fija ni términos clínicos.
+Devuelve SOLO un JSON: {"anclaje":n,"accionable":n,"consultivo":n,"tono":n}
+
+PREGUNTA: ${question}
+RESPUESTA: ${answer}`;
+      try {
+        const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: judgePrompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 200, thinkingConfig: { thinkingBudget: 0 } } }),
+        });
+        if (!r.ok) return null;
+        const data = await r.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+        const jsonMatch = text.match(/\{[^}]+\}/);
+        if (!jsonMatch) return null;
+        const scores = JSON.parse(jsonMatch[0]) as Record<string, number>;
+        return ['anclaje', 'accionable', 'consultivo', 'tono'].every(k => typeof scores[k] === 'number') ? scores : null;
+      } catch { return null; }
+    };
+
     // tenant-chat returns { thread_id, message: { role, content }, usage }. Extract the text.
     const extractAnswer = (body: { message?: unknown; reply?: unknown; content?: unknown }): string => {
       const m = body.message;
@@ -90,6 +120,13 @@ export async function runEval(): Promise<number> {
         }
         if (c.expectDirect && countQuestions(answer) > 1) {
           issues.push(`expected a direct answer, got ${countQuestions(answer)} questions`);
+        }
+        // Judge scores are informational (WARN, never FAIL).
+        const judge = await judgeAnswer(c.message, answer);
+        if (judge) {
+          const summary = Object.entries(judge).map(([k, v]) => `${k} ${v}`).join(', ');
+          const low = Object.entries(judge).filter(([, v]) => v <= 2).map(([k]) => k);
+          lines.push(`  - judge: ${summary}${low.length ? ` — WARN low: ${low.join(', ')}` : ''}`);
         }
         if (c.followUp && threadId) {
           const f = await sendChat(c.followUp.message, threadId);
