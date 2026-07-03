@@ -340,19 +340,6 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
     },
     /* ═══ 2026-07 additions: memory, conversation and mobile ═══ */
     {
-        id: 'coach-como-conversar',
-        category: 'coach',
-        title: 'How do I get the most out of conversations with Argo Coach?',
-        body: 'Argo Coach is built to converse, not just answer. If you bring up a problem without context ("Fede misbehaves"), it will first ask 2 or 3 questions to understand better before suggesting. And after every answer it will propose a next step or ask for one detail to sharpen the advice.',
-        steps: [
-            'Mention the child by name: it will use their real profile and history.',
-            'Answer its questions: the better the context, the better the guidance.',
-            'Try what it suggests and come back with how it went: it adjusts with that.',
-        ],
-        tip: 'It is a thinking aid, not a verdict. You know the child better than anyone.',
-        links: [{ label: 'Go to Argo Coach', to: '/dashboard/chat' }],
-    },
-    {
         id: 'memoria-asistente',
         category: 'coach',
         title: 'What is the assistant memory and who can see it?',

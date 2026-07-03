@@ -340,19 +340,6 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
     },
     /* ═══ Novidades 2026-07: memória, conversa e mobile ═══ */
     {
-        id: 'coach-como-conversar',
-        category: 'coach',
-        title: 'Como aproveito melhor as conversas com o Argo Coach?',
-        body: 'O Argo Coach foi pensado para conversar, não só responder. Se você traz um problema sem contexto ("Fede se comporta mal"), ele primeiro faz 2 ou 3 perguntas para entender melhor antes de sugerir. E depois de cada resposta propõe um próximo passo ou pede um dado para afinar.',
-        steps: [
-            'Mencione a criança pelo nome: ele usa o perfil real e a história dela.',
-            'Responda às perguntas dele: quanto melhor o contexto, melhor a orientação.',
-            'Experimente o que ele sugere e volte contando como foi: ele ajusta com isso.',
-        ],
-        tip: 'É uma ajuda para pensar, não um veredicto. Você conhece a criança melhor que ninguém.',
-        links: [{ label: 'Ir para o Argo Coach', to: '/dashboard/chat' }],
-    },
-    {
         id: 'memoria-asistente',
         category: 'coach',
         title: 'O que é a memória do assistente e quem pode vê-la?',
