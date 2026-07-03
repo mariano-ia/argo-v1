@@ -18,6 +18,7 @@ interface Tenant {
     institution_type: string | null;
     sport: string | null;
     country: string | null;
+    free_puentes: boolean;
     active_players: number;
     total_sessions: number;
     last_session: string | null;
@@ -237,6 +238,9 @@ export const AdminTenants: React.FC = () => {
                                     {t.trial_days_left !== null && t.trial_days_left <= 3 && (
                                         <span className="ml-1.5 text-[10px] text-amber-600 font-medium">{t.trial_days_left}d</span>
                                     )}
+                                    {t.free_puentes && (
+                                        <span className="ml-1.5 inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase border bg-violet-50 text-violet-700 border-violet-200">Puente gratis</span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3">
                                     <span className="text-gray-900 font-medium">{t.active_players}</span>
@@ -271,6 +275,10 @@ export const AdminTenants: React.FC = () => {
                                             {t.plan !== 'enterprise' && (
                                                 <button onClick={() => doAction('change-plan', t.id, { plan: 'enterprise', roster_limit: 500 })} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50">Cambiar a Enterprise</button>
                                             )}
+                                            <div className="h-px bg-gray-100 my-1" />
+                                            <button onClick={() => doAction('toggle-free-puentes', t.id, { enabled: !t.free_puentes })} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50">
+                                                {t.free_puentes ? 'Desactivar ArgoPuente® gratis' : 'Activar ArgoPuente® gratis'}
+                                            </button>
                                             <div className="h-px bg-gray-100 my-1" />
                                             <button onClick={() => doAction('reset-trial', t.id)} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50">Resetear a trial</button>
                                             <button onClick={() => doAction('extend-trial', t.id, { days: 14 })} className="w-full text-left px-3 py-2 text-xs hover:bg-gray-50">Extender trial +14d</button>
