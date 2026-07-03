@@ -30,7 +30,7 @@ const SLIDE_TEXT = {
                 { label: 'Planteles', desc: 'Organiza a tus jugadores en planteles y asigna entrenadores. Cada plantel tiene su propio link de juego.' },
                 { label: 'Química de grupos', desc: 'Agrupa a tus jugadores y analiza su química: cómo se complementan o tensionan los perfiles.' },
                 { label: 'Predictor Conductual', desc: 'Situaciones habituales de la actividad, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.' },
-                { label: 'Argo Coach', desc: 'Hazle preguntas por nombre: "¿Cómo motivo a Mateo?". Tiene acceso a todos los perfiles de tu plataforma.' },
+                { label: 'Argo Coach', desc: 'Conversa con él sobre tus jugadores por nombre: te hace preguntas para entender mejor, sugiere cómo acompañar y recuerda la historia de cada niño entre consultas.' },
             ],
         },
         s3: {
@@ -65,7 +65,7 @@ const SLIDE_TEXT = {
                 { label: 'Teams',        desc: 'Organize your players into teams and assign coaches. Each team has its own play link.' },
                 { label: 'Group chemistry', desc: 'Group your players and analyze their chemistry: how profiles complement or tension each other.' },
                 { label: 'Behavioral Predictor', desc: 'Common activity situations, organized by category. Guidance based on the athlete\'s profile.' },
-                { label: 'Argo Coach', desc: 'Ask by name: "How do I motivate Mateo?". Has access to all profiles on your platform.' },
+                { label: 'Argo Coach', desc: 'Talk with it about your players by name: it asks questions to understand better, suggests how to support them and remembers the history of each child across consultations.' },
             ],
         },
         s3: {
@@ -100,7 +100,7 @@ const SLIDE_TEXT = {
                 { label: 'Plantéis',     desc: 'Organize seus jogadores em plantéis e atribua treinadores. Cada plantel tem seu próprio link de jogo.' },
                 { label: 'Química de grupos', desc: 'Agrupe seus jogadores e analise a química: como os perfis se complementam ou tensionam.' },
                 { label: 'Preditor Comportamental', desc: 'Situações comuns da atividade, organizadas por categoria. Orientações com base no perfil do atleta.' },
-                { label: 'Argo Coach', desc: 'Faça perguntas por nome: "Como motivo o Mateo?". Tem acesso a todos os perfis da sua plataforma.' },
+                { label: 'Argo Coach', desc: 'Converse com ele sobre seus jogadores pelo nome: ele faz perguntas para entender melhor, sugere como acompanhar e lembra a história de cada criança entre consultas.' },
             ],
         },
         s3: {

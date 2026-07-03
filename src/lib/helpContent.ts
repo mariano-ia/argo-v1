@@ -422,6 +422,46 @@ export const HELP_ARTICLES: HelpArticle[] = [
         ],
         links: [{ label: 'Ir a Ajustes', to: '/dashboard/settings' }],
     },
+    /* ═══ Novedades 2026-07: memoria, conversación y mobile ═══ */
+    {
+        id: 'coach-como-conversar',
+        category: 'coach',
+        title: '¿Cómo le saco más provecho a las conversaciones con Argo Coach?',
+        body: 'Argo Coach está pensado para conversar, no solo para responder. Si le planteas un problema sin contexto ("Fede se porta mal"), primero te va a hacer 2 o 3 preguntas para entender mejor antes de sugerir. Y después de cada respuesta te va a proponer un siguiente paso o pedirte un dato para afinar.',
+        steps: [
+            'Menciona al niño por su nombre: así usa su perfil real y su historia.',
+            'Responde sus preguntas: cuanto mejor el contexto, mejor la guía.',
+            'Prueba lo que te sugiere y vuelve a contarle cómo resultó: ajusta la guía con eso.',
+        ],
+        tip: 'Es una ayuda para pensar, no un veredicto. Tú conoces al niño mejor que nadie.',
+        links: [{ label: 'Ir a Argo Coach', to: '/dashboard/chat' }],
+    },
+    {
+        id: 'memoria-asistente',
+        category: 'coach',
+        title: '¿Qué es la Memoria del asistente y quién puede verla?',
+        body: 'Es lo que Argo Coach recuerda de cada niño para dar continuidad a tus consultas: los episodios (qué consultaste y qué se sugirió) y un resumen que se actualiza solo cada noche.\n\nEres la única persona que puede leerla: ni Argo ni otros entrenadores tienen acceso. Puedes editar el resumen, quitar episodios de a uno o borrar toda la memoria cuando quieras.',
+        steps: [
+            'Entra a Jugadores y abre la ficha del niño.',
+            'Toca "Memoria" en la fila de acciones.',
+            'Edita el resumen, quita un episodio con el tachito, o usa "Borrar memoria".',
+        ],
+        links: [{ label: 'Ir a Jugadores', to: '/dashboard/players' }],
+    },
+    {
+        id: 'compartir-link-celular',
+        category: 'getting-started',
+        title: '¿Cómo comparto el link desde el celular?',
+        body: 'En el teléfono, el botón violeta del centro de la barra inferior copia tu link listo para pegar en WhatsApp. Un aviso te confirma "Link copiado".\n\nEl link que se copia depende del plantel elegido arriba a la derecha: si estás en un plantel, se comparte el link de ese plantel; en Administración, el de la institución.',
+        tip: 'Si tu equipo está completo, el botón te avisa antes: nadie nuevo puede registrarse hasta liberar un lugar.',
+    },
+    {
+        id: 'acciones-ficha',
+        category: 'players',
+        title: '¿Qué puedo hacer desde la ficha de un jugador?',
+        body: 'Al expandir la ficha, la fila de acciones de arriba concentra todo: consultar a Argo Coach sobre ese niño (abre el chat con su perfil cargado), ver su Memoria, descargar el informe en PDF (el extendido que recibe el adulto responsable), reenviarlo por email y archivar.',
+        links: [{ label: 'Ir a Jugadores', to: '/dashboard/players' }],
+    },
 ];
 
 /* ── Localized getter ────────────────────────────────────────────────────────── */

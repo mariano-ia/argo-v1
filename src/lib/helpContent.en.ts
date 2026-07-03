@@ -338,4 +338,44 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         ],
         links: [{ label: 'Go to Settings', to: '/dashboard/settings' }],
     },
+    /* ═══ 2026-07 additions: memory, conversation and mobile ═══ */
+    {
+        id: 'coach-como-conversar',
+        category: 'coach',
+        title: 'How do I get the most out of conversations with Argo Coach?',
+        body: 'Argo Coach is built to converse, not just answer. If you bring up a problem without context ("Fede misbehaves"), it will first ask 2 or 3 questions to understand better before suggesting. And after every answer it will propose a next step or ask for one detail to sharpen the advice.',
+        steps: [
+            'Mention the child by name: it will use their real profile and history.',
+            'Answer its questions: the better the context, the better the guidance.',
+            'Try what it suggests and come back with how it went: it adjusts with that.',
+        ],
+        tip: 'It is a thinking aid, not a verdict. You know the child better than anyone.',
+        links: [{ label: 'Go to Argo Coach', to: '/dashboard/chat' }],
+    },
+    {
+        id: 'memoria-asistente',
+        category: 'coach',
+        title: 'What is the assistant memory and who can see it?',
+        body: 'It is what Argo Coach remembers about each child to give continuity to your consultations: the episodes (what you asked and what was suggested) and a summary that updates itself nightly.\n\nYou are the only person who can read it: neither Argo nor other coaches have access. You can edit the summary, remove episodes one by one, or delete the whole memory anytime.',
+        steps: [
+            'Go to Players and open the child\'s card.',
+            'Tap "Memory" in the action row.',
+            'Edit the summary, remove an episode with the trash icon, or use "Delete memory".',
+        ],
+        links: [{ label: 'Go to Players', to: '/dashboard/players' }],
+    },
+    {
+        id: 'compartir-link-celular',
+        category: 'getting-started',
+        title: 'How do I share the link from my phone?',
+        body: 'On the phone, the violet button at the center of the bottom bar copies your link, ready to paste into WhatsApp. A message confirms "Link copied".\n\nThe copied link depends on the team selected at the top right: inside a team it shares that team\'s link; under Administration, the institution\'s.',
+        tip: 'If your team is full, the button warns you first: nobody new can register until a slot is freed.',
+    },
+    {
+        id: 'acciones-ficha',
+        category: 'players',
+        title: 'What can I do from a player\'s card?',
+        body: 'When you expand the card, the action row at the top gathers everything: ask Argo Coach about that child (opens the chat with their profile loaded), view their Memory, download the PDF report (the extended one the responsible adult receives), resend it by email, and archive.',
+        links: [{ label: 'Go to Players', to: '/dashboard/players' }],
+    },
 ];
