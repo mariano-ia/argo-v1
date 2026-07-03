@@ -103,7 +103,7 @@ const FichaAction: React.FC<{
     );
 };
 
-interface MemEvent { content: string; advice: string | null; situation_id: string | null; updated_at: string; source: string }
+interface MemEvent { id: number | string; content: string; advice: string | null; situation_id: string | null; updated_at: string; source: string }
 
 export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean; tenantId?: string }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false, tenantId }) => {
     const [expanded, setExpanded] = useState(false);
@@ -147,6 +147,22 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                 ? (lang === 'en' ? 'Saved.' : lang === 'pt' ? 'Salvo.' : 'Guardado.')
                 : (lang === 'en' ? 'Could not save. Try again.' : lang === 'pt' ? 'Não foi possível salvar.' : 'No se pudo guardar. Intenta de nuevo.'));
         } finally { setMemBusy(false); }
+    };
+
+    const deleteMemEvent = async (ev: MemEvent) => {
+        const ok = window.confirm(lang === 'en'
+            ? 'Remove this episode from the memory? The consolidated summary may still mention it until you edit it.'
+            : lang === 'pt'
+                ? 'Remover este episódio da memória? O resumo consolidado pode ainda mencioná-lo até você editá-lo.'
+                : '¿Quitar este episodio de la memoria? El resumen consolidado puede seguir mencionándolo hasta que lo edites.');
+        if (!ok) return;
+        setMemEvents(prev => prev.filter(e => e.id !== ev.id));
+        const token = await memToken();
+        if (!token) return;
+        fetch('/api/child-memory', {
+            method: 'POST', headers: memHeaders(token),
+            body: JSON.stringify({ action: 'delete_event', child_id: session.id, event_id: ev.id, tenant_id: tenantId }),
+        }).catch(() => { /* optimistic; reopening the modal shows the truth */ });
     };
 
     const wipeMemory = async () => {
@@ -787,11 +803,18 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                             </p>
                                                         ) : (
                                                             <div className="space-y-2">
-                                                                {memEvents.map((ev, i) => (
-                                                                    <div key={i} className="rounded-xl border border-argo-border px-3 py-2">
+                                                                {memEvents.map((ev) => (
+                                                                    <div key={ev.id} className="relative rounded-xl border border-argo-border px-3 py-2 pr-9">
                                                                         <p className="text-[10px] text-argo-light mb-0.5">{String(ev.updated_at).slice(0, 10)}</p>
                                                                         <p className="text-xs text-argo-secondary leading-relaxed">{ev.content}</p>
                                                                         {ev.advice && <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{lang === 'en' ? 'Suggested' : lang === 'pt' ? 'Sugerido' : 'Se sugirió'}: {ev.advice}</p>}
+                                                                        <button
+                                                                            onClick={() => deleteMemEvent(ev)}
+                                                                            aria-label={lang === 'en' ? 'Remove this episode' : lang === 'pt' ? 'Remover este episódio' : 'Quitar este episodio'}
+                                                                            className="absolute top-2 right-2 p-1 rounded text-argo-light/60 hover:text-red-500 hover:bg-red-50 active:text-red-500 transition-colors"
+                                                                        >
+                                                                            <Trash2 size={12} />
+                                                                        </button>
                                                                     </div>
                                                                 ))}
                                                             </div>

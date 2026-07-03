@@ -90,7 +90,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .eq('tenant_id', ctx.tenantId)
                     .eq('child_id', childId)).maybeSingle(),
                 memberScope(sb.from('child_memory_events')
-                    .select('content, advice, situation_id, updated_at, source')
+                    .select('id, content, advice, situation_id, updated_at, source')
                     .eq('tenant_id', ctx.tenantId)
                     .eq('child_id', childId))
                     .order('updated_at', { ascending: false })
@@ -133,6 +133,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (error) return res.status(500).json({ error: 'Failed to save' });
             }
             return res.status(200).json({ ok: true, summary });
+        }
+
+        if (action === 'delete_event') {
+            // Granular control: remove ONE episode from the caller's memory.
+            // Note the consolidated summary may still reflect it until the user
+            // edits the summary (it is theirs to edit).
+            const eventId = req.body?.event_id;
+            if (eventId === undefined || eventId === null || !/^\d+$/.test(String(eventId))) {
+                return res.status(400).json({ error: 'event_id required' });
+            }
+            const { error: evErr } = await memberScope(sb.from('child_memory_events').delete()
+                .eq('tenant_id', ctx.tenantId)
+                .eq('child_id', childId)
+                .eq('id', Number(eventId)));
+            if (evErr) {
+                console.error('[child-memory] delete_event failed:', evErr.message);
+                return res.status(500).json({ error: 'Failed to delete event' });
+            }
+            return res.status(200).json({ ok: true });
         }
 
         if (action === 'delete') {

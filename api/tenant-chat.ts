@@ -2586,9 +2586,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (qa.prohibitedAfterRetry) return; // fallback text is not guidance
                 if (assistantContent.length < 180) return; // no substance to remember
                 try {
+                    // Word-boundary clip: mid-word cuts ("Una posibi") read broken
+                    // in the memory modal and in the injected recap.
+                    const clip = (s: string, n: number) => (s.length <= n ? s : `${s.slice(0, n).replace(/\s+\S*$/, '')}…`);
                     const event = {
-                        content: trimmedMsg.slice(0, 240),
-                        advice: assistantContent.slice(0, 240),
+                        content: clip(trimmedMsg, 240),
+                        advice: clip(assistantContent, 240),
                         situation_id: bestSituation?.id ?? null,
                         updated_at: new Date().toISOString(),
                     };
