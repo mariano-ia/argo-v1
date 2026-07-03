@@ -9,7 +9,7 @@ import { TenantOnboarding } from './tenant/TenantOnboarding';
 import { TrialEndModal } from '../components/dashboard/TrialEndModal';
 import type { Session } from '@supabase/supabase-js';
 import {
-    LayoutDashboard, Settings, LogOut, Menu, PanelLeftClose, PanelLeftOpen,
+    LayoutDashboard, Settings, LogOut, PanelLeftClose, PanelLeftOpen,
     Users, Compass, MessageCircle, Layers, UserPlus, User, Shield, HelpCircle,
     ChevronsUpDown, Check, Share2,
 } from 'lucide-react';
@@ -96,6 +96,11 @@ export const TenantDashboard: React.FC = () => {
     const [memberships, setMemberships] = useState<Membership[]>([]);
     const [activeContext, setActiveContextState] = useState<ActiveContext | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    // Mobile share-link snackbar (tab bar): visible ~4s after copying.
+    const [linkCopied, setLinkCopied] = useState(false);
+    const linkSnackTimer = useRef<ReturnType<typeof setTimeout>>();
+    // Mobile plantel/hat switcher (topbar, right edge).
+    const [mobileHatOpen, setMobileHatOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
@@ -624,29 +629,56 @@ export const TenantDashboard: React.FC = () => {
                 <Sidebar />
             </div>
 
-            {/* Mobile overlay */}
-            {sidebarOpen && (
-                <div className="fixed inset-0 z-40 flex md:hidden">
-                    <div className="fixed inset-0 bg-black/25 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-                    <div className="relative z-50 flex">
-                        <Sidebar mobile />
-                    </div>
-                </div>
-            )}
+            {/* Mobile drawer removed (Modo Cancha): on the phone only the bottom
+                tab bar surfaces exist; settings/admin/context switching live on
+                desktop by design. */}
 
             {/* Main */}
             <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-                {/* Mobile topbar */}
-                <div className="md:hidden h-14 flex items-center gap-3 px-4 bg-white border-b border-argo-border">
-                    <Tooltip text="Menu" position="bottom">
-                        <button onClick={() => setSidebarOpen(true)} className="text-argo-grey">
-                            <Menu size={20} />
-                        </button>
-                    </Tooltip>
+                {/* Mobile topbar: brand left, plantel/hat switcher right (no
+                    hamburger — Modo Cancha keeps only field surfaces on mobile) */}
+                <div className="md:hidden h-14 flex items-center justify-between px-4 bg-white border-b border-argo-border relative">
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
-                                    </div>
+                    {tenant && tenant.onboarding_completed && (() => {
+                        const hats: Array<{ key: string; label: string; hat: ContextHat }> = [
+                            ...(role !== 'coach' ? [{ key: 'admin', label: lang === 'en' ? 'Administration' : lang === 'pt' ? 'Administração' : 'Administración', hat: 'admin' as ContextHat }] : []),
+                            ...teams.map(t => ({ key: t.id, label: t.name, hat: { plantelId: t.id } as ContextHat })),
+                        ];
+                        if (hats.length < 2) return null;
+                        const currentKey = currentHat === 'admin' ? 'admin' : currentHat.plantelId;
+                        const currentLabel = hats.find(h => h.key === currentKey)?.label ?? hats[0].label;
+                        return (
+                            <>
+                                <button
+                                    onClick={() => setMobileHatOpen(v => !v)}
+                                    className="flex items-center gap-1.5 max-w-[55%] px-2.5 py-1.5 rounded-full border border-argo-border bg-white text-[12px] font-medium text-argo-secondary active:bg-argo-bg transition-colors"
+                                >
+                                    <span className="truncate">{currentLabel}</span>
+                                    <ChevronsUpDown size={13} className="text-argo-grey flex-shrink-0" />
+                                </button>
+                                {mobileHatOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setMobileHatOpen(false)} />
+                                        <div className="absolute right-3 top-[52px] z-50 w-56 bg-white rounded-xl shadow-argo-hover border border-argo-border py-1">
+                                            {hats.map(h => (
+                                                <button
+                                                    key={h.key}
+                                                    onClick={() => { setActiveContext({ tenantId: activeContext?.tenantId ?? tenant.id, hat: h.hat }); setMobileHatOpen(false); }}
+                                                    className="w-full flex items-center justify-between gap-2 px-3.5 py-2.5 text-left text-[13px] text-argo-secondary active:bg-argo-bg transition-colors"
+                                                >
+                                                    <span className="truncate">{h.label}</span>
+                                                    {h.key === currentKey && <Check size={14} className="text-argo-violet-500 flex-shrink-0" />}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        );
+                    })()}
+                </div>
 
                 <main className="flex-1 overflow-y-auto p-6 pb-24 md:px-12 md:py-10">
                     {tenant && !tenant.onboarding_completed ? (
@@ -664,7 +696,13 @@ export const TenantDashboard: React.FC = () => {
                 {tenant && tenant.onboarding_completed && (() => {
                     const activeTeam = (teams ?? []).find(tm => tm.id === effectiveTeamId) ?? null;
                     const rosterFull = tenant.active_players_count >= tenant.roster_limit;
-                    const sharePlayLink = async () => {
+                    const playUrl = `${window.location.origin}/play/${tenant.slug}${activeTeam ? `/${activeTeam.slug}` : ''}`;
+                    const shareTitle = activeTeam
+                        ? (lang === 'en' ? `Argo link · ${activeTeam.name}` : lang === 'pt' ? `Link Argo · ${activeTeam.name}` : `Link de Argo · ${activeTeam.name}`)
+                        : (lang === 'en' ? `Argo link · ${tenant.display_name}` : lang === 'pt' ? `Link Argo · ${tenant.display_name}` : `Link de Argo · ${tenant.display_name}`);
+                    // Tap = copy + snackbar confirmation (owner-specified UX); the
+                    // snackbar offers the native share sheet as its action.
+                    const copyPlayLink = async () => {
                         if (rosterFull) {
                             window.alert(lang === 'en'
                                 ? 'Your team is full: new players cannot register with this link. Free a slot or upgrade your plan.'
@@ -673,17 +711,14 @@ export const TenantDashboard: React.FC = () => {
                                     : 'Tu equipo está completo: no pueden registrarse jugadores nuevos con este link. Libera un lugar o actualiza tu plan.');
                             return;
                         }
-                        const url = `${window.location.origin}/play/${tenant.slug}${activeTeam ? `/${activeTeam.slug}` : ''}`;
-                        const title = activeTeam
-                            ? (lang === 'en' ? `Argo link · ${activeTeam.name}` : lang === 'pt' ? `Link Argo · ${activeTeam.name}` : `Link de Argo · ${activeTeam.name}`)
-                            : (lang === 'en' ? `Argo link · ${tenant.display_name}` : lang === 'pt' ? `Link Argo · ${tenant.display_name}` : `Link de Argo · ${tenant.display_name}`);
-                        try {
-                            if (navigator.share) { await navigator.share({ title, url }); return; }
-                        } catch { return; /* user closed the share sheet */ }
-                        try {
-                            await navigator.clipboard.writeText(url);
-                            window.alert(lang === 'en' ? 'Link copied.' : lang === 'pt' ? 'Link copiado.' : 'Link copiado.');
-                        } catch { /* nothing else to fall back to */ }
+                        try { await navigator.clipboard.writeText(playUrl); } catch { /* still show the share path */ }
+                        setLinkCopied(true);
+                        clearTimeout(linkSnackTimer.current);
+                        linkSnackTimer.current = setTimeout(() => setLinkCopied(false), 4000);
+                    };
+                    const shareNative = async () => {
+                        setLinkCopied(false);
+                        try { await navigator.share({ title: shareTitle, url: playUrl }); } catch { /* user closed the sheet */ }
                     };
                     const tabs = [
                         { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
@@ -696,7 +731,7 @@ export const TenantDashboard: React.FC = () => {
                             to={t.to}
                             end={t.end}
                             className={({ isActive }) =>
-                                `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors active:bg-argo-bg ${
+                                `flex-1 flex flex-col items-center justify-center gap-1 py-3 text-[10px] font-medium transition-colors active:bg-argo-bg ${
                                     isActive ? 'text-argo-violet-500' : 'text-argo-grey'
                                 }`}
                         >
@@ -705,24 +740,41 @@ export const TenantDashboard: React.FC = () => {
                         </NavLink>
                     );
                     return (
-                        <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
-                            <TabLink t={tabs[0]} />
-                            <TabLink t={tabs[1]} />
-                            <div className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2">
-                                <button
-                                    onClick={sharePlayLink}
-                                    aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
-                                    className={`-mt-6 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-                                        rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
-                                    }`}
-                                >
-                                    <Share2 size={20} />
-                                </button>
-                                <span className="text-[10px] font-medium text-argo-grey -mt-0.5">Link</span>
-                            </div>
-                            <TabLink t={tabs[2]} />
-                            <TabLink t={tabs[3]} />
-                        </nav>
+                        <>
+                            {/* Snackbar: floats just above the share button */}
+                            {linkCopied && (
+                                <div className="md:hidden fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] inset-x-0 z-50 flex justify-center pointer-events-none px-4">
+                                    <div className="pointer-events-auto flex items-center gap-3 bg-argo-navy text-white text-[12px] font-medium px-4 py-2.5 rounded-full shadow-lg">
+                                        <span>{lang === 'en' ? 'Link copied. Ready to share.' : lang === 'pt' ? 'Link copiado. Já pode compartilhar.' : 'Link copiado. Ya puedes compartirlo.'}</span>
+                                        {typeof navigator !== 'undefined' && 'share' in navigator && (
+                                            <button onClick={shareNative} className="font-bold text-argo-violet-200 active:opacity-70 flex-shrink-0">
+                                                {lang === 'en' ? 'Share' : lang === 'pt' ? 'Compartilhar' : 'Compartir'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
+                                <TabLink t={tabs[0]} />
+                                <TabLink t={tabs[1]} />
+                                <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
+                                    <button
+                                        onClick={copyPlayLink}
+                                        aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
+                                        className={`-mt-7 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                                            rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
+                                        }`}
+                                    >
+                                        <Share2 size={20} />
+                                    </button>
+                                    <span className="text-[10px] font-medium text-argo-grey -mt-0.5 whitespace-nowrap">
+                                        {lang === 'en' ? 'Share link' : lang === 'pt' ? 'Compartilhar' : 'Compartir link'}
+                                    </span>
+                                </div>
+                                <TabLink t={tabs[2]} />
+                                <TabLink t={tabs[3]} />
+                            </nav>
+                        </>
                     );
                 })()}
             </div>
