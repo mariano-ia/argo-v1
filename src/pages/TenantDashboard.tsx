@@ -618,7 +618,7 @@ export const TenantDashboard: React.FC = () => {
                 onClose={() => setShowTrialModal(false)}
             />
         )}
-        <div className="flex h-screen bg-argo-bg overflow-hidden">
+        <div className="flex h-[100dvh] bg-argo-bg overflow-hidden">
             {/* Desktop sidebar */}
             <div className="hidden md:flex">
                 <Sidebar />
@@ -648,13 +648,47 @@ export const TenantDashboard: React.FC = () => {
                     </span>
                                     </div>
 
-                <main className="flex-1 overflow-y-auto p-6 md:px-12 md:py-10">
+                <main className="flex-1 overflow-y-auto p-6 pb-24 md:px-12 md:py-10">
                     {tenant && !tenant.onboarding_completed ? (
                         <TenantOnboarding tenant={tenant} onComplete={fetchTenant} lang={lang} />
                     ) : (
                         <Outlet context={{ tenant, refreshTenant: fetchTenant, dt, lang, userEmail: session?.user?.email ?? '', memberProfile, role, teams, memberId, devBypass, memberships, activeContext, setActiveContext, effectiveTeamId, isAdminView }} />
                     )}
                 </main>
+
+                {/* ── Mobile bottom tab bar (Modo Cancha B1): the 4 core surfaces
+                    one thumb away; "Más" opens the existing drawer for the rest
+                    (Guía, Ajustes, Ayuda, administración, logout). ── */}
+                {tenant && tenant.onboarding_completed && (
+                    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
+                        {[
+                            { to: '/dashboard', label: dt.nav.inicio, icon: LayoutDashboard, end: true },
+                            { to: '/dashboard/players', label: dt.nav.jugadores, icon: Users, end: false },
+                            { to: '/dashboard/chat', label: 'Coach', icon: MessageCircle, end: false },
+                            { to: '/dashboard/grupos', label: dt.nav.grupos, icon: Layers, end: false },
+                        ].map(t => (
+                            <NavLink
+                                key={t.to}
+                                to={t.to}
+                                end={t.end}
+                                className={({ isActive }) =>
+                                    `flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors active:bg-argo-bg ${
+                                        isActive ? 'text-argo-violet-500' : 'text-argo-grey'
+                                    }`}
+                            >
+                                <t.icon size={18} />
+                                <span className="truncate max-w-full px-0.5">{t.label}</span>
+                            </NavLink>
+                        ))}
+                        <button
+                            onClick={() => setSidebarOpen(true)}
+                            className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium text-argo-grey active:bg-argo-bg transition-colors"
+                        >
+                            <Menu size={18} />
+                            {lang === 'en' ? 'More' : lang === 'pt' ? 'Mais' : 'Más'}
+                        </button>
+                    </nav>
+                )}
             </div>
         </div>
         </ToastProvider>

@@ -314,7 +314,7 @@ export const TenantChat: React.FC = () => {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
-            className="flex h-[calc(100dvh-7rem)] bg-white rounded-[14px] shadow-argo overflow-hidden"
+            className="flex h-[calc(100dvh-10.5rem)] md:h-[calc(100dvh-7rem)] bg-white rounded-[14px] shadow-argo overflow-hidden"
         >
             {/* ═══ LEFT PANEL — Thread history ═══ */}
             <div className={`flex-shrink-0 border-r border-argo-border flex flex-col transition-all duration-200 ${panelOpen ? 'w-[280px]' : 'w-[48px]'}`}>
