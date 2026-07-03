@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout, MessageCircle } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout, MessageCircle, BookOpen, X, Trash2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { sendReport } from '../../lib/emailService';
@@ -103,9 +103,70 @@ const FichaAction: React.FC<{
     );
 };
 
-export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
+interface MemEvent { content: string; advice: string | null; situation_id: string | null; updated_at: string; source: string }
+
+export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean; tenantId?: string }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false, tenantId }) => {
     const [expanded, setExpanded] = useState(false);
     const navigate = useNavigate();
+
+    /* ── Memoria del asistente (M2) ───────────────────────────────────── */
+    const [memOpen, setMemOpen] = useState(false);
+    const [memLoading, setMemLoading] = useState(false);
+    const [memSummary, setMemSummary] = useState('');
+    const [memEvents, setMemEvents] = useState<MemEvent[]>([]);
+    const [memBusy, setMemBusy] = useState(false);
+    const [memMsg, setMemMsg] = useState<string | null>(null);
+
+    const memToken = async () => (await supabase.auth.getSession()).data.session?.access_token ?? null;
+    const memHeaders = (token: string) => ({ Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' });
+
+    const openMemory = async () => {
+        setMemOpen(true); setMemLoading(true); setMemMsg(null);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch(`/api/child-memory?child_id=${session.id}&tenant_id=${tenantId ?? ''}`, { headers: memHeaders(token) });
+            if (res.ok) {
+                const d = await res.json();
+                setMemSummary(d.summary ?? '');
+                setMemEvents(d.events ?? []);
+            }
+        } finally { setMemLoading(false); }
+    };
+
+    const saveMemory = async () => {
+        setMemBusy(true); setMemMsg(null);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch('/api/child-memory', {
+                method: 'POST', headers: memHeaders(token),
+                body: JSON.stringify({ action: 'update_summary', child_id: session.id, summary: memSummary, tenant_id: tenantId }),
+            });
+            setMemMsg(res.ok
+                ? (lang === 'en' ? 'Saved.' : lang === 'pt' ? 'Salvo.' : 'Guardado.')
+                : (lang === 'en' ? 'Could not save. Try again.' : lang === 'pt' ? 'Não foi possível salvar.' : 'No se pudo guardar. Intenta de nuevo.'));
+        } finally { setMemBusy(false); }
+    };
+
+    const wipeMemory = async () => {
+        const ok = window.confirm(lang === 'en'
+            ? `Delete everything the assistant remembers about ${session.child_name}? This cannot be undone.`
+            : lang === 'pt'
+                ? `Excluir tudo o que o assistente lembra sobre ${session.child_name}? Isso não pode ser desfeito.`
+                : `¿Borrar todo lo que el asistente recuerda sobre ${session.child_name}? Esta acción no se puede deshacer.`);
+        if (!ok) return;
+        setMemBusy(true);
+        try {
+            const token = await memToken();
+            if (!token) return;
+            const res = await fetch('/api/child-memory', {
+                method: 'POST', headers: memHeaders(token),
+                body: JSON.stringify({ action: 'delete', child_id: session.id, tenant_id: tenantId }),
+            });
+            if (res.ok) { setMemSummary(''); setMemEvents([]); setMemMsg(lang === 'en' ? 'Memory deleted.' : lang === 'pt' ? 'Memória excluída.' : 'Memoria borrada.'); }
+        } finally { setMemBusy(false); }
+    };
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
     const [copied, setCopied] = useState(false);
@@ -406,6 +467,12 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         : lang === 'pt' ? `Como acompanho ${session.child_name} na atividade?`
                                         : `¿Cómo acompaño a ${session.child_name} en la actividad?`)}`)}
                                 />
+                                <FichaAction
+                                    icon={BookOpen}
+                                    label={lang === 'en' ? 'Memory' : lang === 'pt' ? 'Memória' : 'Memoria'}
+                                    tooltip={lang === 'en' ? `What the assistant remembers about ${session.child_name}. You can edit or delete it.` : lang === 'pt' ? `O que o assistente lembra sobre ${session.child_name}. Você pode editar ou excluir.` : `Lo que el asistente recuerda de ${session.child_name}. Puedes editarlo o borrarlo.`}
+                                    onClick={openMemory}
+                                />
                                 <div className="flex-1" />
                                 {canManage && (
                                     <FichaAction
@@ -653,6 +720,99 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                 </div>
                             </div>
+
+                            {/* ── Memoria del asistente modal (M2) ─────────────────── */}
+                            {memOpen && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center bg-argo-navy/30 p-4" onClick={() => setMemOpen(false)}>
+                                    <div className="bg-white rounded-[14px] shadow-lg w-full max-w-lg max-h-[85vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                                        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-argo-border">
+                                            <div>
+                                                <h3 className="text-[15px] font-semibold text-argo-navy">
+                                                    {lang === 'en' ? 'Assistant memory' : lang === 'pt' ? 'Memória do assistente' : 'Memoria del asistente'} · {session.child_name}
+                                                </h3>
+                                                <p className="text-[11px] text-argo-light mt-0.5 leading-relaxed">
+                                                    {lang === 'en'
+                                                        ? 'You are the only person who can read this: neither Argo nor other coaches have access. The assistant uses it solely to give continuity to your consultations, and you can edit or delete it whenever you want.'
+                                                        : lang === 'pt'
+                                                            ? 'Você é a única pessoa que pode ler isto: nem a Argo nem outros treinadores têm acesso. O assistente a usa apenas para dar continuidade às suas consultas, e você pode editá-la ou excluí-la quando quiser.'
+                                                            : 'Eres la única persona que puede leer esto: ni Argo ni otros entrenadores tienen acceso. El asistente la usa únicamente para dar continuidad a tus consultas, y puedes editarla o borrarla cuando quieras.'}
+                                                </p>
+                                            </div>
+                                            <button onClick={() => setMemOpen(false)} className="p-1.5 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors flex-shrink-0 ml-3" aria-label={lang === 'en' ? 'Close' : lang === 'pt' ? 'Fechar' : 'Cerrar'}>
+                                                <X size={16} />
+                                            </button>
+                                        </div>
+                                        <div className="px-5 py-4 space-y-4">
+                                            {memLoading ? (
+                                                <div className="space-y-2">
+                                                    {[1, 2, 3].map(i => <div key={i} className="h-8 bg-argo-bg rounded-lg animate-pulse" />)}
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                            {lang === 'en' ? 'Consolidated summary' : lang === 'pt' ? 'Resumo consolidado' : 'Resumen consolidado'}
+                                                        </p>
+                                                        <textarea
+                                                            value={memSummary}
+                                                            onChange={(e) => setMemSummary(e.target.value)}
+                                                            rows={5}
+                                                            maxLength={1500}
+                                                            placeholder={lang === 'en'
+                                                                ? 'No summary yet. It builds automatically from your ArgoCoach consultations (nightly), or write your own here.'
+                                                                : lang === 'pt'
+                                                                    ? 'Ainda sem resumo. Ele se constrói automaticamente com suas consultas no ArgoCoach (à noite), ou escreva o seu aqui.'
+                                                                    : 'Todavía no hay resumen. Se construye solo con tus consultas en ArgoCoach (cada noche), o escribe el tuyo aquí.'}
+                                                            className="w-full resize-y rounded-xl border border-argo-border bg-argo-bg px-3.5 py-2.5 text-[13px] leading-relaxed outline-none focus:border-argo-violet-200 transition-colors"
+                                                        />
+                                                        <div className="flex items-center justify-between mt-2">
+                                                            <span className="text-[11px] text-argo-light">{memMsg ?? ''}</span>
+                                                            <button
+                                                                onClick={saveMemory}
+                                                                disabled={memBusy}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-argo-navy text-white hover:bg-argo-navy/90 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                {memBusy ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                                                                {lang === 'en' ? 'Save' : lang === 'pt' ? 'Salvar' : 'Guardar'}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
+                                                            {lang === 'en' ? 'Recent episodes' : lang === 'pt' ? 'Episódios recentes' : 'Episodios recientes'}
+                                                        </p>
+                                                        {memEvents.length === 0 ? (
+                                                            <p className="text-xs text-argo-light leading-relaxed">
+                                                                {lang === 'en' ? 'No episodes yet: they appear when you consult ArgoCoach about this child.' : lang === 'pt' ? 'Ainda sem episódios: eles aparecem quando você consulta o ArgoCoach sobre esta criança.' : 'Todavía no hay episodios: aparecen cuando consultas a ArgoCoach sobre este niño.'}
+                                                            </p>
+                                                        ) : (
+                                                            <div className="space-y-2">
+                                                                {memEvents.map((ev, i) => (
+                                                                    <div key={i} className="rounded-xl border border-argo-border px-3 py-2">
+                                                                        <p className="text-[10px] text-argo-light mb-0.5">{String(ev.updated_at).slice(0, 10)}</p>
+                                                                        <p className="text-xs text-argo-secondary leading-relaxed">{ev.content}</p>
+                                                                        {ev.advice && <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{lang === 'en' ? 'Suggested' : lang === 'pt' ? 'Sugerido' : 'Se sugirió'}: {ev.advice}</p>}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="pt-2 border-t border-argo-border flex justify-end">
+                                                        <button
+                                                            onClick={wipeMemory}
+                                                            disabled={memBusy || (memEvents.length === 0 && !memSummary)}
+                                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 active:text-red-600 active:bg-red-50 disabled:opacity-40 transition-all"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                            {lang === 'en' ? 'Delete memory' : lang === 'pt' ? 'Excluir memória' : 'Borrar memoria'}
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Bottom bar: metadata only — date left, responsible adult right */}
                             <div className="mt-5 pt-4 border-t border-argo-border flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs text-argo-grey">
@@ -967,7 +1127,7 @@ export const TenantPlayers: React.FC = () => {
                     {/* List card */}
                     <div className="bg-white rounded-[14px] shadow-argo overflow-hidden">
                         {paginated.map(s => (
-                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} onArchive={handleArchive} canManage={(role ?? 'owner') === 'coach'} />
+                            <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} onArchive={handleArchive} canManage={(role ?? 'owner') === 'coach'} />
                         ))}
                     </div>
 
@@ -1020,7 +1180,7 @@ export const TenantPlayers: React.FC = () => {
                     {showArchived && (
                         <div className="bg-white rounded-[14px] shadow-argo overflow-hidden mt-3 opacity-75">
                             {archivedSessions.map(s => (
-                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} archived onReactivate={handleReactivate} canManage={(role ?? 'owner') === 'coach'} />
+                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} archived onReactivate={handleReactivate} canManage={(role ?? 'owner') === 'coach'} />
                             ))}
                         </div>
                     )}

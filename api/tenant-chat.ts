@@ -2022,7 +2022,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 .select('child_name')
                 .eq('tenant_id', tenant.id)
                 .limit(1000);
-            const [reportRes, histRes, recapRes, allNamesRes] = await Promise.all([
+            // M2: consolidated summary (nightly cron distillate; user-editable in
+            // the ficha). Same member scoping convention as the episodic recap.
+            const memoryPromise = (() => {
+                let q = sb.from('child_memory')
+                    .select('summary, updated_at')
+                    .eq('tenant_id', tenant.id)
+                    .eq('child_id', mp.id)
+                    .order('updated_at', { ascending: false })
+                    .limit(1);
+                if (callerMemberId) q = q.eq('member_id', callerMemberId);
+                return q;
+            })();
+            const [reportRes, histRes, recapRes, allNamesRes, memoryRes] = await Promise.all([
                 sb.from('current_perfilamiento')
                     .select('ai_sections')
                     .eq('id', mp.id)
@@ -2039,6 +2051,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .limit(6),
                 recapPromise,
                 allNamesPromise,
+                memoryPromise,
             ]);
             const ai = reportRes.data?.ai_sections;
             let aiContext = '';
@@ -2103,11 +2116,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const anon = anonymize(text);
                 return outOfScopeRe ? anon.replace(outOfScopeRe, '[otro jugador]') : anon;
             };
+            // M2 consolidated summary line (scrubbed like everything injected).
+            const memSummary = ((memoryRes.data ?? []) as Array<{ summary: string }>)[0]?.summary ?? '';
+            const summaryLine = memSummary
+                ? `\n- Memoria consolidada sobre ${mentionedPlaceholder} (mantenida por el asistente, editable por el usuario en la ficha): "${scrubRecap(memSummary).slice(0, 1000)}"`
+                : '';
             const recapRows = (recapRes.data ?? []) as Array<{ content: string; advice: string | null; source: string; updated_at: string }>;
             const recapLine = recapRows.length > 0
                 ? `\n- Memoria de consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.updated_at).slice(0, 10)}] consultó: "${scrubRecap(r.content).slice(0, 110)}"${r.advice ? `; se le sugirió: "${scrubRecap(r.advice).slice(0, 110)}"` : ''}`).join(' · ')}. Úsala como continuidad: no vuelvas a preguntar lo que el entrenador ya contó y, si hubo una guía previa reciente, puedes abrir preguntando brevemente cómo resultó.`
                 : '';
-            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${recapLine}${anonymize(ownScrubbed)}`;
+            extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${summaryLine}${recapLine}${anonymize(ownScrubbed)}`;
         } else if (mentionedPlayers.length >= 2) {
             // Ambiguous: the message matches several players (e.g. two "Juan").
             const names = mentionedPlayers.map(p => placeholderForId(p.id)).join(', ');

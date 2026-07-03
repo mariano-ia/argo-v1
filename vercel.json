@@ -21,6 +21,10 @@
       "schedule": "0 3 * * *"
     },
     {
+      "path": "/api/child-memory-cron",
+      "schedule": "0 6 * * *"
+    },
+    {
       "path": "/api/puentes-reminder-cron",
       "schedule": "0 14 * * *"
     },

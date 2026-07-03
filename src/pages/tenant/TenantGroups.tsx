@@ -490,7 +490,7 @@ export const TenantGroups: React.FC = () => {
                                     ) : (
                                         <div>
                                             {plantelSessions.map(s => (
-                                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} canManage={false} />
+                                                <PlayerRow key={s.id} session={s} dt={dt} lang={lang} locked={tenant.plan === 'trial'} tenantId={tenant.id} canManage={false} />
                                             ))}
                                         </div>
                                     )}

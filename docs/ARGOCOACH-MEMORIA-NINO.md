@@ -63,11 +63,53 @@ M3, cierre de loop).
 - `chat_messages.matched_child_id` sigue poblándose (títulos + analítica),
   ya no alimenta el recap.
 
+## M2 as-built (2026-07-03)
+
+- Tabla `child_memory` (summary por niño+miembro, `events_through` como
+  watermark, `user_edited_at`). RLS sin policies (solo service role).
+- `api/child-memory-cron.ts` (Vercel cron diario 06:00 UTC en vercel.json):
+  agrupa eventos nuevos por (tenant, niño, miembro), consolida con
+  Flash-Lite (1 llamada por grupo, cap 60 grupos/run), guardrails inlined
+  (palabras prohibidas + frases deterministas) con 1 retry; si el output
+  sigue sucio conserva el resumen anterior y avanza el watermark (la memoria
+  se atrasa, nunca loopea con input envenenado). Si la IA no responde, NO
+  avanza el watermark (reintenta al día siguiente). Un resumen editado por
+  el usuario se usa como base, no se reescribe entero. Heartbeat a
+  health_checks + costo a ai_events (source 'child-memory-cron').
+- Confiabilidad del cron (defensa en profundidad):
+  1. Ventana de descubrimiento de 7 días + watermark por grupo: si el cron
+     no corre durante días, el siguiente run exitoso recupera todo lo
+     pendiente sin duplicar trabajo.
+  2. Dead-man's-switch: registrado en `CRON_MAX_STALE_MIN` de qa-monitor
+     (corre cada hora); si el heartbeat tiene más de 48 h, pagea a ops por
+     Telegram/email como los demás crons.
+  3. Degradación elegante: el chat nunca depende del cron; sin resumen, la
+     inyección M1 de episodios crudos sigue funcionando (la memoria pierde
+     compresión, no continuidad).
+  4. Disparo manual: `GET /api/child-memory-cron` con el CRON_SECRET
+     re-consolida on demand.
+- Privacidad reforzada del cron: los nombres NUNCA viajan a Gemini tampoco en
+  la consolidación: antes de la llamada, el niño objetivo se reemplaza por
+  "el niño" y cualquier otro niño del tenant por "un compañero" (scrub
+  tenant-wide, mismo criterio que el fix C1 del chat); el prompt además
+  prohíbe nombres propios, así los resúmenes quedan sin nombres por
+  construcción.
+- Índice único (tenant, child, member) NULLS NOT DISTINCT en `child_memory`:
+  una carrera cron/endpoint no puede duplicar filas.
+- `api/child-memory.ts`: GET resumen+episodios / POST update_summary /
+  POST delete (borra resumen + episodios del caller). Scope por miembro
+  (owner = member_id null); child validado contra el tenant.
+- Inyección: el resumen consolidado entra en JUGADOR MENCIONADO (scrubbed),
+  antes de los episodios.
+- UI: FichaAction "Memoria" en el área de acciones de la ficha → modal con
+  resumen editable (Guardar), episodios recientes de solo lectura, "Borrar
+  memoria" con confirmación, y la nota de privacidad ("esta memoria es tuya,
+  nadie más la lee").
+
 ## Pendiente
 
-- **M2**: tabla `child_memory` + cron nocturno de consolidación (inlined,
-  patrón cron+guardrails) + UI "Memoria del asistente" en la ficha.
-- **M3**: cierre de loop explícito + integración de la feature de notas.
+- **M3**: cierre de loop explícito + integración de la feature de notas
+  (los eventos `source='nota'` ya tienen su lugar en el modelo).
 - **M4**: consolidación jerárquica + poda (>3 meses).
 - Decisiones abiertas del owner: memoria compartida por institución (hoy por
   miembro); comportamiento al archivar (propuesta: congelar); confirmación
