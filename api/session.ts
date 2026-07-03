@@ -72,6 +72,58 @@ async function ensureTeamMembership(sb: SB, teamId: string | null, childId: stri
     if (error) console.error('[session] ensureTeamMembership failed to attribute child to plantel:', error.message, { childId, teamId });
 }
 
+// ── Tenant free ArgoPuente® grant ────────────────────────────────────────────
+// When a tenant has free_puentes enabled, every resolved (non-demo) perfilamiento
+// grants the responsible adult a complimentary ($0, provider='comp') ArgoPuente®
+// purchase, mirroring the ArgoOne+® combo block in one-complete.ts. The purchase
+// must exist BEFORE the report email goes out: send-email then swaps the $4.99
+// upsell for the "included" copy + magic link and creates the puentes_session
+// itself. Skips if the adult already has a paid purchase (real or comp), so
+// siblings and re-profiles never duplicate. Best-effort: never blocks the save.
+async function maybeGrantTenantFreePuente(sb: SB, perf: {
+    id: string; tenantId: string | null; adultEmail: string | null;
+    adultName: string | null; childName: string | null; lang: string | null; isDemo: boolean;
+}): Promise<void> {
+    try {
+        if (!perf.tenantId || !perf.adultEmail || perf.isDemo) return;
+
+        const { data: tenant } = await sb.from('tenants')
+            .select('free_puentes').eq('id', perf.tenantId).maybeSingle();
+        if (!tenant?.free_puentes) return;
+
+        const { data: existing } = await sb.from('puentes_purchases')
+            .select('id')
+            .eq('recipient_email', perf.adultEmail)
+            .eq('status', 'paid')
+            .maybeSingle();
+        if (existing) return;
+
+        const { error } = await sb.from('puentes_purchases').insert({
+            source_session_id: perf.id,
+            recipient_email: perf.adultEmail,
+            recipient_name: perf.adultName ?? null,
+            child_name: perf.childName,
+            amount_cents: 0,
+            currency: 'USD',
+            provider: 'comp',
+            provider_payment_id: `tenant_free_${perf.tenantId}_${perf.id}`,
+            status: 'paid',
+            paid_at: new Date().toISOString(),
+            magic_token: randomBytes(24).toString('base64url'),
+            lang: perf.lang ?? 'es',
+            source: 'tenant',
+            tenant_id: perf.tenantId,
+        });
+        if (error) {
+            console.warn('[session] tenant free Puente insert failed (non-blocking):', error.message);
+        } else {
+            console.info('[session] tenant free Puente granted for perfilamiento', perf.id);
+        }
+    } catch (err) {
+        console.warn('[session] tenant free Puente grant failed (non-blocking):', err instanceof Error ? err.message : err);
+    }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -248,7 +300,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(403).json({ error: 'missing_session_token' });
             }
             const { data: ownRow, error: ownErr } = await sb
-                .from('perfilamientos').select('id, share_token, child_id, tenant_id').eq('id', id).maybeSingle();
+                .from('perfilamientos').select('id, share_token, child_id, tenant_id, adult_email, adult_name, child_name, lang, is_demo').eq('id', id).maybeSingle();
             if (ownErr) {
                 console.error('[session:update] ownership lookup error:', ownErr.message);
                 return res.status(500).json({ error: 'update_lookup_failed' });
@@ -286,6 +338,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     resourceType: 'session', resourceId: String(id),
                     reason: { session_id: id, child_id: ownRow.child_id, eje: allowed.eje, motor: allowed.motor, tenant_id: ownRow.tenant_id },
                     relatedLogs: [`perfilamientos.${id}`],
+                });
+                await maybeGrantTenantFreePuente(sb, {
+                    id: String(id),
+                    tenantId: ownRow.tenant_id ?? null,
+                    adultEmail: ownRow.adult_email ?? null,
+                    adultName: ownRow.adult_name ?? null,
+                    childName: ownRow.child_name ?? null,
+                    lang: ownRow.lang ?? null,
+                    isDemo: ownRow.is_demo === true,
                 });
             }
 
@@ -395,6 +456,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     resourceType: 'session', resourceId: String(saveData.id),
                     reason: { session_id: saveData.id, child_id: saveChildId, eje, motor, tenant_id: saveTenantId },
                     relatedLogs: [`perfilamientos.${saveData.id}`],
+                });
+                await maybeGrantTenantFreePuente(sb, {
+                    id: String(saveData.id),
+                    tenantId: saveTenantId,
+                    adultEmail: adult_email ?? null,
+                    adultName: adult_name ?? null,
+                    childName: child_name ?? null,
+                    lang: lang ?? null,
+                    isDemo: is_demo === true,
                 });
             }
 

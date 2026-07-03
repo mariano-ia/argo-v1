@@ -178,7 +178,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (req.method === 'GET') {
             const { data: tenants } = await sb
                 .from('tenants')
-                .select('id, email, display_name, slug, plan, roster_limit, ai_queries_count, ai_queries_reset_at, trial_expires_at, onboarding_completed, created_at, institution_type, sport, country')
+                .select('id, email, display_name, slug, plan, roster_limit, ai_queries_count, ai_queries_reset_at, trial_expires_at, onboarding_completed, created_at, institution_type, sport, country, free_puentes')
                 .neq('is_synthetic', true) // exclude synthetic QA tenant from admin
                 .order('created_at', { ascending: false });
 
@@ -362,6 +362,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
             await auditLog(sb, adminEmail, 'create-enterprise', 'tenant', tenant!.id, { email, display_name, full_name, roster_limit: roster_limit || 500, email_sent: emailSent });
             return res.status(200).json({ ok: true, tenant, action: 'enterprise_created', email_sent: emailSent });
+        }
+
+        // Toggle the tenant-level free ArgoPuente® flag. When ON, every resolved
+        // (non-demo) perfilamiento of this tenant grants the responsible adult a
+        // complimentary puentes_purchase (see maybeGrantTenantFreePuente in session.ts),
+        // so the report email shows the included magic link instead of the upsell.
+        if (action === 'toggle-free-puentes') {
+            if (!tenant_id) return res.status(400).json({ error: 'Missing tenant_id' });
+            const enabled = req.body?.enabled === true;
+            const { error } = await sb.from('tenants').update({ free_puentes: enabled }).eq('id', tenant_id);
+            if (error) return res.status(500).json({ error: error.message });
+            await auditLog(sb, adminEmail, 'toggle-free-puentes', 'tenant', tenant_id, { enabled });
+            return res.status(200).json({ ok: true, action: 'free_puentes_toggled', enabled });
         }
 
         if (action === 'reset-trial') {
