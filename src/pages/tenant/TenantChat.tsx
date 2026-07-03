@@ -105,12 +105,13 @@ export const TenantChat: React.FC = () => {
         for (const b of base) { if (out.length >= 3) break; out.push(b); }
         return out.slice(0, 3);
     }, [suggestions, lang]);
-    // Sidebar search (#17): filter by content or matched player, accent-lax.
+    // Sidebar search (#17): filter by content or matched player, accent-insensitive.
     const filteredThreads = useMemo(() => {
-        const q = threadSearch.trim().toLowerCase();
+        const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+        const q = norm(threadSearch.trim());
         if (!q) return threads;
         return threads.filter(t =>
-            t.content.toLowerCase().includes(q) || (t.matched_player ?? '').toLowerCase().includes(q));
+            norm(t.content).includes(q) || norm(t.matched_player ?? '').includes(q));
     }, [threads, threadSearch]);
     const groupedThreads = useMemo(() => groupThreadsByDate(filteredThreads, lang), [filteredThreads, lang]);
 
@@ -151,6 +152,7 @@ export const TenantChat: React.FC = () => {
         if (ctxInitRef.current) { ctxInitRef.current = false; return; }
         setActiveThreadId(null);
         setMessages([]);
+        setThreadSearch('');
         persistThread(null);
     }, [effectiveTeamId, tenant?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 

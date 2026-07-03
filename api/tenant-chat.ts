@@ -915,7 +915,6 @@ const SITUATION_KEYWORDS: Record<string, string[]> = {
   "distraído",
   "no presta atención",
   "no se concentra",
-  "distraído",
   "desatento"
  ],
  "quiere-dejar": [
@@ -1990,13 +1989,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // never sees another member's conversations). Recap matching uses the
             // matched_player column (first name), so it accrues from 2026-07-02 on;
             // homonym first names within a tenant may mix, same as thread titles.
-            const mpFirstName = mp.child_name.trim().split(/\s+/)[0];
             const recapPromise = (() => {
                 let q = sb.from('chat_messages')
                     .select('content, created_at')
                     .eq('tenant_id', tenant.id)
                     .eq('role', 'user')
-                    .eq('matched_player', mpFirstName)
+                    // Keyed by CHILD ID (review fix C2): first names mixed homonym
+                    // children's behavioral histories into the wrong child's context.
+                    .eq('matched_child_id', mp.id)
                     .neq('thread_id', threadId)
                     .is('deleted_at', null)
                     .order('created_at', { ascending: false })
@@ -2004,7 +2004,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (callerMemberId) q = q.eq('member_id', callerMemberId);
                 return q;
             })();
-            const [reportRes, histRes, recapRes] = await Promise.all([
+            // Review fix C1: past messages can name children OUTSIDE the current
+            // hat's roster (archived, other plantel), which anonRe doesn't cover.
+            // Fetch every tenant child name so the recap scrub can neutralize them.
+            const allNamesPromise = sb.from('children')
+                .select('child_name')
+                .eq('tenant_id', tenant.id)
+                .limit(1000);
+            const [reportRes, histRes, recapRes, allNamesRes] = await Promise.all([
                 sb.from('current_perfilamiento')
                     .select('ai_sections')
                     .eq('id', mp.id)
@@ -2020,6 +2027,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .order('created_at', { ascending: true })
                     .limit(6),
                 recapPromise,
+                allNamesPromise,
             ]);
             const ai = reportRes.data?.ai_sections;
             let aiContext = '';
@@ -2069,9 +2077,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ? `\n- Historial de perfilamientos (viejo → actual): ${histRows.map(r => `${String(r.created_at).slice(0, 7)} ${canonicalArchetype(r.eje, r.motor, lang)}`).join(' → ')}. El perfil vigente es el último; si cambió, considera qué pudo cambiar en su contexto.`
                 : '';
             // Cross-thread recap (#11a): extractive, anonymized before Gemini.
+            // anonymize() covers only the CURRENT hat's roster; names of any other
+            // tenant child (archived, other plantel) are neutralized to a generic
+            // token so the {{Pn}} invariant holds for recap text too (C1).
+            const knownNowLower = new Set(nameVariants.map(v => v.toLowerCase()));
+            const outOfScopeNames = Array.from(new Set(((allNamesRes.data ?? []) as Array<{ child_name: string }>)
+                .flatMap(r => { const full = (r.child_name ?? '').trim(); return full ? [full, full.split(/\s+/)[0]] : []; })
+                .filter(n => n.length > 1 && !knownNowLower.has(n.toLowerCase()))))
+                .sort((a, b) => b.length - a.length);
+            const outOfScopeRe = outOfScopeNames.length
+                ? new RegExp(`(?<![\\p{L}\\p{N}])(${outOfScopeNames.map(escapeRegexStr).join('|')})(?![\\p{L}\\p{N}])`, 'giu')
+                : null;
+            const scrubRecap = (text: string): string => {
+                const anon = anonymize(text);
+                return outOfScopeRe ? anon.replace(outOfScopeRe, '[otro jugador]') : anon;
+            };
             const recapRows = (recapRes.data ?? []) as Array<{ content: string; created_at: string }>;
             const recapLine = recapRows.length > 0
-                ? `\n- Consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.created_at).slice(0, 10)}] "${anonymize(r.content).slice(0, 90)}"`).join(' · ')}. Úsalas como contexto de continuidad: no vuelvas a preguntar lo que el entrenador ya contó ahí.`
+                ? `\n- Consultas previas del mismo usuario sobre ${mentionedPlaceholder} (más recientes primero): ${recapRows.map(r => `[${String(r.created_at).slice(0, 10)}] "${scrubRecap(r.content).slice(0, 90)}"`).join(' · ')}. Úsalas como contexto de continuidad: no vuelvas a preguntar lo que el entrenador ya contó ahí.`
                 : '';
             extraContext += `\n\nJUGADOR MENCIONADO:\n- ${mentionedPlaceholder} (${mp.child_age} años, ${sanitize(mp.sport ?? '', 40)})\n- Arquetipo: ${archetype}, Eje: ${axisDisp}, Motor: ${motorDisp}, Secundario: ${secDisp} (${tend})${historyLine}${recapLine}${anonymize(ownScrubbed)}`;
         } else if (mentionedPlayers.length >= 2) {
@@ -2265,7 +2288,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // {{P2}}, ... placeholders. The model must use the same placeholders
         // in its response. We rehydrate them to real names after the call.
         const privacyInstruction = allPlayers.length > 0
-            ? `\n\nPRIVACY NOTICE (critical): Player names in this conversation have been replaced with placeholders like {{P1}}, {{P2}}, etc. In your response, refer to players using the same placeholders — never invent a name. Our server will replace the placeholders with the real names before displaying your response, so the output will read naturally.`
+            ? `\n\nPRIVACY NOTICE (critical): Player names in this conversation have been replaced with placeholders like {{P1}}, {{P2}}, etc. In your response, refer to players using the same placeholders — never invent a name, and never use a placeholder that does not already appear in this conversation or in the context above. Our server will replace the placeholders with the real names before displaying your response, so the output will read naturally.`
             : '';
 
         // No greetings: don't open with "Hola Entrenador" or by name; answer directly.
@@ -2278,7 +2301,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Machine-readable mode tag so ai_events can record whether the model
         // explored or answered directly; stripped before display/storage.
-        const modeTagInstruction = `\n\nETIQUETA DE MODO (interna, obligatoria): comienza tu respuesta con exactamente una etiqueta en su propia línea: [[modo:consultivo]] si en este turno principalmente indagas (haces preguntas antes de dar la guía completa) o [[modo:directo]] si principalmente respondes. La etiqueta se elimina antes de mostrar la respuesta; nunca la menciones ni la expliques.`;
+        // Localized so en/pt threads comply as reliably as es; the tag literals
+        // themselves stay Spanish for uniform parsing.
+        const MODE_TAG_TEXTS: Record<string, string> = {
+            es: `\n\nETIQUETA DE MODO (interna, obligatoria): comienza tu respuesta con exactamente una etiqueta en su propia línea: [[modo:consultivo]] si en este turno principalmente indagas (haces preguntas antes de dar la guía completa) o [[modo:directo]] si principalmente respondes. La etiqueta se elimina antes de mostrar la respuesta; nunca la menciones ni la expliques.`,
+            en: `\n\nMODE TAG (internal, mandatory): begin your reply with exactly one tag on its own line: [[modo:consultivo]] if this turn mainly explores (asks questions before the full guidance) or [[modo:directo]] if it mainly answers. The tag is removed before the reply is shown; never mention or explain it.`,
+            pt: `\n\nETIQUETA DE MODO (interna, obrigatória): comece sua resposta com exatamente uma etiqueta em linha própria: [[modo:consultivo]] se neste turno você principalmente explora (faz perguntas antes da orientação completa) ou [[modo:directo]] se principalmente responde. A etiqueta é removida antes de exibir a resposta; nunca a mencione nem explique.`,
+        };
+        const modeTagInstruction = MODE_TAG_TEXTS[safeLang(promptLang)];
 
         const systemPrompt = (SYSTEM_PROMPTS[promptLang] ?? SYSTEM_PROMPTS.es)
             + coachInstruction
@@ -2500,7 +2530,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // matched_player powers thread auto-titles ("Sobre Fede: ...") in
                 // the sidebar (#17); it's the child's first name, same PII level
                 // as the message content itself.
-                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter, matched_player: mentionedPlayer ? mentionedPlayer.child_name.trim().split(/\s+/)[0] : null },
+                { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'user', content: trimmedMsg, tokens_in: 0, tokens_out: 0, plantel_id: teamFilter, matched_player: mentionedPlayer ? mentionedPlayer.child_name.trim().split(/\s+/)[0] : null, matched_child_id: mentionedPlayer?.id ?? null },
                 { tenant_id: tenant.id, member_id: callerMemberId, thread_id: threadId, role: 'assistant', content: assistantContent, tokens_in: totalInputTokens, tokens_out: totalOutputTokens, plantel_id: teamFilter },
             ]).select('id, role').then(({ data, error }) => {
                 // Losing a turn breaks thread history + the trial count: log loudly.

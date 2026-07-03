@@ -68,6 +68,15 @@ function buildSituationsBlock(): string {
     for (const id of keywordIds) {
         if (!guideIds.has(id)) throw new Error(`Keywords entry "${id}" has no situation in situationalGuide.ts`);
     }
+    // Duplicate keywords inflate the hit count and bias bestSituation selection.
+    for (const [id, kws] of Object.entries(SITUATION_KEYWORDS_SOURCE)) {
+        const seenKw = new Set<string>();
+        for (const k of kws) {
+            const norm = k.toLowerCase();
+            if (seenKw.has(norm)) throw new Error(`Duplicate keyword "${k}" in situation "${id}"`);
+            seenKw.add(norm);
+        }
+    }
 
     const cardsByLang: Record<Lang, SituationCard[]> = { es: SITUATION_CARDS, en: SITUATION_CARDS_EN, pt: SITUATION_CARDS_PT };
     const data: Record<Lang, Record<string, Record<string, string>>> = { es: {}, en: {}, pt: {} };

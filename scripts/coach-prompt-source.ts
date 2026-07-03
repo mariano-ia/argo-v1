@@ -271,7 +271,7 @@ export const SITUATION_KEYWORDS_SOURCE: Record<string, string[]> = {
     'llora-o-se-enoja': ['llora', 'cries', 'chora', 'se enoja', 'se quiebra', 'desborde', 'se desborda'],
     'roce-con-companero': ['pelea', 'conflicto', 'roce', 'fight', 'conflict', 'briga', 'compañero', 'discutió con'],
     'se-castiga': ['se castiga', 'autocrítica', 'self-critical', 'soy un desastre', 'se golpea', 'se cobra', 'duro consigo'],
-    'se-distrae': ['distrae', 'distracted', 'distraído', 'no presta atención', 'no se concentra', 'distraído', 'desatento'],
+    'se-distrae': ['distrae', 'distracted', 'distraído', 'no presta atención', 'no se concentra', 'desatento'],
     'quiere-dejar': ['quiere dejar', 'wants to quit', 'quer sair', 'abandonar', 'no quiere venir', 'quer largar'],
     'se-congela': ['se congela', 'freezes', 'se bloquea', 'no reacciona', 'paraliza', 'trava', 'se paraliza'],
     'cambio-repentino': ['cambió', 'changed', 'mudou', 'diferente', 'distinto', 'de un día para el otro', 'está raro'],

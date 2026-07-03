@@ -121,8 +121,15 @@ RESPUESTA: ${answer}`;
         if (c.expectDirect && countQuestions(answer) > 1) {
           issues.push(`expected a direct answer, got ${countQuestions(answer)} questions`);
         }
-        // Judge scores are informational (WARN, never FAIL).
-        const judge = await judgeAnswer(c.message, answer);
+        // Judge scores are informational (WARN, never FAIL). The answer text is
+        // post-rehydration (real QA-tenant player names). The QA tenant must
+        // hold synthetic players only; as defense in depth, names listed in
+        // QA_ROSTER_NAMES (comma-separated) are scrubbed before the judge call
+        // so pointing the eval at a real tenant can't leak minors' names.
+        const scrubNames = (t: string): string => (process.env.QA_ROSTER_NAMES ?? '')
+          .split(',').map(s => s.trim()).filter(Boolean)
+          .reduce((acc, n) => acc.replace(new RegExp(`\\b${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'gi'), 'el jugador'), t);
+        const judge = await judgeAnswer(c.message, scrubNames(answer));
         if (judge) {
           const summary = Object.entries(judge).map(([k, v]) => `${k} ${v}`).join(', ');
           const low = Object.entries(judge).filter(([, v]) => v <= 2).map(([k]) => k);
