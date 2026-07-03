@@ -47,6 +47,46 @@ const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
 /* ── PlayerRow ─────────────────────────────────────────────────────────────── */
 
+/* One pill in the ficha's action area. Every child-level action (assistant,
+   report, email, archive; soon Notas + Memoria) is ONE <FichaAction> in the
+   bar at the top of the expanded detail — never a floating button elsewhere. */
+const FichaAction: React.FC<{
+    icon: React.ComponentType<{ size?: number | string; className?: string }>;
+    label: string;
+    onClick?: (e: React.MouseEvent) => void;
+    variant?: 'primary' | 'neutral' | 'positive' | 'danger';
+    disabled?: boolean;
+    loading?: boolean;
+    lockedTip?: string;
+}> = ({ icon: Icon, label, onClick, variant = 'neutral', disabled, loading, lockedTip }) => {
+    if (lockedTip) {
+        return (
+            <Tooltip text={lockedTip}>
+                <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
+                    <Lock size={11} />
+                    {label}
+                </span>
+            </Tooltip>
+        );
+    }
+    const styles: Record<string, string> = {
+        primary: 'border-argo-violet-100 text-argo-violet-500 font-semibold hover:bg-argo-violet-50 active:bg-argo-violet-50',
+        neutral: 'border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200',
+        positive: 'border-green-200 text-green-700 bg-green-50 hover:bg-green-100',
+        danger: 'border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50',
+    };
+    return (
+        <button
+            onClick={(e) => { e.stopPropagation(); onClick?.(e); }}
+            disabled={disabled}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all disabled:opacity-50 ${styles[variant]}`}
+        >
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <Icon size={12} />}
+            {label}
+        </button>
+    );
+};
+
 export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof getDashboardT>; lang: string; locked?: boolean; onArchive?: (id: string) => void; archived?: boolean; onReactivate?: (id: string) => void; canManage?: boolean }> = ({ session, dt, lang, locked = false, onArchive, archived = false, onReactivate, canManage = false }) => {
     const [expanded, setExpanded] = useState(false);
     const navigate = useNavigate();
@@ -336,19 +376,54 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                         className="overflow-hidden"
                     >
                         <div className="px-6 pb-6 pt-2">
-                            {/* Ask ArgoCoach about this child (#2): the exact stored name
-                                guarantees the chat's mention matcher + full profile injection. */}
-                            <div className="mb-4 flex justify-end">
-                                <button
+                            {/* ── Action area: every child-level action lives HERE (Notas y
+                                Memoria del asistente se sumarán como FichaAction). ── */}
+                            <div className="mb-5 pb-4 border-b border-argo-border flex flex-wrap items-center gap-2">
+                                <FichaAction
+                                    icon={MessageCircle}
+                                    variant="primary"
+                                    label={lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Consultar o assistente' : 'Consultar al asistente'}
                                     onClick={() => navigate(`/dashboard/chat?q=${encodeURIComponent(
                                         lang === 'en' ? `How do I support ${session.child_name} in the activity?`
                                         : lang === 'pt' ? `Como acompanho ${session.child_name} na atividade?`
                                         : `¿Cómo acompaño a ${session.child_name} en la actividad?`)}`)}
-                                    className="flex items-center gap-1.5 text-[11px] font-semibold text-argo-violet-500 border border-argo-violet-100 hover:bg-argo-violet-50 active:bg-argo-violet-50 px-3 py-1.5 rounded-full transition-colors"
-                                >
-                                    <MessageCircle size={12} />
-                                    {lang === 'en' ? 'Ask the assistant' : lang === 'pt' ? 'Consultar o assistente' : 'Consultar al asistente'}
-                                </button>
+                                />
+                                <div className="flex items-center gap-1.5">
+                                    <FichaAction
+                                        icon={Download}
+                                        label={lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
+                                        onClick={handleDownload}
+                                        lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
+                                    />
+                                    <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
+                                </div>
+                                {canManage && (
+                                    <FichaAction
+                                        icon={Send}
+                                        label={resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? (lang === 'en' ? 'Error' : lang === 'pt' ? 'Erro' : 'Error') : dt.home.reenviarInforme}
+                                        onClick={handleResend}
+                                        disabled={resending}
+                                        loading={resending}
+                                        lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
+                                    />
+                                )}
+                                <div className="flex-1" />
+                                {canManage && archived && onReactivate && (
+                                    <FichaAction
+                                        icon={RotateCcw}
+                                        variant="positive"
+                                        label={lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
+                                        onClick={() => onReactivate(session.id)}
+                                    />
+                                )}
+                                {canManage && !archived && onArchive && (
+                                    <FichaAction
+                                        icon={Archive}
+                                        variant="danger"
+                                        label={lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
+                                        onClick={() => onArchive(session.id)}
+                                    />
+                                )}
                             </div>
                             {/* Profile history timeline (left) + plain-language change description (right) */}
                             {(session.history?.length ?? 0) > 1 && (
@@ -551,74 +626,16 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                 </div>
                             </div>
 
-                            {/* Bottom bar */}
-                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div className="flex items-center gap-4 text-xs text-argo-grey">
-                                    <span className="flex items-center gap-1">
-                                        <Clock size={12} />
-                                        {formatDate(session.created_at, lang)}
-                                        {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
-                                    </span>
-                                    <span className="text-argo-light">
-                                        <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsável' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    <div className="flex items-center gap-1.5">
-                                    {locked ? (
-                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
-                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
-                                                <Lock size={11} />
-                                                {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                            </span>
-                                        </Tooltip>
-                                    ) : (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleDownload(); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all"
-                                        >
-                                            <Download size={12} />
-                                            {lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
-                                        </button>
-                                    )}
-                                        <InfoTip text={lang === 'en' ? 'This is the extended report parents receive by email.' : lang === 'pt' ? 'Este é o relatório completo que os pais recebem por email.' : 'Este es el informe extendido que reciben los padres por email.'} />
-                                    </div>
-                                    {canManage && (locked ? (
-                                        <Tooltip text={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}>
-                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light cursor-not-allowed">
-                                                <Lock size={11} />
-                                                {dt.home.reenviarInforme}
-                                            </span>
-                                        </Tooltip>
-                                    ) : (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleResend(); }}
-                                            disabled={resending}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-secondary hover:bg-argo-violet-50 hover:border-argo-violet-200 transition-all disabled:opacity-50"
-                                        >
-                                            {resending ? <Loader2 size={12} className="animate-spin" /> : <Send size={12} />}
-                                            {resendOk === true ? (lang === 'en' ? 'Sent' : 'Enviado') : resendOk === false ? (lang === 'en' ? 'Error' : lang === 'pt' ? 'Erro' : 'Error') : dt.home.reenviarInforme}
-                                        </button>
-                                    ))}
-                                    {canManage && archived && onReactivate && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onReactivate(session.id); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-green-200 text-green-700 bg-green-50 hover:bg-green-100 transition-all"
-                                        >
-                                            <RotateCcw size={12} />
-                                            {lang === 'en' ? 'Reactivate' : lang === 'pt' ? 'Reativar' : 'Reactivar'}
-                                        </button>
-                                    )}
-                                    {canManage && !archived && onArchive && (
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); onArchive(session.id); }}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 transition-all"
-                                        >
-                                            <Archive size={12} />
-                                            {lang === 'en' ? 'Archive' : lang === 'pt' ? 'Arquivar' : 'Archivar'}
-                                        </button>
-                                    )}
-                                </div>
+                            {/* Bottom bar: metadata only — actions live in the action area above */}
+                            <div className="mt-5 pt-4 border-t border-argo-border flex flex-wrap items-center gap-4 text-xs text-argo-grey">
+                                <span className="flex items-center gap-1">
+                                    <Clock size={12} />
+                                    {formatDate(session.created_at, lang)}
+                                    {months > 0 && <span className="text-argo-light">· {months} {dt.players.meses}</span>}
+                                </span>
+                                <span className="text-argo-light">
+                                    <span className="text-argo-grey">{lang === 'en' ? 'Responsible adult' : lang === 'pt' ? 'Adulto responsável' : 'Adulto responsable'}:</span> {session.adult_name} ({session.adult_email})
+                                </span>
                             </div>
                         </div>
                     </motion.div>
