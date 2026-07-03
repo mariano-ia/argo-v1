@@ -1,9 +1,30 @@
 # Exploración: versión mobile exclusiva de Argo (roadmap #16, ampliado)
 
-> Estado: EXPLORACIÓN DE DISEÑO para discusión (el owner amplió el alcance
-> 2026-07-02: "pensemos una versión exclusiva de mobile de toda la herramienta,
-> quizás inclusive reduciendo algunas cosas"). Nada construido; este doc
-> propone el marco para decidir.
+> Estado: opción B ("Modo Cancha") CONFIRMADA por uso; **B1 parcialmente EN
+> PRODUCCIÓN desde 2026-07-03**. El resto del doc conserva la exploración
+> original para contexto.
+
+## As-built B1 (2026-07-03, decisiones del owner en iteración)
+
+- **Tab bar inferior** (< md): Inicio · Jugadores · [Compartir link] · Coach ·
+  Grupos. Sin pestaña "Más" y **sin menú hamburguesa**: en mobile solo
+  existen las superficies de cancha; Ajustes/Ayuda/Guía/administración son
+  desktop-only por decisión explícita del owner.
+- **Compartir link** es el botón central destacado (círculo violeta elevado,
+  etiqueta "Compartir link"): el tap COPIA el link y una snackbar sobre el
+  botón confirma "Link copiado. Ya puedes compartirlo." (solo texto, sin
+  acción dentro: el owner pidió sacar el enlace "Compartir"). El link es
+  contextual (plantel activo o institución) y hay guard de equipo completo.
+- **Switch de planteles en la topbar mobile, extremo derecho** (pastilla +
+  dropdown; incluye el sombrero Administración para no-coaches; oculto si no
+  hay nada que cambiar). Reemplaza el acceso al context switcher que se
+  perdió al sacar la hamburguesa.
+- Base técnica: alto en 100dvh, safe-area inset, padding inferior del main,
+  chat con altura ajustada a la barra.
+
+**Pendiente del Modo Cancha:** superficie "Hoy" (qué observar en la sesión
+según los perfiles del plantel), ficha pocket del jugador, "Registrar"
+(espera la feature de notas), pulido PWA instalable y dictado por voz.
 
 ## El usuario mobile real
 

@@ -1,7 +1,16 @@
 # Memoria de largo plazo por niño ("ficha viva")
 
-> Diseño aprobado en conversación 2026-07-03. M1 construido (local, pendiente
-> de push por instrucción del owner). M2-M4 pendientes.
+> **EN PRODUCCIÓN desde 2026-07-03** (merge d8f3056): M1+M2+M3a+M4 completos.
+> El cron corre diario a las 06:00 UTC (solo en producción: los crons de
+> Vercel no se ejecutan en previews; en develop se dispara a mano con el
+> CRON_SECRET). Único pendiente: M3b (integrar la feature de notas cuando
+> exista). Ajustes post-release del owner ya incluidos: borrado de episodios
+> de a uno (con la aclaración de que el resumen puede seguir mencionándolo
+> hasta editarlo), recortes en límite de palabra con elipsis, y texto de
+> privacidad enfático ("Eres la única persona que puede leer esto: ni Argo
+> ni otros entrenadores tienen acceso"). Editar el texto de un episodio quedó
+> deliberadamente afuera (el episodio es bitácora; el resumen es el lugar
+> editable); el owner puede pedirlo si lo quiere.
 
 ## Concepto
 

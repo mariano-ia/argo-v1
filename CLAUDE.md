@@ -103,7 +103,8 @@ Single-instance. One admin dashboard.
 
 ## Git workflow
 - **`main`** branch = production (`argomethod.com`). Do NOT push here unless the user explicitly says "mandalo a producción" or "push to main".
-- **`develop`** branch = testing/staging. All new work goes here by default. Vercel generates a preview URL for each push.
+- **`develop`** branch = testing/staging. All new work goes here by default. Stable URL: **develop.argomethod.com** serves the latest develop push (setup + operations: `docs/ENTORNO-DEVELOP.md`). Same production DB; crons do NOT run on previews.
+- Since 2026-07-03 the owner requires an explicit in-conversation order for EVERY push (local commits are fine).
 - When unsure which branch to target, **always ask the user**.
 - Never merge `develop` into `main` without explicit user approval.
 
@@ -132,7 +133,9 @@ All DB writes go through `/api/*` endpoints using `SUPABASE_SERVICE_ROLE_KEY` to
 - `GET/POST /api/one-panel` — Argo One mini-panel (magic link auth)
 - `POST /api/one-start-play` — validate Argo One link
 - `POST /api/one-complete` — save Argo One session
-- `GET/POST /api/tenant-chat` — AI consultant (Gemini)
+- `GET/POST /api/tenant-chat` — AI consultant (Gemini); POST sub-actions `rate` (thumbs) and `delete_thread`
+- `GET/POST /api/child-memory` — per-child assistant memory: view summary+episodes / edit summary / delete (member-scoped; `docs/ARGOCOACH-MEMORIA-NINO.md`)
+- `GET /api/child-memory-cron` — nightly memory consolidation (Vercel cron 06:00 UTC, CRON_SECRET, names scrubbed before Gemini, watched by qa-monitor)
 - `GET /api/admin-tenants` — superadmin tenant management
 - `GET /api/admin-ai-usage` — AI consumption per tenant
 - `GET /api/admin-revenue` — revenue metrics
@@ -147,7 +150,7 @@ The AI consultant (`tenant-chat.ts`) has 5 anti-hallucination layers:
 4. **Few-shot examples**: 4 correct Q&A per language showing expected tone, format, and probabilistic language (incl. the consultive first-turn example)
 5. **Ground truth validation**: post-generation check verifies the response doesn't attribute the wrong DISC axis to a named player
 
-Consultive mode (2026-07-02): when a thread OPENS with a vague problem about a child/group, the assistant explores first (validate + ONE tentative profile-anchored reading + 2-3 observable-behavior questions, single round) instead of prescribing; specific questions are still answered directly. Enforced by a MODO CONSULTIVO prompt section + a deterministic first-turn nudge injected when a player/group/situation is detected. The chat also knows the caller's chem groups (`chem_groups`, owner-scoped) in the same mention matcher as planteles. As-built: `docs/ARGOCOACH-MODO-CONSULTIVO.md`.
+Consultive mode (2026-07-02): when a thread OPENS with a vague problem about a child/group, the assistant explores first (validate + ONE tentative profile-anchored reading + 2-3 observable-behavior questions, single round) instead of prescribing; specific questions are still answered directly. Enforced by a MODO CONSULTIVO prompt section + a deterministic first-turn nudge injected when a player/group/situation is detected. The chat also knows the caller's chem groups (`chem_groups`, owner-scoped) in the same mention matcher as planteles. **Conversational close (2026-07-03): EVERY reply (direct ones included) must end with ONE conversation-specific question or offer; generic closes forbidden — the assistant is an interlocutor, not a dispenser.** The chat also injects the per-child MEMORY (episodic diary + nightly consolidated summary; user-editable in the ficha). As-built: `docs/ARGOCOACH-MODO-CONSULTIVO.md` + `docs/ARGOCOACH-MEMORIA-NINO.md`.
 
 **GENERATED regions (STRICT, 2026-07-02):** `api/tenant-chat.ts` contains two machine-generated regions fenced by `// >>> GENERATED:COACH_PROMPTS` and `// >>> GENERATED:COACH_SITUATIONS` markers. NEVER hand-edit inside them: edit `scripts/coach-prompt-source.ts` (prompts es/en/pt + situation keywords) or `src/lib/situationalGuide*.ts` (situation cards), then run `npm run gen:coach`. `npm run check:coach-gen` (part of `qa:unit`) fails when the file drifts from its sources. Chat telemetry lands in `ai_events` (mode consultivo/directo, situation_matched, tokens_cached, model-aware cost_usd) and per-response ratings in `chat_messages.rating`. Full execution log: `docs/ARGOCOACH-MEJORAS.md`.
 

@@ -31,6 +31,36 @@ después de tener el seguimiento de telemetría/costos funcionando, como A/B).
 **Diferidos: 19 (streaming) y 24 (thinking budget)**, para más adelante.
 Higiene menor: va como batch de mantenimiento junto a los quick wins.
 
+## EN PRODUCCIÓN desde 2026-07-03 (merge d8f3056)
+
+Todo lo listado como SHIPPED abajo salió a producción el 2026-07-03 junto con:
+la **memoria por niño completa M1-M4** (`docs/ARGOCOACH-MEMORIA-NINO.md`), el
+**cierre conversacional** en toda respuesta (evolución del modo consultivo
+pedida por el owner el 2026-07-03: el asistente es interlocutor, no
+dispensador; ver `docs/ARGOCOACH-MODO-CONSULTIVO.md`), el rediseño del área
+de acciones de la ficha, los tooltips en portal, y la **tab bar mobile del
+Modo Cancha** (compartir link central con snackbar, switch de planteles en
+la topbar, sin hamburguesa en mobile; ver `docs/ARGO-MOBILE-EXPLORACION.md`).
+El cron `child-memory-cron` corre en producción (diario 06:00 UTC) vigilado
+por el dead-man's-switch de qa-monitor.
+
+### Pendientes al 2026-07-03 (qué espera qué)
+
+**Decisión del owner:** digest v0 (propuesta con 4 preguntas abiertas en
+`docs/ARGOCOACH-DIGEST-SEMANAL.md`); home "Hoy" mobile + ficha pocket;
+editar episodios de memoria (se shippeó solo borrar).
+
+**Datos (reloj corriendo desde el release):** encender A/B flash-lite
+(`COACH_FLASH_LITE_PCT`, 1-2 semanas de baseline); decisión 21b del matcher
+semántico (~2 semanas de `situation_matched`); evaluación del modo
+conversacional (ai_events.mode + ratings + judge).
+
+**Otra pieza:** M3b memoria ← feature de notas; superficie "Registrar"
+mobile ← notas; opt-out de emails ← prerequisito del digest.
+
+**Diferidos sin fecha (decisión owner):** 19 streaming, 24 thinking budget.
+**Descartados:** 1, 4 (trial), 14 (detección server-side de mensajes).
+
 ## Estado de ejecución (2026-07-02, en develop)
 
 **SHIPPED** (commits 1e36771, 595c639, e7184d5, fb8eefe): items 2, 3, 5, 6, 7,

@@ -5,6 +5,28 @@
 > postura consultiva (indagar antes de recetar), y que conozca los grupos de
 > química además de los planteles.
 
+## Evolución 2026-07-03: cierre conversacional (EN PRODUCCIÓN)
+
+El owner detectó que las preguntas ESPECÍFICAS ("¿qué rol le doy a Chicho?")
+recibían respuestas completas pero planas, correctas según este diseño
+original pero contrarias al objetivo de producto (fomentar el uso, mejorar el
+input, ayudar al entrenador a pensar). Se agregó al MODO CONSULTIVO:
+
+- **El asistente es interlocutor, no dispensador**: toda respuesta (también
+  las directas) termina con UNA invitación específica a seguir: la pregunta
+  que afinaría la sugerencia, el ofrecimiento de un siguiente paso, o pedir
+  el resultado para ajustar juntos. Cierres genéricos prohibidos.
+- Los 6 ejemplos few-shot de respuesta directa de cada idioma modelan el
+  cierre (los ejemplos pesan más que las reglas en Flash).
+- El cierre después de la guía NO cuenta como ronda de indagación.
+- Regla de Continuidad (memoria): si hubo guía previa sobre el niño, se
+  reconoce y se pregunta cómo resultó antes de sumar nueva.
+
+Todo vive en `scripts/coach-prompt-source.ts` (sección `consultive` +
+`examples`); NUNCA editar el bloque generado de `api/tenant-chat.ts`.
+Instrumentos para evaluarlo: `ai_events.mode`, `chat_messages.rating`,
+LLM-judge del eval (dimensión "consultivo").
+
 ## Problema
 
 Ante una consulta abierta y sin contexto ("Juancito se porta mal, ¿qué hago?"),
