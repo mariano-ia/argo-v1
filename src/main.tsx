@@ -19,7 +19,9 @@ import './index.css'
 
     // Non-actionable browser noise — never worth persisting. Keep in sync with
     // NOISE_MESSAGE in api/client-errors.ts.
-    const BENIGN_NOISE = /ResizeObserver loop|Lock broken by another request with the 'steal' option/i;
+    // "Lock broken ... 'steal' option" is Chrome's Web Locks phrasing; Safari
+    // says "Lock was stolen by another request". Same benign auth-lock event.
+    const BENIGN_NOISE = /ResizeObserver loop|Lock (?:broken|was stolen) by another request/i;
     // Stale-chunk errors after a deploy: the loaded index.html references
     // content-hashed chunks that no longer exist on the CDN. We recover by
     // reloading ONCE (guarded) to pull the fresh build, instead of surfacing a
@@ -42,8 +44,13 @@ import './index.css'
         try { sessionStorage.removeItem(RELOAD_FLAG); } catch { /* ignore */ }
     });
     // Vite dispatches this when a dynamic import / modulepreload fails.
-    window.addEventListener('vite:preloadError', (e: Event) => {
-        e.preventDefault();
+    // Deliberately NOT calling e.preventDefault(): swallowing the error makes
+    // the failed import() resolve undefined, so the lazy route factory throws
+    // a generic TypeError ("reading 'TenantHome'") that evades STALE_CHUNK and
+    // lands in client_errors (Vigia false positive, 2026-07-04). Letting it
+    // reject keeps the recognizable stale-chunk message, which the error and
+    // unhandledrejection listeners below already drop.
+    window.addEventListener('vite:preloadError', () => {
         recoverFromStaleChunk();
     });
 

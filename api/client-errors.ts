@@ -19,7 +19,45 @@ const KNOWN_KINDS = new Set(['error', 'unhandledrejection']);
 //   - browser internals that are not bugs (ResizeObserver loop, auth lock steal)
 //   - stale-chunk errors after a deploy (the client auto-reloads; see main.tsx)
 // Keep this list in sync with BENIGN_NOISE / STALE_CHUNK in src/main.tsx.
-const NOISE_MESSAGE = /ResizeObserver loop|Lock broken by another request with the 'steal' option|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|is not a valid JavaScript MIME type|Loading chunk \S+ failed/i;
+// "Lock (broken|was stolen)" covers both Chrome's and Safari's phrasing of the
+// same benign Web Locks auth event.
+const NOISE_MESSAGE = /ResizeObserver loop|Lock (?:broken|was stolen) by another request|Failed to fetch dynamically imported module|error loading dynamically imported module|Importing a module script failed|is not a valid JavaScript MIME type|Loading chunk \S+ failed/i;
+
+// Transitional filter (added 2026-07-04). Bundles built while main.tsx still
+// preventDefault()ed vite:preloadError turn a stale chunk after a deploy into
+// a generic TypeError from the lazy route factory in src/App.tsx
+// (`.then(m => ({ default: m.TenantHome }))` with m === undefined). Browsers
+// holding those cached bundles will beam that TypeError one last time on the
+// next deploy. Drop it ONLY when the property being read is exactly one of the
+// lazy route exports below. Safe to delete once pre-2026-07-04 bundles have
+// aged out of caches (roughly a few deploys from now).
+const LAZY_ROUTE_EXPORTS = new Set([
+    'TenantDashboard', 'TenantHome', 'TenantSettings', 'TenantUsers',
+    'TenantGroups', 'TenantGrupos', 'TenantGuide', 'TenantPlayers',
+    'TenantChat', 'TenantPricing', 'TenantHelp',
+    'Dashboard', 'Sessions', 'Metrics', 'QuestionsAdmin', 'AdminUsers',
+    'AdminTenants', 'AdminAIUsage', 'AdminRevenue', 'AdminArgoOne',
+    'Contactos', 'AdminAuditLog', 'AdminHealth', 'Feedback',
+    'PrincipiaShell', 'Resumen', 'Registros', 'Incidentes', 'Bandeja',
+    'AreaDetail', 'Consilium', 'BlogAdmin', 'BlogEditor',
+    'SetPassword', 'FeedbackForm', 'ReportPage', 'TermsPage', 'PrivacyPage',
+    'PricingPage', 'Familias', 'OnePlay', 'OnePanel', 'ConsentLanding',
+    'DeleteMyData', 'DeleteLanding', 'ResultRevealPreview',
+    'TestIslas', 'TestEsquivar', 'TestTormenta', 'Deck', 'Demo',
+]);
+// Chrome: Cannot read properties of undefined (reading 'X')
+// Safari: undefined is not an object (evaluating '$.X')
+const RESIDUAL_LAZY_PATTERNS = [
+    /Cannot read properties of undefined \(reading '(\w+)'\)/,
+    /undefined is not an object \(evaluating '[\w$]+\.(\w+)'\)/,
+];
+function isStaleLazyResidual(message: string): boolean {
+    for (const re of RESIDUAL_LAZY_PATTERNS) {
+        const m = re.exec(message);
+        if (m && LAZY_ROUTE_EXPORTS.has(m[1])) return true;
+    }
+    return false;
+}
 
 function isLocalOrigin(...vals: (string | null | undefined)[]): boolean {
     return vals.some(v => typeof v === 'string' && /(^|\/\/)(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:|\/|$)/i.test(v));
@@ -79,6 +117,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const rawMessage = typeof body.message === 'string' ? body.message : '';
         if (
             NOISE_MESSAGE.test(rawMessage) ||
+            isStaleLazyResidual(rawMessage) ||
             isLocalOrigin(
                 typeof body.url === 'string' ? body.url : null,
                 typeof body.source === 'string' ? body.source : null,

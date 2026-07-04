@@ -99,6 +99,8 @@ npm run qa:monitor   # curl a la /api/qa-monitor desplegada; necesita CRON_SECRE
 
 Todas las tablas de telemetría tienen **RLS on sin policies** → los clientes no leen/escriben; solo el service role (que bypassa RLS). Definiciones en `supabase/migrations/`.
 
+**Filtro de ruido en `client_errors` (2026-07-01, ampliado 2026-07-04).** Doble capa, cliente (`src/main.tsx`) + servidor (`api/client-errors.ts`, defensa para bundles viejos), que descarta: builds DEV, orígenes localhost, ruido benigno de browser (ResizeObserver; el lock de Web Locks de Supabase Auth en sus DOS fraseos, Chrome "Lock broken..." y Safari "Lock was stolen..."), y errores de stale chunk tras un deploy (el cliente se auto-recarga una vez, flag en sessionStorage). Gotcha aprendido el 2026-07-04 (incidente Vigía #16): el handler de `vite:preloadError` NO debe hacer `e.preventDefault()`, porque eso hace que el `import()` fallido resuelva `undefined` y el factory lazy de App.tsx lance un TypeError genérico ("reading 'TenantHome'") que evade el filtro y dispara el signal `client_errors_per_day`. Se dejó de prevenir el default y hay un filtro transicional server-side (`isStaleLazyResidual`) para los bundles cacheados pre-fix; se puede borrar cuando esos bundles envejezcan.
+
 ### `ai_events` — esquema de calidad del Coach
 Columnas clave (además de tenant/thread/provider/model/lang/tokens/cost/latency):
 `mentioned_player`, `groundtruth_violation`, `label_violation`, `prohibited_hit`, `prohibited_after_retry`, `context_miss`, `fair_use_exceeded`, y `group_ids` (los planteles a los que estaba scopeado el coach; null para owner/admin → permite drill-down de calidad por plantel).
