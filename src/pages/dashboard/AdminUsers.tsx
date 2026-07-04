@@ -5,6 +5,7 @@ import { ShieldCheck, Plus, Trash2 } from 'lucide-react';
 interface AdminUser {
     id: string;
     email: string;
+    role?: 'superadmin' | 'limited';
     created_at: string;
 }
 
@@ -13,6 +14,7 @@ export const AdminUsers: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState<'superadmin' | 'limited'>('superadmin');
     const [creating, setCreating] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -63,7 +65,7 @@ export const AdminUsers: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, role }),
             });
 
             const data = await res.json();
@@ -76,6 +78,7 @@ export const AdminUsers: React.FC = () => {
             setAdmins(prev => [...prev, data.admin]);
             setEmail('');
             setPassword('');
+            setRole('superadmin');
             setSuccess(`Admin ${data.admin.email} creado exitosamente.`);
             setTimeout(() => setSuccess(''), 4000);
         } catch {
@@ -119,7 +122,7 @@ export const AdminUsers: React.FC = () => {
             <div className="mb-6">
                 <h1 className="font-display text-2xl font-bold text-argo-navy">Usuarios admin</h1>
                 <p className="text-sm text-argo-grey mt-0.5">
-                    Los usuarios admin pueden acceder al panel de administración completo.
+                    Acceso completo: todo el panel. Acceso limitado: solo Sesiones, Tenants, Consumo IA, Contactos y Blog.
                 </p>
             </div>
 
@@ -146,10 +149,18 @@ export const AdminUsers: React.FC = () => {
                         value={password}
                         onChange={e => setPassword(e.target.value)}
                         required
-                        minLength={6}
-                        placeholder="Contraseña (min. 6 caracteres)"
+                        minLength={12}
+                        placeholder="Contraseña (min. 12 caracteres)"
                         className="flex-1 border border-argo-border rounded-lg px-4 py-2.5 text-sm text-argo-navy focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 focus:border-argo-indigo"
                     />
+                    <select
+                        value={role}
+                        onChange={e => setRole(e.target.value === 'limited' ? 'limited' : 'superadmin')}
+                        className="border border-argo-border rounded-lg px-4 py-2.5 text-sm text-argo-navy bg-white focus:outline-none focus:ring-2 focus:ring-argo-indigo/30 focus:border-argo-indigo flex-shrink-0"
+                    >
+                        <option value="superadmin">Acceso completo</option>
+                        <option value="limited">Acceso limitado</option>
+                    </select>
                     <button
                         type="submit"
                         disabled={creating}
@@ -207,10 +218,17 @@ export const AdminUsers: React.FC = () => {
                                     <p className="text-sm font-semibold text-argo-navy">
                                         {admin.email}
                                         {admin.email === currentEmail && (
-                                            <span className="ml-2 text-[10px] font-bold text-argo-indigo bg-[#F0F0FF] px-2 py-0.5 rounded-full">
-                                                Vos
+                                            <span className="ml-2 text-xs font-bold text-argo-indigo bg-[#F0F0FF] px-2 py-0.5 rounded-full">
+                                                Tú
                                             </span>
                                         )}
+                                        <span className={`ml-2 text-xs font-bold px-2 py-0.5 rounded-full ${
+                                            admin.role === 'limited'
+                                                ? 'text-amber-700 bg-amber-50'
+                                                : 'text-argo-violet-500 bg-argo-violet-50'
+                                        }`}>
+                                            {admin.role === 'limited' ? 'Limitado' : 'Completo'}
+                                        </span>
                                     </p>
                                     <p className="text-[10px] text-argo-grey/60 mt-0.5">
                                         Desde {fmt(admin.created_at)}

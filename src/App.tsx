@@ -80,7 +80,7 @@ const PuentesCheckoutSuccess = lazy(() => import('./pages/PuentesCheckoutSuccess
 const Deck                = lazy(() => import('./pages/Deck').then(m => ({ default: m.Deck })));
 const Demo                = lazy(() => import('./pages/Demo').then(m => ({ default: m.Demo })));
 
-import { AdminRoute }         from './components/AdminRoute';
+import { AdminRoute, SuperadminOnly } from './components/AdminRoute';
 import { OnboardingFlowV2 }   from './components/onboarding/OnboardingFlowV2';
 import type { AdultData }     from './components/onboarding/OnboardingFlowV2';
 import { UserAuthGate }       from './components/onboarding/UserAuthGate';
@@ -293,21 +293,21 @@ function App() {
             <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>}>
                 <Route index            element={<Sessions />} />
                 <Route path="sessions"  element={<Sessions />} />
-                <Route path="metrics"   element={<Metrics />} />
+                <Route path="metrics"   element={<SuperadminOnly><Metrics /></SuperadminOnly>} />
                 <Route path="tenants"   element={<AdminTenants />} />
                 <Route path="ai-usage"  element={<AdminAIUsage />} />
-                <Route path="revenue"   element={<AdminRevenue />} />
-                <Route path="argo-one"  element={<AdminArgoOne />} />
+                <Route path="revenue"   element={<SuperadminOnly><AdminRevenue /></SuperadminOnly>} />
+                <Route path="argo-one"  element={<SuperadminOnly><AdminArgoOne /></SuperadminOnly>} />
                 <Route path="contactos" element={<AdminContactos />} />
-                <Route path="audit"     element={<AdminAuditLog />} />
-                <Route path="health" element={<AdminHealth />} />
-                <Route path="feedback"  element={<AdminFeedback />} />
-                <Route path="questions" element={<QuestionsAdmin />} />
-                <Route path="users"     element={<AdminUsers />} />
+                <Route path="audit"     element={<SuperadminOnly><AdminAuditLog /></SuperadminOnly>} />
+                <Route path="health" element={<SuperadminOnly><AdminHealth /></SuperadminOnly>} />
+                <Route path="feedback"  element={<SuperadminOnly><AdminFeedback /></SuperadminOnly>} />
+                <Route path="questions" element={<SuperadminOnly><QuestionsAdmin /></SuperadminOnly>} />
+                <Route path="users"     element={<SuperadminOnly><AdminUsers /></SuperadminOnly>} />
                 <Route path="blog"          element={<BlogAdmin />} />
                 <Route path="blog/new"      element={<BlogEditor />} />
                 <Route path="blog/edit/:id" element={<BlogEditor />} />
-                    <Route path="principia" element={<PrincipiaShell />}>
+                    <Route path="principia" element={<SuperadminOnly><PrincipiaShell /></SuperadminOnly>}>
                         <Route index             element={<PrincipiaResumen />} />
                         <Route path="registros"  element={<PrincipiaRegistros />} />
                         <Route path="incidentes" element={<PrincipiaIncidentes />} />

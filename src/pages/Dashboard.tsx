@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { useAdminRole, LIMITED_ADMIN_TABS } from '../components/AdminRoute';
 import { APP_VERSION } from '../lib/version';
 import {
     Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity, Compass, AtSign,
@@ -25,8 +26,13 @@ const NAV_ITEMS = [
 
 export const Dashboard: React.FC = () => {
     const navigate = useNavigate();
+    const role = useAdminRole();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
+
+    const navItems = role === 'superadmin'
+        ? NAV_ITEMS
+        : NAV_ITEMS.filter(item => LIMITED_ADMIN_TABS.has(item.to));
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -52,7 +58,7 @@ export const Dashboard: React.FC = () => {
 
                 {/* Nav */}
                 <nav className={`flex-1 space-y-0.5 ${isCollapsed ? 'px-1.5' : 'px-3'}`}>
-                    {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+                    {navItems.map(({ to, label, icon: Icon }) => (
                         <NavLink
                             key={to}
                             to={to}

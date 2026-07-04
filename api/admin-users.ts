@@ -26,7 +26,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data: callerAdmin } = await sb
         .from('admin_users')
-        .select('id')
+        .select('id, role')
         .eq('email', user.email)
         .maybeSingle();
 
@@ -34,12 +34,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(403).json({ error: 'Not an admin' });
     }
 
+    // Limited admins can see the list but never manage admins (privilege escalation guard)
+    if (req.method !== 'GET' && callerAdmin.role === 'limited') {
+        return res.status(403).json({ error: 'Superadmin role required' });
+    }
+
     try {
         // GET — list all admins
         if (req.method === 'GET') {
             const { data, error } = await sb
                 .from('admin_users')
-                .select('id, email, created_at')
+                .select('id, email, role, created_at')
                 .order('created_at', { ascending: true });
 
             if (error) return res.status(500).json({ error: error.message });
@@ -48,11 +53,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // POST — create new admin
         if (req.method === 'POST') {
-            const { email, password } = req.body as { email: string; password: string };
+            const { email, password, role } = req.body as { email: string; password: string; role?: string };
 
             if (!email || !password) {
                 return res.status(400).json({ error: 'Email and password are required' });
             }
+
+            // Fail closed: unknown role values are rejected, never coerced to superadmin
+            if (role !== undefined && role !== 'superadmin' && role !== 'limited') {
+                return res.status(400).json({ error: 'Invalid role' });
+            }
+            const newRole: 'superadmin' | 'limited' = role === 'limited' ? 'limited' : 'superadmin';
 
             if (password.length < 12) {
                 return res.status(400).json({ error: 'Password must be at least 12 characters' });
@@ -83,8 +94,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Insert into admin_users
             const { data: newAdmin, error: insertError } = await sb
                 .from('admin_users')
-                .insert({ email })
-                .select('id, email, created_at')
+                .insert({ email, role: newRole })
+                .select('id, email, role, created_at')
                 .single();
 
             if (insertError) {
@@ -92,7 +103,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             // Audit log
-            try { await sb.from('admin_audit_log').insert({ admin_email: user.email, action: 'create-admin', target_type: 'admin_user', target_id: email, details: { email } }); } catch { /* non-blocking */ }
+            try { await sb.from('admin_audit_log').insert({ admin_email: user.email, action: 'create-admin', target_type: 'admin_user', target_id: email, details: { email, role: newRole } }); } catch { /* non-blocking */ }
 
             return res.status(201).json({ admin: newAdmin });
         }
