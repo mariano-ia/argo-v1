@@ -64,6 +64,8 @@ A bridge is unique per `(adult_profile, child_session)` — generate and charge 
 
 ## 3. The questionnaire split (the unlock)
 
+> **Concrete proposal (2026-07-02, pending partner review):** `docs/CUESTIONARIO-PUENTE-SPLIT.md` — the item-by-item map of the current 15 questions to CORE vs relational, a 6-question draft of the per-child relational layer (incl. the new "manejo del éxito" dimension + role), and the open decisions. Read that for the executable design; this section is the model-level summary.
+
 The current 15-question test bakes the adult's answers into each purchase and references the specific child throughout (`{nombre}`). That contradicts a reusable adult profile. The test is split in two:
 
 ### Core (played once, reusable, no expiry)
