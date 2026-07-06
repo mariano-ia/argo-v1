@@ -50,10 +50,24 @@ Ledger vivo de las decisiones tomadas con el owner sobre el corazón del método
 - **Olas:** 1) banda de confianza + limpieza; 2) momento real + lectura de equipo + ritmo; 3) evolución (sin backfill); 4) lo que exige construir campos de ficha (F4b/F10/F6).
 - Correcciones de la verificación ya anotadas en el doc (A2 no es shippeable sin `question_id`; F6 es barato; colapsar redundancias; fixes de copy).
 
-## Decisiones pendientes (abiertas)
+**D14 — Cálculo del perfil: 7 ítems finales APROBADOS.** Todos los umbrales/reglas exactos, documentados en [`METODO-CALCULO-NUEVO.md`](./METODO-CALCULO-NUEVO.md):
+1. Bandas de veta/confianza sobre la brecha B: ≥4 Definido, 2-3 Marcado, 1 Con matices, 0 Equilibrio (arranque; recalibrar a los 500).
+2. Factores de edad del motor: ya definidos (D2).
+3. Momento notable: regla de selección determinista (escena firma > eje secundario > escena temprana; corroboración obligatoria; tope 1-2; caso nulo; texto literal).
+4. Mapeo de los 4 temas nuevos (éxito ← Q12; frustración ← tormenta; cambios ← adaptación; los demás ← conteo Conector).
+5. Forma del perfil: cascada mutuamente excluyente (disperso → dúo → pico → líder-con-sombra → leve), test sobre las 455 composiciones.
+6. Calibración ipsativa: Monte Carlo multinomial(12,0.25) para fijar cortes sobre el ruido.
+7. i18n transversal (todo `Record<Lang,…>` desde el diseño).
 
-**D11 — Spec final endurecida.** Incorporar las 39 correcciones de la verificación adversarial + estas decisiones al esqueleto canónico, dejándolo listo para código. Incluye el i18n transversal (todo lexicón/biblioteca/guard es `Record<Lang, …>`).
+## Estado del diseño: COMPLETO
 
-## Próximo paso
+El diseño del método y del informe está cerrado: todas las variables decididas, con números y reglas exactos. Documentación:
+- `METODO-CALCULO-NUEVO.md` — especificación autoritativa (arquitectura + ficha + 7 ítems + informe + guards + persistencia + i18n).
+- `METODO-ESTADO-ACTUAL.md` — el cálculo como corre hoy (punto de retorno).
+- `METODO-INFORME-DETERMINISTA.md` / `METODO-INFORME-MODULOS.md` — diseño detallado + verificación adversarial (39 hallazgos) + plan de módulos.
+- `preview/informe-final.html` — mockup fiel del informe.
 
-Con D10 cerrada, la última abierta es D11 (spec final endurecida). Después, armar el **plan de ejecución** por fases combinando el worklist de la Parte E de `METODO-INFORME-DETERMINISTA.md` con el plan de olas de `METODO-INFORME-MODULOS.md`, con todas estas decisiones aplicadas.
+## Pendiente (ya no de diseño)
+
+- **D11 — Spec final endurecida como plan de código:** incorporar las 39 correcciones + estos 7 ítems a un worklist de implementación (Parte E de `METODO-INFORME-DETERMINISTA.md` + olas de `METODO-INFORME-MODULOS.md`).
+- **Revisión externa:** panel de matemáticos + psicólogos deportivos DISC para buscar errores en el método documentado (en curso).
