@@ -34,7 +34,12 @@ Ledger vivo de las decisiones tomadas con el owner sobre el corazón del método
 - **Ubicación y ajuste (requisito del owner):** el filtro debe estar ubicado en el lugar correcto y calibrado para que la tasa de informes que caen al respaldo estático sea **≈1%**.
 - **Observabilidad (requisito del owner):** registrar por informe/sección qué filtros se dispararon, cuántos reintentos, y si cayó al respaldo. Métrica clave: **tasa de fallback (% servido desde estático), objetivo ≤1%**, con alerta si supera el umbral (señal de afinar prompt/guards, no de sumar más filtros). Vive en `ai_events` (extendido) + tablero.
 
-**D12 — Dos vistas del informe (`viewer`: coach | familia).** El mismo árbol de render sirve hoy a coach y adulto por igual. Se introduce un `viewer` para rutear secciones: p. ej. "Ecos fuera de la cancha" y "En casa vas a notar" van a la familia; "Cómo leer tu equipo" va al coach/dashboard. Resuelve las peleas "quitar vs conservar" sin borrar globalmente. Estructura idéntica dentro de cada vista.
+**D12 — Un solo informe (sin split de vistas).** Decisión del owner: hay UN único informe, el mismo para ArgoOne y para entrenadores. No se hace uno para One y otro para coach. Se descarta el `viewer` coach|familia; todos reciben la misma estructura de 15 componentes. "Cómo leer tu equipo" queda fuera del informe (es individual); "Ecos fuera de la cancha" se queda dentro del informe único.
+
+**D13 — Estructura definitiva del informe (15 componentes).** Cerrada con el owner:
+1. Su perfil (arquetipo + segunda tendencia) · 2. Qué tan marcado es (banda de confianza, NUEVO) · 3. Su motor · 4. Cómo decide · 5. Qué lo enciende · 6. Palabras que lo encienden y las que lo apagan (puente/ruido) · 7. Guía rápida (mejorar más adelante) · 8. Checklist del día (se queda, muy valorado) · 9. Consejo de reset · 10. Manejo del éxito (NUEVO) · 11. Manejo de la frustración (NUEVO, hoy disperso) · 12. Cómo se banca lo inesperado (NUEVO) · 13. Cómo se lleva con los demás (NUEVO) · 14. Ecos fuera de la cancha · 15. Evolución (desde el 2.º perfilamiento; misma fuente que el dashboard `describeProfileChange`).
+- Banda de confianza y evolución usan **una sola fuente de cálculo** (no contradecir el dashboard).
+- Los 4 temas nuevos (10-13) tienen dato: manejo del éxito ← pregunta de la meta (Q12); frustración ← preguntas de tormenta; lo inesperado ← mini-juego de adaptación; los demás ← eje Conector + elecciones.
 
 ## Decisiones cerradas (cont.)
 
