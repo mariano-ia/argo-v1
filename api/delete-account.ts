@@ -7,7 +7,9 @@ import { createClient } from '@supabase/supabase-js';
  *
  * Deletes the tenant's account:
  * 1. Cancels any active subscription (Stripe/MP)
- * 2. Soft-deletes tenant record (sets deleted_at)
+ * 1.5 HARD-erases the child roster PII (children + perfilamientos + related),
+ *     COPPA §312.10 / GDPR Art.17 — no minor data is retained
+ * 2. Soft-deletes tenant record (keeps only non-PII billing metadata for audit)
  * 3. Removes auth user from Supabase
  */
 
@@ -57,7 +59,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // 2. Soft-delete tenant (preserve data for audit)
+        // 1.5 ERASE the child roster PII before soft-deleting the tenant.
+        // COPPA §312.10 / GDPR Art.17 require REAL deletion of a minor's data.
+        // The tenant row is kept (soft-deleted) for billing audit, but no
+        // identifiable child data survives. Mirrors the hard-delete chain in
+        // delete-session.ts, tenant-wide. (Security audit 2026-07-06.)
+        const { data: kids } = await sb.from('children').select('id').eq('tenant_id', tenant.id);
+        const childIds = (kids ?? []).map((k: { id: string }) => k.id);
+        const { data: perfs } = await sb.from('perfilamientos').select('id').eq('tenant_id', tenant.id);
+        const perfIds = (perfs ?? []).map((p: { id: string }) => p.id);
+
+        if (perfIds.length > 0) {
+            await sb.from('feedback').delete().in('session_id', perfIds);
+            await sb.from('parental_consents').delete().in('session_id', perfIds);
+        }
+        // Coach chat + per-child assistant memory are tenant/child scoped.
+        await sb.from('chat_messages').delete().eq('tenant_id', tenant.id);
+        if (childIds.length > 0) {
+            try { await sb.from('child_memory_events').delete().in('child_id', childIds); } catch (e) { console.warn('[delete-account] child_memory_events cleanup:', e); }
+            try { await sb.from('child_memory').delete().in('child_id', childIds); } catch (e) { console.warn('[delete-account] child_memory cleanup:', e); }
+            await sb.from('group_members').delete().in('child_id', childIds);
+            await sb.from('chem_group_members').delete().in('child_id', childIds);
+            // Deleting children cascades their perfilamientos (FK ON DELETE CASCADE).
+            await sb.from('children').delete().in('id', childIds);
+        }
+        console.info(`[delete-account] Erased ${childIds.length} children / ${perfIds.length} perfilamientos for tenant ${tenant.id}`);
+
+        // 2. Soft-delete tenant (keep only non-PII billing metadata for audit;
+        //    the child roster PII was hard-deleted in step 1.5 above).
         await sb.from('tenants').update({
             plan: 'deleted',
             subscription_provider: null,

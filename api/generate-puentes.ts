@@ -1,6 +1,27 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
+// The child's real name is NEVER sent to the AI provider. We inject a placeholder
+// into the prompt (and scrub it out of the injected child-report summary), then
+// rehydrate the real name into the output server-side. Mirrors generate-ai.ts /
+// tenant-chat.ts / child-memory-cron.ts and honors the Privacy Policy's
+// anonymization promise. (Security audit 2026-07-06.)
+const NAME_PLACEHOLDER = '__NAME__';
+
+function deepReplaceStrings<T>(value: T, from: string, to: string): T {
+    if (!from || from === to) return value;
+    if (typeof value === 'string') return value.split(from).join(to) as unknown as T;
+    if (Array.isArray(value)) return value.map((v) => deepReplaceStrings(v, from, to)) as unknown as T;
+    if (value && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+            out[k] = deepReplaceStrings(v, from, to);
+        }
+        return out as unknown as T;
+    }
+    return value;
+}
+
 /**
  * POST /api/generate-puentes
  * Body: { puentes_session_id }
@@ -337,15 +358,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ? 'Você é um especialista em DISC aplicado à psicologia esportiva juvenil. Trabalha para o ArgoMethod®. Responde SOMENTE com JSON válido, sem markdown nem explicações. Tom adulto a adulto, linguagem probabilística, sem rótulos clínicos.'
                 : 'You are a specialist in DISC applied to youth sports psychology. You work for ArgoMethod®. Respond ONLY with valid JSON, no markdown or explanations. Adult to adult tone, probabilistic language, no clinical labels.';
 
+        // Never send the real child name to Gemini: use a placeholder in the prompt
+        // and scrub it out of the injected child-report summary. Rehydrated below.
+        const realChildName: string = child.child_name || (lang === 'en' ? 'your child' : lang === 'pt' ? 'seu filho' : 'tu hijo');
+        const hasRealName = !!child.child_name;
+        const scrubbedChildAiSections = hasRealName
+            ? deepReplaceStrings(child.ai_sections, realChildName, NAME_PLACEHOLDER)
+            : child.ai_sections;
+
         const userContent = buildPrompt({
             childProfile: {
                 eje: child.eje,
                 motor: child.motor,
                 archetype_label: child.archetype_label,
-                ai_sections: child.ai_sections,
+                ai_sections: scrubbedChildAiSections,
             },
             adultProfile: pSession.adult_profile,
-            childName: child.child_name || (lang === 'en' ? 'your child' : lang === 'pt' ? 'seu filho' : 'tu hijo'),
+            childName: hasRealName ? NAME_PLACEHOLDER : realChildName,
             sport: child.sport || (lang === 'en' ? 'sport' : lang === 'pt' ? 'esporte' : 'deporte'),
             lang,
         });
@@ -385,7 +414,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // hits flow through the SAME single correction-retry path. If anything
         // persists after the retry we behave exactly as before (log + serve the
         // generated content; never block the report).
-        const detPatterns = buildDeterministicPatterns(child.child_name || '');
+        // Patterns anchor on the placeholder because the AI output still carries
+        // __NAME__ at this point (rehydrated to the real name only after the checks).
+        const detPatterns = buildDeterministicPatterns(hasRealName ? NAME_PLACEHOLDER : '');
         const offenders = findProhibitedWords(aiSections);
         const detOffenders = findDeterministicHits(aiSections, detPatterns);
         if (offenders.length > 0 || detOffenders.length > 0) {
@@ -408,6 +439,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.warn('[generate-puentes] Correction retry failed', corrErr);
             }
         }
+
+        // Rehydrate the real child name into the output; it was never sent to Gemini.
+        if (hasRealName) aiSections = deepReplaceStrings(aiSections, NAME_PLACEHOLDER, realChildName);
 
         const costUsd = resp.inputTokens * (0.15 / 1_000_000) + resp.outputTokens * (0.60 / 1_000_000);
 

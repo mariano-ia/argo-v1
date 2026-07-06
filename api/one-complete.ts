@@ -104,6 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_cost_usd: session_data.ai_cost_usd || 0,
                 lang,
                 tenant_id: null,  // ArgoOne®: no tenant
+                share_token: crypto.randomBytes(16).toString('hex'),  // required for /report access (report.ts fails closed)
                 last_profiled_at: new Date().toISOString(),
             })
             .select('id')

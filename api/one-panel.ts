@@ -161,6 +161,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .order('created_at', { ascending: true });
         const L = links ?? [];
 
+        // Attach report_token (perfilamiento.share_token) to completed links so the
+        // panel can build a tokenized /report link. report.ts fails closed on a null
+        // token, so the bare /report/:id link no longer works. (Audit 2026-07-06.)
+        const sessionIds = L.filter(l => l.status === 'completed' && l.session_id).map(l => l.session_id);
+        if (sessionIds.length > 0) {
+            const { data: reports } = await sb
+                .from('perfilamientos')
+                .select('id, share_token')
+                .in('id', sessionIds);
+            const tokenById = new Map((reports ?? []).map(r => [r.id, r.share_token as string | null]));
+            for (const l of L) {
+                (l as Record<string, unknown>).report_token = l.session_id ? (tokenById.get(l.session_id) ?? null) : null;
+            }
+        }
+
         return res.status(200).json({
             purchase: {
                 email: purchase.email,

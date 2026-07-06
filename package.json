@@ -17,7 +17,8 @@
     "check:api-imports": "node scripts/qa/check-api-imports.mjs",
     "typecheck:api": "tsc -p tsconfig.api.json",
     "gen:coach": "tsx scripts/gen-coach-knowledge.ts",
-    "check:coach-gen": "tsx scripts/gen-coach-knowledge.ts --check"
+    "check:coach-gen": "tsx scripts/gen-coach-knowledge.ts --check",
+    "check:security": "node -r dotenv/config scripts/security/security-probe.mjs dotenv_config_path=.env.local"
   },
   "dependencies": {
     "@react-three/fiber": "^8.18.0",

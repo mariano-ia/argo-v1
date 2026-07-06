@@ -35,11 +35,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const authHeader = req.headers.authorization ?? '';
     const isVercelCron = authHeader.startsWith('Bearer ') && cronSecret && authHeader === `Bearer ${cronSecret}`;
     if (!isVercelCron) {
-        // If CRON_SECRET is not configured, allow the call from Vercel Cron
-        // via the user-agent header (vercel-cron/1.0). This is the standard
-        // fallback when a project doesn't set a custom secret.
+        // The user-agent heuristic is ONLY a fallback for projects with no secret.
+        // User-Agent is attacker-controllable, so when CRON_SECRET IS configured the
+        // Bearer token is mandatory — a spoofed `vercel-cron` UA must never reach the
+        // destructive retention purge below.
         const userAgent = req.headers['user-agent'] ?? '';
-        if (!userAgent.includes('vercel-cron')) {
+        if (cronSecret || !userAgent.includes('vercel-cron')) {
             return res.status(401).json({ error: 'unauthorized' });
         }
     }

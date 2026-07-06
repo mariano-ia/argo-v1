@@ -15,6 +15,7 @@ interface OneLink {
     sport: string | null;
     completed_at: string | null;
     session_id: string | null;
+    report_token?: string | null;  // perfilamiento.share_token, required for the /report link
 }
 
 interface PanelData {
@@ -435,7 +436,7 @@ export const OnePanel: React.FC = () => {
                             <div className="flex-shrink-0">
                                 {link.status === 'completed' && link.session_id && (
                                     <Link
-                                        to={`/report/${link.session_id}`}
+                                        to={`/report/${link.session_id}?token=${link.report_token ?? ''}`}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
                                     >
                                         <ExternalLink size={12} /> {t.viewReport}

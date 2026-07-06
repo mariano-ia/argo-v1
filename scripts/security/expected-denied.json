@@ -1,0 +1,35 @@
+{
+  "_comment": "Surfaces the PUBLIC anon key (shipped in the browser bundle) must NEVER reach. The security probe (scripts/security/security-probe.mjs + api/security-canary.ts) asserts every entry is denied. This is the regression guard for the 2026-07-06 RLS lockdown. When a new table/RPC holds sensitive data, ADD it here — coverage is only as wide as this list.",
+  "forbidden_reads": [
+    "children",
+    "perfilamientos",
+    "current_perfilamiento",
+    "one_purchases",
+    "one_links",
+    "leads",
+    "admin_audit_log",
+    "system_activity_log",
+    "parental_consents",
+    "child_memory",
+    "child_memory_events",
+    "chat_messages",
+    "puentes_purchases",
+    "puentes_sessions",
+    "ai_events",
+    "blog_topics"
+  ],
+  "forbidden_deletes": [
+    "perfilamientos",
+    "children",
+    "leads",
+    "one_links",
+    "one_purchases",
+    "admin_audit_log"
+  ],
+  "forbidden_rpcs": [
+    { "name": "merge_children", "args": { "p_survivor": "00000000-0000-0000-0000-000000000000", "p_absorbed": "00000000-0000-0000-0000-000000000000", "p_actor": "security-probe" } },
+    { "name": "add_credits", "args": { "p_tenant_id": "00000000-0000-0000-0000-000000000000", "p_credits": 0, "p_stripe_event_id": "security-probe", "p_pack_id": "security-probe" } },
+    { "name": "deduct_credit", "args": { "tenant_slug": "security-probe-nonexistent" } },
+    { "name": "increment_ai_queries", "args": { "p_tenant_id": "00000000-0000-0000-0000-000000000000" } }
+  ]
+}

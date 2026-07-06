@@ -51,6 +51,10 @@
     {
       "path": "/api/journey-canary",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/security-canary",
+      "schedule": "15 * * * *"
     }
   ]
 }

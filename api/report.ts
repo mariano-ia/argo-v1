@@ -42,8 +42,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(404).json({ error: 'Report not found' });
     }
 
-    // Validate share token
-    if (data.share_token && data.share_token !== token) {
+    // Validate share token. Fail CLOSED: a report with no share_token is NOT
+    // shareable via this public endpoint, so a null token must never bypass the
+    // check. (Previously `data.share_token && ...` short-circuited and returned the
+    // full child record when share_token was null — the ArgoOne report row class.)
+    // Every report now carries a token (session.ts / one-complete.ts). Audit 2026-07-06.
+    if (!data.share_token || data.share_token !== token) {
         return res.status(403).json({ error: 'Invalid access token' });
     }
 
