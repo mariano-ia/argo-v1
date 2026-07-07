@@ -901,13 +901,14 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             }
 
             // ── Option 1: Save profile data IMMEDIATELY (before AI) ─────────
+            // CRITICAL path: only the profile fields. The v4 shadow is persisted SEPARATELY
+            // below so a v4 issue can NEVER block/fail the profile save or the report.
             const profileFields = {
                 eje:             profile.eje,
                 motor:           profile.motor,
                 archetype_label: report.arquetipo.label,
                 eje_secundario:  profile.ejeSecundario ?? null,
                 answers,
-                ...v4Shadow,
             };
 
             if (sessionIdRef.current) {
@@ -939,6 +940,18 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
             // Option 2: Clear localStorage — profile is safely in DB now
             clearRecoveryData();
+
+            // ── v4 shadow persist (ISOLATED, best-effort) ───────────────────
+            // Fully decoupled from the critical profile save above: a failure here can
+            // NEVER block the report. report_status is left NULL (never client-set), so
+            // delivery stays legacy. Pure observability until activation.
+            if (sessionIdRef.current && Object.keys(v4Shadow).length > 0) {
+                try {
+                    await updateSession(sessionIdRef.current, v4Shadow, shareTokenRef.current ?? undefined);
+                } catch (e) {
+                    console.warn('[v4:shadow] persist failed (non-blocking):', e);
+                }
+            }
 
             // ── Generate AI sections ────────────────────────────────────────
             setAiLoading(true);
