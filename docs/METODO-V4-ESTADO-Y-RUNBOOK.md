@@ -4,7 +4,24 @@
 
 ## TL;DR
 
-El informe v4 (determinista, en la voz que el owner aprobó) está **construido, testeado y previsualizable**. La entrega real sigue siendo la legacy. Falta la **activación** (que v4 sea el informe entregado), que requiere: tu ojo sobre un informe real (vía el preview) + push + 3 piezas más (email v4, gate server-side, cola de retenidos). **A un flag de estar vivo.**
+El informe v4 (determinista, en la voz que el owner aprobó) está **construido, testeado y previsualizable**. La entrega real sigue siendo la legacy. Falta la **activación** (que v4 sea el informe entregado). **A un flag (`V4_SEAL`) + un render flip de estar vivo.**
+
+## ACTUALIZACIÓN 2026-07-07 (segunda tanda, autónoma) — leer esto primero
+
+Desde que se escribió el resto del doc se sumó (todo en develop, verificado, legacy intacto):
+
+| Pieza | Qué | Estado |
+|---|---|---|
+| **Género** | El informe es **100% GÉNERO-NEUTRO**. Decisión del owner: NO se recolecta el género del niño (no es apropiado). Se neutralizó cada clítico/adjetivo (patrón, grupo, logro, contenido de ejes). Un informe de nena da cero marcas de género. | ✅ pusheado |
+| **Gate server-side** | `session.ts` sella `report_status` server-side (el cliente NUNCA lo setea). Gate inlineado (subconjunto de qualityGate). Detrás de env **`V4_SEAL`** (default OFF → `report_status` NULL → choke-point sin gatear → **legacy entrega, sin cambios**). 7 tests (`src/lib/serverGate.test.ts`). | ✅ inerte hasta el flip |
+| **Email v4** | `buildHtmlV4` en `send-email.ts`: diseño **aprobado por el owner** (maqueta `scratchpad/email-v4.html`). Arquetipo eje×veta coloreado, **sin chip de motor legacy** (Dinámico/Rítmico/Sereno), voz nueva, CTA al informe, **ArgoPuente USD 4.99**. Se usa cuando `report_status` es ready/sent; si no, email legacy. 4 tests. | ✅ cableado, inerte hasta el flip |
+| **Bug precio Puente** | El email mostraba **"ARS 4.999"** (arbitrario y engañoso: el checkout es USD only). Ahora siempre **USD 4.99**. | ✅ pusheado |
+| **Contador de normas** | `scripts/norm-progress.sh`: avance hacia las 500 jugadas reales (con `evidence_ficha`) para definir normas de motor propias y reemplazar la referencia bibliográfica. Hoy 0/500. | ✅ |
+| **Motor (normas)** | Owner 2026-07-07: **bibliografía (banda 60/40) hasta 500 jugadas reales**, de las que se definen los percentiles p33/p67 por franja de edad; ahí se flipea `normaLabel` biblio→poblacion_argo. La banda 60/40 fue decisión del owner ("valor sobre cautela"), NO recomendación de expertos (ellos pedían cautela). GOTCHA descubierto: la columna `game_metrics` histórica está vacía (0/86); la fuente de normas es `evidence_ficha` (shadow), que sí trae los tiempos crudos, desde ahora. | plan confirmado |
+
+**Commits de esta tanda:** `7b8af7b`..`b422459`. Suite v4: ~73 tests verdes.
+
+**Qué falta para el flip (activación):** cola de retenidos + "preparando" (3 superficies) + vista admin + cron · en/pt (i18n de reportV4, refactor grande) · Capa 2 (IA) · y el flip en sí (`V4_SEAL=on` + render v4 por default + rollout escalonado + push a main con OK del owner).
 
 ## Decisión de arquitectura (owner 2026-07-07): OPCIÓN 1
 
