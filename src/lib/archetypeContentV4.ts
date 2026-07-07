@@ -143,11 +143,11 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       lead: `Tres momentos donde una pequeña intención cambia mucho.`,
       antes: `Ofrécele un objetivo concreto y un espacio para tomar la iniciativa. Saber que va a poder **arrancar algo suyo** enfoca y entusiasma a {nombre}.`,
       durante: `Si se acelera de más, en lugar de frenarlo, **canaliza su empuje**: reconoce las ganas y súmale una lectura rápida antes de ir. Se trata de sumar, no de apagar.`,
-      despues: `Reconoce lo que **puso en movimiento**, no solo el resultado. A un perfil de acción suele llegarle más un "lograste que todo arrancara" que un elogio general.`,
+      despues: `Reconoce lo que **pone en movimiento**, no solo el resultado. A un perfil de acción suele llegarle más un "lograste que todo arrancara" que un elogio general.`,
       ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a poder empezar tú" transforma los nervios en ganas.`,
     },
     reset: {
-      cuerpo: `Cuando se frustra, a {nombre} le cuesta quedarse a la espera, y eso es muy entendible en un perfil de acción. Lo que **más suele ayudar es una acción pequeña y concreta** para hacer en el momento: una tarea clara, un objetivo corto, algo que devuelva la sensación de estar avanzando.`,
+      cuerpo: `Cuando se frustra, a {nombre} suele costarle quedarse a la espera, y eso es muy entendible en un perfil de acción. Lo que **más suele ayudar es una acción pequeña y concreta** para hacer en el momento: una tarea clara, un objetivo corto, algo que devuelva la sensación de estar avanzando.`,
       ejemplo: `En vez de "tranquilízate", un "ocúpate de esto un minuto" suele reencauzar la situación mucho mejor.`,
     },
     ecos: {
@@ -171,7 +171,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
     ],
     palabrasRuido: [
       `Ahora no es momento de hablar.`,
-      `Trabaja en silencio y solo.`,
+      `Trabaja en silencio, por tu cuenta.`,
       `Deja de dispersar al grupo.`,
     ],
     palabrasNota: `No es un guion, es una brújula de tono: a {nombre} suele **llegarle más lo que celebra su forma de conectar**, y hacerle ruido lo que apaga su chispa o corta el vínculo. Con eso en mente, las palabras exactas las pones tú.`,
@@ -179,7 +179,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       lead: `Tres momentos donde una pequeña intención cambia mucho.`,
       antes: `Dale un espacio donde su entusiasmo tenga lugar y a alguien con quien compartirlo. Saber que va a poder **sumar a los demás** enfoca y entusiasma a {nombre}.`,
       durante: `Si la energía se dispersa, en lugar de pedirle silencio, **canaliza su chispa**: dale un rol donde su entusiasmo empuje al grupo hacia la tarea.`,
-      despues: `Reconoce **cómo levantó al grupo**, no solo el resultado. A un perfil conector suele llegarle más un "contagiaste las ganas de todos" que un elogio general.`,
+      despues: `Reconoce **cuando suma al ánimo del grupo**, no solo el resultado. A un perfil conector suele llegarle más un "contagiaste las ganas de todos" que un elogio general.`,
       ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a conocer un montón de gente" transforma los nervios en ganas.`,
     },
     reset: {
@@ -187,7 +187,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       ejemplo: `En vez de "resuélvelo solo", un "vamos a verlo juntos" suele reencauzar la situación mucho mejor.`,
     },
     ecos: {
-      cuerpo: `Esta forma de conectar **no vive solo en el deporte**. Suele asomar cuando {nombre} junta a los amigos, anima una salida o se pone a charlar con cualquiera. Verlo en esos momentos ayuda a entender que no es "hablar de más": es **su manera de estar en el mundo**.`,
+      cuerpo: `Esta forma de conectar **no vive solo en el deporte**. Suele asomar cuando {nombre} junta a los amigos, anima una salida o se pone a charlar con quien tenga cerca. Verlo en esos momentos ayuda a entender que no es "hablar de más": es **su manera de estar en el mundo**.`,
       ejemplo: `Si en casa es quien propone planes con amigos y organiza la salida, estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
     },
   },
@@ -215,7 +215,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       lead: `Tres momentos donde una pequeña intención cambia mucho.`,
       antes: `Dale previsibilidad: cuéntale qué va a pasar y cuál es su lugar. Saber que **el terreno es firme y que hay un lugar para su aporte** enfoca y tranquiliza a {nombre}.`,
       durante: `Si algo le genera tensión, en lugar de meterle prisa, **acompaña con calma**: baja el ritmo un momento y dale seguridad de que todo está en orden.`,
-      despues: `Reconoce **cómo sostuvo al grupo**, no solo el resultado. A un perfil sostenedor suele llegarle más un "fuiste el apoyo de todos" que un elogio general.`,
+      despues: `Reconoce **cuando sostiene al grupo**, no solo el resultado. A un perfil sostenedor suele llegarle más un "fuiste el apoyo de todos" que un elogio general.`,
       ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a saber en todo momento qué sigue" transforma los nervios en tranquilidad.`,
     },
     reset: {
@@ -251,7 +251,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       lead: `Tres momentos donde una pequeña intención cambia mucho.`,
       antes: `Dale información y un momento para pensar. Saber que va a poder **entender antes de actuar** enfoca y tranquiliza a {nombre}.`,
       durante: `Si se traba analizando, en lugar de meterle presión, **acompaña la decisión**: ayúdale a elegir con la info que ya tiene y a soltar la búsqueda del plan perfecto.`,
-      despues: `Reconoce **cómo lo pensó y cuidó los detalles**, no solo el resultado. A un perfil estratega suele llegarle más un "se nota que lo tenías bien pensado" que un elogio general.`,
+      despues: `Reconoce **cuando piensa y cuida los detalles**, no solo el resultado. A un perfil estratega suele llegarle más un "se nota que lo tenías bien pensado" que un elogio general.`,
       ejemplo: `Si el sábado hay una actividad nueva, contarle con tiempo "así va a ser, estos son los pasos" transforma los nervios en confianza.`,
     },
     reset: {
