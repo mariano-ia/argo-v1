@@ -12,7 +12,9 @@ import {
 } from './reportV4';
 
 // Contexto de render (nombre / género / marco de deporte).
-const CTX = (nombre = 'Mateo', genero = 'm', frame = 'equipo') => ({ nombre, genero, frame } as never);
+// El informe es GÉNERO-NEUTRO (no se recolecta el género del niño). El 2º arg queda por
+// compatibilidad de las llamadas viejas pero se ignora; el 3º sigue siendo el frame.
+const CTX = (nombre = 'Mateo', _genero = 'm', frame = 'equipo') => ({ nombre, frame } as never);
 
 function answersFrom(vec: Record<'D' | 'I' | 'S' | 'C', number>) {
   const out: { axis: 'D' | 'I' | 'S' | 'C'; responseTimeMs: number }[] = [];
@@ -101,14 +103,15 @@ test('patrón: ritmo uniforme => consistencia ("ritmo bastante parejo")', () => 
   assert.match(b.cuerpo, /ritmo bastante parejo/);
 });
 
-test('patrón: género femenino concuerda (rápida)', () => {
+test('patrón (acople rápido): NEUTRO en género ("más rápido", sin marcar femenino)', () => {
   // acople rápido: D rápido, resto lento
   const a = (n: number, axis: 'D' | 'I' | 'S' | 'C', rt: number) => ({ axis, responseTimeMs: rt, question_id: `q${n}` });
   const ans = [a(1, 'D', 600), a(2, 'D', 600), a(3, 'D', 650), a(4, 'D', 620), a(5, 'C', 1600), a(6, 'C', 1500), a(7, 'D', 640), a(8, 'D', 630), a(9, 'C', 1550), a(10, 'I', 1500), a(11, 'D', 660), a(12, 'D', 610)];
   const f = resolveEvidenceFicha(ans as never, { edadMeses: 132, questionVersion: 'v4' });
-  const b = buildPatronSection(f, CTX('Delfina', 'f'));
+  const b = buildPatronSection(f, CTX('Delfina'));
   assert.match(b.cuerpo, /decidió en ritmos diversos/);
-  assert.match(b.cuerpo, /más rápida/);
+  assert.match(b.cuerpo, /resolvió más rápido/);
+  assert.ok(!/rápida|cómoda|lo conecta|forzarla/.test(b.cuerpo), 'no debe marcar género');
 });
 
 test('tormenta 2/3: preferencia tentativa nombrando las dos + ejemplo', () => {

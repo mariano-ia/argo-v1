@@ -142,7 +142,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
     guia: {
       lead: `Tres momentos donde una pequeña intención cambia mucho.`,
       antes: `Ofrécele un objetivo concreto y un espacio para tomar la iniciativa. Saber que va a poder **arrancar algo suyo** enfoca y entusiasma a {nombre}.`,
-      durante: `Si se acelera de más, en lugar de frenarlo, **canaliza su empuje**: reconoce las ganas y súmale una lectura rápida antes de ir. Se trata de sumar, no de apagar.`,
+      durante: `Si se acelera de más, en lugar de frenar el envión, **canaliza su empuje**: reconoce las ganas y súmale una lectura rápida antes de ir. Se trata de sumar, no de apagar.`,
       despues: `Reconoce lo que **pone en movimiento**, no solo el resultado. A un perfil de acción suele llegarle más un "lograste que todo arrancara" que un elogio general.`,
       ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a poder empezar tú" transforma los nervios en ganas.`,
     },
@@ -223,7 +223,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       ejemplo: `En vez de "vamos, sigue ya", un "tómate un minuto, no hay apuro" suele reencauzar la situación mucho mejor.`,
     },
     ecos: {
-      cuerpo: `Esta forma de sostener **no vive solo en el deporte**. Suele asomar cuando {nombre} cuida a un hermano, calma una discusión o es a quien todos buscan cuando algo se complica. Verlo en esos momentos ayuda a entender que no es "ser demasiado tranquilo": es **su manera de estar en el mundo**.`,
+      cuerpo: `Esta forma de sostener **no vive solo en el deporte**. Suele asomar cuando {nombre} cuida a un hermano, calma una discusión o es a quien todos buscan cuando algo se complica. Verlo en esos momentos ayuda a entender que su calma no es pasividad: es **su manera de estar en el mundo**.`,
       ejemplo: `Si en casa es quien pone paz y en quien todos se apoyan, estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
     },
   },

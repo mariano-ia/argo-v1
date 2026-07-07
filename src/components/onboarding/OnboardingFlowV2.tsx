@@ -891,7 +891,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 });
                 const pipe = runReportPipeline(
                     ficha,
-                    { nombre: adultData.nombreNino, genero: 'm', frame: sportFrame(adultData.deporte) },
+                    { nombre: adultData.nombreNino, frame: sportFrame(adultData.deporte) },
                     { lang: (lang === 'en' || lang === 'pt' ? lang : 'es') },
                 );
                 v4Shadow = { evidence_ficha: ficha, report_v4: pipe.report, report_qc: pipe.qc };

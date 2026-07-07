@@ -12,19 +12,16 @@ import { getMotorInsight, getVetaLabel, getEjeBase } from './archetypeContentV4'
 import type { ReportBlock } from './archetypeContentV4';
 import type { ContextId, RecetaItem } from './dischSignals';
 
-export type Genero = 'm' | 'f';
 export type SportFrame = 'equipo' | 'individual';
 
-/** Contexto de render del informe: quién es, su género (concordancia), y el marco de deporte. */
+/** Contexto de render del informe: quién es y el marco de deporte. GÉNERO-NEUTRO por diseño
+ *  (owner 2026-07-07: no se recolecta el género del niño; el copy no marca género). */
 export interface ReportContext {
   nombre: string;
-  genero: Genero;       // 'm' por defecto en los call-sites si no se conoce
   frame: SportFrame;    // sportFrame(deporte) — default seguro 'individual'
 }
 
 export type { ReportBlock };
-
-const gg = (genero: Genero, m: string, f: string) => (genero === 'f' ? f : m);
 
 // Deportes de equipo => 'equipo'; el resto (individuales, duelo) => 'individual' (default seguro:
 // el grupo con el que se comparte la actividad aplica a cualquier chico, un equipo de partido no).
@@ -200,20 +197,19 @@ export function buildContingenciaSection(ficha: EvidenceFicha, ctx: ReportContex
 /** "Su patrón de decisión" (ritmo): el acople de ritmo (si es robusto) o la consistencia. Por la positiva. */
 export function buildPatronSection(ficha: EvidenceFicha, ctx: ReportContext): ReportBlock {
   const n = ctx.nombre;
-  const g = (m: string, f: string) => gg(ctx.genero, m, f);
   const r = ficha.signals.ritmoAcople;
   if (!r) {
     return {
       cuerpo: `A lo largo del juego, ${n} **decidió a un ritmo bastante parejo**: sostuvo su compromiso de principio a fin, sin arrancar dudando ni aflojar sobre el final. Es una linda señal de consistencia en cómo se involucra con cada elección.`,
-      ejemplo: `Cuando algo lo convoca, ${n} tiende a mantener la misma dedicación del primer al último momento.`,
+      ejemplo: `Cuando algo le importa, ${n} tiende a mantener la misma dedicación del primer al último momento.`,
     };
   }
   const q = r.direccion === 'primario_rapido'
-    ? `fue más ${g('rápido', 'rápida')} justo en las elecciones que van con su motor principal`
+    ? `resolvió más rápido justo en las elecciones que van con su motor principal`
     : `se dio un poco más de tiempo justo en las elecciones que van con su motor principal`;
   return {
-    cuerpo: `A lo largo del juego, ${n} **decidió en ritmos diversos**: ${q}, y ajustó el tiempo en las demás. Ese acople entre lo que elige y cuánto tarda es una huella muy personal, y cuenta algo lindo: **cuando algo ${g('lo', 'la')} moviliza, responde con soltura**.`,
-    ejemplo: `Frente a una decisión que ${g('lo', 'la')} entusiasma, casi no la piensa; frente a una que ${g('lo', 'la')} saca de su terreno, se da su tiempo.`,
+    cuerpo: `A lo largo del juego, ${n} **decidió en ritmos diversos**: ${q}, y ajustó el tiempo en las demás. Ese acople entre lo que elige y cuánto tarda es una huella muy personal, y cuenta algo lindo: **cuando algo le entusiasma de verdad, responde con soltura**.`,
+    ejemplo: `Frente a una decisión que le entusiasma, casi no la piensa; frente a una fuera de su terreno, se da su tiempo.`,
   };
 }
 
@@ -252,7 +248,6 @@ export function buildTormentaSection(ficha: EvidenceFicha, ctx: ReportContext): 
 /** "Cuánto lo mueve el grupo": FRAME-AWARE (equipo vs individual). I y S por separado, en positivo. */
 export function buildGrupoSection(ficha: EvidenceFicha, ctx: ReportContext): ReportBlock {
   const n = ctx.nombre;
-  const g = (m: string, f: string) => gg(ctx.genero, m, f);
   const { I, S } = ficha.votes.vector;
   const indiv = ctx.frame === 'individual';
   if (I <= 1 && S <= 1) {
@@ -262,7 +257,7 @@ export function buildGrupoSection(ficha: EvidenceFicha, ctx: ReportContext): Rep
     const ejEscena = indiv ? 'marcar el ritmo de un momento compartido de la actividad' : 'liderar el arranque de una jugada compartida';
     return {
       cuerpo: `${intro}Entre los motores de ${n}, ${costado} hoy **aparece más en segundo plano**, y es simplemente parte de su receta de este momento: no dice nada de su vida social ni de sus amistades. Su manera de sumar al grupo pasa hoy **más por el hacer que por lo emocional**, y cuando su aporte se nota, el vínculo suele venir después. Una linda forma de acercar a ${n} es **darle un rol donde su empuje ${rol}**.`,
-      ejemplo: `Invitar a ${n} a ${ejEscena} ${g('lo', 'la')} conecta con ${g('los', 'las')} demás desde su fortaleza, sin forzar${g('lo', 'la')} a un lugar que hoy no es el suyo.`,
+      ejemplo: `Invitar a ${n} a ${ejEscena} acerca a ${n} al grupo desde su fortaleza, sin empujar a un lugar que hoy no es el suyo.`,
     };
   }
   const partes: string[] = [];
@@ -271,7 +266,7 @@ export function buildGrupoSection(ficha: EvidenceFicha, ctx: ReportContext): Rep
   const cuerpoPartes = partes.length === 2 ? `${partes[0]}; y, por otro lado, ${partes[1]}` : (partes[0] ?? 'el grupo aparece de a ratos');
   const conQuien = indiv ? 'su grupo' : 'el equipo';
   return {
-    cuerpo: `En la relación de ${n} con ${conQuien} aparece ${cuerpoPartes}. Son motores sociales distintos (involucrar no es lo mismo que sostener), y saber cuál pesa más ayuda a acompañar a ${n} desde donde de verdad se siente ${g('cómodo', 'cómoda')}.`,
+    cuerpo: `En la relación de ${n} con ${conQuien} aparece ${cuerpoPartes}. Son motores sociales distintos (involucrar no es lo mismo que sostener), y saber cuál pesa más ayuda a acompañar a ${n} desde donde de verdad se siente a gusto.`,
     ejemplo: `Darle lugar a ese costado social, en la medida en que le nace, suele hacer que ${n} se sienta parte.`,
   };
 }
@@ -279,12 +274,11 @@ export function buildGrupoSection(ficha: EvidenceFicha, ctx: ReportContext): Rep
 /** "Cuando le sale bien": anclado en el PERFIL (medido) + la escena de la meta (Q12) como ejemplo. */
 export function buildLogroSection(ficha: EvidenceFicha, ctx: ReportContext): ReportBlock {
   const n = ctx.nombre;
-  const g = (m: string, f: string) => gg(ctx.genero, m, f);
   const prim = ficha.votes.ejePrimario;
   const q12 = ficha.respuestas.find((r) => r.number === 12)?.axis;
   const ej = q12 ? ` En el juego se vio con claridad, porque al llegar a la meta eligió **${META_CHOICE_ES[q12]}**.` : '';
   return {
-    cuerpo: `Cuando a ${n} le sale algo, ${SUCCESS_ANCHOR_ES[prim]}.${ej} Lo vive así, y está muy bien. Acompañar a ${n} es ayudar${g('lo', 'la')} a también **registrar y celebrar lo logrado** antes de volver a arrancar.`,
+    cuerpo: `Cuando a ${n} le sale algo, ${SUCCESS_ANCHOR_ES[prim]}.${ej} Lo vive así, y está muy bien. Acompañar a ${n} es ayudarle a también **registrar y celebrar lo logrado** antes de volver a arrancar.`,
     ejemplo: `Después de un buen resultado, un simple "mira todo lo que conseguiste" ayuda a ${n} a que el disfrute también tenga su lugar.`,
   };
 }
