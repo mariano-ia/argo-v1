@@ -4,6 +4,10 @@ import { Axis } from './onboardingData';
 import type { IslandMetrics } from '../components/games/IslasDesconocidas';
 import type { RhythmMetrics } from '../components/onboarding/screens/MiniGame1';
 import type { AdaptationMetrics } from '../components/games/LaTormenta';
+// v4 engine (additive) — spec docs/METODO-CALCULO-NUEVO.md, names docs/archetype-naming.md.
+import type { VotesEvidence, MotorInsight, EvidenceFicha, SubMotor } from './evidenceFicha';
+import { classifyBanda, classifyRegistro, classifyForma, nameGate, classifyVetaBanda, isOppositeAxis } from './nullDistribution';
+import { factorEdad, ageFairMs, tempoScoreFromAgeFair, tempoZonaFromScore } from './ageNorms';
 
 /**
  * Mini-game metrics for motor calculation.
@@ -259,4 +263,107 @@ export function resolveFromAnswers(
         tendenciaLabel: TENDENCIA_LABELS[ejeSecundario],
         tiebreakerApplied,
     };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// v4 ENGINE (additive). Produces an EvidenceFicha. The name comes ONLY from votes;
+// the motor never names. The old resolveProfile / resolveFromAnswers above stay until
+// consumers migrate (Fases 5-8). Spec: docs/METODO-CALCULO-NUEVO.md.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Canonical ES archetype-axis labels (derived from docs/archetype-naming.md). Full i18n display is
+// handled by the report/dashboard layer; the ficha stores the ES canonical label.
+const AXIS_ARCHETYPE_LABEL_ES: Record<Axis, string> = {
+    D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega',
+};
+
+/** Deterministic votes evidence from the raw vote vector. Pure. */
+export function buildVotesEvidence(vector: Record<Axis, number>): VotesEvidence {
+    const axes: Axis[] = ['D', 'I', 'S', 'C'];
+    const sortedAxes = [...axes].sort((a, b) => vector[b] - vector[a]);
+    const sortedCounts = sortedAxes.map((a) => vector[a]);
+    const ejePrimario = sortedAxes[0];
+    const ejeSecundario = sortedAxes[1];
+    const topCount = sortedCounts[0];
+    const secondCount = sortedCounts[1];
+    const thirdCount = sortedCounts[2];
+    const B = topCount - secondCount;
+    const B2 = secondCount - thirdCount;
+    const nEjesFuertes = sortedCounts.filter((x) => x >= topCount - 1).length;
+    const secundarioEmpatado = secondCount === thirdCount;
+    const banda = classifyBanda(B);
+    const registro = classifyRegistro(B);
+    const forma = classifyForma(sortedCounts);
+    const nombrarPrimario = nameGate(B, topCount);
+    const vetaBanda = classifyVetaBanda(B2);
+    const vetaOpuesta = isOppositeAxis(ejePrimario, ejeSecundario);
+    const vetaEnNombre = vetaBanda === 'afirmada' && !vetaOpuesta && nombrarPrimario;
+
+    let arquetipoLabel: string | null = null;
+    if (nombrarPrimario) {
+        arquetipoLabel = vetaEnNombre
+            ? `${AXIS_ARCHETYPE_LABEL_ES[ejePrimario]} con veta ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}`
+            : AXIS_ARCHETYPE_LABEL_ES[ejePrimario];
+    }
+
+    return {
+        vector: { ...vector }, ejePrimario, ejeSecundario, topCount, secondCount, thirdCount,
+        B, B2, nEjesFuertes, secundarioEmpatado, banda, registro, forma,
+        nombrarPrimario, vetaBanda, vetaOpuesta, vetaEnNombre, arquetipoLabel,
+    };
+}
+
+/** Mini-game insights (per-child, age-fair). Tempo = decision + reaction only; adaptation feeds §5. */
+export function resolveMotorInsights(games: GameMetrics, edadMeses: number): MotorInsight {
+    const f = factorEdad(edadMeses);
+    const narratable = !!games.impulse && !!games.rhythm; // needs decision AND reaction
+
+    const mkSub = (rawMs: number | undefined, nTrials: number): SubMotor | null => {
+        if (rawMs == null) return null;
+        const af = ageFairMs(rawMs, f);
+        return { rawMs, ageFair: af, nTrials, percentilCelda: null, ic: [af * 0.75, af * 1.25], zona: null, confianza: 'media' };
+    };
+
+    const decision = mkSub(games.impulse?.avgLatency, games.impulse?.latencies?.length ?? 0);
+    const reaction = mkSub(games.rhythm?.avgReaction, games.rhythm?.reactionTimes?.length ?? 0);
+    const adaptation = mkSub(games.adaptation?.avgAdaptation, games.adaptation?.adaptationTimes?.length ?? 0);
+
+    const tempoScore = narratable
+        ? tempoScoreFromAgeFair(decision?.ageFair ?? null, reaction?.ageFair ?? null)
+        : null;
+
+    return {
+        narratable, edadMeses, factorEdad: f, normaLabel: 'referencia_bibliografica',
+        decision, reaction, adaptation, tempoScore, tempoZona: tempoZonaFromScore(tempoScore),
+    };
+}
+
+/** Assemble the full EvidenceFicha from onboarding answers + game metrics + age. */
+export function resolveEvidenceFicha(
+    answers: QuestionAnswer[],
+    opts: { edadMeses: number; games?: GameMetrics; methodVersion?: string; questionVersion?: string },
+): EvidenceFicha {
+    const vector: Record<Axis, number> = { D: 0, I: 0, S: 0, C: 0 };
+    answers.forEach((a) => { if (vector[a.axis] !== undefined) vector[a.axis]++; });
+    const games = opts.games ?? {};
+    return {
+        version: 4,
+        methodVersion: opts.methodVersion ?? 'v4',
+        questionVersion: opts.questionVersion ?? 'unknown',
+        votes: buildVotesEvidence(vector),
+        motor: resolveMotorInsights(games, opts.edadMeses),
+        gameMetricsRaw: {
+            impulse: games.impulse ?? null,
+            rhythm: games.rhythm ?? null,
+            adaptation: games.adaptation ?? null,
+        },
+    };
+}
+
+/** Display name (ES canonical for now; the report/dashboard layer adds full i18n). */
+export function buildDisplayName(votes: VotesEvidence): string {
+    if (votes.arquetipoLabel) return votes.arquetipoLabel;
+    const a = AXIS_ARCHETYPE_LABEL_ES[votes.ejePrimario as Axis];
+    const b = AXIS_ARCHETYPE_LABEL_ES[votes.ejeSecundario as Axis];
+    return `una mezcla entre ${a} y ${b}`;
 }
