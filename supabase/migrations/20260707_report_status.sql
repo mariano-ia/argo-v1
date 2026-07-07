@@ -7,7 +7,8 @@
 --
 -- HOW TO APPLY: single MCP apply_migration (NOT `supabase db push`). Then the NOTIFY is MANDATORY or
 -- PostgREST no ve las columnas nuevas por REST.
--- STATUS: written 2026-07-07. Batched for the coordinated "última milla" (owner present) like 20260706.
+-- STATUS: APPLIED to prod 2026-07-07 via `supabase db query --linked --file` (MCP was unauth; this path
+-- uses the Management API, no DB password). Verified: 7 columns + CHECK + partial index present.
 
 BEGIN;
 

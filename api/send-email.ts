@@ -525,6 +525,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ai_sections?: { resumenPerfil?: string; palabrasPuente?: string[] } | null;
             is_demo?: boolean | null;
             full_access?: boolean | null;
+            report_status?: string | null;
         };
         let sessionRow: SessionRow | null = null;
         if (sessionId) {
@@ -534,7 +535,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 const { data } = await sb
                     .from('perfilamientos')
-                    .select('email_sent_at, share_token, ai_sections, is_demo, full_access')
+                    .select('email_sent_at, share_token, ai_sections, is_demo, full_access, report_status')
                     .eq('id', sessionId)
                     .maybeSingle();
                 sessionRow = (data as SessionRow) ?? null;
@@ -543,6 +544,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (sessionRow?.email_sent_at) {
                     console.log('[send-email] Already sent for session', sessionId);
                     return res.status(200).json({ success: true, already_sent: true });
+                }
+
+                // ── Fail-closed choke-point (doc METODO-FALLBACK-INFORME.md §3) ──
+                // The ONLY place a report leaves the system. A v4 report ships ONLY if the
+                // quality gate sealed report_status='ready'. NULL = legacy row (ungated,
+                // backward-compat). 'held'/'pending' => never send; the recovery cron / admin
+                // approval flow resolves it. This inverts today's fail-OPEN behaviour.
+                const rs = sessionRow?.report_status ?? null;
+                if (rs !== null && rs !== 'ready' && rs !== 'sent') {
+                    console.warn('[send-email] BLOCKED: report_status=', rs, 'for session', sessionId);
+                    return res.status(409).json({
+                        success: false,
+                        blocked: true,
+                        report_status: rs,
+                        message: 'Report is not ready (held/pending). Not sent.',
+                    });
                 }
             }
         }
@@ -766,6 +783,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (serviceKey && supabaseUrl) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 try { await sb.from('perfilamientos').update({ email_sent_at: new Date().toISOString() }).eq('id', sessionId); } catch { /* non-blocking */ }
+                // v4 rows: transition 'ready' -> 'sent' (legacy NULL rows are left untouched by the .eq filter).
+                try { await sb.from('perfilamientos').update({ report_status: 'sent' }).eq('id', sessionId).eq('report_status', 'ready'); } catch { /* non-blocking */ }
                 // Principia ingestion (area=producto): the report email reached the adult.
                 await logActivity(sb, {
                     area: 'producto',
