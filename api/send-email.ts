@@ -433,6 +433,76 @@ function buildHtml(params: {
 
 // ─── Handler ──────────────────────────────────────────────────────────────────
 
+// ─── Email v4 (diseño aprobado por el owner 2026-07-07) ───────────────────────
+// Render del informe v4 en el email: arquetipo eje×veta (SIN chip de motor legacy), voz nueva,
+// ArgoPuente USD 4.99. Se usa cuando el informe está sellado v4 (report_status ready/sent); si no,
+// el email legacy (buildHtml). es-only por ahora (el v4 solo se sella en es). Maqueta aprobada:
+// scratchpad/email-v4.html.
+type HeroV4 = { primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string };
+export function buildHtmlV4(hero: HeroV4, params: {
+    nombreNino: string; nombreAdulto?: string; edad?: number; deporte?: string;
+    sessionId?: string; shareToken?: string; siteUrl?: string; lang?: string;
+    suppressPuentes?: boolean; existingPuentesMagicLink?: string;
+}): string {
+    const AXIS: Record<string, string> = { D: '#F97316', I: '#F59E0B', S: '#22C55E', C: '#6366F1' };
+    const accent = AXIS[hero.ejePrimario ?? ''] ?? '#955FB5';
+    const vetaColor = AXIS[hero.ejeSecundario ?? ''] ?? '#86868B';
+    const vetaName = hero.vetaLabel ? hero.vetaLabel.replace(/^con veta\s+/i, '') : '';
+    const rich = (s: string) => (s || '').replace(/\*\*([^*]+)\*\*/g, '<b style="color:#1D1D1F;">$1</b>');
+    const baseUrl = params.siteUrl || 'https://argomethod.com';
+    const tokenParam = params.shareToken ? `?token=${params.shareToken}` : '';
+    const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}${tokenParam}` : baseUrl;
+    const puentesUrl = params.sessionId ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${params.lang || 'es'}` : `${baseUrl}/puentes/checkout`;
+    const kidLine = [params.nombreNino, params.edad ? `${params.edad} años` : '', params.deporte, params.nombreAdulto ? `para ${params.nombreAdulto}` : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
+    const arquetipo = `<span style="color:${accent};">${hero.primarioLabel ?? ''}</span>` + (vetaName ? ` <span style="color:#86868B;font-weight:400;">con veta</span> <span style="color:${vetaColor};">${vetaName}</span>` : '');
+
+    let puente = '';
+    if (params.existingPuentesMagicLink) {
+        puente = `<div style="padding:24px 32px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">ArgoPuente®</div><div style="font-size:15px;color:#424245;margin-top:8px;line-height:1.5;">Tu ArgoPuente® ya incluye a ${params.nombreNino}. <a href="${params.existingPuentesMagicLink}" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver el informe del vínculo</a>.</div></div>`;
+    } else if (!params.suppressPuentes) {
+        puente = `<div style="padding:24px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">ArgoPuente® · Tu complemento</div>
+      <div style="font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;margin-top:8px;line-height:1.3;">Ahora que conoces a ${params.nombreNino}, conócete a ti.</div>
+      <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.</div>
+      <div style="margin-top:16px;">
+        <a href="${puentesUrl}" style="display:inline-block;background:#7A4D96;color:#FFFFFF;font-size:14px;font-weight:600;padding:11px 22px;border-radius:11px;text-decoration:none;">Empezar mi ArgoPuente®</a>
+        <span style="font-size:14px;color:#1D1D1F;font-weight:600;margin-left:12px;">USD 4.99</span>
+      </div>
+    </div>`;
+    }
+
+    return `<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${(hero.primarioLabel ?? 'Informe')} · ArgoMethod®</title></head>
+<body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="padding:28px 12px 40px;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
+    <div style="padding:22px 32px 0;"><span style="font-size:17px;font-weight:800;color:#1D1D1F;letter-spacing:-0.01em;">Argo</span><span style="font-size:17px;font-weight:300;color:#86868B;">Method®</span></div>
+    <div style="padding:26px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">Informe de perfil</div>
+      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">El informe de ${params.nombreNino} ya está listo</div>
+      <div style="font-size:13px;color:#86868B;margin-top:6px;">${kidLine}</div>
+    </div>
+    <div style="padding:22px 32px 0;">
+      <div style="background:#F8F8FA;border:1px solid #E8E8ED;border-radius:14px;padding:20px 22px;">
+        <div style="font-size:26px;font-weight:600;letter-spacing:-0.02em;line-height:1.15;">${arquetipo}</div>
+        <div style="font-size:13.5px;color:#424245;margin-top:10px;line-height:1.55;">${rich(hero.lead ?? '')}</div>
+      </div>
+    </div>
+    <div style="padding:22px 32px 0;text-align:center;">
+      <a href="${reportUrl}" style="display:inline-block;background:#0071E3;color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">Ver el informe completo de ${params.nombreNino}</a>
+      <div style="font-size:12px;color:#AEAEB2;margin-top:10px;">Su mezcla, cómo cambia según la situación, su motor, cómo acompañarlo y más.</div>
+    </div>
+    <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
+    ${puente}
+    <div style="padding:28px 32px 26px;">
+      <div style="height:1px;background:#E8E8ED;margin-bottom:16px;"></div>
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span> · Perfil conductual para el deporte formativo.<br>Este informe es una foto del presente, no una etiqueta permanente.</div>
+    </div>
+  </div>
+</div>
+</body></html>`;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -523,6 +593,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             is_demo?: boolean | null;
             full_access?: boolean | null;
             report_status?: string | null;
+            report_v4?: { hero?: { primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string } } | null;
         };
         let sessionRow: SessionRow | null = null;
         if (sessionId) {
@@ -532,7 +603,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const sb = createClient(supabaseUrl, serviceKey);
                 const { data } = await sb
                     .from('perfilamientos')
-                    .select('email_sent_at, share_token, ai_sections, is_demo, full_access, report_status')
+                    .select('email_sent_at, share_token, ai_sections, is_demo, full_access, report_status, report_v4')
                     .eq('id', sessionId)
                     .maybeSingle();
                 sessionRow = (data as SessionRow) ?? null;
@@ -711,16 +782,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        const html = buildHtml({
-            nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo,
-            perfil: finalPerfil,
-            palabrasPuente: finalPalabrasPuente,
-            sessionId, shareToken: finalShareToken, lang, resumenPerfil: finalResumenPerfil,
-            siteUrl,
-            existingPuentesMagicLink,
-            preferredCurrency,
-            suppressPuentes: isLockedDemo,
-        });
+        // v4 email when the report is sealed v4 (report_status ready/sent + report_v4 present);
+        // otherwise the legacy email. Until V4_SEAL activates, report_status is NULL => legacy.
+        const rv4 = sessionRow?.report_v4;
+        const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent');
+        const html = useV4
+            ? buildHtmlV4(rv4!.hero!, {
+                nombreNino, nombreAdulto, edad, deporte,
+                sessionId, shareToken: finalShareToken, siteUrl, lang,
+                suppressPuentes: isLockedDemo, existingPuentesMagicLink,
+            })
+            : buildHtml({
+                nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo,
+                perfil: finalPerfil,
+                palabrasPuente: finalPalabrasPuente,
+                sessionId, shareToken: finalShareToken, lang, resumenPerfil: finalResumenPerfil,
+                siteUrl,
+                existingPuentesMagicLink,
+                preferredCurrency,
+                suppressPuentes: isLockedDemo,
+            });
 
         const langAttr = lang || 'es';
         const autoSubject = langAttr === 'en'
