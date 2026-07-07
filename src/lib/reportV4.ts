@@ -152,3 +152,33 @@ export function buildGrupoSection(ficha: EvidenceFicha, nombre: string): string 
   const cuerpo = partes.length === 2 ? `${partes[0]}; y por otro, ${partes[1]}` : (partes[0] ?? 'el grupo aparece de a ratos');
   return `En la relación de ${nombre} con el equipo aparece ${cuerpo}. Son motores sociales distintos (involucrar no es lo mismo que sostener), y saber cuál pesa más ayuda a acompañarlo mejor.`;
 }
+
+// "Cuando le sale bien": anclado en el PERFIL (medido) + la escena de la meta (Q12) como ejemplo, no como prueba.
+const SUCCESS_ANCHOR_ES: Record<Axis, string> = {
+  D: 'suele encenderlos ya el próximo objetivo, más que quedarse saboreando el logro',
+  I: 'suele importarles compartir y celebrar el logro con los demás',
+  S: 'suele importarles que todo el equipo lo disfrute, más que el mérito propio',
+  C: 'suele gustarles repasar cómo lo lograron para hacerlo todavía mejor',
+};
+const META_CHOICE_ES: Record<Axis, string> = {
+  D: 'mirar ya hacia el próximo reto',
+  I: 'compartir la alegría con los compañeros',
+  S: 'asegurarse de que todo el equipo estuviera bien',
+  C: 'repasar cómo habían llegado hasta ahí',
+};
+export function buildLogroSection(ficha: EvidenceFicha, nombre: string): string {
+  const prim = ficha.votes.ejePrimario;
+  const q12 = ficha.respuestas.find((r) => r.number === 12)?.axis;
+  const ejemplo = q12 ? ` En el juego se vio: al llegar a la meta, eligió ${META_CHOICE_ES[q12]}.` : '';
+  return `A los chicos con un perfil de ${AXIS_ARQ_ES[prim].toLowerCase()} como el de ${nombre}, cuando logran algo, ${SUCCESS_ANCHOR_ES[prim]}.${ejemplo} No es que no lo disfrute; es su forma de vivir el logro. Un buen acompañamiento le ayuda a también registrar y celebrar lo alcanzado antes de arrancar de nuevo.`;
+}
+
+/** "Patrón de decisión": el acople de ritmo (si es robusto) o la consistencia. */
+export function buildPatronSection(ficha: EvidenceFicha, nombre: string): string {
+  const r = ficha.signals.ritmoAcople;
+  if (!r) {
+    return `A lo largo del juego, ${nombre} decidió a un ritmo bastante parejo: no arrancó dudando ni se desinfló al final. Es una señal linda de consistencia en cómo se compromete con cada elección.`;
+  }
+  const q = r.direccion === 'primario_rapido' ? 'resolvió más rápido' : 'se tomó un poco más de tiempo';
+  return `A lo largo del juego, ${nombre} no decidió todo al mismo ritmo: ${q} justo en las elecciones que van con su motor principal. Ese acople entre lo que elige y cuánto tarda es parte de su forma de jugar.`;
+}

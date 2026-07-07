@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { resolveEvidenceFicha } from './profileResolver';
-import { buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection, buildTormentaSection, buildGrupoSection } from './reportV4';
+import { buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection, buildTormentaSection, buildGrupoSection, buildLogroSection, buildPatronSection } from './reportV4';
 
 // Construye respuestas con un vector de votos dado (para simular el cuestionario).
 function answersFrom(vec: Record<'D' | 'I' | 'S' | 'C', number>) {
@@ -94,6 +94,18 @@ test('grupo: I y S bajos => lectura positiva, sin "poco sociable"', () => {
   const s = buildGrupoSection(orderedFicha(DESVIO), 'Mateo'); // I=1, S=0
   assert.match(s, /no dice nada de su capacidad social/);
   assert.match(s, /roles donde su fortaleza tenga impacto/);
+});
+
+test('cuando le sale bien: anclado al perfil + ejemplo de la meta (Q12)', () => {
+  const s = buildLogroSection(orderedFicha(DESVIO), 'Mateo'); // prim D, Q12 D
+  assert.match(s, /perfil de impulsor/);
+  assert.match(s, /próximo objetivo/);            // anchor del perfil
+  assert.match(s, /al llegar a la meta, eligió mirar ya hacia el próximo reto/); // ejemplo Q12
+});
+
+test('patrón de decisión: ritmo uniforme => lectura de consistencia (parejo)', () => {
+  const s = buildPatronSection(orderedFicha(DESVIO), 'Mateo'); // rt uniforme => ritmoAcople null
+  assert.match(s, /ritmo bastante parejo/);
 });
 
 test('Su motor: con juegos rápidos narra; sin juegos devuelve null (se omite)', () => {
