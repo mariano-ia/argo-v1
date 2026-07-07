@@ -71,6 +71,16 @@ test('receta: describe su mezcla con la cifra + ejemplo, sin placeholders', () =
   assert.ok(!/\{nombre\}/.test(b.cuerpo + b.ejemplo));
 });
 
+test('receta: evita el choque de "y" cuando un color contiene "y" (el detalle y el plan)', () => {
+  // S principal (5), D y C presentes (3 y 3) => presentes = [la acción, el detalle y el plan]
+  const seq: [number, 'D' | 'I' | 'S' | 'C'][] = [
+    [1, 'S'], [2, 'S'], [3, 'S'], [4, 'S'], [5, 'S'], [6, 'D'], [7, 'D'], [8, 'D'], [9, 'C'], [10, 'C'], [11, 'C'], [12, 'I'],
+  ];
+  const b = buildRecetaSection(orderedFicha(seq), CTX('Test'));
+  assert.match(b.cuerpo, /y también \*\*el detalle y el plan\*\*/); // separador limpio
+  assert.ok(!/acción\*\* y \*\*el detalle/.test(b.cuerpo), 'no debe quedar el doble "y"');
+});
+
 test('contingencia: narra el desvío en presente ("se inclina por"), no en pasado deportivo', () => {
   const b = buildContingenciaSection(orderedFicha(DESVIO), CTX('Mateo'));
   assert.ok(b);

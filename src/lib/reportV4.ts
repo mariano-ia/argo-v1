@@ -82,9 +82,11 @@ const CONTEXT_WORD_ES: Record<ContextId, string> = {
   disfrute: '', decision: '', espera: '', equipo: '', meta: '',
 };
 
-function listaEs(items: string[]): string {
+/** Une una lista en español evitando el choque de "y" cuando un ítem ya contiene " y " (ej. "el detalle y el plan"). */
+function listaClara(items: string[]): string {
   if (items.length <= 1) return items[0] ?? '';
-  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`;
+  const sep = items.some((it) => / y /.test(it)) ? ' y también ' : ' y ';
+  return `${items.slice(0, -1).join(', ')}${sep}${items[items.length - 1]}`;
 }
 function capitalizar(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -129,7 +131,7 @@ function leadParagraph(v: VotesEvidence, ctx: ReportContext): string {
       return `El juego de ${n} se inclina hacia **${p.corta}**, con una presencia clara de su segundo color.${veta} Hoy tiende a moverse por ahí, sin que sea su única nota: ${tail}.`;
     case 'parejo':
     default:
-      return `${n} juega hoy con **dos motores bien parejos**: ${p.corta} y ${EJE_WORD_ES[v.ejeSecundario].corta}. No es indefinición, al contrario: dispone de dos registros y tiende a elegir según lo que pide cada momento.`;
+      return `${n} juega hoy con **dos motores bien parejos**: ${listaClara([p.corta, EJE_WORD_ES[v.ejeSecundario].corta])}. No es indefinición, al contrario: dispone de dos registros y tiende a elegir según lo que pide cada momento.`;
   }
 }
 
@@ -160,10 +162,14 @@ export function buildRecetaSection(ficha: EvidenceFicha, ctx: ReportContext): Re
   const presentes = r.slice(1).filter((x) => x.presencia === 'presente');
   const suaves = r.slice(1).filter((x) => x.presencia === 'apenas' || x.presencia === 'ausente');
   let cuerpo = `En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de ${n} se destaca un ingrediente: **${corta(p)}**, que eligió en ${p.count} de sus 12 decisiones.`;
-  if (presentes.length) cuerpo += ` Muy cerca aparece **${listaEs(presentes.map(corta))}**, que le suma matices a su forma de jugar.`;
+  if (presentes.length) {
+    const verbo2 = presentes.length > 1 ? 'aparecen' : 'aparece';
+    const suman = presentes.length > 1 ? 'suman' : 'suma';
+    cuerpo += ` Muy cerca ${verbo2} ${listaClara(presentes.map((it) => `**${corta(it)}**`))}, que le ${suman} matices a su forma de jugar.`;
+  }
   if (suaves.length) {
     const verbo = suaves.length > 1 ? 'pesan' : 'pesa';
-    cuerpo += ` ${capitalizar(listaEs(suaves.map(corta)))}, en cambio, hoy ${verbo} menos en cómo decide: son colores que también tiene disponibles y que irán tomando su lugar con el tiempo.`;
+    cuerpo += ` ${capitalizar(listaClara(suaves.map(corta)))}, en cambio, hoy ${verbo} menos en cómo decide: son colores que también tiene disponibles y que irán tomando su lugar con el tiempo.`;
   }
   return { cuerpo, ejemplo: `Ante una misma situación, ${n} tiende a ${RECETA_EJEMPLO_ES[p.axis]}.` };
 }

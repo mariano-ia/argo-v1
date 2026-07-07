@@ -513,15 +513,39 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
         return (
             <div className="min-h-screen bg-argo-neutral" style={{ fontFamily: 'Inter, -apple-system, sans-serif' }}>
                 <style>{`@media print { .no-print { display: none !important; } body { background: white !important; } }`}</style>
+                {/* Top bar — same controls as the legacy report (share + print) + a subtle v4 badge */}
                 <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
-                    <div className="flex items-center tracking-tight">
+                    <div className="flex items-center gap-2 tracking-tight">
                         <span className="font-[800] text-base text-argo-navy">Argo</span>
                         <span className="font-[100] text-base text-argo-grey">Method®</span>
+                        <span className="ml-1 rounded-full bg-argo-bg px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-argo-light">v4</span>
                     </div>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-argo-light">Informe v4 · vista previa</span>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={handleCopy}
+                            className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
+                        >
+                            {copied
+                                ? <><CheckCircle size={13} className="text-green-600" />{t.copied}</>
+                                : <><Link2 size={13} />{t.copyLink}</>
+                            }
+                        </button>
+                        <button
+                            onClick={() => window.print()}
+                            className="flex items-center gap-1.5 text-xs font-medium text-argo-secondary border border-argo-border px-3 py-1.5 rounded-lg hover:bg-argo-bg transition-colors"
+                        >
+                            <Printer size={13} />{t.download}
+                        </button>
+                    </div>
                 </div>
                 <div className="px-4 py-8">
-                    <ReportV4View report={session.report_v4} edad={session.child_age} deporte={session.sport} />
+                    <ReportV4View
+                        report={session.report_v4}
+                        edad={session.child_age}
+                        deporte={session.sport}
+                        adulto={session.adult_name}
+                        fecha={date}
+                    />
                 </div>
             </div>
         );

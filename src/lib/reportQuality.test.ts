@@ -114,6 +114,20 @@ test('veta en el nombre pero el lead no la menciona => HOLD veta_inconsistente',
   assert.ok(codes(qualityGate(r, f, OPTS)).includes('veta_inconsistente'));
 });
 
+test('perfil PAREJO con veta NO retiene por veta_inconsistente (lead nombra ambos motores)', () => {
+  // 6-6-0-0 => parejo, primario D, veta I. El lead dice "dos motores bien parejos", no "veta".
+  const answers = [];
+  for (let i = 1; i <= 6; i++) answers.push(a(i, 'D', 1000));
+  for (let i = 7; i <= 12; i++) answers.push(a(i, 'I', 1000));
+  const ficha = resolveEvidenceFicha(answers as never, { edadMeses: 132, questionVersion: 'v4' });
+  const r = buildReportV4(ficha, CTX);
+  assert.strictEqual(r.hero.registro, 'parejo');
+  assert.ok(r.hero.vetaLabel, 'debe tener veta');
+  const res = qualityGate(r, ficha, OPTS);
+  assert.ok(!codes(res).includes('veta_inconsistente'), `no debe retener por veta: ${JSON.stringify(res.reasons)}`);
+  assert.strictEqual(res.pass, true, `parejo con veta debe PASAR: ${JSON.stringify(res.reasons)}`);
+});
+
 test('corazón en fallback => HOLD procedencia_fallback', () => {
   const f = mateoFicha();
   const r = buildReportV4(f, CTX);

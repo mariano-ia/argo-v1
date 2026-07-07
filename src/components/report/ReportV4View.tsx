@@ -100,20 +100,25 @@ export interface ReportV4ViewProps {
   report: ReportV4;
   edad?: number | null;
   deporte?: string | null;
+  adulto?: string | null;   // "Adulto responsable" (como el informe legacy)
+  fecha?: string | null;    // fecha ya formateada (ej. "07 de julio de 2026")
 }
 
-export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deporte }) => {
+export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deporte, adulto, fecha }) => {
   const { hero } = report;
   const accent = AXIS_COLORS[hero.ejePrimario] ?? '#955FB5';
   const veta = AXIS_COLORS[hero.ejeSecundario] ?? '#86868B';
   const byId = new Map(report.secciones.map((s) => [s.id, s]));
-  const kidMeta = [hero.nombre, edad ? `${edad} años` : null, deporte || null].filter(Boolean).join(' · ');
+  const kidMeta = [hero.nombre, edad ? `${edad} años` : null, deporte || null, fecha || null].filter(Boolean).join(' · ');
 
   return (
     <div className="mx-auto max-w-[760px]">
       {/* Hero */}
       <div className="rounded-[20px] border border-argo-border bg-white p-8 shadow-argo-hover">
-        <div className="mb-4 text-[13px] font-semibold tracking-wide text-argo-grey">{kidMeta}</div>
+        <div className="mb-4">
+          <div className="text-[13px] font-semibold tracking-wide text-argo-grey">{kidMeta}</div>
+          {adulto && <div className="mt-0.5 text-[12px] text-argo-light">Adulto responsable: {adulto}</div>}
+        </div>
         <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           <span style={{ color: accent }}>{hero.primarioLabel}</span>
           {hero.vetaLabel && (

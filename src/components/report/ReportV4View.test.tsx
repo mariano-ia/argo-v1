@@ -27,8 +27,11 @@ function mateoReport() {
 
 test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, pasos, footer', () => {
   const html = renderToStaticMarkup(
-    React.createElement(ReportV4View, { report: mateoReport(), edad: 11, deporte: 'Fútbol' }),
+    React.createElement(ReportV4View, { report: mateoReport(), edad: 11, deporte: 'Fútbol', adulto: 'Marian', fecha: '07 de julio de 2026' }),
   );
+  // Encabezado: nombre del niño + adulto responsable + fecha (como el legacy)
+  assert.match(html, /Adulto responsable: Marian/);
+  assert.match(html, /07 de julio de 2026/);
   // Hero: perfil + veta coloreados
   assert.match(html, /Impulsor/);
   assert.match(html, /con veta/);
