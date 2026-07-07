@@ -10,6 +10,7 @@
 import type { IslandMetrics } from '../components/games/IslasDesconocidas';
 import type { RhythmMetrics } from '../components/onboarding/screens/MiniGame1';
 import type { AdaptationMetrics } from '../components/games/LaTormenta';
+import type { AnswerRecord, DiscSignals } from './dischSignals';
 
 export type Axis = 'D' | 'I' | 'S' | 'C';
 export type Banda = 'mezcla' | 'con_matices' | 'definido';
@@ -83,4 +84,8 @@ export interface EvidenceFicha {
     rhythm: RhythmMetrics | null;
     adaptation: AdaptationMetrics | null;
   };
+  // Autocontenida: las respuestas per-answer + las señales individuales viven en la ficha,
+  // así el informe (temas, contingencia, evolución) regenera solo desde evidence_ficha jsonb.
+  respuestas: AnswerRecord[];   // length 12 (número de escena, eje, tiempo) — spec §4
+  signals: DiscSignals;         // receta + contingencia + ritmoAcople (individuación DISC)
 }

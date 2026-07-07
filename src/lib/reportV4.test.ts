@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { resolveEvidenceFicha } from './profileResolver';
-import { buildReportHero, buildMotorSection } from './reportV4';
+import { buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection } from './reportV4';
 
 // Construye respuestas con un vector de votos dado (para simular el cuestionario).
 function answersFrom(vec: Record<'D' | 'I' | 'S' | 'C', number>) {
@@ -42,6 +42,39 @@ test('caso parejo (6-6-0-0): igual da perfil + veta, nombra los dos motores', ()
   assert.strictEqual(h.meter.level, 1);
   assert.strictEqual(h.arquetipoLabel, 'Impulsor con veta Conector'); // nunca "no pudimos"
   assert.match(h.lead, /dos motores bien parejos/);
+});
+
+// Respuestas EN ORDEN de escena (con question_id) para que la contingencia funcione.
+const ordered = (pairs: [number, 'D' | 'I' | 'S' | 'C'][]) =>
+  pairs.map(([n, ax]) => ({ axis: ax, responseTimeMs: 1000, question_id: `q${n}` }));
+const orderedFicha = (pairs: [number, 'D' | 'I' | 'S' | 'C'][]) =>
+  resolveEvidenceFicha(ordered(pairs) as never, { edadMeses: 132, questionVersion: 'v4-2026-07' });
+
+// Chico D con desvío a Estratega en la adversidad (9-2-1-0).
+const DESVIO: [number, 'D' | 'I' | 'S' | 'C'][] = [
+  [1, 'D'], [2, 'D'], [3, 'D'], [4, 'D'], [5, 'C'], [6, 'C'], [7, 'D'], [8, 'D'], [9, 'D'], [10, 'I'], [11, 'D'], [12, 'D'],
+];
+
+test('receta section: describe su mezcla con la cifra, sin placeholders', () => {
+  const s = buildRecetaSection(orderedFicha(DESVIO), 'Mateo');
+  assert.match(s, /Lo que más mueve a Mateo es la acción/);
+  assert.match(s, /9 de sus 12/);
+  assert.ok(!/\{nombre\}/.test(s));
+});
+
+test('contingencia section: narra el desvío ("cambia de registro")', () => {
+  const s = buildContingenciaSection(orderedFicha(DESVIO), 'Mateo');
+  assert.ok(s);
+  assert.match(s!, /cuando la cosa se complica cambia de registro/);
+  assert.match(s!, /mirar el plan antes de actuar/); // conducta Estratega
+});
+
+test('contingencia section: sin patrones robustos => null (se omite, no inventa)', () => {
+  // inicio dividido, adversidad 1-1-1, esfuerzo dividido => ningún patrón
+  const sinPatron: [number, 'D' | 'I' | 'S' | 'C'][] = [
+    [1, 'D'], [2, 'C'], [3, 'D'], [4, 'D'], [5, 'D'], [6, 'I'], [7, 'S'], [8, 'D'], [9, 'D'], [10, 'D'], [11, 'C'], [12, 'D'],
+  ];
+  assert.strictEqual(buildContingenciaSection(orderedFicha(sinPatron), 'X'), null);
 });
 
 test('Su motor: con juegos rápidos narra; sin juegos devuelve null (se omite)', () => {

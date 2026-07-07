@@ -90,3 +90,20 @@ test('resolveEvidenceFicha assembles a v4 ficha con perfil + veta', () => {
   assert.strictEqual(f.votes.arquetipoLabel, 'Impulsor con veta Conector'); // 6-2-2-2
   assert.strictEqual(f.motor.narratable, false);
 });
+
+test('resolveEvidenceFicha embebe respuestas[] + señales DISC (contingencia real)', () => {
+  // Chico D con desvío a Estratega en la adversidad (Q5-7), en orden de escena.
+  const a = (n: number, axis: 'D' | 'I' | 'S' | 'C') => ({ axis, responseTimeMs: 1000, question_id: `q${n}` });
+  const answers = [
+    a(1, 'D'), a(2, 'D'), a(3, 'D'), a(4, 'D'),
+    a(5, 'C'), a(6, 'C'), a(7, 'D'),        // adversidad: C,C,D => C (desvío)
+    a(8, 'D'), a(9, 'D'), a(10, 'I'), a(11, 'D'), a(12, 'D'),
+  ];
+  const f = resolveEvidenceFicha(answers as never, { edadMeses: 132, questionVersion: 'v4-2026-07' });
+  assert.strictEqual(f.respuestas.length, 12);
+  assert.strictEqual(f.votes.ejePrimario, 'D');        // 9-2-1-0
+  assert.strictEqual(f.signals.receta[0].axis, 'D');   // principal
+  const adv = f.signals.contingencia.patrones.find((p) => p.context === 'adversidad');
+  assert.strictEqual(adv?.axis, 'C');                  // cuando se complica, cambia a Estratega
+  assert.strictEqual(adv?.esDesvio, true);
+});

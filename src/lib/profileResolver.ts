@@ -8,6 +8,8 @@ import type { AdaptationMetrics } from '../components/games/LaTormenta';
 import type { VotesEvidence, MotorInsight, EvidenceFicha, SubMotor } from './evidenceFicha';
 import { classifyBanda, classifyRegistro, classifyForma, nameGate, classifyVetaBanda, isOppositeAxis } from './nullDistribution';
 import { factorEdad, ageFairMs, tempoScoreFromAgeFair, tempoZonaFromScore } from './ageNorms';
+import { computeDiscSignals } from './dischSignals';
+import type { AnswerRecord } from './dischSignals';
 
 /**
  * Mini-game metrics for motor calculation.
@@ -346,17 +348,29 @@ export function resolveEvidenceFicha(
     const vector: Record<Axis, number> = { D: 0, I: 0, S: 0, C: 0 };
     answers.forEach((a) => { if (vector[a.axis] !== undefined) vector[a.axis]++; });
     const games = opts.games ?? {};
+    const votes = buildVotesEvidence(vector);
+    // Per-answer records (autocontained). El número de escena sale de question_id ('q5'→5),
+    // o del orden (i+1) si no viene — el juego entrega las 12 en orden Q1..Q12.
+    const respuestas: AnswerRecord[] = answers.map((a, i) => ({
+        questionId: a.question_id ?? `q${i + 1}`,
+        number: a.question_id ? (parseInt(a.question_id.replace(/\D/g, ''), 10) || i + 1) : i + 1,
+        axis: a.axis,
+        responseTimeMs: a.responseTimeMs,
+    }));
+    const signals = computeDiscSignals(vector, respuestas, votes.ejePrimario);
     return {
         version: 4,
         methodVersion: opts.methodVersion ?? 'v4',
         questionVersion: opts.questionVersion ?? 'unknown',
-        votes: buildVotesEvidence(vector),
+        votes,
         motor: resolveMotorInsights(games, opts.edadMeses),
         gameMetricsRaw: {
             impulse: games.impulse ?? null,
             rhythm: games.rhythm ?? null,
             adaptation: games.adaptation ?? null,
         },
+        respuestas,
+        signals,
     };
 }
 

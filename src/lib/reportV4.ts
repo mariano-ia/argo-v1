@@ -8,6 +8,7 @@
 
 import type { EvidenceFicha, Axis, Registro, VotesEvidence } from './evidenceFicha';
 import { getMotorInsight, getVetaLabel } from './archetypeContentV4';
+import type { ContextId, RecetaItem } from './dischSignals';
 
 // Label del arquetipo del eje (es). en/pt: capa de i18n del render (después).
 const AXIS_ARQ_ES: Record<Axis, string> = { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' };
@@ -70,4 +71,49 @@ export function buildReportHero(ficha: EvidenceFicha, nombre: string): ReportHer
 export function buildMotorSection(ficha: EvidenceFicha, nombre: string): string | null {
   if (!ficha.motor.narratable) return null;
   return getMotorInsight(ficha.motor.tempoZona, 'es').replace(/\{nombre\}/g, nombre);
+}
+
+// ── Secciones INDIVIDUALES (usan las señales DISC de la ficha) ──
+const CONTEXT_WORD_ES: Record<ContextId, string> = {
+  inicio: 'al arrancar algo nuevo', adversidad: 'cuando la cosa se complica',
+  esfuerzo: 'cuando hay que sostener el esfuerzo',
+  disfrute: '', decision: '', espera: '', equipo: '', meta: '',
+};
+function listaEs(items: string[]): string {
+  if (items.length <= 1) return items[0] ?? '';
+  return `${items.slice(0, -1).join(', ')} y ${items[items.length - 1]}`;
+}
+
+/** "Su mezcla" (receta): el orden completo de sus 4 ejes, intra-individual. Es un hecho, siempre presente. */
+export function buildRecetaSection(ficha: EvidenceFicha, nombre: string): string {
+  const r = ficha.signals.receta;
+  const corta = (it: RecetaItem) => EJE_WORD_ES[it.axis].corta;
+  const p = r[0];
+  const presentes = r.slice(1).filter((x) => x.presencia === 'presente');
+  const apenas = r.slice(1).filter((x) => x.presencia === 'apenas');
+  const ausentes = r.slice(1).filter((x) => x.presencia === 'ausente');
+  let s = `Lo que más mueve a ${nombre} es ${corta(p)}: la eligió en ${p.count} de sus 12 elecciones.`;
+  if (presentes.length) s += ` Después aparece ${listaEs(presentes.map(corta))}.`;
+  if (apenas.length) s += ` Apenas asoma ${listaEs(apenas.map(corta))}.`;
+  if (ausentes.length) s += ` Y casi no aparece ${listaEs(ausentes.map(corta))}: en el juego casi no lo eligió (eso no dice nada de su capacidad para eso).`;
+  return s;
+}
+
+/** "Cómo cambia según la situación" (contingencia): SOLO patrones robustos; si no hay, se omite (null). */
+export function buildContingenciaSection(ficha: EvidenceFicha, nombre: string): string | null {
+  const { patrones } = ficha.signals.contingencia;
+  if (patrones.length === 0) return null; // nada robusto que afirmar => se omite
+  const conducta = (axis: Axis) => EJE_WORD_ES[axis].larga;
+  const ctx = (c: ContextId) => CONTEXT_WORD_ES[c];
+  const desvios = patrones.filter((pp) => pp.esDesvio);
+  const norma = patrones.filter((pp) => !pp.esDesvio);
+  if (desvios.length > 0) {
+    const d = desvios[0];
+    const base = norma.length
+      ? `${nombre} tiende a ${conducta(ficha.votes.ejePrimario)} en buena parte del juego`
+      : `${nombre} suele ${conducta(ficha.votes.ejePrimario)}`;
+    return `${base}, pero ${ctx(d.context)} cambia de registro: ahí eligió ${conducta(d.axis)}. Ese contraste es suyo: no aplica siempre la misma receta, lee lo que pide cada momento.`;
+  }
+  const ctxs = norma.map((pp) => ctx(pp.context)).filter(Boolean);
+  return `En distintos momentos del juego (${ctxs.join('; ')}), ${nombre} sostuvo lo mismo: ${conducta(ficha.votes.ejePrimario)}. Es una señal de consistencia en cómo encara las situaciones.`;
 }
