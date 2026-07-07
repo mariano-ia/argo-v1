@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { Link2, Printer, CheckCircle, Lock } from 'lucide-react';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../lib/argosEngine';
 import type { AISections } from '../lib/openaiService';
+import { ReportV4View } from '../components/report/ReportV4View';
+import type { ReportV4 } from '../lib/reportV4';
 import {
     classifyDecisionPattern,
     getPatternCopy,
@@ -29,6 +31,7 @@ export interface SessionData {
     tenant_plan?: string | null;
     full_access?: boolean;
     is_demo?: boolean;
+    report_v4?: ReportV4 | null;   // informe v4 determinista (Capa 1). Preview: ?engine=v4
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -499,6 +502,30 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
             .replace(/Nota de acompañamiento:[\s\S]*/i, '')
             .replace(/[ \t]+/g, ' ')
             .trim();
+
+    // ── v4 preview (owner-only, ?engine=v4) ──────────────────────────────────
+    // Renders the deterministic v4 report (Capa 1) when it's persisted and the flag
+    // is present. Leaves the LEGACY path 100% untouched (no flag => nothing changes).
+    // This is a safe eyeball preview; full activation (v4 as the default delivered
+    // report) is a separate, gated step.
+    const wantV4 = new URLSearchParams(window.location.search).get('engine') === 'v4';
+    if (wantV4 && session.report_v4) {
+        return (
+            <div className="min-h-screen bg-argo-neutral" style={{ fontFamily: 'Inter, -apple-system, sans-serif' }}>
+                <style>{`@media print { .no-print { display: none !important; } body { background: white !important; } }`}</style>
+                <div className="no-print sticky top-0 z-10 bg-white border-b border-argo-border px-4 sm:px-6 py-3 flex items-center justify-between">
+                    <div className="flex items-center tracking-tight">
+                        <span className="font-[800] text-base text-argo-navy">Argo</span>
+                        <span className="font-[100] text-base text-argo-grey">Method®</span>
+                    </div>
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-argo-light">Informe v4 · vista previa</span>
+                </div>
+                <div className="px-4 py-8">
+                    <ReportV4View report={session.report_v4} edad={session.child_age} deporte={session.sport} />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-argo-neutral" style={{ fontFamily: 'Inter, -apple-system, sans-serif' }}>

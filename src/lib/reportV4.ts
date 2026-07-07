@@ -105,6 +105,8 @@ export interface ReportHero {
   arquetipoLabel: string;        // "Impulsor con veta Estratega" (SIEMPRE presente)
   primarioLabel: string;
   vetaLabel: string | null;
+  ejePrimario: Axis;             // para colorear (AXIS_COLORS[ejePrimario])
+  ejeSecundario: Axis;           // para colorear la veta
   registro: Registro;
   meter: { level: number; labels: string[] };
   lead: string;                  // párrafo calibrado por registro (puede tener **negritas**)
@@ -139,6 +141,8 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
     arquetipoLabel: v.arquetipoLabel,
     primarioLabel: AXIS_ARQ_ES[v.ejePrimario],
     vetaLabel: v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, 'es') : null,
+    ejePrimario: v.ejePrimario,
+    ejeSecundario: v.ejeSecundario,
     registro: v.registro,
     meter: { level: METER_LEVEL[v.registro], labels: METER_LABELS },
     lead: leadParagraph(v, ctx),
