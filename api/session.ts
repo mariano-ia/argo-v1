@@ -361,6 +361,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd, ai_sections, game_metrics,
                 is_demo,
+                // v4 method (client-computed; see METODO-FALLBACK-INFORME.md). Additive + optional:
+                // absent => legacy row (report_status stays NULL => choke-point ungated). In SHADOW
+                // mode the client sends evidence_ficha/report_v4/report_qc but NOT report_status, so
+                // v4 is observed against real traffic with ZERO delivery risk.
+                evidence_ficha, report_v4, report_qc, report_status,
             } = fields;
 
             if (!adult_email || !eje || !motor) {
@@ -440,6 +445,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 status:           resolved ? 'resolved' : 'in_flight',
                 share_token:      save_share_token,
                 is_demo:          is_demo === true,
+                // v4 method (additive; NULL for legacy callers). report_status stays NULL in shadow.
+                evidence_ficha:   evidence_ficha ?? null,
+                report_v4:        report_v4 ?? null,
+                report_qc:        report_qc ?? null,
+                report_status:    (report_status as string | null | undefined) ?? null,
             }).select('id, share_token').single();
 
             if (error || !saveData) {
