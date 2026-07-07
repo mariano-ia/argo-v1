@@ -59,11 +59,19 @@ export function classifyBanda(B: number): Banda {
   return 'mezcla';
 }
 
-/** Registro de intensidad del lenguaje (A9): 'claridad' es el tope y SOLO B≥5. B=4 => tentativo. */
+/**
+ * Registro de TONO por el margen de votos B = 1º−2º (owner 2026-07-07). 4 niveles, TODOS nombran el perfil:
+ *   B≥6 'rotundo'  → suena fuerte, cita la cifra ("apareció en 10 de 12").
+ *   B=4-5 'claro'  → "se define con claridad por X".
+ *   B=2-3 'matices'→ "se inclina hacia X, con Y presente" (probabilístico, pero con nombre).
+ *   B=0-1 'parejo' → "dos motores parejos: X y Y" (los dos en el nombre).
+ * La firmeza es sobre el DATO; la lectura queda en presente/tendencia (nunca rasgo permanente).
+ */
 export function classifyRegistro(B: number): Registro {
-  if (B >= 5) return 'claridad';
-  if (B >= 2) return 'tentativo';
-  return 'mezcla';
+  if (B >= 6) return 'rotundo';
+  if (B >= 4) return 'claro';
+  if (B >= 2) return 'matices';
+  return 'parejo';
 }
 
 /** Name-gate del primario: sustantivo único solo si pasa. */

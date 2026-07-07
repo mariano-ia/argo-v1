@@ -13,7 +13,10 @@ import type { AdaptationMetrics } from '../components/games/LaTormenta';
 
 export type Axis = 'D' | 'I' | 'S' | 'C';
 export type Banda = 'mezcla' | 'con_matices' | 'definido';
-export type Registro = 'mezcla' | 'tentativo' | 'claridad'; // 'claridad' es el tope, SOLO B≥5 (A9)
+// Registro de TONO (owner 2026-07-07): la firmeza es sobre el DATO (el margen de votos, un hecho),
+// el "potencial" sobre la LECTURA (presente/tendencia). Los 4 niveles suenan distinto pero TODOS
+// nombran el perfil. 'rotundo' cita la cifra; ninguno afirma rasgo permanente.
+export type Registro = 'parejo' | 'matices' | 'claro' | 'rotundo';
 export type FormaId =
   | 'duo_empate' | 'equilibrio' | 'duo' | 'versatil'
   | 'lider_acompanante' | 'definido' | 'muy_definido';
@@ -38,8 +41,10 @@ export interface VotesEvidence {
   nombrarPrimario: boolean;       // B>=4 || (B>=2 && topCount>=7)
   vetaBanda: VetaBanda;           // B2<=1 sin / 2-3 tentativa / >=4 afirmada
   vetaOpuesta: boolean;           // eje secundario diagonal opuesto (D<->S, I<->C)
-  vetaEnNombre: boolean;          // afirmada && !opuesta && nombrarPrimario
-  arquetipoLabel: string | null;  // ya gateado; null => par/tendencia sin sustantivo
+  vetaEnNombre: boolean;          // (para el gráfico) veta lo bastante fuerte para el nombre duro
+  // REGLA DURA (owner 2026-07-07): SIEMPRE hay perfil + veta en el encabezado, sin importar la fuerza.
+  // El gráfico de confianza (banda/registro) dice cuánto está definido; NUNCA se oculta el nombre.
+  arquetipoLabel: string;         // siempre "[Primario] con veta [Secundario]" (o solo primario si el 2º tiene 0 votos)
 }
 
 /** Un sub-motor medido (age-fair). El intervalo ANCHO manda: si cruza el corte, zona=null. */

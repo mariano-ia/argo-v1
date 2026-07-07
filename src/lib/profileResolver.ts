@@ -300,12 +300,11 @@ export function buildVotesEvidence(vector: Record<Axis, number>): VotesEvidence 
     const vetaOpuesta = isOppositeAxis(ejePrimario, ejeSecundario);
     const vetaEnNombre = vetaBanda === 'afirmada' && !vetaOpuesta && nombrarPrimario;
 
-    let arquetipoLabel: string | null = null;
-    if (nombrarPrimario) {
-        arquetipoLabel = vetaEnNombre
-            ? `${AXIS_ARCHETYPE_LABEL_ES[ejePrimario]} con veta ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}`
-            : AXIS_ARCHETYPE_LABEL_ES[ejePrimario];
-    }
+    // REGLA DURA (owner 2026-07-07): SIEMPRE perfil + veta en el encabezado. El registro/gráfico
+    // comunica cuán definido está; nunca se oculta el nombre. Solo se omite la veta si el 2º eje
+    // no tuvo NINGÚN voto (mostrarla sería inventar una inclinación inexistente).
+    const vetaTxt = secondCount >= 1 ? ` con veta ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}` : '';
+    const arquetipoLabel = `${AXIS_ARCHETYPE_LABEL_ES[ejePrimario]}${vetaTxt}`;
 
     return {
         vector: { ...vector }, ejePrimario, ejeSecundario, topCount, secondCount, thirdCount,
@@ -361,10 +360,8 @@ export function resolveEvidenceFicha(
     };
 }
 
-/** Display name (ES canonical for now; the report/dashboard layer adds full i18n). */
+/** Display name (ES canonical for now; the report/dashboard layer adds full i18n).
+ *  Siempre devuelve un perfil con nombre (nunca "no pudimos"): es el arquetipoLabel ya armado. */
 export function buildDisplayName(votes: VotesEvidence): string {
-    if (votes.arquetipoLabel) return votes.arquetipoLabel;
-    const a = AXIS_ARCHETYPE_LABEL_ES[votes.ejePrimario as Axis];
-    const b = AXIS_ARCHETYPE_LABEL_ES[votes.ejeSecundario as Axis];
-    return `una mezcla entre ${a} y ${b}`;
+    return votes.arquetipoLabel;
 }

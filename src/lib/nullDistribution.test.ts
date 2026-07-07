@@ -50,13 +50,15 @@ test('nameGate reproduces the adopted 7.68% null mass', () => {
   assert.strictEqual(+(m * 100).toFixed(2), NAME_GATE_MASS.adopted);
 });
 
-test('band / registro / veta thresholds (A9: claridad only B>=5, B=4 tentativo)', () => {
+test('band / registro (4 niveles de tono) / veta thresholds', () => {
   assert.strictEqual(classifyBanda(4), 'definido');
   assert.strictEqual(classifyBanda(3), 'con_matices');
   assert.strictEqual(classifyBanda(1), 'mezcla');
-  assert.strictEqual(classifyRegistro(5), 'claridad');
-  assert.strictEqual(classifyRegistro(4), 'tentativo');
-  assert.strictEqual(classifyRegistro(1), 'mezcla');
+  // registro de tono: rotundo B>=6, claro B=4-5, matices B=2-3, parejo B<=1 (owner 2026-07-07)
+  assert.strictEqual(classifyRegistro(6), 'rotundo');
+  assert.strictEqual(classifyRegistro(4), 'claro');
+  assert.strictEqual(classifyRegistro(2), 'matices');
+  assert.strictEqual(classifyRegistro(1), 'parejo');
   assert.strictEqual(classifyVetaBanda(4), 'afirmada');
   assert.strictEqual(classifyVetaBanda(2), 'tentativa');
   assert.strictEqual(classifyVetaBanda(1), 'sin');
