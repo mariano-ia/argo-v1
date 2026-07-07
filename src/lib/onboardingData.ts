@@ -12,6 +12,18 @@ export interface Question {
     options: QuestionOption[];
 }
 
+// ─── v4: stable question identity + signature scenes (persistence, spec §4/§10) ──────
+/** Bump when the question bank changes so evolution never compares across instruments. */
+export const QUESTION_VERSION = 'v4-2026-07';
+/** Stable per-question id derived from the 1-12 order (persisted with each answer). */
+export function questionId(questionNumber: number): string {
+    return `q${questionNumber}`;
+}
+/** Signature scenes for the "momento notable" module: storm/adversity (Q5-7) + goal (Q12). */
+export const SIGNATURE_SCENES: Record<number, 'tormenta' | 'meta'> = {
+    5: 'tormenta', 6: 'tormenta', 7: 'tormenta', 12: 'meta',
+};
+
 export interface StorySlideData {
     id: string;
     title?: string;

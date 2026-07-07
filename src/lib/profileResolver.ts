@@ -72,6 +72,7 @@ export function resolveMotorFromGames(games: GameMetrics): MotorInput | null {
 export interface QuestionAnswer {
     axis: Axis;
     responseTimeMs: number;
+    question_id?: string;   // v4: stable question id (spec §4/§10); optional for back-compat
 }
 
 export interface SessionContext {
