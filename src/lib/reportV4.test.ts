@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { resolveEvidenceFicha } from './profileResolver';
-import { buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection, buildTormentaSection, buildGrupoSection, buildLogroSection, buildPatronSection } from './reportV4';
+import { buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection, buildTormentaSection, buildGrupoSection, buildLogroSection, buildPatronSection, buildCombustibleSection, buildPalabrasSection, buildGuiaSection, buildResetSection, buildEcosSection, buildReportV4 } from './reportV4';
 
 // Construye respuestas con un vector de votos dado (para simular el cuestionario).
 function answersFrom(vec: Record<'D' | 'I' | 'S' | 'C', number>) {
@@ -106,6 +106,51 @@ test('cuando le sale bien: anclado al perfil + ejemplo de la meta (Q12)', () => 
 test('patrón de decisión: ritmo uniforme => lectura de consistencia (parejo)', () => {
   const s = buildPatronSection(orderedFicha(DESVIO), 'Mateo'); // rt uniforme => ritmoAcople null
   assert.match(s, /ritmo bastante parejo/);
+});
+
+test('contenido eje D (Mateo): combustible, palabras, guía, reset y ecos con nombre inyectado', () => {
+  const f = orderedFicha(DESVIO); // prim D
+  const comb = buildCombustibleSection(f, 'Mateo');
+  assert.ok(comb && comb.includes('Mateo') && !/\{nombre\}/.test(comb));
+  const pal = buildPalabrasSection(f, 'Mateo');
+  assert.ok(pal && pal.puente.length >= 3 && pal.ruido.length >= 2);
+  assert.match(pal!.puente[0], /Arranca tú/);
+  const guia = buildGuiaSection(f, 'Mateo');
+  assert.ok(guia && guia.antes && guia.durante && guia.despues);
+  const reset = buildResetSection(f, 'Mateo');
+  assert.ok(reset && reset.includes('Mateo') && /reset/.test(reset));
+  const ecos = buildEcosSection(f, 'Mateo');
+  assert.ok(ecos && ecos.includes('Mateo'));
+});
+
+test('buildReportV4: ensambla hero + secciones ordenadas; omite lo no narratable', () => {
+  const r = buildReportV4(orderedFicha(DESVIO), 'Mateo');
+  assert.strictEqual(r.hero.arquetipoLabel, 'Impulsor con veta Estratega');
+  const ids = r.secciones.map((s) => s.id);
+  // data-driven siempre presentes + contenido D presente
+  ['receta', 'contingencia', 'patron', 'tormenta', 'grupo', 'logro', 'combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
+    assert.ok(ids.includes(id), `falta sección ${id}`));
+  // motor se omite (sin juegos) y queda registrado
+  assert.ok(!ids.includes('motor'));
+  assert.ok(r.omitidas.some((o) => o.id === 'motor' && o.motivo === 'sin_datos'));
+  // la sección palabras trae el objeto estructurado
+  const pal = r.secciones.find((s) => s.id === 'palabras');
+  assert.strictEqual(pal?.kind, 'palabras');
+  assert.ok(pal?.palabras && pal.palabras.puente.length >= 3);
+});
+
+test('buildReportV4: eje sin contenido redactado (I) omite las secciones de contenido, NO las inventa', () => {
+  // 8 votos I => primario Conector, que aún no tiene EJE_BASE => secciones de contenido null
+  const soloI: [number, 'D' | 'I' | 'S' | 'C'][] = [
+    [1, 'I'], [2, 'I'], [3, 'I'], [4, 'I'], [5, 'I'], [6, 'I'], [7, 'I'], [8, 'I'], [9, 'D'], [10, 'D'], [11, 'S'], [12, 'C'],
+  ];
+  const r = buildReportV4(orderedFicha(soloI), 'Sofi');
+  const ids = r.secciones.map((s) => s.id);
+  assert.ok(ids.includes('receta') && ids.includes('logro')); // data-driven sí
+  ['combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) => {
+    assert.ok(!ids.includes(id), `no debería estar ${id} sin contenido`);
+    assert.ok(r.omitidas.some((o) => o.id === id && o.motivo === 'sin_contenido'));
+  });
 });
 
 test('Su motor: con juegos rápidos narra; sin juegos devuelve null (se omite)', () => {

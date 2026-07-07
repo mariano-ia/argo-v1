@@ -7,7 +7,7 @@
 // Nombres: docs/archetype-naming.md · Cálculo: docs/METODO-CALCULO-NUEVO.md · Voz validada: informe de Mateo.
 
 import type { EvidenceFicha, Axis, Registro, VotesEvidence } from './evidenceFicha';
-import { getMotorInsight, getVetaLabel } from './archetypeContentV4';
+import { getMotorInsight, getVetaLabel, getEjeBase } from './archetypeContentV4';
 import type { ContextId, RecetaItem } from './dischSignals';
 
 // Label del arquetipo del eje (es). en/pt: capa de i18n del render (después).
@@ -170,7 +170,7 @@ export function buildLogroSection(ficha: EvidenceFicha, nombre: string): string 
   const prim = ficha.votes.ejePrimario;
   const q12 = ficha.respuestas.find((r) => r.number === 12)?.axis;
   const ejemplo = q12 ? ` En el juego se vio: al llegar a la meta, eligió ${META_CHOICE_ES[q12]}.` : '';
-  return `A los chicos con un perfil de ${AXIS_ARQ_ES[prim].toLowerCase()} como el de ${nombre}, cuando logran algo, ${SUCCESS_ANCHOR_ES[prim]}.${ejemplo} No es que no lo disfrute; es su forma de vivir el logro. Un buen acompañamiento le ayuda a también registrar y celebrar lo alcanzado antes de arrancar de nuevo.`;
+  return `A los niños con un perfil de ${AXIS_ARQ_ES[prim].toLowerCase()} como el de ${nombre}, cuando logran algo, ${SUCCESS_ANCHOR_ES[prim]}.${ejemplo} No es que no lo disfrute; es su forma de vivir el logro. Un buen acompañamiento le ayuda a también registrar y celebrar lo alcanzado antes de arrancar de nuevo.`;
 }
 
 /** "Patrón de decisión": el acople de ritmo (si es robusto) o la consistencia. */
@@ -181,4 +181,109 @@ export function buildPatronSection(ficha: EvidenceFicha, nombre: string): string
   }
   const q = r.direccion === 'primario_rapido' ? 'resolvió más rápido' : 'se tomó un poco más de tiempo';
   return `A lo largo del juego, ${nombre} no decidió todo al mismo ritmo: ${q} justo en las elecciones que van con su motor principal. Ese acople entre lo que elige y cuánto tarda es parte de su forma de jugar.`;
+}
+
+// ── Secciones de CONTENIDO por eje (leen el sustrato redactado; null si el eje aún no tiene voz aprobada) ──
+export interface PalabrasSection { puente: string[]; ruido: string[]; nota: string; }
+export interface GuiaSection { antes: string; durante: string; despues: string; }
+
+const inject = (s: string, nombre: string) => s.replace(/\{nombre\}/g, nombre);
+
+/** "Qué lo enciende" (combustible del eje). null si el eje aún no está redactado en es. */
+export function buildCombustibleSection(ficha: EvidenceFicha, nombre: string): string | null {
+  const c = getEjeBase(ficha.votes.ejePrimario, 'es');
+  return c ? inject(c.combustible, nombre) : null;
+}
+
+/** "Palabras que conectan (y las que hacen ruido)". null si el eje aún no está redactado. */
+export function buildPalabrasSection(ficha: EvidenceFicha, nombre: string): PalabrasSection | null {
+  const c = getEjeBase(ficha.votes.ejePrimario, 'es');
+  if (!c) return null;
+  return {
+    puente: c.palabrasPuente.map((s) => inject(s, nombre)),
+    ruido: c.palabrasRuido.map((s) => inject(s, nombre)),
+    nota: `No son un guion, son el tono: a un perfil de ${AXIS_ARQ_ES[ficha.votes.ejePrimario].toLowerCase()} suele llegarle más lo que reconoce su motor, y hacerle ruido lo que lo frena sin más.`,
+  };
+}
+
+/** "Antes, durante y después": guía concreta para acompañar. null si el eje aún no está redactado. */
+export function buildGuiaSection(ficha: EvidenceFicha, nombre: string): GuiaSection | null {
+  const c = getEjeBase(ficha.votes.ejePrimario, 'es');
+  if (!c) return null;
+  return { antes: inject(c.guia.antes, nombre), durante: inject(c.guia.durante, nombre), despues: inject(c.guia.despues, nombre) };
+}
+
+/** "Un reset que funciona": qué ayuda cuando se frustra. null si el eje aún no está redactado. */
+export function buildResetSection(ficha: EvidenceFicha, nombre: string): string | null {
+  const c = getEjeBase(ficha.votes.ejePrimario, 'es');
+  return c ? inject(c.reset, nombre) : null;
+}
+
+/** "Fuera de la cancha": cómo asoma este motor en el día a día. null si el eje aún no está redactado. */
+export function buildEcosSection(ficha: EvidenceFicha, nombre: string): string | null {
+  const c = getEjeBase(ficha.votes.ejePrimario, 'es');
+  return c ? inject(c.ecos, nombre) : null;
+}
+
+// ── Ensamblador: une hero + todas las secciones (omitiendo las que devuelven null) en un informe ordenado ──
+export type ReportSectionKind = 'texto' | 'palabras' | 'guia';
+export interface ReportSection {
+  id: string;
+  titulo: string;
+  kind: ReportSectionKind;
+  cuerpo?: string;             // kind 'texto'
+  palabras?: PalabrasSection;  // kind 'palabras'
+  guia?: GuiaSection;          // kind 'guia'
+}
+export interface ReportV4 {
+  hero: ReportHero;
+  secciones: ReportSection[];
+  // Trazabilidad: qué secciones se omitieron y por qué (para QA y para el gate de contenido).
+  omitidas: { id: string; motivo: 'sin_datos' | 'sin_contenido' }[];
+}
+
+/**
+ * Arma el informe v4 completo desde la ficha (Capa 1 determinista). Este objeto ES el fallback:
+ * si la Capa 2 (IA) no está o falla, se renderiza tal cual. Cada sección se omite (no se inventa)
+ * cuando no hay dato robusto (contingencia/motor) o el eje no tiene voz aprobada (secciones de contenido).
+ */
+export function buildReportV4(ficha: EvidenceFicha, nombre: string): ReportV4 {
+  const hero = buildReportHero(ficha, nombre);
+  const secciones: ReportSection[] = [];
+  const omitidas: ReportV4['omitidas'] = [];
+  const txt = (id: string, titulo: string, cuerpo: string | null, motivo: 'sin_datos' | 'sin_contenido' = 'sin_datos') => {
+    if (cuerpo) secciones.push({ id, titulo, kind: 'texto', cuerpo });
+    else omitidas.push({ id, motivo });
+  };
+
+  // 1. Quién es hoy (siempre): su mezcla completa de 4 ejes.
+  txt('receta', 'Su mezcla', buildRecetaSection(ficha, nombre));
+  // 2. Cómo cambia según la situación (solo si hay patrón robusto).
+  txt('contingencia', 'Cómo cambia según la situación', buildContingenciaSection(ficha, nombre));
+  // 3. Su patrón de decisión (ritmo).
+  txt('patron', 'Su patrón de decisión', buildPatronSection(ficha, nombre));
+  // 4. Su motor (solo si los mini-juegos son narratables).
+  txt('motor', 'Su motor', buildMotorSection(ficha, nombre));
+  // 5. Ante la tormenta (siempre; calibrado por cuántas escenas coinciden).
+  txt('tormenta', 'Ante la tormenta', buildTormentaSection(ficha, nombre));
+  // 6. Cuánto lo mueve el grupo (siempre; I y S por separado).
+  txt('grupo', 'Cuánto lo mueve el grupo', buildGrupoSection(ficha, nombre));
+  // 7. Cuando le sale bien (siempre; anclado al perfil + ejemplo de la meta).
+  txt('logro', 'Cuando le sale bien', buildLogroSection(ficha, nombre));
+  // 8. Qué lo enciende (contenido de eje).
+  txt('combustible', 'Qué lo enciende', buildCombustibleSection(ficha, nombre), 'sin_contenido');
+  // 9. Palabras que conectan (contenido de eje).
+  const palabras = buildPalabrasSection(ficha, nombre);
+  if (palabras) secciones.push({ id: 'palabras', titulo: 'Palabras que conectan (y las que hacen ruido)', kind: 'palabras', palabras });
+  else omitidas.push({ id: 'palabras', motivo: 'sin_contenido' });
+  // 10. Antes, durante y después (contenido de eje).
+  const guia = buildGuiaSection(ficha, nombre);
+  if (guia) secciones.push({ id: 'guia', titulo: 'Antes, durante y después', kind: 'guia', guia });
+  else omitidas.push({ id: 'guia', motivo: 'sin_contenido' });
+  // 11. Un reset que funciona (contenido de eje).
+  txt('reset', 'Un reset que funciona', buildResetSection(ficha, nombre), 'sin_contenido');
+  // 12. Fuera de la cancha (contenido de eje).
+  txt('ecos', 'Fuera de la cancha', buildEcosSection(ficha, nombre), 'sin_contenido');
+
+  return { hero, secciones, omitidas };
 }

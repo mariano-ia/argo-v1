@@ -90,18 +90,47 @@ export interface EjeBaseContent {
   label: string;         // 'Impulsor' (primario puro; el blend lo arma getBlendName)
   perfil: string;        // 1-2 frases, sin tempo
   combustible: string;   // qué lo enciende
-  // ... (bienvenida, corazon, palabrasPuente/Ruido, guia, checklist, reseteo, ecos):
-  //     se re-keyan desde la variante "Medio", depuradas de tempo, en la completación de 2B.
+  palabrasPuente: string[]; // frases del adulto que conectan con este motor
+  palabrasRuido: string[];  // frases que suelen apagar/friccionar este motor
+  guia: { antes: string; durante: string; despues: string }; // acompañar antes/durante/después de la actividad
+  reset: string;         // qué ayuda cuando se frustra o se desborda
+  ecos: string;          // cómo asoma este motor fuera de la cancha
 }
 
 export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
-  // EJEMPLO TRABAJADO (Impulsor / D), depurado de tempo. Los otros 3 son idénticos en método.
+  // EJE TRABAJADO Y LISTO PARA REVISIÓN DE VOZ (Impulsor / D), depurado de tempo.
+  // Los otros 3 ejes siguen el mismo molde; se completan tras tu ok a esta voz.
   D: {
     eje: 'D',
     label: 'Impulsor',
     perfil: `El perfil de {nombre} se inclina hacia la acción y la iniciativa: tiende a ir al frente, a decidir y a poner el cuerpo en movimiento para que las cosas avancen.`,
     combustible: `A {nombre} suele encenderlo tener un objetivo claro y sentir que su empuje hace avanzar al equipo. Reconocer el impacto concreto de su iniciativa tiende a ser su mejor combustible.`,
+    palabrasPuente: [
+      `Arranca tú esta jugada.`,
+      `¿Qué propones para salir de esta?`,
+      `Hoy marcas tú el ritmo del equipo.`,
+      `Muéstrame cómo lo resolverías.`,
+    ],
+    palabrasRuido: [
+      `Espera, todavía no te toca.`,
+      `Hazlo exactamente como te digo.`,
+      `Quédate quieto y observa.`,
+    ],
+    guia: {
+      antes: `Dale un objetivo concreto y un rol donde pueda tomar la iniciativa. Saber que va a poder arrancar algo suele enfocarlo.`,
+      durante: `Cuando se acelere de más, en lugar de frenarlo, canaliza su empuje: reconoce las ganas y súmale una lectura rápida antes de ir.`,
+      despues: `Reconoce lo que puso en movimiento, no solo el resultado. A un perfil de acción suele llegarle más un "hiciste que el equipo avanzara" que un elogio general.`,
+    },
+    reset: `Cuando se frustra, a {nombre} suele costarle quedarse quieto esperando. Un reset que tiende a funcionar es darle una acción pequeña y concreta para hacer ya (una tarea clara, un objetivo corto), para que recupere la sensación de estar avanzando. Frenarlo en seco de golpe suele subir la frustración.`,
+    ecos: `Este empuje por avanzar no vive solo en el deporte: suele asomar cuando {nombre} organiza un juego, propone planes o quiere resolver algo ya. Verlo en esos momentos ayuda a entender que no es "no poder esperar": es su forma de estar en el mundo.`,
   },
   // I, S, C: TODO — re-keyar de conector_relacional / sosten_confiable / estratega_analitico,
   //          depurados de tempo, en la completación de 2B (mismo procedimiento).
 };
+
+/** Devuelve el contenido base del eje si está redactado y aprobado en ese idioma; si no, null
+ *  (el render omite la sección: degradación por construcción, no inventa). en/pt: pendientes. */
+export function getEjeBase(axis: Axis, lang: Lang): EjeBaseContent | null {
+  if (lang !== 'es') return null; // en/pt: pendientes de redacción + revisión de voz
+  return EJE_BASE_DRAFT_ES[axis] ?? null;
+}
