@@ -186,17 +186,19 @@ test('buildReportV4: ensambla hero + secciones ordenadas; omite lo no narratable
   assert.ok(receta?.bloque?.cuerpo && receta.bloque.ejemplo);
 });
 
-test('buildReportV4: eje sin contenido (I) omite las secciones de contenido, NO las inventa', () => {
-  const soloI: [number, 'D' | 'I' | 'S' | 'C'][] = [
-    [1, 'I'], [2, 'I'], [3, 'I'], [4, 'I'], [5, 'I'], [6, 'I'], [7, 'I'], [8, 'I'], [9, 'D'], [10, 'D'], [11, 'S'], [12, 'C'],
-  ];
-  const r = buildReportV4(orderedFicha(soloI), CTX('Sofi', 'f'));
-  const ids = r.secciones.map((s) => s.id);
-  assert.ok(ids.includes('receta') && ids.includes('logro'));
-  ['combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) => {
-    assert.ok(!ids.includes(id), `no debería estar ${id} sin contenido`);
-    assert.ok(r.omitidas.some((o) => o.id === id && o.motivo === 'sin_contenido'));
-  });
+test('buildReportV4: los 4 ejes tienen contenido (I/S/C también) => secciones de contenido presentes', () => {
+  const primarios: ('D' | 'I' | 'S' | 'C')[] = ['I', 'S', 'C'];
+  for (const prim of primarios) {
+    const otros = (['D', 'I', 'S', 'C'] as const).filter((x) => x !== prim);
+    const seq: [number, 'D' | 'I' | 'S' | 'C'][] = [];
+    for (let i = 1; i <= 8; i++) seq.push([i, prim]);
+    seq.push([9, otros[0]], [10, otros[1]], [11, otros[2]], [12, prim]);
+    const r = buildReportV4(orderedFicha(seq), CTX('Alex', 'm'));
+    const ids = r.secciones.map((s) => s.id);
+    ['combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
+      assert.ok(ids.includes(id), `eje ${prim}: falta contenido ${id}`));
+    assert.ok(!r.omitidas.some((o) => o.motivo === 'sin_contenido'), `eje ${prim}: no debería omitir contenido`);
+  }
 });
 
 // ── Marco de deporte ──

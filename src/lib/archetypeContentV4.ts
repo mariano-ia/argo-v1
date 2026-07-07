@@ -155,7 +155,114 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       ejemplo: `Si en casa es de los primeros en decir "dale, hagamos esto", estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
     },
   },
-  // I, S, C: TODO — mismo molde en la voz aprobada (Fase 2B, workflow autoral + audit anti-fabricación).
+  // CONECTOR (I): lo social, el entusiasmo, el vínculo.
+  I: {
+    eje: 'I',
+    label: 'Conector',
+    combustible: {
+      cuerpo: `Lo que más suele encender a {nombre} es **sentirse parte y poder contagiar su entusiasmo a los demás**. Cuando el clima es bueno y hay con quién compartir, se prende de verdad. Sentir que su energía suma al grupo es muchas veces su mejor combustible.`,
+      ejemplo: `Un "se nota cuando estás, contagias las ganas" probablemente llegue a {nombre} más que un elogio a solas.`,
+    },
+    palabrasPuente: [
+      `Cuéntale al grupo lo que se te ocurre.`,
+      `Tú puedes levantar el ánimo de todos.`,
+      `¿A quién sumamos para esto?`,
+      `Me encanta tu energía, contágiala.`,
+    ],
+    palabrasRuido: [
+      `Ahora no es momento de hablar.`,
+      `Trabaja en silencio y solo.`,
+      `Deja de dispersar al grupo.`,
+    ],
+    palabrasNota: `No es un guion, es una brújula de tono: a {nombre} suele **llegarle más lo que celebra su forma de conectar**, y hacerle ruido lo que apaga su chispa o corta el vínculo. Con eso en mente, las palabras exactas las pones tú.`,
+    guia: {
+      lead: `Tres momentos donde una pequeña intención cambia mucho.`,
+      antes: `Dale un espacio donde su entusiasmo tenga lugar y a alguien con quien compartirlo. Saber que va a poder **sumar a los demás** enfoca y entusiasma a {nombre}.`,
+      durante: `Si la energía se dispersa, en lugar de pedirle silencio, **canaliza su chispa**: dale un rol donde su entusiasmo empuje al grupo hacia la tarea.`,
+      despues: `Reconoce **cómo levantó al grupo**, no solo el resultado. A un perfil conector suele llegarle más un "contagiaste las ganas de todos" que un elogio general.`,
+      ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a conocer un montón de gente" transforma los nervios en ganas.`,
+    },
+    reset: {
+      cuerpo: `Cuando se frustra, a {nombre} suele pesarle sentirse a un lado, y lo que necesita es reconectar. Lo que **más suele ayudar es un momento de vínculo**: escuchar a {nombre}, nombrar lo que siente y recordarle que no está en esto en soledad. Con el clima recompuesto, suele volver a encenderse.`,
+      ejemplo: `En vez de "resuélvelo solo", un "vamos a verlo juntos" suele reencauzar la situación mucho mejor.`,
+    },
+    ecos: {
+      cuerpo: `Esta forma de conectar **no vive solo en el deporte**. Suele asomar cuando {nombre} junta a los amigos, anima una salida o se pone a charlar con cualquiera. Verlo en esos momentos ayuda a entender que no es "hablar de más": es **su manera de estar en el mundo**.`,
+      ejemplo: `Si en casa es quien propone planes con amigos y organiza la salida, estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
+    },
+  },
+  // SOSTENEDOR (S): la estabilidad, la armonía, el apoyo confiable.
+  S: {
+    eje: 'S',
+    label: 'Sostenedor',
+    combustible: {
+      cuerpo: `Lo que más suele encender a {nombre} es **sentir que el grupo está bien y poder ser un apoyo confiable**. Un clima tranquilo, sin sobresaltos, y saber que los demás cuentan con su apoyo, hacen sentir a {nombre} en su lugar. Sentirse de confianza es muchas veces su mejor combustible.`,
+      ejemplo: `Un "sé que puedo contar contigo" probablemente llegue a {nombre} más que un elogio ruidoso.`,
+    },
+    palabrasPuente: [
+      `Cuento contigo para esto.`,
+      `Gracias por sostener al grupo.`,
+      `Tómate el tiempo que necesites.`,
+      `Tu calma le hace bien a todos.`,
+    ],
+    palabrasRuido: [
+      `Vamos, apúrate, no hay tiempo.`,
+      `Cambiamos todo sobre la marcha.`,
+      `Si no te gusta, arréglatelas.`,
+    ],
+    palabrasNota: `No es un guion, es una brújula de tono: a {nombre} suele **llegarle más lo que valora su constancia y su calma**, y hacerle ruido el apuro o los cambios bruscos sin aviso. Con eso en mente, las palabras exactas las pones tú.`,
+    guia: {
+      lead: `Tres momentos donde una pequeña intención cambia mucho.`,
+      antes: `Dale previsibilidad: cuéntale qué va a pasar y cuál es su lugar. Saber que **el terreno es firme y que hay un lugar para su aporte** enfoca y tranquiliza a {nombre}.`,
+      durante: `Si algo le genera tensión, en lugar de meterle prisa, **acompaña con calma**: baja el ritmo un momento y dale seguridad de que todo está en orden.`,
+      despues: `Reconoce **cómo sostuvo al grupo**, no solo el resultado. A un perfil sostenedor suele llegarle más un "fuiste el apoyo de todos" que un elogio general.`,
+      ejemplo: `Si el sábado hay una actividad nueva, contarle "vas a saber en todo momento qué sigue" transforma los nervios en tranquilidad.`,
+    },
+    reset: {
+      cuerpo: `Cuando se frustra, a {nombre} suele pesarle el ruido y la tensión, y lo que necesita es recuperar la calma. Lo que **más suele ayudar es bajar un cambio y volver a lo conocido**: un momento tranquilo, una rutina familiar, la seguridad de que todo está en orden. Con el clima sereno, suele reacomodarse.`,
+      ejemplo: `En vez de "vamos, sigue ya", un "tómate un minuto, no hay apuro" suele reencauzar la situación mucho mejor.`,
+    },
+    ecos: {
+      cuerpo: `Esta forma de sostener **no vive solo en el deporte**. Suele asomar cuando {nombre} cuida a un hermano, calma una discusión o es a quien todos buscan cuando algo se complica. Verlo en esos momentos ayuda a entender que no es "ser demasiado tranquilo": es **su manera de estar en el mundo**.`,
+      ejemplo: `Si en casa es quien pone paz y en quien todos se apoyan, estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
+    },
+  },
+  // ESTRATEGA (C): el análisis, el plan, el detalle, entender el porqué.
+  C: {
+    eje: 'C',
+    label: 'Estratega',
+    combustible: {
+      cuerpo: `Lo que más suele encender a {nombre} es **entender cómo funcionan las cosas y tener un plan claro**. Cuando puede analizar, anticipar y hacer las cosas bien, se prende de verdad. Sentir que su mirada cuidadosa marca la diferencia es muchas veces su mejor combustible.`,
+      ejemplo: `Un "buenísimo cómo lo pensaste" probablemente llegue a {nombre} más que un elogio general.`,
+    },
+    palabrasPuente: [
+      `¿Cómo lo pensarías tú?`,
+      `Tú ves los detalles que a otros se les escapan.`,
+      `Tómate un momento para analizarlo.`,
+      `Muéstrame tu plan.`,
+    ],
+    palabrasRuido: [
+      `No preguntes tanto y hazlo.`,
+      `Improvisa, ya veremos.`,
+      `No hace falta entender, hazlo y ya.`,
+    ],
+    palabrasNota: `No es un guion, es una brújula de tono: a {nombre} suele **llegarle más lo que valora su análisis y su cuidado**, y hacerle ruido que lo apuren o le pidan improvisar sin entender. Con eso en mente, las palabras exactas las pones tú.`,
+    guia: {
+      lead: `Tres momentos donde una pequeña intención cambia mucho.`,
+      antes: `Dale información y un momento para pensar. Saber que va a poder **entender antes de actuar** enfoca y tranquiliza a {nombre}.`,
+      durante: `Si se traba analizando, en lugar de meterle presión, **acompaña la decisión**: ayúdale a elegir con la info que ya tiene y a soltar la búsqueda del plan perfecto.`,
+      despues: `Reconoce **cómo lo pensó y cuidó los detalles**, no solo el resultado. A un perfil estratega suele llegarle más un "se nota que lo tenías bien pensado" que un elogio general.`,
+      ejemplo: `Si el sábado hay una actividad nueva, contarle con tiempo "así va a ser, estos son los pasos" transforma los nervios en confianza.`,
+    },
+    reset: {
+      cuerpo: `Cuando se frustra, a {nombre} suele costarle la sensación de no entender o de tener que improvisar. Lo que **más suele ayudar es darle claridad**: explicarle qué está pasando, ordenar la información y darle un momento para pensar. Con el panorama claro, suele reacomodarse.`,
+      ejemplo: `En vez de "no lo pienses tanto", un "veamos juntos cómo sigue" suele reencauzar la situación mucho mejor.`,
+    },
+    ecos: {
+      cuerpo: `Esta forma de analizar **no vive solo en el deporte**. Suele asomar cuando {nombre} arma una estrategia en un juego, pregunta cómo funcionan las cosas o quiere entender el porqué de todo. Verlo en esos momentos ayuda a entender que no es "complicarla de más": es **su manera de estar en el mundo**.`,
+      ejemplo: `Si en casa es quien quiere entender cómo funciona cada cosa y arma su plan, estás viendo el mismo motor que mueve a {nombre} en la actividad.`,
+    },
+  },
 };
 
 /** Devuelve el contenido base del eje si está redactado y aprobado en ese idioma; si no, null
