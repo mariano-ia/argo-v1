@@ -80,8 +80,9 @@ test('motor: impulse+rhythm => narratable, zona null (seed), adaptation fuera de
   };
   const m = resolveMotorInsights(games, 10 * 12);
   assert.strictEqual(m.narratable, true);
-  assert.strictEqual(m.tempoZona, null); // no real norms yet
-  assert.ok(m.tempoScore !== null && m.tempoScore >= 0 && m.tempoScore <= 100);
+  // fast games (1500ms latency, 400ms reaction @10y) => high age-fair score => 'rapido' zone
+  assert.strictEqual(m.tempoZona, 'rapido');
+  assert.ok(m.tempoScore !== null && m.tempoScore >= 60);
   assert.ok(m.decision && m.reaction && m.adaptation);
   assert.strictEqual(m.factorEdad, factorEdad(120));
 });

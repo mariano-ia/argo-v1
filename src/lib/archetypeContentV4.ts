@@ -44,30 +44,32 @@ export function getBlendName(primario: Axis, secundario: Axis, lang: Lang): stri
 }
 
 // ─── "Su motor" — insight cronométrico per-child (reemplaza motorDesc disposicional) ──
-// {nombre} lo reemplaza la capa de render. Con las normas semilla actuales, la zona es
-// SIEMPRE 'intermedio' (no se afirma rápido/lento): la plantilla que se renderiza hoy es
-// la de zona=null. lento/rapido quedan listas para cuando existan normas reales (§14.1).
+// {nombre} lo reemplaza la capa de render. La zona sale del score ajustado por edad (§2.3).
+// Principios (reformulado 2026-07-07 con feedback del owner): (1) nombra los desafíos
+// concretos (reacción y decisión); (2) la cancha es donde el ritmo SE APLICA y se reconoce,
+// no donde "recién ahí sirve"; (3) afirma con valor y lenguaje probabilístico ("tiende a"),
+// con UNA salvedad de presente, sin ahogar el insight en disclaimers.
 type MotorTemplate = { intermedio: string; lento: string; rapido: string };
 
 export const MOTOR_INSIGHT_TEMPLATES: Record<Lang, MotorTemplate> = {
   es: {
-    intermedio: `En los juegos de ritmo, {nombre} respondió a un ritmo intermedio para su edad. Es una foto de este momento, no una etiqueta. Lo más útil es observarlo en la cancha, en distintos días, para conocer su ritmo real.`,
-    lento: `En los juegos, {nombre} tendió a tomarse un poco más de tiempo antes de responder, comparado con el promedio de su edad. Tomarse ese tiempo no significa "menos capaz". Puede ser su forma de asegurarse, o simplemente parte de su maduración. Es una foto del momento, con un margen amplio.`,
-    rapido: `En los juegos, {nombre} tendió a responder rápido, por encima del promedio de su edad. Responder rápido no es en sí mejor ni peor. Es su ritmo de hoy. Es una foto del momento, con un margen amplio.`,
+    rapido: `En los mini-juegos de reacción y decisión, {nombre} resolvió con un ritmo ágil: tiende a leer rápido y a confiar en su primer impulso. En la cancha esto suele verse en un chico que arranca las jugadas y decide sin titubear bajo presión. Acompañarlo bien es darle espacio para esa velocidad, y de a poco sumarle momentos para elegir cuándo conviene tomarse un segundo más.`,
+    intermedio: `En los mini-juegos de reacción y decisión, {nombre} mostró un ritmo equilibrado: tiende a acomodar su tiempo a lo que pide cada momento, sin apurarse ni demorarse. En la cancha esto suele verse en un chico flexible con los tempos. Acompañarlo bien es ayudarlo a reconocer cuándo su juego pide velocidad y cuándo pide una pausa.`,
+    lento: `En los mini-juegos de reacción y decisión, {nombre} resolvió con un ritmo medido: tiende a tomarse un momento para leer la escena antes de moverse. En la cancha esto suele verse en un chico que no se apura y elige con criterio. Acompañarlo bien es valorar esa lectura (sin pedirle que se apure solo por apurarlo) y darle confianza para sostener su tiempo cuando la jugada lo permite.`,
   },
   en: {
-    intermedio: `In the timed games, {nombre} responded at a middle pace for their age. This is a snapshot of the moment, not a label. The most useful thing is to watch it on the field, across different days, to learn their real pace.`,
-    lento: `In the games, {nombre} tended to take a little more time before responding than the average for their age. Taking that time does not mean "less capable". It may be their way of making sure, or simply part of their development. A snapshot of the moment, with a wide margin.`,
-    rapido: `In the games, {nombre} tended to respond quickly, above the average for their age. Responding quickly is not in itself better or worse. It is their pace today. A snapshot of the moment, with a wide margin.`,
+    rapido: `In the reaction and decision mini-games, {nombre} played at a quick pace: they tend to read fast and trust their first impulse. On the field this often shows up as a kid who starts the plays and decides without hesitating under pressure. Supporting them well means giving room for that speed, and gradually adding moments to choose when it pays to take an extra second.`,
+    intermedio: `In the reaction and decision mini-games, {nombre} showed a balanced pace: they tend to adjust their timing to what each moment asks, without rushing or lagging. On the field this often shows up as a kid who is flexible with tempo. Supporting them well means helping them recognize when their game calls for speed and when it calls for a pause.`,
+    lento: `In the reaction and decision mini-games, {nombre} played at a measured pace: they tend to take a moment to read the scene before moving. On the field this often shows up as a kid who doesn't rush and chooses with judgment. Supporting them well means valuing that read (without asking them to hurry for its own sake) and giving confidence to hold their timing when the play allows.`,
   },
   pt: {
-    intermedio: `Nos jogos de ritmo, {nombre} respondeu num ritmo intermediário para a idade. É uma foto deste momento, não um rótulo. O mais útil é observar na quadra, em dias diferentes, para conhecer o ritmo real.`,
-    lento: `Nos jogos, {nombre} tendeu a levar um pouco mais de tempo antes de responder, comparado com a média da idade. Levar esse tempo não significa "menos capaz". Pode ser a forma de se assegurar, ou simplesmente parte do amadurecimento. Uma foto do momento, com margem ampla.`,
-    rapido: `Nos jogos, {nombre} tendeu a responder rápido, acima da média da idade. Responder rápido não é em si melhor nem pior. É o ritmo de hoje. Uma foto do momento, com margem ampla.`,
+    rapido: `Nos mini-jogos de reação e decisão, {nombre} resolveu num ritmo ágil: tende a ler rápido e a confiar no primeiro impulso. Na quadra isso costuma aparecer como uma criança que inicia as jogadas e decide sem hesitar sob pressão. Acompanhar bem é dar espaço para essa velocidade e, aos poucos, somar momentos para escolher quando vale a pena levar um segundo a mais.`,
+    intermedio: `Nos mini-jogos de reação e decisão, {nombre} mostrou um ritmo equilibrado: tende a ajustar o seu tempo ao que cada momento pede, sem se apressar nem se atrasar. Na quadra isso costuma aparecer como uma criança flexível com os tempos. Acompanhar bem é ajudá-la a reconhecer quando o jogo pede velocidade e quando pede uma pausa.`,
+    lento: `Nos mini-jogos de reação e decisão, {nombre} resolveu num ritmo comedido: tende a levar um momento para ler a cena antes de se mover. Na quadra isso costuma aparecer como uma criança que não se apressa e escolhe com critério. Acompanhar bem é valorizar essa leitura (sem pedir que se apresse à toa) e dar confiança para sustentar o seu tempo quando a jogada permite.`,
   },
 };
 
-/** Devuelve la plantilla de "Su motor" según la zona (null => intermedio, la que rinde hoy). */
+/** Devuelve la plantilla de "Su motor" según la zona (null => intermedio como fallback). */
 export function getMotorInsight(zona: MotorZona | null, lang: Lang): string {
   const t = MOTOR_INSIGHT_TEMPLATES[lang];
   if (zona === 'lento') return t.lento;
@@ -98,7 +100,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
     eje: 'D',
     label: 'Impulsor',
     perfil: `El perfil de {nombre} se inclina hacia la acción y la iniciativa: tiende a ir al frente, a decidir y a poner el cuerpo en movimiento para que las cosas avancen.`,
-    combustible: `A {nombre} suele encenderlo tener un objetivo claro y sentir que su empuje mueve la aguja. Reconocer el impacto de su iniciativa tiende a ser su mejor combustible.`,
+    combustible: `A {nombre} suele encenderlo tener un objetivo claro y sentir que su empuje hace avanzar al equipo. Reconocer el impacto concreto de su iniciativa tiende a ser su mejor combustible.`,
   },
   // I, S, C: TODO — re-keyar de conector_relacional / sosten_confiable / estratega_analitico,
   //          depurados de tempo, en la completación de 2B (mismo procedimiento).

@@ -47,9 +47,15 @@ export function tempoScoreFromAgeFair(latencyAf: number | null, reactionAf: numb
 }
 
 /**
- * Tempo zone. Returns null (=> 'intermedio') until real per-age-cell percentile norms exist:
- * with only bibliographic seed ranges the confidence interval crosses any cut, so no zone is asserted.
+ * Tempo zone from the age-fair score. Banded so the reading HAS VALUE (owner decision 2026-07-07:
+ * value over extra caution) — the honesty lives in probabilistic copy + present-moment framing
+ * (MOTOR_INSIGHT_TEMPLATES) + normaLabel='referencia_bibliografica', NOT in refusing to read.
+ * Basis is the bibliographic age-fair mapping (Kail anchors), NOT Argo-population percentiles yet
+ * (§14.1 roadmap). The child is never ranked against peers nor called a permanent type.
  */
-export function tempoZonaFromScore(_score: number | null): MotorZona | null {
-  return null;
+export function tempoZonaFromScore(score: number | null): MotorZona | null {
+  if (score == null) return null;
+  if (score >= 60) return 'rapido';
+  if (score <= 40) return 'lento';
+  return 'intermedio';
 }
