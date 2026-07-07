@@ -155,14 +155,11 @@ function buildHtml(params: {
         ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${langAttr}`
         : `${baseUrl}/puentes/checkout`;
 
-    // Render the price in the currency the parent has previously paid in.
-    // Falls back to showing both when we have no signal.
-    const priceCurrency = params.preferredCurrency;
-    const priceLine = priceCurrency === 'ars'
-        ? 'ARS 4.999' // Fase 1 TODO: confirm the ARS price for the $4.99 add-on
-        : priceCurrency === 'usd'
-            ? 'USD 4.99'
-            : 'USD 4.99';
+    // ArgoPuente® cuesta USD 4.99. Fase 0 = Stripe USD únicamente (el path ARS está bypassed,
+    // ver api/puentes-checkout.ts), así que TODOS pagan USD 4.99. Se muestra siempre USD 4.99:
+    // el viejo 'ARS 4.999' para padres con preferencia ARS era un precio arbitrario y engañoso
+    // (igual pagaban en USD). Fase 1 TODO: cuando se habilite ARS nativo, mostrar el precio ARS real.
+    const priceLine = 'USD 4.99';
 
     // Two copy variants: upsell (parent has not paid) vs included (parent
     // already has ArgoPuente®, this child is now part of their bond report).
