@@ -7,6 +7,9 @@ export interface RequestConsentInput {
     flowType: 'auth' | 'tenant' | 'one';
     tenantId?: string;
     oneLinkId?: string;
+    /** Plantel the play link came from, so the consent-landing redirect returns
+     * to /play/<slug>/<teamSlug> and the child re-attaches to that plantel. */
+    teamSlug?: string;
     /** Set on a re-profile: the child's reprofile_token, so the consent-landing
      * redirect returns to /play/r/<token> and the play appends to that child. */
     reprofileToken?: string;
@@ -33,6 +36,7 @@ export async function requestConsent(input: RequestConsentInput): Promise<Reques
         flow_type:   input.flowType,
         tenant_id:   input.tenantId ?? null,
         one_link_id: input.oneLinkId ?? null,
+        team_slug:   input.teamSlug ?? null,
         reprofile_token: input.reprofileToken ?? null,
         lang:        input.lang,
     };
@@ -87,6 +91,7 @@ export interface ConsentDataFromServer {
     flow_type: 'auth' | 'tenant' | 'one';
     lang: string;
     tenant_slug: string | null;
+    team_slug?: string | null;
     one_link_slug: string | null;
     reprofile_token?: string | null;
 }

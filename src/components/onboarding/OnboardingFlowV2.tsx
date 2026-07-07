@@ -138,6 +138,9 @@ interface OnboardingV2Props {
     institutionName?: string;
     /** Club flow: institution sport shown read-only (the club defines it). */
     institutionSport?: string;
+    /** Club flow: plantel the play link came from. Threaded into the consent request
+     *  so an under-13 play returns to /play/<slug>/<teamSlug> and re-attaches to the plantel. */
+    teamSlug?: string;
     /**
      * When provided (via the /consent/:token landing redirect), the flow
      * skips LanguageSelect → AdultIntros → AdultRegistration → WaitingScreen
@@ -166,7 +169,7 @@ interface OnboardingV2Props {
     onDemoBlocked?: () => void;
 }
 
-export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, initialConsent, initialAdultData, reprofileToken, demoMode = false, onDemoBlocked }) => {
+export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', onPlayComplete, tenantId, playToken, oneLinkId, linkSport, institutionName, institutionSport, teamSlug, initialConsent, initialAdultData, reprofileToken, demoMode = false, onDemoBlocked }) => {
     const { lang } = useLang();
     const ot = getOdysseyT(lang);
 
@@ -1145,6 +1148,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         flowType={tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth'}
                         tenantId={tenantId}
                         oneLinkId={oneLinkId}
+                        teamSlug={teamSlug}
                         reprofileToken={reprofileToken}
                         initialValues={initialAdultData ?? undefined}
                         readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}

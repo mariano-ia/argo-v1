@@ -50,7 +50,10 @@ export const ConsentLanding: React.FC = () => {
                         // a perfilamiento to the existing child (not a new one).
                         target = `/play/r/${cd.reprofile_token}?consent=${token}`;
                     } else if (cd.flow_type === 'tenant' && cd.tenant_slug) {
-                        target = `/play/${cd.tenant_slug}?consent=${token}`;
+                        // Re-attach to the plantel the play link came from, if any, so the
+                        // child lands in the right plantel (not just the institution).
+                        const teamPart = cd.team_slug ? `/${cd.team_slug}` : '';
+                        target = `/play/${cd.tenant_slug}${teamPart}?consent=${token}`;
                     } else if (cd.flow_type === 'one' && cd.one_link_slug) {
                         target = `/one/${cd.one_link_slug}?consent=${token}`;
                     } else if (cd.flow_type === 'auth') {

@@ -109,6 +109,7 @@ export const TenantPlay: React.FC = () => {
             playToken={playToken}
             institutionName={tenantName}
             institutionSport={tenantSport}
+            teamSlug={teamSlug}
             initialConsent={initialConsent}
         />
     );
