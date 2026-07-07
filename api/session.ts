@@ -314,6 +314,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const safeKeys = [
                 'eje', 'motor', 'archetype_label', 'eje_secundario',
                 'answers', 'ai_tokens_input', 'ai_tokens_output', 'ai_cost_usd', 'ai_sections', 'game_metrics',
+                // v4 SHADOW artifacts (data only; report_status is NEVER client-settable — sealed server-side).
+                'evidence_ficha', 'report_v4', 'report_qc',
             ];
             for (const key of safeKeys) {
                 if (rest[key] !== undefined) allowed[key] = rest[key];
@@ -361,11 +363,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd, ai_sections, game_metrics,
                 is_demo,
-                // v4 method (client-computed; see METODO-FALLBACK-INFORME.md). Additive + optional:
-                // absent => legacy row (report_status stays NULL => choke-point ungated). In SHADOW
-                // mode the client sends evidence_ficha/report_v4/report_qc but NOT report_status, so
-                // v4 is observed against real traffic with ZERO delivery risk.
-                evidence_ficha, report_v4, report_qc, report_status,
+                // v4 method (client-computed; see METODO-FALLBACK-INFORME.md). Additive + optional.
+                // report_status is NEVER accepted from the client (a malicious client could set
+                // 'ready'+garbage and bypass the choke-point); only server-side code seals it. The
+                // client sends evidence_ficha/report_v4/report_qc (data only) for SHADOW observation.
+                evidence_ficha, report_v4, report_qc,
             } = fields;
 
             if (!adult_email || !eje || !motor) {
@@ -445,11 +447,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 status:           resolved ? 'resolved' : 'in_flight',
                 share_token:      save_share_token,
                 is_demo:          is_demo === true,
-                // v4 method (additive; NULL for legacy callers). report_status stays NULL in shadow.
+                // v4 method (additive; NULL for legacy callers). report_status stays NULL (shadow):
+                // it is sealed ONLY by server-side code, never from the client request.
                 evidence_ficha:   evidence_ficha ?? null,
                 report_v4:        report_v4 ?? null,
                 report_qc:        report_qc ?? null,
-                report_status:    (report_status as string | null | undefined) ?? null,
+                report_status:    null,
             }).select('id, share_token').single();
 
             if (error || !saveData) {

@@ -4,8 +4,10 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
-import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
+import { QuestionAnswer, SessionContext, resolveFromAnswers, resolveEvidenceFicha } from '../../lib/profileResolver';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
+import { runReportPipeline } from '../../lib/reportPipeline';
+import { sportFrame } from '../../lib/reportV4';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import {
     startSession, updateSession, saveSession,
@@ -870,6 +872,34 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.info('[profileResolver] Tiebreaker applied → eje:', profile.eje, 'motor:', profile.motor);
             }
 
+            // ── v4 method (SHADOW, owner 2026-07-07 option 1) ───────────────
+            // Compute the deterministic v4 report + fail-closed gate verdict for
+            // observability against real traffic. NEVER sets report_status (delivery
+            // stays legacy; the server never accepts report_status from the client)
+            // and NEVER throws (wrapped). Purely additive telemetry until we activate.
+            let v4Shadow: Record<string, unknown> = {};
+            try {
+                const edadMeses = Math.round(((adultData.edad as number) || 11) * 12);
+                const ficha = resolveEvidenceFicha(answers, {
+                    edadMeses,
+                    questionVersion: 'v4-2026-07',
+                    games: {
+                        impulse: gameAMetricsRef.current ?? undefined,
+                        rhythm: gameBMetricsRef.current ?? undefined,
+                        adaptation: gameCMetricsRef.current ?? undefined,
+                    },
+                });
+                const pipe = runReportPipeline(
+                    ficha,
+                    { nombre: adultData.nombreNino, genero: 'm', frame: sportFrame(adultData.deporte) },
+                    { lang: (lang === 'en' || lang === 'pt' ? lang : 'es') },
+                );
+                v4Shadow = { evidence_ficha: ficha, report_v4: pipe.report, report_qc: pipe.qc };
+                console.info('[v4:shadow] gate:', pipe.status, '·', pipe.qc.reasons.map((r) => r.code).join(',') || 'clean', '· origen:', pipe.origen);
+            } catch (e) {
+                console.warn('[v4:shadow] non-blocking failure:', e);
+            }
+
             // ── Option 1: Save profile data IMMEDIATELY (before AI) ─────────
             const profileFields = {
                 eje:             profile.eje,
@@ -877,6 +907,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 archetype_label: report.arquetipo.label,
                 eje_secundario:  profile.ejeSecundario ?? null,
                 answers,
+                ...v4Shadow,
             };
 
             if (sessionIdRef.current) {
