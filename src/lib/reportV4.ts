@@ -117,3 +117,38 @@ export function buildContingenciaSection(ficha: EvidenceFicha, nombre: string): 
   const ctxs = norma.map((pp) => ctx(pp.context)).filter(Boolean);
   return `En distintos momentos del juego (${ctxs.join('; ')}), ${nombre} sostuvo lo mismo: ${conducta(ficha.votes.ejePrimario)}. Es una señal de consistencia en cómo encara las situaciones.`;
 }
+
+/** "Ante la tormenta": las 3 escenas de adversidad (Q5-7). Calibrado: 3/3 firme, 2/3 tentativo, 1-1-1 caso-por-caso. */
+export function buildTormentaSection(ficha: EvidenceFicha, nombre: string): string {
+  const axes = [5, 6, 7]
+    .map((n) => ficha.respuestas.find((r) => r.number === n)?.axis)
+    .filter((a): a is Axis => !!a);
+  const conducta = (ax: Axis) => EJE_WORD_ES[ax].larga;
+  const foot = ' (Es lo que prefirió en estas escenas del juego.)';
+  if (axes.length < 2) return 'En las escenas de tormenta del juego no reunimos suficientes elecciones para leer una tendencia.';
+  const counts: Partial<Record<Axis, number>> = {};
+  axes.forEach((a) => { counts[a] = (counts[a] ?? 0) + 1; });
+  const ranked = (Object.entries(counts) as [Axis, number][]).sort((a, b) => b[1] - a[1]);
+  const [top, n] = ranked[0];
+  if (n === axes.length) {
+    return `Cuando la cosa se complicó, ${nombre} tendió a lo mismo en las escenas de tormenta: ${conducta(top)}. En un momento adverso, es probable que ese sea su primer recurso.${foot}`;
+  }
+  if (n === 2 && axes.length === 3) {
+    const otra = axes.find((a) => a !== top)!;
+    return `En dos de las tres escenas de tormenta, ${nombre} se inclinó por ${conducta(top)}; en la tercera, por ${conducta(otra)}. Asoma una preferencia por ${conducta(top)} cuando la cosa se complica, sin que sea su única salida.${foot}`;
+  }
+  return `Cuando la cosa se complicó, ${nombre} no aplicó una sola receta: en cada escena de tormenta leyó lo que ese momento parecía pedir. Hoy tiende a responder a lo adverso caso por caso, más que con una reacción fija.${foot}`;
+}
+
+/** "Cuánto lo mueve el grupo": I y S SIEMPRE por separado (nunca sumados), en positivo (calibración de valor). */
+export function buildGrupoSection(ficha: EvidenceFicha, nombre: string): string {
+  const { I, S } = ficha.votes.vector;
+  if (I <= 1 && S <= 1) {
+    return `Hoy, entre lo que mueve a ${nombre}, el grupo pesa menos que otros de sus motores: en esta toma no aparecen al frente ni las ganas de involucrar y entusiasmar a otros, ni las de sostener la armonía del equipo. Eso no dice nada de su capacidad social ni de sus amistades. Una forma de acercarlo al equipo es darle roles donde su fortaleza tenga impacto en el grupo: cuando el aporte pasa por lo suyo, el vínculo suele venir después.`;
+  }
+  const partes: string[] = [];
+  if (I >= 2) partes.push(I >= 4 ? 'un empuje fuerte por involucrar y entusiasmar a los demás' : 'algo de gusto por involucrar a los demás');
+  if (S >= 2) partes.push(S >= 4 ? 'una clara necesidad de que el equipo esté en armonía' : 'algo de cuidado por que el equipo esté bien');
+  const cuerpo = partes.length === 2 ? `${partes[0]}; y por otro, ${partes[1]}` : (partes[0] ?? 'el grupo aparece de a ratos');
+  return `En la relación de ${nombre} con el equipo aparece ${cuerpo}. Son motores sociales distintos (involucrar no es lo mismo que sostener), y saber cuál pesa más ayuda a acompañarlo mejor.`;
+}
