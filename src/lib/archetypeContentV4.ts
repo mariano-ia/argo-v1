@@ -37,6 +37,11 @@ const AXIS_ARCHETYPE_LABEL: Record<Lang, Record<Axis, string>> = {
   pt: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
 };
 
+/** El label de arquetipo del eje ("Impulsor" / "Driver" / "Impulsionador"), por idioma. */
+export function getArchetypeLabel(axis: Axis, lang: Lang): string {
+  return AXIS_ARCHETYPE_LABEL[lang][axis];
+}
+
 /** "con veta Estratega" / "with a Strategist lean" / "com veta Estrategista". */
 export function getVetaLabel(axis: Axis, lang: Lang): string {
   const label = AXIS_ARCHETYPE_LABEL[lang][axis];
