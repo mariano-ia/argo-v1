@@ -23,6 +23,18 @@ Desde que se escribió el resto del doc se sumó (todo en develop, verificado, l
 
 **Qué falta para el flip (activación):** cola de retenidos + "preparando" (3 superficies) + vista admin + cron · en/pt (i18n de reportV4, refactor grande) · Capa 2 (IA) · y el flip en sí (`V4_SEAL=on` + render v4 por default + rollout escalonado + push a main con OK del owner).
 
+## ACTUALIZACIÓN 2026-07-08 (i18n + cola de retenidos + Capa 2) — todo en develop, sin push
+
+| Pieza | Qué | Estado |
+|---|---|---|
+| **en/pt INTEGRADO** | El informe genera + renderiza en es/en/pt. Engine lang-keyed (lógica compartida + copy por idioma en `reportV4Copy.ts` / `reportEjeContentI18n.ts`, GENERADOS por `scripts/gen_copy.py` + `scripts/gen_eje.py`). Gate abierto a en/pt. **es byte-idéntico** (snapshot 24 = 8 perfiles × 3 idiomas) + anti-mezcla (`reportV4.i18n.test.ts`). Doc: `METODO-V4-EN-PT-INTEGRACION.md`. | ✅ verificado |
+| **Cola de retenidos** | La capa operativa del fail-closed. Backend: `admin-held-reports` (vista superadmin) + `admin-approve-report` (release re-gatea el `report_v4` y si pasa envía; force = override humano) + `report-recovery-cron` reworkeado (excluye held, cuenta `retry_count`, retiene tras N fallos con alerta one-shot). Frontend: página **Retenidos** `/admin/held` + pantalla **"preparando"** (ReportPage fail-closed en la web con auto-refresh + OnePanel). **Revisado adversarialmente** (workflow): 6 hallazgos, TODOS corregidos (el crítico: `isV4` keyaba en presencia de `report_v4` en vez de `report_status` → rompía la recuperación de filas legacy shadow-live). Verificado. | ✅ inerte hasta `V4_SEAL=on` |
+| **Capa 2 (variación IA)** | `reportCapa2.ts` (núcleo seguro): la IA **solo reescribe prosa**; arquetipo/ejes/contadores/meter/**palabras curadas** quedan inmutables de Capa 1. 3 recaudos antes de aceptar: **distinción** (similitud de trigramas < 55%), **hechos** (todo número + arquetipo preservados), **gate** completo. Cualquier fallo → Capa 1 (piso). Endpoint `report-variant.ts` (Gemini, provider inlineado, gateado por env **`V4_CAPA2`**). Wire en el shadow de OnboardingFlowV2 (best-effort, no bloquea). **Prueba real (Gemini)**: dos perfiles idénticos pasaron de **100% → 15%** de similitud, ambos por Capa 2 + gate limpio + hechos preservados. 7 tests. | ✅ inerte hasta `V4_CAPA2=on` |
+
+**Flags nuevos (Vercel env):** `V4_CAPA2=on` habilita la variación IA (hoy off → `report-variant` devuelve `{variant:null}` → siempre Capa 1). Independiente de `V4_SEAL`.
+
+**Pendiente del flip (entrega):** email `buildHtmlV4` sigue es-only (i18n del email) + selección de "qué idioma usa cada jugada" (hoy el shadow arma es por defecto). Ambos van con el flip, no con la integración.
+
 ## Decisión de arquitectura (owner 2026-07-07): OPCIÓN 1
 
 - **Capa 1 (determinista, aprobada) = el piso que sale por defecto.** Grounded, no puede fabricar.
