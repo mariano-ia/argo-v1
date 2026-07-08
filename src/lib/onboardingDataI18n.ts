@@ -276,12 +276,12 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
         {
             number: 8,
             title: 'El Empuje',
-            intro: 'El equipo está cansado. ¿Cómo los animas?',
+            intro: 'El equipo está cansado y el barco se frena. ¿Qué haces?',
             options: [
-                { label: 'Digo algo divertido', axis: 'I' },
-                { label: 'Recuerdo cuánto falta', axis: 'C' },
-                { label: 'Sigo remando igual', axis: 'S' },
-                { label: 'Remo más fuerte', axis: 'D' },
+                { label: 'Remo con más fuerza y marco el ritmo', axis: 'D' },
+                { label: 'Ajusto la técnica para que cada remada rinda', axis: 'C' },
+                { label: 'Mantengo mi remada firme y pareja', axis: 'S' },
+                { label: 'Suelto una broma y les levanto el ánimo', axis: 'I' },
             ],
         },
         {
@@ -300,10 +300,10 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             title: 'El Apoyo',
             intro: 'A un compañero se le cae el remo. ¿Qué haces?',
             options: [
-                { label: 'Le choco la mano, ¡todos bien!', axis: 'I' },
-                { label: 'Le enseño un truco', axis: 'C' },
-                { label: 'Lo ayudo a recuperarlo rápido', axis: 'D' },
-                { label: 'Me pongo a su lado', axis: 'S' },
+                { label: 'Le alcanzo el remo enseguida', axis: 'D' },
+                { label: 'Le muestro cómo agarrarlo firme', axis: 'C' },
+                { label: 'Bajo el ritmo y remo a su lado', axis: 'S' },
+                { label: 'Le choco los cinco y lo hago reír', axis: 'I' },
             ],
         },
         {
@@ -411,12 +411,12 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
         {
             number: 8,
             title: 'The Push',
-            intro: 'The crew is tired. How do you cheer them on?',
+            intro: 'The crew is tired and the boat slows down. What do you do?',
             options: [
-                { label: 'I say something funny', axis: 'I' },
-                { label: 'I remind them how far we\'ve come', axis: 'C' },
-                { label: 'I keep rowing the same', axis: 'S' },
-                { label: 'I row harder', axis: 'D' },
+                { label: 'I row harder and set the pace', axis: 'D' },
+                { label: 'I fine-tune my technique so each stroke counts', axis: 'C' },
+                { label: 'I keep my stroke steady and even', axis: 'S' },
+                { label: 'I crack a joke and lift their spirits', axis: 'I' },
             ],
         },
         {
@@ -435,10 +435,10 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             title: 'The Support',
             intro: 'A teammate drops their oar. What do you do?',
             options: [
-                { label: 'I high-five them — we\'re all good!', axis: 'I' },
-                { label: 'I teach them a trick', axis: 'C' },
-                { label: 'I help them grab it back fast', axis: 'D' },
-                { label: 'I stand by their side', axis: 'S' },
+                { label: 'I hand them the oar right away', axis: 'D' },
+                { label: 'I show them how to grip it firmly', axis: 'C' },
+                { label: 'I ease my pace and row beside them', axis: 'S' },
+                { label: 'I high-five them and make them laugh', axis: 'I' },
             ],
         },
         {
@@ -546,12 +546,12 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
         {
             number: 8,
             title: 'O Empurrão',
-            intro: 'A equipe está cansada. Como você anima todo mundo?',
+            intro: 'A equipe está cansada e o barco perde o ritmo. O que você faz?',
             options: [
-                { label: 'Falo algo engraçado', axis: 'I' },
-                { label: 'Lembro quanto falta', axis: 'C' },
-                { label: 'Continuo remando igual', axis: 'S' },
-                { label: 'Remo com mais força', axis: 'D' },
+                { label: 'Remo com mais força e marco o ritmo', axis: 'D' },
+                { label: 'Ajusto a técnica pra cada remada render', axis: 'C' },
+                { label: 'Mantenho minha remada firme e constante', axis: 'S' },
+                { label: 'Solto uma piada e animo todo mundo', axis: 'I' },
             ],
         },
         {
@@ -570,10 +570,10 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             title: 'O Apoio',
             intro: 'Um companheiro deixa o remo cair. O que você faz?',
             options: [
-                { label: 'Dou um toque nele — tá tudo bem!', axis: 'I' },
-                { label: 'Ensino um truque', axis: 'C' },
-                { label: 'Ajudo a pegar de volta rápido', axis: 'D' },
-                { label: 'Fico do lado dele', axis: 'S' },
+                { label: 'Passo o remo pra ele na hora', axis: 'D' },
+                { label: 'Mostro como segurar firme', axis: 'C' },
+                { label: 'Diminuo o ritmo e remo do lado dele', axis: 'S' },
+                { label: 'Dou um toque nele e faço ele rir', axis: 'I' },
             ],
         },
         {

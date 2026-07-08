@@ -168,10 +168,10 @@ export const QUESTIONS: Question[] = [
         title: 'El Empuje',
         intro: '¿Qué haces para que el Argo no se detenga?',
         options: [
-            { label: 'Hago un gesto o digo algo divertido para que todos nos riamos y olvidemos el cansancio.', axis: 'I' },
-            { label: 'Recuerdo a todos cuánto nos falta y qué pasos faltan para terminar la tarea.', axis: 'C' },
-            { label: 'Sigo remando con el mismo ritmo, demostrando que se puede mantener la constancia.', axis: 'S' },
-            { label: 'Empiezo a tirar con más fuerza para animar a los demás a seguir mi ritmo.', axis: 'D' },
+            { label: 'Remo con más fuerza y marco el ritmo para que el barco agarre impulso.', axis: 'D' },
+            { label: 'Busco el momento justo para que mi remo entre limpio y cada movimiento rinda.', axis: 'C' },
+            { label: 'Sostengo mi remada pareja y firme, ese pulso constante en el que los demás se apoyan.', axis: 'S' },
+            { label: 'Suelto un grito de equipo o una broma para que rememos con la misma chispa.', axis: 'I' },
         ],
     },
     {
@@ -190,10 +190,10 @@ export const QUESTIONS: Question[] = [
         title: 'El Apoyo',
         intro: 'A un compañero se le escapa el remo de las manos y se ve un poco frustrado. ¿Qué te sale del corazón?',
         options: [
-            { label: 'Le choco la mano y le digo que a cualquiera le puede pasar, que siga adelante.', axis: 'I' },
-            { label: 'Le digo un pequeño truco de cómo agarrarlo para que no se le vuelva a resbalar.', axis: 'C' },
-            { label: 'Lo ayudo a recuperar el remo rápido para que no perdamos tiempo de viaje.', axis: 'D' },
-            { label: 'Me pongo a su lado para que sienta que no está solo y que el equipo lo apoya.', axis: 'S' },
+            { label: 'Me estiro rápido y le devuelvo el remo a la mano para que vuelva a remar con nosotros.', axis: 'D' },
+            { label: 'Le muestro un truco para agarrar el remo con firmeza y que no se le vuelva a escapar.', axis: 'C' },
+            { label: 'Bajo un poco mi ritmo y me quedo remando a su lado hasta que recupera la confianza.', axis: 'S' },
+            { label: 'Le choco los cinco y le hago un chiste para que se ría y se le pase el mal momento.', axis: 'I' },
         ],
     },
     {
