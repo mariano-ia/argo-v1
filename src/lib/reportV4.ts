@@ -9,7 +9,7 @@
 
 import type { EvidenceFicha, Axis, Registro, VotesEvidence } from './evidenceFicha';
 import { getMotorInsight, getVetaLabel, getEjeBase } from './archetypeContentV4';
-import type { ReportBlock } from './archetypeContentV4';
+import type { ReportBlock, Lang } from './archetypeContentV4';
 import type { ContextId, RecetaItem } from './dischSignals';
 
 export type SportFrame = 'equipo' | 'individual';
@@ -19,6 +19,7 @@ export type SportFrame = 'equipo' | 'individual';
 export interface ReportContext {
   nombre: string;
   frame: SportFrame;    // sportFrame(deporte) — default seguro 'individual'
+  lang?: Lang;          // idioma del informe (default 'es'). El pipeline lo inyecta desde opts.lang.
 }
 
 export type { ReportBlock };
