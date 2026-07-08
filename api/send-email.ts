@@ -784,8 +784,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // v4 email when the report is sealed v4 (report_status ready/sent + report_v4 present);
         // otherwise the legacy email. Until V4_SEAL activates, report_status is NULL => legacy.
+        // LANG GUARD: buildHtmlV4's chrome is es-only. en/pt reports fall back to the legacy email
+        // (which IS lang-aware) until the v4 email is translated — the report itself is still in its
+        // language on the web. So the wrapper never mismatches the report's language.
         const rv4 = sessionRow?.report_v4;
-        const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent');
+        const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent') && (lang === 'es');
         const html = useV4
             ? buildHtmlV4(rv4!.hero!, {
                 nombreNino, nombreAdulto, edad, deporte,

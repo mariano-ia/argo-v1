@@ -549,13 +549,20 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
             .replace(/[ \t]+/g, ' ')
             .trim();
 
-    // ── v4 preview (owner-only, ?engine=v4) ──────────────────────────────────
-    // Renders the deterministic v4 report (Capa 1) when it's persisted and the flag
-    // is present. Leaves the LEGACY path 100% untouched (no flag => nothing changes).
-    // This is a safe eyeball preview; full activation (v4 as the default delivered
-    // report) is a separate, gated step.
+    // ── v4 render ─────────────────────────────────────────────────────────────
+    // Two triggers: (1) ?engine=v4 owner preview of ANY row's report_v4; (2) DEFAULT delivery
+    // of a SEALED v4 report (report_status ready/sent + report_v4) that is NOT paywall-locked.
+    // Locked rows (trial/demo without full_access) keep the LEGACY path so the abridged report +
+    // upsell (revenue) is preserved. Held/pending already short-circuited above ("preparando").
+    // Inert until V4_SEAL is on (no row is sealed 'ready'/'sent' => nothing renders v4 by default).
+    // Coherence with the email: the v4 email is es-only for now (its chrome isn't translated yet), so
+    // the DEFAULT v4 web render is also es-only — en/pt sealed rows stay fully legacy (web + email) until
+    // the email is translated, keeping each language coherent. The ?engine=v4 preview works in any language.
     const wantV4 = new URLSearchParams(window.location.search).get('engine') === 'v4';
-    if (wantV4 && session.report_v4) {
+    const isSealedV4 = !!session.report_v4 && (session.report_status === 'ready' || session.report_status === 'sent');
+    const paywallLocked = (session.tenant_plan === 'trial' || session.is_demo) && !session.full_access;
+    const showV4 = !!session.report_v4 && (wantV4 || (isSealedV4 && !paywallLocked && lang === 'es'));
+    if (showV4 && session.report_v4) {
         return (
             <div className="min-h-screen bg-argo-neutral" style={{ fontFamily: 'Inter, -apple-system, sans-serif' }}>
                 <style>{`@media print { .no-print { display: none !important; } body { background: white !important; } }`}</style>
@@ -564,7 +571,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                     <div className="flex items-center gap-2 tracking-tight">
                         <span className="font-[800] text-base text-argo-navy">Argo</span>
                         <span className="font-[100] text-base text-argo-grey">Method®</span>
-                        <span className="ml-1 rounded-full bg-argo-bg px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-argo-light">v4</span>
+                        {wantV4 && <span className="ml-1 rounded-full bg-argo-bg px-2 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-argo-light">v4</span>}
                     </div>
                     <div className="flex items-center gap-2">
                         <button
