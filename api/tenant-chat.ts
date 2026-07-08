@@ -2045,7 +2045,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             })();
             const [reportRes, histRes, recapRes, allNamesRes, memoryRes] = await Promise.all([
                 sb.from('current_perfilamiento')
-                    .select('ai_sections')
+                    .select('ai_sections, report_v4')
                     .eq('id', mp.id)
                     .eq('tenant_id', tenant.id)
                     .is('deleted_at', null)
@@ -2099,7 +2099,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // archetype_label, which is stale for pre-2026-06-02 sessions and
             // contradicts the system-prompt knowledge base (E10).
             const lang = safeLang(promptLang);
-            const archetype = canonicalArchetype(mp.eje, mp.motor, lang);
+            // V4 (2026-07-08): if the child has a v4 report, use its actual eje×veta name
+            // ("Impulsor con veta Conector") so the assistant matches what the adult received,
+            // instead of the deprecated eje×motor name ("Impulsor Dinámico"). Legacy => canonical.
+            const v4Label = (reportRes.data?.report_v4 as { hero?: { arquetipoLabel?: string } } | null)?.hero?.arquetipoLabel;
+            const archetype = (typeof v4Label === 'string' && v4Label.trim())
+                ? v4Label.trim()
+                : canonicalArchetype(mp.eje, mp.motor, lang);
             const motorDisp = canonicalMotorDisplay(mp.eje, mp.motor, lang);
             const axisDisp = AXIS_DISPLAY[lang][mp.eje] ?? mp.eje;
             const secDisp = mp.eje_secundario ? (AXIS_DISPLAY[lang][mp.eje_secundario] ?? mp.eje_secundario) : 'N/A';
