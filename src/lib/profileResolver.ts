@@ -75,6 +75,11 @@ export interface QuestionAnswer {
     axis: Axis;
     responseTimeMs: number;
     question_id?: string;   // v4: stable question id (spec §4/§10); optional for back-compat
+    // Psychometric telemetry (additive, 2026-07-08 panel audit / ECD-02). Optional for
+    // back-compat; flows through the answers jsonb untouched by the server.
+    displayed_order?: string; // axes in on-screen (shuffled) order, e.g. "DCSI"
+    chosen_pos?: number;      // 0-3 slot the child tapped
+    intro_done?: boolean;     // typewriter had finished when the child tapped
 }
 
 export interface SessionContext {
@@ -170,7 +175,7 @@ export function resolveProfile(answers: AnswerOption[]): ProfileResult {
  */
 export function resolveFromAnswers(
     answers: QuestionAnswer[],
-    sessionCtx?: SessionContext,
+    _sessionCtx?: SessionContext, // DEPRECATED 2026-07-08: group tiebreakers removed; ignored
     gameMetrics?: GameMetrics,
 ): ProfileResult {
     // — Eje from axis counts —
@@ -186,19 +191,25 @@ export function resolveFromAnswers(
     const secondCount = axisCounts[sorted[1]];
     const diff        = topCount - secondCount;
     const total       = answers.length;
-    let tiebreakerApplied = false;
+    const tiebreakerApplied = false;
 
-    // — Eje tiebreaker: only on exact tie, pick less represented in group —
-    if (sessionCtx && sessionCtx.priorEjes.length > 0 && diff === 0) {
-        const candidates = sorted.filter(axis => axisCounts[axis] >= topCount - 1);
-        const ejeCounts = candidates.map(axis => ({
-            axis,
-            count: sessionCtx.priorEjes.filter(e => e === axis).length,
-        }));
-        ejeCounts.sort((a, b) => a.count - b.count);
-        if (ejeCounts[0].axis !== dominantAxis) {
-            dominantAxis = ejeCounts[0].axis;
-            tiebreakerApplied = true;
+    // GROUP TIEBREAKER REMOVED (2026-07-08, expert-panel audit PSI-03/PD-02/h2/H4):
+    // the old rule resolved exact ties by favoring the axis LEAST represented in the
+    // group's prior profiles, so a child's label depended on who played before them
+    // (~1 in 5 primaries had B=0). Fabricated differentiation by design.
+    // Exact ties now resolve with the child's OWN signal only (PSI-03): among the
+    // tied top axes, the one the child chose fastest on average wins (a light
+    // engagement cue); fixed declaration order (D,I,S,C) is the last resort.
+    // sessionCtx is kept in the signature for back-compat but is IGNORED.
+    if (diff === 0) {
+        const tied = sorted.filter(axis => axisCounts[axis] === topCount);
+        if (tied.length > 1) {
+            const meanRt = (axis: Axis) => {
+                const rts = answers.filter(a => a.axis === axis && a.responseTimeMs > 0);
+                if (rts.length === 0) return Number.POSITIVE_INFINITY;
+                return rts.reduce((s, a) => s + a.responseTimeMs, 0) / rts.length;
+            };
+            dominantAxis = [...tied].sort((a, b) => meanRt(a) - meanRt(b))[0];
         }
     }
 
@@ -229,15 +240,10 @@ export function resolveFromAnswers(
             }
         }
 
-        // Motor tiebreaker: when too many "Medio", nudge based on avgMs
-        if (sessionCtx && motor === 'Medio' && sessionCtx.priorMotors.length >= 3) {
-            const medioRatio = sessionCtx.priorMotors.filter(m => m === 'Medio').length
-                / sessionCtx.priorMotors.length;
-            if (medioRatio > 0.6) {
-                motor = avgMs < 8500 ? 'Rápido' : 'Lento';
-                tiebreakerApplied = true;
-            }
-        }
+        // GROUP MOTOR NUDGE REMOVED (2026-07-08, expert-panel audit): the old rule
+        // pushed "Medio" toward Rápido/Lento when >60% of the group's prior motors
+        // were Medio — artificial dispersion from other children's data. The motor
+        // now depends only on this child's own metrics.
     }
 
     // — Secondary eje (sub-profile) —

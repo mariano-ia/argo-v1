@@ -91,8 +91,20 @@ export const QuestionScreenV2: React.FC<Props> = ({
         setChosen(optionIndex);
 
         const responseTimeMs = Date.now() - startTime.current;
+        // Psychometric telemetry (additive, panel audit 2026-07-08 / ECD-02):
+        // displayed_order = axes in the shuffled on-screen order, chosen_pos = slot
+        // tapped (0-3), intro_done = whether the typewriter had finished when the
+        // child tapped. Needed to audit the shuffle, detect positional responders
+        // and build person-fit. Flows through answers jsonb untouched.
         setTimeout(() => {
-            onAnswer({ axis: displayOptions[optionIndex].axis as Axis, responseTimeMs });
+            onAnswer({
+                axis: displayOptions[optionIndex].axis as Axis,
+                responseTimeMs,
+                question_id: `q${question.number}`,
+                displayed_order: displayOptions.map(o => o.axis).join(''),
+                chosen_pos: optionIndex,
+                intro_done: done,
+            });
         }, 650);
     };
 

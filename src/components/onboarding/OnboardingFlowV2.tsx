@@ -4,7 +4,12 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
-import { QuestionAnswer, SessionContext, resolveFromAnswers, resolveEvidenceFicha } from '../../lib/profileResolver';
+import { QuestionAnswer, resolveFromAnswers, resolveEvidenceFicha } from '../../lib/profileResolver';
+
+// Instrument version stamped on every perfilamiento (panel audit 2026-07-08 / M3):
+// bump on ANY change to items, option order behavior or scoring so cohorts are
+// separable. v2 = random option order (Fisher-Yates) + rebalanced Q8/Q10.
+const INSTRUMENT_VERSION = 'v2-shuffle-q8q10-20260708';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { runReportPipeline } from '../../lib/reportPipeline';
 import { sportFrame, buildReportV4 } from '../../lib/reportV4';
@@ -814,23 +819,13 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
         if (!adultData || answers.length < questions.length) return;
 
         const run = async () => {
-            let sessionCtx: SessionContext | undefined;
-            try {
-                const res = await fetch('/api/session-context');
-                if (res.ok) {
-                    const ctx = await res.json() as { ejes: string[]; motors: string[] };
-                    if (ctx.ejes.length > 0) {
-                        sessionCtx = { priorEjes: ctx.ejes, priorMotors: ctx.motors };
-                    }
-                }
-            } catch {
-                // proceed without tiebreaker
-            }
-
+            // Group tiebreaker context REMOVED (2026-07-08, expert-panel audit): the
+            // profile must depend only on this child's answers, never on which
+            // profiles the group already had. /api/session-context is no longer used.
             let profile: ReturnType<typeof resolveFromAnswers>;
             let report: ReturnType<typeof getReportData>;
             try {
-                profile = resolveFromAnswers(answers, sessionCtx, {
+                profile = resolveFromAnswers(answers, undefined, {
                     impulse: gameAMetricsRef.current,
                     rhythm: gameBMetricsRef.current,
                     adaptation: gameCMetricsRef.current,
@@ -883,7 +878,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 const edadMeses = Math.round(((adultData.edad as number) || 11) * 12);
                 const ficha = resolveEvidenceFicha(answers, {
                     edadMeses,
-                    questionVersion: 'v4-2026-07',
+                    questionVersion: INSTRUMENT_VERSION,
                     games: {
                         impulse: gameAMetricsRef.current ?? undefined,
                         rhythm: gameBMetricsRef.current ?? undefined,
@@ -925,6 +920,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 archetype_label: report.arquetipo.label,
                 eje_secundario:  profile.ejeSecundario ?? null,
                 answers,
+                question_version: INSTRUMENT_VERSION,
             };
 
             if (sessionIdRef.current) {
@@ -943,6 +939,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     ejeSecundario:  profile.ejeSecundario,
                     answers, tenantId, playToken, lang,
                     isDemo:         demoMode,
+                    questionVersion: INSTRUMENT_VERSION,
                 });
                 if (fallback.ok && fallback.id) {
                     sessionIdRef.current = fallback.id;

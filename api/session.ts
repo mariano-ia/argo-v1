@@ -379,6 +379,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'answers', 'ai_tokens_input', 'ai_tokens_output', 'ai_cost_usd', 'ai_sections', 'game_metrics',
                 // v4 SHADOW artifacts (data only; report_status is NEVER client-settable — sealed server-side).
                 'evidence_ficha', 'report_v4', 'report_qc',
+                // Instrument version stamp (panel audit 2026-07-08 / M3): separates item-set cohorts.
+                'question_version',
             ];
             for (const key of safeKeys) {
                 if (rest[key] !== undefined) allowed[key] = rest[key];
@@ -434,7 +436,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 eje, motor, archetype_label, eje_secundario,
                 answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd, ai_sections, game_metrics,
-                is_demo,
+                is_demo, question_version,
                 // v4 method (client-computed; see METODO-FALLBACK-INFORME.md). Additive + optional.
                 // report_status is NEVER accepted from the client (a malicious client could set
                 // 'ready'+garbage and bypass the choke-point); only server-side code seals it. The
@@ -517,6 +519,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 ai_cost_usd:      ai_cost_usd ?? 0,
                 ai_sections:      ai_sections ?? null,
                 game_metrics:     game_metrics ?? null,
+                question_version: question_version ?? null,
                 status:           resolved ? 'resolved' : 'in_flight',
                 share_token:      save_share_token,
                 is_demo:          is_demo === true,

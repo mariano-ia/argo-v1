@@ -20,12 +20,25 @@ const t2 = resolveFromAnswers(mkAnswers(['D','D','D','I','I','I','S','S','S','C'
 console.log('T2:', t2.eje, t2.motor, t2.arquetipoLabel);
 check('T2 motor', t2.motor === 'Lento', 'expected Lento got ' + t2.motor);
 
-// Test 3: Exact tie with tiebreaker (D overrepresented in context)
+// Test 3: GROUP TIEBREAKER REMOVED (2026-07-08, expert-panel audit) — the group
+// context must be IGNORED: same answers => same profile, regardless of who played
+// before. Exact ties resolve with the child's own signal (fastest tied axis).
 const ctx = { priorEjes: ['D','D','D','I','S'], priorMotors: ['Medio','Medio','Medio','Rápido','Lento'] };
 const t3 = resolveFromAnswers(mkAnswers(['D','D','D','I','I','I','S','S','S','C','C','C']), ctx);
+const t3b = resolveFromAnswers(mkAnswers(['D','D','D','I','I','I','S','S','S','C','C','C']));
 console.log('T3:', t3.eje, t3.motor, '| tiebreaker:', t3.tiebreakerApplied);
-check('T3 tiebreaker', t3.tiebreakerApplied === true, 'expected tiebreaker applied');
-check('T3 not D', t3.eje !== 'D', 'expected not D, got ' + t3.eje);
+check('T3 ctx ignored', t3.eje === t3b.eje && t3.motor === t3b.motor, 'group context must not change the profile');
+check('T3 no tiebreaker flag', t3.tiebreakerApplied === false, 'group tiebreaker must never apply');
+// Tie with distinct per-axis RTs: the axis the child chose fastest wins the tie.
+const tieFast: QuestionAnswer[] = [
+    ...(['I','I','I'] as const).map(a => ({ axis: a as 'I', responseTimeMs: 4000 })),
+    ...(['D','D','D'] as const).map(a => ({ axis: a as 'D', responseTimeMs: 9000 })),
+    ...(['S','S','S'] as const).map(a => ({ axis: a as 'S', responseTimeMs: 9000 })),
+    ...(['C','C','C'] as const).map(a => ({ axis: a as 'C', responseTimeMs: 9000 })),
+];
+const t3c = resolveFromAnswers(tieFast);
+console.log('T3c tie->fastest:', t3c.eje);
+check('T3c fastest tied axis wins', t3c.eje === 'I', 'expected I (fastest tied axis) got ' + t3c.eje);
 
 // Test 4: Fast responses → Rápido
 const t4 = resolveFromAnswers(mkAnswers(['D','D','D','D','D','I','I','I','S','S','C','C'], 3000));
@@ -64,11 +77,14 @@ console.log('T7 Isabella+ctx:', t7.eje, t7.motor, '| tiebreaker:', t7.tiebreaker
 check('T7 eje', t7.eje === 'C', 'expected C even with context');
 check('T7 no tiebreaker', t7.tiebreakerApplied === false, 'tiebreaker should not apply for diff=1');
 
-// Test 8: Motor tiebreaker (>60% Medio in context)
+// Test 8: GROUP MOTOR NUDGE REMOVED (2026-07-08) — a Medio child stays Medio no
+// matter how many Medios the group already had.
 const medioCtx = { priorEjes: ['D','I','S','C'], priorMotors: ['Medio','Medio','Medio','Medio','Rápido'] };
-const t8 = resolveFromAnswers(mkAnswers(['D','D','D','D','I','I','I','S','S','S','C','C'], 7000), medioCtx);
-console.log('T8 motor tiebreaker:', t8.eje, t8.motor, '| tiebreaker:', t8.tiebreakerApplied);
-check('T8 not Medio', t8.motor !== 'Medio', 'expected motor tiebreaker away from Medio');
+// D5,I3,S2,C2 (diff=2) at 7000ms avg => Medio by the child's own data; the old
+// group nudge would have pushed it to Rápido (avg<8500 with >60% prior Medios).
+const t8 = resolveFromAnswers(mkAnswers(['D','D','D','D','D','I','I','I','S','S','C','C'], 7000), medioCtx);
+console.log('T8 motor (group ignored):', t8.eje, t8.motor, '| tiebreaker:', t8.tiebreakerApplied);
+check('T8 stays Medio', t8.motor === 'Medio', 'group motor nudge must never apply, got ' + t8.motor);
 
 // Test 9: ejeSecundario correct
 const t9 = resolveFromAnswers(mkAnswers(['D','D','D','D','D','I','I','I','I','S','S','C']));

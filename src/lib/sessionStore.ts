@@ -16,6 +16,9 @@ interface SessionPayload {
     // to a tenant — prevents creating sessions in an arbitrary tenant (IDOR).
     playToken?: string;
     isDemo?: boolean;
+    // Instrument version stamp (panel audit 2026-07-08 / M3): which item set +
+    // presentation regime produced these answers.
+    questionVersion?: string;
     aiUsage?: {
         tokensInput: number;
         tokensOutput: number;
@@ -157,6 +160,7 @@ export async function saveSession(payload: SessionPayload): Promise<{ ok: boolea
         ai_tokens_output: payload.aiUsage?.tokensOutput ?? 0,
         ai_cost_usd:      payload.aiUsage?.costUsd      ?? 0,
         is_demo:          payload.isDemo === true,
+        question_version: payload.questionVersion ?? null,
     };
 
     if (import.meta.env.DEV) {
