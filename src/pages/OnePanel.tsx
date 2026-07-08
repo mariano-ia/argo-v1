@@ -16,6 +16,7 @@ interface OneLink {
     completed_at: string | null;
     session_id: string | null;
     report_token?: string | null;  // perfilamiento.share_token, required for the /report link
+    report_status?: string | null; // held/pending => "preparando" (no ver informe todavía)
 }
 
 interface PanelData {
@@ -434,7 +435,12 @@ export const OnePanel: React.FC = () => {
                             </div>
 
                             <div className="flex-shrink-0">
-                                {link.status === 'completed' && link.session_id && (
+                                {link.status === 'completed' && link.session_id && (link.report_status === 'held' || link.report_status === 'pending') && (
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">
+                                        {lang === 'en' ? 'Preparing…' : lang === 'pt' ? 'Preparando…' : 'Preparando…'}
+                                    </span>
+                                )}
+                                {link.status === 'completed' && link.session_id && link.report_status !== 'held' && link.report_status !== 'pending' && (
                                     <Link
                                         to={`/report/${link.session_id}?token=${link.report_token ?? ''}`}
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors"

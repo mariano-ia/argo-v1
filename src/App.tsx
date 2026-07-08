@@ -42,6 +42,7 @@ const AdminTenants    = lazy(() => import('./pages/dashboard/AdminTenants').then
 const AdminAIUsage    = lazy(() => import('./pages/dashboard/AdminAIUsage').then(m => ({ default: m.AdminAIUsage })));
 const AdminRevenue    = lazy(() => import('./pages/dashboard/AdminRevenue').then(m => ({ default: m.AdminRevenue })));
 const AdminArgoOne    = lazy(() => import('./pages/dashboard/AdminArgoOne').then(m => ({ default: m.AdminArgoOne })));
+const AdminHeld       = lazy(() => import('./pages/dashboard/AdminHeld').then(m => ({ default: m.AdminHeld })));
 const AdminContactos  = lazy(() => import('./pages/dashboard/Contactos').then(m => ({ default: m.Contactos })));
 const AdminAuditLog   = lazy(() => import('./pages/dashboard/AdminAuditLog').then(m => ({ default: m.AdminAuditLog })));
 const PrincipiaShell      = lazy(() => import('./pages/dashboard/principia/PrincipiaShell').then(m => ({ default: m.PrincipiaShell })));
@@ -298,6 +299,7 @@ function App() {
                 <Route path="ai-usage"  element={<AdminAIUsage />} />
                 <Route path="revenue"   element={<SuperadminOnly><AdminRevenue /></SuperadminOnly>} />
                 <Route path="argo-one"  element={<SuperadminOnly><AdminArgoOne /></SuperadminOnly>} />
+                <Route path="held"      element={<SuperadminOnly><AdminHeld /></SuperadminOnly>} />
                 <Route path="contactos" element={<AdminContactos />} />
                 <Route path="audit"     element={<SuperadminOnly><AdminAuditLog /></SuperadminOnly>} />
                 <Route path="health" element={<SuperadminOnly><AdminHealth /></SuperadminOnly>} />

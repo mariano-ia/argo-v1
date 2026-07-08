@@ -32,6 +32,7 @@ export interface SessionData {
     full_access?: boolean;
     is_demo?: boolean;
     report_v4?: ReportV4 | null;   // informe v4 determinista (Capa 1). Preview: ?engine=v4
+    report_status?: string | null; // gate fail-closed: 'held'/'pending' => pantalla "preparando"
 }
 
 // ─── i18n ─────────────────────────────────────────────────────────────────────
@@ -395,6 +396,28 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                         if (attempts >= 15 && pollTimer) { setUnlocking(false); clearInterval(pollTimer); }
                     }, 2000);
                 }
+                // Fail-closed: a held/pending report shows "preparando". Poll until the gate/admin/cron
+                // releases it (report_status leaves held/pending), then swap in the real report.
+                const isHeld = data && (data.report_status === 'held' || data.report_status === 'pending');
+                if (isHeld && !pollTimer) {
+                    let heldAttempts = 0;
+                    pollTimer = setInterval(async () => {
+                        heldAttempts++;
+                        try {
+                            const rr = await fetch(`/api/report?${buildQs()}`);
+                            if (rr.ok) {
+                                const fresh = await rr.json();
+                                const rs = fresh?.report_status;
+                                if (!cancelled && rs !== 'held' && rs !== 'pending') {
+                                    setSession(fresh);
+                                    if (pollTimer) clearInterval(pollTimer);
+                                    return;
+                                }
+                            }
+                        } catch { /* keep polling */ }
+                        if (heldAttempts >= 24 && pollTimer) clearInterval(pollTimer);
+                    }, 5000);
+                }
             })
             .catch(() => { if (!cancelled) { setNotFound(true); setLoading(false); } });
 
@@ -432,6 +455,29 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
 
     const lang = (session.lang || 'es') as keyof typeof T;
     const t = T[lang] ?? T.es;
+
+    // ── Fail-closed en la VISTA: un informe retenido/pendiente NO renderiza (ni legacy ni ?engine=v4).
+    // Muestra "preparando" y la página se auto-refresca (poll en el fetch) cuando el gate/admin lo libera.
+    if (session.report_status === 'held' || session.report_status === 'pending') {
+        const P: Record<string, { title: string; body: string }> = {
+            es: { title: 'Tu informe se está preparando', body: 'Estamos revisando que todo esté perfecto antes de mostrártelo. Te avisamos por email apenas esté listo. Esta página se actualiza sola.' },
+            en: { title: 'Your report is being prepared', body: 'We are making sure everything is right before showing it. We will email you as soon as it is ready. This page refreshes on its own.' },
+            pt: { title: 'Seu relatório está sendo preparado', body: 'Estamos conferindo que tudo esteja certo antes de mostrar. Avisamos por email assim que estiver pronto. Esta página se atualiza sozinha.' },
+        };
+        const p = P[lang] ?? P.es;
+        return (
+            <div className="min-h-screen bg-argo-neutral flex flex-col items-center justify-center p-6 text-center">
+                <div className="mb-6 flex items-center tracking-tight">
+                    <span className="font-[800] text-lg text-argo-navy">Argo</span>
+                    <span className="font-[100] text-lg text-argo-grey">Method®</span>
+                </div>
+                <div className="mb-5 h-8 w-8 rounded-full border-2 border-argo-border border-t-argo-navy animate-spin" />
+                <p className="text-lg font-semibold text-argo-navy mb-2">{p.title}</p>
+                <p className="text-sm text-argo-grey max-w-sm leading-relaxed">{p.body}</p>
+            </div>
+        );
+    }
+
     const axisColor = AXIS_COLORS[session.eje] ?? '#955FB5';
     const axisChip = AXIS_CHIP[session.eje] ?? 'bg-violet-50 text-violet-700 border-violet-200';
     const motorChip = MOTOR_CHIP[session.motor] ?? 'bg-violet-50 text-violet-700 border-violet-200';

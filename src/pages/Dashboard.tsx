@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { useAdminRole, LIMITED_ADMIN_TABS } from '../components/AdminRoute';
 import { APP_VERSION } from '../lib/version';
 import {
-    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity, Compass, AtSign,
+    Users, BarChart2, HelpCircle, ShieldCheck, MessageCircle, LogOut, Menu, PanelLeftClose, PanelLeftOpen, FileText, Building2, Cpu, DollarSign, ShoppingBag, ClipboardList, Activity, Compass, AtSign, Inbox,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
     { to: '/admin/ai-usage',  label: 'Consumo IA', icon: Cpu },
     { to: '/admin/revenue',   label: 'Revenue',   icon: DollarSign },
     { to: '/admin/argo-one',  label: 'ArgoOne®',  icon: ShoppingBag },
+    { to: '/admin/held',      label: 'Retenidos', icon: Inbox },
     { to: '/admin/contactos', label: 'Contactos', icon: AtSign },
     { to: '/admin/metrics',   label: 'Métricas',  icon: BarChart2 },
     { to: '/admin/health',    label: 'Health',    icon: Activity },
