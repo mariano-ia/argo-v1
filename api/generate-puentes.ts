@@ -339,7 +339,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Fetch puentes_session + source child perfilamiento
         const { data: pSession, error: pErr } = await sb
             .from('puentes_sessions')
-            .select('*, source:perfilamientos!source_session_id(id, child_name, sport, eje, motor, archetype_label, ai_sections, lang)')
+            .select('*, source:perfilamientos!source_session_id(id, child_name, sport, eje, motor, archetype_label, ai_sections, lang, report_v4)')
             .eq('id', puentes_session_id)
             .maybeSingle();
         if (pErr || !pSession) return res.status(404).json({ error: 'Puentes session not found' });
@@ -370,7 +370,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             childProfile: {
                 eje: child.eje,
                 motor: child.motor,
-                archetype_label: child.archetype_label,
+                // V4 naming (2026-07-08): use the new eje×veta label ("Impulsor con veta Conector")
+                // when the child has a v4 report, so the Puente doesn't reintroduce the old
+                // eje×motor name ("Impulsor Dinámico") the adult no longer sees. Falls back to legacy.
+                archetype_label: (child.report_v4 as { hero?: { arquetipoLabel?: string } } | null)?.hero?.arquetipoLabel || child.archetype_label,
                 ai_sections: scrubbedChildAiSections,
             },
             adultProfile: pSession.adult_profile,

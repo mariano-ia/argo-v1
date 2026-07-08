@@ -115,6 +115,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // 'sessions' to keep health-check identity in sync with the Producto registry.
         const { data } = await sb.from('perfilamientos')
             .select('id, created_at').is('ai_sections', null).neq('eje', '_pending')
+            // V4 candado (2026-07-08): a HELD/PENDING report is withheld ON PURPOSE by the
+            // fail-closed gate, not a delivery stall. Exclude them so this signal only sees
+            // genuine stalls (legacy=null, or v4 ready/sent). Otherwise a held report with a
+            // null ai_sections would propose report-recovery, which SKIPS held => stuck loop.
+            .or('report_status.is.null,report_status.in.(ready,sent)')
             .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const stalled = data ?? [];
         await writeHealthCheck(sb, 'entrega', 'sessions_without_report', 'sessions', stalled.length, 1, '<', stalled.length > 0);
@@ -145,6 +150,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .select('id').not('ai_sections', 'is', null).is('email_sent_at', null)
             .not('is_demo', 'is', true)
             .not('adult_email', 'is', null).neq('adult_email', '')
+            // V4 candado (2026-07-08): a HELD/PENDING report is NOT sent BY DESIGN (the
+            // choke-point 409s and never stamps email_sent_at). Without this filter every
+            // held report matches (ai_sections present + email_sent_at null) => false
+            // "email unsent" incident + resend proposal that 409s => incident stuck
+            // 'verifying' forever. Only flag genuinely-unsent deliveries (null/ready/sent).
+            .or('report_status.is.null,report_status.in.(ready,sent)')
             .lt('created_at', cutoff).gte('created_at', floor).is('deleted_at', null).limit(50);
         const unsent = data ?? [];
         await writeHealthCheck(sb, 'entrega', 'report_email_unsent', 'sessions', unsent.length, 1, '<', unsent.length > 0);

@@ -66,7 +66,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ReportPage only needs report_status to render "preparando"; returning report_v4/ai_sections would
     // let the gate-blocked content be retrieved via the raw API response. Strip them (defense-in-depth).
     const withheld = data.report_status === 'held' || data.report_status === 'pending';
-    const safeData = withheld ? { ...data, report_v4: null, ai_sections: null } : data;
+    // Paywall leak (2026-07-08): a locked report (trial/demo without full_access) shows only a
+    // TEASER (the hero + resumenPerfil); the rest of ai_sections and the whole report_v4 are behind
+    // the paywall but were being shipped in the raw API JSON (retrievable via network tab). Mirror
+    // ReportPage's lock rule and strip the paid content, keeping ONLY resumenPerfil for the teaser.
+    const paywallLocked = (tenantPlan === 'trial' || data.is_demo === true) && data.full_access !== true;
+    let safeData: typeof data = data;
+    if (withheld) {
+        safeData = { ...data, report_v4: null, ai_sections: null };
+    } else if (paywallLocked) {
+        const resumen = (data.ai_sections as { resumenPerfil?: unknown } | null)?.resumenPerfil ?? null;
+        safeData = { ...data, report_v4: null, ai_sections: resumen ? ({ resumenPerfil: resumen } as typeof data.ai_sections) : null };
+    }
 
     // Set noindex header so crawlers respect it even without the meta tag
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');

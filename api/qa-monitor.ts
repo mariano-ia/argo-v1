@@ -216,6 +216,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .neq('eje', '_pending')
       .is('ai_sections', null)
       .not('is_demo', 'is', true) // exclude demo/canary sessions — not real undelivered reports
+      // V4 candado (2026-07-08): a held/pending report is withheld on purpose by the gate,
+      // not an AI failure. Exclude them so this check only pages on genuine undelivered reports.
+      .or('report_status.is.null,report_status.in.(ready,sent)')
       .gte('created_at', cutoff);
     add('no AI-failed reports (24h)', (count ?? 0) === 0, `undelivered=${count}`);
   } catch (e) { add('AI-failure check reachable', false, String(e)); }
