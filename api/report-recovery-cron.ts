@@ -173,10 +173,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     for (const s of sessions ?? []) {
         const r = { id: s.id, aiGenerated: false, emailed: false, error: undefined as string | undefined };
-        // A v4 row already carries its report_v4 (client shadow, gate-passed). It does NOT need legacy
-        // ai_sections regeneration — send-email selects buildHtmlV4 off report_status+report_v4. So for
-        // v4 rows we skip the legacy regen path and just (re)send. Inert while V4_SEAL is off.
-        const isV4 = !!s.report_v4;
+        // "v4 delivery" is decided by REPORT_STATUS, not by report_v4 presence: the client shadow persists
+        // report_v4 on EVERY play (even with V4_SEAL off), so a NULL-status legacy row usually HAS a
+        // report_v4. Only a sealed v4 status ('ready'/'pending') delivers via buildHtmlV4 and can be held;
+        // NULL rows take the unchanged LEGACY path (regenerate ai_sections + legacy email + axis defense).
+        const isV4 = s.report_status === 'ready' || s.report_status === 'pending';
         try {
             let aiSections = s.ai_sections as { palabrasPuente?: string[] } | null;
 

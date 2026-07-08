@@ -16,8 +16,11 @@ async function verifyAdmin(req: VercelRequest, sb: ReturnType<typeof createClien
     if (!authHeader?.startsWith('Bearer ')) return false;
     const { data: { user }, error } = await sb.auth.getUser(authHeader.replace('Bearer ', ''));
     if (error || !user || !user.email) return false;
-    const { data: admin } = await sb.from('admin_users').select('id').eq('email', user.email).maybeSingle();
-    return !!admin;
+    const { data: admin } = await sb.from('admin_users').select('id, role').eq('email', user.email).maybeSingle();
+    // Held queue exposes child report content/PII: SUPERADMIN only (a 'limited' co-admin must not see it),
+    // matching the SuperadminOnly route + admin-approve-report's role check.
+    if (!admin || (admin as { role?: string }).role === 'limited') return false;
+    return true;
 }
 
 const COLS = 'id, child_name, child_age, sport, adult_name, adult_email, archetype_label, eje, lang, report_status, held_reason, held_at, retry_count, last_error, report_qc, tenant_id, created_at';
