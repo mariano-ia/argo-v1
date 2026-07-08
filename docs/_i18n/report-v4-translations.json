@@ -1,585 +1,585 @@
 {
- "copy": {
-  "en": {
-   "meter_labels": [
-    "Even",
-    "With nuance",
-    "Clear",
-    "All in"
-   ],
-   "eje_word": {
-    "D": {
-     "corta": "action",
-     "larga": "moving forward and deciding"
+  "copy": {
+    "en": {
+      "meter_labels": [
+        "Even",
+        "With nuance",
+        "Clear",
+        "All in"
+      ],
+      "eje_word": {
+        "D": {
+          "corta": "action",
+          "larga": "moving forward and deciding"
+        },
+        "I": {
+          "corta": "connecting with others",
+          "larga": "connecting and energizing the group"
+        },
+        "S": {
+          "corta": "supporting the group",
+          "larga": "looking after the group and keeping things calm"
+        },
+        "C": {
+          "corta": "the detail and the plan",
+          "larga": "looking at the plan before acting"
+        }
+      },
+      "eje_lead": {
+        "D": "moving forward, deciding and getting things moving",
+        "I": "connecting, energizing and bringing others on board",
+        "S": "looking after the group's mood and supporting those around them",
+        "C": "observing, understanding and building a plan before acting"
+      },
+      "receta_ejemplo": {
+        "D": "asking first \"what do I do\" before \"who do I do it with\"",
+        "I": "looking first at \"who do I do it with\" and how the group is doing",
+        "S": "making sure everyone is okay before starting",
+        "C": "wanting to understand \"the best way to do it\" before jumping in"
+      },
+      "storm_ejemplo": {
+        "D": "Faced with the unexpected, they will likely move fast to solve it as soon as possible.",
+        "I": "Faced with the unexpected, they will likely look to lean on others to get through it.",
+        "S": "Faced with the unexpected, they will likely prioritize keeping the group calm.",
+        "C": "Faced with the unexpected, they will likely first try to understand what's going on and only then act."
+      },
+      "success_anchor": {
+        "D": "tends to light up right away toward **the next goal**: enjoys moving forward more than stopping to savor what was achieved",
+        "I": "tends to want to **share and celebrate the achievement with others**: experiences it more fully when celebrating as a group",
+        "S": "tends to be glad above all that **the team is doing well**, more than about personal credit",
+        "C": "tends to want to **review how they did it** to understand it and do it even better"
+      },
+      "meta_choice": {
+        "D": "looking ahead to the next challenge",
+        "I": "sharing the joy with teammates",
+        "S": "making sure the whole team was okay",
+        "C": "reviewing how they had gotten there"
+      },
+      "context_word": {
+        "inicio": "when starting something new",
+        "adversidad": "when things get tough",
+        "esfuerzo": "when the effort has to be sustained"
+      },
+      "section_titles": {
+        "receta": "Their mix",
+        "contingencia": "How it shifts with the situation",
+        "patron": "Their decision pattern",
+        "motor": "Their engine",
+        "tormenta": "Facing the storm",
+        "grupo": "How much the group moves them",
+        "logro": "When things go well",
+        "combustible": "What lights them up",
+        "palabras": "Words that connect (and the ones that jar)",
+        "guia": "Before, during and after",
+        "reset": "A reset that works",
+        "ecos": "Beyond the sport"
+      },
+      "group_titles": {
+        "quien": "Who ${n} is today",
+        "cancha": "How they show up in the activity",
+        "acompanar": "How to support ${n}",
+        "masalla": "Beyond the sport"
+      },
+      "lead": {
+        "veta_clause": " And behind that drive a **${vetaLabel} streak** shows through: in several scenes they also chose ${largaSec}.",
+        "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it in ${top} of their 12 decisions, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
+        "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose in ${top} of their 12 decisions.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
+        "matices": "${n}'s game leans toward **${corta}**, with a clear presence of their second color.${veta} Today they tend to move through there, though it's not their only note: ${tail}.",
+        "parejo": "${n} plays today with **two well-balanced engines**: ${dosCortas}. It's not indecision, quite the opposite: they have two registers and tend to choose according to what each moment calls for."
+      },
+      "footer": "How to read this report. It describes **how ${n} tends to choose today**, not what they are or what they might become: it's a snapshot of their preferences right now, not a label. Profiles change with age and experience, **which is why we recommend re-profiling children every 6 months**. The sport only changes the frame for recognizing the profile; what is measured is the same in any activity."
     },
-    "I": {
-     "corta": "connecting with others",
-     "larga": "connecting and energizing the group"
-    },
-    "S": {
-     "corta": "supporting the group",
-     "larga": "looking after the group and keeping things calm"
-    },
-    "C": {
-     "corta": "the detail and the plan",
-     "larga": "looking at the plan before acting"
+    "pt": {
+      "meter_labels": [
+        "Equilibrado",
+        "Com nuances",
+        "Claro",
+        "Por completo"
+      ],
+      "eje_word": {
+        "D": {
+          "corta": "a ação",
+          "larga": "avançar e decidir"
+        },
+        "I": {
+          "corta": "o vínculo com os outros",
+          "larga": "conectar e entusiasmar o grupo"
+        },
+        "S": {
+          "corta": "o apoio do grupo",
+          "larga": "cuidar do grupo e manter a calma"
+        },
+        "C": {
+          "corta": "o detalhe e o plano",
+          "larga": "olhar o plano antes de agir"
+        }
+      },
+      "eje_lead": {
+        "D": "avançar, decidir e fazer as coisas acontecerem",
+        "I": "conectar, entusiasmar e somar os outros",
+        "S": "cuidar do clima do grupo e amparar quem está ao redor",
+        "C": "observar, entender e montar um plano antes de agir"
+      },
+      "receta_ejemplo": {
+        "D": "perguntar-se primeiro \"o que faço\" antes de \"com quem faço\"",
+        "I": "reparar primeiro em \"com quem faço\" e em como está o grupo",
+        "S": "garantir que todos estejam bem antes de começar",
+        "C": "querer entender \"qual é a melhor forma de fazer\" antes de se lançar"
+      },
+      "storm_ejemplo": {
+        "D": "Diante de um imprevisto, é provável que aja rápido para resolvê-lo o quanto antes.",
+        "I": "Diante de um imprevisto, é provável que busque se apoiar nos outros para seguir em frente.",
+        "S": "Diante de um imprevisto, é provável que priorize manter a calma do grupo.",
+        "C": "Diante de um imprevisto, é provável que primeiro busque entender o que está acontecendo e só depois aja."
+      },
+      "success_anchor": {
+        "D": "costuma se acender logo rumo ao **próximo objetivo**: curte mais avançar do que parar para saborear o que conquistou",
+        "I": "costuma querer **compartilhar e celebrar a conquista com os outros**: vive isso de forma mais plena quando comemora em grupo",
+        "S": "costuma se alegrar sobretudo por **a equipe ir bem**, mais do que pelo mérito próprio",
+        "C": "costuma querer **revisar como conseguiu** para entender e fazer ainda melhor"
+      },
+      "meta_choice": {
+        "D": "já olhar para o próximo desafio",
+        "I": "compartilhar a alegria com os colegas",
+        "S": "garantir que toda a equipe estivesse bem",
+        "C": "revisar como tinha chegado até ali"
+      },
+      "context_word": {
+        "inicio": "ao começar algo novo",
+        "adversidad": "quando a coisa complica",
+        "esfuerzo": "quando é preciso sustentar o esforço"
+      },
+      "section_titles": {
+        "receta": "Sua mistura",
+        "contingencia": "Como muda conforme a situação",
+        "patron": "Seu padrão de decisão",
+        "motor": "Seu motor",
+        "tormenta": "Diante da tempestade",
+        "grupo": "O quanto o grupo importa",
+        "logro": "Quando dá certo",
+        "combustible": "O que acende a chama",
+        "palabras": "Palavras que conectam (e as que fazem ruído)",
+        "guia": "Antes, durante e depois",
+        "reset": "Um reset que funciona",
+        "ecos": "Além do esporte"
+      },
+      "group_titles": {
+        "quien": "Quem é ${n} hoje",
+        "cancha": "Como aparece na atividade",
+        "acompanar": "Como acompanhar ${n}",
+        "masalla": "Além do esporte"
+      },
+      "lead": {
+        "veta_clause": " E por trás desse impulso aparece uma **veia ${vetaLabel}**: em várias cenas também escolheu ${largaSec}.",
+        "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
+        "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
+        "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
+        "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
+      },
+      "footer": "Como ler este relatório. Descreve **como ${n} tende a escolher hoje**, não o que é nem o que poderá chegar a fazer: é uma foto de suas preferências neste momento, não um rótulo. Os perfis mudam com a idade e a experiência, **por isso recomendamos perfilar as crianças novamente a cada 6 meses**. O esporte só muda o cenário para reconhecer o perfil; o que se mede é o mesmo em qualquer atividade."
     }
-   },
-   "eje_lead": {
-    "D": "moving forward, deciding and getting things moving",
-    "I": "connecting, energizing and bringing others on board",
-    "S": "looking after the group's mood and supporting those around them",
-    "C": "observing, understanding and building a plan before acting"
-   },
-   "receta_ejemplo": {
-    "D": "asking first \"what do I do\" before \"who do I do it with\"",
-    "I": "looking first at \"who do I do it with\" and how the group is doing",
-    "S": "making sure everyone is okay before starting",
-    "C": "wanting to understand \"the best way to do it\" before jumping in"
-   },
-   "storm_ejemplo": {
-    "D": "Faced with the unexpected, they will likely move fast to solve it as soon as possible.",
-    "I": "Faced with the unexpected, they will likely look to lean on others to get through it.",
-    "S": "Faced with the unexpected, they will likely prioritize keeping the group calm.",
-    "C": "Faced with the unexpected, they will likely first try to understand what's going on and only then act."
-   },
-   "success_anchor": {
-    "D": "tends to light up right away toward **the next goal**: enjoys moving forward more than stopping to savor what was achieved",
-    "I": "tends to want to **share and celebrate the achievement with others**: experiences it more fully when celebrating as a group",
-    "S": "tends to be glad above all that **the team is doing well**, more than about personal credit",
-    "C": "tends to want to **review how they did it** to understand it and do it even better"
-   },
-   "meta_choice": {
-    "D": "looking ahead to the next challenge",
-    "I": "sharing the joy with teammates",
-    "S": "making sure the whole team was okay",
-    "C": "reviewing how they had gotten there"
-   },
-   "context_word": {
-    "inicio": "when starting something new",
-    "adversidad": "when things get tough",
-    "esfuerzo": "when the effort has to be sustained"
-   },
-   "section_titles": {
-    "receta": "Their mix",
-    "contingencia": "How it shifts with the situation",
-    "patron": "Their decision pattern",
-    "motor": "Their engine",
-    "tormenta": "Facing the storm",
-    "grupo": "How much the group moves them",
-    "logro": "When things go well",
-    "combustible": "What lights them up",
-    "palabras": "Words that connect (and the ones that jar)",
-    "guia": "Before, during and after",
-    "reset": "A reset that works",
-    "ecos": "Beyond the sport"
-   },
-   "group_titles": {
-    "quien": "Who ${n} is today",
-    "cancha": "How they show up in the activity",
-    "acompanar": "How to support ${n}",
-    "masalla": "Beyond the sport"
-   },
-   "lead": {
-    "veta_clause": " And behind that drive a **${vetaLabel} streak** shows through: in several scenes they also chose ${largaSec}.",
-    "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it in ${top} of their 12 decisions, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
-    "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose in ${top} of their 12 decisions.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
-    "matices": "${n}'s game leans toward **${corta}**, with a clear presence of their second color.${veta} Today they tend to move through there, though it's not their only note: ${tail}.",
-    "parejo": "${n} plays today with **two well-balanced engines**: ${dosCortas}. It's not indecision, quite the opposite: they have two registers and tend to choose according to what each moment calls for."
-   },
-   "footer": "How to read this report. It describes **how ${n} tends to choose today**, not what they are or what they might become: it's a snapshot of their preferences right now, not a label. Profiles change with age and experience, **which is why we recommend re-profiling children every 6 months**. The sport only changes the frame for recognizing the profile; what is measured is the same in any activity."
   },
-  "pt": {
-   "meter_labels": [
-    "Equilibrado",
-    "Com nuances",
-    "Claro",
-    "Por completo"
-   ],
-   "eje_word": {
-    "D": {
-     "corta": "a ação",
-     "larga": "avançar e decidir"
+  "bodies": {
+    "en": {
+      "section_bodies": {
+        "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose in ${count} of their 12 decisions.",
+        "receta_presentes": " Close behind ${verbo2} ${lista}, which ${suman} nuance to how they play.",
+        "receta_suaves": " ${listaCap}, on the other hand, ${verbo} less today in how they decide: these are colors they also have available and that will find their place over time.",
+        "receta_verbos": {
+          "aparece": "appears",
+          "aparecen": "appear",
+          "suma": "adds",
+          "suman": "add",
+          "pesa": "weighs",
+          "pesan": "weigh",
+          "ytambien": "and also",
+          "y": "and"
+        },
+        "receta_ejemplo": "Faced with the same situation, ${n} tends to ${rec}.",
+        "conting_desvio": "One of the loveliest things about their profile is that **they play differently depending on the moment and read what each situation calls for**. Most of the time, ${n} tends to ${conductaPrim}. And ${ctxDesvio}, they shift gears: there they lean toward **${conductaDesvio}**. That contrast is genuinely their own, and speaks of someone who adjusts their approach to what's in front of them.",
+        "conting_desvio_ej": "In a calm moment they dive in without hesitating; in a trickier one they can pause for a second to think through the best way out.",
+        "conting_norma": "Something lovely about ${n}'s profile is their **consistency**: at different moments in the game (${ctxs}) they held the same way of taking things on, ${conductaPrim}. When something works for them, they tend to trust that resource.",
+        "conting_norma_ej": "Even if the situation changes, ${n} will likely keep their way of solving things rather than switching it all at once.",
+        "patron_null": "Throughout the game, ${n} **decided at a fairly steady pace**: they kept their commitment from start to finish, without starting out unsure or easing off toward the end. It's a lovely sign of consistency in how they get involved with each choice.",
+        "patron_null_ej": "When something matters to them, ${n} tends to keep the same dedication from the first moment to the last.",
+        "patron_rapido": "resolved faster right in the choices that go with their main driver",
+        "patron_lento": "gave themselves a little more time right in the choices that go with their main driver",
+        "patron_acople": "Throughout the game, ${n} **decided at varied paces**: ${q}, and adjusted their timing on the rest. That coupling between what they choose and how long they take is a very personal signature, and it tells us something lovely: **when something truly excites them, they respond with ease**.",
+        "patron_acople_ej": "Faced with a decision that excites them, they barely think it over; faced with one outside their comfort zone, they take their time.",
+        "tormenta_insuf": "In the game's storm scenes we didn't gather enough of ${n}'s choices to read a clear tendency. It's simply a part of the game with less data, nothing more.",
+        "tormenta_firme": "When things get complicated, ${n} showed a **clear tendency**: in the storm scenes they leaned again and again toward **${top}**. In a tough moment, that's likely their first go-to, and it's very valuable to know that ahead of time.",
+        "tormenta_dos": "When things get complicated, ${n} showed a preference: in two of the three storm scenes they leaned toward **${top}**, and in the third toward ${otra}. A tendency toward **${top}** shows up when the pressure is on, without it being their only way out. It's a valuable sign, because it means that **under pressure they have more than one resource**.",
+        "tormenta_disperso": "When things get complicated, ${n} **read each scene on its own**: in the storm they didn't repeat a single response, but adjusted to what each moment seemed to call for. Today they tend to respond to adversity with flexibility rather than a fixed reaction, and that's a resource too.",
+        "grupo_intro_indiv": "In an individual sport, the \"team\" is above all **the group they share the activity with**. ",
+        "grupo_low": "${intro}Among ${n}'s drivers, ${costado} today **shows up more in the background**, and it's simply part of their recipe at this moment: it says nothing about their social life or their friendships. Their way of adding to the group today runs **more through doing than through the emotional side**, and when their contribution shows, the bond usually comes afterward. A lovely way to bring ${n} closer is to **give them a role where their drive ${rol}**.",
+        "grupo_low_ej": "Inviting ${n} to ${ejEscena} brings ${n} closer to the group from their strength, without pushing them into a place that isn't theirs today.",
+        "grupo_words": {
+          "costado_indiv": "that social side",
+          "costado_equipo": "the bond with the team",
+          "rol_indiv": "shows within the group",
+          "rol_equipo": "has an impact on the team",
+          "esc_indiv": "set the pace of a shared moment in the activity",
+          "esc_equipo": "lead the start of a shared play",
+          "conquien_indiv": "their group",
+          "conquien_equipo": "the team"
+        },
+        "grupo_partes": {
+          "i_fuerte": "a **strong drive to involve and excite** others",
+          "i_algo": "some taste for involving others",
+          "s_fuerte": "a **clear need for the group to be in harmony**",
+          "s_algo": "some care for the group being okay"
+        },
+        "grupo_present": "In ${n}'s relationship with ${conQuien}, ${partes} shows up. These are different social drivers (involving isn't the same as holding together), and knowing which one weighs more helps in supporting ${n} from where they truly feel at ease.",
+        "grupo_present_ej": "Making room for that social side, to the extent it comes naturally, usually helps ${n} feel part of things.",
+        "logro": "When ${n} pulls something off, ${anchor}.${ej} That's how they experience it, and that's perfectly fine. Supporting ${n} means helping them also **notice and celebrate what they've achieved** before setting off again.",
+        "logro_ej_clause": " It showed clearly in the game, because on reaching the finish they chose **${metaChoice}**.",
+        "logro_ejemplo": "After a good result, a simple \"look at everything you accomplished\" helps ${n} give enjoyment its place too.",
+        "palabras_nota_suffix": "They're not a script, they're the key to the tone."
+      },
+      "motor": {
+        "rapido_cuerpo": "In the reaction-and-decision mini-games, {nombre} moved with a **nimble pace**: they tend to read quickly and trust their first impulse. They usually **get actions going and resolve things with ease when a decision has to be made on the spot**. Supporting {nombre} means giving room for that speed and, little by little, offering chances to discover when it's worth taking one more second.",
+        "rapido_ej": "If something needs to be started, {nombre} is usually among the first to get going. Adding the question \"what if I look for a second first?\" helps {nombre} grow without dimming their drive.",
+        "intermedio_cuerpo": "In the reaction-and-decision mini-games, {nombre} showed a **balanced pace**: they tend to fit their timing to what each moment calls for, without rushing or dragging. They're usually **flexible with tempo**, and that's a very valuable resource. Supporting {nombre} means helping recognize when their game calls for speed and when it calls for a pause.",
+        "intermedio_ej": "Faced with a decision, {nombre} can speed up if needed or take a moment if it helps: that read of the tempo is a strength.",
+        "lento_cuerpo": "In the reaction-and-decision mini-games, {nombre} moved with a **measured pace**: they tend to take a moment to read the scene before moving. They usually **choose thoughtfully, without rushing**. Supporting {nombre} means valuing that read (without asking them to hurry just for the sake of it) and giving them the confidence to hold their own timing when the situation allows.",
+        "lento_ej": "Before responding, {nombre} usually looks at the situation for a second: that \"understand first, then go\" is part of their strength."
+      }
     },
-    "I": {
-     "corta": "o vínculo com os outros",
-     "larga": "conectar e entusiasmar o grupo"
-    },
-    "S": {
-     "corta": "o apoio do grupo",
-     "larga": "cuidar do grupo e manter a calma"
-    },
-    "C": {
-     "corta": "o detalhe e o plano",
-     "larga": "olhar o plano antes de agir"
+    "pt": {
+      "section_bodies": {
+        "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu em ${count} de suas 12 decisões.",
+        "receta_presentes": " Bem perto ${verbo2} ${lista}, que ${suman} nuances à sua forma de jogar.",
+        "receta_suaves": " ${listaCap}, por outro lado, hoje ${verbo} menos em como decide: são cores que também tem disponíveis e que vão ganhando seu lugar com o tempo.",
+        "receta_verbos": {
+          "aparece": "aparece",
+          "aparecen": "aparecem",
+          "suma": "soma",
+          "suman": "somam",
+          "pesa": "pesa",
+          "pesan": "pesam",
+          "ytambien": "e também",
+          "y": "e"
+        },
+        "receta_ejemplo": "Diante de uma mesma situação, ${n} tende a ${rec}.",
+        "conting_desvio": "Uma das coisas mais bonitas de seu perfil é que **joga diferente conforme o momento e lê o que cada situação pede**. Na maior parte do tempo, ${n} tende a ${conductaPrim}. E ${ctxDesvio}, muda de registro: aí se inclina por **${conductaDesvio}**. Esse contraste é genuinamente seu, e fala de alguém que ajusta sua maneira conforme o que tem pela frente.",
+        "conting_desvio_ej": "Em um momento tranquilo se lança sem hesitar; em um mais complicado é capaz de parar um segundo para pensar na melhor saída.",
+        "conting_norma": "Algo bonito no perfil de ${n} é sua **consistência**: em diferentes momentos do jogo (${ctxs}) manteve a mesma maneira de encarar, ${conductaPrim}. Quando algo dá certo, tende a confiar no seu recurso.",
+        "conting_norma_ej": "Mesmo que a situação mude, é provável que ${n} mantenha sua forma de resolver em vez de mudá-la de repente.",
+        "patron_null": "Ao longo do jogo, ${n} **decidiu em um ritmo bastante constante**: manteve seu compromisso do início ao fim, sem começar hesitando nem afrouxar no final. É um bonito sinal de consistência em como se envolve com cada escolha.",
+        "patron_null_ej": "Quando algo importa para ${n}, tende a manter a mesma dedicação do primeiro ao último momento.",
+        "patron_rapido": "resolveu mais rápido justamente nas escolhas que combinam com seu motor principal",
+        "patron_lento": "levou um pouco mais de tempo justamente nas escolhas que combinam com seu motor principal",
+        "patron_acople": "Ao longo do jogo, ${n} **decidiu em ritmos diversos**: ${q}, e ajustou o tempo nas demais. Esse encaixe entre o que escolhe e quanto demora é uma marca muito pessoal, e conta algo bonito: **quando algo empolga de verdade, responde com desenvoltura**.",
+        "patron_acople_ej": "Diante de uma decisão que empolga, quase não pensa; diante de uma fora de seu terreno, leva seu tempo.",
+        "tormenta_insuf": "Nas cenas de tempestade do jogo não reunimos escolhas suficientes de ${n} para ler uma tendência clara. É simplesmente uma parte do jogo com menos dados, nada mais.",
+        "tormenta_firme": "Quando as coisas se complicam, ${n} mostrou uma **tendência clara**: nas cenas de tempestade se inclinou uma e outra vez por **${top}**. Em um momento adverso, é provável que esse seja seu primeiro recurso, e é muito valioso saber disso de antemão.",
+        "tormenta_dos": "Quando as coisas se complicam, ${n} mostrou uma preferência: em duas das três cenas de tempestade se inclinou por **${top}**, e na terceira por ${otra}. Surge uma tendência a **${top}** quando aperta, sem que seja sua única saída. É um sinal valioso, porque significa que **sob pressão tem mais de um recurso**.",
+        "tormenta_disperso": "Quando as coisas se complicam, ${n} **leu cada cena separadamente**: na tempestade não repetiu uma única resposta, e sim ajustou ao que cada momento parecia pedir. Hoje tende a responder ao adverso com flexibilidade, mais do que com uma reação fixa, e isso também é um recurso.",
+        "grupo_intro_indiv": "Em um esporte individual, o \"time\" é sobretudo **o grupo com o qual compartilha a atividade**. ",
+        "grupo_low": "${intro}Entre os motores de ${n}, ${costado} hoje **aparece mais em segundo plano**, e é simplesmente parte de sua receita deste momento: não diz nada sobre sua vida social nem sobre suas amizades. Sua maneira de somar ao grupo passa hoje **mais pelo fazer do que pelo emocional**, e quando sua contribuição se nota, o vínculo costuma vir depois. Uma bonita forma de aproximar ${n} é **dar um papel onde seu impulso ${rol}**.",
+        "grupo_low_ej": "Convidar ${n} a ${ejEscena} aproxima ${n} do grupo a partir de sua força, sem empurrar para um lugar que hoje não é o seu.",
+        "grupo_words": {
+          "costado_indiv": "esse lado social",
+          "costado_equipo": "o vínculo com o time",
+          "rol_indiv": "se note dentro do grupo",
+          "rol_equipo": "tenha impacto no time",
+          "esc_indiv": "marcar o ritmo de um momento compartilhado da atividade",
+          "esc_equipo": "liderar o início de uma jogada compartilhada",
+          "conquien_indiv": "seu grupo",
+          "conquien_equipo": "o time"
+        },
+        "grupo_partes": {
+          "i_fuerte": "um **impulso forte de envolver e empolgar** os demais",
+          "i_algo": "certo gosto por envolver os demais",
+          "s_fuerte": "uma **clara necessidade de que o grupo esteja em harmonia**",
+          "s_algo": "certo cuidado para que o grupo esteja bem"
+        },
+        "grupo_present": "Na relação de ${n} com ${conQuien} aparece ${partes}. São motores sociais diferentes (envolver não é o mesmo que sustentar), e saber qual pesa mais ajuda a acompanhar ${n} a partir de onde realmente se sente à vontade.",
+        "grupo_present_ej": "Dar espaço a esse lado social, na medida em que surge, costuma fazer com que ${n} se sinta parte.",
+        "logro": "Quando ${n} consegue algo, ${anchor}.${ej} Vive assim, e tudo bem. Acompanhar ${n} é ajudar também a **registrar e celebrar o que conquistou** antes de recomeçar.",
+        "logro_ej_clause": " No jogo se viu com clareza, porque ao chegar à meta escolheu **${metaChoice}**.",
+        "logro_ejemplo": "Depois de um bom resultado, um simples \"olha tudo o que você conseguiu\" ajuda ${n} a que o desfrute também tenha seu lugar.",
+        "palabras_nota_suffix": "Não são um roteiro, são a chave do tom."
+      },
+      "motor": {
+        "rapido_cuerpo": "Nos minijogos de reação e decisão, {nombre} se moveu com um **ritmo ágil**: tende a ler rápido e a confiar em seu primeiro impulso. Costuma **iniciar as ações e resolver com desenvoltura quando é preciso decidir na hora**. Acompanhar {nombre} é dar espaço para essa velocidade e, aos poucos, oferecer oportunidades para descobrir quando vale a pena levar um segundo a mais.",
+        "rapido_ej": "Se há algo para começar, {nombre} costuma estar entre os primeiros a iniciar. Acrescentar a pergunta \"e se eu olhar um segundo antes?\" ajuda {nombre} a crescer sem apagar seu impulso.",
+        "intermedio_cuerpo": "Nos minijogos de reação e decisão, {nombre} mostrou um **ritmo equilibrado**: tende a ajustar seu tempo ao que cada momento pede, sem se apressar nem se demorar. Costuma ser **flexível com os tempos**, e esse é um recurso muito valioso. Acompanhar {nombre} é ajudar a reconhecer quando seu jogo pede velocidade e quando pede uma pausa.",
+        "intermedio_ej": "Diante de uma decisão, {nombre} pode acelerar se for preciso ou levar um momento se convém: essa leitura do tempo é uma força.",
+        "lento_cuerpo": "Nos minijogos de reação e decisão, {nombre} se moveu com um **ritmo medido**: tende a levar um momento para ler a cena antes de se mover. Costuma **escolher com critério, sem se apressar**. Acompanhar {nombre} é valorizar essa leitura (sem pedir que se apresse só por se apressar) e dar confiança para sustentar seu tempo quando a situação permite.",
+        "lento_ej": "Antes de responder, {nombre} costuma olhar um segundo a situação: esse \"primeiro entendo, depois vou\" é parte de sua força."
+      }
     }
-   },
-   "eje_lead": {
-    "D": "avançar, decidir e fazer as coisas acontecerem",
-    "I": "conectar, entusiasmar e somar os outros",
-    "S": "cuidar do clima do grupo e amparar quem está ao redor",
-    "C": "observar, entender e montar um plano antes de agir"
-   },
-   "receta_ejemplo": {
-    "D": "perguntar-se primeiro \"o que faço\" antes de \"com quem faço\"",
-    "I": "reparar primeiro em \"com quem faço\" e em como está o grupo",
-    "S": "garantir que todos estejam bem antes de começar",
-    "C": "querer entender \"qual é a melhor forma de fazer\" antes de se lançar"
-   },
-   "storm_ejemplo": {
-    "D": "Diante de um imprevisto, é provável que aja rápido para resolvê-lo o quanto antes.",
-    "I": "Diante de um imprevisto, é provável que busque se apoiar nos outros para seguir em frente.",
-    "S": "Diante de um imprevisto, é provável que priorize manter a calma do grupo.",
-    "C": "Diante de um imprevisto, é provável que primeiro busque entender o que está acontecendo e só depois aja."
-   },
-   "success_anchor": {
-    "D": "costuma se acender logo rumo ao **próximo objetivo**: curte mais avançar do que parar para saborear o que conquistou",
-    "I": "costuma querer **compartilhar e celebrar a conquista com os outros**: vive isso de forma mais plena quando comemora em grupo",
-    "S": "costuma se alegrar sobretudo por **a equipe ir bem**, mais do que pelo mérito próprio",
-    "C": "costuma querer **revisar como conseguiu** para entender e fazer ainda melhor"
-   },
-   "meta_choice": {
-    "D": "já olhar para o próximo desafio",
-    "I": "compartilhar a alegria com os colegas",
-    "S": "garantir que toda a equipe estivesse bem",
-    "C": "revisar como tinha chegado até ali"
-   },
-   "context_word": {
-    "inicio": "ao começar algo novo",
-    "adversidad": "quando a coisa complica",
-    "esfuerzo": "quando é preciso sustentar o esforço"
-   },
-   "section_titles": {
-    "receta": "Sua mistura",
-    "contingencia": "Como muda conforme a situação",
-    "patron": "Seu padrão de decisão",
-    "motor": "Seu motor",
-    "tormenta": "Diante da tempestade",
-    "grupo": "O quanto o grupo importa",
-    "logro": "Quando dá certo",
-    "combustible": "O que acende a chama",
-    "palabras": "Palavras que conectam (e as que fazem ruído)",
-    "guia": "Antes, durante e depois",
-    "reset": "Um reset que funciona",
-    "ecos": "Além do esporte"
-   },
-   "group_titles": {
-    "quien": "Quem é ${n} hoje",
-    "cancha": "Como aparece na atividade",
-    "acompanar": "Como acompanhar ${n}",
-    "masalla": "Além do esporte"
-   },
-   "lead": {
-    "veta_clause": " E por trás desse impulso aparece uma **veia ${vetaLabel}**: em várias cenas também escolheu ${largaSec}.",
-    "rotundo": "O jogo de ${n} se apoia **totalmente em ${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
-    "claro": "O jogo de ${n} se apoia **com clareza em ${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
-    "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
-    "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
-   },
-   "footer": "Como ler este relatório. Descreve **como ${n} tende a escolher hoje**, não o que é nem o que poderá chegar a fazer: é uma foto de suas preferências neste momento, não um rótulo. Os perfis mudam com a idade e a experiência, **por isso recomendamos perfilar as crianças novamente a cada 6 meses**. O esporte só muda o cenário para reconhecer o perfil; o que se mede é o mesmo em qualquer atividade."
-  }
- },
- "bodies": {
-  "en": {
-   "section_bodies": {
-    "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose in ${count} of their 12 decisions.",
-    "receta_presentes": " Close behind ${verbo2} ${lista}, which ${suman} nuance to how they play.",
-    "receta_suaves": " ${listaCap}, on the other hand, ${verbo} less today in how they decide: these are colors they also have available and that will find their place over time.",
-    "receta_verbos": {
-     "aparece": "appears",
-     "aparecen": "appear",
-     "suma": "adds",
-     "suman": "add",
-     "pesa": "weighs",
-     "pesan": "weigh",
-     "ytambien": "and also",
-     "y": "and"
-    },
-    "receta_ejemplo": "Faced with the same situation, ${n} tends to ${rec}.",
-    "conting_desvio": "One of the loveliest things about their profile is that **they play differently depending on the moment and read what each situation calls for**. Most of the time, ${n} tends to ${conductaPrim}. And ${ctxDesvio}, they shift gears: there they lean toward **${conductaDesvio}**. That contrast is genuinely their own, and speaks of someone who adjusts their approach to what's in front of them.",
-    "conting_desvio_ej": "In a calm moment they dive in without hesitating; in a trickier one they can pause for a second to think through the best way out.",
-    "conting_norma": "Something lovely about ${n}'s profile is their **consistency**: at different moments in the game (${ctxs}) they held the same way of taking things on, ${conductaPrim}. When something works for them, they tend to trust that resource.",
-    "conting_norma_ej": "Even if the situation changes, ${n} will likely keep their way of solving things rather than switching it all at once.",
-    "patron_null": "Throughout the game, ${n} **decided at a fairly steady pace**: they kept their commitment from start to finish, without starting out unsure or easing off toward the end. It's a lovely sign of consistency in how they get involved with each choice.",
-    "patron_null_ej": "When something matters to them, ${n} tends to keep the same dedication from the first moment to the last.",
-    "patron_rapido": "resolved faster right in the choices that go with their main driver",
-    "patron_lento": "gave themselves a little more time right in the choices that go with their main driver",
-    "patron_acople": "Throughout the game, ${n} **decided at varied paces**: ${q}, and adjusted their timing on the rest. That coupling between what they choose and how long they take is a very personal signature, and it tells us something lovely: **when something truly excites them, they respond with ease**.",
-    "patron_acople_ej": "Faced with a decision that excites them, they barely think it over; faced with one outside their comfort zone, they take their time.",
-    "tormenta_insuf": "In the game's storm scenes we didn't gather enough of ${n}'s choices to read a clear tendency. It's simply a part of the game with less data, nothing more.",
-    "tormenta_firme": "When things get complicated, ${n} showed a **clear tendency**: in the storm scenes they leaned again and again toward **${top}**. In a tough moment, that's likely their first go-to, and it's very valuable to know that ahead of time.",
-    "tormenta_dos": "When things get complicated, ${n} showed a preference: in two of the three storm scenes they leaned toward **${top}**, and in the third toward ${otra}. A tendency toward **${top}** shows up when the pressure is on, without it being their only way out. It's a valuable sign, because it means that **under pressure they have more than one resource**.",
-    "tormenta_disperso": "When things get complicated, ${n} **read each scene on its own**: in the storm they didn't repeat a single response, but adjusted to what each moment seemed to call for. Today they tend to respond to adversity with flexibility rather than a fixed reaction, and that's a resource too.",
-    "grupo_intro_indiv": "In an individual sport, the \"team\" is above all **the group they share the activity with**. ",
-    "grupo_low": "${intro}Among ${n}'s drivers, ${costado} today **shows up more in the background**, and it's simply part of their recipe at this moment: it says nothing about their social life or their friendships. Their way of adding to the group today runs **more through doing than through the emotional side**, and when their contribution shows, the bond usually comes afterward. A lovely way to bring ${n} closer is to **give them a role where their drive ${rol}**.",
-    "grupo_low_ej": "Inviting ${n} to ${ejEscena} brings ${n} closer to the group from their strength, without pushing them into a place that isn't theirs today.",
-    "grupo_words": {
-     "costado_indiv": "that social side",
-     "costado_equipo": "the bond with the team",
-     "rol_indiv": "shows within the group",
-     "rol_equipo": "has an impact on the team",
-     "esc_indiv": "set the pace of a shared moment in the activity",
-     "esc_equipo": "lead the start of a shared play",
-     "conquien_indiv": "their group",
-     "conquien_equipo": "the team"
-    },
-    "grupo_partes": {
-     "i_fuerte": "a **strong drive to involve and excite** others",
-     "i_algo": "some taste for involving others",
-     "s_fuerte": "a **clear need for the group to be in harmony**",
-     "s_algo": "some care for the group being okay"
-    },
-    "grupo_present": "In ${n}'s relationship with ${conQuien}, ${partes} shows up. These are different social drivers (involving isn't the same as holding together), and knowing which one weighs more helps in supporting ${n} from where they truly feel at ease.",
-    "grupo_present_ej": "Making room for that social side, to the extent it comes naturally, usually helps ${n} feel part of things.",
-    "logro": "When ${n} pulls something off, ${anchor}.${ej} That's how they experience it, and that's perfectly fine. Supporting ${n} means helping them also **notice and celebrate what they've achieved** before setting off again.",
-    "logro_ej_clause": " It showed clearly in the game, because on reaching the finish they chose **${metaChoice}**.",
-    "logro_ejemplo": "After a good result, a simple \"look at everything you accomplished\" helps ${n} give enjoyment its place too.",
-    "palabras_nota_suffix": "They're not a script, they're the key to the tone."
-   },
-   "motor": {
-    "rapido_cuerpo": "In the reaction-and-decision mini-games, {nombre} moved with a **nimble pace**: they tend to read quickly and trust their first impulse. They usually **get actions going and resolve things with ease when a decision has to be made on the spot**. Supporting {nombre} means giving room for that speed and, little by little, offering chances to discover when it's worth taking one more second.",
-    "rapido_ej": "If something needs to be started, {nombre} is usually among the first to get going. Adding the question \"what if I look for a second first?\" helps {nombre} grow without dimming their drive.",
-    "intermedio_cuerpo": "In the reaction-and-decision mini-games, {nombre} showed a **balanced pace**: they tend to fit their timing to what each moment calls for, without rushing or dragging. They're usually **flexible with tempo**, and that's a very valuable resource. Supporting {nombre} means helping recognize when their game calls for speed and when it calls for a pause.",
-    "intermedio_ej": "Faced with a decision, {nombre} can speed up if needed or take a moment if it helps: that read of the tempo is a strength.",
-    "lento_cuerpo": "In the reaction-and-decision mini-games, {nombre} moved with a **measured pace**: they tend to take a moment to read the scene before moving. They usually **choose thoughtfully, without rushing**. Supporting {nombre} means valuing that read (without asking them to hurry just for the sake of it) and giving them the confidence to hold their own timing when the situation allows.",
-    "lento_ej": "Before responding, {nombre} usually looks at the situation for a second: that \"understand first, then go\" is part of their strength."
-   }
   },
-  "pt": {
-   "section_bodies": {
-    "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu em ${count} de suas 12 decisões.",
-    "receta_presentes": " Bem perto ${verbo2} ${lista}, que ${suman} nuances à sua forma de jogar.",
-    "receta_suaves": " ${listaCap}, por outro lado, hoje ${verbo} menos em como decide: são cores que também tem disponíveis e que vão ganhando seu lugar com o tempo.",
-    "receta_verbos": {
-     "aparece": "aparece",
-     "aparecen": "aparecem",
-     "suma": "soma",
-     "suman": "somam",
-     "pesa": "pesa",
-     "pesan": "pesam",
-     "ytambien": "e também",
-     "y": "e"
+  "eje": {
+    "en": {
+      "D": {
+        "label": "Impulsor",
+        "combustible": {
+          "cuerpo": "What tends to light {nombre} up most is **having a clear goal and feeling that their drive moves things forward**. When {nombre} senses that their initiative leaves a real mark, they truly come alive, and recognizing that impact is often their best fuel.",
+          "ejemplo": "A \"thanks to you getting it going, this worked out\" will probably motivate {nombre} far more than general praise."
+        },
+        "palabrasPuente": [
+          "You start this one off.",
+          "What do you suggest to solve it?",
+          "Today you set the pace.",
+          "Show me how you'd do it."
+        ],
+        "palabrasRuido": [
+          "Wait, it's not your turn yet.",
+          "Just do it exactly as I say.",
+          "Better stay on the sidelines and watch."
+        ],
+        "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is anything that recognizes their initiative**, and what grates is anything that halts their drive without explaining why. With that in mind, the exact words are up to you.",
+        "guia": {
+          "lead": "Three moments where a small intention changes a lot.",
+          "antes": "Offer {nombre} a concrete goal and room to take the initiative. Knowing they'll be able to **get something of their own going** focuses and excites {nombre}.",
+          "durante": "If they speed up too much, instead of stopping the momentum, **channel their drive**: acknowledge the eagerness and add a quick read of the situation before going. It's about adding, not shutting down.",
+          "despues": "Recognize what they **set in motion**, not just the result. For an action-oriented profile, a \"you got everything going\" usually lands better than general praise.",
+          "ejemplo": "If there's a new activity on Saturday, telling them \"you'll get to start it off\" turns the nerves into eagerness."
+        },
+        "reset": {
+          "cuerpo": "When {nombre} gets frustrated, waiting around tends to be hard for them, and that's very understandable in an action-oriented profile. What **tends to help most is a small, concrete action** to take right then: a clear task, a short goal, something that brings back the feeling of making progress.",
+          "ejemplo": "Instead of \"calm down\", a \"take care of this for a minute\" usually gets things back on track much better."
+        },
+        "ecos": {
+          "cuerpo": "This drive to move forward **doesn't live only in sport**. It tends to show up when {nombre} organizes a game, suggests plans, or wants to solve something right away. Seeing it in those moments helps you understand it's not impatience: it's **their way of being in the world**.",
+          "ejemplo": "If at home they're one of the first to say \"come on, let's do this\", you're seeing the same engine that drives {nombre} in the activity."
+        }
+      },
+      "I": {
+        "combustible": {
+          "cuerpo": "What usually lights {nombre} up most is **feeling part of the group and being able to spread their enthusiasm to others**. When the mood is good and there's someone to share it with, they really come alive. Feeling that their energy adds to the group is often their best fuel.",
+          "ejemplo": "A \"you can tell when you're around, you get everyone excited\" will probably land with {nombre} more than praise given in private."
+        },
+        "palabrasPuente": [
+          "Tell the group whatever comes to mind.",
+          "You can lift everyone's spirits.",
+          "Who should we bring in for this?",
+          "I love your energy, spread it around."
+        ],
+        "palabrasRuido": [
+          "This isn't the time to talk.",
+          "Work quietly, on your own.",
+          "Stop distracting the group."
+        ],
+        "palabrasNota": "It's not a script, it's a compass for tone: what usually **lands most with {nombre} is anything that celebrates their way of connecting**, and what grates is anything that dims their spark or cuts off the bond. With that in mind, the exact words are up to you.",
+        "guia": {
+          "lead": "Three moments where a small intention changes a lot.",
+          "antes": "Give them a space where their enthusiasm has room and someone to share it with. Knowing they'll get to **add to the others** focuses and excites {nombre}.",
+          "durante": "If the energy scatters, instead of asking for silence, **channel their spark**: give them a role where their enthusiasm pushes the group toward the task.",
+          "despues": "Recognize **when they lift the group's spirits**, not just the result. A connector profile is usually reached more by a \"you got everyone excited\" than by general praise.",
+          "ejemplo": "If there's a new activity on Saturday, telling them \"you're going to meet a bunch of people\" turns the nerves into excitement."
+        },
+        "reset": {
+          "cuerpo": "When they get frustrated, feeling left out tends to weigh on {nombre}, and what they need is to reconnect. What **usually helps most is a moment of connection**: listening to {nombre}, naming what they feel and reminding them they're not in this alone. Once the mood is restored, they usually light back up.",
+          "ejemplo": "Instead of \"figure it out on your own\", a \"let's look at it together\" usually gets the situation back on track much better."
+        },
+        "ecos": {
+          "cuerpo": "This way of connecting **doesn't only live in sport**. It tends to show up when {nombre} gathers friends together, brings life to an outing or strikes up a chat with whoever's nearby. Seeing it in those moments helps you understand that it's not \"talking too much\": it's **their way of being in the world**.",
+          "ejemplo": "If at home they're the one who suggests plans with friends and organizes the outing, you're seeing the same engine that drives {nombre} in the activity."
+        }
+      },
+      "S": {
+        "combustible": {
+          "cuerpo": "What usually lights {nombre} up most is **feeling that the group is doing well and being able to be a reliable support**. A calm atmosphere, with no surprises, and knowing that others count on their support, make {nombre} feel right at home. Feeling trusted is often their best fuel.",
+          "ejemplo": "An \"I know I can count on you\" will probably reach {nombre} more than loud praise."
+        },
+        "palabrasPuente": [
+          "I'm counting on you for this.",
+          "Thank you for holding the group together.",
+          "Take all the time you need.",
+          "Your calm is good for everyone."
+        ],
+        "palabrasRuido": [
+          "Come on, hurry up, there's no time.",
+          "We're changing everything on the fly.",
+          "If you don't like it, deal with it."
+        ],
+        "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is valuing their steadiness and their calm**, and what jars is rushing or abrupt changes with no warning. With that in mind, the exact words are up to you.",
+        "guia": {
+          "lead": "Three moments where a small intention changes a lot.",
+          "antes": "Give them predictability: tell them what's going to happen and what their place is. Knowing that **the ground is firm and that there's a place for their contribution** focuses and calms {nombre}.",
+          "durante": "If something creates tension, instead of rushing them, **stay alongside them calmly**: slow the pace for a moment and reassure them that everything is in order.",
+          "despues": "Acknowledge **when they hold the group together**, not just the result. A supportive profile is usually reached more by a \"you were everyone's support\" than by general praise.",
+          "ejemplo": "If there's a new activity on Saturday, telling them \"you'll know what comes next at every moment\" turns nerves into calm."
+        },
+        "reset": {
+          "cuerpo": "When they get frustrated, noise and tension usually weigh on {nombre}, and what they need is to get their calm back. What **usually helps most is easing off and returning to the familiar**: a quiet moment, a familiar routine, the reassurance that everything is in order. With a calm atmosphere, they usually settle back in.",
+          "ejemplo": "Instead of \"come on, keep going now\", a \"take a minute, there's no rush\" usually gets things back on track much better."
+        },
+        "ecos": {
+          "cuerpo": "This way of supporting **doesn't live only in sport**. It tends to show up when {nombre} looks after a sibling, calms an argument, or is the one everyone turns to when something gets tricky. Seeing it in those moments helps you understand that their calm isn't passivity: it's **their way of being in the world**.",
+          "ejemplo": "If at home they're the one who brings peace and whom everyone leans on, you're seeing the same engine that drives {nombre} in the activity."
+        }
+      },
+      "C": {
+        "combustible": {
+          "cuerpo": "What usually lights {nombre} up most is **understanding how things work and having a clear plan**. When they can analyze, anticipate and get things right, they really come alive. Feeling that their careful eye makes a difference is often their best fuel.",
+          "ejemplo": "A \"I love how you thought that through\" will probably reach {nombre} more than general praise."
+        },
+        "palabrasPuente": [
+          "How would you think it through?",
+          "You see the details others miss.",
+          "Take a moment to analyze it.",
+          "Show me your plan."
+        ],
+        "palabrasRuido": [
+          "Stop asking so much and just do it.",
+          "Just improvise, we'll see.",
+          "You don't need to understand it, just do it."
+        ],
+        "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is anything that values their thinking and their care**, and what tends to grate is being rushed or asked to improvise without understanding. With that in mind, the exact words are yours to choose.",
+        "guia": {
+          "lead": "Three moments where a small intention changes a lot.",
+          "antes": "Give them information and a moment to think. Knowing they'll get to **understand before acting** focuses and calms {nombre}.",
+          "durante": "If they get stuck analyzing, instead of adding pressure, **support the decision**: help them choose with the info they already have and let go of the search for the perfect plan.",
+          "despues": "Acknowledge **when they think things through and care about the details**, not just the result. A strategist profile is usually reached more by a \"you can tell you had it well thought out\" than by general praise.",
+          "ejemplo": "If there's a new activity on Saturday, telling them ahead of time \"this is how it'll go, these are the steps\" turns the nerves into confidence."
+        },
+        "reset": {
+          "cuerpo": "When they get frustrated, {nombre} usually struggles with the feeling of not understanding or having to improvise. What **usually helps most is giving them clarity**: explaining what's going on, organizing the information and giving them a moment to think. With the full picture clear, they tend to settle back down.",
+          "ejemplo": "Instead of \"don't overthink it,\" a \"let's look at what comes next together\" usually gets the situation back on track much better."
+        },
+        "ecos": {
+          "cuerpo": "This way of analyzing **doesn't live only in sport**. It tends to show up when {nombre} builds a strategy in a game, asks how things work or wants to understand the why behind everything. Seeing it in those moments helps you understand that it isn't \"overcomplicating things\": it's **their way of being in the world**.",
+          "ejemplo": "If at home they're the one who wants to understand how each thing works and makes their own plan, you're seeing the same engine that drives {nombre} in the activity."
+        }
+      }
     },
-    "receta_ejemplo": "Diante de uma mesma situação, ${n} tende a ${rec}.",
-    "conting_desvio": "Uma das coisas mais bonitas de seu perfil é que **joga diferente conforme o momento e lê o que cada situação pede**. Na maior parte do tempo, ${n} tende a ${conductaPrim}. E ${ctxDesvio}, muda de registro: aí se inclina por **${conductaDesvio}**. Esse contraste é genuinamente seu, e fala de alguém que ajusta sua maneira conforme o que tem pela frente.",
-    "conting_desvio_ej": "Em um momento tranquilo se lança sem hesitar; em um mais complicado é capaz de parar um segundo para pensar na melhor saída.",
-    "conting_norma": "Algo bonito no perfil de ${n} é sua **consistência**: em diferentes momentos do jogo (${ctxs}) manteve a mesma maneira de encarar, ${conductaPrim}. Quando algo dá certo, tende a confiar no seu recurso.",
-    "conting_norma_ej": "Mesmo que a situação mude, é provável que ${n} mantenha sua forma de resolver em vez de mudá-la de repente.",
-    "patron_null": "Ao longo do jogo, ${n} **decidiu em um ritmo bastante constante**: manteve seu compromisso do início ao fim, sem começar hesitando nem afrouxar no final. É um bonito sinal de consistência em como se envolve com cada escolha.",
-    "patron_null_ej": "Quando algo importa para ${n}, tende a manter a mesma dedicação do primeiro ao último momento.",
-    "patron_rapido": "resolveu mais rápido justamente nas escolhas que combinam com seu motor principal",
-    "patron_lento": "levou um pouco mais de tempo justamente nas escolhas que combinam com seu motor principal",
-    "patron_acople": "Ao longo do jogo, ${n} **decidiu em ritmos diversos**: ${q}, e ajustou o tempo nas demais. Esse encaixe entre o que escolhe e quanto demora é uma marca muito pessoal, e conta algo bonito: **quando algo empolga de verdade, responde com desenvoltura**.",
-    "patron_acople_ej": "Diante de uma decisão que empolga, quase não pensa; diante de uma fora de seu terreno, leva seu tempo.",
-    "tormenta_insuf": "Nas cenas de tempestade do jogo não reunimos escolhas suficientes de ${n} para ler uma tendência clara. É simplesmente uma parte do jogo com menos dados, nada mais.",
-    "tormenta_firme": "Quando as coisas se complicam, ${n} mostrou uma **tendência clara**: nas cenas de tempestade se inclinou uma e outra vez por **${top}**. Em um momento adverso, é provável que esse seja seu primeiro recurso, e é muito valioso saber disso de antemão.",
-    "tormenta_dos": "Quando as coisas se complicam, ${n} mostrou uma preferência: em duas das três cenas de tempestade se inclinou por **${top}**, e na terceira por ${otra}. Surge uma tendência a **${top}** quando aperta, sem que seja sua única saída. É um sinal valioso, porque significa que **sob pressão tem mais de um recurso**.",
-    "tormenta_disperso": "Quando as coisas se complicam, ${n} **leu cada cena separadamente**: na tempestade não repetiu uma única resposta, e sim ajustou ao que cada momento parecia pedir. Hoje tende a responder ao adverso com flexibilidade, mais do que com uma reação fixa, e isso também é um recurso.",
-    "grupo_intro_indiv": "Em um esporte individual, o \"time\" é sobretudo **o grupo com o qual compartilha a atividade**. ",
-    "grupo_low": "${intro}Entre os motores de ${n}, ${costado} hoje **aparece mais em segundo plano**, e é simplesmente parte de sua receita deste momento: não diz nada sobre sua vida social nem sobre suas amizades. Sua maneira de somar ao grupo passa hoje **mais pelo fazer do que pelo emocional**, e quando sua contribuição se nota, o vínculo costuma vir depois. Uma bonita forma de aproximar ${n} é **dar um papel onde seu impulso ${rol}**.",
-    "grupo_low_ej": "Convidar ${n} a ${ejEscena} aproxima ${n} do grupo a partir de sua força, sem empurrar para um lugar que hoje não é o seu.",
-    "grupo_words": {
-     "costado_indiv": "esse lado social",
-     "costado_equipo": "o vínculo com o time",
-     "rol_indiv": "se note dentro do grupo",
-     "rol_equipo": "tenha impacto no time",
-     "esc_indiv": "marcar o ritmo de um momento compartilhado da atividade",
-     "esc_equipo": "liderar o início de uma jogada compartilhada",
-     "conquien_indiv": "seu grupo",
-     "conquien_equipo": "o time"
-    },
-    "grupo_partes": {
-     "i_fuerte": "um **impulso forte de envolver e empolgar** os demais",
-     "i_algo": "certo gosto por envolver os demais",
-     "s_fuerte": "uma **clara necessidade de que o grupo esteja em harmonia**",
-     "s_algo": "certo cuidado para que o grupo esteja bem"
-    },
-    "grupo_present": "Na relação de ${n} com ${conQuien} aparece ${partes}. São motores sociais diferentes (envolver não é o mesmo que sustentar), e saber qual pesa mais ajuda a acompanhar ${n} a partir de onde realmente se sente à vontade.",
-    "grupo_present_ej": "Dar espaço a esse lado social, na medida em que surge, costuma fazer com que ${n} se sinta parte.",
-    "logro": "Quando ${n} consegue algo, ${anchor}.${ej} Vive assim, e tudo bem. Acompanhar ${n} é ajudar também a **registrar e celebrar o que conquistou** antes de recomeçar.",
-    "logro_ej_clause": " No jogo se viu com clareza, porque ao chegar à meta escolheu **${metaChoice}**.",
-    "logro_ejemplo": "Depois de um bom resultado, um simples \"olha tudo o que você conseguiu\" ajuda ${n} a que o desfrute também tenha seu lugar.",
-    "palabras_nota_suffix": "Não são um roteiro, são a chave do tom."
-   },
-   "motor": {
-    "rapido_cuerpo": "Nos minijogos de reação e decisão, {nombre} se moveu com um **ritmo ágil**: tende a ler rápido e a confiar em seu primeiro impulso. Costuma **iniciar as ações e resolver com desenvoltura quando é preciso decidir na hora**. Acompanhar {nombre} é dar espaço para essa velocidade e, aos poucos, oferecer oportunidades para descobrir quando vale a pena levar um segundo a mais.",
-    "rapido_ej": "Se há algo para começar, {nombre} costuma estar entre os primeiros a iniciar. Acrescentar a pergunta \"e se eu olhar um segundo antes?\" ajuda {nombre} a crescer sem apagar seu impulso.",
-    "intermedio_cuerpo": "Nos minijogos de reação e decisão, {nombre} mostrou um **ritmo equilibrado**: tende a ajustar seu tempo ao que cada momento pede, sem se apressar nem se demorar. Costuma ser **flexível com os tempos**, e esse é um recurso muito valioso. Acompanhar {nombre} é ajudar a reconhecer quando seu jogo pede velocidade e quando pede uma pausa.",
-    "intermedio_ej": "Diante de uma decisão, {nombre} pode acelerar se for preciso ou levar um momento se convém: essa leitura do tempo é uma força.",
-    "lento_cuerpo": "Nos minijogos de reação e decisão, {nombre} se moveu com um **ritmo medido**: tende a levar um momento para ler a cena antes de se mover. Costuma **escolher com critério, sem se apressar**. Acompanhar {nombre} é valorizar essa leitura (sem pedir que se apresse só por se apressar) e dar confiança para sustentar seu tempo quando a situação permite.",
-    "lento_ej": "Antes de responder, {nombre} costuma olhar um segundo a situação: esse \"primeiro entendo, depois vou\" é parte de sua força."
-   }
+    "pt": {
+      "D": {
+        "combustible": {
+          "cuerpo": "O que mais costuma acender {nombre} é **ter um objetivo claro e sentir que seu impulso move as coisas**. Quando percebe que sua iniciativa deixa uma marca concreta, se anima de verdade, e reconhecer esse impacto é muitas vezes seu melhor combustível.",
+          "ejemplo": "Um \"foi porque você começou que isso deu certo\" provavelmente motiva {nombre} muito mais do que um elogio genérico."
+        },
+        "palabrasPuente": [
+          "Comece você com isso.",
+          "O que você propõe para resolver?",
+          "Hoje é você quem marca o ritmo.",
+          "Me mostra como você faria."
+        ],
+        "palabrasRuido": [
+          "Espera, ainda não é a sua vez.",
+          "Faz exatamente como eu digo.",
+          "Melhor ficar de lado e só observar."
+        ],
+        "palabrasNota": "Não é um roteiro, é uma bússola de tom: {nombre} costuma **sentir mais o que reconhece sua iniciativa**, e se incomoda com o que freia seu impulso sem explicar por quê. Com isso em mente, as palavras exatas quem escolhe é você.",
+        "guia": {
+          "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
+          "antes": "Ofereça um objetivo concreto e um espaço para tomar a iniciativa. Saber que vai poder **começar algo próprio** foca e entusiasma {nombre}.",
+          "durante": "Se acelera demais, em vez de cortar o embalo, **canalize esse impulso**: reconheça a vontade e acrescente uma leitura rápida antes de ir. A ideia é somar, não apagar.",
+          "despues": "Reconheça o que {nombre} **põe em movimento**, não só o resultado. Um perfil de ação costuma sentir mais um \"você fez tudo começar\" do que um elogio genérico.",
+          "ejemplo": "Se no sábado tem uma atividade nova, dizer \"você vai poder começar\" transforma o nervosismo em vontade."
+        },
+        "reset": {
+          "cuerpo": "Quando se frustra, {nombre} costuma ter dificuldade para ficar esperando, e isso é muito compreensível em um perfil de ação. O que **mais costuma ajudar é uma ação pequena e concreta** para fazer na hora: uma tarefa clara, um objetivo curto, algo que devolva a sensação de estar avançando.",
+          "ejemplo": "Em vez de \"se acalma\", um \"cuida disso por um minuto\" costuma reorientar a situação muito melhor."
+        },
+        "ecos": {
+          "cuerpo": "Esse impulso de avançar **não vive só no esporte**. Costuma aparecer quando {nombre} organiza uma brincadeira, propõe planos ou quer resolver algo na hora. Ver isso nesses momentos ajuda a entender que não é impaciência: é **o jeito de {nombre} estar no mundo**.",
+          "ejemplo": "Se em casa {nombre} é dos primeiros a dizer \"vamos, bora fazer isso\", você está vendo o mesmo motor que move {nombre} na atividade."
+        }
+      },
+      "I": {
+        "combustible": {
+          "cuerpo": "O que mais costuma acender {nombre} é **sentir-se parte e poder contagiar os outros com seu entusiasmo**. Quando o clima é bom e há com quem compartilhar, {nombre} se anima de verdade. Sentir que sua energia soma ao grupo é muitas vezes seu melhor combustível.",
+          "ejemplo": "Um \"nota-se quando você está, você contagia a vontade\" provavelmente chega mais a {nombre} do que um elogio a sós."
+        },
+        "palabrasPuente": [
+          "Conte ao grupo o que você está pensando.",
+          "Você pode levantar o ânimo de todos.",
+          "Quem vamos incluir nisso?",
+          "Adoro sua energia, contagie os outros."
+        ],
+        "palabrasRuido": [
+          "Agora não é hora de falar.",
+          "Trabalhe em silêncio, por conta própria.",
+          "Pare de dispersar o grupo."
+        ],
+        "palabrasNota": "Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que celebra seu jeito de conectar**, e fazer ruído o que apaga sua faísca ou corta o vínculo. Com isso em mente, as palavras exatas quem escolhe é você.",
+        "guia": {
+          "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
+          "antes": "Dê um espaço onde o entusiasmo de {nombre} tenha lugar e alguém com quem compartilhar. Saber que vai poder **somar aos outros** foca e entusiasma {nombre}.",
+          "durante": "Se a energia se dispersa, em vez de pedir silêncio, **canalize essa faísca**: dê um papel onde o entusiasmo de {nombre} empurre o grupo para a tarefa.",
+          "despues": "Reconheça **quando {nombre} soma ao ânimo do grupo**, não só o resultado. A um perfil conector costuma chegar mais um \"você contagiou a vontade de todos\" do que um elogio geral.",
+          "ejemplo": "Se no sábado tem uma atividade nova, contar a {nombre} \"você vai conhecer um monte de gente\" transforma o nervosismo em vontade."
+        },
+        "reset": {
+          "cuerpo": "Quando se frustra, a {nombre} costuma pesar sentir-se de lado, e o que precisa é reconectar. O que **mais costuma ajudar é um momento de vínculo**: escutar {nombre}, nomear o que sente e lembrar que não está nisso sozinho. Com o clima recomposto, {nombre} costuma voltar a se acender.",
+          "ejemplo": "Em vez de \"resolva sozinho\", um \"vamos ver isso juntos\" costuma reencaminhar a situação muito melhor."
+        },
+        "ecos": {
+          "cuerpo": "Esse jeito de conectar **não vive só no esporte**. Costuma aparecer quando {nombre} junta os amigos, anima um programa ou começa a conversar com quem estiver por perto. Ver isso nesses momentos ajuda a entender que não é \"falar demais\": é **seu jeito de estar no mundo**.",
+          "ejemplo": "Se em casa é quem propõe programas com os amigos e organiza a saída, você está vendo o mesmo motor que move {nombre} na atividade."
+        }
+      },
+      "S": {
+        "combustible": {
+          "cuerpo": "O que mais costuma acender {nombre} é **sentir que o grupo está bem e poder ser um apoio de confiança**. Um clima tranquilo, sem sobressaltos, e saber que os demais contam com seu apoio, fazem {nombre} sentir-se no seu lugar. Sentir-se de confiança é muitas vezes seu melhor combustível.",
+          "ejemplo": "Um \"sei que posso contar com você\" provavelmente chega a {nombre} mais do que um elogio barulhento."
+        },
+        "palabrasPuente": [
+          "Conto com você para isto.",
+          "Obrigado por sustentar o grupo.",
+          "Leve o tempo que precisar.",
+          "Sua calma faz bem a todos."
+        ],
+        "palabrasRuido": [
+          "Vamos, se apure, não há tempo.",
+          "Mudamos tudo em cima da hora.",
+          "Se você não gosta, se vire."
+        ],
+        "palabrasNota": "\"Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que valoriza sua constância e sua calma**, e fazer ruído a pressa ou as mudanças bruscas sem aviso. Com isso em mente, as palavras exatas você escolhe.\"",
+        "guia": {
+          "lead": "Três momentos onde uma pequena intenção muda muito.",
+          "antes": "Dê previsibilidade: conte o que vai acontecer e qual é o seu lugar. Saber que **o terreno é firme e que há um lugar para sua contribuição** foca e tranquiliza {nombre}.",
+          "durante": "Se algo gera tensão, em vez de apressar, **acompanhe com calma**: baixe o ritmo um momento e dê a segurança de que está tudo em ordem.",
+          "despues": "Reconheça **quando sustenta o grupo**, não só o resultado. A um perfil sustentador costuma chegar mais um \"você foi o apoio de todos\" do que um elogio geral.",
+          "ejemplo": "Se no sábado há uma atividade nova, contar \"você vai saber a todo momento o que vem a seguir\" transforma o nervosismo em tranquilidade."
+        },
+        "reset": {
+          "cuerpo": "Quando se frustra, a {nombre} costuma pesar o ruído e a tensão, e o que precisa é recuperar a calma. O que **mais costuma ajudar é dar uma pausa e voltar ao conhecido**: um momento tranquilo, uma rotina familiar, a segurança de que está tudo em ordem. Com o clima sereno, costuma se reacomodar.",
+          "ejemplo": "Em vez de \"vamos, continue já\", um \"leve um minuto, não há pressa\" costuma reencaminhar a situação muito melhor."
+        },
+        "ecos": {
+          "cuerpo": "Essa forma de sustentar **não vive só no esporte**. Costuma aparecer quando {nombre} cuida de um irmão, acalma uma discussão ou é a quem todos procuram quando algo se complica. Ver isso nesses momentos ajuda a entender que sua calma não é passividade: é **sua maneira de estar no mundo**.",
+          "ejemplo": "Se em casa é quem traz paz e em quem todos se apoiam, você está vendo o mesmo motor que move {nombre} na atividade."
+        }
+      },
+      "C": {
+        "combustible": {
+          "cuerpo": "O que mais costuma acender {nombre} é **entender como as coisas funcionam e ter um plano claro**. Quando pode analisar, antecipar e fazer as coisas bem, se envolve de verdade. Sentir que seu olhar cuidadoso faz a diferença é muitas vezes seu melhor combustível.",
+          "ejemplo": "Um \"que ótimo como você pensou nisso\" provavelmente chega a {nombre} mais do que um elogio genérico."
+        },
+        "palabrasPuente": [
+          "Como você pensaria nisso?",
+          "Você enxerga os detalhes que passam despercebidos para os outros.",
+          "Reserve um momento para analisar.",
+          "Me mostra o seu plano."
+        ],
+        "palabrasRuido": [
+          "Não pergunte tanto e faça logo.",
+          "Improvisa, depois a gente vê.",
+          "Não precisa entender, faça e pronto."
+        ],
+        "palabrasNota": "Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que valoriza sua análise e seu cuidado**, e incomodar quando o apressam ou pedem que improvise sem entender. Com isso em mente, as palavras exatas são você quem escolhe.",
+        "guia": {
+          "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
+          "antes": "Dê informação e um momento para pensar. Saber que vai poder **entender antes de agir** foca e tranquiliza {nombre}.",
+          "durante": "Se travar analisando, em vez de colocar pressão, **acompanhe a decisão**: ajude a escolher com a informação que já tem e a abrir mão da busca pelo plano perfeito.",
+          "despues": "Reconheça **quando pensa e cuida dos detalhes**, não só o resultado. A um perfil estrategista costuma chegar mais um \"dá para ver que você tinha pensado bem nisso\" do que um elogio genérico.",
+          "ejemplo": "Se no sábado tem uma atividade nova, contar com antecedência \"vai ser assim, estes são os passos\" transforma o nervosismo em confiança."
+        },
+        "reset": {
+          "cuerpo": "Quando se frustra, a {nombre} costuma pesar a sensação de não entender ou de ter que improvisar. O que **mais costuma ajudar é dar clareza**: explicar o que está acontecendo, organizar a informação e dar um momento para pensar. Com o panorama claro, costuma se reacomodar.",
+          "ejemplo": "Em vez de \"não pensa tanto nisso\", um \"vamos ver juntos como segue\" costuma reencaminhar a situação muito melhor."
+        },
+        "ecos": {
+          "cuerpo": "Essa forma de analisar **não vive só no esporte**. Costuma aparecer quando {nombre} monta uma estratégia num jogo, pergunta como as coisas funcionam ou quer entender o porquê de tudo. Ver isso nesses momentos ajuda a entender que não é \"complicar demais\": é **seu jeito de estar no mundo**.",
+          "ejemplo": "Se em casa é quem quer entender como cada coisa funciona e monta seu plano, você está vendo o mesmo motor que move {nombre} na atividade."
+        }
+      }
+    }
   }
- },
- "eje": {
-  "en": {
-   "D": {
-    "label": "Impulsor",
-    "combustible": {
-     "cuerpo": "What tends to light {nombre} up most is **having a clear goal and feeling that their drive moves things forward**. When {nombre} senses that their initiative leaves a real mark, they truly come alive, and recognizing that impact is often their best fuel.",
-     "ejemplo": "A \"thanks to you getting it going, this worked out\" will probably motivate {nombre} far more than general praise."
-    },
-    "palabrasPuente": [
-     "You start this one off.",
-     "What do you suggest to solve it?",
-     "Today you set the pace.",
-     "Show me how you'd do it."
-    ],
-    "palabrasRuido": [
-     "Wait, it's not your turn yet.",
-     "Just do it exactly as I say.",
-     "Better stay on the sidelines and watch."
-    ],
-    "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is anything that recognizes their initiative**, and what grates is anything that halts their drive without explaining why. With that in mind, the exact words are up to you.",
-    "guia": {
-     "lead": "Three moments where a small intention changes a lot.",
-     "antes": "Offer {nombre} a concrete goal and room to take the initiative. Knowing they'll be able to **get something of their own going** focuses and excites {nombre}.",
-     "durante": "If they speed up too much, instead of stopping the momentum, **channel their drive**: acknowledge the eagerness and add a quick read of the situation before going. It's about adding, not shutting down.",
-     "despues": "Recognize what they **set in motion**, not just the result. For an action-oriented profile, a \"you got everything going\" usually lands better than general praise.",
-     "ejemplo": "If there's a new activity on Saturday, telling them \"you'll get to start it off\" turns the nerves into eagerness."
-    },
-    "reset": {
-     "cuerpo": "When {nombre} gets frustrated, waiting around tends to be hard for them, and that's very understandable in an action-oriented profile. What **tends to help most is a small, concrete action** to take right then: a clear task, a short goal, something that brings back the feeling of making progress.",
-     "ejemplo": "Instead of \"calm down\", a \"take care of this for a minute\" usually gets things back on track much better."
-    },
-    "ecos": {
-     "cuerpo": "This drive to move forward **doesn't live only in sport**. It tends to show up when {nombre} organizes a game, suggests plans, or wants to solve something right away. Seeing it in those moments helps you understand it's not impatience: it's **their way of being in the world**.",
-     "ejemplo": "If at home they're one of the first to say \"come on, let's do this\", you're seeing the same engine that drives {nombre} in the activity."
-    }
-   },
-   "I": {
-    "combustible": {
-     "cuerpo": "What usually lights {nombre} up most is **feeling part of the group and being able to spread their enthusiasm to others**. When the mood is good and there's someone to share it with, they really come alive. Feeling that their energy adds to the group is often their best fuel.",
-     "ejemplo": "A \"you can tell when you're around, you get everyone excited\" will probably land with {nombre} more than praise given in private."
-    },
-    "palabrasPuente": [
-     "Tell the group whatever comes to mind.",
-     "You can lift everyone's spirits.",
-     "Who should we bring in for this?",
-     "I love your energy, spread it around."
-    ],
-    "palabrasRuido": [
-     "This isn't the time to talk.",
-     "Work quietly, on your own.",
-     "Stop distracting the group."
-    ],
-    "palabrasNota": "It's not a script, it's a compass for tone: what usually **lands most with {nombre} is anything that celebrates their way of connecting**, and what grates is anything that dims their spark or cuts off the bond. With that in mind, the exact words are up to you.",
-    "guia": {
-     "lead": "Three moments where a small intention changes a lot.",
-     "antes": "Give them a space where their enthusiasm has room and someone to share it with. Knowing they'll get to **add to the others** focuses and excites {nombre}.",
-     "durante": "If the energy scatters, instead of asking for silence, **channel their spark**: give them a role where their enthusiasm pushes the group toward the task.",
-     "despues": "Recognize **when they lift the group's spirits**, not just the result. A connector profile is usually reached more by a \"you got everyone excited\" than by general praise.",
-     "ejemplo": "If there's a new activity on Saturday, telling them \"you're going to meet a bunch of people\" turns the nerves into excitement."
-    },
-    "reset": {
-     "cuerpo": "When they get frustrated, feeling left out tends to weigh on {nombre}, and what they need is to reconnect. What **usually helps most is a moment of connection**: listening to {nombre}, naming what they feel and reminding them they're not in this alone. Once the mood is restored, they usually light back up.",
-     "ejemplo": "Instead of \"figure it out on your own\", a \"let's look at it together\" usually gets the situation back on track much better."
-    },
-    "ecos": {
-     "cuerpo": "This way of connecting **doesn't only live in sport**. It tends to show up when {nombre} gathers friends together, brings life to an outing or strikes up a chat with whoever's nearby. Seeing it in those moments helps you understand that it's not \"talking too much\": it's **their way of being in the world**.",
-     "ejemplo": "If at home they're the one who suggests plans with friends and organizes the outing, you're seeing the same engine that drives {nombre} in the activity."
-    }
-   },
-   "S": {
-    "combustible": {
-     "cuerpo": "What usually lights {nombre} up most is **feeling that the group is doing well and being able to be a reliable support**. A calm atmosphere, with no surprises, and knowing that others count on their support, make {nombre} feel right at home. Feeling trusted is often their best fuel.",
-     "ejemplo": "An \"I know I can count on you\" will probably reach {nombre} more than loud praise."
-    },
-    "palabrasPuente": [
-     "I'm counting on you for this.",
-     "Thank you for holding the group together.",
-     "Take all the time you need.",
-     "Your calm is good for everyone."
-    ],
-    "palabrasRuido": [
-     "Come on, hurry up, there's no time.",
-     "We're changing everything on the fly.",
-     "If you don't like it, deal with it."
-    ],
-    "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is valuing their steadiness and their calm**, and what jars is rushing or abrupt changes with no warning. With that in mind, the exact words are up to you.",
-    "guia": {
-     "lead": "Three moments where a small intention changes a lot.",
-     "antes": "Give them predictability: tell them what's going to happen and what their place is. Knowing that **the ground is firm and that there's a place for their contribution** focuses and calms {nombre}.",
-     "durante": "If something creates tension, instead of rushing them, **stay alongside them calmly**: slow the pace for a moment and reassure them that everything is in order.",
-     "despues": "Acknowledge **when they hold the group together**, not just the result. A supportive profile is usually reached more by a \"you were everyone's support\" than by general praise.",
-     "ejemplo": "If there's a new activity on Saturday, telling them \"you'll know what comes next at every moment\" turns nerves into calm."
-    },
-    "reset": {
-     "cuerpo": "When they get frustrated, noise and tension usually weigh on {nombre}, and what they need is to get their calm back. What **usually helps most is easing off and returning to the familiar**: a quiet moment, a familiar routine, the reassurance that everything is in order. With a calm atmosphere, they usually settle back in.",
-     "ejemplo": "Instead of \"come on, keep going now\", a \"take a minute, there's no rush\" usually gets things back on track much better."
-    },
-    "ecos": {
-     "cuerpo": "This way of supporting **doesn't live only in sport**. It tends to show up when {nombre} looks after a sibling, calms an argument, or is the one everyone turns to when something gets tricky. Seeing it in those moments helps you understand that their calm isn't passivity: it's **their way of being in the world**.",
-     "ejemplo": "If at home they're the one who brings peace and whom everyone leans on, you're seeing the same engine that drives {nombre} in the activity."
-    }
-   },
-   "C": {
-    "combustible": {
-     "cuerpo": "What usually lights {nombre} up most is **understanding how things work and having a clear plan**. When they can analyze, anticipate and get things right, they really come alive. Feeling that their careful eye makes a difference is often their best fuel.",
-     "ejemplo": "A \"I love how you thought that through\" will probably reach {nombre} more than general praise."
-    },
-    "palabrasPuente": [
-     "How would you think it through?",
-     "You see the details others miss.",
-     "Take a moment to analyze it.",
-     "Show me your plan."
-    ],
-    "palabrasRuido": [
-     "Stop asking so much and just do it.",
-     "Just improvise, we'll see.",
-     "You don't need to understand it, just do it."
-    ],
-    "palabrasNota": "It's not a script, it's a compass for tone: what usually **reaches {nombre} most is anything that values their thinking and their care**, and what tends to grate is being rushed or asked to improvise without understanding. With that in mind, the exact words are yours to choose.",
-    "guia": {
-     "lead": "Three moments where a small intention changes a lot.",
-     "antes": "Give them information and a moment to think. Knowing they'll get to **understand before acting** focuses and calms {nombre}.",
-     "durante": "If they get stuck analyzing, instead of adding pressure, **support the decision**: help them choose with the info they already have and let go of the search for the perfect plan.",
-     "despues": "Acknowledge **when they think things through and care about the details**, not just the result. A strategist profile is usually reached more by a \"you can tell you had it well thought out\" than by general praise.",
-     "ejemplo": "If there's a new activity on Saturday, telling them ahead of time \"this is how it'll go, these are the steps\" turns the nerves into confidence."
-    },
-    "reset": {
-     "cuerpo": "When they get frustrated, {nombre} usually struggles with the feeling of not understanding or having to improvise. What **usually helps most is giving them clarity**: explaining what's going on, organizing the information and giving them a moment to think. With the full picture clear, they tend to settle back down.",
-     "ejemplo": "Instead of \"don't overthink it,\" a \"let's look at what comes next together\" usually gets the situation back on track much better."
-    },
-    "ecos": {
-     "cuerpo": "This way of analyzing **doesn't live only in sport**. It tends to show up when {nombre} builds a strategy in a game, asks how things work or wants to understand the why behind everything. Seeing it in those moments helps you understand that it isn't \"overcomplicating things\": it's **their way of being in the world**.",
-     "ejemplo": "If at home they're the one who wants to understand how each thing works and makes their own plan, you're seeing the same engine that drives {nombre} in the activity."
-    }
-   }
-  },
-  "pt": {
-   "D": {
-    "combustible": {
-     "cuerpo": "O que mais costuma acender {nombre} é **ter um objetivo claro e sentir que seu impulso move as coisas**. Quando percebe que sua iniciativa deixa uma marca concreta, se anima de verdade, e reconhecer esse impacto é muitas vezes seu melhor combustível.",
-     "ejemplo": "Um \"foi porque você começou que isso deu certo\" provavelmente motiva {nombre} muito mais do que um elogio genérico."
-    },
-    "palabrasPuente": [
-     "Comece você com isso.",
-     "O que você propõe para resolver?",
-     "Hoje é você quem marca o ritmo.",
-     "Me mostra como você faria."
-    ],
-    "palabrasRuido": [
-     "Espera, ainda não é a sua vez.",
-     "Faz exatamente como eu digo.",
-     "Melhor ficar de lado e só observar."
-    ],
-    "palabrasNota": "Não é um roteiro, é uma bússola de tom: {nombre} costuma **sentir mais o que reconhece sua iniciativa**, e se incomoda com o que freia seu impulso sem explicar por quê. Com isso em mente, as palavras exatas quem escolhe é você.",
-    "guia": {
-     "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
-     "antes": "Ofereça um objetivo concreto e um espaço para tomar a iniciativa. Saber que vai poder **começar algo próprio** foca e entusiasma {nombre}.",
-     "durante": "Se acelera demais, em vez de cortar o embalo, **canalize esse impulso**: reconheça a vontade e acrescente uma leitura rápida antes de ir. A ideia é somar, não apagar.",
-     "despues": "Reconheça o que {nombre} **põe em movimento**, não só o resultado. Um perfil de ação costuma sentir mais um \"você fez tudo começar\" do que um elogio genérico.",
-     "ejemplo": "Se no sábado tem uma atividade nova, dizer \"você vai poder começar\" transforma o nervosismo em vontade."
-    },
-    "reset": {
-     "cuerpo": "Quando se frustra, {nombre} costuma ter dificuldade para ficar esperando, e isso é muito compreensível em um perfil de ação. O que **mais costuma ajudar é uma ação pequena e concreta** para fazer na hora: uma tarefa clara, um objetivo curto, algo que devolva a sensação de estar avançando.",
-     "ejemplo": "Em vez de \"se acalma\", um \"cuida disso por um minuto\" costuma reorientar a situação muito melhor."
-    },
-    "ecos": {
-     "cuerpo": "Esse impulso de avançar **não vive só no esporte**. Costuma aparecer quando {nombre} organiza uma brincadeira, propõe planos ou quer resolver algo na hora. Ver isso nesses momentos ajuda a entender que não é impaciência: é **o jeito de {nombre} estar no mundo**.",
-     "ejemplo": "Se em casa {nombre} é dos primeiros a dizer \"vamos, bora fazer isso\", você está vendo o mesmo motor que move {nombre} na atividade."
-    }
-   },
-   "I": {
-    "combustible": {
-     "cuerpo": "O que mais costuma acender {nombre} é **sentir-se parte e poder contagiar os outros com seu entusiasmo**. Quando o clima é bom e há com quem compartilhar, {nombre} se anima de verdade. Sentir que sua energia soma ao grupo é muitas vezes seu melhor combustível.",
-     "ejemplo": "Um \"nota-se quando você está, você contagia a vontade\" provavelmente chega mais a {nombre} do que um elogio a sós."
-    },
-    "palabrasPuente": [
-     "Conte ao grupo o que você está pensando.",
-     "Você pode levantar o ânimo de todos.",
-     "Quem vamos incluir nisso?",
-     "Adoro sua energia, contagie os outros."
-    ],
-    "palabrasRuido": [
-     "Agora não é hora de falar.",
-     "Trabalhe em silêncio, por conta própria.",
-     "Pare de dispersar o grupo."
-    ],
-    "palabrasNota": "Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que celebra seu jeito de conectar**, e fazer ruído o que apaga sua faísca ou corta o vínculo. Com isso em mente, as palavras exatas quem escolhe é você.",
-    "guia": {
-     "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
-     "antes": "Dê um espaço onde o entusiasmo de {nombre} tenha lugar e alguém com quem compartilhar. Saber que vai poder **somar aos outros** foca e entusiasma {nombre}.",
-     "durante": "Se a energia se dispersa, em vez de pedir silêncio, **canalize essa faísca**: dê um papel onde o entusiasmo de {nombre} empurre o grupo para a tarefa.",
-     "despues": "Reconheça **quando {nombre} soma ao ânimo do grupo**, não só o resultado. A um perfil conector costuma chegar mais um \"você contagiou a vontade de todos\" do que um elogio geral.",
-     "ejemplo": "Se no sábado tem uma atividade nova, contar a {nombre} \"você vai conhecer um monte de gente\" transforma o nervosismo em vontade."
-    },
-    "reset": {
-     "cuerpo": "Quando se frustra, a {nombre} costuma pesar sentir-se de lado, e o que precisa é reconectar. O que **mais costuma ajudar é um momento de vínculo**: escutar {nombre}, nomear o que sente e lembrar que não está nisso sozinho. Com o clima recomposto, {nombre} costuma voltar a se acender.",
-     "ejemplo": "Em vez de \"resolva sozinho\", um \"vamos ver isso juntos\" costuma reencaminhar a situação muito melhor."
-    },
-    "ecos": {
-     "cuerpo": "Esse jeito de conectar **não vive só no esporte**. Costuma aparecer quando {nombre} junta os amigos, anima um programa ou começa a conversar com quem estiver por perto. Ver isso nesses momentos ajuda a entender que não é \"falar demais\": é **seu jeito de estar no mundo**.",
-     "ejemplo": "Se em casa é quem propõe programas com os amigos e organiza a saída, você está vendo o mesmo motor que move {nombre} na atividade."
-    }
-   },
-   "S": {
-    "combustible": {
-     "cuerpo": "O que mais costuma acender {nombre} é **sentir que o grupo está bem e poder ser um apoio de confiança**. Um clima tranquilo, sem sobressaltos, e saber que os demais contam com seu apoio, fazem {nombre} sentir-se no seu lugar. Sentir-se de confiança é muitas vezes seu melhor combustível.",
-     "ejemplo": "Um \"sei que posso contar com você\" provavelmente chega a {nombre} mais do que um elogio barulhento."
-    },
-    "palabrasPuente": [
-     "Conto com você para isto.",
-     "Obrigado por sustentar o grupo.",
-     "Leve o tempo que precisar.",
-     "Sua calma faz bem a todos."
-    ],
-    "palabrasRuido": [
-     "Vamos, se apure, não há tempo.",
-     "Mudamos tudo em cima da hora.",
-     "Se você não gosta, se vire."
-    ],
-    "palabrasNota": "\"Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que valoriza sua constância e sua calma**, e fazer ruído a pressa ou as mudanças bruscas sem aviso. Com isso em mente, as palavras exatas você escolhe.\"",
-    "guia": {
-     "lead": "Três momentos onde uma pequena intenção muda muito.",
-     "antes": "Dê previsibilidade: conte o que vai acontecer e qual é o seu lugar. Saber que **o terreno é firme e que há um lugar para sua contribuição** foca e tranquiliza {nombre}.",
-     "durante": "Se algo gera tensão, em vez de apressar, **acompanhe com calma**: baixe o ritmo um momento e dê a segurança de que está tudo em ordem.",
-     "despues": "Reconheça **quando sustenta o grupo**, não só o resultado. A um perfil sustentador costuma chegar mais um \"você foi o apoio de todos\" do que um elogio geral.",
-     "ejemplo": "Se no sábado há uma atividade nova, contar \"você vai saber a todo momento o que vem a seguir\" transforma o nervosismo em tranquilidade."
-    },
-    "reset": {
-     "cuerpo": "Quando se frustra, a {nombre} costuma pesar o ruído e a tensão, e o que precisa é recuperar a calma. O que **mais costuma ajudar é dar uma pausa e voltar ao conhecido**: um momento tranquilo, uma rotina familiar, a segurança de que está tudo em ordem. Com o clima sereno, costuma se reacomodar.",
-     "ejemplo": "Em vez de \"vamos, continue já\", um \"leve um minuto, não há pressa\" costuma reencaminhar a situação muito melhor."
-    },
-    "ecos": {
-     "cuerpo": "Essa forma de sustentar **não vive só no esporte**. Costuma aparecer quando {nombre} cuida de um irmão, acalma uma discussão ou é a quem todos procuram quando algo se complica. Ver isso nesses momentos ajuda a entender que sua calma não é passividade: é **sua maneira de estar no mundo**.",
-     "ejemplo": "Se em casa é quem traz paz e em quem todos se apoiam, você está vendo o mesmo motor que move {nombre} na atividade."
-    }
-   },
-   "C": {
-    "combustible": {
-     "cuerpo": "O que mais costuma acender {nombre} é **entender como as coisas funcionam e ter um plano claro**. Quando pode analisar, antecipar e fazer as coisas bem, se envolve de verdade. Sentir que seu olhar cuidadoso faz a diferença é muitas vezes seu melhor combustível.",
-     "ejemplo": "Um \"que ótimo como você pensou nisso\" provavelmente chega a {nombre} mais do que um elogio genérico."
-    },
-    "palabrasPuente": [
-     "Como você pensaria nisso?",
-     "Você enxerga os detalhes que passam despercebidos para os outros.",
-     "Reserve um momento para analisar.",
-     "Me mostra o seu plano."
-    ],
-    "palabrasRuido": [
-     "Não pergunte tanto e faça logo.",
-     "Improvisa, depois a gente vê.",
-     "Não precisa entender, faça e pronto."
-    ],
-    "palabrasNota": "Não é um roteiro, é uma bússola de tom: a {nombre} costuma **chegar mais o que valoriza sua análise e seu cuidado**, e incomodar quando o apressam ou pedem que improvise sem entender. Com isso em mente, as palavras exatas são você quem escolhe.",
-    "guia": {
-     "lead": "Três momentos em que uma pequena intenção muda muita coisa.",
-     "antes": "Dê informação e um momento para pensar. Saber que vai poder **entender antes de agir** foca e tranquiliza {nombre}.",
-     "durante": "Se travar analisando, em vez de colocar pressão, **acompanhe a decisão**: ajude a escolher com a informação que já tem e a abrir mão da busca pelo plano perfeito.",
-     "despues": "Reconheça **quando pensa e cuida dos detalhes**, não só o resultado. A um perfil estrategista costuma chegar mais um \"dá para ver que você tinha pensado bem nisso\" do que um elogio genérico.",
-     "ejemplo": "Se no sábado tem uma atividade nova, contar com antecedência \"vai ser assim, estes são os passos\" transforma o nervosismo em confiança."
-    },
-    "reset": {
-     "cuerpo": "Quando se frustra, a {nombre} costuma pesar a sensação de não entender ou de ter que improvisar. O que **mais costuma ajudar é dar clareza**: explicar o que está acontecendo, organizar a informação e dar um momento para pensar. Com o panorama claro, costuma se reacomodar.",
-     "ejemplo": "Em vez de \"não pensa tanto nisso\", um \"vamos ver juntos como segue\" costuma reencaminhar a situação muito melhor."
-    },
-    "ecos": {
-     "cuerpo": "Essa forma de analisar **não vive só no esporte**. Costuma aparecer quando {nombre} monta uma estratégia num jogo, pergunta como as coisas funcionam ou quer entender o porquê de tudo. Ver isso nesses momentos ajuda a entender que não é \"complicar demais\": é **seu jeito de estar no mundo**.",
-     "ejemplo": "Se em casa é quem quer entender como cada coisa funciona e monta seu plano, você está vendo o mesmo motor que move {nombre} na atividade."
-    }
-   }
-  }
- }
 }

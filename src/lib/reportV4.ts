@@ -11,7 +11,7 @@
 // Nombres: docs/archetype-naming.md · Cálculo: docs/METODO-CALCULO-NUEVO.md · i18n: docs/METODO-V4-EN-PT-INTEGRACION.md.
 
 import type { EvidenceFicha, Axis, Registro, VotesEvidence } from './evidenceFicha';
-import { getMotorInsight, getVetaLabel, getArchetypeLabel, getEjeBase } from './archetypeContentV4';
+import { getMotorInsight, getVetaLabel, getArchetypeLabel, getBlendName, getEjeBase } from './archetypeContentV4';
 import type { ReportBlock, Lang } from './archetypeContentV4';
 import { COPY, fill, listaClara } from './reportV4Copy';
 import type { CopyPack } from './reportV4Copy';
@@ -88,9 +88,14 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
   const lang = langOf(ctx);
   const pack = COPY[lang];
   const v = ficha.votes;
+  // arquetipoLabel lang-aware: reproduce la regla dura del resolver (SIEMPRE primario + veta; veta solo
+  // si el 2º eje tuvo ≥1 voto). getBlendName es idéntico al label es del resolver (snapshot-guarded).
+  const arquetipoLabel = v.secondCount >= 1
+    ? getBlendName(v.ejePrimario, v.ejeSecundario, lang)
+    : getArchetypeLabel(v.ejePrimario, lang);
   return {
     nombre: ctx.nombre,
-    arquetipoLabel: v.arquetipoLabel,
+    arquetipoLabel,
     primarioLabel: getArchetypeLabel(v.ejePrimario, lang),
     vetaLabel: v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang) : null,
     ejePrimario: v.ejePrimario,

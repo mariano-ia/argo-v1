@@ -418,8 +418,8 @@ export const COPY: Record<Lang, CopyPack> = {
     },
     "lead": {
       "veta_clause": " E por trás desse impulso aparece uma **veia ${vetaLabel}**: em várias cenas também escolheu ${largaSec}.",
-      "rotundo": "O jogo de ${n} se apoia **totalmente em ${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
-      "claro": "O jogo de ${n} se apoia **com clareza em ${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
+      "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
+      "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
       "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
       "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
     },

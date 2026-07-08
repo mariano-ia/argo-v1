@@ -20,6 +20,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 import type { Axis, MotorZona } from './evidenceFicha';
+import { EJE_BASE_EN, EJE_BASE_PT, MOTOR_EN, MOTOR_PT } from './reportEjeContentI18n';
 
 export type Lang = 'es' | 'en' | 'pt';
 
@@ -81,16 +82,9 @@ export const MOTOR_INSIGHT_TEMPLATES: Record<Lang, MotorTemplate> = {
       ejemplo: `Antes de responder, {nombre} suele mirar un segundo la situación: ese "primero entiendo, después voy" es parte de su fortaleza.`,
     },
   },
-  en: {
-    rapido: { cuerpo: `In the reaction and decision mini-games, {nombre} played at a quick pace: they tend to read fast and trust their first impulse. Supporting {nombre} well means giving room for that speed, and gradually adding moments to choose when it pays to take an extra second.` },
-    intermedio: { cuerpo: `In the reaction and decision mini-games, {nombre} showed a balanced pace: they tend to adjust their timing to what each moment asks, without rushing or lagging. Supporting {nombre} well means helping them recognize when their game calls for speed and when it calls for a pause.` },
-    lento: { cuerpo: `In the reaction and decision mini-games, {nombre} played at a measured pace: they tend to take a moment to read the scene before moving. Supporting {nombre} well means valuing that read (without asking them to hurry for its own sake) and giving confidence to hold their timing when the situation allows.` },
-  },
-  pt: {
-    rapido: { cuerpo: `Nos mini-jogos de reação e decisão, {nombre} moveu-se num ritmo ágil: tende a ler rápido e a confiar no primeiro impulso. Acompanhar {nombre} é dar espaço para essa velocidade e, aos poucos, somar momentos para escolher quando vale a pena levar um segundo a mais.` },
-    intermedio: { cuerpo: `Nos mini-jogos de reação e decisão, {nombre} mostrou um ritmo equilibrado: tende a ajustar o seu tempo ao que cada momento pede, sem se apressar nem se atrasar. Acompanhar {nombre} é ajudar a reconhecer quando o jogo pede velocidade e quando pede uma pausa.` },
-    lento: { cuerpo: `Nos mini-jogos de reação e decisão, {nombre} moveu-se num ritmo comedido: tende a levar um momento para ler a cena antes de se mover. Acompanhar {nombre} é valorizar essa leitura (sem pedir que se apresse à toa) e dar confiança para sustentar o seu tempo quando a situação permite.` },
-  },
+  // en/pt en la VOZ NUEVA (con ejemplo), generados desde bodies.motor (reportEjeContentI18n).
+  en: MOTOR_EN,
+  pt: MOTOR_PT,
 };
 
 /** Devuelve el bloque de "Su motor" según la zona (null => intermedio como fallback). */
@@ -270,9 +264,11 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
   },
 };
 
-/** Devuelve el contenido base del eje si está redactado y aprobado en ese idioma; si no, null
- *  (el render omite la sección: degradación por construcción, no inventa). en/pt: pendientes. */
+/** Devuelve el contenido base del eje en el idioma pedido; null si no está redactado
+ *  (el render omite la sección: degradación por construcción, no inventa). es aprobado por el
+ *  owner; en/pt de las traducciones verificadas (reportEjeContentI18n, fixes del verificador aplicados). */
 export function getEjeBase(axis: Axis, lang: Lang): EjeBaseContent | null {
-  if (lang !== 'es') return null; // en/pt: pendientes de redacción + revisión de voz
+  if (lang === 'en') return EJE_BASE_EN[axis] ?? null;
+  if (lang === 'pt') return EJE_BASE_PT[axis] ?? null;
   return EJE_BASE_DRAFT_ES[axis] ?? null;
 }
