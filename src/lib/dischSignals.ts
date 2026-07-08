@@ -75,9 +75,11 @@ export function computeContingencia(answers: AnswerRecord[], primario: Axis): Co
     chosen.forEach((ax) => { counts[ax] = (counts[ax] ?? 0) + 1; });
     const ranked = (Object.entries(counts) as [Axis, number][]).sort((a, b) => b[1] - a[1]);
     const [axis, support] = ranked[0];
-    const secondSupport = ranked[1]?.[1] ?? 0;
-    // ROBUSTEZ: mayoría estricta (≥2 Y estrictamente mayor que el resto). Empate ⇒ "varía".
-    if (support >= 2 && support > secondSupport) {
+    // CANDADO (panel 2026-07-08): afirmar patrón SOLO con UNANIMIDAD en un contexto de ≥3
+    // escenas (3 de 3). En 3 escenas, "2 de 3" ocurre por azar el 62.5% de las veces: afirmarlo
+    // fabricaría un rasgo. Los contextos de 2 escenas (inicio, esfuerzo) no afirman; van a "varía".
+    // Cuando el dato no alcanza, la sección se calla (buildContingenciaSection => null).
+    if (support === chosen.length && chosen.length >= 3) {
       patrones.push({ context: ctx, axis, support, deTotal: chosen.length, esDesvio: axis !== primario });
     } else {
       contextosVaria.push(ctx);

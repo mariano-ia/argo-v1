@@ -14,22 +14,29 @@ test('receta: 8-3-1-0 => orden con presencia intra-individual', () => {
   ]);
 });
 
-test('contingencia: patrones robustos + marca el desvío (cambia de registro)', () => {
+test('contingencia CANDADO: afirma solo con 3 de 3 en adversidad; inicio/esfuerzo (2 escenas) van a "varía"', () => {
   const answers = [
-    ans(1, 'D'), ans(2, 'D'),            // inicio: D,D
+    ans(1, 'D'), ans(2, 'D'),               // inicio: D,D (2 escenas => no afirma)
     ans(3, 'D'), ans(4, 'D'),
-    ans(5, 'C'), ans(6, 'C'), ans(7, 'D'), // adversidad: C,C,D => C (desvío)
-    ans(8, 'D'), ans(11, 'D'),           // esfuerzo: D,D
+    ans(5, 'C'), ans(6, 'C'), ans(7, 'C'),  // adversidad: C,C,C => 3/3 => desvío a C
+    ans(8, 'D'), ans(11, 'D'),              // esfuerzo: D,D (2 escenas => no afirma)
     ans(9, 'D'), ans(10, 'I'), ans(12, 'D'),
   ];
   const c = computeContingencia(answers, 'D');
-  const inicio = c.patrones.find((p) => p.context === 'inicio');
   const adv = c.patrones.find((p) => p.context === 'adversidad');
-  const esf = c.patrones.find((p) => p.context === 'esfuerzo');
-  assert.strictEqual(inicio?.axis, 'D'); assert.strictEqual(inicio?.esDesvio, false);
-  assert.strictEqual(adv?.axis, 'C'); assert.strictEqual(adv?.esDesvio, true); assert.strictEqual(adv?.support, 2);
-  assert.strictEqual(esf?.axis, 'D');
-  assert.deepStrictEqual(c.contextosVaria, []);
+  assert.strictEqual(adv?.axis, 'C'); assert.strictEqual(adv?.esDesvio, true); assert.strictEqual(adv?.support, 3);
+  assert.ok(!c.patrones.some((p) => p.context === 'inicio'), 'inicio (2 escenas) no afirma');
+  assert.ok(!c.patrones.some((p) => p.context === 'esfuerzo'), 'esfuerzo (2 escenas) no afirma');
+  assert.ok(c.contextosVaria.includes('inicio') && c.contextosVaria.includes('esfuerzo'));
+});
+
+test('contingencia CANDADO: adversidad 2 de 3 (mayoría no unánime) => se calla, no fabrica', () => {
+  const answers = [
+    ans(5, 'C'), ans(6, 'C'), ans(7, 'D'),  // adversidad: C,C,D => 2/3 => ya NO afirma
+  ];
+  const c = computeContingencia(answers, 'D');
+  assert.ok(!c.patrones.some((p) => p.context === 'adversidad'));
+  assert.ok(c.contextosVaria.includes('adversidad'));
 });
 
 test('REGLA DE ORO: adversidad 1-1-1 (todas distintas) => NO afirma patrón, cae a "varía"', () => {

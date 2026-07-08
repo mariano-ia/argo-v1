@@ -31,9 +31,13 @@ const ordered = (pairs: [number, 'D' | 'I' | 'S' | 'C'][]) =>
 const orderedFicha = (pairs: [number, 'D' | 'I' | 'S' | 'C'][]) =>
   resolveEvidenceFicha(ordered(pairs) as never, { edadMeses: 132, questionVersion: 'v4-2026-07' });
 
-// Chico D con desvío a Estratega en la adversidad (9-2-1-0).
+// Chico D con adversidad C,C,D (2 de 3): tormenta tentativa, y bajo el candado la contingencia se CALLA (9-2-1-0).
 const DESVIO: [number, 'D' | 'I' | 'S' | 'C'][] = [
   [1, 'D'], [2, 'D'], [3, 'D'], [4, 'D'], [5, 'C'], [6, 'C'], [7, 'D'], [8, 'D'], [9, 'D'], [10, 'I'], [11, 'D'], [12, 'D'],
+];
+// Chico D con desvío ROBUSTO a Estratega: adversidad C,C,C (3 de 3, pasa el candado) (8-3-1-0).
+const DESVIO3: [number, 'D' | 'I' | 'S' | 'C'][] = [
+  [1, 'D'], [2, 'D'], [3, 'D'], [4, 'D'], [5, 'C'], [6, 'C'], [7, 'C'], [8, 'D'], [9, 'D'], [10, 'I'], [11, 'D'], [12, 'D'],
 ];
 
 // ── Encabezado ──
@@ -84,7 +88,7 @@ test('receta: evita el choque de "y" cuando un color contiene "y" (el detalle y 
 });
 
 test('contingencia: narra el desvío en presente ("se inclina por"), no en pasado deportivo', () => {
-  const b = buildContingenciaSection(orderedFicha(DESVIO), CTX('Mateo'));
+  const b = buildContingenciaSection(orderedFicha(DESVIO3), CTX('Mateo'));
   assert.ok(b);
   assert.match(b!.cuerpo, /cambia de registro/);
   assert.match(b!.cuerpo, /se inclina por \*\*mirar el plan antes de actuar\*\*/);
@@ -184,7 +188,7 @@ test('motor: con juegos rápidos narra bloque; sin juegos null (se omite)', () =
 
 // ── Ensamblador ──
 test('buildReportV4: ensambla hero + secciones ordenadas; omite lo no narratable', () => {
-  const r = buildReportV4(orderedFicha(DESVIO), CTX('Mateo'));
+  const r = buildReportV4(orderedFicha(DESVIO3), CTX('Mateo'));
   assert.strictEqual(r.hero.arquetipoLabel, 'Impulsor con veta Estratega');
   const ids = r.secciones.map((s) => s.id);
   ['receta', 'contingencia', 'patron', 'tormenta', 'grupo', 'logro', 'combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
