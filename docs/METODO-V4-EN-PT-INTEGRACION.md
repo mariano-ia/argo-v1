@@ -1,6 +1,38 @@
-# Informe v4 — en/pt: traducciones LISTAS, integración pendiente
+# Informe v4 — en/pt: INTEGRADO ✅ (2026-07-07)
 
-> 2026-07-07. Las traducciones de TODO el copy del informe v4 a EN + PT están **producidas y verificadas adversarialmente** (3 workflows). Falta la **integración** (refactor lang-keyed del engine + abrir el gate). El camino **es sigue intacto** (nada de esto se aplicó todavía). Estado general: `METODO-V4-ESTADO-Y-RUNBOOK.md`.
+> **DONE 2026-07-07.** El informe v4 genera y renderiza en **es/en/pt**. Engine lang-keyed, contenido de
+> ejes + motor en/pt, gate abierto a en/pt, render (ReportV4View) por idioma. **es quedó byte-idéntico**
+> (snapshot 24 = 8 perfiles × 3 idiomas). Lo que sigue es **entrega** (email i18n + "qué idioma usa cada
+> jugada"), parte del flip, NO de la integración. Estado general: `METODO-V4-ESTADO-Y-RUNBOOK.md`.
+
+## Cómo quedó (as-built)
+
+Arquitectura: **lógica compartida** (reportV4.ts computa slots desde la ficha) + **copy por idioma**.
+- `src/lib/reportV4Copy.ts` (GENERADO por `scripts/gen_copy.py`): `COPY: Record<Lang, CopyPack>` con léxico +
+  lead (5 registros + veta_clause) + section/group titles + footer + bodies (templates de secciones con verbos
+  de concordancia + frases de marco equipo/individual) + `ui` (micro-copy del render). `fill()` sustituye `${slot}`;
+  `listaClara()` toma los conectores "y"/"and"/"e" por idioma.
+- `src/lib/reportEjeContentI18n.ts` (GENERADO por `scripts/gen_eje.py`): `EJE_BASE_EN/PT` (combustible/palabras/
+  guia/reset/ecos) + `MOTOR_EN/PT` (voz nueva, con ejemplo). `getEjeBase(axis, lang)` y `getMotorInsight` ya
+  devuelven en/pt.
+- `reportV4.ts`: los builders indexan `COPY[ctx.lang]`; `ReportContext.lang`, `ReportV4.lang`, `ReportHero.veta`
+  {pre,word,post} (para pintar el H1 por idioma). `arquetipoLabel` lang-aware (getBlendName).
+- Gate (`reportQuality.ts` + inline en `session.ts`): idioma-hold solo para idiomas NO soportados (es/en/pt pasan);
+  no-guiones universal; voseo es-only; `veta_inconsistente` lang-agnóstico (chequea el arquetipo secundario en
+  el lead vía `hero.veta.word`, no la palabra "veta"). `reportPipeline` arma en `opts.lang`.
+- `ReportV4View.tsx`: consume `COPY[report.lang]` (group_titles, footer, ui). H1 con piezas de veta coloreadas.
+
+**Fixes de gramática/traducción hallados y corregidos en la integración:** contracción PT `em`+artículo → `n`
+(`na ação`/`no vínculo`, antes `em a ação`) en el lead rotundo/claro; los 6 fixes del verificador (ver abajo).
+
+**Tests:** snapshot 3 idiomas (24), `reportV4.i18n.test.ts` (sin placeholders residuales; EN ASCII puro = no hay
+es/pt colado; PT sin marcas es-only; label/títulos/veta por idioma), gate/pipeline/view actualizados. Suite v4: 92 verde.
+
+**Pendiente (ENTREGA, no integración):** (1) email `buildHtmlV4` sigue es (todos los report_v4 guardados son es;
+ningún en/pt se entrega aún) — i18n del email va con el flip. (2) plumbing "qué idioma usa cada jugada" (hoy el
+shadow arma es). Ambos son del flip (`V4_SEAL=on` + selección de idioma + rollout).
+
+## Traducciones (fuente)
 
 ## Dónde están las traducciones
 
@@ -27,19 +59,10 @@ Placeholders (`${n}`, `${corta}`, `{nombre}`, etc.) y **negritas** preservados. 
 - `eje.S.guia.lead`: unificar con D/I/C ("Três momentos em que uma pequena intenção muda muita coisa").
 - (heredado, opcional) `eje.D.ecos.ejemplo`: "dos primeiros" genérico masculino — neutralizar en ambos idiomas si se quiere.
 
-## Plan de integración (refactor, protegido por los tests de es)
+## Plan de integración — EJECUTADO ✅
 
-Arquitectura: centralizar el copy en `Record<Lang, ...>` (es verbatim + en/pt del JSON). El engine (`reportV4.ts`) computa SLOTS (nombre, conducta, count, qué rama) y llama a un template por idioma. Separa LÓGICA (compartida) de COPY (por idioma). `lang` ya está threadeado en `ReportContext` (opcional, default es).
-
-Pasos (correr `qa:unit`/tests de es DESPUÉS DE CADA UNO — blindan es):
-1. **Léxico → `Record<Lang>`**: EJE_WORD, EJE_LEAD, RECETA_EJEMPLO, STORM_EJEMPLO, SUCCESS_ANCHOR, META_CHOICE, CONTEXT_WORD, METER_LABELS. AXIS_ARQ desde `AXIS_ARCHETYPE_LABEL`. Builders indexan por `ctx.lang`.
-2. **Lead** (`leadParagraph`) → templates por idioma (5 registros + veta_clause). getVetaLabel ya es lang-aware.
-3. **Secciones** (receta/contingencia/patron/tormenta/grupo/logro) → templates por idioma (bodies + verbos + frases de marco). Cuidado con las concordancias (verbo2/suman/pesa) y `listaClara` (el separador "y también" tiene su equivalente EN "and also" / PT "e também").
-4. **Motor** (`archetypeContentV4.MOTOR_INSIGHT_TEMPLATES`) → reemplazar el en/pt viejo por el nuevo (bodies.motor), con ejemplo.
-5. **Contenido de ejes** (`archetypeContentV4.EJE_BASE`) → `Record<Lang>` (es + en + pt del bucket eje, con los fixes). `getEjeBase(axis, lang)` devuelve en/pt.
-6. **Section/group titles + footer** (ReportV4View) → por idioma.
-7. **Gate**: abrir a en/pt (`reportQuality.ts` idioma check + el gate server-side inlineado en `session.ts` — hoy retienen lang≠es). Recalibrar los guards (el voseo-guard es es-only; en/pt tienen sus propios patrones — o desactivarlo para no-es).
-8. **Tests**: generar informes en/pt (Mateo) + inspeccionar HTML (como se hizo con es); tests de que en/pt renderizan sin `{...}` residual y sin mezcla de idioma.
-9. Recién ahí, con en/pt verificado, el pipeline/gate dejan pasar en/pt.
-
-**Riesgo**: es el refactor más invasivo del engine vivo. Mitigación: es verbatim (tests de es lo prueban) + gate cerrado para en/pt hasta el paso 8 + inspección del HTML en/pt. Hacerlo como pasada enfocada.
+El plan (9 pasos: léxico → lead → secciones → motor → contenido de ejes → titles/footer → gate → tests) se
+ejecutó completo el 2026-07-07, protegido en cada paso por el snapshot de es (byte-idéntico). Ver "Cómo quedó
+(as-built)" arriba. Para regenerar el copy: `python3 scripts/gen_copy.py` (COPY) y `python3 scripts/gen_eje.py`
+(contenido de ejes + motor); ambos leen `docs/_i18n/report-v4-translations.json`. NO editar los .ts generados
+a mano. El snapshot es la red de seguridad (regenerarlo solo con intención explícita de cambiar copy).
