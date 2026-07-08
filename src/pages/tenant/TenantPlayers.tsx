@@ -1,4 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { createRoot } from 'react-dom/client';
+import { flushSync } from 'react-dom';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, ChevronUp, Clock, AlertCircle, UserCircle, Users, Send, Loader2, Download, Lock, Archive, RotateCcw, Copy, Check, Sprout, MessageCircle, BookOpen, X, Trash2 } from 'lucide-react';
@@ -44,6 +46,59 @@ const monthsSince = (iso: string) => {
     const now = new Date();
     return (now.getFullYear() - d.getFullYear()) * 12 + now.getMonth() - d.getMonth();
 };
+
+// Rasterizes a laid-out DOM node to a multi-page A4 PDF and triggers the download.
+// Shared by the legacy export (an iframe body with inlined styles) and the v4 export
+// (an off-screen ReportV4View rendered in the main document so Tailwind applies). Defaults
+// reproduce the legacy call exactly (scale 2, 800px, html2canvas default white bg) so the
+// legacy path is unchanged; the v4 path passes the neutral report background.
+async function domNodeToPdf(node: HTMLElement, filename: string, opts: { width?: number; backgroundColor?: string } = {}): Promise<void> {
+    const width = opts.width ?? 800;
+    const html2canvas = (await import('html2canvas')).default;
+    const jsPDF = (await import('jspdf')).default;
+
+    // The tall single-column v4 report can exceed the mobile/iOS canvas ceiling (Safari
+    // silently clips a canvas past ~4096-8192px). Drop the effective scale for very tall
+    // nodes to stay under a conservative ceiling; short nodes (the legacy report) keep
+    // scale 2 unchanged. Then hard-check that the canvas was NOT clipped — html2canvas
+    // does not throw on a clipped canvas, so without this the caller's fallback never runs.
+    const nodeHeight = node.scrollHeight || node.offsetHeight || 0;
+    const MAX_CANVAS_PX = 8000;
+    const scale = nodeHeight > 0 ? Math.min(2, Math.max(1, MAX_CANVAS_PX / nodeHeight)) : 2;
+
+    const canvas = await html2canvas(node, {
+        scale,
+        useCORS: true,
+        width,
+        windowWidth: width,
+        ...(opts.backgroundColor ? { backgroundColor: opts.backgroundColor } : {}),
+    });
+
+    const expectedHeight = Math.round(nodeHeight * scale);
+    if (!canvas.width || !canvas.height || (expectedHeight > 0 && canvas.height < expectedHeight * 0.85)) {
+        throw new Error(`html2canvas produced a clipped/blank canvas (${canvas.width}x${canvas.height}, expected ~${Math.round(width * scale)}x${expectedHeight})`);
+    }
+
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+    let position = 0;
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // When a page background is set (v4 neutral bg), fill each page before drawing so the
+    // leftover area below the report on the last page matches instead of showing white.
+    const bg = opts.backgroundColor;
+    const rgb = bg ? [parseInt(bg.slice(1, 3), 16), parseInt(bg.slice(3, 5), 16), parseInt(bg.slice(5, 7), 16)] : null;
+
+    while (position < pdfHeight) {
+        if (position > 0) pdf.addPage();
+        if (rgb) { pdf.setFillColor(rgb[0], rgb[1], rgb[2]); pdf.rect(0, 0, pdfWidth, pageHeight, 'F'); }
+        pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, pdfHeight);
+        position += pageHeight;
+    }
+    pdf.save(filename);
+}
 
 const PAGE_SIZE_OPTIONS = [20, 50, 100];
 
@@ -188,6 +243,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
     const [resending, setResending] = useState(false);
     const [resendOk, setResendOk] = useState<boolean | null>(null);
     const [copied, setCopied] = useState(false);
+    const [downloading, setDownloading] = useState(false);
 
     const reprofileLink = session.reprofile_token
         ? `${typeof window !== 'undefined' ? window.location.origin : ''}/play/r/${session.reprofile_token}`
@@ -287,6 +343,14 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         return (r && sealed && r.hero) ? r : null;
     }, [session.report_v4, session.report_status]);
     const v4Label = v4?.hero?.arquetipoLabel ?? null;
+    // Canonical report date (long month), shared by the on-screen v4 card header and the v4 PDF
+    // so both agree and match the delivered report page.
+    const reportFecha = useMemo(
+        () => new Date(session.created_at).toLocaleDateString(
+            sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR',
+            { day: '2-digit', month: 'long', year: 'numeric' }),
+        [session.created_at, sessionLang],
+    );
 
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
@@ -334,7 +398,55 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         finally { setResending(false); setTimeout(() => setResendOk(null), 3000); }
     };
 
+    const pdfFilename = `argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.pdf`;
+
+    // v4 export: render the SAME ReportV4View the coach/parent see, off-screen in the MAIN
+    // document (so the global Tailwind stylesheet applies), inside a wrapper that mirrors the
+    // web report page look (neutral bg + report-page padding). Then rasterize that node to PDF.
+    const downloadV4Pdf = async (v4report: ReportV4) => {
+        const host = document.createElement('div');
+        host.style.cssText = 'position:fixed;left:-9999px;top:0;width:800px;padding:32px 16px;background:#F5F5F7;font-family:Inter,-apple-system,BlinkMacSystemFont,sans-serif;';
+        document.body.appendChild(host);
+        const root = createRoot(host);
+        try {
+            flushSync(() => {
+                root.render(
+                    <ReportV4View
+                        report={v4report}
+                        edad={session.child_age}
+                        deporte={session.sport}
+                        adulto={session.adult_name}
+                        fecha={reportFecha}
+                    />
+                );
+            });
+            // Short settle so web fonts + layout are final before capture. A plain timeout (not
+            // requestAnimationFrame) so it still resolves if the tab is backgrounded mid-download
+            // — an rAF would pause while hidden and leave the host mounted.
+            await new Promise<void>((r) => setTimeout(r, 400));
+            await domNodeToPdf(host, pdfFilename, { width: 800, backgroundColor: '#F5F5F7' });
+        } finally {
+            try { root.unmount(); } catch { /* noop */ }
+            host.remove();
+        }
+    };
+
     const handleDownload = async () => {
+        if (downloading) return;   // re-entrancy guard: ignore rapid double-clicks (each export is heavy)
+        setDownloading(true);
+        try { await runDownload(); }
+        finally { setDownloading(false); }
+    };
+
+    const runDownload = async () => {
+        // Coherent with the on-screen render: a sealed v4 report (paid coach) exports the v4
+        // document; otherwise the legacy report. On a v4 rasterization failure, fall through to
+        // the legacy PDF so the coach always ends up with a file.
+        if (v4 && !locked) {
+            try { await downloadV4Pdf(v4); return; }
+            catch (err) { console.error('v4 PDF generation failed, falling back to legacy:', err); }
+        }
+
         const locale = sessionLang === 'pt' ? 'pt-BR' : sessionLang === 'en' ? 'en-US' : 'es-AR';
         const report = getSessionReport();
         const html = buildDownloadableReportHtml({
@@ -366,32 +478,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         await new Promise(r => setTimeout(r, 500));
 
         try {
-            const html2canvas = (await import('html2canvas')).default;
-            const jsPDF = (await import('jspdf')).default;
-
-            const canvas = await html2canvas(iframeDoc.body, {
-                scale: 2,
-                useCORS: true,
-                width: 800,
-                windowWidth: 800,
-            });
-
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-            // Handle multi-page if content is tall
-            let position = 0;
-            const pageHeight = pdf.internal.pageSize.getHeight();
-
-            while (position < pdfHeight) {
-                if (position > 0) pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', 0, -position, pdfWidth, pdfHeight);
-                position += pageHeight;
-            }
-
-            pdf.save(`argo-informe-${session.child_name.toLowerCase().replace(/\s+/g, '-')}.pdf`);
+            await domNodeToPdf(iframeDoc.body, pdfFilename);
         } catch (err) {
             console.error('PDF generation failed, falling back to HTML:', err);
             // Fallback: download as HTML
@@ -521,6 +608,8 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     label={lang === 'en' ? 'Download PDF' : lang === 'pt' ? 'Baixar PDF' : 'Descargar PDF'}
                                     tooltip={lang === 'en' ? 'The extended report the responsible adult receives' : lang === 'pt' ? 'O relatório completo que o adulto responsável recebe' : 'Es el informe extendido que recibe el adulto responsable'}
                                     onClick={handleDownload}
+                                    disabled={downloading}
+                                    loading={downloading}
                                     lockedTip={locked ? (lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos') : undefined}
                                 />
                                 {canManage && archived && onReactivate && (
@@ -589,7 +678,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     edad={session.child_age}
                                     deporte={session.sport}
                                     adulto={session.adult_name}
-                                    fecha={formatDate(session.created_at, sessionLang)}
+                                    fecha={reportFecha}
                                 />
                             ) : (
                             /* 2-column layout for detail */
