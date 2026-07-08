@@ -63,6 +63,9 @@ export interface ReportHero {
   arquetipoLabel: string;        // "Impulsor con veta Estratega" (SIEMPRE presente)
   primarioLabel: string;
   vetaLabel: string | null;
+  // Piezas para pintar el H1 con color por idioma: "con veta"/"with a"/"com veta" + arquetipo + sufijo
+  // (en: "with a" + "Strategist" + "lean"; es/pt: prefijo + palabra, post vacío). null si no hay veta.
+  veta: { pre: string; word: string; post: string } | null;
   ejePrimario: Axis;             // para colorear (AXIS_COLORS[ejePrimario])
   ejeSecundario: Axis;           // para colorear la veta
   registro: Registro;
@@ -93,11 +96,23 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
   const arquetipoLabel = v.secondCount >= 1
     ? getBlendName(v.ejePrimario, v.ejeSecundario, lang)
     : getArchetypeLabel(v.ejePrimario, lang);
+  const vetaLabel = v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang) : null;
+  // Descompone el vetaLabel en (prefijo, arquetipo, sufijo) para pintar cada parte con su color.
+  let veta: ReportHero['veta'] = null;
+  if (v.secondCount >= 1) {
+    const word = getArchetypeLabel(v.ejeSecundario, lang);
+    const full = vetaLabel ?? word;
+    const idx = full.indexOf(word);
+    veta = idx >= 0
+      ? { pre: full.slice(0, idx).trim(), word, post: full.slice(idx + word.length).trim() }
+      : { pre: '', word: full, post: '' };
+  }
   return {
     nombre: ctx.nombre,
     arquetipoLabel,
     primarioLabel: getArchetypeLabel(v.ejePrimario, lang),
-    vetaLabel: v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang) : null,
+    vetaLabel,
+    veta,
     ejePrimario: v.ejePrimario,
     ejeSecundario: v.ejeSecundario,
     registro: v.registro,
@@ -302,6 +317,7 @@ export interface ReportSection {
   guia?: GuiaSection;          // kind 'guia'
 }
 export interface ReportV4 {
+  lang: Lang;                  // idioma en el que se armó (para que el render use el mismo COPY)
   hero: ReportHero;
   secciones: ReportSection[];
   omitidas: { id: string; motivo: 'sin_datos' | 'sin_contenido' }[];
@@ -343,5 +359,5 @@ export function buildReportV4(ficha: EvidenceFicha, ctx: ReportContext): ReportV
   // 4. Más allá del deporte.
   texto('ecos', buildEcosSection(ficha, ctx), 'sin_contenido');
 
-  return { hero, secciones, omitidas };
+  return { lang: langOf(ctx), hero, secciones, omitidas };
 }

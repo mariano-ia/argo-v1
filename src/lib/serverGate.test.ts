@@ -21,6 +21,10 @@ function mateo() {
   });
   return { ficha, report: buildReportV4(ficha, { nombre: 'Mateo', frame: sportFrame('Fútbol') } as never) };
 }
+function mateoLang(lang: 'es' | 'en' | 'pt') {
+  const { ficha } = mateo();
+  return { ficha, report: buildReportV4(ficha, { nombre: 'Mateo', frame: sportFrame('Fútbol'), lang } as never) };
+}
 const clone = <T>(x: T): T => JSON.parse(JSON.stringify(x));
 
 test('server gate: informe v4 real => ready', () => {
@@ -32,9 +36,15 @@ test('server gate: vector != 12 => held', () => {
   const bad = clone(ficha); bad.votes.vector.D += 1;
   assert.strictEqual(gateReportV4(report, bad, 'Mateo', 'es').status, 'held');
 });
-test('server gate: lang != es => held idioma', () => {
+test('server gate: idioma no soportado => held idioma', () => {
   const { ficha, report } = mateo();
-  assert.strictEqual(gateReportV4(report, ficha, 'Mateo', 'en').reason, 'idioma');
+  assert.strictEqual(gateReportV4(report, ficha, 'Mateo', 'fr').reason, 'idioma');
+});
+test('server gate: en/pt con contenido en su idioma => ready', () => {
+  for (const lang of ['en', 'pt'] as const) {
+    const { ficha, report } = mateoLang(lang);
+    assert.strictEqual(gateReportV4(report, ficha, 'Mateo', lang).status, 'ready', `lang ${lang} debería pasar`);
+  }
 });
 test('server gate: placeholder => held', () => {
   const { ficha, report } = mateo();

@@ -3,8 +3,12 @@
 // el design system Argo, fiel a la maqueta aprobada (owner 2026-07-07): bloques desarrollados con
 // **negritas** de lectura + un ejemplo que baja a tierra, por la positiva. Componente presentacional
 // puro (sin fetch): ReportPage decide cuándo usarlo (flag ?engine=v4). Diseño: docs/METODO-FALLBACK-INFORME.md
+// i18n: toda etiqueta fija sale de COPY[report.lang] (group_titles, footer, ui); el contenido ya viene
+// en el idioma del informe. Default 'es' si el informe no trae lang (informes viejos).
 import React from 'react';
 import type { ReportV4, ReportSection } from '../../lib/reportV4';
+import type { Lang } from '../../lib/archetypeContentV4';
+import { COPY, fill, type Ui } from '../../lib/reportV4Copy';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
 /** Convierte `**negrita**` en <strong>. El resto va como texto. */
@@ -16,12 +20,13 @@ function renderRich(text: string): React.ReactNode[] {
   });
 }
 
-// Agrupación de secciones (misma que la maqueta). Si un grupo queda vacío (secciones omitidas), no se muestra.
-const GROUPS: { title: (nombre: string) => string; ids: string[] }[] = [
-  { title: (n) => `Quién es ${n} hoy`, ids: ['receta', 'contingencia', 'patron', 'motor'] },
-  { title: () => 'Cómo se le ve en la actividad', ids: ['tormenta', 'grupo', 'logro'] },
-  { title: (n) => `Cómo acompañar a ${n}`, ids: ['combustible', 'palabras', 'guia', 'reset'] },
-  { title: () => 'Más allá del deporte', ids: ['ecos'] },
+// Agrupación de secciones (misma que la maqueta). El título sale de COPY[lang].group_titles.
+// Si un grupo queda vacío (secciones omitidas), no se muestra.
+const GROUP_DEFS: { key: 'quien' | 'cancha' | 'acompanar' | 'masalla'; ids: string[] }[] = [
+  { key: 'quien', ids: ['receta', 'contingencia', 'patron', 'motor'] },
+  { key: 'cancha', ids: ['tormenta', 'grupo', 'logro'] },
+  { key: 'acompanar', ids: ['combustible', 'palabras', 'guia', 'reset'] },
+  { key: 'masalla', ids: ['ecos'] },
 ];
 // Secciones con punto de color "veta" (hablan del segundo eje / la contingencia). El resto, acento primario.
 const VETA_DOT = new Set(['contingencia', 'tormenta']);
@@ -33,7 +38,7 @@ const Ejemplo: React.FC<{ text: string; accent: string }> = ({ text, accent }) =
   </div>
 );
 
-function SectionBlock({ section, accent, veta }: { section: ReportSection; accent: string; veta: string }) {
+function SectionBlock({ section, accent, veta, ui }: { section: ReportSection; accent: string; veta: string; ui: Ui }) {
   const dotColor = VETA_DOT.has(section.id) ? veta : accent;
   const Header = (
     <h2 className="mb-2.5 flex items-center gap-2.5 text-sm font-bold tracking-tight text-argo-navy">
@@ -58,13 +63,13 @@ function SectionBlock({ section, accent, veta }: { section: ReportSection; accen
         {Header}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-green-700">Conectan</h3>
+            <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-green-700">{ui.conectan}</h3>
             {section.palabras.puente.map((c, i) => (
               <span key={i} className="mb-2 block rounded-[11px] bg-green-50 px-3 py-2 text-sm text-argo-navy">{c}</span>
             ))}
           </div>
           <div>
-            <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-argo-grey">Hacen ruido</h3>
+            <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-argo-grey">{ui.ruido}</h3>
             {section.palabras.ruido.map((c, i) => (
               <span key={i} className="mb-2 block rounded-[11px] border border-argo-border bg-argo-bg px-3 py-2 text-sm text-argo-grey">{c}</span>
             ))}
@@ -76,7 +81,7 @@ function SectionBlock({ section, accent, veta }: { section: ReportSection; accen
   }
 
   if (section.kind === 'guia' && section.guia) {
-    const steps: [string, string][] = [['Antes', section.guia.antes], ['Durante', section.guia.durante], ['Después', section.guia.despues]];
+    const steps: [string, string][] = [[ui.antes, section.guia.antes], [ui.durante, section.guia.durante], [ui.despues, section.guia.despues]];
     return (
       <section className="mt-3 rounded-[14px] border border-argo-border bg-white p-6 shadow-argo">
         {Header}
@@ -106,10 +111,19 @@ export interface ReportV4ViewProps {
 
 export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deporte, adulto, fecha }) => {
   const { hero } = report;
+  const lang: Lang = report.lang ?? 'es';
+  const pack = COPY[lang];
+  const ui = pack.ui;
   const accent = AXIS_COLORS[hero.ejePrimario] ?? '#955FB5';
   const veta = AXIS_COLORS[hero.ejeSecundario] ?? '#86868B';
   const byId = new Map(report.secciones.map((s) => [s.id, s]));
-  const kidMeta = [hero.nombre, edad ? `${edad} años` : null, deporte || null, fecha || null].filter(Boolean).join(' · ');
+  const kidMeta = [hero.nombre, edad ? `${edad} ${ui.edad}` : null, deporte || null, fecha || null].filter(Boolean).join(' · ');
+
+  // Footer: el título va en negrita; el resto (con **negritas** internas + ${n}) por renderRich.
+  const footerFull = fill(pack.footer, { n: hero.nombre });
+  const fdot = footerFull.indexOf('. ');
+  const footerHead = fdot >= 0 ? footerFull.slice(0, fdot + 1) : footerFull;
+  const footerRest = fdot >= 0 ? footerFull.slice(fdot + 2) : '';
 
   return (
     <div className="mx-auto max-w-[760px]">
@@ -117,14 +131,15 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
       <div className="rounded-[20px] border border-argo-border bg-white p-8 shadow-argo-hover">
         <div className="mb-4">
           <div className="text-[13px] font-semibold tracking-wide text-argo-grey">{kidMeta}</div>
-          {adulto && <div className="mt-0.5 text-[12px] text-argo-light">Adulto responsable: {adulto}</div>}
+          {adulto && <div className="mt-0.5 text-[12px] text-argo-light">{ui.adulto}: {adulto}</div>}
         </div>
         <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           <span style={{ color: accent }}>{hero.primarioLabel}</span>
-          {hero.vetaLabel && (
+          {hero.veta && (
             <>
-              {' '}<span className="font-normal text-argo-grey">con veta</span>{' '}
-              <span style={{ color: veta }}>{hero.vetaLabel.replace(/^con veta\s+/i, '')}</span>
+              {' '}<span className="font-normal text-argo-grey">{hero.veta.pre}</span>{' '}
+              <span style={{ color: veta }}>{hero.veta.word}</span>
+              {hero.veta.post && <>{' '}<span className="font-normal text-argo-grey">{hero.veta.post}</span></>}
             </>
           )}
         </h1>
@@ -132,7 +147,7 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
         {/* Medidor de confianza */}
         <div className="my-5">
           <div className="mb-2 flex items-baseline justify-between text-xs font-semibold text-argo-grey">
-            <span>Qué tan marcado está su perfil hoy</span>
+            <span>{ui.meter_header}</span>
             <span className="text-[11px] uppercase tracking-wider" style={{ color: accent }}>{hero.meter.labels[hero.meter.level - 1]}</span>
           </div>
           <div className="grid grid-cols-4 gap-1.5">
@@ -152,28 +167,25 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
       </div>
 
       {/* Grupos de secciones */}
-      {GROUPS.map((g) => {
+      {GROUP_DEFS.map((g) => {
         const secs = g.ids.map((id) => byId.get(id)).filter((s): s is ReportSection => !!s);
         if (secs.length === 0) return null;
+        const title = fill(pack.group_titles[g.key], { n: hero.nombre });
         return (
-          <div key={g.title(hero.nombre)}>
+          <div key={g.key}>
             <div className="mb-1 mt-9 px-1">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-argo-grey">{g.title(hero.nombre)}</div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-argo-grey">{title}</div>
               <div className="mt-3 h-px bg-argo-border" />
             </div>
-            {secs.map((s) => <SectionBlock key={s.id} section={s} accent={accent} veta={veta} />)}
+            {secs.map((s) => <SectionBlock key={s.id} section={s} accent={accent} veta={veta} ui={ui} />)}
           </div>
         );
       })}
 
       {/* Cómo leer (footer con los dos registros: potencial en la lectura, taxativo en la política) */}
       <div className="mt-7 rounded-[14px] border border-dashed border-argo-border px-6 py-5 text-sm leading-relaxed text-argo-secondary">
-        <span className="font-semibold text-argo-navy">Cómo leer este informe.</span>{' '}
-        Describe <span className="font-semibold text-argo-navy">cómo tiende a elegir {hero.nombre} hoy</span>, no lo que es
-        ni lo que podrá llegar a hacer: es una foto de sus preferencias en este momento, no una etiqueta. Los perfiles
-        cambian con la edad y la experiencia, <span className="font-semibold text-argo-navy">por eso recomendamos volver
-        a perfilar a los niños cada 6 meses</span>. El deporte solo cambia el marco para reconocer el perfil; lo que se
-        mide es lo mismo en cualquier actividad.
+        <span className="font-semibold text-argo-navy">{footerHead}</span>{' '}
+        {renderRich(footerRest)}
       </div>
     </div>
   );

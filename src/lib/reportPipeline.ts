@@ -11,6 +11,9 @@ import type { ReportContext, ReportV4 } from './reportV4';
 import { buildReportV4 } from './reportV4';
 import { qualityGate } from './reportQuality';
 import type { QualityResult, HoldReason } from './reportQuality';
+import type { Lang } from './archetypeContentV4';
+
+const SUPPORTED_LANGS: Lang[] = ['es', 'en', 'pt'];
 
 export type ReportOrigen = 'capa1' | 'capa2';
 
@@ -39,8 +42,13 @@ export interface PipelineOpts {
  * Capa 2 cae a Capa 1; ante un defecto de dato/forma, el gate marca held. El caller persiste el resultado.
  */
 export function runReportPipeline(ficha: EvidenceFicha, ctx: ReportContext, opts: PipelineOpts): PipelineResult {
+  // El informe se ARMA en el idioma pedido para que el contenido coincida con el idioma que gatea.
+  // Un idioma no soportado se arma en 'es' (fallback seguro, no crashea) y el gate lo retiene por 'idioma'.
+  const buildLang: Lang = SUPPORTED_LANGS.includes(opts.lang) ? opts.lang : 'es';
+  const buildCtx: ReportContext = { ...ctx, lang: buildLang };
+
   // ── Capa 1: el piso determinista aprobado ──
-  const base = buildReportV4(ficha, ctx);
+  const base = buildReportV4(ficha, buildCtx);
 
   // ── Capa 2 (opcional): variación grounded detrás del MISMO gate ──
   let report = base;
@@ -48,7 +56,7 @@ export function runReportPipeline(ficha: EvidenceFicha, ctx: ReportContext, opts
   let fallbackSectionIds: string[] = [];
   if (opts.capa2) {
     try {
-      const enhanced = opts.capa2(base, ficha, ctx);
+      const enhanced = opts.capa2(base, ficha, buildCtx);
       if (enhanced && enhanced.report) {
         const qc2 = qualityGate(enhanced.report, ficha, { nombre: ctx.nombre, lang: opts.lang, fallbackSectionIds: enhanced.fallbackSectionIds });
         if (qc2.pass) {

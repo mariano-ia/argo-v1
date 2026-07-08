@@ -100,17 +100,25 @@ test('guion em => HOLD guard_guion', () => {
   assert.ok(codes(qualityGate(r, f, OPTS)).includes('guard_guion'));
 });
 
-test('lang != es => HOLD idioma', () => {
+test('en/pt (contenido en su idioma) NO retiene por idioma', () => {
+  const f = mateoFicha();
+  for (const lang of ['en', 'pt'] as const) {
+    const r = buildReportV4(f, { nombre: 'Mateo', frame: sportFrame('Fútbol'), lang } as never);
+    assert.ok(!codes(qualityGate(r, f, { nombre: 'Mateo', lang })).includes('idioma'), `${lang} no debería retener idioma`);
+  }
+});
+test('idioma no soportado => HOLD idioma', () => {
   const f = mateoFicha();
   const r = buildReportV4(f, CTX);
-  assert.ok(codes(qualityGate(r, f, { nombre: 'Mateo', lang: 'en' })).includes('idioma'));
+  assert.ok(codes(qualityGate(r, f, { nombre: 'Mateo', lang: 'fr' as never })).includes('idioma'));
 });
 
-test('veta en el nombre pero el lead no la menciona => HOLD veta_inconsistente', () => {
+test('veta en el nombre pero el lead no nombra el arquetipo secundario => HOLD veta_inconsistente', () => {
   const f = mateoFicha();
   const r = clone(buildReportV4(f, CTX));
-  assert.ok(r.hero.vetaLabel); // Mateo tiene veta
-  r.hero.lead = r.hero.lead.replace(/veta/gi, 'nota'); // saco la palabra "veta"
+  assert.ok(r.hero.vetaLabel && r.hero.veta); // Mateo tiene veta
+  // Simula una Capa 2 que reescribe el lead y deja caer el arquetipo secundario (Estratega).
+  r.hero.lead = r.hero.lead.replace(new RegExp(r.hero.veta!.word, 'gi'), 'algo');
   assert.ok(codes(qualityGate(r, f, OPTS)).includes('veta_inconsistente'));
 });
 

@@ -11,6 +11,7 @@ export interface EjeWord { corta: string; larga: string; }
 export interface RecetaVerbos { aparece: string; aparecen: string; suma: string; suman: string; pesa: string; pesan: string; ytambien: string; y: string; }
 export interface GrupoWords { costado_indiv: string; costado_equipo: string; rol_indiv: string; rol_equipo: string; esc_indiv: string; esc_equipo: string; conquien_indiv: string; conquien_equipo: string; }
 export interface GrupoPartes { i_fuerte: string; i_algo: string; s_fuerte: string; s_algo: string; }
+export interface Ui { meter_header: string; conectan: string; ruido: string; antes: string; durante: string; despues: string; adulto: string; edad: string; }
 export interface Bodies {
   receta_base: string; receta_presentes: string; receta_suaves: string; receta_verbos: RecetaVerbos; receta_ejemplo: string;
   conting_desvio: string; conting_desvio_ej: string; conting_norma: string; conting_norma_ej: string;
@@ -35,6 +36,7 @@ export interface CopyPack {
   lead: { veta_clause: string; rotundo: string; claro: string; matices: string; parejo: string; };
   footer: string;
   bodies: Bodies;
+  ui: Ui;
 }
 
 export const COPY: Record<Lang, CopyPack> = {
@@ -187,6 +189,16 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro_ejemplo": "Después de un buen resultado, un simple \"mira todo lo que conseguiste\" ayuda a ${n} a que el disfrute también tenga su lugar.",
       "grupo_join": "; y, por otro lado, ",
       "grupo_fallback": "el grupo aparece de a ratos"
+    },
+    "ui": {
+      "meter_header": "Qué tan marcado está su perfil hoy",
+      "conectan": "Conectan",
+      "ruido": "Hacen ruido",
+      "antes": "Antes",
+      "durante": "Durante",
+      "despues": "Después",
+      "adulto": "Adulto responsable",
+      "edad": "años"
     }
   },
   "en": {
@@ -333,6 +345,16 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro_ejemplo": "After a good result, a simple \"look at everything you accomplished\" helps ${n} give enjoyment its place too.",
       "grupo_join": "; and on the other hand, ",
       "grupo_fallback": "the group shows up now and then"
+    },
+    "ui": {
+      "meter_header": "How defined their profile is today",
+      "conectan": "Connect",
+      "ruido": "Jar",
+      "antes": "Before",
+      "durante": "During",
+      "despues": "After",
+      "adulto": "Responsible adult",
+      "edad": "years"
     }
   },
   "pt": {
@@ -479,6 +501,16 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro_ejemplo": "Depois de um bom resultado, um simples \"olha tudo o que você conseguiu\" ajuda ${n} a que o desfrute também tenha seu lugar.",
       "grupo_join": "; e, por outro lado, ",
       "grupo_fallback": "o grupo aparece de vez em quando"
+    },
+    "ui": {
+      "meter_header": "O quão marcado está seu perfil hoje",
+      "conectan": "Conectam",
+      "ruido": "Fazem ruído",
+      "antes": "Antes",
+      "durante": "Durante",
+      "despues": "Depois",
+      "adulto": "Adulto responsável",
+      "edad": "anos"
     }
   }
 };

@@ -67,10 +67,16 @@ test('Capa 2 que explota => se ignora, sale la Capa 1 (nunca rompe el envío)', 
   assert.strictEqual(r.origen, 'capa1');
 });
 
-test('lang no soportado => held idioma (aún es-only)', () => {
-  const r = runReportPipeline(mateoFicha(), CTX, { lang: 'en' });
+test('idioma no soportado => held idioma', () => {
+  const r = runReportPipeline(mateoFicha(), CTX, { lang: 'fr' as never });
   assert.strictEqual(r.status, 'held');
   assert.ok(r.qc.reasons.some((x) => x.code === 'idioma'));
+});
+test('en/pt => ready (i18n integrado)', () => {
+  for (const lang of ['en', 'pt'] as const) {
+    const r = runReportPipeline(mateoFicha(), CTX, { lang });
+    assert.strictEqual(r.status, 'ready', `lang ${lang} debería pasar`);
+  }
 });
 
 // Espeja EXACTAMENTE lo que corre el cliente (OnboardingFlowV2 shadow): QuestionAnswer[] +

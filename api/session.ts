@@ -48,7 +48,7 @@ export function gateReportV4(report: unknown, ficha: unknown, nombre: string, la
     const nm = (nombre ?? '').trim();
     if (nm.length < 1 || nm.length > 40 || /[{}]/.test(nombre ?? '')) return hold('nombre_invalido');
     if (!['D', 'I', 'S', 'C'].includes(f?.votes?.ejePrimario ?? '') || !f?.votes?.arquetipoLabel) return hold('axis_mismatch');
-    if (lang !== 'es') return hold('idioma');
+    if (!['es', 'en', 'pt'].includes(lang)) return hold('idioma');
     const text = v4Text(report);
     if (((report as { secciones?: unknown[] })?.secciones ?? []).length < 5) return hold('faltan_secciones');
     if (text.replace(/\s+/g, '').length < 900) return hold('forma_corta');
@@ -63,8 +63,8 @@ export function gateReportV4(report: unknown, ficha: unknown, nombre: string, la
         /\bva a ser\b/iu, /\bsin duda\b/iu, /\bnació para\b/iu, /\bdefinitivamente\b/iu,
     ];
     for (const re of det) { if (re.test(text)) return hold('guard_determinista'); }
-    if (V4_VOSEO.test(text)) return hold('guard_voseo');
-    if (/[—–]/.test(text)) return hold('guard_guion');
+    if (lang === 'es' && V4_VOSEO.test(text)) return hold('guard_voseo'); // voseo: solo español
+    if (/[—–]/.test(text)) return hold('guard_guion'); // no-guiones: regla universal (es/en/pt)
     return { status: 'ready', reason: null };
 }
 

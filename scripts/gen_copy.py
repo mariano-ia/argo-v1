@@ -108,6 +108,13 @@ ES = {
     "grupo_join": "; y, por otro lado, ",
     "grupo_fallback": "el grupo aparece de a ratos",
   },
+  # UI micro-copy del render (ReportV4View): etiquetas fijas, no dependen de la ficha.
+  "ui": {
+    "meter_header": "Qué tan marcado está su perfil hoy",
+    "conectan": "Conectan", "ruido": "Hacen ruido",
+    "antes": "Antes", "durante": "Durante", "despues": "Después",
+    "adulto": "Adulto responsable", "edad": "años",
+  },
 }
 
 # ── EN/PT: del JSON verificado. copy = léxico+titles+lead+footer; bodies = section_bodies (motor va aparte). ──
@@ -117,6 +124,12 @@ VETA_WORD = {
 }
 GRUPO_JOIN = {"en": "; and on the other hand, ", "pt": "; e, por outro lado, "}
 GRUPO_FALLBACK = {"en": "the group shows up now and then", "pt": "o grupo aparece de vez em quando"}
+UI = {
+  "en": {"meter_header": "How defined their profile is today", "conectan": "Connect", "ruido": "Jar",
+         "antes": "Before", "durante": "During", "despues": "After", "adulto": "Responsible adult", "edad": "years"},
+  "pt": {"meter_header": "O quão marcado está seu perfil hoje", "conectan": "Conectam", "ruido": "Fazem ruído",
+         "antes": "Antes", "durante": "Durante", "despues": "Depois", "adulto": "Adulto responsável", "edad": "anos"},
+}
 
 def build_lang(lang):
     if lang == "es":
@@ -141,6 +154,7 @@ def build_lang(lang):
         "lead": c["lead"],
         "footer": c["footer"],
         "bodies": b,
+        "ui": UI[lang],
     }
 
 COPY = {L: build_lang(L) for L in ("es", "en", "pt")}
@@ -168,6 +182,7 @@ export interface EjeWord { corta: string; larga: string; }
 export interface RecetaVerbos { aparece: string; aparecen: string; suma: string; suman: string; pesa: string; pesan: string; ytambien: string; y: string; }
 export interface GrupoWords { costado_indiv: string; costado_equipo: string; rol_indiv: string; rol_equipo: string; esc_indiv: string; esc_equipo: string; conquien_indiv: string; conquien_equipo: string; }
 export interface GrupoPartes { i_fuerte: string; i_algo: string; s_fuerte: string; s_algo: string; }
+export interface Ui { meter_header: string; conectan: string; ruido: string; antes: string; durante: string; despues: string; adulto: string; edad: string; }
 export interface Bodies {
   receta_base: string; receta_presentes: string; receta_suaves: string; receta_verbos: RecetaVerbos; receta_ejemplo: string;
   conting_desvio: string; conting_desvio_ej: string; conting_norma: string; conting_norma_ej: string;
@@ -192,6 +207,7 @@ export interface CopyPack {
   lead: { veta_clause: string; rotundo: string; claro: string; matices: string; parejo: string; };
   footer: string;
   bodies: Bodies;
+  ui: Ui;
 }
 
 export const COPY: Record<Lang, CopyPack> = '''
