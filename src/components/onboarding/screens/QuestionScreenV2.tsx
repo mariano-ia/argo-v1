@@ -37,6 +37,16 @@ function useWordTypewriter(text: string, speed = 55): { displayed: string; done:
     return { displayed: words.slice(0, count).join(' '), done: count >= words.length };
 }
 
+// Fisher-Yates: return a new array with the options in random order.
+function shuffled<T>(arr: T[]): T[] {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
 // ─── Main Component ──────────────────────────────────────────────────────────
 
 interface Props {
@@ -65,13 +75,24 @@ export const QuestionScreenV2: React.FC<Props> = ({
         setChosen(null);
     }, [question.number]);
 
+    // Randomize option order per question so position carries no meaning
+    // (a child can't just always tap slot 1 or 2). Colors/letters stay
+    // positional (A=sky…) and never reveal the axis; the axis rides underneath.
+    // Ref-backed so the order is computed once per question and stays stable
+    // across re-renders (e.g. when an option is tapped) — it must not reshuffle.
+    const shuffleRef = useRef<{ q: number; opts: Question['options'] }>({ q: -1, opts: [] });
+    if (shuffleRef.current.q !== question.number) {
+        shuffleRef.current = { q: question.number, opts: shuffled(question.options) };
+    }
+    const displayOptions = shuffleRef.current.opts;
+
     const handleSelect = (optionIndex: number) => {
         if (chosen !== null) return;
         setChosen(optionIndex);
 
         const responseTimeMs = Date.now() - startTime.current;
         setTimeout(() => {
-            onAnswer({ axis: question.options[optionIndex].axis as Axis, responseTimeMs });
+            onAnswer({ axis: displayOptions[optionIndex].axis as Axis, responseTimeMs });
         }, 650);
     };
 
@@ -181,7 +202,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
 
                 {/* Option buttons — Stitch glass-button: white 0.08, blur 12, white border 0.15 */}
                 <div className="flex flex-col gap-3 mt-1">
-                    {question.options.map((opt, i) => {
+                    {displayOptions.map((opt, i) => {
                         const isChosen = chosen === i;
                         const isOther = chosen !== null && chosen !== i;
 
