@@ -436,50 +436,100 @@ function buildHtml(params: {
 // ─── Email v4 (diseño aprobado por el owner 2026-07-07) ───────────────────────
 // Render del informe v4 en el email: arquetipo eje×veta (SIN chip de motor legacy), voz nueva,
 // ArgoPuente USD 4.99. Se usa cuando el informe está sellado v4 (report_status ready/sent); si no,
-// el email legacy (buildHtml). es-only por ahora (el v4 solo se sella en es). Maqueta aprobada:
-// scratchpad/email-v4.html.
-type HeroV4 = { primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string };
+// el email legacy (buildHtml). i18n es/en/pt (el v4 se sella en cualquiera de los tres). El conector
+// de la veta ("con veta / con tonos de / con destellos de" y sus pares en/pt) sale de las piezas
+// hero.veta (pre/word/post), nunca hardcodeado. Maqueta aprobada: scratchpad/email-v4.html.
+type HeroV4 = {
+    primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string;
+    veta?: { pre: string; word: string; post: string } | null;
+};
 export function buildHtmlV4(hero: HeroV4, params: {
     nombreNino: string; nombreAdulto?: string; edad?: number; deporte?: string;
     sessionId?: string; shareToken?: string; siteUrl?: string; lang?: string;
     suppressPuentes?: boolean; existingPuentesMagicLink?: string;
 }): string {
+    const lg = (params.lang === 'en' || params.lang === 'pt') ? params.lang : 'es';
+    const n = params.nombreNino;
     const AXIS: Record<string, string> = { D: '#F97316', I: '#F59E0B', S: '#22C55E', C: '#6366F1' };
     const accent = AXIS[hero.ejePrimario ?? ''] ?? '#955FB5';
     const vetaColor = AXIS[hero.ejeSecundario ?? ''] ?? '#86868B';
-    const vetaName = hero.vetaLabel ? hero.vetaLabel.replace(/^con veta\s+/i, '') : '';
     const rich = (s: string) => (s || '').replace(/\*\*([^*]+)\*\*/g, '<b style="color:#1D1D1F;">$1</b>');
     const baseUrl = params.siteUrl || 'https://argomethod.com';
     const tokenParam = params.shareToken ? `?token=${params.shareToken}` : '';
     const reportUrl = params.sessionId ? `${baseUrl}/report/${params.sessionId}${tokenParam}` : baseUrl;
-    const puentesUrl = params.sessionId ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${params.lang || 'es'}` : `${baseUrl}/puentes/checkout`;
-    const kidLine = [params.nombreNino, params.edad ? `${params.edad} años` : '', params.deporte, params.nombreAdulto ? `para ${params.nombreAdulto}` : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
-    const arquetipo = `<span style="color:${accent};">${hero.primarioLabel ?? ''}</span>` + (vetaName ? ` <span style="color:#86868B;font-weight:400;">con veta</span> <span style="color:${vetaColor};">${vetaName}</span>` : '');
+    const puentesUrl = params.sessionId ? `${baseUrl}/puentes/checkout?source_session_id=${params.sessionId}&lang=${lg}` : `${baseUrl}/puentes/checkout`;
+
+    const T = {
+        es: {
+            eyebrow: 'Informe de perfil', title: `El informe de ${n} ya está listo`, ageWord: 'años', forWord: 'para',
+            ctaBtn: `Ver el informe completo de ${n}`, ctaSub: 'Su mezcla, cómo cambia según la situación, su motor, cómo acompañarlo y más.',
+            puenteEyebrow: 'ArgoPuente® · Tu complemento', puenteTitle: `Ahora que conoces a ${n}, conócete a ti.`,
+            puenteBody: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${n} mejor en su deporte.`,
+            puenteBtn: 'Empezar mi ArgoPuente®',
+            existingPuente: `Tu ArgoPuente® ya incluye a ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver el informe del vínculo</a>.`,
+            footerTail: 'Perfil conductual para el deporte formativo.', footerNote: 'Este informe es una foto del presente, no una etiqueta permanente.',
+        },
+        en: {
+            eyebrow: 'Profile report', title: `${n}'s report is ready`, ageWord: 'years', forWord: 'for',
+            ctaBtn: `View ${n}'s full report`, ctaSub: `Their blend, how it shifts by situation, their engine, how to support them, and more.`,
+            puenteEyebrow: 'ArgoPuente® · Your complement', puenteTitle: `Now that you know ${n}, get to know yourself.`,
+            puenteBody: `Five minutes of questions. Your own report revealing your style and four specific bridges to support ${n} better in their sport.`,
+            puenteBtn: 'Start my ArgoPuente®',
+            existingPuente: `Your ArgoPuente® already includes ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">See the bond report</a>.`,
+            footerTail: 'Behavioral profile for youth sport.', footerNote: 'This report is a snapshot of the present, not a permanent label.',
+        },
+        pt: {
+            eyebrow: 'Relatório de perfil', title: `O relatório de ${n} já está pronto`, ageWord: 'anos', forWord: 'para',
+            ctaBtn: `Ver o relatório completo de ${n}`, ctaSub: 'A mistura dele, como muda conforme a situação, seu motor, como acompanhá-lo e mais.',
+            puenteEyebrow: 'ArgoPuente® · Seu complemento', puenteTitle: `Agora que você conhece ${n}, conheça você mesmo.`,
+            puenteBody: `Cinco minutos de perguntas. Um relatório próprio que revela seu estilo e quatro pontes específicas para acompanhar ${n} melhor no esporte.`,
+            puenteBtn: 'Começar meu ArgoPuente®',
+            existingPuente: `Seu ArgoPuente® já inclui ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver o relatório do vínculo</a>.`,
+            footerTail: 'Perfil comportamental para o esporte formativo.', footerNote: 'Este relatório é uma foto do presente, não um rótulo permanente.',
+        },
+    }[lg];
+
+    const kidLine = [n, params.edad ? `${params.edad} ${T.ageWord}` : '', params.deporte, params.nombreAdulto ? `${T.forWord} ${params.nombreAdulto}` : ''].filter(Boolean).join(' &nbsp;·&nbsp; ');
+
+    // Veta con sus piezas (pre/word/post) para colorear la palabra del segundo eje y dejar el conector
+    // ("con veta / with a … streak / com veta") en gris. Si un blob viejo no trae hero.veta, lo deriva
+    // de vetaLabel (retrocompatible es/en/pt). Sin veta => solo el eje primario.
+    const vd = hero.veta
+        ? hero.veta
+        : (hero.vetaLabel
+            ? { pre: /^\s*with a/i.test(hero.vetaLabel) ? 'with a' : /^\s*com veta/i.test(hero.vetaLabel) ? 'com veta' : 'con veta',
+                word: hero.vetaLabel.replace(/^\s*(con veta|with a|com veta)\s+/i, '').replace(/\s+(lean|streak)\s*$/i, ''),
+                post: /\s+lean\s*$/i.test(hero.vetaLabel) ? 'lean' : /\s+streak\s*$/i.test(hero.vetaLabel) ? 'streak' : '' }
+            : null);
+    const arquetipo = `<span style="color:${accent};">${hero.primarioLabel ?? ''}</span>`
+        + (vd && vd.word
+            ? ` <span style="color:#86868B;font-weight:400;">${vd.pre}</span> <span style="color:${vetaColor};">${vd.word}</span>${vd.post ? ` <span style="color:#86868B;font-weight:400;">${vd.post}</span>` : ''}`
+            : '');
 
     let puente = '';
     if (params.existingPuentesMagicLink) {
-        puente = `<div style="padding:24px 32px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">ArgoPuente®</div><div style="font-size:15px;color:#424245;margin-top:8px;line-height:1.5;">Tu ArgoPuente® ya incluye a ${params.nombreNino}. <a href="${params.existingPuentesMagicLink}" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver el informe del vínculo</a>.</div></div>`;
+        puente = `<div style="padding:24px 32px 0;"><div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">ArgoPuente®</div><div style="font-size:15px;color:#424245;margin-top:8px;line-height:1.5;">${T.existingPuente.replace('__LINK__', params.existingPuentesMagicLink)}</div></div>`;
     } else if (!params.suppressPuentes) {
         puente = `<div style="padding:24px 32px 0;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">ArgoPuente® · Tu complemento</div>
-      <div style="font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;margin-top:8px;line-height:1.3;">Ahora que conoces a ${params.nombreNino}, conócete a ti.</div>
-      <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${params.nombreNino} mejor en su deporte.</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#7A4D96;">${T.puenteEyebrow}</div>
+      <div style="font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;margin-top:8px;line-height:1.3;">${T.puenteTitle}</div>
+      <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">${T.puenteBody}</div>
       <div style="margin-top:16px;">
-        <a href="${puentesUrl}" style="display:inline-block;background:#7A4D96;color:#FFFFFF;font-size:14px;font-weight:600;padding:11px 22px;border-radius:11px;text-decoration:none;">Empezar mi ArgoPuente®</a>
+        <a href="${puentesUrl}" style="display:inline-block;background:#7A4D96;color:#FFFFFF;font-size:14px;font-weight:600;padding:11px 22px;border-radius:11px;text-decoration:none;">${T.puenteBtn}</a>
         <span style="font-size:14px;color:#1D1D1F;font-weight:600;margin-left:12px;">USD 4.99</span>
       </div>
     </div>`;
     }
 
     return `<!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${(hero.primarioLabel ?? 'Informe')} · ArgoMethod®</title></head>
+<html lang="${lg}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${(hero.primarioLabel ?? 'Informe')} · ArgoMethod®</title></head>
 <body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <div style="padding:28px 12px 40px;">
   <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
     <div style="padding:22px 32px 0;"><span style="font-size:17px;font-weight:800;color:#1D1D1F;letter-spacing:-0.01em;">Argo</span><span style="font-size:17px;font-weight:300;color:#86868B;">Method®</span></div>
     <div style="padding:26px 32px 0;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">Informe de perfil</div>
-      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">El informe de ${params.nombreNino} ya está listo</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">${T.eyebrow}</div>
+      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">${T.title}</div>
       <div style="font-size:13px;color:#86868B;margin-top:6px;">${kidLine}</div>
     </div>
     <div style="padding:22px 32px 0;">
@@ -489,14 +539,14 @@ export function buildHtmlV4(hero: HeroV4, params: {
       </div>
     </div>
     <div style="padding:22px 32px 0;text-align:center;">
-      <a href="${reportUrl}" style="display:inline-block;background:#0071E3;color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">Ver el informe completo de ${params.nombreNino}</a>
-      <div style="font-size:12px;color:#AEAEB2;margin-top:10px;">Su mezcla, cómo cambia según la situación, su motor, cómo acompañarlo y más.</div>
+      <a href="${reportUrl}" style="display:inline-block;background:#0071E3;color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">${T.ctaBtn}</a>
+      <div style="font-size:12px;color:#AEAEB2;margin-top:10px;">${T.ctaSub}</div>
     </div>
     <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
     ${puente}
     <div style="padding:28px 32px 26px;">
       <div style="height:1px;background:#E8E8ED;margin-bottom:16px;"></div>
-      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span> · Perfil conductual para el deporte formativo.<br>Este informe es una foto del presente, no una etiqueta permanente.</div>
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span> · ${T.footerTail}<br>${T.footerNote}</div>
     </div>
   </div>
 </div>
@@ -593,7 +643,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             is_demo?: boolean | null;
             full_access?: boolean | null;
             report_status?: string | null;
-            report_v4?: { hero?: { primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string } } | null;
+            report_v4?: { hero?: { primarioLabel?: string; vetaLabel?: string | null; ejePrimario?: string; ejeSecundario?: string; lead?: string; veta?: { pre: string; word: string; post: string } | null } } | null;
         };
         let sessionRow: SessionRow | null = null;
         if (sessionId) {
@@ -784,11 +834,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // v4 email when the report is sealed v4 (report_status ready/sent + report_v4 present);
         // otherwise the legacy email. Until V4_SEAL activates, report_status is NULL => legacy.
-        // LANG GUARD: buildHtmlV4's chrome is es-only. en/pt reports fall back to the legacy email
-        // (which IS lang-aware) until the v4 email is translated — the report itself is still in its
-        // language on the web. So the wrapper never mismatches the report's language.
+        // buildHtmlV4 is now i18n (es/en/pt), so it wraps sealed reports in any of the three
+        // languages; the veta connector comes from hero.veta pieces (banda-aware), never hardcoded.
         const rv4 = sessionRow?.report_v4;
-        const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent') && (lang === 'es');
+        const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent');
         const html = useV4
             ? buildHtmlV4(rv4!.hero!, {
                 nombreNino, nombreAdulto, edad, deporte,
