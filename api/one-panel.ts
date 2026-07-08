@@ -168,11 +168,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (sessionIds.length > 0) {
             const { data: reports } = await sb
                 .from('perfilamientos')
-                .select('id, share_token')
+                .select('id, share_token, report_status')
                 .in('id', sessionIds);
             const tokenById = new Map((reports ?? []).map(r => [r.id, r.share_token as string | null]));
+            const statusById = new Map((reports ?? []).map(r => [r.id, r.report_status as string | null]));
             for (const l of L) {
                 (l as Record<string, unknown>).report_token = l.session_id ? (tokenById.get(l.session_id) ?? null) : null;
+                // report_status of the underlying perfilamiento (held/pending => "preparando" on the panel).
+                (l as Record<string, unknown>).report_status = l.session_id ? (statusById.get(l.session_id) ?? null) : null;
             }
         }
 
