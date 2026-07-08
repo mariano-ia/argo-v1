@@ -5,7 +5,7 @@ Behavioral profiling tool for young athletes (8-16 years) based on the DISC mode
 A gamified "odyssey" with nautical theme generates a personalized report for the responsible adult (coach, parent, institution).
 
 ## Archetype naming (SINGLE source of truth)
-The 12 profile names follow **`[Eje] [Motor]`**: D=Impulsor, I=Conector, S=Sostenedor, C=Estratega × Dinámico/Rítmico/Sereno (C+Lento = "Observador"). This is the ONLY valid naming. Old metaphor names (El Tanque, La Brújula, El Capitán) and old adjective schemes (Impulsor Decidido, Conector Vibrante, Estratega Reactivo, etc.) are **forbidden** — remove on sight. Full canonical table (es/en/pt) + every mirror map that must stay in sync: `docs/archetype-naming.md`. Naming aligned forward-only 2026-06-02 (stored DB reports keep old labels).
+Profiles are named as a DISC **blend**: **`[Eje primario] con veta [Eje secundario]`** — both terms are DISC axes (D=Impulsor, I=Conector, S=Sostenedor, C=Estratega). 12 = **4 pure primaries + 8 non-opposite blends**. Gated by confidence: name a primary only if `B≥4 OR (B≥2 ∧ top_count≥7)`; add the veta only if `B2≥4` AND the secondary is NOT the diagonal opposite (**D↔S, I↔C never form a compound name** — narrated in the body). **The tempo (Dinámico/Rítmico/Sereno/Observador, Rápido/Medio/Lento) is OUT of the name** — it became a per-child measured insight in the report's "Su motor" section; tempo words + dispositional tempo lexicon (reflexivo/impulsivo/meditado/ágil/calmo/tranquilo/nervioso) are **forbidden in any name/veta**. The old `[Eje][Motor]` scheme (the 12 eje×tempo names), old metaphor names (El Tanque, La Brújula, El Capitán) and old adjective schemes are **forbidden** — remove on sight. Full canonical table (es/en/pt) + name gates + every mirror map: `docs/archetype-naming.md`. Calculation spec (gates B/B2, bands, forms, motor age-fair): `docs/METODO-CALCULO-NUEVO.md`. Reworked 2026-07-06, forward-only (stored DB reports keep old labels). **In-progress:** this is DESIGN + a phased implementation (`docs/METODO-PLAN-IMPLEMENTACION.md`); code may still emit old `[Eje][Motor]` labels until the migration lands.
 
 ## Stack
 React + TypeScript + Vite + TailwindCSS + Framer Motion + Google Gemini AI
@@ -169,7 +169,7 @@ Admin can grant `full_access` on any session — regenerates AI if missing befor
 
 ### STRICT RULES
 1. **Never hardcode axis colors** — import `AXIS_COLORS`, `AXIS_CHIP`, `AXIS_LABELS` from `src/lib/designTokens.ts`
-2. **Never hardcode motor chip styles** — import `MOTOR_CHIP` from `src/lib/designTokens.ts`
+2. **Motor chip styles are not identity** — the tempo (motor) is NOT part of the archetype name (see `docs/archetype-naming.md`). A tempo reading survives only inside the "Su motor" report section with chronometric lexicon; if shown, import the token from `src/lib/designTokens.ts` (never hardcode). Do not reintroduce a motor-tempo chip as the profile's identity.
 3. **Use shared UI components** — import from `src/components/ui/index.ts`:
    - `Button` (variants: primary, violet, secondary, ghost, danger; sizes: sm, md, lg)
    - `Input` (with label, error, consistent focus ring)

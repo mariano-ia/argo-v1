@@ -17,6 +17,69 @@ async function logActivity(sb: { from: (table: string) => { insert: (values: unk
     } catch (err) { console.warn('[principia:logActivity] non-blocking write failed:', err); }
 }
 
+// ─── Fail-closed SERVER gate (inlined; api/ can't import src/lib) ──────────────
+// Re-verifies the client-computed v4 report SERVER-SIDE and seals report_status.
+// The client NEVER sets report_status; only this does. Mirrors the safety-critical
+// subset of src/lib/reportQuality.ts. Gated by env V4_SEAL: unset/'off' => report_status
+// stays NULL (choke-point ungated => legacy delivery, unchanged). Flip to 'on' ONLY once
+// held-UI + v4 render/email are live, or a v4 'held' would block a delivery legacy would ship.
+const V4_PROHIBITED = ['error', 'errores', 'fracaso', 'fracasos', 'déficit', 'débil', 'debilidad', 'incapaz', 'agresivo', 'violento', 'torpe', 'diagnóstico', 'trastorno', 'patología', 'síndrome', 'tdah', 'autismo', 'terapia', 'mistake', 'failure', 'weakness', 'weak', 'diagnosis', 'disorder', 'pathology', 'adhd', 'autism', 'erro', 'fracasso', 'fraco', 'transtorno'];
+const V4_VOSEO = /\b(podés|querés|tenés|sabés|hacés|venís|sentís|decís|mirá|hacé|poné|tomá|vení|dejá|hablá|buscá|esperá|bajá|decile|pedile|ponelo|dejalo|sacalo|resolvelo|seguí|tomate|sos)\b/i;
+
+export function v4Text(report: unknown): string {
+    const parts: string[] = [];
+    const r = report as { hero?: { lead?: string }; secciones?: Array<{ bloque?: { cuerpo?: string; ejemplo?: string }; palabras?: { puente?: string[]; ruido?: string[]; nota?: string }; guia?: Record<string, string> }> };
+    if (r?.hero?.lead) parts.push(r.hero.lead);
+    for (const s of r?.secciones ?? []) {
+        if (s.bloque) { parts.push(s.bloque.cuerpo ?? '', s.bloque.ejemplo ?? ''); }
+        if (s.palabras) { parts.push(...(s.palabras.puente ?? []), ...(s.palabras.ruido ?? []), s.palabras.nota ?? ''); }
+        if (s.guia) parts.push(...Object.values(s.guia));
+    }
+    return parts.join('\n');
+}
+
+/** Sound server-side subset of the fail-closed gate. Returns 'ready' or 'held'+reason. */
+export function gateReportV4(report: unknown, ficha: unknown, nombre: string, lang: string): { status: 'ready' | 'held'; reason: string | null } {
+    const hold = (reason: string) => ({ status: 'held' as const, reason });
+    const f = ficha as { votes?: { vector?: Record<string, number>; ejePrimario?: string; arquetipoLabel?: string } };
+    const vec = f?.votes?.vector ?? {};
+    const sum = Object.values(vec).reduce((a, b) => a + (b || 0), 0);
+    if (sum !== 12) return hold('datos_insuficientes');
+    const nm = (nombre ?? '').trim();
+    if (nm.length < 1 || nm.length > 40 || /[{}]/.test(nombre ?? '')) return hold('nombre_invalido');
+    if (!['D', 'I', 'S', 'C'].includes(f?.votes?.ejePrimario ?? '') || !f?.votes?.arquetipoLabel) return hold('axis_mismatch');
+    if (!['es', 'en', 'pt'].includes(lang)) return hold('idioma');
+    const text = v4Text(report);
+    if (((report as { secciones?: unknown[] })?.secciones ?? []).length < 5) return hold('faltan_secciones');
+    if (text.replace(/\s+/g, '').length < 900) return hold('forma_corta');
+    if (/\{[^}]+\}/.test(text)) return hold('placeholder');
+    if (/\b(undefined|null|NaN|Desconocido|unknown)\b|\[object Object\]/.test(text)) return hold('literal_basura');
+    const low = text.toLowerCase();
+    for (const w of V4_PROHIBITED) { if (new RegExp(`\\b${w}\\b`, 'i').test(low)) return hold('guard_prohibido'); }
+    const n = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const det = [
+        new RegExp(`(?:${n}|él|ella|el niño|la niña)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${n}|él|ella)\\s+(?:siempre|nunca|jamás)(?![\\p{L}])`, 'iu'),
+        /\bva a ser\b/iu, /\bsin duda\b/iu, /\bnació para\b/iu, /\bdefinitivamente\b/iu,
+    ];
+    for (const re of det) { if (re.test(text)) return hold('guard_determinista'); }
+    if (lang === 'es' && V4_VOSEO.test(text)) return hold('guard_voseo'); // voseo: solo español
+    if (/[—–]/.test(text)) return hold('guard_guion'); // no-guiones: regla universal (es/en/pt)
+    return { status: 'ready', reason: null };
+}
+
+/** Wrapper: seals report_status ONLY when V4_SEAL is on. Off => {null,null} (shadow, legacy delivery). */
+function sealV4(report_v4: unknown, ficha: unknown, nombre: string, lang: string): { report_status: string | null; held_reason: string | null } {
+    if (process.env.V4_SEAL !== 'on' || !report_v4 || !ficha) return { report_status: null, held_reason: null };
+    try {
+        const g = gateReportV4(report_v4, ficha, nombre, lang);
+        return { report_status: g.status, held_reason: g.reason };
+    } catch (e) {
+        console.warn('[v4:seal] gate threw, leaving report_status NULL:', e);
+        return { report_status: null, held_reason: null };
+    }
+}
+
 /**
  * Unified session endpoint. Routes by `action` field in POST body:
  *   - "start"  → create a child (or re-profile an existing one) + a started perfilamiento
@@ -314,12 +377,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const safeKeys = [
                 'eje', 'motor', 'archetype_label', 'eje_secundario',
                 'answers', 'ai_tokens_input', 'ai_tokens_output', 'ai_cost_usd', 'ai_sections', 'game_metrics',
+                // v4 SHADOW artifacts (data only; report_status is NEVER client-settable — sealed server-side).
+                'evidence_ficha', 'report_v4', 'report_qc',
             ];
             for (const key of safeKeys) {
                 if (rest[key] !== undefined) allowed[key] = rest[key];
             }
             if (Object.keys(allowed).length === 0) {
                 return res.status(400).json({ error: 'No valid fields to update' });
+            }
+
+            // Fail-closed server gate: when the v4 report is being persisted, the SERVER (never the
+            // client) seals report_status. NULL unless V4_SEAL='on' (shadow => legacy delivery).
+            if (allowed.report_v4) {
+                const sealUpd = sealV4(allowed.report_v4, allowed.evidence_ficha, ownRow.child_name ?? '', ownRow.lang ?? 'es');
+                allowed.report_status = sealUpd.report_status;
+                allowed.held_reason = sealUpd.held_reason;
+                if (sealUpd.report_status === 'held') allowed.held_at = new Date().toISOString();
             }
 
             // Completing the questionnaire (a real eje) resolves the perfilamiento.
@@ -361,6 +435,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 answers, tenant_id, lang, play_token,
                 ai_tokens_input, ai_tokens_output, ai_cost_usd, ai_sections, game_metrics,
                 is_demo,
+                // v4 method (client-computed; see METODO-FALLBACK-INFORME.md). Additive + optional.
+                // report_status is NEVER accepted from the client (a malicious client could set
+                // 'ready'+garbage and bypass the choke-point); only server-side code seals it. The
+                // client sends evidence_ficha/report_v4/report_qc (data only) for SHADOW observation.
+                evidence_ficha, report_v4, report_qc,
             } = fields;
 
             if (!adult_email || !eje || !motor) {
@@ -418,6 +497,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             const save_share_token = randomBytes(16).toString('hex');
+            const sealSave = sealV4(report_v4, evidence_ficha, child_name, lang ?? 'es');
             const { data: saveData, error } = await sb.from('perfilamientos').insert({
                 child_id:         saveChildId,
                 adult_name,
@@ -440,6 +520,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 status:           resolved ? 'resolved' : 'in_flight',
                 share_token:      save_share_token,
                 is_demo:          is_demo === true,
+                // v4 method (additive; NULL for legacy callers). report_status is sealed ONLY by the
+                // server gate (sealV4), never from the client; NULL unless V4_SEAL is 'on'.
+                evidence_ficha:   evidence_ficha ?? null,
+                report_v4:        report_v4 ?? null,
+                report_qc:        report_qc ?? null,
+                report_status:    sealSave.report_status,
+                held_reason:      sealSave.held_reason,
+                held_at:          sealSave.report_status === 'held' ? new Date().toISOString() : null,
             }).select('id, share_token').single();
 
             if (error || !saveData) {

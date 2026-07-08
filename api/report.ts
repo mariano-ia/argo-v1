@@ -33,7 +33,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const { data, error } = await sb
         .from('perfilamientos')
-        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token, is_demo')
+        .select('id, child_name, child_age, sport, adult_name, eje, motor, eje_secundario, lang, answers, created_at, ai_sections, tenant_id, full_access, share_token, is_demo, report_v4, report_status')
         .eq('id', id)
         .not('eje', 'eq', '_pending')
         .single();
@@ -62,7 +62,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         tenantPlan = tenant?.plan ?? null;
     }
 
+    // Fail-closed on the API too: for a withheld report (held/pending) do NOT return the report BODIES.
+    // ReportPage only needs report_status to render "preparando"; returning report_v4/ai_sections would
+    // let the gate-blocked content be retrieved via the raw API response. Strip them (defense-in-depth).
+    const withheld = data.report_status === 'held' || data.report_status === 'pending';
+    const safeData = withheld ? { ...data, report_v4: null, ai_sections: null } : data;
+
     // Set noindex header so crawlers respect it even without the meta tag
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-    return res.status(200).json({ ...data, tenant_plan: tenantPlan, full_access: data.full_access ?? false });
+    return res.status(200).json({ ...safeData, tenant_plan: tenantPlan, full_access: data.full_access ?? false });
 }

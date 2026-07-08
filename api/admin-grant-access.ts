@@ -32,11 +32,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Get perfilamiento data including AI sections (session_id is a perfilamiento id)
         const { data: session } = await sb
             .from('perfilamientos')
-            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd, share_token')
+            .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, ai_cost_usd, share_token, report_status')
             .eq('id', session_id)
             .single();
 
         if (!session) return res.status(404).json({ error: 'Session not found' });
+
+        // Fail-closed: this path sends its OWN "report ready" email, bypassing the send-email choke-point.
+        // A withheld report (held/pending) must NOT trigger a "ready" email — release it from the Held
+        // queue first. Closes the one report-email path that ignored report_status.
+        if (session.report_status === 'held' || session.report_status === 'pending') {
+            return res.status(409).json({ error: 'El informe está retenido. Liberalo desde Retenidos antes de dar acceso.', report_status: session.report_status });
+        }
 
         // If AI sections are missing, regenerate before sending
         if (!session.ai_sections || !session.ai_cost_usd) {

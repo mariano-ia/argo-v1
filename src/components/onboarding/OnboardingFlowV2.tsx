@@ -4,8 +4,11 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { getAdultIntroSlides, getStorySlides, getQuestions } from '../../lib/onboardingDataI18n';
 import { getOdysseyT } from '../../lib/odysseyTranslations';
 import { useLang } from '../../context/LangContext';
-import { QuestionAnswer, SessionContext, resolveFromAnswers } from '../../lib/profileResolver';
+import { QuestionAnswer, SessionContext, resolveFromAnswers, resolveEvidenceFicha } from '../../lib/profileResolver';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
+import { runReportPipeline } from '../../lib/reportPipeline';
+import { sportFrame, buildReportV4 } from '../../lib/reportV4';
+import { makeCapa2 } from '../../lib/reportCapa2';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import {
     startSession, updateSession, saveSession,
@@ -870,7 +873,52 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.info('[profileResolver] Tiebreaker applied → eje:', profile.eje, 'motor:', profile.motor);
             }
 
+            // ── v4 method (SHADOW, owner 2026-07-07 option 1) ───────────────
+            // Compute the deterministic v4 report + fail-closed gate verdict for
+            // observability against real traffic. NEVER sets report_status (delivery
+            // stays legacy; the server never accepts report_status from the client)
+            // and NEVER throws (wrapped). Purely additive telemetry until we activate.
+            let v4Shadow: Record<string, unknown> = {};
+            try {
+                const edadMeses = Math.round(((adultData.edad as number) || 11) * 12);
+                const ficha = resolveEvidenceFicha(answers, {
+                    edadMeses,
+                    questionVersion: 'v4-2026-07',
+                    games: {
+                        impulse: gameAMetricsRef.current ?? undefined,
+                        rhythm: gameBMetricsRef.current ?? undefined,
+                        adaptation: gameCMetricsRef.current ?? undefined,
+                    },
+                });
+                const v4ctx = { nombre: adultData.nombreNino, frame: sportFrame(adultData.deporte) };
+                const v4lang = (lang === 'en' || lang === 'pt' ? lang : 'es') as 'es' | 'en' | 'pt';
+
+                // ── Capa 2 (variación por IA): best-effort. El endpoint /api/report-variant está gateado por
+                //    V4_CAPA2 (off => variant null). makeCapa2 aplica los recaudos (distinción + hechos) y el
+                //    pipeline corre el gate completo; si algo no da, cae a Capa 1. NUNCA bloquea (todo try/catch).
+                let capa2Hook: ReturnType<typeof makeCapa2> | undefined;
+                try {
+                    const base = buildReportV4(ficha, { ...v4ctx, lang: v4lang });
+                    const vr = await fetch('/api/report-variant', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ report_v4: base, lang: v4lang, nombre: adultData.nombreNino }),
+                    });
+                    if (vr.ok) {
+                        const { variant } = await vr.json();
+                        if (variant) capa2Hook = makeCapa2(variant, {}, (reason, detail) => console.info('[v4:capa2] reject:', reason, detail ?? ''));
+                    }
+                } catch (e) { console.warn('[v4:capa2] variant fetch failed (non-blocking):', e); }
+
+                const pipe = runReportPipeline(ficha, v4ctx, { lang: v4lang, capa2: capa2Hook });
+                v4Shadow = { evidence_ficha: ficha, report_v4: pipe.report, report_qc: pipe.qc };
+                console.info('[v4:shadow] gate:', pipe.status, '·', pipe.qc.reasons.map((r) => r.code).join(',') || 'clean', '· origen:', pipe.origen);
+            } catch (e) {
+                console.warn('[v4:shadow] non-blocking failure:', e);
+            }
+
             // ── Option 1: Save profile data IMMEDIATELY (before AI) ─────────
+            // CRITICAL path: only the profile fields. The v4 shadow is persisted SEPARATELY
+            // below so a v4 issue can NEVER block/fail the profile save or the report.
             const profileFields = {
                 eje:             profile.eje,
                 motor:           profile.motor,
@@ -908,6 +956,18 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
             // Option 2: Clear localStorage — profile is safely in DB now
             clearRecoveryData();
+
+            // ── v4 shadow persist (ISOLATED, best-effort) ───────────────────
+            // Fully decoupled from the critical profile save above: a failure here can
+            // NEVER block the report. report_status is left NULL (never client-set), so
+            // delivery stays legacy. Pure observability until activation.
+            if (sessionIdRef.current && Object.keys(v4Shadow).length > 0) {
+                try {
+                    await updateSession(sessionIdRef.current, v4Shadow, shareTokenRef.current ?? undefined);
+                } catch (e) {
+                    console.warn('[v4:shadow] persist failed (non-blocking):', e);
+                }
+            }
 
             // ── Generate AI sections ────────────────────────────────────────
             setAiLoading(true);

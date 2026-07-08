@@ -35,6 +35,38 @@ function ejeFromAnswers(answers: unknown): string | null {
     return winners.length === 1 ? winners[0] : null;
 }
 
+// Record a failed recovery attempt. Populates retry_count/last_error (observability). For a v4 row
+// (report_v4 present) that has failed MAX times, transition it to 'held' for human review + fire a
+// one-shot alert. LEGACY (NULL) rows are NEVER held here — they keep retrying (unchanged behavior).
+type SbLoose = { from: (t: string) => { update: (v: Record<string, unknown>) => { eq: (c: string, val: unknown) => unknown }; insert: (v: unknown) => unknown } };
+async function bumpRetry(
+    sb: SbLoose,
+    s: { id: string; retry_count?: number | null; report_status?: string | null; report_v4?: unknown },
+    errCode: string,
+    isV4: boolean,
+): Promise<void> {
+    try {
+        const next = (s.retry_count ?? 0) + 1;
+        const patch: Record<string, unknown> = { retry_count: next, last_error: errCode };
+        const held = isV4 && next >= MAX_RECOVERY_RETRIES && s.report_status !== 'held';
+        if (held) {
+            patch.report_status = 'held';
+            patch.held_reason = 'recovery_failed';
+            patch.held_at = new Date().toISOString();
+        }
+        await sb.from('perfilamientos').update(patch).eq('id', s.id);
+        if (held) {
+            await sendAlert('[Argo] Informe retenido tras reintentos', `perfilamiento ${s.id} retenido (recovery_failed): ${errCode}, intento ${next}. Revisar en /admin/held.`);
+            await logActivity(sb, {
+                area: 'producto', action: 'report_held', sourceType: 'cron', severity: 'degradado',
+                resourceType: 'session', resourceId: String(s.id),
+                reason: { session_id: s.id, held_reason: 'recovery_failed', last_error: errCode, retry_count: next },
+                relatedLogs: [`perfilamientos.${s.id}`],
+            });
+        }
+    } catch (e) { console.warn('[report-recovery] bumpRetry failed:', e); }
+}
+
 /**
  * GET/POST /api/report-recovery-cron
  *
@@ -58,6 +90,29 @@ export const maxDuration = 120; // several sequential AI generations per run
 
 const RECOVERY_WINDOW_HOURS = 6;
 const BATCH_SIZE = 5; // sessions processed per run; cron runs frequently
+const MAX_RECOVERY_RETRIES = 5; // after this many failed attempts, a v4 row is held for human review
+
+// One-shot alert (Resend + Telegram) — inlined from qa-monitor (api/ can't import). Best-effort.
+async function sendAlert(subject: string, body: string): Promise<void> {
+    const key = process.env.RESEND_API_KEY;
+    if (key) {
+        try {
+            await fetch('https://api.resend.com/emails', {
+                method: 'POST', headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ from: 'Argo QA <qa@argomethod.com>', to: ['hola@argomethod.com'], subject, text: body }),
+            });
+        } catch (e) { console.warn('[report-recovery] alert email failed:', e); }
+    }
+    const tok = process.env.TELEGRAM_BOT_TOKEN, chat = process.env.TELEGRAM_CHAT_ID;
+    if (tok && chat) {
+        try {
+            await fetch(`https://api.telegram.org/bot${tok}/sendMessage`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chat, text: `${subject}\n${body}` }),
+            });
+        } catch (e) { console.warn('[report-recovery] alert telegram failed:', e); }
+    }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Protect like the other crons.
@@ -96,10 +151,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ai_sections about to land) so the cron never races a live generation.
     const { data: sessions, error } = await sb
         .from('perfilamientos')
-        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token, answers')
+        .select('id, child_name, child_age, sport, adult_name, adult_email, eje, motor, eje_secundario, archetype_label, lang, ai_sections, share_token, answers, report_status, retry_count, report_v4')
         .eq('status', 'resolved')
         .not('is_demo', 'is', true) // never generate/send for demo or canary sessions
         .is('email_sent_at', null)
+        // Fail-closed: NEVER auto-work a 'held' row (human-in-loop) — it would 409 at send-email
+        // and re-hammer forever. Keep NULL (legacy) + ready/pending (v4). 'sent' is already excluded
+        // by email_sent_at IS NULL. This is inert while V4_SEAL is off (every row is NULL).
+        .or('report_status.is.null,report_status.in.(ready,pending)')
         .gte('created_at', cutoff)
         .lt('created_at', new Date(Date.now() - 2 * 60 * 1000).toISOString())
         .order('created_at', { ascending: true })
@@ -114,13 +173,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     for (const s of sessions ?? []) {
         const r = { id: s.id, aiGenerated: false, emailed: false, error: undefined as string | undefined };
+        // "v4 delivery" is decided by REPORT_STATUS, not by report_v4 presence: the client shadow persists
+        // report_v4 on EVERY play (even with V4_SEAL off), so a NULL-status legacy row usually HAS a
+        // report_v4. Only a sealed v4 status ('ready'/'pending') delivers via buildHtmlV4 and can be held;
+        // NULL rows take the unchanged LEGACY path (regenerate ai_sections + legacy email + axis defense).
+        const isV4 = s.report_status === 'ready' || s.report_status === 'pending';
         try {
             let aiSections = s.ai_sections as { palabrasPuente?: string[] } | null;
 
-            // Defense: if the answers clearly disagree with the stored eje, do NOT
+            // Defense (LEGACY path only): if the answers clearly disagree with the stored eje, do NOT
             // author a report from a contested axis — skip and flag to Principia.
             const derivedEje = ejeFromAnswers(s.answers);
-            if (!aiSections && derivedEje && derivedEje !== s.eje) {
+            if (!isV4 && !aiSections && derivedEje && derivedEje !== s.eje) {
                 await logActivity(sb, {
                     area: 'producto', action: 'report_axis_mismatch_skipped', sourceType: 'cron',
                     severity: 'degradado', resourceType: 'session', resourceId: String(s.id),
@@ -128,13 +192,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     relatedLogs: [`perfilamientos.${s.id}`],
                 });
                 r.error = 'axis_mismatch';
+                await bumpRetry(sb, s, 'axis_mismatch', isV4);
                 results.push(r);
                 continue;
             }
 
-            // 1. Regenerate AI sections if missing (same minimal payload shape as
-            //    admin-grant-access — generate-ai fills the rest from the archetype).
-            if (!aiSections) {
+            // 1. Regenerate AI sections if missing (LEGACY only; a v4 row skips this).
+            //    Same minimal payload shape as admin-grant-access — generate-ai fills the rest.
+            if (!isV4 && !aiSections) {
                 const aiRes = await fetch(`${origin}/api/generate-ai`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -159,6 +224,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 });
                 if (!aiRes.ok) {
                     r.error = `generate-ai ${aiRes.status}`;
+                    await bumpRetry(sb, s, r.error, isV4);
                     results.push(r);
                     continue; // retry on next run
                 }
@@ -197,8 +263,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
             if (!emailRes.ok) {
                 r.error = `send-email ${emailRes.status}`;
+                // A 409 means the choke-point withheld it (held/pending) — do not treat as transient.
+                await bumpRetry(sb, s, r.error, isV4);
                 results.push(r);
-                continue; // retry on next run
+                continue; // retry on next run (unless now held)
             }
             r.emailed = true;
             // Principia ingestion (area=producto): a stuck report was auto-recovered.
@@ -214,6 +282,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             });
         } catch (err) {
             r.error = err instanceof Error ? err.message : String(err);
+            await bumpRetry(sb, s, r.error, isV4);
         }
         results.push(r);
     }
