@@ -118,10 +118,11 @@ test('patrón (acople rápido): NEUTRO en género ("más rápido", sin marcar fe
   assert.ok(!/rápida|cómoda|lo conecta|forzarla/.test(b.cuerpo), 'no debe marcar género');
 });
 
-test('tormenta 2/3: preferencia tentativa nombrando las dos + ejemplo', () => {
+test('tormenta 2/3 (candado): narra SIGNIFICADO ("más de un recurso"), sin el fragmento "dos de las tres"', () => {
   const b = buildTormentaSection(orderedFicha(DESVIO), CTX('Mateo')); // Q5 C, Q6 C, Q7 D
-  assert.match(b.cuerpo, /dos de las tres escenas de tormenta/);
-  assert.match(b.cuerpo, /mirar el plan antes de actuar/);
+  assert.match(b.cuerpo, /más de un recurso/);
+  assert.match(b.cuerpo, /mirar el plan antes de actuar/); // sigue nombrando la inclinación (significado)
+  assert.ok(!/dos de las tres|en la tercera/.test(b.cuerpo), 'no debe narrar el conteo fragmentado');
   assert.ok(b.ejemplo);
 });
 
