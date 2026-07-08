@@ -15,7 +15,7 @@ import { useLang } from '../../context/LangContext';
 import { SectionIntro } from '../../components/dashboard/SectionIntro';
 import { ContextChip } from '../../components/dashboard/ContextChip';
 import { LockedSection } from '../../components/dashboard/LockedSection';
-import { AXIS_COLORS, AXIS_CHIP_STYLE, MOTOR_CHIP_STYLE } from '../../lib/designTokens';
+import { AXIS_COLORS, AXIS_CHIP_STYLE } from '../../lib/designTokens';
 import { Tooltip } from '../../components/ui/Tooltip';
 import {
     classifyDecisionPattern,
@@ -24,6 +24,7 @@ import {
 } from '../../lib/decisionPattern';
 import type { ReportV4 } from '../../lib/reportV4';
 import { ReportV4View } from '../../components/report/ReportV4View';
+import { getArchetypeLabel } from '../../lib/archetypeContentV4';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -259,7 +260,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
 
     const dot = AXIS_COLORS[session.eje] ?? '#6366f1';
     const chip = AXIS_CHIP_STYLE[session.eje] ?? AXIS_CHIP_STYLE.C;
-    const motorCfg = MOTOR_CHIP_STYLE[session.motor] ?? MOTOR_CHIP_STYLE['Medio'];
     const needsReprofile = monthsSince(session.created_at) >= 6;
     const months = monthsSince(session.created_at);
 
@@ -373,6 +373,74 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         if (!h || h.length < 2) return null;
         return describeProfileChange(h[0], h[1], lang, session.id, session.child_name);
     }, [session.history, lang, session.id, session.child_name]);
+
+    // Name for the row chip + timeline. v4 → its blend name; otherwise the PRIMARY eje only.
+    // The deprecated "[Eje] [Motor]" tempo names (Rítmico/Sereno/Dinámico/Observador) are dropped
+    // on sight: the tempo is a measured insight inside the report, never part of the identity.
+    const displayLabel = v4Label ?? getArchetypeLabel(session.eje as 'D' | 'I' | 'S' | 'C', lang as 'es' | 'en' | 'pt');
+
+    // Compact-card content mapped from the v4 report (short excerpts into the same slots the
+    // coach already knew) — the dashboard stays a purpose-built summary, NOT the full report.
+    const v4Compact = useMemo(() => {
+        if (!v4) return null;
+        const byId = new Map(v4.secciones.map((s) => [s.id, s]));
+        const strip = (t: string) => (t || '').replace(/\*\*/g, '');
+        const clip = (t: string, n = 2) => {
+            const s = strip(t).trim();
+            const parts = s.match(/[^.!?]+[.!?]+/g);
+            return parts ? parts.slice(0, n).join(' ').trim() : s;
+        };
+        const bodyOf = (id: string) => { const sec = byId.get(id); return sec?.bloque?.cuerpo ? clip(sec.bloque.cuerpo) : null; };
+        const titleOf = (id: string) => byId.get(id)?.titulo ?? '';
+        const pal = byId.get('palabras')?.palabras ?? null;
+        const gu = byId.get('guia')?.guia ?? null;
+        const patronBody = bodyOf('patron');
+        const contBody = bodyOf('contingencia');
+        const motorBody = bodyOf('motor');
+        const combBody = bodyOf('combustible');
+        return {
+            esencia: v4.hero.lead ? clip(v4.hero.lead, 3) : null,
+            patron: patronBody ? { label: titleOf('patron'), text: patronBody } : null,
+            cambia: contBody ? { label: titleOf('contingencia'), text: contBody } : (motorBody ? { label: titleOf('motor'), text: motorBody } : null),
+            palabrasPuente: pal?.puente ?? [],
+            palabrasRuido: pal?.ruido ?? [],
+            combustible: combBody ? { label: titleOf('combustible'), text: combBody } : null,
+            checklist: gu ? { antes: clip(gu.antes, 1), durante: clip(gu.durante, 1), despues: clip(gu.despues, 1) } : null,
+        };
+    }, [v4]);
+
+    // Single source the compact card renders from: v4 mapping when sealed, else the legacy engine.
+    const compact = useMemo(() => {
+        if (v4Compact) {
+            return {
+                esencia: v4Compact.esencia,
+                patron: v4Compact.patron ? { label: v4Compact.patron.label, sub: null as string | null, text: v4Compact.patron.text } : null,
+                cambia: v4Compact.cambia,
+                palabrasPuente: v4Compact.palabrasPuente,
+                palabrasRuido: v4Compact.palabrasRuido,
+                guiaCards: null as { situacion: string; activador: string; desmotivacion: string }[] | null,
+                combustible: v4Compact.combustible,
+                checklist: v4Compact.checklist,
+            };
+        }
+        if (!reportData) return null;
+        const tendText = tendenciaContent ? (() => {
+            const full = tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name);
+            const end = full.indexOf('. ');
+            return end !== -1 ? full.slice(0, end + 1) : full;
+        })() : null;
+        const p = decisionPattern ? getPatternCopy(decisionPattern, lang) : null;
+        return {
+            esencia: reportData.perfilExtended ?? reportData.perfil,
+            patron: p ? { label: getPatternSectionLabel(lang), sub: p.label, text: p.desc } : null,
+            cambia: tendText ? { label: `${dt.players.brujulaSecundaria}: ${tendencia}`, text: tendText } : null,
+            palabrasPuente: reportData.palabrasPuente,
+            palabrasRuido: reportData.palabrasRuido,
+            guiaCards: reportData.guia?.length ? reportData.guia : null,
+            combustible: null as { label: string; text: string } | null,
+            checklist: reportData.checklist ?? null,
+        };
+    }, [v4Compact, reportData, decisionPattern, tendenciaContent, tendencia, lang, dt, session.child_name]);
 
     const handleResend = async () => {
         setResending(true);
@@ -512,23 +580,13 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                     </p>
                 </div>
 
-                {/* Profile chip */}
+                {/* Profile chip (the tempo/motor is NOT identity — it lives inside the report, not here) */}
                 <span
                     className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden md:inline-block"
                     style={{ border: `1px solid ${chip.border}`, color: chip.text }}
                 >
-                    {v4Label ?? reportData?.arquetipo.label ?? session.archetype_label}
+                    {displayLabel}
                 </span>
-
-                {/* Motor */}
-                <Tooltip text={lang === 'en' ? 'Processing speed during the experience' : lang === 'pt' ? 'Velocidade de processamento durante a experiência' : 'Velocidad de procesamiento durante la experiencia'}>
-                    <span
-                        className="text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline-block"
-                        style={{ background: motorCfg.bg, color: motorCfg.text }}
-                    >
-                        {dt.profile.motorNames[session.motor] ?? session.motor}
-                    </span>
-                </Tooltip>
 
                 {/* Re-profile: appears at 6 months. Copies the child's re-profile link. */}
                 {needsReprofile && reprofileLink && (
@@ -651,7 +709,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 return (
                                                     <div key={h.id} className={`flex items-center gap-2 ${isCurrent ? 'text-xs' : 'text-[10px]'}`}>
                                                         <span className={`rounded-full flex-shrink-0 ${isCurrent ? 'w-1.5 h-1.5' : 'w-1 h-1 opacity-60'}`} style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
-                                                        <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{isCurrent && v4Label ? v4Label : h.archetype_label}</span>
+                                                        <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{isCurrent ? displayLabel : getArchetypeLabel(h.eje as 'D' | 'I' | 'S' | 'C', lang as 'es' | 'en' | 'pt')}</span>
                                                         <span className="text-argo-light">{dateStr}</span>
                                                         {isCurrent
                                                             ? <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>
@@ -672,64 +730,47 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                             {/* Report body. When a sealed v4 report exists (and the coach is on a
                                 paid plan, so the paywall is not in effect) render the exact v4 report
                                 the responsible adult receives; otherwise the legacy 2-column detail. */}
-                            {v4 && !locked ? (
-                                <ReportV4View
-                                    report={v4}
-                                    edad={session.child_age}
-                                    deporte={session.sport}
-                                    adulto={session.adult_name}
-                                    fecha={reportFecha}
-                                />
-                            ) : (
-                            /* 2-column layout for detail */
+                            {compact && (
+                            /* Compact 2-column summary — the coach's purpose-built view (NOT the full
+                               report; the full report is the PDF/email). Content is v4 when the report is
+                               sealed, otherwise the legacy engine. Short excerpts, same slots as before. */
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
                                 <div className="space-y-4">
                                     {/* Key insight */}
-                                    {reportData && (
+                                    {compact.esencia && (
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.loEsencial}</p>
-                                            <p className="text-sm text-argo-navy leading-relaxed">{reportData.perfilExtended ?? reportData.perfil}</p>
+                                            <p className="text-sm text-argo-navy leading-relaxed">{compact.esencia}</p>
                                         </div>
                                     )}
 
                                     {/* Decision pattern */}
-                                    {decisionPattern && (() => {
-                                        const p = getPatternCopy(decisionPattern, lang);
-                                        return (
-                                            <div>
-                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                                    {getPatternSectionLabel(lang)}
-                                                </p>
-                                                <p className="text-xs font-semibold text-argo-navy mb-0.5">{p.label}</p>
-                                                <p className="text-xs text-argo-grey leading-relaxed">{p.desc}</p>
-                                            </div>
-                                        );
-                                    })()}
-
-                                    {/* Tendencia */}
-                                    {tendenciaContent && (
+                                    {compact.patron && (
                                         <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                                {dt.players.brujulaSecundaria}: {tendencia}
-                                            </p>
-                                            <p className="text-xs text-argo-grey leading-relaxed">{(() => {
-                                                const full = tendenciaContent.parrafo.replace(/\{nombre\}/g, session.child_name);
-                                                const end = full.indexOf('. ');
-                                                return end !== -1 ? full.slice(0, end + 1) : full;
-                                            })()}</p>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.patron.label}</p>
+                                            {compact.patron.sub && <p className="text-xs font-semibold text-argo-navy mb-0.5">{compact.patron.sub}</p>}
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.patron.text}</p>
+                                        </div>
+                                    )}
+
+                                    {/* How it shifts (v4 contingencia/motor · legacy secondary compass) */}
+                                    {compact.cambia && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.cambia.label}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.cambia.text}</p>
                                         </div>
                                     )}
 
                                     {/* Bridge words */}
-                                    {reportData && (locked ? (
+                                    {compact.palabrasPuente.length > 0 && (locked ? (
                                         <LockedSection
                                             label={dt.players.palabrasPuente}
                                             cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
                                             tooltip={lang === 'en' ? 'Key phrases to connect and communicate effectively with this profile. Words that resonate with their behavioral style.' : lang === 'pt' ? 'Frases-chave para conectar e comunicar de forma eficaz com este perfil. Palavras que ressoam com seu estilo comportamental.' : 'Frases clave para conectar y comunicarte de forma efectiva con este perfil. Palabras que resuenan con su estilo conductual.'}
                                         >
                                             <div className="flex flex-wrap gap-1.5">
-                                                {reportData.palabrasPuente.map((w, i) => (
+                                                {compact.palabrasPuente.map((w, i) => (
                                                     <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
                                                 ))}
                                             </div>
@@ -738,7 +779,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {reportData.palabrasPuente.map((w, i) => (
+                                                {compact.palabrasPuente.map((w, i) => (
                                                     <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
                                                 ))}
                                             </div>
@@ -746,14 +787,14 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     ))}
 
                                     {/* Noise words */}
-                                    {reportData && (locked ? (
+                                    {compact.palabrasRuido.length > 0 && (locked ? (
                                         <LockedSection
                                             label={dt.players.evitarComunicacion}
                                             cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
                                             tooltip={lang === 'en' ? 'Words and phrases that generate resistance or disconnection with this profile. Knowing them helps you avoid communication friction.' : lang === 'pt' ? 'Palavras e frases que geram resistência ou desconexão com este perfil. Conhecê-las ajuda a evitar ruído na comunicação.' : 'Palabras y frases que generan resistencia o desconexión con este perfil. Conocerlas te ayuda a evitar ruido en la comunicación.'}
                                         >
                                             <div className="flex flex-wrap gap-1.5">
-                                                {reportData.palabrasRuido.map((w, i) => (
+                                                {compact.palabrasRuido.map((w, i) => (
                                                     <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
                                                 ))}
                                             </div>
@@ -762,7 +803,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
                                             <div className="flex flex-wrap gap-1.5">
-                                                {reportData.palabrasRuido.map((w, i) => (
+                                                {compact.palabrasRuido.map((w, i) => (
                                                     <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
                                                 ))}
                                             </div>
@@ -774,14 +815,14 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                 <div className="space-y-4">
                                     {locked ? (
                                         <>
-                                            {reportData && reportData.guia?.length > 0 && (
+                                            {compact.guiaCards && (
                                                 <LockedSection
                                                     label={dt.players.guiaRapida}
                                                     cta={lang === 'en' ? 'Activators and demotivators per situation. Available in paid plans.' : lang === 'pt' ? 'Ativadores e desmotivadores por situação. Disponível nos planos pagos.' : 'Activadores y desmotivadores por situación. Disponible en planes pagos.'}
                                                     tooltip={lang === 'en' ? 'For each common activity situation, see what activates and what demotivates this athlete based on their profile.' : lang === 'pt' ? 'Para cada situação comum da atividade, veja o que ativa e o que desmotiva este atleta com base no seu perfil.' : 'Para cada situación habitual de la actividad, mira qué activa y qué desmotiva a este deportista según su perfil.'}
                                                 >
                                                     <div className="space-y-2">
-                                                        {reportData.guia.map((g, i) => (
+                                                        {compact.guiaCards.map((g, i) => (
                                                             <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
                                                                 <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
                                                                 <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
@@ -791,7 +832,16 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                     </div>
                                                 </LockedSection>
                                             )}
-                                            {reportData?.checklist && (
+                                            {compact.combustible && (
+                                                <LockedSection
+                                                    label={compact.combustible.label}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'What most motivates this athlete, based on their profile.' : lang === 'pt' ? 'O que mais motiva este atleta, com base no seu perfil.' : 'Lo que más motiva a este deportista, según su perfil.'}
+                                                >
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
+                                                </LockedSection>
+                                            )}
+                                            {compact.checklist && (
                                                 <LockedSection
                                                     label={dt.players.checklistEntrenamiento}
                                                     cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
@@ -799,9 +849,9 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 >
                                                     <div className="grid grid-cols-3 gap-2">
                                                         {[
-                                                            { label: dt.players.antes, text: reportData.checklist.antes },
-                                                            { label: dt.players.durante, text: reportData.checklist.durante },
-                                                            { label: dt.players.despues, text: reportData.checklist.despues },
+                                                            { label: dt.players.antes, text: compact.checklist.antes },
+                                                            { label: dt.players.durante, text: compact.checklist.durante },
+                                                            { label: dt.players.despues, text: compact.checklist.despues },
                                                         ].map(c => (
                                                             <div key={c.label} className="bg-argo-bg rounded-xl p-3">
                                                                 <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
@@ -814,11 +864,11 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         </>
                                     ) : (
                                         <>
-                                            {reportData && reportData.guia?.length > 0 && (
+                                            {compact.guiaCards && (
                                                 <div>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
                                                     <div className="space-y-2">
-                                                        {reportData.guia.map((g, i) => (
+                                                        {compact.guiaCards.map((g, i) => (
                                                             <div key={i} className="bg-argo-bg rounded-xl p-3 space-y-1">
                                                                 <p className="text-xs font-semibold text-argo-navy">{g.situacion}</p>
                                                                 <p className="text-[11px] text-emerald-700"><span className="font-semibold">{dt.players.activar}:</span> {g.activador}</p>
@@ -828,14 +878,20 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                     </div>
                                                 </div>
                                             )}
-                                            {reportData?.checklist && (
+                                            {compact.combustible && (
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.combustible.label}</p>
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
+                                                </div>
+                                            )}
+                                            {compact.checklist && (
                                                 <div>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
                                                     <div className="grid grid-cols-3 gap-2">
                                                         {[
-                                                            { label: dt.players.antes, text: reportData.checklist.antes },
-                                                            { label: dt.players.durante, text: reportData.checklist.durante },
-                                                            { label: dt.players.despues, text: reportData.checklist.despues },
+                                                            { label: dt.players.antes, text: compact.checklist.antes },
+                                                            { label: dt.players.durante, text: compact.checklist.durante },
+                                                            { label: dt.players.despues, text: compact.checklist.despues },
                                                         ].map(c => (
                                                             <div key={c.label} className="bg-argo-bg rounded-xl p-3">
                                                                 <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
