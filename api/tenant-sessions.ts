@@ -119,7 +119,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // profiles, so the prior _pending guard is implicit in the view.
         let query = sb
             .from('current_perfilamiento')
-            .select('id, perfilamiento_id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, current_profile_date, lang, answers, ai_sections, share_token, reprofile_token, full_access, email_sent_at, perfilamiento_count, archived_at')
+            .select('id, perfilamiento_id, child_name, child_age, adult_name, adult_email, sport, archetype_label, eje, motor, eje_secundario, current_profile_date, lang, answers, ai_sections, share_token, reprofile_token, full_access, email_sent_at, perfilamiento_count, archived_at, report_v4, report_status')
             .eq('tenant_id', tenantId)
             .is('deleted_at', null)
             .order('current_profile_date', { ascending: false })

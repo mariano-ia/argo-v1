@@ -20,6 +20,8 @@ import {
     getPatternCopy,
     getPatternSectionLabel,
 } from '../../lib/decisionPattern';
+import type { ReportV4 } from '../../lib/reportV4';
+import { ReportV4View } from '../../components/report/ReportV4View';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -27,7 +29,7 @@ interface TenantData { id: string; slug: string; display_name: string; plan: str
 interface AnswerRecord { axis: string; responseTimeMs: number; }
 interface AISections { wow?: string; motorDesc?: string; combustible?: string; corazon?: string; reseteo?: string; ecos?: string; checklist?: { antes: string; durante: string; despues: string }; label?: string; bienvenida?: string; grupoEspacio?: string; guia?: { situacion: string; activador: string; desmotivacion: string }[]; palabrasPuente?: string[]; palabrasRuido?: string[]; tendenciaParagraph?: string; tendenciaLabel?: string; palabrasPuenteExtra?: string[]; palabrasRuidoExtra?: string[]; }
 export interface PerfilamientoHistory { id: string; eje: string; motor: string; archetype_label: string; created_at: string; email_sent_at: string | null; share_token: string | null; answers?: AnswerRecord[] | null; }
-export interface SessionRow { id: string; perfilamiento_id?: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; share_token?: string | null; reprofile_token?: string | null; full_access?: boolean; email_sent_at?: string | null; perfilamiento_count?: number; archived_at?: string | null; history?: PerfilamientoHistory[]; }
+export interface SessionRow { id: string; perfilamiento_id?: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; answers: AnswerRecord[] | null; ai_sections: AISections | null; team_ids?: string[]; share_token?: string | null; reprofile_token?: string | null; full_access?: boolean; email_sent_at?: string | null; perfilamiento_count?: number; archived_at?: string | null; history?: PerfilamientoHistory[]; report_v4?: ReportV4 | null; report_status?: string | null; }
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 
@@ -276,6 +278,16 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         catch { return null; }
     }, [session.eje, session.motor, session.eje_secundario, session.child_name, session.ai_sections, lang, sessionLang]);
 
+    // V4 coherence: when a sealed v4 report exists it is the source of truth for the
+    // profile NAME (shown in the chip + timeline) and, for paid coaches, the full report
+    // body. Trial coaches keep the legacy teaser so the paywall still hides paid sections.
+    const v4 = useMemo<ReportV4 | null>(() => {
+        const r = session.report_v4;
+        const sealed = session.report_status === 'ready' || session.report_status === 'sent';
+        return (r && sealed && r.hero) ? r : null;
+    }, [session.report_v4, session.report_status]);
+    const v4Label = v4?.hero?.arquetipoLabel ?? null;
+
     const tendenciaContent = useMemo(() => {
         if (!session.eje_secundario) return null;
         return getLocalizedTendenciaContent(session.eje, session.eje_secundario, lang);
@@ -418,7 +430,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                     className="text-[11px] font-medium px-3 py-1 rounded-full bg-transparent flex-shrink-0 hidden md:inline-block"
                     style={{ border: `1px solid ${chip.border}`, color: chip.text }}
                 >
-                    {reportData?.arquetipo.label ?? session.archetype_label}
+                    {v4Label ?? reportData?.arquetipo.label ?? session.archetype_label}
                 </span>
 
                 {/* Motor */}
@@ -550,7 +562,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 return (
                                                     <div key={h.id} className={`flex items-center gap-2 ${isCurrent ? 'text-xs' : 'text-[10px]'}`}>
                                                         <span className={`rounded-full flex-shrink-0 ${isCurrent ? 'w-1.5 h-1.5' : 'w-1 h-1 opacity-60'}`} style={{ background: AXIS_COLORS[h.eje] ?? '#6366f1' }} />
-                                                        <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{h.archetype_label}</span>
+                                                        <span className={isCurrent ? 'text-argo-secondary font-medium' : 'text-argo-light'}>{isCurrent && v4Label ? v4Label : h.archetype_label}</span>
                                                         <span className="text-argo-light">{dateStr}</span>
                                                         {isCurrent
                                                             ? <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full">{lang === 'en' ? 'current' : lang === 'pt' ? 'atual' : 'actual'}</span>
@@ -568,7 +580,19 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                 </div>
                             )}
-                            {/* 2-column layout for detail */}
+                            {/* Report body. When a sealed v4 report exists (and the coach is on a
+                                paid plan, so the paywall is not in effect) render the exact v4 report
+                                the responsible adult receives; otherwise the legacy 2-column detail. */}
+                            {v4 && !locked ? (
+                                <ReportV4View
+                                    report={v4}
+                                    edad={session.child_age}
+                                    deporte={session.sport}
+                                    adulto={session.adult_name}
+                                    fecha={formatDate(session.created_at, sessionLang)}
+                                />
+                            ) : (
+                            /* 2-column layout for detail */
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
                                 <div className="space-y-4">
@@ -736,6 +760,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                 </div>
                             </div>
+                            )}
 
                             {/* ── Memoria del asistente modal (M2) ─────────────────── */}
                             {memOpen && (
