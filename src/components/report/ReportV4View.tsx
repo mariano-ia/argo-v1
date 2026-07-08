@@ -125,6 +125,17 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
   const footerHead = fdot >= 0 ? footerFull.slice(0, fdot + 1) : footerFull;
   const footerRest = fdot >= 0 ? footerFull.slice(fdot + 2) : '';
 
+  // Veta del H1: usa las piezas (hero.veta) para colorear. Si faltan (informes v4 viejos, generados
+  // antes de que existieran las piezas: guardaron vetaLabel pero no hero.veta), la deriva de vetaLabel
+  // para NO perder la veta en el render de blobs persistidos. Retrocompatible es/en/pt.
+  const vetaDisplay = hero.veta
+    ? hero.veta
+    : (hero.vetaLabel
+        ? { pre: /^\s*with a/i.test(hero.vetaLabel) ? 'with a' : /^\s*com veta/i.test(hero.vetaLabel) ? 'com veta' : 'con veta',
+            word: hero.vetaLabel.replace(/^\s*(con veta|with a|com veta)\s+/i, '').replace(/\s+(lean|streak)\s*$/i, ''),
+            post: /\s+lean\s*$/i.test(hero.vetaLabel) ? 'lean' : '' }
+        : null);
+
   return (
     <div className="mx-auto max-w-[760px]">
       {/* Hero */}
@@ -135,11 +146,11 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
         </div>
         <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
           <span style={{ color: accent }}>{hero.primarioLabel}</span>
-          {hero.veta && (
+          {vetaDisplay && (
             <>
-              {' '}<span className="font-normal text-argo-grey">{hero.veta.pre}</span>{' '}
-              <span style={{ color: veta }}>{hero.veta.word}</span>
-              {hero.veta.post && <>{' '}<span className="font-normal text-argo-grey">{hero.veta.post}</span></>}
+              {' '}<span className="font-normal text-argo-grey">{vetaDisplay.pre}</span>{' '}
+              <span style={{ color: veta }}>{vetaDisplay.word}</span>
+              {vetaDisplay.post && <>{' '}<span className="font-normal text-argo-grey">{vetaDisplay.post}</span></>}
             </>
           )}
         </h1>

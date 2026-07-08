@@ -60,6 +60,18 @@ test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, p
   assert.match(html, /Su motor/);
 });
 
+test('ReportV4View: informe v4 VIEJO (sin hero.veta, solo vetaLabel) NO pierde la veta', () => {
+  // Blobs report_v4 generados antes de que existieran las piezas hero.veta guardaron vetaLabel pero no
+  // hero.veta. El render debe recuperar la veta desde vetaLabel (retrocompat), no mostrar solo el primario.
+  const report = mateoReport() as unknown as { hero: { veta?: unknown; vetaLabel: string | null; primarioLabel: string } };
+  delete report.hero.veta; // simula el blob viejo
+  const html = renderToStaticMarkup(React.createElement(ReportV4View, { report: report as never, edad: 11, deporte: 'Fútbol' }));
+  const h1 = (html.match(/<h1[^>]*>(.*?)<\/h1>/s)?.[1] ?? '').replace(/<[^>]+>/g, '');
+  assert.match(h1, /Impulsor/, 'primario presente');
+  assert.match(h1, /con veta/, 'la veta NO se pierde en blobs viejos');
+  assert.match(h1, /Estratega/, 'el arquetipo de la veta presente');
+});
+
 test('ReportV4View omite grupos vacíos (sin motor/contingencia)', () => {
   // ficha sin juegos y sin desvío => motor y contingencia omitidos
   const answers = Array.from({ length: 12 }, (_, i) => a(i + 1, 'D', 1000));
