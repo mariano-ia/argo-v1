@@ -7,7 +7,8 @@ import { useLang } from '../../context/LangContext';
 import { QuestionAnswer, SessionContext, resolveFromAnswers, resolveEvidenceFicha } from '../../lib/profileResolver';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { runReportPipeline } from '../../lib/reportPipeline';
-import { sportFrame } from '../../lib/reportV4';
+import { sportFrame, buildReportV4 } from '../../lib/reportV4';
+import { makeCapa2 } from '../../lib/reportCapa2';
 import { generateAISections, AISections, AIUsage, ReportContext } from '../../lib/openaiService';
 import {
     startSession, updateSession, saveSession,
@@ -889,11 +890,26 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         adaptation: gameCMetricsRef.current ?? undefined,
                     },
                 });
-                const pipe = runReportPipeline(
-                    ficha,
-                    { nombre: adultData.nombreNino, frame: sportFrame(adultData.deporte) },
-                    { lang: (lang === 'en' || lang === 'pt' ? lang : 'es') },
-                );
+                const v4ctx = { nombre: adultData.nombreNino, frame: sportFrame(adultData.deporte) };
+                const v4lang = (lang === 'en' || lang === 'pt' ? lang : 'es') as 'es' | 'en' | 'pt';
+
+                // ── Capa 2 (variación por IA): best-effort. El endpoint /api/report-variant está gateado por
+                //    V4_CAPA2 (off => variant null). makeCapa2 aplica los recaudos (distinción + hechos) y el
+                //    pipeline corre el gate completo; si algo no da, cae a Capa 1. NUNCA bloquea (todo try/catch).
+                let capa2Hook: ReturnType<typeof makeCapa2> | undefined;
+                try {
+                    const base = buildReportV4(ficha, { ...v4ctx, lang: v4lang });
+                    const vr = await fetch('/api/report-variant', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ report_v4: base, lang: v4lang, nombre: adultData.nombreNino }),
+                    });
+                    if (vr.ok) {
+                        const { variant } = await vr.json();
+                        if (variant) capa2Hook = makeCapa2(variant, {}, (reason, detail) => console.info('[v4:capa2] reject:', reason, detail ?? ''));
+                    }
+                } catch (e) { console.warn('[v4:capa2] variant fetch failed (non-blocking):', e); }
+
+                const pipe = runReportPipeline(ficha, v4ctx, { lang: v4lang, capa2: capa2Hook });
                 v4Shadow = { evidence_ficha: ficha, report_v4: pipe.report, report_qc: pipe.qc };
                 console.info('[v4:shadow] gate:', pipe.status, '·', pipe.qc.reasons.map((r) => r.code).join(',') || 'clean', '· origen:', pipe.origen);
             } catch (e) {
