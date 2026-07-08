@@ -43,9 +43,9 @@ const DESVIO3: [number, 'D' | 'I' | 'S' | 'C'][] = [
 // ── Encabezado ──
 test('hero (8-3-1-0): registro claro, perfil + veta, tono "con claridad", cita 8 de 12', () => {
   const h = buildReportHero(fichaFor({ D: 8, C: 3, I: 1, S: 0 }), CTX('Mateo'));
-  assert.strictEqual(h.arquetipoLabel, 'Impulsor con veta Estratega');
+  assert.strictEqual(h.arquetipoLabel, 'Impulsor con tonos de Estratega'); // B2=2 => "con tonos de"
   assert.strictEqual(h.primarioLabel, 'Impulsor');
-  assert.strictEqual(h.vetaLabel, 'con veta Estratega');
+  assert.strictEqual(h.vetaLabel, 'con tonos de Estratega');
   assert.strictEqual(h.registro, 'claro');
   assert.strictEqual(h.meter.level, 3);
   assert.match(h.lead, /\*\*con claridad en la acción\*\*/);
@@ -189,7 +189,7 @@ test('motor: con juegos rápidos narra bloque; sin juegos null (se omite)', () =
 // ── Ensamblador ──
 test('buildReportV4: ensambla hero + secciones ordenadas; omite lo no narratable', () => {
   const r = buildReportV4(orderedFicha(DESVIO3), CTX('Mateo'));
-  assert.strictEqual(r.hero.arquetipoLabel, 'Impulsor con veta Estratega');
+  assert.strictEqual(r.hero.arquetipoLabel, 'Impulsor con tonos de Estratega'); // 8-3-1-0, B2=2
   const ids = r.secciones.map((s) => s.id);
   ['receta', 'contingencia', 'patron', 'tormenta', 'grupo', 'logro', 'combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
     assert.ok(ids.includes(id), `falta sección ${id}`));

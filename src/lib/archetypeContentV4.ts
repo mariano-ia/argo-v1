@@ -19,7 +19,7 @@
 //   3. Espejar EJE_BASE + MOTOR_INSIGHT_TEMPLATES en en/pt (acá van es + en/pt de lo NUEVO).
 // ═══════════════════════════════════════════════════════════════════════════════
 
-import type { Axis, MotorZona } from './evidenceFicha';
+import type { Axis, MotorZona, VetaBanda } from './evidenceFicha';
 import { EJE_BASE_EN, EJE_BASE_PT, MOTOR_EN, MOTOR_PT } from './reportEjeContentI18n';
 
 export type Lang = 'es' | 'en' | 'pt';
@@ -43,17 +43,32 @@ export function getArchetypeLabel(axis: Axis, lang: Lang): string {
   return AXIS_ARCHETYPE_LABEL[lang][axis];
 }
 
-/** "con veta Estratega" / "with a Strategist lean" / "com veta Estrategista". */
-export function getVetaLabel(axis: Axis, lang: Lang): string {
+/**
+ * Conector de la veta GRADUADO por su fuerza (B2), owner D2 (2026-07-08): el perfil es
+ * SIEMPRE compuesto, pero el conector carga la confianza. afirmada (B2≥4) = "con veta";
+ * tentativa (B2 2-3) = "con tonos de"; sin (B2≤1) = "con destellos de". Ej: "Conector con
+ * destellos de Impulsor". Aplica también a la veta opuesta (siempre compuesto, sea como sea).
+ */
+export function getVetaLabel(axis: Axis, lang: Lang, banda: VetaBanda = 'afirmada'): string {
   const label = AXIS_ARCHETYPE_LABEL[lang][axis];
-  if (lang === 'en') return `with a ${label} lean`;
-  if (lang === 'pt') return `com veta ${label}`;
+  if (lang === 'en') {
+    if (banda === 'tentativa') return `with ${label} tones`;
+    if (banda === 'sin') return `with a hint of ${label}`;
+    return `with a ${label} lean`;
+  }
+  if (lang === 'pt') {
+    if (banda === 'tentativa') return `com tons de ${label}`;
+    if (banda === 'sin') return `com um toque de ${label}`;
+    return `com veta ${label}`;
+  }
+  if (banda === 'tentativa') return `con tonos de ${label}`;
+  if (banda === 'sin') return `con destellos de ${label}`;
   return `con veta ${label}`;
 }
 
-/** Nombre-blend completo (cuando la veta entra al nombre). */
-export function getBlendName(primario: Axis, secundario: Axis, lang: Lang): string {
-  return `${AXIS_ARCHETYPE_LABEL[lang][primario]} ${getVetaLabel(secundario, lang)}`;
+/** Nombre-blend completo (siempre compuesto), con el conector graduado por la banda de la veta. */
+export function getBlendName(primario: Axis, secundario: Axis, lang: Lang, banda: VetaBanda = 'afirmada'): string {
+  return `${AXIS_ARCHETYPE_LABEL[lang][primario]} ${getVetaLabel(secundario, lang, banda)}`;
 }
 
 // ─── "Su motor" — insight cronométrico per-child (reemplaza motorDesc disposicional) ──

@@ -94,9 +94,9 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
   // arquetipoLabel lang-aware: reproduce la regla dura del resolver (SIEMPRE primario + veta; veta solo
   // si el 2º eje tuvo ≥1 voto). getBlendName es idéntico al label es del resolver (snapshot-guarded).
   const arquetipoLabel = v.secondCount >= 1
-    ? getBlendName(v.ejePrimario, v.ejeSecundario, lang)
+    ? getBlendName(v.ejePrimario, v.ejeSecundario, lang, v.vetaBanda)
     : getArchetypeLabel(v.ejePrimario, lang);
-  const vetaLabel = v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang) : null;
+  const vetaLabel = v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang, v.vetaBanda) : null;
   // Descompone el vetaLabel en (prefijo, arquetipo, sufijo) para pintar cada parte con su color.
   let veta: ReportHero['veta'] = null;
   if (v.secondCount >= 1) {

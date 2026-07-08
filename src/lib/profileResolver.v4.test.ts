@@ -13,21 +13,21 @@ test('4-3-3-2 => registro parejo, PERO igual da perfil + veta', () => {
   assert.strictEqual(v.B, 1);
   assert.strictEqual(v.forma, 'versatil');
   assert.strictEqual(v.registro, 'parejo');
-  assert.strictEqual(v.arquetipoLabel, 'Impulsor con veta Conector'); // nunca null
+  assert.strictEqual(v.arquetipoLabel, 'Impulsor con destellos de Conector'); // B2=0 => "destellos"; nunca null
 });
 
 test('5-3-2-2 => registro matices, perfil + veta', () => {
   const v = buildVotesEvidence(vec(5, 3, 2, 2));
   assert.strictEqual(v.B, 2);
   assert.strictEqual(v.registro, 'matices');
-  assert.strictEqual(v.arquetipoLabel, 'Impulsor con veta Conector');
+  assert.strictEqual(v.arquetipoLabel, 'Impulsor con destellos de Conector'); // B2=1 => "destellos"
 });
 
 test('6-2-2-2 => registro claro (B=4), perfil + veta', () => {
   const v = buildVotesEvidence(vec(6, 2, 2, 2));
   assert.strictEqual(v.B, 4);
   assert.strictEqual(v.registro, 'claro'); // B=4 ahora suena "con claridad" (owner)
-  assert.strictEqual(v.arquetipoLabel, 'Impulsor con veta Conector');
+  assert.strictEqual(v.arquetipoLabel, 'Impulsor con destellos de Conector'); // B2=0 => "destellos"
 });
 
 test('12-0-0-0 => registro rotundo; sin veta real (2º con 0 votos) => solo primario', () => {
@@ -87,7 +87,7 @@ test('resolveEvidenceFicha assembles a v4 ficha con perfil + veta', () => {
   const f = resolveEvidenceFicha(answers as never, { edadMeses: 144, questionVersion: 'q1' });
   assert.strictEqual(f.version, 4);
   assert.strictEqual(f.votes.ejePrimario, 'D');
-  assert.strictEqual(f.votes.arquetipoLabel, 'Impulsor con veta Conector'); // 6-2-2-2
+  assert.strictEqual(f.votes.arquetipoLabel, 'Impulsor con destellos de Conector'); // 6-2-2-2, B2=0
   assert.strictEqual(f.motor.narratable, false);
 });
 

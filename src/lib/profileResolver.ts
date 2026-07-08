@@ -311,7 +311,10 @@ export function buildVotesEvidence(vector: Record<Axis, number>): VotesEvidence 
     // REGLA DURA (owner 2026-07-07): SIEMPRE perfil + veta en el encabezado. El registro/gráfico
     // comunica cuán definido está; nunca se oculta el nombre. Solo se omite la veta si el 2º eje
     // no tuvo NINGÚN voto (mostrarla sería inventar una inclinación inexistente).
-    const vetaTxt = secondCount >= 1 ? ` con veta ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}` : '';
+    // CONECTOR GRADUADO por B2 (owner D2 2026-07-08): siempre compuesto, pero el conector carga
+    // la confianza. Debe coincidir con getVetaLabel(es) del report (snapshot-guarded).
+    const ES_VETA_CONN = { afirmada: 'con veta', tentativa: 'con tonos de', sin: 'con destellos de' } as const;
+    const vetaTxt = secondCount >= 1 ? ` ${ES_VETA_CONN[vetaBanda]} ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}` : '';
     const arquetipoLabel = `${AXIS_ARCHETYPE_LABEL_ES[ejePrimario]}${vetaTxt}`;
 
     return {
