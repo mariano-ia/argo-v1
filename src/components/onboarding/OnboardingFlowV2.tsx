@@ -8,8 +8,11 @@ import { QuestionAnswer, resolveFromAnswers, resolveEvidenceFicha } from '../../
 
 // Instrument version stamped on every perfilamiento (panel audit 2026-07-08 / M3):
 // bump on ANY change to items, option order behavior or scoring so cohorts are
-// separable. v2 = random option order (Fisher-Yates) + rebalanced Q8/Q10.
-const INSTRUMENT_VERSION = 'v2-shuffle-q8q10-20260708';
+// separable. v3 folds the shuffle (random option order, Fisher-Yates) AND the
+// expert-panel item rewrite (de-magnet Q1/Q5/Q7/Q8/Q10, S-function restored,
+// Q9 -> substitution scene, lexicon to the 8yo floor) into ONE launch so the
+// norm clock resets only once (never shipped v2 to prod).
+const INSTRUMENT_VERSION = 'v3-items-20260708';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { runReportPipeline } from '../../lib/reportPipeline';
 import { sportFrame, buildReportV4 } from '../../lib/reportV4';
