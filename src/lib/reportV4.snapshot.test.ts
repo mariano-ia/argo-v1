@@ -1,12 +1,14 @@
 // src/lib/reportV4.snapshot.test.ts  (run via: tsx --test)
-// RED DE SEGURIDAD del refactor i18n: el output ES de 8 perfiles canónicos debe quedar IDÉNTICO
-// (carácter por carácter) al snapshot capturado antes del refactor. Si algo de es cambia, falla.
-// Snapshot: src/lib/__snapshots__/reportV4.es.json (regenerar SOLO con intención explícita).
+// RED DE SEGURIDAD del engine: el output de 8 perfiles canónicos (es/en/pt) debe quedar IDÉNTICO
+// (carácter por carácter) al snapshot congelado. Si algo cambia, falla. Nació para blindar es durante
+// el refactor i18n; ahora congela los 3 idiomas. Snapshots: src/lib/__snapshots__/reportV4.{es,en,pt}.json
+// (regenerar SOLO con intención explícita — es equivale a un cambio de copy revisado).
 import test from 'node:test';
 import assert from 'node:assert';
 import { readFileSync } from 'fs';
 import { resolveEvidenceFicha } from './profileResolver';
 import { buildReportV4, sportFrame } from './reportV4';
+import type { Lang } from './archetypeContentV4';
 
 const a = (n: number, x: 'D' | 'I' | 'S' | 'C', rt = 1000) => ({ axis: x, responseTimeMs: rt, question_id: `q${n}` });
 const seq = (arr: ('D' | 'I' | 'S' | 'C')[]) => arr.map((x, i) => a(i + 1, x));
@@ -23,9 +25,9 @@ const profiles = [
   { name: 'Leo', deporte: 'Rugby', edad: 12, answers: [a(1, 'D', 600), a(2, 'D', 600), a(3, 'D', 650), a(4, 'D', 620), a(5, 'C', 1600), a(6, 'C', 1500), a(7, 'D', 640), a(8, 'D', 630), a(9, 'C', 1550), a(10, 'I', 1500), a(11, 'D', 660), a(12, 'D', 610)] },
 ];
 
-function serialize(name: string, deporte: string, edad: number, answers: ReturnType<typeof a>[], games?: unknown) {
+function serialize(lang: Lang, name: string, deporte: string, edad: number, answers: ReturnType<typeof a>[], games?: unknown) {
   const ficha = resolveEvidenceFicha(answers as never, { edadMeses: edad * 12, questionVersion: 'v4', ...(games ? { games } : {}) } as never);
-  const r = buildReportV4(ficha, { nombre: name, frame: sportFrame(deporte) } as never);
+  const r = buildReportV4(ficha, { nombre: name, frame: sportFrame(deporte), lang } as never);
   const parts = [`HERO ${r.hero.arquetipoLabel} [${r.hero.registro}]`, r.hero.lead];
   for (const s of r.secciones) {
     if (s.kind === 'texto') parts.push(`# ${s.titulo}`, s.bloque!.cuerpo, s.bloque!.ejemplo ?? '');
@@ -36,11 +38,12 @@ function serialize(name: string, deporte: string, edad: number, answers: ReturnT
   return parts.join('\n');
 }
 
-const snap: Record<string, string> = JSON.parse(readFileSync(new URL('./__snapshots__/reportV4.es.json', import.meta.url), 'utf8'));
-
-for (const p of profiles) {
-  test(`snapshot ES idéntico: ${p.name}`, () => {
-    const got = serialize(p.name, p.deporte, p.edad, p.answers, p.games);
-    assert.strictEqual(got, snap[p.name], `El output ES de ${p.name} cambió vs el snapshot (refactor rompió es).`);
-  });
+for (const lang of ['es', 'en', 'pt'] as const) {
+  const snap: Record<string, string> = JSON.parse(readFileSync(new URL(`./__snapshots__/reportV4.${lang}.json`, import.meta.url), 'utf8'));
+  for (const p of profiles) {
+    test(`snapshot ${lang.toUpperCase()} idéntico: ${p.name}`, () => {
+      const got = serialize(lang, p.name, p.deporte, p.edad, p.answers, p.games);
+      assert.strictEqual(got, snap[p.name], `El output ${lang.toUpperCase()} de ${p.name} cambió vs el snapshot.`);
+    });
+  }
 }
