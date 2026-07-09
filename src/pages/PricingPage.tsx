@@ -21,7 +21,15 @@ const T = {
         contactSales: 'Contactar ventas',
         familiesLabel: 'Padres y familias',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
+        familiesDesc: 'El niño juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
+        buyCta: 'Comprar',
+        buyModalTitle: 'Comprar ArgoOne®',
+        buyModalDesc: 'Ingresa tu email. Te llevamos al pago y después recibes el link para que el niño juegue y para crear tu puente.',
+        buyEmailPlaceholder: 'Tu email',
+        buyConsent: 'Acepto los términos.',
+        buyGo: 'Ir al pago',
+        buyCancel: 'Cancelar',
+        buyError: 'Algo salió mal. Intenta de nuevo.',
         report: 'informe',
         reports: 'informes',
         perReport: 'por informe',
@@ -59,7 +67,15 @@ const T = {
         contactSales: 'Contact sales',
         familiesLabel: 'Parents & families',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
+        familiesDesc: 'The child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
+        buyCta: 'Buy',
+        buyModalTitle: 'Buy ArgoOne®',
+        buyModalDesc: 'Enter your email. We take you to payment, then you receive the link for the child to play and to create your bridge.',
+        buyEmailPlaceholder: 'Your email',
+        buyConsent: 'I accept the terms.',
+        buyGo: 'Go to payment',
+        buyCancel: 'Cancel',
+        buyError: 'Something went wrong. Try again.',
         report: 'report',
         reports: 'reports',
         perReport: 'per report',
@@ -97,7 +113,15 @@ const T = {
         contactSales: 'Contatar vendas',
         familiesLabel: 'Pais e famílias',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
+        familiesDesc: 'A criança joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
+        buyCta: 'Comprar',
+        buyModalTitle: 'Comprar ArgoOne®',
+        buyModalDesc: 'Insira seu email. Levamos você ao pagamento e depois você recebe o link para a criança jogar e para criar sua ponte.',
+        buyEmailPlaceholder: 'Seu email',
+        buyConsent: 'Aceito os termos.',
+        buyGo: 'Ir ao pagamento',
+        buyCancel: 'Cancelar',
+        buyError: 'Algo deu errado. Tente de novo.',
         report: 'relatório',
         reports: 'relatórios',
         perReport: 'por relatório',
@@ -139,6 +163,29 @@ export const PricingPage: React.FC = () => {
     const { lang } = useLang();
     const [annual, setAnnual] = useState(true);
     const t = T[lang as keyof typeof T] ?? T.es;
+
+    // ArgoOne fusion (F4): behind VITE_BRIDGES_V2, the families card sells the
+    // single $12.99 product and a small email modal goes straight to Stripe.
+    const bridgesV2 = import.meta.env.VITE_BRIDGES_V2 === '1';
+    const [buyOpen, setBuyOpen] = useState(false);
+    const [buyEmail, setBuyEmail] = useState('');
+    const [buyConsent, setBuyConsent] = useState(false);
+    const [buyLoading, setBuyLoading] = useState(false);
+    const [buyErr, setBuyErr] = useState('');
+    const startBuy = async () => {
+        if (!buyEmail.trim() || !buyConsent || buyLoading) return;
+        setBuyLoading(true); setBuyErr('');
+        try {
+            const res = await fetch('/api/one-checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: buyEmail.trim(), kind: 'one_puente', lang }),
+            });
+            const j = await res.json();
+            if (j.checkout_url) { window.location.href = j.checkout_url; return; }
+            setBuyErr(t.buyError); setBuyLoading(false);
+        } catch { setBuyErr(t.buyError); setBuyLoading(false); }
+    };
     const f = t.features;
 
     return (
@@ -287,17 +334,32 @@ export const PricingPage: React.FC = () => {
                             <p className="text-[15px] font-semibold text-argo-navy mb-1">{t.familiesTitle}</p>
                             <p className="text-[13px] text-argo-grey leading-relaxed">{t.familiesDesc}</p>
                         </div>
-                        <div className="flex gap-3 flex-shrink-0">
-                            {[
-                                { name: 'ArgoOne®', price: '$9.99' },
-                                { name: 'ArgoOne+®', price: '$12.99' },
-                            ].map(p => (
-                                <div key={p.name} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
-                                    <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>
-                                    <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">{p.price}</p>
+                        {bridgesV2 ? (
+                            <div className="flex items-center gap-4 flex-shrink-0">
+                                <div className="text-right">
+                                    <p className="text-[15px] font-semibold text-argo-navy">ArgoOne®</p>
+                                    <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">USD 12.99</p>
                                 </div>
-                            ))}
-                        </div>
+                                <button
+                                    onClick={() => { setBuyOpen(true); setBuyEmail(''); setBuyConsent(false); setBuyErr(''); }}
+                                    className="px-5 py-2.5 rounded-lg text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                                >
+                                    {t.buyCta}
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="flex gap-3 flex-shrink-0">
+                                {[
+                                    { name: 'ArgoOne®', price: '$9.99' },
+                                    { name: 'ArgoOne+®', price: '$12.99' },
+                                ].map(p => (
+                                    <div key={p.name} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
+                                        <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>
+                                        <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">{p.price}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -310,6 +372,33 @@ export const PricingPage: React.FC = () => {
                     <Link to="/privacy" className="hover:text-argo-navy transition-colors">Privacy</Link>
                 </div>
             </div>
+
+            {/* F4 — email modal -> Stripe */}
+            {buyOpen && (
+                <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={() => setBuyOpen(false)}>
+                    <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl p-7 w-full max-w-sm shadow-xl">
+                        <h3 className="text-base font-semibold text-argo-navy">{t.buyModalTitle} <span className="text-argo-violet-500">USD 12.99</span></h3>
+                        <p className="text-[13px] text-argo-grey mt-1 mb-5 leading-relaxed">{t.buyModalDesc}</p>
+                        <input
+                            type="email"
+                            placeholder={t.buyEmailPlaceholder}
+                            value={buyEmail}
+                            onChange={e => setBuyEmail(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && startBuy()}
+                            className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-3"
+                        />
+                        <label className="flex items-start gap-2.5 cursor-pointer mb-1">
+                            <input type="checkbox" checked={buyConsent} onChange={e => setBuyConsent(e.target.checked)} className="mt-0.5 accent-argo-violet-500" />
+                            <span className="text-[13px] text-argo-secondary leading-relaxed">{t.buyConsent}</span>
+                        </label>
+                        {buyErr && <p className="text-[13px] text-red-600 mt-2">{buyErr}</p>}
+                        <div className="flex gap-3 mt-5">
+                            <button onClick={() => setBuyOpen(false)} className="flex-1 py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-grey hover:text-argo-navy transition-colors">{t.buyCancel}</button>
+                            <button onClick={startBuy} disabled={buyLoading || !buyEmail.trim() || !buyConsent} className="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50">{buyLoading ? '...' : t.buyGo}</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
