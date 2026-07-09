@@ -21,8 +21,6 @@ import crypto from 'crypto';
  *   401 / 403 — auth issues
  */
 
-const MAX_CHILDREN_PER_PURCHASE = 5;
-
 function genMagicToken(): string {
     return crypto.randomBytes(24).toString('base64url');
 }
@@ -42,9 +40,7 @@ function buildFreeInviteEmail(args: {
         title: `We have a companion piece for you, on us.`,
         intro: `A few days ago you received the Argo report for ${args.childName}. As a thank-you, we want to invite you to ArgoPuente®, completely free.`,
         what: `ArgoPuente® is a short questionnaire (about five minutes) that reveals your own DISC style as an adult and proposes four specific bridges to better accompany ${args.childName} in sport.`,
-        highlight: args.siblingsNames.length > 0
-            ? `Your invitation also covers ${args.siblingsNames.join(', ')}.`
-            : 'Includes all children profiled with this email, at no cost.',
+        highlight: `Your ArgoPuente® with ${args.childName}, at no cost.`,
         cta: 'Start ArgoPuente®',
         note: 'This invitation is personal. No payment is required at any step.',
         footer: 'ArgoMethod® · ArgoPuente®',
@@ -54,9 +50,7 @@ function buildFreeInviteEmail(args: {
         title: `Temos um complemento para você, por nossa conta.`,
         intro: `Há alguns dias você recebeu o relatório Argo de ${args.childName}. Como agradecimento, queremos convidá-lo para o ArgoPuente®, totalmente gratuito.`,
         what: `ArgoPuente® é um questionário curto (cerca de cinco minutos) que revela seu próprio estilo DISC como adulto e propõe quatro pontes específicas para acompanhar ${args.childName} melhor no esporte.`,
-        highlight: args.siblingsNames.length > 0
-            ? `Seu convite também inclui ${args.siblingsNames.join(', ')}.`
-            : 'Inclui todas as crianças perfiladas com este email, sem custo.',
+        highlight: `Seu ArgoPuente® com ${args.childName}, sem custo.`,
         cta: 'Começar ArgoPuente®',
         note: 'Este convite é pessoal. Não é necessário nenhum pagamento em nenhum momento.',
         footer: 'ArgoMethod® · ArgoPuente®',
@@ -66,9 +60,7 @@ function buildFreeInviteEmail(args: {
         title: `Tenemos un complemento para ti, sin costo.`,
         intro: `Hace unos días recibiste el informe Argo de ${args.childName}. Como agradecimiento, queremos invitarte a ArgoPuente®, totalmente gratis.`,
         what: `ArgoPuente® es un cuestionario corto (unos cinco minutos) que revela tu propio estilo DISC como adulto y propone cuatro puentes específicos para acompañar a ${args.childName} mejor en su deporte.`,
-        highlight: args.siblingsNames.length > 0
-            ? `Tu invitación también incluye a ${args.siblingsNames.join(', ')}.`
-            : 'Incluye a todos los niños perfilados con este email, sin costo.',
+        highlight: `Tu ArgoPuente® con ${args.childName}, sin costo.`,
         cta: 'Empezar ArgoPuente®',
         note: 'Esta invitación es personal. No es necesario ningún pago en ningún paso.',
         footer: 'ArgoMethod® · ArgoPuente®',
@@ -133,12 +125,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ? `https://${process.env.VERCEL_URL}`
             : (process.env.SITE_URL || 'https://argomethod.com');
 
-        // If this email already has a paid purchase (real or comp), just
-        // return the existing magic link instead of creating a duplicate.
+        // Per-child model: only block if this email already has a puente toward
+        // THIS child; a puente for a different child does not block the grant.
         const { data: existing } = await sb
             .from('puentes_purchases')
             .select('id, magic_token, provider')
             .eq('recipient_email', session.adult_email)
+            .eq('source_session_id', session.id)
             .eq('status', 'paid')
             .maybeSingle();
         if (existing) {
@@ -177,41 +170,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Could not create comp purchase' });
         }
 
-        // Multi-child: include all siblings of the same email, capped at 5.
-        // source_session_id (in puentes_sessions) still binds to a perfilamiento
-        // id, so we list resolved perfilamientos here (not the child view).
-        const { data: siblings } = await sb
-            .from('perfilamientos')
-            .select('id, child_name, created_at')
-            .eq('adult_email', session.adult_email)
-            .is('deleted_at', null)
-            .not('eje', 'eq', '_pending')
-            .order('created_at', { ascending: false });
-        const uniqueIds = Array.from(new Set([
-            session.id,
-            ...((siblings ?? []).map((s: any) => s.id)),
-        ])).slice(0, MAX_CHILDREN_PER_PURCHASE);
-
-        const sessionRows = uniqueIds.map(sid => ({
+        // Per-child model: the free grant covers ONLY the target child — no sibling
+        // fan-out (a grant is for one perfilamiento, like a paid $4.99). The old
+        // multi-child auto-cover was removed alongside the webhook/cron fan-out.
+        await sb.from('puentes_sessions').insert({
             purchase_id: purchase.id,
-            source_session_id: sid,
+            source_session_id: session.id,
             lang,
             status: 'created' as const,
-        }));
-        if (sessionRows.length > 0) {
-            await sb.from('puentes_sessions').insert(sessionRows);
-        }
+        });
 
-        // Build sibling names list (excluding the triggering session) for the email
         const siblingsNames: string[] = [];
-        const triggeringName = (session.child_name || '').toLowerCase().trim();
-        for (const s of siblings ?? []) {
-            const n = (s.child_name || '').toLowerCase().trim();
-            if (n && n !== triggeringName && !siblingsNames.includes(s.child_name)) {
-                siblingsNames.push(s.child_name);
-            }
-            if (siblingsNames.length >= MAX_CHILDREN_PER_PURCHASE - 1) break;
-        }
 
         const magicLink = `${origin}/puentes/${magicToken}`;
 
@@ -251,7 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 metadata: {
                     recipient_email: session.adult_email,
                     purchase_id: purchase.id,
-                    children_included: sessionRows.length,
+                    children_included: 1,
                     lang,
                 },
             });
@@ -261,7 +230,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             ok: true,
             purchase_id: purchase.id,
             magic_link: magicLink,
-            children_included: sessionRows.length,
+            children_included: 1,
         });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

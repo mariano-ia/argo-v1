@@ -61,9 +61,9 @@ export const TermsPage: React.FC = () => (
                 <p>(d) Puede ofrecerse en hasta dos comunicaciones por correo electrónico tras la entrega del informe principal: una en el propio email del informe y una segunda comunicación tres días más tarde si la propuesta no ha sido aceptada.</p>
                 <p>(e) Puedes solicitar dejar de recibir esta propuesta en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
                 <p>Las compras de ArgoPuente® son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
-                <p><strong>Cobertura multi-hijo y conservación del perfil:</strong></p>
-                <p>(f) Una compra de ArgoPuente® cubre a todos los hijos del adulto responsable identificados por el mismo correo electrónico, hasta un máximo de 5 niños por compra. Si tienes más hijos perfilados, escríbenos a hola@argomethod.com.</p>
-                <p>(g) El perfil del adulto generado por ArgoPuente® se conserva indefinidamente, para poder generar puentes con futuros hijos perfilados con el mismo correo electrónico sin cobrarte nuevamente. Si un hijo ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, los puentes con el adulto se actualizan automáticamente.</p>
+                <p><strong>Alcance por niño y conservación del perfil:</strong></p>
+                <p>(f) Una compra de ArgoPuente® genera el puente del adulto hacia un niño. Cada niño distinto requiere su propia compra.</p>
+                <p>(g) El perfil del adulto generado por ArgoPuente® se conserva para reutilizarlo en nuevos puentes sin repetir el cuestionario. Si un niño ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, su puente con el adulto se actualiza.</p>
                 <p>(h) Para solicitar la eliminación del perfil del adulto y todos los puentes asociados, escríbenos a hola@argomethod.com. La eliminación es definitiva y no se puede revertir.</p>
             </Section>
 

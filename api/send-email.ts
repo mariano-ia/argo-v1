@@ -195,7 +195,7 @@ function buildHtml(params: {
         es: {
             eyebrow: 'Tu ArgoPuente® ahora incluye más',
             title: `Sumamos a ${params.nombreNino} a tu informe`,
-            body: `Como ya tienes ArgoPuente® activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora los incluye a todos en un solo lugar, sin volver a cobrarte.`,
+            body: `Como ya tienes ArgoPuente® activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora lo incluye, sin volver a cobrarte.`,
             highlight: '',
             cta: 'Ver mi informe actualizado',
             price: '',
@@ -203,7 +203,7 @@ function buildHtml(params: {
         en: {
             eyebrow: 'Your ArgoPuente® now includes more',
             title: `${params.nombreNino} has been added to your report`,
-            body: `Since you already have ArgoPuente® active, we automatically generated the bridges with ${params.nombreNino}. Your report now covers every child in one place, with no extra charge.`,
+            body: `Since you already have ArgoPuente® active, we automatically generated the bridges with ${params.nombreNino}. Your report now includes them, with no extra charge.`,
             highlight: '',
             cta: 'View my updated report',
             price: '',
@@ -211,7 +211,7 @@ function buildHtml(params: {
         pt: {
             eyebrow: 'Seu ArgoPuente® agora inclui mais',
             title: `${params.nombreNino} foi adicionado(a) ao seu relatório`,
-            body: `Como você já tem ArgoPuente® ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora cobre todos eles em um só lugar, sem cobrança adicional.`,
+            body: `Como você já tem ArgoPuente® ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora o inclui, sem cobrança adicional.`,
             highlight: '',
             cta: 'Ver meu relatório atualizado',
             price: '',

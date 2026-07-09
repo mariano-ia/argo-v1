@@ -98,9 +98,9 @@ const EMAIL_NOTE: Record<Lang, (email?: string) => string> = {
 };
 
 const FOREVER_NOTE: Record<Lang, string> = {
-    es: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
-    en: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
-    pt: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
+    es: 'Guardamos tu perfil para reutilizarlo en nuevos puentes sin repetir el cuestionario. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
+    en: 'We keep your profile so we can reuse it for new bridges without repeating the questionnaire. If you want us to delete it, write to hola@argomethod.com.',
+    pt: 'Guardamos seu perfil para reutilizá-lo em novas pontes sem repetir o questionário. Se quiser que apaguemos, escreva para hola@argomethod.com.',
 };
 
 const SectionIcons: Record<string, React.ReactNode> = {
