@@ -31,15 +31,20 @@ export const REQUIRED_QUESTION_IDS = [
     'q14', 'q15',
 ] as const;
 
+// The adult questionnaire measures the ADULT's own style and is generic: it no
+// longer anchors to a specific child ({nombre}). It maps to a reusable
+// adult_profiles DISC profile that serves any child the adult bridges toward.
+// Option ids and their axis/motor/pressure/context tags are unchanged (the
+// resolver keys off them).
 export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
     es: [
-        { id: 'q1', block: 'disc', prompt: 'Cuando {nombre} te cuenta un problema que tuvo en un partido, lo primero que tiendes a hacer es:', options: [
+        { id: 'q1', block: 'disc', prompt: 'Cuando un niño que acompañas te cuenta un problema que tuvo en un partido, lo primero que tiendes a hacer es:', options: [
             { id: 'q1a', label: 'Plantear qué se puede hacer la próxima vez', axis: 'D' },
             { id: 'q1b', label: 'Darle ánimo y bajarle drama al asunto', axis: 'I' },
             { id: 'q1c', label: 'Escuchar sin interrumpir y validar lo que siente', axis: 'S' },
             { id: 'q1d', label: 'Hacer preguntas para entender exactamente qué pasó', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'Si {nombre} no quiere ir a la actividad un día, tu reacción más natural es:', options: [
+        { id: 'q2', block: 'disc', prompt: 'Si un niño que acompañas no quiere ir a la actividad un día, tu reacción más natural es:', options: [
             { id: 'q2a', label: 'Acompañar lo que siente y dejar la decisión abierta', axis: 'S' },
             { id: 'q2b', label: 'Recordarle el compromiso y darle un empujón para ir igual', axis: 'D' },
             { id: 'q2c', label: 'Indagar qué está pasando antes de decidir nada', axis: 'C' },
@@ -63,7 +68,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q5c', label: 'Quien conecta, anima y arma vínculo', axis: 'I' },
             { id: 'q5d', label: 'Quien aporta información o cuida los detalles', axis: 'C' },
         ] },
-        { id: 'q6', block: 'disc', prompt: 'Al ver a {nombre} perder un partido importante, tu impulso primero es:', options: [
+        { id: 'q6', block: 'disc', prompt: 'Al ver a un niño que acompañas perder un partido importante, tu impulso primero es:', options: [
             { id: 'q6a', label: 'Estar presente sin forzar conversación', axis: 'S' },
             { id: 'q6b', label: 'Levantarle el ánimo con una distracción', axis: 'I' },
             { id: 'q6c', label: 'Hablar del próximo objetivo', axis: 'D' },
@@ -91,17 +96,17 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q10b', label: 'Por instinto, después confirmo si fue acertado', motor: 'agil' },
             { id: 'q10c', label: 'Combino instinto con un análisis breve', motor: 'equilibrado' },
         ] },
-        { id: 'q11', block: 'pressure', prompt: 'Cuando {nombre} atraviesa una mala racha deportiva, lo que más te cuesta es:', options: [
+        { id: 'q11', block: 'pressure', prompt: 'Cuando un niño que acompañas atraviesa una mala racha deportiva, lo que más te cuesta es:', options: [
             { id: 'q11a', label: 'Contengo mi propia frustración y me enfoco en acompañar', pressure: 'regulado' },
             { id: 'q11b', label: 'A veces se me escapa la frustración antes de pensarla', pressure: 'reactivo' },
             { id: 'q11c', label: 'Tiendo a no hablar del tema para no incomodar', pressure: 'evitativo' },
         ] },
-        { id: 'q12', block: 'pressure', prompt: 'Si percibes una injusticia hacia {nombre} (otro jugador, árbitro, entrenador), tu primera reacción es:', options: [
+        { id: 'q12', block: 'pressure', prompt: 'Si percibes una injusticia hacia un niño que acompañas (otro jugador, árbitro, entrenador), tu primera reacción es:', options: [
             { id: 'q12a', label: 'Espero a estar tranquilo para evaluar si actuar', pressure: 'regulado' },
             { id: 'q12b', label: 'Prefiero no intervenir y dejar que lo resuelva por su cuenta', pressure: 'evitativo' },
             { id: 'q12c', label: 'Reacciono rápido, a veces más fuerte de lo que quisiera', pressure: 'reactivo' },
         ] },
-        { id: 'q13', block: 'pressure', prompt: 'Después de una conversación con {nombre} sobre algo del deporte:', options: [
+        { id: 'q13', block: 'pressure', prompt: 'Después de una conversación con un niño que acompañas sobre algo del deporte:', options: [
             { id: 'q13a', label: 'Me cuesta soltar, me quedo dando vueltas al tema', pressure: 'reactivo' },
             { id: 'q13b', label: 'Vuelvo a hablar cuando ambos estamos calmados', pressure: 'regulado' },
             { id: 'q13c', label: 'Suele pasar y no volvemos a tocar el tema', pressure: 'evitativo' },
@@ -112,7 +117,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'No, pero sí recreativamente', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'No', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'Cuando ves jugar a {nombre}, la emoción que más predomina en ti es:', options: [
+        { id: 'q15', block: 'context', prompt: 'Cuando ves jugar a un niño que acompañas, la emoción que más predomina en ti es:', options: [
             { id: 'q15a', label: 'Orgullo', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nervios o ansiedad', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Disfrute pleno', contextKey: 'dominant_emotion', contextValue: 'disfrute' },
@@ -123,13 +128,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
     ],
 
     en: [
-        { id: 'q1', block: 'disc', prompt: 'When {nombre} tells you about a problem they had in a match, the first thing you tend to do is:', options: [
+        { id: 'q1', block: 'disc', prompt: 'When a child you accompany tells you about a problem they had in a match, the first thing you tend to do is:', options: [
             { id: 'q1a', label: 'Suggest what could be done next time', axis: 'D' },
             { id: 'q1b', label: 'Cheer them up and lighten the moment', axis: 'I' },
             { id: 'q1c', label: 'Listen without interrupting and validate what they feel', axis: 'S' },
             { id: 'q1d', label: 'Ask questions to understand exactly what happened', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'If {nombre} does not want to go to the activity one day, your most natural reaction is:', options: [
+        { id: 'q2', block: 'disc', prompt: 'If a child you accompany does not want to go to the activity one day, your most natural reaction is:', options: [
             { id: 'q2a', label: 'Stay close to what they feel and leave the decision open', axis: 'S' },
             { id: 'q2b', label: 'Remind them of their commitment and motivate them to go anyway', axis: 'D' },
             { id: 'q2c', label: 'Ask what is going on before deciding anything', axis: 'C' },
@@ -153,7 +158,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q5c', label: 'The one who connects, encourages and builds bonds', axis: 'I' },
             { id: 'q5d', label: 'The one who brings information or takes care of the details', axis: 'C' },
         ] },
-        { id: 'q6', block: 'disc', prompt: 'Seeing {nombre} lose an important match, your first impulse is:', options: [
+        { id: 'q6', block: 'disc', prompt: 'Seeing a child you accompany lose an important match, your first impulse is:', options: [
             { id: 'q6a', label: 'Be present without forcing conversation', axis: 'S' },
             { id: 'q6b', label: 'Lift their spirits, distract them', axis: 'I' },
             { id: 'q6c', label: 'Talk about the next goal', axis: 'D' },
@@ -181,17 +186,17 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q10b', label: 'By instinct, then I check if it was right', motor: 'agil' },
             { id: 'q10c', label: 'I combine instinct with a brief analysis', motor: 'equilibrado' },
         ] },
-        { id: 'q11', block: 'pressure', prompt: 'When {nombre} goes through a rough sports patch, what is hardest for you is:', options: [
+        { id: 'q11', block: 'pressure', prompt: 'When a child you accompany goes through a rough sports patch, what is hardest for you is:', options: [
             { id: 'q11a', label: 'I contain my own frustration and focus on them', pressure: 'regulado' },
             { id: 'q11b', label: 'Sometimes frustration slips out before I think it through', pressure: 'reactivo' },
             { id: 'q11c', label: 'I tend not to bring it up so as not to make them uncomfortable', pressure: 'evitativo' },
         ] },
-        { id: 'q12', block: 'pressure', prompt: 'If you sense an unfair situation toward {nombre} (another player, referee, coach), your first reaction is:', options: [
+        { id: 'q12', block: 'pressure', prompt: 'If you sense an unfair situation toward a child you accompany (another player, referee, coach), your first reaction is:', options: [
             { id: 'q12a', label: 'I wait until I am calm to assess whether to act', pressure: 'regulado' },
             { id: 'q12b', label: 'I prefer not to intervene and let them resolve it', pressure: 'evitativo' },
             { id: 'q12c', label: 'I react quickly, sometimes more strongly than I wanted', pressure: 'reactivo' },
         ] },
-        { id: 'q13', block: 'pressure', prompt: 'After a conversation with {nombre} about something related to sport:', options: [
+        { id: 'q13', block: 'pressure', prompt: 'After a conversation with a child you accompany about something related to sport:', options: [
             { id: 'q13a', label: 'It is hard for me to let go, I keep turning it over in my mind', pressure: 'reactivo' },
             { id: 'q13b', label: 'I come back to talk when we are both calm', pressure: 'regulado' },
             { id: 'q13c', label: 'It usually fades and we do not revisit it', pressure: 'evitativo' },
@@ -202,7 +207,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'No, but I played recreationally', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'No', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'When you watch {nombre} play, the emotion that predominates in you is:', options: [
+        { id: 'q15', block: 'context', prompt: 'When you watch a child you accompany play, the emotion that predominates in you is:', options: [
             { id: 'q15a', label: 'Pride', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nerves or anxiety', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Full enjoyment', contextKey: 'dominant_emotion', contextValue: 'disfrute' },
@@ -213,13 +218,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
     ],
 
     pt: [
-        { id: 'q1', block: 'disc', prompt: 'Quando {nombre} te conta um problema que teve em uma partida, a primeira coisa que você tende a fazer é:', options: [
+        { id: 'q1', block: 'disc', prompt: 'Quando uma criança que você acompanha te conta um problema que teve em uma partida, a primeira coisa que você tende a fazer é:', options: [
             { id: 'q1a', label: 'Propor o que pode ser feito na próxima vez', axis: 'D' },
             { id: 'q1b', label: 'Dar ânimo e tirar o drama da situação', axis: 'I' },
             { id: 'q1c', label: 'Escutar sem interromper e validar o que sente', axis: 'S' },
             { id: 'q1d', label: 'Fazer perguntas para entender exatamente o que aconteceu', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'Se {nombre} não quiser ir à atividade um dia, sua reação mais natural é:', options: [
+        { id: 'q2', block: 'disc', prompt: 'Se uma criança que você acompanha não quiser ir à atividade um dia, sua reação mais natural é:', options: [
             { id: 'q2a', label: 'Acompanhar o que sente e deixar a decisão em aberto', axis: 'S' },
             { id: 'q2b', label: 'Lembrar do compromisso e dar um empurrão para ir mesmo assim', axis: 'D' },
             { id: 'q2c', label: 'Investigar o que está acontecendo antes de decidir', axis: 'C' },
@@ -243,7 +248,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q5c', label: 'Quem conecta, anima e cria vínculo', axis: 'I' },
             { id: 'q5d', label: 'Quem traz informação ou cuida dos detalhes', axis: 'C' },
         ] },
-        { id: 'q6', block: 'disc', prompt: 'Ao ver {nombre} perder uma partida importante, seu primeiro impulso é:', options: [
+        { id: 'q6', block: 'disc', prompt: 'Ao ver uma criança que você acompanha perder uma partida importante, seu primeiro impulso é:', options: [
             { id: 'q6a', label: 'Estar presente sem forçar conversa', axis: 'S' },
             { id: 'q6b', label: 'Levantar o ânimo com uma distração', axis: 'I' },
             { id: 'q6c', label: 'Falar do próximo objetivo', axis: 'D' },
@@ -271,17 +276,17 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q10b', label: 'Por instinto, depois confirmo se foi acertado', motor: 'agil' },
             { id: 'q10c', label: 'Combino instinto com uma análise breve', motor: 'equilibrado' },
         ] },
-        { id: 'q11', block: 'pressure', prompt: 'Quando {nombre} atravessa uma fase difícil no esporte, o que mais te custa é:', options: [
+        { id: 'q11', block: 'pressure', prompt: 'Quando uma criança que você acompanha atravessa uma fase difícil no esporte, o que mais te custa é:', options: [
             { id: 'q11a', label: 'Contenho minha própria frustração e me concentro em acompanhar', pressure: 'regulado' },
             { id: 'q11b', label: 'Às vezes a frustração escapa antes de eu pensar', pressure: 'reactivo' },
             { id: 'q11c', label: 'Costumo não falar do tema para não incomodar', pressure: 'evitativo' },
         ] },
-        { id: 'q12', block: 'pressure', prompt: 'Se você percebe uma injustiça com {nombre} (outro jogador, árbitro, treinador), sua primeira reação é:', options: [
+        { id: 'q12', block: 'pressure', prompt: 'Se você percebe uma injustiça com uma criança que você acompanha (outro jogador, árbitro, treinador), sua primeira reação é:', options: [
             { id: 'q12a', label: 'Espero estar tranquilo para avaliar se atuo', pressure: 'regulado' },
             { id: 'q12b', label: 'Prefiro não intervir e deixar que resolva por conta própria', pressure: 'evitativo' },
             { id: 'q12c', label: 'Reajo rápido, às vezes mais forte do que gostaria', pressure: 'reactivo' },
         ] },
-        { id: 'q13', block: 'pressure', prompt: 'Depois de uma conversa com {nombre} sobre algo do esporte:', options: [
+        { id: 'q13', block: 'pressure', prompt: 'Depois de uma conversa com uma criança que você acompanha sobre algo do esporte:', options: [
             { id: 'q13a', label: 'Tenho dificuldade de soltar, fico dando voltas no tema', pressure: 'reactivo' },
             { id: 'q13b', label: 'Volto a falar quando ambos estamos calmos', pressure: 'regulado' },
             { id: 'q13c', label: 'Costuma passar e não voltamos ao assunto', pressure: 'evitativo' },
@@ -292,7 +297,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'Não, mas pratiquei de forma recreativa', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'Não', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'Quando você vê {nombre} jogar, a emoção que mais predomina em você é:', options: [
+        { id: 'q15', block: 'context', prompt: 'Quando você vê uma criança que você acompanha jogar, a emoção que mais predomina em você é:', options: [
             { id: 'q15a', label: 'Orgulho', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nervosismo ou ansiedade', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Diversão plena', contextKey: 'dominant_emotion', contextValue: 'disfrute' },

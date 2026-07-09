@@ -84,7 +84,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             consentLabel: 'Acepto los términos y entiendo que este informe no es un servicio clínico ni terapéutico.',
             termsLink: 'Ver términos',
             payCta: 'Continuar al pago',
-            priceUsd: 'USD 9.99',
+            priceUsd: 'USD 4.99',
             priceArs: 'ARS 6.999',
         },
         errors: {
@@ -128,7 +128,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             consentLabel: 'I accept the terms and understand this is not a clinical or therapeutic service.',
             termsLink: 'View terms',
             payCta: 'Continue to payment',
-            priceUsd: 'USD 9.99',
+            priceUsd: 'USD 4.99',
             priceArs: 'ARS 6,999',
         },
         errors: {
@@ -172,7 +172,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             consentLabel: 'Aceito os termos e entendo que este não é um serviço clínico nem terapêutico.',
             termsLink: 'Ver termos',
             payCta: 'Continuar para o pagamento',
-            priceUsd: 'USD 9.99',
+            priceUsd: 'USD 4.99',
             priceArs: 'ARS 6.999',
         },
         errors: {
