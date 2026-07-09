@@ -65,7 +65,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         },
         report: {
             eyebrow: 'ArgoPuente® · Tu vínculo',
-            greetingLabel: 'Bienvenida',
+            greetingLabel: 'Te damos la bienvenida',
             adultProfileLabel: 'Tu estilo natural',
             puenteLabel: (n) => `Puente ${n}`,
             closingLabel: 'Para llevar',
@@ -153,7 +153,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         },
         report: {
             eyebrow: 'ArgoPuente® · Seu vínculo',
-            greetingLabel: 'Bem-vindo',
+            greetingLabel: 'Boas-vindas',
             adultProfileLabel: 'Seu estilo natural',
             puenteLabel: (n) => `Ponte ${n}`,
             closingLabel: 'Para levar',

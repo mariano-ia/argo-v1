@@ -30,7 +30,7 @@ const BrandName: React.FC<{ kind: OneKind }> = ({ kind }) => (
 
 const FAQ_ITEMS = [
     { q: '¿Es un test psicológico?', a: 'No. No diagnostica, no clasifica, no predice. Es una herramienta para entender y comunicarte mejor.' },
-    { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañarlo mejor.' },
+    { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañar mejor.' },
     { q: '¿Qué edad debe tener?', a: 'Entre 8 y 16 años.' },
     { q: '¿Cuánto toma?', a: '10 a 12 minutos de aventura interactiva.' },
     { q: '¿Necesito crear cuenta?', a: 'No. Solo un email para recibir el informe. Sin suscripción, sin compromisos.' },
@@ -120,7 +120,7 @@ const ArgoOneLanding: React.FC = () => {
                             Cada niño vive el deporte a su manera.
                         </h1>
                         <p style={{ fontSize: '16px', color: '#424245', lineHeight: 1.6 }}>
-                            Conoce sus tendencias en 10 minutos. El informe te da las claves para acompañarlo mejor y que disfrute más del juego.
+                            Conoce sus tendencias en 10 minutos. El informe te da las claves para acompañar mejor y que disfrute más del juego.
                         </p>
                     </motion.div>
 
@@ -227,7 +227,7 @@ const ArgoOneLanding: React.FC = () => {
                         {[
                             { n: '1', title: 'Compras y recibes el enlace', desc: <>Eliges <BrandName kind="one" /> o <BrandName kind="one_puente" />, pagas con tarjeta y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción.</> },
                             { n: '2', title: 'El niño juega 10 minutos', desc: 'Desde el celular vive una aventura náutica. No hay preguntas directas ni respuestas correctas: sus decisiones muestran cómo vive el juego, la presión y el equipo.' },
-                            { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro con su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañarlo en la cancha.' },
+                            { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro con su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañar en la cancha.' },
                         ].map(s => (
                             <div key={s.n}>
                                 <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(149,95,181,0.09)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: 700, color: '#955FB5', marginBottom: '14px' }}>

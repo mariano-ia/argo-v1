@@ -474,7 +474,7 @@ export function PuentesReport({
                                 ? 'ArgoPuente® is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
                                 : lang === 'pt'
                                     ? 'ArgoPuente® não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
-                                    : 'ArgoPuente® no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con tu hijo en el deporte.'}
+                                    : 'ArgoPuente® no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con el niño en el deporte.'}
                         </p>
                     </div>
                 </Card>

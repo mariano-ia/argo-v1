@@ -96,7 +96,7 @@ function buildHtml(params: {
             headerTitle: `El informe de <strong style="font-weight:700;">${params.nombreNino}</strong> está listo.`,
             headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} años`,
             eyebrow: 'Arquetipo',
-            bridgeLabel: 'Palabras que lo activan',
+            bridgeLabel: 'Palabras que activan',
             ctaSub: 'El informe completo incluye patrón de decisión, guía de comunicación, checklist del día, tendencia secundaria y más.',
             ctaBtn: 'Ver informe completo →',
             security: '🔒 Este link es personal e intransferible. Solo tú lo recibiste.',
@@ -132,7 +132,7 @@ function buildHtml(params: {
             headerTitle: `O relatório de <strong style="font-weight:700;">${params.nombreNino}</strong> está pronto.`,
             headerSub: `Para ${params.nombreAdulto} · ${params.deporte} · ${params.edad} anos`,
             eyebrow: 'Arquétipo',
-            bridgeLabel: 'Palavras que o ativam',
+            bridgeLabel: 'Palavras que ativam',
             ctaSub: 'O relatório completo inclui padrão de decisão, guia de comunicação, checklist do dia, tendência secundária e mais.',
             ctaBtn: 'Ver relatório completo →',
             security: '🔒 Este link é pessoal e intransferível. Só você o recebeu.',
@@ -462,7 +462,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
     const T = {
         es: {
             eyebrow: 'Informe de perfil', title: `El informe de ${n} ya está listo`, ageWord: 'años', forWord: 'para',
-            ctaBtn: `Ver el informe completo de ${n}`, ctaSub: 'Su mezcla, cómo cambia según la situación, su motor, cómo acompañarlo y más.',
+            ctaBtn: `Ver el informe completo de ${n}`, ctaSub: 'Su mezcla, cómo cambia según la situación, su motor, cómo acompañar y más.',
             puenteEyebrow: 'ArgoPuente® · Tu complemento', puenteTitle: `Ahora que conoces a ${n}, conócete a ti.`,
             puenteBody: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${n} mejor en su deporte.`,
             puenteBtn: 'Empezar mi ArgoPuente®',
@@ -480,7 +480,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
         },
         pt: {
             eyebrow: 'Relatório de perfil', title: `O relatório de ${n} já está pronto`, ageWord: 'anos', forWord: 'para',
-            ctaBtn: `Ver o relatório completo de ${n}`, ctaSub: 'A mistura dele, como muda conforme a situação, seu motor, como acompanhá-lo e mais.',
+            ctaBtn: `Ver o relatório completo de ${n}`, ctaSub: 'A mistura dele, como muda conforme a situação, seu motor, como acompanhar e mais.',
             puenteEyebrow: 'ArgoPuente® · Seu complemento', puenteTitle: `Agora que você conhece ${n}, conheça você mesmo.`,
             puenteBody: `Cinco minutos de perguntas. Um relatório próprio que revela seu estilo e quatro pontes específicas para acompanhar ${n} melhor no esporte.`,
             puenteBtn: 'Começar meu ArgoPuente®',

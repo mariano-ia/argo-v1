@@ -228,8 +228,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const resendKey = process.env.RESEND_API_KEY;
         if (resendKey) {
-            const childDisplay = child_name?.trim() || 'el niño';
             const pl = (purchase.lang as string) || 'es';
+            const childDisplay = child_name?.trim() || (pl === 'en' ? 'the child' : pl === 'pt' ? 'a criança' : 'el niño');
             const PL = pl === 'en' ? {
                 subject: `ArgoMethod®: ${childDisplay}'s experience is ready`,
                 heading: `${childDisplay}'s experience is ready`,

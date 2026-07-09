@@ -250,6 +250,7 @@ REGLAS DE REDACCIÓN (estrictas):
 8. ${langInstruction}
 9. Sin guiones largos (em dash, en dash). Si necesitas pausa, usa comas, paréntesis o punto.
 10. Cada puente debe combinar específicamente el perfil del niño con el del adulto. El Puente 2 (frustración) DEBE incorporar el estilo bajo presión del adulto (${pressureLabel}).
+11. No conocemos el género del niño ni del adulto. Refiérete a cada uno por su nombre y evita pronombres y adjetivos con marca de género (nada de él/ella, contento/a, cansado/a, listo/a, nervioso/a, seguro/a). Cuando una concordancia en español o portugués sea inevitable, reformula la frase o usa el nombre en lugar del pronombre. Nunca asumas si es varón o mujer.
 
 ESTRUCTURA EXACTA (devuelve SOLO este JSON, sin markdown):
 {
@@ -360,7 +361,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Never send the real child name to Gemini: use a placeholder in the prompt
         // and scrub it out of the injected child-report summary. Rehydrated below.
-        const realChildName: string = child.child_name || (lang === 'en' ? 'your child' : lang === 'pt' ? 'seu filho' : 'tu hijo');
+        const realChildName: string = child.child_name || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
         const hasRealName = !!child.child_name;
         const scrubbedChildAiSections = hasRealName
             ? deepReplaceStrings(child.ai_sections, realChildName, NAME_PLACEHOLDER)

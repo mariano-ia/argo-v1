@@ -35,13 +35,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
     es: [
         { id: 'q1', block: 'disc', prompt: 'Cuando {nombre} te cuenta un problema que tuvo en un partido, lo primero que tiendes a hacer es:', options: [
             { id: 'q1a', label: 'Plantear qué se puede hacer la próxima vez', axis: 'D' },
-            { id: 'q1b', label: 'Animarlo y bajarle drama al asunto', axis: 'I' },
+            { id: 'q1b', label: 'Darle ánimo y bajarle drama al asunto', axis: 'I' },
             { id: 'q1c', label: 'Escuchar sin interrumpir y validar lo que siente', axis: 'S' },
             { id: 'q1d', label: 'Hacer preguntas para entender exactamente qué pasó', axis: 'C' },
         ] },
         { id: 'q2', block: 'disc', prompt: 'Si {nombre} no quiere ir a la actividad un día, tu reacción más natural es:', options: [
-            { id: 'q2a', label: 'Acompañarlo en su sentir y dejar la decisión abierta', axis: 'S' },
-            { id: 'q2b', label: 'Recordarle el compromiso y motivarlo a ir igual', axis: 'D' },
+            { id: 'q2a', label: 'Acompañar lo que siente y dejar la decisión abierta', axis: 'S' },
+            { id: 'q2b', label: 'Recordarle el compromiso y darle un empujón para ir igual', axis: 'D' },
             { id: 'q2c', label: 'Indagar qué está pasando antes de decidir nada', axis: 'C' },
             { id: 'q2d', label: 'Buscar algo que conecte la actividad con su entusiasmo', axis: 'I' },
         ] },
@@ -58,14 +58,14 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q4d', label: 'Buscar conversar e influir desde la cordialidad', axis: 'I' },
         ] },
         { id: 'q5', block: 'disc', prompt: 'En el grupo de padres del equipo, sueles ser:', options: [
-            { id: 'q5a', label: 'El que propone cosas y mueve la agenda', axis: 'D' },
-            { id: 'q5b', label: 'El que está disponible y sostiene', axis: 'S' },
-            { id: 'q5c', label: 'El que conecta, anima y arma vínculo', axis: 'I' },
-            { id: 'q5d', label: 'El que aporta información o cuida los detalles', axis: 'C' },
+            { id: 'q5a', label: 'Quien propone cosas y mueve la agenda', axis: 'D' },
+            { id: 'q5b', label: 'Quien está disponible y sostiene', axis: 'S' },
+            { id: 'q5c', label: 'Quien conecta, anima y arma vínculo', axis: 'I' },
+            { id: 'q5d', label: 'Quien aporta información o cuida los detalles', axis: 'C' },
         ] },
         { id: 'q6', block: 'disc', prompt: 'Al ver a {nombre} perder un partido importante, tu impulso primero es:', options: [
             { id: 'q6a', label: 'Estar presente sin forzar conversación', axis: 'S' },
-            { id: 'q6b', label: 'Levantarle el ánimo, distraerlo', axis: 'I' },
+            { id: 'q6b', label: 'Levantarle el ánimo con una distracción', axis: 'I' },
             { id: 'q6c', label: 'Hablar del próximo objetivo', axis: 'D' },
             { id: 'q6d', label: 'Esperar el momento adecuado y conversar con calma', axis: 'C' },
         ] },
@@ -77,7 +77,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
         ] },
         { id: 'q8', block: 'disc', prompt: 'Lo que más te incomoda del deporte juvenil hoy es:', options: [
             { id: 'q8a', label: 'Cuando se rompe el espíritu de equipo', axis: 'I' },
-            { id: 'q8b', label: 'La presión excesiva sobre los chicos', axis: 'S' },
+            { id: 'q8b', label: 'La presión excesiva sobre los niños', axis: 'S' },
             { id: 'q8c', label: 'La falta de ambición o desafío real', axis: 'D' },
             { id: 'q8d', label: 'La falta de criterio o planificación', axis: 'C' },
         ] },
@@ -92,13 +92,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q10c', label: 'Combino instinto con un análisis breve', motor: 'equilibrado' },
         ] },
         { id: 'q11', block: 'pressure', prompt: 'Cuando {nombre} atraviesa una mala racha deportiva, lo que más te cuesta es:', options: [
-            { id: 'q11a', label: 'Contengo mi propia frustración y me enfoco en él', pressure: 'regulado' },
+            { id: 'q11a', label: 'Contengo mi propia frustración y me enfoco en acompañar', pressure: 'regulado' },
             { id: 'q11b', label: 'A veces se me escapa la frustración antes de pensarla', pressure: 'reactivo' },
-            { id: 'q11c', label: 'Tiendo a no hablar del tema para no incomodarlo', pressure: 'evitativo' },
+            { id: 'q11c', label: 'Tiendo a no hablar del tema para no incomodar', pressure: 'evitativo' },
         ] },
         { id: 'q12', block: 'pressure', prompt: 'Si percibes una injusticia hacia {nombre} (otro jugador, árbitro, entrenador), tu primera reacción es:', options: [
             { id: 'q12a', label: 'Espero a estar tranquilo para evaluar si actuar', pressure: 'regulado' },
-            { id: 'q12b', label: 'Prefiero no intervenir, que lo resuelva él', pressure: 'evitativo' },
+            { id: 'q12b', label: 'Prefiero no intervenir y dejar que lo resuelva por su cuenta', pressure: 'evitativo' },
             { id: 'q12c', label: 'Reacciono rápido, a veces más fuerte de lo que quisiera', pressure: 'reactivo' },
         ] },
         { id: 'q13', block: 'pressure', prompt: 'Después de una conversación con {nombre} sobre algo del deporte:', options: [
@@ -215,13 +215,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
     pt: [
         { id: 'q1', block: 'disc', prompt: 'Quando {nombre} te conta um problema que teve em uma partida, a primeira coisa que você tende a fazer é:', options: [
             { id: 'q1a', label: 'Propor o que pode ser feito na próxima vez', axis: 'D' },
-            { id: 'q1b', label: 'Animá-lo e tirar o drama da situação', axis: 'I' },
+            { id: 'q1b', label: 'Dar ânimo e tirar o drama da situação', axis: 'I' },
             { id: 'q1c', label: 'Escutar sem interromper e validar o que sente', axis: 'S' },
             { id: 'q1d', label: 'Fazer perguntas para entender exatamente o que aconteceu', axis: 'C' },
         ] },
         { id: 'q2', block: 'disc', prompt: 'Se {nombre} não quiser ir à atividade um dia, sua reação mais natural é:', options: [
-            { id: 'q2a', label: 'Acompanhá-lo no que sente e deixar a decisão em aberto', axis: 'S' },
-            { id: 'q2b', label: 'Lembrá-lo do compromisso e motivá-lo a ir mesmo assim', axis: 'D' },
+            { id: 'q2a', label: 'Acompanhar o que sente e deixar a decisão em aberto', axis: 'S' },
+            { id: 'q2b', label: 'Lembrar do compromisso e dar um empurrão para ir mesmo assim', axis: 'D' },
             { id: 'q2c', label: 'Investigar o que está acontecendo antes de decidir', axis: 'C' },
             { id: 'q2d', label: 'Buscar algo que conecte a atividade ao seu entusiasmo', axis: 'I' },
         ] },
@@ -245,7 +245,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
         ] },
         { id: 'q6', block: 'disc', prompt: 'Ao ver {nombre} perder uma partida importante, seu primeiro impulso é:', options: [
             { id: 'q6a', label: 'Estar presente sem forçar conversa', axis: 'S' },
-            { id: 'q6b', label: 'Levantar o ânimo, distraí-lo', axis: 'I' },
+            { id: 'q6b', label: 'Levantar o ânimo com uma distração', axis: 'I' },
             { id: 'q6c', label: 'Falar do próximo objetivo', axis: 'D' },
             { id: 'q6d', label: 'Esperar o momento certo e conversar com calma', axis: 'C' },
         ] },
@@ -272,13 +272,13 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q10c', label: 'Combino instinto com uma análise breve', motor: 'equilibrado' },
         ] },
         { id: 'q11', block: 'pressure', prompt: 'Quando {nombre} atravessa uma fase difícil no esporte, o que mais te custa é:', options: [
-            { id: 'q11a', label: 'Contenho minha própria frustração e me concentro nele', pressure: 'regulado' },
+            { id: 'q11a', label: 'Contenho minha própria frustração e me concentro em acompanhar', pressure: 'regulado' },
             { id: 'q11b', label: 'Às vezes a frustração escapa antes de eu pensar', pressure: 'reactivo' },
-            { id: 'q11c', label: 'Costumo não falar do tema para não incomodá-lo', pressure: 'evitativo' },
+            { id: 'q11c', label: 'Costumo não falar do tema para não incomodar', pressure: 'evitativo' },
         ] },
         { id: 'q12', block: 'pressure', prompt: 'Se você percebe uma injustiça com {nombre} (outro jogador, árbitro, treinador), sua primeira reação é:', options: [
             { id: 'q12a', label: 'Espero estar tranquilo para avaliar se atuo', pressure: 'regulado' },
-            { id: 'q12b', label: 'Prefiro não intervir, que ele resolva', pressure: 'evitativo' },
+            { id: 'q12b', label: 'Prefiro não intervir e deixar que resolva por conta própria', pressure: 'evitativo' },
             { id: 'q12c', label: 'Reajo rápido, às vezes mais forte do que gostaria', pressure: 'reactivo' },
         ] },
         { id: 'q13', block: 'pressure', prompt: 'Depois de uma conversa com {nombre} sobre algo do esporte:', options: [

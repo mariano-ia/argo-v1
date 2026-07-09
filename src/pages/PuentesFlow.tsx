@@ -190,7 +190,7 @@ export default function PuentesFlow() {
 
     const questions = getPuentesQuestions(lang);
     const anchorChild = children[anchorIdx] ?? null;
-    const anchorName = anchorChild?.child_name || (lang === 'en' ? 'your child' : lang === 'pt' ? 'seu filho' : 'tu hijo');
+    const anchorName = anchorChild?.child_name || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
 
     const handleSelect = (optId: string) => {
         const q = questions[currentIdx];
