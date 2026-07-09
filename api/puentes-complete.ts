@@ -134,7 +134,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const { data: siblings } = await sb
             .from('puentes_sessions')
-            .select('id')
+            .select('id, source_session_id')
             .eq('purchase_id', anchor.purchase_id);
 
         const siblingIds = (siblings ?? []).map(s => s.id);
@@ -151,6 +151,68 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (updErr) {
             console.error('[puentes-complete] Update error:', updErr.message);
             return res.status(500).json({ error: 'Could not save answers' });
+        }
+
+        // ── ArgoOne fusion (L3) dual-write ──────────────────────────────────
+        // Behind PUENTES_BRIDGES: also populate adult_profiles (reusable by email)
+        // + bridges (adult x perfilamiento, with a frozen DISC snapshot). SHADOW:
+        // nothing reads these until the read side flips, so this is best-effort and
+        // never blocks the legacy puentes_sessions flow. Flag OFF = identical legacy.
+        if (process.env.PUENTES_BRIDGES === 'on') {
+            try {
+                const { data: purchase } = await sb
+                    .from('puentes_purchases')
+                    .select('recipient_email, lang')
+                    .eq('id', anchor.purchase_id)
+                    .maybeSingle();
+                const em = (purchase?.recipient_email || '').trim().toLowerCase();
+                if (em) {
+                    const bLang = purchase?.lang || 'es';
+                    const nowIso = new Date().toISOString();
+                    const exp = new Date(); exp.setMonth(exp.getMonth() + 6);
+                    const expIso = exp.toISOString();
+
+                    // Upsert the reusable adult profile by normalized email (one row,
+                    // overwritten on re-profile).
+                    let adultProfileId: string | undefined;
+                    const { data: apRow } = await sb.from('adult_profiles').select('id').eq('email', em).maybeSingle();
+                    if (apRow) {
+                        adultProfileId = apRow.id;
+                        await sb.from('adult_profiles').update({
+                            disc: profile, adult_answers: answers, lang: bLang,
+                            computed_at: nowIso, expires_at: expIso, updated_at: nowIso,
+                        }).eq('id', apRow.id);
+                    } else {
+                        const { data: ins } = await sb.from('adult_profiles').insert({
+                            email: em, disc: profile, adult_answers: answers, lang: bLang,
+                            computed_at: nowIso, expires_at: expIso,
+                        }).select('id').single();
+                        adultProfileId = ins?.id;
+                    }
+
+                    // One bridge per child (adult x perfilamiento), DISC frozen at generation.
+                    for (const s of (siblings ?? [])) {
+                        if (!s.source_session_id) continue;
+                        const bridgeData = {
+                            adult_profile_id: adultProfileId ?? null,
+                            perfilamiento_id: s.source_session_id,
+                            adult_email: em,
+                            disc_snapshot: profile,
+                            adult_profile_computed_at: nowIso,
+                            status: 'answered',
+                            lang: bLang,
+                            computed_at: nowIso,
+                            expires_at: expIso,
+                        };
+                        const { data: br } = await sb.from('bridges').select('id')
+                            .eq('adult_email', em).eq('perfilamiento_id', s.source_session_id).maybeSingle();
+                        if (br) await sb.from('bridges').update(bridgeData).eq('id', br.id);
+                        else await sb.from('bridges').insert(bridgeData);
+                    }
+                }
+            } catch (dwErr) {
+                console.warn('[puentes-complete] L3 dual-write (adult_profiles/bridges) failed (non-blocking):', dwErr instanceof Error ? dwErr.message : dwErr);
+            }
         }
 
         // Internal endpoint calls must hit the SAME deployment running this
