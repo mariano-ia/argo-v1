@@ -5,6 +5,27 @@
 > 2026-07-09). Basado en el mapa de cambios de `ARGOONE-FLUJOS.md` §E y el modelo de `ARGOONE-MODELO-DATOS.md`.
 > **Aún NO tocado en código.** Requiere OK del owner + cerrar 2 bloqueadores (ver §Bloqueadores).
 
+## Estado de ejecución (actualizado 2026-07-09) — todo LOCAL, sin push
+
+Rama `develop`, sin push (regla del owner). Flags env en OFF → el producto vivo sigue en el flujo legacy.
+
+| Lote | Estado | Commit(s) |
+|---|---|---|
+| **L0** fugas + MP + precio | HECHO + verificado | `4b6a13d` |
+| **L1** esquema aditivo (M1-M6 + M2b) | **APLICADO a prod** (MCP) + verificado; M7/M8 diferidos | `54e14e7` + M2b |
+| **L5** copy (cuestionario genérico + precio) | HECHO | `404f88e` |
+| **L2** pago v2 | PARCIAL (B7 checkout un-SKU, B10 child_id, B17 confirmado); B8/B9/G2 al front | `1e0accf` |
+| **L3** puente→bridges | CORE hecho (dual-write B11 en `puentes-complete`) + sync-cron; resta read-side (B12), admin-grant (B18) | `87ea5f5` |
+| **Revisión funcional** | 9 hallazgos, 7 fixes (incl. fuga viva del sync-cron + revert B4), 2 diferidos | `039e849` |
+| **L4** add-on/invites/borrado/renewal | pendiente | — |
+| **L6-L8** front (hub React + B21, páginas) | pendiente (mockup del hub aprobado en localhost) | — |
+| **L9** cutover (flags en prod) | pendiente | — |
+
+**Deuda registrada de la revisión:** #3 (reminder skip per-email, va con B16), #4 (gate del $4.99 da 403 con email
+distinto, necesita pre-fill del front). **G2** (doble fila ArgoOne) = fix coordinado front+backend en el lote de
+front. **M7** (vista) diferida: la vista viva NO tiene `security_invoker`, agregarlo rompería ~15 readers. **M8**
+(backfill 24 puentes) + autofill de `responsible_adult_email`/`expires_at` en filas nuevas = cutover-prep.
+
 ## Principio de rollout: shadow-live por subsistema (patrón V4_SEAL)
 
 Todo se construye **aditivo/forward-only**: tablas y columnas nuevas conviven con `puentes_sessions`/
