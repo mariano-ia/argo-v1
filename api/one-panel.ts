@@ -88,6 +88,379 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
     });
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+ * ArgoOne fusion — HUB v2 (behind VITE_BRIDGES_V2)
+ * ────────────────────────────────────────────────────────────────────────────
+ * When VITE_BRIDGES_V2 is OFF this endpoint behaves EXACTLY as the v1 pack panel
+ * below. When ON, GET resolves a state-adaptive hub BY EMAIL and returns a
+ * { version: 2, ... } payload; the front branches on payload.version (backward-
+ * compat BY SHAPE — old tokens/packs still render the v1 panel while the flag is
+ * off). It reads children (by responsible_adult_email OR legacy adult_email),
+ * their current perfilamiento, this email's bridges, and the buyer's one_links.
+ * All helpers are INLINE (serverless: no cross-api and no src/ imports).
+ * ════════════════════════════════════════════════════════════════════════════ */
+
+// Accept the client ('1') and server ('on'/'true') truthy conventions so a single
+// Vercel env value gates BOTH the front (import.meta.env, build-time) and this
+// serverless read (process.env, runtime).
+function bridgesV2On(): boolean {
+    const v = (process.env.VITE_BRIDGES_V2 || '').trim().toLowerCase();
+    return v === '1' || v === 'on' || v === 'true';
+}
+
+function normEmail(s: string | null | undefined): string {
+    return (s || '').trim().toLowerCase();
+}
+
+// Escape LIKE metacharacters so a stored email with % or _ can't widen an ilike
+// into a cross-account match (mirrors the v1 emailPattern logic).
+function likeEscape(s: string): string {
+    return s.replace(/([\\%_])/g, '\\$1');
+}
+
+function isStaleAt(expiresAt: string | null | undefined, nowMs: number): boolean {
+    if (!expiresAt) return false;
+    const t = Date.parse(expiresAt);
+    return Number.isFinite(t) && t <= nowMs;
+}
+
+// A report is viewable when ready/sent (or legacy-null); held/pending => withheld.
+function reportReady(status: string | null | undefined): boolean {
+    return status == null || status === 'ready' || status === 'sent';
+}
+
+// One-line "Su motor" reading from a report_v4 blob: the section id 'motor',
+// its bloque.cuerpo, markdown stripped, first sentence only. Null when absent.
+function extractMotorLine(reportV4: unknown): string | null {
+    try {
+        const secs = (reportV4 as { secciones?: unknown[] })?.secciones;
+        if (!Array.isArray(secs)) return null;
+        const motor = secs.find((s) => s && (s as { id?: string }).id === 'motor') as { bloque?: { cuerpo?: unknown } } | undefined;
+        const cuerpo = motor?.bloque?.cuerpo;
+        if (typeof cuerpo !== 'string' || !cuerpo.trim()) return null;
+        const plain = cuerpo.replace(/\*\*/g, '').replace(/\s+/g, ' ').trim();
+        const stop = plain.search(/\.(\s|$)/);
+        return (stop > 0 ? plain.slice(0, stop + 1) : plain) || null;
+    } catch { return null; }
+}
+
+interface HubReport {
+    perfilamiento_id: string;
+    status: string | null;
+    ready: boolean;
+    share_token: string | null;
+    archetype_label: string | null;
+    eje: string | null;
+    motor_line: string | null;
+    expires_at: string | null;
+    is_stale: boolean;
+}
+interface HubBridge {
+    status: string | null;
+    ready: boolean;
+    expires_at: string | null;
+    is_stale: boolean;
+}
+interface HubChild {
+    key: string;
+    child_id: string | null;
+    perfilamiento_id: string | null;
+    name: string | null;
+    age: number | null;
+    sport: string | null;
+    report: HubReport | null;
+    is_buyer: boolean;
+    is_responsible: boolean;
+    is_invited: boolean;
+    my_bridge: HubBridge | null;
+    play_link: { slug: string; status: string } | null;
+    deletion_id: string | null;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function buildReport(perf: any, nowMs: number): HubReport | null {
+    if (!perf) return null;
+    const ready = reportReady(perf.report_status);
+    return {
+        perfilamiento_id: perf.id,
+        status: perf.report_status ?? null,
+        ready,
+        share_token: perf.share_token ?? null,
+        archetype_label: perf.archetype_label ?? (perf.report_v4?.hero?.arquetipoLabel ?? null),
+        eje: perf.eje ?? null,
+        motor_line: ready ? extractMotorLine(perf.report_v4) : null,
+        expires_at: perf.expires_at ?? null,
+        is_stale: isStaleAt(perf.expires_at, nowMs),
+    };
+}
+
+function buildBridge(b: any, nowMs: number): HubBridge {
+    const s = b.status ?? null;
+    return {
+        status: s,
+        ready: s === 'ready' || s === 'sent' || s === 'completed',
+        expires_at: b.expires_at ?? null,
+        is_stale: isStaleAt(b.expires_at, nowMs),
+    };
+}
+
+// Resolve the full state-adaptive hub for an email. In shadow (flags OFF on the
+// write side) bridges/adult_profiles are empty and new children carry NULL
+// responsible_adult_email — the by-EMAIL reads just come back empty, which is why
+// the front is exercised via ?demo=<state> and real data fills in over later lotes.
+async function buildHubPayload(sb: any, email: string, lang: string, nowMs: number): Promise<any> {
+    const esc = likeEscape(email);
+
+    // ── buyer path: paid purchases + their links ──
+    const { data: purchases } = await sb
+        .from('one_purchases')
+        .select('id')
+        .ilike('email', esc)
+        .eq('payment_status', 'paid');
+    const purchaseIds = (purchases ?? []).map((p: any) => p.id);
+    let links: any[] = [];
+    if (purchaseIds.length) {
+        const { data } = await sb
+            .from('one_links')
+            .select('id, slug, status, recipient_email, child_name, sport, completed_at, session_id, child_id')
+            .in('purchase_id', purchaseIds)
+            .order('created_at', { ascending: true });
+        links = data ?? [];
+    }
+
+    // ── owned children (responsible OR legacy adult email), not deleted ──
+    const [respRes, adultRes] = await Promise.all([
+        sb.from('children').select('id, child_name, child_age, sport, deletion_id').ilike('responsible_adult_email', esc).is('deleted_at', null),
+        sb.from('children').select('id, child_name, child_age, sport, deletion_id').ilike('adult_email', esc).is('deleted_at', null),
+    ]);
+    const ownedById = new Map<string, any>();
+    for (const c of [...(respRes.data ?? []), ...(adultRes.data ?? [])]) ownedById.set(c.id, c);
+    const ownedChildren = [...ownedById.values()];
+
+    // ── this email's bridges (empty in shadow until M8 backfill / B11 dual-write) ──
+    const { data: bridgeRows } = await sb
+        .from('bridges')
+        .select('id, perfilamiento_id, status, expires_at')
+        .ilike('adult_email', esc);
+    const bridges = bridgeRows ?? [];
+
+    // ── perfilamientos: latest resolved per owned child + explicit ids from links/bridges ──
+    const perfCols = 'id, child_id, child_name, child_age, sport, eje, eje_secundario, archetype_label, report_status, share_token, expires_at, report_v4, last_profiled_at, status';
+    const perfById = new Map<string, any>();
+    const latestByChild = new Map<string, any>();
+    const ownedIds = ownedChildren.map((c) => c.id);
+    if (ownedIds.length) {
+        // Mirror the canonical current_perfilamiento view: latest RESOLVED, not
+        // deleted, picked by created_at DESC (last_profiled_at is NULL for the
+        // general/tenant save path and sorts NULLS FIRST, which would surface a
+        // stale report as "current").
+        const { data } = await sb.from('perfilamientos').select(perfCols).in('child_id', ownedIds).eq('status', 'resolved').is('deleted_at', null).order('created_at', { ascending: false });
+        for (const p of data ?? []) {
+            perfById.set(p.id, p);
+            if (p.child_id && !latestByChild.has(p.child_id)) latestByChild.set(p.child_id, p);
+        }
+    }
+    const explicitIds = [
+        ...links.filter((l) => l.status === 'completed' && l.session_id).map((l) => l.session_id),
+        ...bridges.map((b: any) => b.perfilamiento_id).filter(Boolean),
+    ].filter((id, i, a) => id && a.indexOf(id) === i && !perfById.has(id));
+    if (explicitIds.length) {
+        const { data } = await sb.from('perfilamientos').select(perfCols).in('id', explicitIds).is('deleted_at', null);
+        for (const p of data ?? []) perfById.set(p.id, p);
+    }
+
+    // ── assemble children keyed by child_id (or perf/link id when unbound) ──
+    const map = new Map<string, HubChild>();
+    const blank = (key: string): HubChild => {
+        let hc = map.get(key);
+        if (!hc) {
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null };
+            map.set(key, hc);
+        }
+        return hc;
+    };
+
+    for (const c of ownedChildren) {
+        const hc = blank(c.id);
+        hc.child_id = c.id;
+        hc.name = c.child_name ?? hc.name;
+        hc.age = c.child_age ?? hc.age;
+        hc.sport = c.sport ?? hc.sport;
+        hc.is_responsible = true;
+        hc.deletion_id = c.deletion_id ?? null;
+        const perf = latestByChild.get(c.id);
+        if (perf) { hc.perfilamiento_id = perf.id; hc.report = buildReport(perf, nowMs); }
+    }
+
+    for (const l of links) {
+        if (l.status === 'completed' && l.session_id) {
+            const perf = perfById.get(l.session_id);
+            if (!perf) continue;
+            const key = perf.child_id ?? `perf:${perf.id}`;
+            const hc = blank(key);
+            hc.child_id = hc.child_id ?? perf.child_id ?? null;
+            hc.name = hc.name ?? perf.child_name ?? null;
+            hc.age = hc.age ?? perf.child_age ?? null;
+            hc.sport = hc.sport ?? perf.sport ?? null;
+            hc.perfilamiento_id = hc.perfilamiento_id ?? perf.id;
+            hc.report = hc.report ?? buildReport(perf, nowMs);
+            hc.is_buyer = true;
+        } else if (l.status === 'available' || l.status === 'sent' || l.status === 'pending') {
+            const hc = blank(`link:${l.id}`);
+            hc.is_buyer = true;
+            hc.play_link = { slug: l.slug, status: l.status };
+            hc.name = hc.name ?? l.child_name ?? null;
+            hc.sport = hc.sport ?? l.sport ?? null;
+        }
+    }
+
+    for (const b of bridges) {
+        const perf = perfById.get(b.perfilamiento_id);
+        if (!perf) continue;
+        const key = perf.child_id ?? `perf:${perf.id}`;
+        const hc = blank(key);
+        if (!hc.perfilamiento_id) {
+            hc.child_id = hc.child_id ?? perf.child_id ?? null;
+            hc.name = hc.name ?? perf.child_name ?? null;
+            hc.age = hc.age ?? perf.child_age ?? null;
+            hc.sport = hc.sport ?? perf.sport ?? null;
+            hc.perfilamiento_id = perf.id;
+            hc.report = hc.report ?? buildReport(perf, nowMs);
+        }
+        hc.my_bridge = buildBridge(b, nowMs);
+    }
+
+    const children = [...map.values()];
+    // Invited = reachable ONLY via a bridge (not owner, not buyer) => read-only.
+    for (const hc of children) hc.is_invited = !hc.is_responsible && !hc.is_buyer && !!hc.my_bridge;
+
+    const availableSlots = links.filter((l) => l.status === 'available').length;
+    const ownedPlayed = children.filter((c) => (c.is_responsible || c.is_buyer) && c.perfilamiento_id);
+    const invited = children.filter((c) => c.is_invited);
+    const hasBuyerPending = children.some((c) => c.is_buyer && c.play_link);
+
+    let role: string;
+    if (children.length === 0) role = 'empty';
+    else if (ownedPlayed.length === 0 && invited.length && !hasBuyerPending) role = 'invited_adult';
+    else if (ownedPlayed.length === 0 && hasBuyerPending) role = 'buyer_no_child_yet';
+    else if (ownedPlayed.length <= 1 && !invited.length) role = 'one_and_done';
+    else role = 'family';
+
+    // Academy CTA is gated by SCALE, never shown to plain families (owner rule).
+    // ArgoOne standalone has no coach signal, so child count is the scale proxy.
+    const distinctOwned = new Set(children.filter((c) => c.is_responsible || c.is_buyer).map((c) => c.child_id ?? c.key)).size;
+    const canUpgradeAcademy = distinctOwned >= 3;
+
+    return { version: 2, email, lang, role, children, available_slots: availableSlots, can_upgrade_academy: canUpgradeAcademy };
+}
+
+// Re-send the ArgoOne® play-link email (v2 resend-play-link). Mirrors the v1
+// generate-link email body; kept as its own helper so v1 stays byte-identical.
+async function sendPlayLinkEmail(email: string, slug: string, childName: string | null, lang: string, origin: string): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+    const playUrl = `${origin}/one/${slug}`;
+    const child = childName || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+    const PL = lang === 'en' ? {
+        subject: `ArgoMethod®: ${child}'s experience is ready`,
+        heading: `${child}'s experience is ready`,
+        body1: `Someone invited ${child} to play an interactive adventure of under 10 minutes. When it ends, you'll receive a personalized behavioral profile report at this email.`,
+        body2: 'Complete the registration, hand the device to the athlete, and you are done.',
+        cta: 'Start the experience',
+        note: 'This link is single-use. Once the experience is completed, it cannot be used again.',
+    } : lang === 'pt' ? {
+        subject: `ArgoMethod®: a experiência de ${child} está pronta`,
+        heading: `A experiência de ${child} está pronta`,
+        body1: `Alguém convidou ${child} para jogar uma aventura interativa de menos de 10 minutos. Ao terminar, você receberá um relatório de perfil comportamental personalizado neste email.`,
+        body2: 'Complete o registro, passe o dispositivo ao atleta, e pronto.',
+        cta: 'Começar a experiência',
+        note: 'Este link é de uso único. Uma vez completada a experiência, não poderá ser usado novamente.',
+    } : {
+        subject: `ArgoMethod®: la experiencia de ${child} está lista`,
+        heading: `La experiencia de ${child} está lista`,
+        body1: `Alguien te invitó a que ${child} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.`,
+        body2: 'Completa el registro, pásale el dispositivo al deportista, y listo.',
+        cta: 'Comenzar la experiencia',
+        note: 'Este link es de un solo uso. Una vez completada la experiencia, no podrá volver a usarse.',
+    };
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [email],
+            subject: PL.subject,
+            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One®</span>
+</td></tr>
+<tr><td style="padding:28px;">
+    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
+    <p style="font-size:14px;color:#86868B;margin:0 0 8px;">${PL.body1}</p>
+    <p style="font-size:14px;color:#86868B;margin:0 0 24px;">${PL.body2}</p>
+    <a href="${playUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;">${PL.note}</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
+        }),
+    });
+}
+
+// Send the ArgoPuente® adult-to-adult invite (v2 invite-adult). ArgoPuente®
+// wordmark (Argo bold + Puente thin + ® last), tuteo, buyer-neutral, es/en/pt.
+async function sendBridgeInviteEmail(email: string, token: string, childName: string | null, lang: string, origin: string): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+    const inviteUrl = `${origin}/puente/invite/${token}`;
+    const child = childName || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+    const PL = lang === 'en' ? {
+        subject: `You've been invited to create your ArgoPuente® with ${child}`,
+        heading: `Your bridge with ${child}`,
+        body: `Someone who accompanies ${child} invited you to create your own ArgoPuente®: a short reading of how you connect with ${child}, built from your own profile. It takes about 5 minutes.`,
+        cta: 'Create my bridge',
+        note: 'This invitation is personal. If you were not expecting it, you can ignore this email.',
+    } : lang === 'pt' ? {
+        subject: `Você foi convidado a criar sua ArgoPuente® com ${child}`,
+        heading: `Sua ponte com ${child}`,
+        body: `Alguém que acompanha ${child} convidou você a criar sua própria ArgoPuente®: uma leitura breve de como você se conecta com ${child}, feita a partir do seu próprio perfil. Leva cerca de 5 minutos.`,
+        cta: 'Criar minha ponte',
+        note: 'Este convite é pessoal. Se você não o esperava, pode ignorar este email.',
+    } : {
+        subject: `Te invitaron a crear tu ArgoPuente® con ${child}`,
+        heading: `Tu puente con ${child}`,
+        body: `Alguien que acompaña a ${child} te invitó a crear tu propia ArgoPuente®: una lectura breve de cómo conectas con ${child}, hecha a partir de tu propio perfil. Toma unos 5 minutos.`,
+        cta: 'Crear mi puente',
+        note: 'Esta invitación es personal. Si no la esperabas, puedes ignorar este email.',
+    };
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [email],
+            subject: PL.subject,
+            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Puente®</span>
+</td></tr>
+<tr><td style="padding:28px;">
+    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
+    <p style="font-size:14px;color:#86868B;margin:0 0 24px;line-height:1.6;">${PL.body}</p>
+    <div style="text-align:center;">
+    <a href="${inviteUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a>
+    </div>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
+        }),
+    });
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'GET' && req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -126,6 +499,157 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const token = req.query.token as string;
     if (!token) return res.status(401).json({ error: 'Missing access token' });
+
+    // ══ ArgoOne fusion HUB v2 (behind VITE_BRIDGES_V2) ═══════════════════════
+    // Self-contained branch: resolves the viewer's email from EITHER a
+    // one_purchases OR an adult_profiles access_token (both 64-hex), returns the
+    // { version: 2 } hub on GET, and handles the 4 inline sub-actions on POST.
+    // The two paid actions (start-replay $12.99 / refresh-bridge $4.99) are posted
+    // by the front directly to one-checkout / puentes-checkout. When the flag is
+    // off this whole block is skipped and the v1 pack panel below runs unchanged.
+    if (bridgesV2On()) {
+        let email: string | null = null;
+        let vLang = 'es';
+        let purchaseUnpaid = false;
+        const { data: op } = await sb
+            .from('one_purchases')
+            .select('email, lang, payment_status')
+            .eq('access_token', token)
+            .maybeSingle();
+        if (op?.email) { email = op.email; vLang = (op.lang as string) || 'es'; purchaseUnpaid = op.payment_status !== 'paid'; }
+        if (!email) {
+            const { data: ap } = await sb
+                .from('adult_profiles')
+                .select('email, lang')
+                .eq('access_token', token)
+                .maybeSingle();
+            if (ap?.email) { email = ap.email; vLang = (ap.lang as string) || 'es'; }
+        }
+        if (!email) return res.status(404).json({ error: 'Purchase not found' });
+        // An unconfirmed one_purchases token keeps the v1 "confirming" polling UX.
+        if (op && purchaseUnpaid) return res.status(403).json({ error: 'Payment not confirmed' });
+
+        const nowMs = Date.now();
+        const origin = process.env.SITE_URL || 'https://argomethod.com';
+
+        if (req.method === 'GET') {
+            const payload = await buildHubPayload(sb, email, vLang, nowMs);
+            return res.status(200).json(payload);
+        }
+
+        const { action } = req.body ?? {};
+
+        // ── invite-adult: responsible adult invites another adult (bridge_invite
+        //    + ArgoPuente® email). The invite IS the authorization (no re-play). ──
+        if (action === 'invite-adult') {
+            const childId = String(req.body.child_id || '');
+            const invited = normEmail(req.body.invited_email);
+            const relation = req.body.relation ? String(req.body.relation).slice(0, 60) : null;
+            if (!childId || !/.+@.+\..+/.test(invited)) return res.status(400).json({ error: 'Missing child_id or invited_email' });
+            if (invited === normEmail(email)) return res.status(400).json({ error: 'cannot_invite_self' });
+            const ip = clientIp(req);
+            if ((await rateLimited(`rl:one-invite:ip:${ip}`, 30, 3600)) || (await rateLimited(`rl:one-invite:email:${normEmail(email)}`, 20, 3600))) {
+                return res.status(429).json({ error: 'rate_limited' });
+            }
+            const { data: child } = await sb
+                .from('children')
+                .select('id, child_name, responsible_adult_email, adult_email')
+                .eq('id', childId)
+                .is('deleted_at', null)
+                .maybeSingle();
+            if (!child) return res.status(404).json({ error: 'Child not found' });
+            const owns = normEmail(child.responsible_adult_email) === normEmail(email) || normEmail(child.adult_email) === normEmail(email);
+            if (!owns) return res.status(403).json({ error: 'not_authorized' });
+            const { data: perf } = await sb
+                .from('perfilamientos')
+                .select('id')
+                .eq('child_id', childId)
+                .eq('status', 'resolved')
+                .order('last_profiled_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (!perf) return res.status(400).json({ error: 'child_not_played' });
+            // Reuse a still-open invite for the same (perfilamiento, invited_email)
+            // instead of minting a duplicate token.
+            const { data: existing } = await sb
+                .from('bridge_invites')
+                .select('token')
+                .eq('perfilamiento_id', perf.id)
+                .ilike('invited_email', likeEscape(invited))
+                .in('status', ['pending', 'accepted'])
+                .maybeSingle();
+            let inviteToken = existing?.token as string | undefined;
+            if (!inviteToken) {
+                const exp = new Date(nowMs + 30 * 24 * 3600 * 1000).toISOString();
+                const { data: ins, error } = await sb
+                    .from('bridge_invites')
+                    .insert({ perfilamiento_id: perf.id, inviter_email: normEmail(email), invited_email: invited, relation, status: 'pending', expires_at: exp })
+                    .select('token')
+                    .single();
+                if (error || !ins) return res.status(500).json({ error: 'Failed to create invite' });
+                inviteToken = ins.token;
+            }
+            await sendBridgeInviteEmail(invited, inviteToken as string, child.child_name || null, vLang, origin);
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── resend-play-link: re-send the play email for a buyer's assigned slot ──
+        if (action === 'resend-play-link') {
+            const linkId = String(req.body.link_id || '');
+            if (!linkId) return res.status(400).json({ error: 'Missing link_id' });
+            // Throttle: a resend fires an email to a stored recipient, so cap it
+            // per IP / per caller / per link (mirrors invite-adult) to prevent
+            // email-bombing a third party from the transactional domain.
+            const ip = clientIp(req);
+            if ((await rateLimited(`rl:one-resend:ip:${ip}`, 30, 3600))
+                || (await rateLimited(`rl:one-resend:email:${normEmail(email)}`, 20, 3600))
+                || (await rateLimited(`rl:one-resend:link:${linkId}`, 5, 3600))) {
+                return res.status(429).json({ error: 'rate_limited' });
+            }
+            const { data: purchases } = await sb
+                .from('one_purchases')
+                .select('id')
+                .ilike('email', likeEscape(email))
+                .eq('payment_status', 'paid');
+            const pIds = (purchases ?? []).map((p: { id: string }) => p.id);
+            const { data: link } = await sb
+                .from('one_links')
+                .select('id, slug, status, recipient_email, child_name, purchase_id')
+                .eq('id', linkId)
+                .maybeSingle();
+            if (!link || !pIds.includes(link.purchase_id)) return res.status(404).json({ error: 'Link not found' });
+            if (!link.recipient_email) return res.status(400).json({ error: 'no_recipient' });
+            // Only a slot that was already assigned (sent/pending) can be resent.
+            if (link.status !== 'sent' && link.status !== 'pending') return res.status(400).json({ error: 'not_resendable' });
+            await sendPlayLinkEmail(link.recipient_email, link.slug, link.child_name || null, vLang, origin);
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── delete-child: hand back the /eliminar route (NON-destructive; the
+        //    actual cascade delete is B15 / the F9 page). ──
+        if (action === 'delete-child') {
+            const childId = String(req.body.child_id || '');
+            if (!childId) return res.status(400).json({ error: 'Missing child_id' });
+            const { data: child } = await sb
+                .from('children')
+                .select('id, deletion_id, responsible_adult_email, adult_email')
+                .eq('id', childId)
+                .is('deleted_at', null)
+                .maybeSingle();
+            if (!child) return res.status(404).json({ error: 'Child not found' });
+            const owns = normEmail(child.responsible_adult_email) === normEmail(email) || normEmail(child.adult_email) === normEmail(email);
+            if (!owns) return res.status(403).json({ error: 'not_authorized' });
+            return res.status(200).json({ ok: true, deletion_url: `${origin}/eliminar/${child.deletion_id}` });
+        }
+
+        // ── start-adult-profile: the generic adult questionnaire (F7) is not wired
+        //    yet; return a pending marker so the front can show a "coming soon". ──
+        if (action === 'start-adult-profile') {
+            return res.status(200).json({ ok: true, pending: true, reason: 'questionnaire_not_available' });
+        }
+
+        return res.status(400).json({ error: 'Unknown action' });
+    }
 
     // Validate token → the owning purchase → its email.
     const { data: purchase } = await sb

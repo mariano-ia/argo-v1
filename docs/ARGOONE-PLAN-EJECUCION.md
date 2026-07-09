@@ -18,8 +18,17 @@ Rama `develop`, sin push (regla del owner). Flags env en OFF → el producto viv
 | **L3** puente→bridges | CORE hecho (dual-write B11 en `puentes-complete`) + sync-cron; resta read-side (B12), admin-grant (B18) | `87ea5f5` |
 | **Revisión funcional** | 9 hallazgos, 7 fixes (incl. fuga viva del sync-cron + revert B4), 2 diferidos | `039e849` |
 | **L4** add-on/invites/borrado/renewal | pendiente | — |
-| **L6-L8** front (hub React + B21, páginas) | pendiente (mockup del hub aprobado en localhost) | — |
+| **L8** hub (B21 one-panel v2 + F10 OnePanel hub) | **HECHO local** + revisado (workflow adversarial, 7 fixes) + verificado (typecheck/imports/qa/build + render Playwright 4 estados) | (sin commitear al escribir) |
+| **L5/L6/L7** front (copy base, PuentesFlow v2, landing/banner + **F8 invite / F9 delete pages**) | pendiente | — |
 | **L9** cutover (flags en prod) | pendiente | — |
+
+**L8 as-built:** B21 = branch `if (bridgesV2On())` en `api/one-panel.ts` (payload `{version:2, role, children[], available_slots,
+can_upgrade_academy}` por email desde token de `one_purchases` O `adult_profiles`; sub-acciones invite-adult/resend-play-link/
+delete-child/start-adult-profile; los 2 pagos van del front a one-checkout/puentes-checkout). F10 = branch `payload.version===2`
+en `OnePanel.tsx` (`HubV2`, es/en/pt, tokens, demo `?demo=padre|familia|comprador|invitada`). Fix del review: el pick de
+perfilamiento actual ahora espeja `current_perfilamiento` (`created_at DESC` + `deleted_at IS NULL`); resend-play-link con
+rate-limit + guardia de estado. Deps aún abiertas para que el hub quede 100%: F8/F9 (páginas invite/delete), B14/B15, F7
+(cuestionario adulto → start-adult-profile), B12 (ver mi puente), G2/B9 (replay atado a child_id).
 
 **Deuda registrada de la revisión:** #3 (reminder skip per-email, va con B16), #4 (gate del $4.99 da 403 con email
 distinto, necesita pre-fill del front). **G2** (doble fila ArgoOne) = fix coordinado front+backend en el lote de

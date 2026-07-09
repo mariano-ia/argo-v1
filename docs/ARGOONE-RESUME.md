@@ -1,7 +1,8 @@
 # ArgoOne fusión — RUNBOOK de retome (leé esto primero)
 
 > Punto de entrada para retomar el build de la fusión ArgoOne en una **sesión nueva**. Estado al
-> 2026-07-09. Todo LOCAL en `develop`, **sin push** (regla del owner). 10 commits (`e87c07f`..`3cdd206`).
+> 2026-07-09. Todo LOCAL en `develop`, **sin push** (regla del owner). 10 commits (`e87c07f`..`3cdd206`)
+> + el lote de front del hub (B21 + F10, ver abajo), sin commitear al escribir esto.
 
 ## Qué es esto (en 3 líneas)
 Se fusionan ArgoOne + ArgoOne+ en un solo **ArgoOne $12.99** (siempre incluye el informe puente) + add-on
@@ -22,12 +23,32 @@ Memoria persistente: `project_argoone_fusion.md` (índice en `MEMORY.md`).
 - Tablas nuevas en prod (vacías, RLS on, solo service-role): `adult_profiles`, `bridges`, `bridge_invites`. Columnas nuevas: `children.responsible_adult_email/deletion_id` (deletion_id con DEFAULT), `perfilamientos.expires_at/renewal_reminder_sent_at`, `one_links.child_id`.
 - **Flags env (todos OFF en prod):** `ONE_UNIFIED_SKU`, `PUENTES_BRIDGES` (dual-write ON escribe a las tablas nuevas), `PUENTES_ADDON_V2`, `RENEWAL_CRON_V2`, `VITE_BRIDGES_V2` (front).
 
-## LA PRÓXIMA TAREA: el FRONT (es donde todo se vuelve real + testeable)
-El backend shadow está completo. Lo que sigue es el front, **empezando por el hub**, que el owner ya revisó y aprobó como mockup.
-1. **Mockup aprobado del hub:** `docs/mockups/argoone-hub-v2.html`. Servilo con `python3 -m http.server` y miralo. Es la referencia de diseño (paleta Argo, wordmark ArgoOne®, buyer-neutral, 4 estados con selector). Ajustes ya incorporados: sin sección "perfil del adulto" (su DISC vive dentro del informe puente); "Crear nuevo puente con [niño]" + (i) tooltip; sin "entrá con tu email" en el panel; **sin nombres** (no tenemos el nombre del usuario, la identidad es el email); CTA Academy solo en el dashboard del comprador (gate por escala/coach en el build, no familias); botones que no envuelven.
-2. **B21 — backend `one-panel` v2** (hacelo primero, es la data del hub): payload state-adaptive resuelto por EMAIL (perfil/niños/puentes/compartidos), 6 sub-acciones (invite-adult, start-adult-profile, resend-play-link, start-replay $12.99, refresh-bridge $4.99, delete-child), backward-compat por SHAPE del payload (tokens viejos → panel actual). Lee `children` (por responsible_adult_email) + `adult_profiles` (por email) + `bridges`. Inline todo helper (no importar entre api/ ni desde src/). Detrás de `VITE_BRIDGES_V2`.
-3. **F10 — `OnePanel.tsx` hub v2 React** desde el mockup, es/en/pt, backward-compat por shape.
-4. Después: páginas `/puente/invite/:token` (F8) + `/eliminar/:deletion_id` (F9), y sus backends B14/B15.
+## Hecho en esta ronda: B21 + F10 (el HUB) — HECHO local, sin push
+El hub del mockup aprobado (`docs/mockups/argoone-hub-v2.html`) está construido, revisado (workflow adversarial,
+7 hallazgos aplicados) y verificado (typecheck api+front, check:api-imports, qa:unit, build; render visual de
+los 4 estados con Playwright, 0 errores de consola). Detrás de `VITE_BRIDGES_V2` (OFF = v1 intacto).
+- **B21** (`api/one-panel.ts`): branch `if (bridgesV2On())` (acepta `1`/`on`/`true`). Resuelve el email desde token
+  de `one_purchases` **o** `adult_profiles`. GET → `{ version:2, role, children[], available_slots, can_upgrade_academy }`
+  con flags por niño (`is_buyer`/`is_responsible`/`is_invited`/`my_bridge`/`play_link`/`report{archetype_label,
+  motor_line,is_stale,...}`). Lee `children` por (responsible_adult_email OR adult_email) + `bridges` + one_links →
+  perfilamientos (últ. resuelto por `created_at DESC` + `deleted_at IS NULL`, alineado a `current_perfilamiento`).
+  4 sub-acciones inline: **invite-adult** (crea `bridge_invite` + email ArgoPuente®, rate-limited, solo responsable),
+  **resend-play-link** (rate-limited + solo estado sent/pending), **delete-child** (devuelve ruta `/eliminar/:id`, NO
+  destructiva), **start-adult-profile** (stub `{pending:true}`, F7 no cableado). Todo helper inline.
+- **F10** (`src/pages/OnePanel.tsx`): branch por `payload.version === 2` → `HubV2` (en `ToastProvider`), es/en/pt,
+  tokens `AXIS_COLORS` + `InfoTip`. Tarjetas fieles al mockup (chip arquetipo, "Su motor", banner retrasado, fila
+  puente, tooltip (i), Academy gateado por escala ≥3). Demo local: `/one/panel?demo=padre|familia|comprador|invitada`.
+- **Pagos ($12.99 replay / $4.99 add-on):** el front postea a `one-checkout` / `puentes-checkout` existentes (decisión
+  del owner). refresh-bridge fija `recipient_email` al del viewer (pasa el gate; deuda #4). start-replay manda `child_id`
+  (one-checkout lo IGNORA hoy → crea niño nuevo; el binding real es **G2/B9**, pendiente antes del cutover).
+
+## LA PRÓXIMA TAREA
+1. **Páginas `/puente/invite/:token` (F8)** + su backend **B14** (bridge-invite-accept). Sin esto, el email de
+   invite-adult 404ea (esperado, gateado). Pre-fill/fijar el email del invitado (deuda #4 la resuelve el token).
+2. **Página `/eliminar/:deletion_id` (F9)** + backend **B15** (child-delete cascade, DESTRUCTIVO → surface al owner).
+3. **F7** (cuestionario genérico del adulto) — destraba `start-adult-profile` (hoy stub) y "Crear mi puente".
+4. **B12** (read-side de puente sobre bridges) — destraba "Ver mi puente" (hoy toast "próximamente").
+5. **G2/B9** (one-checkout/one-complete honran `child_id`) — para que "Actualizar el informe $12.99" no cree un niño nuevo.
 
 ## Deuda registrada (NO se te olvide)
 - **#3** reminder `skip-if-paid` sigue per-email (suprime recordatorios legítimos) → va con B16 (renewal-cron per-child).
