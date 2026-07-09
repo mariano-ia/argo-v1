@@ -1,0 +1,367 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArgoOne — Panel (mockup v2)</title>
+<style>
+  :root {
+    --navy: #1D1D1F;
+    --secondary: #424245;
+    --grey: #86868B;
+    --light: #AEAEB2;
+    --border: #E8E8ED;
+    --bg: #F8F8FA;
+    --neutral: #F5F5F7;
+    --card: #FFFFFF;
+    --violet: #955FB5;
+    --violet-soft: rgba(149, 95, 181, 0.08);
+    --violet-border: rgba(149, 95, 181, 0.22);
+    --amber-bg: rgba(245, 158, 11, 0.10);
+    --amber-fg: #B45309;
+    --amber-border: rgba(245, 158, 11, 0.28);
+    --green-bg: rgba(34, 197, 94, 0.10);
+    --green-fg: #15803D;
+    --ax-d: #f97316;
+    --ax-i: #f59e0b;
+    --ax-s: #22c55e;
+    --ax-c: #6366f1;
+    --shadow: 0 1px 3px rgba(29,29,31,0.04), 0 6px 24px rgba(29,29,31,0.05);
+    --shadow-hover: 0 2px 6px rgba(29,29,31,0.06), 0 12px 32px rgba(29,29,31,0.09);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --navy: #F5F5F7; --secondary: #C7C7CC; --grey: #98989D; --light: #6E6E73;
+      --border: #2C2C2E; --bg: #131315; --neutral: #1C1C1E; --card: #1F1F22;
+      --violet: #C08FDB; --violet-soft: rgba(192,143,219,0.12); --violet-border: rgba(192,143,219,0.28);
+      --amber-fg: #FBBF24; --green-fg: #4ADE80;
+      --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 6px 24px rgba(0,0,0,0.35);
+      --shadow-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="light"] {
+    --navy: #1D1D1F; --secondary: #424245; --grey: #86868B; --light: #AEAEB2;
+    --border: #E8E8ED; --bg: #F8F8FA; --neutral: #F5F5F7; --card: #FFFFFF;
+    --violet: #955FB5; --violet-soft: rgba(149,95,181,0.08); --violet-border: rgba(149,95,181,0.22);
+    --amber-fg: #B45309; --green-fg: #15803D;
+    --shadow: 0 1px 3px rgba(29,29,31,0.04), 0 6px 24px rgba(29,29,31,0.05);
+    --shadow-hover: 0 2px 6px rgba(29,29,31,0.06), 0 12px 32px rgba(29,29,31,0.09);
+  }
+  :root[data-theme="dark"] {
+    --navy: #F5F5F7; --secondary: #C7C7CC; --grey: #98989D; --light: #6E6E73;
+    --border: #2C2C2E; --bg: #131315; --neutral: #1C1C1E; --card: #1F1F22;
+    --violet: #C08FDB; --violet-soft: rgba(192,143,219,0.12); --violet-border: rgba(192,143,219,0.28);
+    --amber-fg: #FBBF24; --green-fg: #4ADE80;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 6px 24px rgba(0,0,0,0.35);
+    --shadow-hover: 0 2px 6px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--navy); font-family: var(--font);
+    -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* Header */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 6px; }
+  .wordmark { font-size: 20px; letter-spacing: -0.01em; }
+  .wordmark .a { font-weight: 800; }
+  .wordmark .r { font-weight: 300; }
+  .wordmark .reg { font-weight: 300; font-size: 0.62em; vertical-align: super; opacity: 0.7; }
+  /* Inline wordmark (Argo bold + rest thin) for brand mentions in prose/buttons */
+  .wm .a { font-weight: 800; }
+  .wm .r { font-weight: 300; }
+  .door { font-size: 12.5px; color: var(--grey); }
+  .door a { color: var(--violet); text-decoration: none; font-weight: 600; }
+  h1.panel-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin: 18px 0 4px; text-wrap: balance; }
+  .panel-sub { font-size: 14px; color: var(--grey); margin: 0 0 22px; }
+
+  /* State switcher (mockup-only control) */
+  .switcher { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 14px; margin-bottom: 26px;
+    background: var(--violet-soft); border: 1px solid var(--violet-border); border-radius: 12px; }
+  .switcher .lbl { width: 100%; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--violet); font-weight: 700; margin-bottom: 2px; }
+  .switcher button {
+    font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    padding: 7px 13px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--card); color: var(--secondary); transition: all .15s;
+  }
+  .switcher button[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: #fff; }
+
+  /* Section label */
+  .sec-label { font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--light);
+    font-weight: 700; margin: 30px 0 12px; }
+
+  /* Cards */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); overflow: visible; }
+  .card + .card { margin-top: 14px; }
+  .pad { padding: 20px 22px; }
+
+  .row { display: flex; align-items: flex-start; gap: 14px; }
+  .row-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+  .avatar { width: 44px; height: 44px; border-radius: 12px; flex: none; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; font-size: 17px; color: #fff; }
+
+  .name { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+  .meta { font-size: 12.5px; color: var(--grey); margin: 2px 0 0; }
+
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    padding: 4px 10px; border-radius: 999px; background: var(--neutral); color: var(--secondary); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .d-d { background: var(--ax-d);} .d-i { background: var(--ax-i);} .d-s { background: var(--ax-s);} .d-c { background: var(--ax-c);}
+
+  .divider { height: 1px; background: var(--border); margin: 0; }
+
+  .subline { font-size: 13px; color: var(--secondary); margin: 12px 0 0; }
+  .subline b { font-weight: 600; color: var(--navy); }
+
+  /* Puente row inside a child card */
+  .puente { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 14px 22px; background: var(--neutral); border-radius: 0 0 14px 14px; }
+  .puente .txt { font-size: 13px; color: var(--secondary); flex: 1; min-width: 0; }
+  .puente .txt b { color: var(--navy); font-weight: 600; }
+
+  /* Banners */
+  .banner { display: flex; gap: 10px; align-items: flex-start; padding: 12px 16px; border-radius: 10px; font-size: 13px; margin: 14px 0 0; }
+  .banner.warn { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber-fg); }
+  .banner .bi { font-weight: 800; }
+
+  /* Buttons */
+  .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .btn { font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none;
+    padding: 9px 16px; border-radius: 10px; border: 1px solid transparent; display: inline-flex; align-items: center;
+    gap: 7px; transition: all .15s; white-space: nowrap; flex: none; }
+  .btn-primary { background: var(--violet); color: #fff; }
+  .btn-secondary { background: var(--card); color: var(--navy); border-color: var(--border); }
+  .btn-ghost { background: transparent; color: var(--violet); padding-left: 4px; padding-right: 4px; }
+  @media (hover: hover) { .btn-primary:hover { filter: brightness(1.06); } .btn-secondary:hover { background: var(--neutral); } .card:hover { box-shadow: var(--shadow-hover); } }
+  .price-tag { font-size: 11.5px; font-weight: 700; opacity: .85; }
+
+  .empty { font-size: 13px; color: var(--grey); }
+
+  /* Info (i) tooltip */
+  .ghost-with-info { display: inline-flex; align-items: center; gap: 2px; }
+  .info { position: relative; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--light);
+    color: var(--grey); font-size: 10px; font-weight: 700; font-style: italic; display: inline-flex;
+    align-items: center; justify-content: center; cursor: help; flex: none; }
+  .info .tip { position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%);
+    width: 244px; max-width: 68vw; background: var(--navy); color: var(--card); font-size: 11.5px; font-style: normal;
+    font-weight: 400; line-height: 1.55; padding: 11px 13px; border-radius: 9px; box-shadow: var(--shadow-hover);
+    opacity: 0; visibility: hidden; transition: opacity .15s; z-index: 20; text-align: left; }
+  .info .tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: var(--navy); }
+  .info:hover .tip, .info:focus .tip, .info:focus-within .tip { opacity: 1; visibility: visible; }
+
+  /* Adult (your profile) card accent */
+  .you { border-color: var(--violet-border); }
+  .you .avatar { background: linear-gradient(135deg, var(--violet), #7A4D96); }
+
+  .role-note { font-size: 12px; color: var(--light); margin-top: 4px; }
+  .foot { margin-top: 40px; font-size: 11.5px; color: var(--light); text-align: center; line-height: 1.7; }
+  .foot a { color: var(--violet); text-decoration: none; }
+
+  [hidden] { display: none !important; }
+  .disclaimer { font-size: 11px; color: var(--light); margin-top: 3px; }
+</style>
+
+<div class="wrap">
+  <div class="top">
+    <div class="wordmark"><span class="a">Argo</span><span class="r">One</span><span class="reg">®</span></div>
+  </div>
+
+  <h1 class="panel-title" id="greeting">Tu panel</h1>
+  <p class="panel-sub" id="greeting-sub">Todo lo tuyo en un lugar. Guarda este link para volver cuando quieras.</p>
+
+  <div class="switcher" role="group" aria-label="Estado del panel (solo para revisar el mockup)">
+    <span class="lbl">Mockup · así se adapta el panel según quién entra</span>
+    <button data-state="padre" aria-pressed="true">Un adulto, un niño</button>
+    <button data-state="familia" aria-pressed="false">Familia (varios)</button>
+    <button data-state="comprador" aria-pressed="false">Compró, aún sin jugar</button>
+    <button data-state="invitada" aria-pressed="false">Adulto invitado</button>
+  </div>
+
+  <!-- ============ LOS NIÑOS ============ -->
+  <div id="sec-kids">
+    <div class="sec-label" id="kids-label">El niño</div>
+
+    <!-- Child: Juan — report ready + puente ready (padre / familia) -->
+    <div class="card" data-when="padre familia">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-d)">J</div>
+          <div style="flex:1; min-width:0;">
+            <div class="row-between">
+              <div>
+                <p class="name">Juan</p>
+                <p class="meta">10 años · fútbol</p>
+              </div>
+              <span class="chip"><span class="dot d-d"></span>Impulsor con veta Conector</span>
+            </div>
+            <p class="subline"><b>Su motor:</b> ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.</p>
+            <div class="btns" style="align-items:center;">
+              <a class="btn btn-primary" href="#">Ver el informe de Juan</a>
+              <span class="ghost-with-info">
+                <a class="btn btn-ghost" href="#">Crear nuevo puente con Juan</a>
+                <span class="info" tabindex="0" role="button" aria-label="Qué es un puente nuevo">i<span class="tip">Invita a otro adulto que acompaña a Juan (la abuela, la tía, el entrenador) a tener su propio puente hacia él. Recibe un link, responde su cuestionario y obtiene su informe puente por USD 4.99. Vos lo autorizas al invitarlo.</span></span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="puente">
+        <div class="txt"><b>Tu puente hacia Juan:</b> listo</div>
+        <a class="btn btn-secondary" href="#">Ver mi puente</a>
+      </div>
+    </div>
+
+    <!-- Child: Sofía — report ready, retrasado + no puente yet (familia only) -->
+    <div class="card" data-when="familia">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-s)">S</div>
+          <div style="flex:1; min-width:0;">
+            <div class="row-between">
+              <div>
+                <p class="name">Sofía</p>
+                <p class="meta">13 años · hockey</p>
+              </div>
+              <span class="chip"><span class="dot d-s"></span>Sostenedor con veta Conector</span>
+            </div>
+            <p class="subline"><b>Su motor:</b> ritmo sereno. Procesa con calma antes de moverse; rinde cuando no la apuran.</p>
+            <div class="banner warn">
+              <span class="bi">!</span>
+              <span>El informe de Sofía tiene más de 6 meses. Puede estar desactualizado, pero podés seguir consultándolo. Si querés la foto de hoy, vuelve a jugar.</span>
+            </div>
+            <div class="btns">
+              <a class="btn btn-secondary" href="#">Ver el informe</a>
+              <a class="btn btn-primary" href="#">Actualizar el informe <span class="price-tag">USD 12.99</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="puente">
+        <div class="txt">Todavía no sumaste tu puente hacia Sofía.</div>
+        <a class="btn btn-secondary" href="#">Sumar mi puente <span class="price-tag">USD 4.99</span></a>
+      </div>
+    </div>
+
+    <!-- Buyer, child not played yet (comprador) -->
+    <div class="card" data-when="comprador">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--neutral); color:var(--light)">?</div>
+          <div style="flex:1; min-width:0;">
+            <p class="name">El niño todavía no jugó</p>
+            <p class="subline">Comparte este link con el adulto que va a acompañarlo. Cuando el niño complete la aventura (menos de 10 minutos), su informe aparece acá.</p>
+            <div class="btns">
+              <a class="btn btn-primary" href="#">Copiar el link para compartir</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="puente">
+        <div class="txt"><b>Tu puente</b> te muestra cómo conectar con el niño. Adelantalo ahora (5 min).</div>
+        <a class="btn btn-primary" href="#">Crear mi puente</a>
+      </div>
+    </div>
+
+    <!-- Invited adult: read-only child + own bridge (invitada) -->
+    <div class="card" data-when="invitada">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-d)">J</div>
+          <div style="flex:1; min-width:0;">
+            <div class="row-between">
+              <div>
+                <p class="name">Juan</p>
+                <p class="meta">10 años · fútbol · te invitaron a acompañarlo</p>
+              </div>
+              <span class="chip"><span class="dot d-d"></span>Impulsor con veta Conector</span>
+            </div>
+            <p class="subline"><b>Su motor:</b> ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.</p>
+            <div class="btns">
+              <a class="btn btn-primary" href="#">Ver el informe de Juan</a>
+            </div>
+            <p class="role-note">Como adulto invitado ves el informe del niño y tu propio puente. Re-perfilar o invitar queda en manos de quien lo autorizó.</p>
+          </div>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="puente">
+        <div class="txt"><b>Tu puente hacia Juan:</b> listo</div>
+        <a class="btn btn-secondary" href="#">Ver mi puente</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Otro niño ============ -->
+  <div id="sec-actions" data-when="familia">
+    <div class="sec-label">Otro niño</div>
+    <div class="card">
+      <div class="pad">
+        <div class="row-between">
+          <div>
+            <p class="name" style="font-size:15px;">Perfila a otro niño</p>
+            <p class="subline" style="margin-top:4px;">Otra aventura, otro informe. Para sumar más adultos a un niño que ya jugó, usa "Crear nuevo puente" en la tarjeta del niño.</p>
+          </div>
+        </div>
+        <div class="btns" style="margin-top:12px;">
+          <a class="btn btn-secondary" href="#">Perfilar a otro niño <span class="price-tag">USD 12.99</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Upgrade a ArgoAcademy ============ -->
+  <div id="sec-academy" data-when="padre comprador">
+    <div class="sec-label">¿Acompañás a un equipo?</div>
+    <div class="card" style="background:var(--violet-soft); border-color:var(--violet-border);">
+      <div class="pad">
+        <div class="row-between" style="flex-wrap:wrap; gap:14px;">
+          <div style="flex:1; min-width:220px;">
+            <p class="name" style="font-size:15px;">Da el paso a <span class="wm"><span class="a">Argo</span><span class="r">Academy®</span></span></p>
+            <p class="subline" style="margin-top:4px;">Un panel para todo tu grupo: química de equipo, un asistente que conoce a cada niño, y roles para varios adultos sin volver a autorizar de a uno.</p>
+          </div>
+          <a class="btn btn-primary" href="#">Hacer upgrade a <span class="wm"><span class="a">Argo</span><span class="r">Academy®</span></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">
+    Cada perfil (del niño y del adulto) se actualiza cada 6 meses.<br>
+    Precios en dólares. Al comprar desde Argentina se cobra al valor del dólar del día.<br>
+    <a href="#">Administrar o eliminar datos</a> · <a href="#">Términos</a>
+  </p>
+</div>
+
+<script>
+  (function () {
+    var buttons = Array.prototype.slice.call(document.querySelectorAll('.switcher button'));
+    var greeting = document.getElementById('greeting');
+    var greetingSub = document.getElementById('greeting-sub');
+    var kidsLabel = document.getElementById('kids-label');
+
+    var copy = {
+      padre:     { g: 'Tu panel', s: 'Todo lo tuyo en un lugar. Guarda este link para volver cuando quieras.', k: 'El niño' },
+      familia:   { g: 'Tu panel', s: 'Acá se acumula todo lo tuyo: los niños que autorizaste y tus puentes.', k: 'Los niños' },
+      comprador: { g: '¡Gracias por tu compra!', s: 'Te quedan dos pasos, en el orden que prefieras.', k: 'El niño' },
+      invitada:  { g: 'Te invitaron a un puente', s: 'Te invitaron a crear tu puente con Juan.', k: 'El niño' }
+    };
+
+    function apply(state) {
+      document.querySelectorAll('[data-when]').forEach(function (el) {
+        var states = el.getAttribute('data-when').split(' ');
+        el.hidden = states.indexOf(state) === -1;
+      });
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.state === state)); });
+      var c = copy[state];
+      greeting.textContent = c.g; greetingSub.textContent = c.s; kidsLabel.textContent = c.k;
+    }
+
+    buttons.forEach(function (b) { b.addEventListener('click', function () { apply(b.dataset.state); }); });
+    apply('padre');
+  })();
+</script>
