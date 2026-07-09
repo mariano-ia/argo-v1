@@ -41,8 +41,20 @@ Cierra las 3 fugas de PII/plata vivas y limpia MP/precio, sobre el esquema actua
 - Verificación: `typecheck:api` + `check:api-imports` + `build`; POST puentes-checkout con recipient≠adult del source → 403; mismo niño → 409; Stripe test → 1 sola fila puente; grep MP/9.99 vacío.
 - Rollback: git revert por archivo. Cero estado, cero migración, cero flag.
 
-### L1 — Esquema aditivo shadow (todas las migraciones) · shippable, shadow puro
-- Tareas: **M1, M2, M3, M6, M5, M4, M8, M7**. Orden duro: M1→M4→M8 (FK + backfill); M3→M7 (vista). `bridges` es TABLA NUEVA, nunca rename de puentes_sessions.
+### L1 — Esquema aditivo shadow · **M1-M6 APLICADO 2026-07-09 (prod, vía MCP); M7/M8 diferidos**
+- Aplicado a prod (`docs`/registro local: `supabase/migrations/20260709_argoone_fusion_l1.sql`): **M1**
+  adult_profiles, **M2** children +responsible_adult_email +deletion_id (backfill 164, sin expires_at),
+  **M3** perfilamientos +expires_at +renewal_reminder_sent_at (backfill), **M6** one_links +child_id (FK
+  SET NULL), **M4** bridges (UNIQUE parcial adult×perfilamiento), **M5** bridge_invites. Las 3 tablas nuevas
+  con RLS activado + sin policies (solo service-role). Verificado: tablas/columnas/índices/FKs OK, backfills
+  0 faltantes, 0 deletion_id duplicados. `NOTIFY pgrst` corrido.
+- **M7 (vista) DIFERIDO — hallazgo clave:** la vista `current_perfilamiento` viva **NO tiene** `security_invoker`
+  (reloptions null, corre con permisos del owner). El plan asumía `security_invoker=true`; agregarlo **habría
+  roto** los ~15 readers (RLS lockdown de children devolvería 0 filas). Se difiere hasta que un reader necesite
+  `expires_at` desde la vista; mientras tanto el backend lo lee de `perfilamientos` directo.
+- **M8 (backfill puentes_sessions.adult_profile → adult_profiles + bridges) DIFERIDO:** 24 filas; con dual-read
+  puede correr justo antes del cutover (forward-only mientras tanto).
+- Tareas restantes/orden original: M1→M4→M8 (FK + backfill); M3→M7 (vista). `bridges` es TABLA NUEVA, nunca rename.
 - Safe-stop: todo el esquema en pie, nadie lo lee → prod intacto. Se puede quedar acá semanas. M7 (la única op live-read) puede diferirse hasta justo antes del hub.
 - Verificación: MCP `apply_migration` (NO db push); `information_schema` + índices únicos + FKs; aserciones de backfill (responsible_adult_email/deletion_id/expires_at NULL == 0); NOTIFY pgrst + probe REST `?limit=0`; qa-monitor CHECK 8 verde. M7: probe a tenant-sessions → 200 + `security_invoker=true`.
 - Rollback: DROP TABLE (shadow) / DROP COLUMN (casi vacías). CHECKs siempre NOT VALID. Nada destructivo sobre legacy.
