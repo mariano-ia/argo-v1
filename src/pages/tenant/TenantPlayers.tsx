@@ -398,13 +398,20 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         const contBody = bodyOf('contingencia');
         const motorBody = bodyOf('motor');
         const combBody = bodyOf('combustible');
+        const logroBody = bodyOf('logro');
+        const grupoBody = bodyOf('grupo');
+        const resetBody = bodyOf('reset');
         return {
+            meter: v4.hero.meter ?? null,
             esencia: v4.hero.lead ? clip(v4.hero.lead, 3) : null,
             patron: patronBody ? { label: titleOf('patron'), text: patronBody } : null,
             cambia: contBody ? { label: titleOf('contingencia'), text: contBody } : (motorBody ? { label: titleOf('motor'), text: motorBody } : null),
+            logro: logroBody ? { label: titleOf('logro'), text: logroBody } : null,
+            grupo: grupoBody ? { label: titleOf('grupo'), text: grupoBody } : null,
             palabrasPuente: pal?.puente ?? [],
             palabrasRuido: pal?.ruido ?? [],
             combustible: combBody ? { label: titleOf('combustible'), text: combBody } : null,
+            reset: resetBody ? { label: titleOf('reset'), text: resetBody } : null,
             checklist: gu ? { antes: clip(gu.antes, 1), durante: clip(gu.durante, 1), despues: clip(gu.despues, 1) } : null,
         };
     }, [v4]);
@@ -413,13 +420,17 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
     const compact = useMemo(() => {
         if (v4Compact) {
             return {
+                meter: v4Compact.meter,
                 esencia: v4Compact.esencia,
                 patron: v4Compact.patron ? { label: v4Compact.patron.label, sub: null as string | null, text: v4Compact.patron.text } : null,
                 cambia: v4Compact.cambia,
+                logro: v4Compact.logro,
+                grupo: v4Compact.grupo,
                 palabrasPuente: v4Compact.palabrasPuente,
                 palabrasRuido: v4Compact.palabrasRuido,
                 guiaCards: null as { situacion: string; activador: string; desmotivacion: string }[] | null,
                 combustible: v4Compact.combustible,
+                reset: v4Compact.reset,
                 checklist: v4Compact.checklist,
             };
         }
@@ -431,13 +442,17 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
         })() : null;
         const p = decisionPattern ? getPatternCopy(decisionPattern, lang) : null;
         return {
+            meter: null as { level: number; labels: string[] } | null,
             esencia: reportData.perfilExtended ?? reportData.perfil,
             patron: p ? { label: getPatternSectionLabel(lang), sub: p.label, text: p.desc } : null,
             cambia: tendText ? { label: `${dt.players.brujulaSecundaria}: ${tendencia}`, text: tendText } : null,
+            logro: null as { label: string; text: string } | null,
+            grupo: null as { label: string; text: string } | null,
             palabrasPuente: reportData.palabrasPuente,
             palabrasRuido: reportData.palabrasRuido,
             guiaCards: reportData.guia?.length ? reportData.guia : null,
             combustible: null as { label: string; text: string } | null,
+            reset: null as { label: string; text: string } | null,
             checklist: reportData.checklist ?? null,
         };
     }, [v4Compact, reportData, decisionPattern, tendenciaContent, tendencia, lang, dt, session.child_name]);
@@ -734,6 +749,22 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                             /* Compact 2-column summary — the coach's purpose-built view (NOT the full
                                report; the full report is the PDF/email). Content is v4 when the report is
                                sealed, otherwise the legacy engine. Short excerpts, same slots as before. */
+                            <>
+                            {/* Confidence meter (v4): how defined the profile is today. Tells the coach
+                               how much to lean on the read (a "parejo" profile is barely differentiated). */}
+                            {compact.meter && (
+                                <div className="mb-5 pb-4 border-b border-argo-border">
+                                    <div className="flex items-baseline justify-between mb-1.5">
+                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">{lang === 'en' ? 'How defined the profile is today' : lang === 'pt' ? 'Quão marcado está o perfil hoje' : 'Qué tan marcado está su perfil hoy'}</p>
+                                        <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: dot }}>{compact.meter.labels[compact.meter.level - 1]}</span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {compact.meter.labels.map((l, i) => (
+                                            <div key={l} className="h-1.5 rounded-full" style={{ background: i < compact.meter!.level ? dot : '#EFEFF2' }} />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Left column: profile info */}
                                 <div className="space-y-4">
@@ -759,6 +790,14 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.cambia.label}</p>
                                             <p className="text-xs text-argo-grey leading-relaxed">{compact.cambia.text}</p>
+                                        </div>
+                                    )}
+
+                                    {/* When it goes well (v4 logro) */}
+                                    {compact.logro && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.logro.label}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.logro.text}</p>
                                         </div>
                                     )}
 
@@ -813,6 +852,13 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
 
                                 {/* Right column: coaching + checklist */}
                                 <div className="space-y-4">
+                                    {/* How much the group moves them (v4 grupo) — a reading, always shown */}
+                                    {compact.grupo && (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.grupo.label}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.grupo.text}</p>
+                                        </div>
+                                    )}
                                     {locked ? (
                                         <>
                                             {compact.guiaCards && (
@@ -839,6 +885,15 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                     tooltip={lang === 'en' ? 'What most motivates this athlete, based on their profile.' : lang === 'pt' ? 'O que mais motiva este atleta, com base no seu perfil.' : 'Lo que más motiva a este deportista, según su perfil.'}
                                                 >
                                                     <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
+                                                </LockedSection>
+                                            )}
+                                            {compact.reset && (
+                                                <LockedSection
+                                                    label={compact.reset.label}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'A reset that tends to help this athlete regroup after frustration.' : lang === 'pt' ? 'Um reset que costuma ajudar este atleta a se reorganizar após a frustração.' : 'Un reset que suele ayudar a este deportista a reordenarse tras la frustración.'}
+                                                >
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.reset.text}</p>
                                                 </LockedSection>
                                             )}
                                             {compact.checklist && (
@@ -884,6 +939,12 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                     <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
                                                 </div>
                                             )}
+                                            {compact.reset && (
+                                                <div>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.reset.label}</p>
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.reset.text}</p>
+                                                </div>
+                                            )}
                                             {compact.checklist && (
                                                 <div>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
@@ -905,6 +966,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                 </div>
                             </div>
+                            </>
                             )}
 
                             {/* ── Memoria del asistente modal (M2) ─────────────────── */}
