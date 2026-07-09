@@ -4,12 +4,14 @@ import type { PuentesQuestion as Q, PuentesOption } from '../../lib/puentesQuest
 
 interface Props {
     question: Q;
-    childName: string;
     onSelect: (option: PuentesOption) => void;
 }
 
-export function PuentesQuestion({ question, childName, onSelect }: Props) {
-    const prompt = question.prompt.replace('{nombre}', childName);
+// The adult questionnaire is generic (measures the adult's own style, reusable
+// across any child the adult bridges toward), so the prompt is shown verbatim —
+// no child-name anchor.
+export function PuentesQuestion({ question, onSelect }: Props) {
+    const prompt = question.prompt;
     return (
         <motion.div
             key={question.id}

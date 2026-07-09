@@ -4,7 +4,7 @@ export interface PuentesCopy {
     intro: {
         eyebrow: string;
         title: string;
-        subtitle: (childName: string) => string;
+        subtitle: string;
         startCta: string;
         estimatedTime: string;
         disclaimer: string;
@@ -52,7 +52,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         intro: {
             eyebrow: 'ArgoPuente® · Tu vínculo',
             title: 'ArgoPuente®',
-            subtitle: (n) => `Conoce tu propio estilo y descubre cómo se complementa con el de ${n}.`,
+            subtitle: 'Conoce tu propio estilo y descubre cómo se complementa con el de los niños que acompañas.',
             startCta: 'Empezar el cuestionario',
             estimatedTime: '5 a 7 minutos',
             disclaimer: 'No es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
@@ -96,7 +96,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         intro: {
             eyebrow: 'ArgoPuente® · Your bond',
             title: 'ArgoPuente®',
-            subtitle: (n) => `Discover your own style and how it complements ${n}'s.`,
+            subtitle: 'Discover your own style and how it complements that of the children you accompany.',
             startCta: 'Start the questionnaire',
             estimatedTime: '5 to 7 minutes',
             disclaimer: 'This is not a clinical or therapeutic service. It is an invitation to reflect.',
@@ -140,7 +140,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         intro: {
             eyebrow: 'ArgoPuente® · Seu vínculo',
             title: 'ArgoPuente®',
-            subtitle: (n) => `Conheça seu próprio estilo e descubra como se complementa com o de ${n}.`,
+            subtitle: 'Conheça seu próprio estilo e descubra como se complementa com o das crianças que você acompanha.',
             startCta: 'Começar o questionário',
             estimatedTime: '5 a 7 minutos',
             disclaimer: 'Não é um serviço clínico nem terapêutico. É um convite à reflexão.',

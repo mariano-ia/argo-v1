@@ -37,7 +37,6 @@ export default function PuentesFlow() {
     const { token } = useParams<{ token: string }>();
     const [stage, setStage] = useState<Stage>('loading');
     const [children, setChildren] = useState<ChildEntry[]>([]);
-    const [anchorIdx, setAnchorIdx] = useState(0);
     const [lang, setLang] = useState<Lang>('es');
     const [answers, setAnswers] = useState<PuentesAnswer[]>([]);
     const [currentIdx, setCurrentIdx] = useState(0);
@@ -189,8 +188,10 @@ export default function PuentesFlow() {
     };
 
     const questions = getPuentesQuestions(lang);
-    const anchorChild = children[anchorIdx] ?? null;
-    const anchorName = anchorChild?.child_name || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+    // The questionnaire is generic (measures the adult, child-independent), so
+    // there is no child anchor: submit against the first session and
+    // puentes-complete propagates the profile to every sibling of the purchase.
+    const anchorChild = children[0] ?? null;
 
     const handleSelect = (optId: string) => {
         const q = questions[currentIdx];
@@ -252,11 +253,7 @@ export default function PuentesFlow() {
         <div className="min-h-screen bg-argo-neutral py-12 px-4">
             {stage === 'intro' && (
                 <PuentesIntro
-                    childName={anchorName}
                     lang={lang}
-                    childOptions={children.length > 1 ? children.map(c => c.child_name || '').filter(Boolean) : []}
-                    selectedAnchor={anchorIdx}
-                    onAnchorChange={setAnchorIdx}
                     onStart={() => setStage('question')}
                 />
             )}
@@ -269,7 +266,6 @@ export default function PuentesFlow() {
                         <PuentesQuestion
                             key={questions[currentIdx].id}
                             question={questions[currentIdx]}
-                            childName={anchorName}
                             onSelect={(opt) => handleSelect(opt.id)}
                         />
                     </AnimatePresence>
