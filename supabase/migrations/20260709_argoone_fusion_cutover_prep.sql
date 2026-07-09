@@ -1,0 +1,122 @@
+-- ============================================================================
+-- ArgoOne fusion — CUTOVER-PREP (M7 + M8)   ⚠️  NOT YET APPLIED  ⚠️
+-- ----------------------------------------------------------------------------
+-- Surfaced for owner review. Do NOT run this blindly against prod (prod + develop
+-- share the DB). Run each block TRANSACTIONALLY with a ROLLBACK rehearsal + a probe
+-- first, then NOTIFY pgrst. Both blocks are cutover-prep: nothing in the shipped
+-- shadow build reads what they produce until the cutover flags flip.
+-- ============================================================================
+
+
+-- ── M7: current_perfilamiento view + expires_at ─────────────────────────────
+-- Verbatim recreate of the live view (from 20260706_perfilamiento_ficha.sql) with
+-- ONE appended column: p.expires_at. The pick already matches the hub (created_at
+-- DESC + resolved + not deleted).
+--
+-- ⚠️ security_invoker CAVEAT (the reason M7 was deferred): the migration FILE
+-- 20260706 sets `security_invoker = true`, but the L1 investigation found the LIVE
+-- prod view has reloptions = NULL (invoker OFF). CREATE OR REPLACE VIEW RESETS view
+-- options, so you must decide, at apply time, what the live view actually has:
+--   SELECT reloptions FROM pg_class WHERE relname = 'current_perfilamiento';
+-- and re-set (or NOT) security_invoker to MATCH the live state. Setting it true when
+-- the live readers rely on it being off (service-role bypasses RLS; the children RLS
+-- lockdown would return 0 rows to non-service callers) breaks ~15 readers + Sessions.tsx.
+-- Rehearse in a transaction with ROLLBACK, then probe /api/tenant-sessions before COMMIT.
+--
+-- M7 is NOT required by the current build (B21 reads expires_at from perfilamientos
+-- directly). Apply only when a reader needs expires_at from the view.
+--
+-- BEGIN;
+-- CREATE OR REPLACE VIEW public.current_perfilamiento AS
+-- SELECT DISTINCT ON (c.id)
+--   c.id            AS id,
+--   c.tenant_id, c.child_name, c.child_age, c.adult_name, c.adult_email, c.sport,
+--   c.archived_at, c.deleted_at, c.is_demo, c.reprofile_token, c.merged_into,
+--   p.id            AS perfilamiento_id,
+--   p.eje, p.motor, p.eje_secundario, p.archetype_label, p.answers, p.ai_sections,
+--   p.ai_tokens_input, p.ai_tokens_output, p.ai_cost_usd,
+--   p.share_token, p.full_access, p.email_sent_at, p.lang,
+--   p.created_at    AS current_profile_date,
+--   (SELECT count(*) FROM public.perfilamientos pp
+--      WHERE pp.child_id = c.id AND pp.status = 'resolved' AND pp.deleted_at IS NULL) AS perfilamiento_count,
+--   p.method_version, p.question_version, p.band, p.registro, p.forma,
+--   p.b_top, p.b2, p.top_count, p.second_count, p.third_count, p.vote_vector,
+--   p.veta_eje, p.nombre_gated, p.veta_en_nombre, p.veta_opuesta,
+--   p.motor_narratable, p.edad_meses, p.factor_edad,
+--   p.latency_af, p.reaction_af, p.adaptation_af, p.tempo_score, p.tempo_zona,
+--   p.evidence_ficha, p.game_metrics,
+--   p.expires_at                          -- ← the only new column
+-- FROM public.children c
+-- JOIN public.perfilamientos p
+--   ON p.child_id = c.id AND p.status = 'resolved' AND p.deleted_at IS NULL
+-- ORDER BY c.id, p.created_at DESC;
+-- -- Re-set security_invoker ONLY to match whatever the live view had (see caveat).
+-- -- ALTER VIEW public.current_perfilamiento SET (security_invoker = true);
+-- -- Probe here, then:
+-- -- COMMIT;   (or ROLLBACK for the rehearsal)
+-- NOTIFY pgrst, 'reload schema';
+
+
+-- ── M8: backfill puentes_sessions.adult_profile -> adult_profiles + bridges ──
+-- ~24 historical rows. Forward-only + dual-read means this runs right before cutover.
+-- The embedded adult_profile jsonb shape is
+--   { eje_primary, eje_secondary, motor, pressure_style, history, dominant_emotion, axis_counts }
+-- Review the row set first: SELECT count(*) FROM puentes_sessions WHERE adult_profile IS NOT NULL;
+--
+-- BEGIN;
+-- -- 1) adult_profiles (one row per normalized email, from the purchase recipient).
+-- INSERT INTO public.adult_profiles (email, disc, lang, computed_at, expires_at)
+-- SELECT DISTINCT ON (lower(btrim(pp.recipient_email)))
+--        lower(btrim(pp.recipient_email)) AS email,
+--        ps.adult_profile                 AS disc,
+--        coalesce(ps.lang, pp.lang, 'es') AS lang,
+--        coalesce(ps.created_at, now())   AS computed_at,
+--        coalesce(ps.created_at, now()) + interval '6 months' AS expires_at
+-- FROM public.puentes_sessions ps
+-- JOIN public.puentes_purchases pp ON pp.id = ps.purchase_id
+-- WHERE ps.adult_profile IS NOT NULL AND pp.recipient_email IS NOT NULL
+-- ORDER BY lower(btrim(pp.recipient_email)), ps.created_at DESC
+-- ON CONFLICT (lower(btrim(email))) DO NOTHING;   -- keep the freshest already there
+--
+-- -- 2) bridges (adult x perfilamiento) from each historical puentes_session.
+-- INSERT INTO public.bridges
+--   (adult_profile_id, perfilamiento_id, adult_email, disc_snapshot,
+--    adult_profile_computed_at, ai_sections, status, lang, computed_at, expires_at)
+-- SELECT ap.id,
+--        ps.source_session_id,
+--        lower(btrim(pp.recipient_email)),
+--        ps.adult_profile,
+--        coalesce(ps.created_at, now()),
+--        ps.ai_sections,
+--        ps.status,
+--        coalesce(ps.lang, pp.lang, 'es'),
+--        coalesce(ps.created_at, now()),
+--        coalesce(ps.created_at, now()) + interval '6 months'
+-- FROM public.puentes_sessions ps
+-- JOIN public.puentes_purchases pp ON pp.id = ps.purchase_id
+-- JOIN public.adult_profiles ap ON ap.email = lower(btrim(pp.recipient_email))
+-- WHERE ps.adult_profile IS NOT NULL
+--   AND ps.source_session_id IS NOT NULL
+-- ON CONFLICT (lower(btrim(adult_email)), perfilamiento_id) WHERE perfilamiento_id IS NOT NULL
+--   DO NOTHING;
+-- -- Verify counts, then COMMIT; (or ROLLBACK to rehearse)
+-- NOTIFY pgrst, 'reload schema';
+
+
+-- ── M8b (optional): autofill trigger for NEW children/perfilamientos ─────────
+-- B9 (one-complete) already sets responsible_adult_email + expires_at under V2, so a
+-- trigger is belt-and-braces for rows written by OTHER paths (e.g. /api/session direct,
+-- tenant flow). Only add it if a non-B9 writer must populate these. Left commented —
+-- decide at cutover whether it is needed (it can mask a missing app-level write).
+--
+-- CREATE OR REPLACE FUNCTION public.argoone_autofill_perfilamiento_expiry()
+-- RETURNS trigger LANGUAGE plpgsql AS $$
+-- BEGIN
+--   IF NEW.expires_at IS NULL THEN
+--     NEW.expires_at := coalesce(NEW.last_profiled_at, NEW.created_at, now()) + interval '6 months';
+--   END IF;
+--   RETURN NEW;
+-- END $$;
+-- CREATE TRIGGER trg_argoone_perfilamiento_expiry
+--   BEFORE INSERT ON public.perfilamientos
+--   FOR EACH ROW EXECUTE FUNCTION public.argoone_autofill_perfilamiento_expiry();

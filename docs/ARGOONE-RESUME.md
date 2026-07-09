@@ -42,13 +42,36 @@ los 4 estados con Playwright, 0 errores de consola). Detrás de `VITE_BRIDGES_V2
   del owner). refresh-bridge fija `recipient_email` al del viewer (pasa el gate; deuda #4). start-replay manda `child_id`
   (one-checkout lo IGNORA hoy → crea niño nuevo; el binding real es **G2/B9**, pendiente antes del cutover).
 
-## LA PRÓXIMA TAREA
-1. **Páginas `/puente/invite/:token` (F8)** + su backend **B14** (bridge-invite-accept). Sin esto, el email de
-   invite-adult 404ea (esperado, gateado). Pre-fill/fijar el email del invitado (deuda #4 la resuelve el token).
-2. **Página `/eliminar/:deletion_id` (F9)** + backend **B15** (child-delete cascade, DESTRUCTIVO → surface al owner).
-3. **F7** (cuestionario genérico del adulto) — destraba `start-adult-profile` (hoy stub) y "Crear mi puente".
-4. **B12** (read-side de puente sobre bridges) — destraba "Ver mi puente" (hoy toast "próximamente").
-5. **G2/B9** (one-checkout/one-complete honran `child_id`) — para que "Actualizar el informe $12.99" no cree un niño nuevo.
+## Fases 1-5 del front + money-path — HECHAS local, sin push (6 commits, `ba68b37`..`8abfeb1`)
+Ejecución autónoma con el patrón por fase (comprensión workflow → build → review adversarial → fixes →
+verificación typecheck/imports/qa/build + render Playwright → commit local). Todo detrás de flags (OFF = legacy).
+- **L8 hub** (`ba68b37`) — B21 `one-panel.ts` v2 + F10 `OnePanel.tsx` (arriba).
+- **Fase 1 / L6** (`a01b2bc`) — cuestionario del adulto GENÉRICO: `PuentesQuestion`/`PuentesIntro`/`PuentesFlow` sin
+  ancla de niño ni `childName`; `puentesTranslations.subtitle` buyer-neutral. Resolver intacto (qa green).
+- **Fase 2 / B9+B8** (`bbc32ae`) — **momento del dinero.** `one-complete` cierra **G2** (rama LINK a la row-A de
+  `/api/session` con report_v4 cuando el front pasa `session_id`) + `responsible_adult_email` (R1) + `expires_at` +
+  replay `child_id`; comp bridge al **COMPRADOR** (R4) vía hub. `one-webhook` email HUB de dos pistas. Flags acoplados
+  (`ONE_UNIFIED_SKU` implica V2-complete) para que el rollout parcial no orfane. Hub muestra "Crear mi puente" gratis
+  con `comp_token`.
+- **Fase 3 / B13+B14+F8** (`5ff6f75`) — invitaciones + add-on. `puentes-checkout` acepta `invite_token` (bypass del
+  gate, acoplado a `VITE_BRIDGES_V2`). `bridge-invite-accept` (nuevo, anti-enum). `PuenteInvite.tsx` (`/puente/invite/:token`,
+  email fijado). Enciende "Crear nuevo puente con X" punta a punta.
+- **Fase 4 / B15+F9** (`df3df36`) — borrado por `deletion_id`. `child-delete.ts` (cascade correcto: FK cascadean bridges/
+  bridge_invites/puentes_*, cierra los aborts NO-ACTION de `parental_consents.child_id`+`merged_into`, scrub one_links,
+  preserva one_purchases). DELETE detrás de **`CHILD_DELETE_ENABLED`** (dry-run + traza durable en admin_audit_log +
+  copy honesta). `DeleteChildData.tsx` (`/eliminar/:deletion_id`, confirmación de dos pasos).
+- **Fase 5 / F4+F3** (`8abfeb1`) — `PricingPage` producto único $12.99 + modal de email → one-checkout/Stripe (detrás de
+  `VITE_BRIDGES_V2`). Copy buyer-neutral ("el niño"). Sweep de copy limpio en toda la superficie fusión.
+
+## LA PRÓXIMA TAREA: cutover (Fase 6) — NECESITA OK DEL OWNER
+El SQL de cutover-prep está escrito **SIN aplicar** en `supabase/migrations/20260709_argoone_fusion_cutover_prep.sql`
+(M7 vista + expires_at con el caveat de security_invoker; M8 backfill 24 puentes + trigger). Falta:
+1. **M7 + M8** — aplicar a prod TRANSACCIONAL con ensayo/ROLLBACK + probe (tu OK; ver caveats en el .sql).
+2. **B12** (read-side puente sobre bridges) + **B16** (renewal-cron por vencimiento, arregla deuda #3) + **B20**
+   (check-purchase backward-compat) — código inerte-hasta-cutover (los crons no corren en preview). Sin construir aún.
+3. **Habilitar `CHILD_DELETE_ENABLED`** (borrado destructivo real) — tu OK.
+4. **L9 cutover** — push + prender flags en prod en orden (`ONE_UNIFIED_SKU` → `ONE_V2_COMPLETE` → `PUENTES_BRIDGES` →
+   `PUENTES_ADDON_V2` → `RENEWAL_CRON_V2` → `VITE_BRIDGES_V2`), verificando entre cada uno. Rollback = apagar flags.
 
 ## Deuda registrada (NO se te olvide)
 - **#3** reminder `skip-if-paid` sigue per-email (suprime recordatorios legítimos) → va con B16 (renewal-cron per-child).
