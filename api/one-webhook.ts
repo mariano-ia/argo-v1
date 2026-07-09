@@ -467,32 +467,17 @@ async function handlePuentesPaid(args: {
         provider_payment_id: providerPaymentId,
     }).eq('id', purchaseId);
 
-    // Multi-child support: one ArgoPuente® purchase covers every child this adult
-    // email already profiled (up to MAX_CHILDREN_PER_PURCHASE). current_perfilamiento
-    // gives one row per child = its latest resolved perfilamiento, already filtered
-    // to resolved + non-deleted. perfilamiento_id is the assessment id that
-    // puentes_sessions.source_session_id binds to (FK unchanged, by perfilamiento id).
-    // The originating source_session_id is included first, followed by any
-    // siblings ordered by most recent first.
-    const MAX_CHILDREN_PER_PURCHASE = 5;
-    const { data: siblings } = await sb
-        .from('current_perfilamiento')
-        .select('perfilamiento_id, child_name, current_profile_date')
-        .eq('adult_email', purchase.recipient_email)
-        .order('current_profile_date', { ascending: false });
-    const siblingIds = (siblings ?? []).map((s: any) => s.perfilamiento_id);
-    const uniqueIds = Array.from(new Set([purchase.source_session_id, ...siblingIds])).slice(0, MAX_CHILDREN_PER_PURCHASE);
-
-    const sessionRows = uniqueIds.map(sid => ({
+    // Per-child model: one ArgoPuente® purchase creates exactly ONE bridge
+    // session, toward the single child it was bought for. The old fan-out that
+    // covered every child of this adult email is gone — a $4.99 must not unlock
+    // bridges to siblings the buyer never paid for.
+    await sb.from('puentes_sessions').insert({
         purchase_id: purchase.id,
-        source_session_id: sid,
+        source_session_id: purchase.source_session_id,
         lang: purchase.lang,
         status: 'created' as const,
-    }));
-    if (sessionRows.length > 0) {
-        await sb.from('puentes_sessions').insert(sessionRows);
-    }
-    console.info(`[one-webhook] puentes purchase ${purchase.id} created ${sessionRows.length} sessions (multi-child)`);
+    });
+    console.info(`[one-webhook] puentes purchase ${purchase.id} created 1 session (single-child)`);
 
     // Send the magic-link email. Use the preview's own URL when running on
     // a Vercel preview deployment so the magic link lands on the preview

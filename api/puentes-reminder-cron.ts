@@ -43,11 +43,9 @@ function buildReminderHtml(args: {
     const violet = '#955FB5';
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const url = `${origin}/puentes/checkout?source_session_id=${args.sourceSessionId}&lang=${args.lang}`;
-    const priceLine = args.preferredCurrency === 'ars'
-        ? 'ARS 6.999'
-        : args.preferredCurrency === 'usd'
-            ? 'USD 9.99'
-            : 'USD 9.99 / ARS 6.999';
+    // ArgoPuente® add-on is $4.99 USD (Stripe only). The ARS / preferredCurrency
+    // branching is retired with the MercadoPago path.
+    const priceLine = 'USD 4.99';
 
     const namesText = formatNamesList(args.childrenNames, args.lang);
     const isMulti = args.childrenNames.length > 1;

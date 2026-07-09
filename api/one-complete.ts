@@ -135,23 +135,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
             const { data: onePurchase } = await sb
                 .from('one_purchases')
-                .select('includes_puente')
+                .select('includes_puente, email')
                 .eq('id', link.purchase_id)
                 .maybeSingle();
 
-            if (onePurchase?.includes_puente && session_data.adult_email) {
+            // R4: the bridge included in the ArgoOne purchase belongs to the BUYER
+            // (one_purchases.email), not to whoever registered/played the child. In
+            // the coach-buys case they differ; the coach paid, so the coach gets the
+            // bridge. Scoped by source_session_id so a buyer who buys ArgoOne for a
+            // second child gets a second comp bridge.
+            const buyerEmail = onePurchase?.email;
+            if (onePurchase?.includes_puente && buyerEmail) {
                 const { data: existing } = await sb
                     .from('puentes_purchases')
                     .select('id')
-                    .eq('recipient_email', session_data.adult_email)
+                    .eq('recipient_email', buyerEmail)
+                    .eq('source_session_id', perfilamiento.id)
                     .eq('status', 'paid')
                     .maybeSingle();
 
                 if (!existing) {
                     await sb.from('puentes_purchases').insert({
                         source_session_id: perfilamiento.id,
-                        recipient_email: session_data.adult_email,
-                        recipient_name: session_data.adult_name ?? null,
+                        recipient_email: buyerEmail,
+                        recipient_name: null,
                         child_name: session_data.child_name,
                         amount_cents: 0,
                         currency: 'USD',
