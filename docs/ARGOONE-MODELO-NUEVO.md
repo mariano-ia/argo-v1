@@ -116,6 +116,23 @@ $9.99 y $12.99 dando vueltas (ArgoOne / ArgoOne+ / mail recordatorio). Unificar 
   puente"; la familia ve lo mismo acumulado. Evolución del `OnePanel` actual.
 - **Cuestionario del adulto:** reescribir de "sobre {nombre}" a **genérico** (mide el DISC del
   adulto, sirve para cualquier niño). El género-neutro ya hecho viaja bien.
+- **El adulto NO tiene "perfil" como objeto visible (CERRADO 2026-07-09):** lo único que recibe/ve es su
+  **informe puente**; su DISC se refleja *dentro* de ese informe, ahí y solo ahí. El panel no muestra una
+  tarjeta "tu perfil". El cuestionario deja de ser "armá tu perfil" y pasa a ser un paso hacia el puente
+  ("Crear mi puente").
+- **Sumar un adulto = decisión del AUTORIZADOR, no del comprador (CERRADO 2026-07-09):** solo el adulto que
+  dio el consentimiento (`responsible_adult_email`) ve "Crear nuevo puente con [niño]" e invita a otros
+  adultos; su invitación ES la autorización (check de auto-atestación en el modal, sin email de ida y vuelta).
+  Cuando comprador ≠ autorizador (caso coach), el **comprador NO puede** sumar adultos a ese niño (nunca fue
+  dueño del consentimiento): obtiene lo suyo (su puente + el informe del niño) pero ampliar el círculo de
+  adultos sobre datos de un menor es del autorizador. El adulto invitado recibe un link directo a
+  intro → su cuestionario → desbloqueo del puente + informe por $4.99 (cuestionario primero, pago al final).
+- **Frontera One → Academy (CTA en el hub):** el caso "un coach quiere sumar a su ayudante en varios niños" NO
+  es ArgoOne (consentimiento de a un adulto por niño); es **ArgoAcademy®**, donde la institución maneja el
+  consentimiento con roles. El hub lleva un CTA "Hacer upgrade a ArgoAcademy®" en el estado familia (señal de
+  escala). El upgrade que migra los niños al dashboard sigue diferido (§7.2).
+- **3 idiomas (STRICT):** todo lo del hub, el flujo de invitación, la landing y los emails nuevos se
+  construyen en **es/en/pt** (como el resto del producto). Los mockups de revisión van en es.
 
 ## 9. Cómo seguimos (hacia el plan de ejecución)
 
