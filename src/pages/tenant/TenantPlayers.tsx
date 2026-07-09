@@ -766,9 +766,9 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                 </div>
                             )}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* Left column: profile info */}
+                                {/* LEFT: lo esencial + palabras + checklist del día */}
                                 <div className="space-y-4">
-                                    {/* Key insight */}
+                                    {/* Lo esencial */}
                                     {compact.esencia && (
                                         <div>
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.loEsencial}</p>
@@ -776,32 +776,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         </div>
                                     )}
 
-                                    {/* Decision pattern */}
-                                    {compact.patron && (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.patron.label}</p>
-                                            {compact.patron.sub && <p className="text-xs font-semibold text-argo-navy mb-0.5">{compact.patron.sub}</p>}
-                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.patron.text}</p>
-                                        </div>
-                                    )}
-
-                                    {/* How it shifts (v4 contingencia/motor · legacy secondary compass) */}
-                                    {compact.cambia && (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.cambia.label}</p>
-                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.cambia.text}</p>
-                                        </div>
-                                    )}
-
-                                    {/* When it goes well (v4 logro) */}
-                                    {compact.logro && (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.logro.label}</p>
-                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.logro.text}</p>
-                                        </div>
-                                    )}
-
-                                    {/* Bridge words */}
+                                    {/* Palabras puente */}
                                     {compact.palabrasPuente.length > 0 && (locked ? (
                                         <LockedSection
                                             label={dt.players.palabrasPuente}
@@ -825,7 +800,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                         </div>
                                     ))}
 
-                                    {/* Noise words */}
+                                    {/* Evitar en la comunicación */}
                                     {compact.palabrasRuido.length > 0 && (locked ? (
                                         <LockedSection
                                             label={dt.players.evitarComunicacion}
@@ -848,20 +823,81 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                             </div>
                                         </div>
                                     ))}
+
+                                    {/* Checklist del día */}
+                                    {compact.checklist && (locked ? (
+                                        <LockedSection
+                                            label={dt.players.checklistEntrenamiento}
+                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                            tooltip={lang === 'en' ? 'A before/during/after activity checklist tailored to this athlete\'s profile to make the most of each moment.' : lang === 'pt' ? 'Um checklist antes/durante/depois da atividade adaptado ao perfil deste atleta para aproveitar cada momento.' : 'Un checklist antes, durante y después de la actividad adaptado al perfil de este deportista para aprovechar cada momento.'}
+                                        >
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { label: dt.players.antes, text: compact.checklist.antes },
+                                                    { label: dt.players.durante, text: compact.checklist.durante },
+                                                    { label: dt.players.despues, text: compact.checklist.despues },
+                                                ].map(c => (
+                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </LockedSection>
+                                    ) : (
+                                        <div>
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                {[
+                                                    { label: dt.players.antes, text: compact.checklist.antes },
+                                                    { label: dt.players.durante, text: compact.checklist.durante },
+                                                    { label: dt.players.despues, text: compact.checklist.despues },
+                                                ].map(c => (
+                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
 
-                                {/* Right column: coaching + checklist */}
-                                <div className="space-y-4">
-                                    {/* How much the group moves them (v4 grupo) — a reading, always shown */}
+                                {/* RIGHT: the interpretive/coaching modules, one per row, divided */}
+                                <div className="divide-y divide-argo-border">
+                                    {/* Su patrón de decisión */}
+                                    {compact.patron && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.patron.label}</p>
+                                            {compact.patron.sub && <p className="text-xs font-semibold text-argo-navy mb-0.5">{compact.patron.sub}</p>}
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.patron.text}</p>
+                                        </div>
+                                    )}
+                                    {/* Cómo cambia / Su motor */}
+                                    {compact.cambia && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.cambia.label}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.cambia.text}</p>
+                                        </div>
+                                    )}
+                                    {/* Cuando le sale bien */}
+                                    {compact.logro && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.logro.label}</p>
+                                            <p className="text-xs text-argo-grey leading-relaxed">{compact.logro.text}</p>
+                                        </div>
+                                    )}
+                                    {/* Cuánto lo mueve el grupo */}
                                     {compact.grupo && (
-                                        <div>
+                                        <div className="py-4 first:pt-0 last:pb-0">
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.grupo.label}</p>
                                             <p className="text-xs text-argo-grey leading-relaxed">{compact.grupo.text}</p>
                                         </div>
                                     )}
-                                    {locked ? (
-                                        <>
-                                            {compact.guiaCards && (
+                                    {/* Guía rápida (legacy) */}
+                                    {compact.guiaCards && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
                                                 <LockedSection
                                                     label={dt.players.guiaRapida}
                                                     cta={lang === 'en' ? 'Activators and demotivators per situation. Available in paid plans.' : lang === 'pt' ? 'Ativadores e desmotivadores por situação. Disponível nos planos pagos.' : 'Activadores y desmotivadores por situación. Disponible en planes pagos.'}
@@ -877,50 +913,8 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                         ))}
                                                     </div>
                                                 </LockedSection>
-                                            )}
-                                            {compact.combustible && (
-                                                <LockedSection
-                                                    label={compact.combustible.label}
-                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                                    tooltip={lang === 'en' ? 'What most motivates this athlete, based on their profile.' : lang === 'pt' ? 'O que mais motiva este atleta, com base no seu perfil.' : 'Lo que más motiva a este deportista, según su perfil.'}
-                                                >
-                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
-                                                </LockedSection>
-                                            )}
-                                            {compact.reset && (
-                                                <LockedSection
-                                                    label={compact.reset.label}
-                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                                    tooltip={lang === 'en' ? 'A reset that tends to help this athlete regroup after frustration.' : lang === 'pt' ? 'Um reset que costuma ajudar este atleta a se reorganizar após a frustração.' : 'Un reset que suele ayudar a este deportista a reordenarse tras la frustración.'}
-                                                >
-                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.reset.text}</p>
-                                                </LockedSection>
-                                            )}
-                                            {compact.checklist && (
-                                                <LockedSection
-                                                    label={dt.players.checklistEntrenamiento}
-                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                                    tooltip={lang === 'en' ? 'A before/during/after activity checklist tailored to this athlete\'s profile to make the most of each moment.' : lang === 'pt' ? 'Um checklist antes/durante/depois da atividade adaptado ao perfil deste atleta para aproveitar cada momento.' : 'Un checklist antes, durante y después de la actividad adaptado al perfil de este deportista para aprovechar cada momento.'}
-                                                >
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        {[
-                                                            { label: dt.players.antes, text: compact.checklist.antes },
-                                                            { label: dt.players.durante, text: compact.checklist.durante },
-                                                            { label: dt.players.despues, text: compact.checklist.despues },
-                                                        ].map(c => (
-                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </LockedSection>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <>
-                                            {compact.guiaCards && (
-                                                <div>
+                                            ) : (
+                                                <>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.guiaRapida}</p>
                                                     <div className="space-y-2">
                                                         {compact.guiaCards.map((g, i) => (
@@ -931,38 +925,47 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                             </div>
                                                         ))}
                                                     </div>
-                                                </div>
+                                                </>
                                             )}
-                                            {compact.combustible && (
-                                                <div>
+                                        </div>
+                                    )}
+                                    {/* Qué lo enciende */}
+                                    {compact.combustible && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
+                                                <LockedSection
+                                                    label={compact.combustible.label}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'What most motivates this athlete, based on their profile.' : lang === 'pt' ? 'O que mais motiva este atleta, com base no seu perfil.' : 'Lo que más motiva a este deportista, según su perfil.'}
+                                                >
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
+                                                </LockedSection>
+                                            ) : (
+                                                <>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.combustible.label}</p>
                                                     <p className="text-xs text-argo-grey leading-relaxed">{compact.combustible.text}</p>
-                                                </div>
+                                                </>
                                             )}
-                                            {compact.reset && (
-                                                <div>
+                                        </div>
+                                    )}
+                                    {/* Un reset que funciona */}
+                                    {compact.reset && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
+                                                <LockedSection
+                                                    label={compact.reset.label}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'A reset that tends to help this athlete regroup after frustration.' : lang === 'pt' ? 'Um reset que costuma ajudar este atleta a se reorganizar após a frustração.' : 'Un reset que suele ayudar a este deportista a reordenarse tras la frustración.'}
+                                                >
+                                                    <p className="text-xs text-argo-grey leading-relaxed">{compact.reset.text}</p>
+                                                </LockedSection>
+                                            ) : (
+                                                <>
                                                     <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{compact.reset.label}</p>
                                                     <p className="text-xs text-argo-grey leading-relaxed">{compact.reset.text}</p>
-                                                </div>
+                                                </>
                                             )}
-                                            {compact.checklist && (
-                                                <div>
-                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
-                                                    <div className="grid grid-cols-3 gap-2">
-                                                        {[
-                                                            { label: dt.players.antes, text: compact.checklist.antes },
-                                                            { label: dt.players.durante, text: compact.checklist.durante },
-                                                            { label: dt.players.despues, text: compact.checklist.despues },
-                                                        ].map(c => (
-                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
+                                        </div>
                                     )}
                                 </div>
                             </div>
