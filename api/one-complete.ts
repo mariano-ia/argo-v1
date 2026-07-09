@@ -135,21 +135,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         try {
             const { data: onePurchase } = await sb
                 .from('one_purchases')
-                .select('includes_puente, email')
+                .select('includes_puente')
                 .eq('id', link.purchase_id)
                 .maybeSingle();
 
-            // R4: the bridge included in the ArgoOne purchase belongs to the BUYER
-            // (one_purchases.email), not to whoever registered/played the child. In
-            // the coach-buys case they differ; the coach paid, so the coach gets the
-            // bridge. Scoped by source_session_id so a buyer who buys ArgoOne for a
-            // second child gets a second comp bridge.
-            const buyerEmail = onePurchase?.email;
-            if (onePurchase?.includes_puente && buyerEmail) {
+            // The prepaid combo Puente is delivered by send-email, which finds it by the
+            // report recipient's email (the adult who played). Keep the comp bound to that
+            // adult_email so the magic link actually reaches them. (R4 "the included puente
+            // belongs to the BUYER" is correct for the fusion, but needs a separate buyer
+            // delivery channel — the hub email — so it is handled in the ArgoOne fusion build,
+            // not as an L0 hotfix: adjudicating it to the buyer here orphaned it when
+            // buyer != player, since no delivery path looks it up by the buyer email.)
+            if (onePurchase?.includes_puente && session_data.adult_email) {
                 const { data: existing } = await sb
                     .from('puentes_purchases')
                     .select('id')
-                    .eq('recipient_email', buyerEmail)
+                    .eq('recipient_email', session_data.adult_email)
                     .eq('source_session_id', perfilamiento.id)
                     .eq('status', 'paid')
                     .maybeSingle();
@@ -157,8 +158,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (!existing) {
                     await sb.from('puentes_purchases').insert({
                         source_session_id: perfilamiento.id,
-                        recipient_email: buyerEmail,
-                        recipient_name: null,
+                        recipient_email: session_data.adult_email,
+                        recipient_name: session_data.adult_name ?? null,
                         child_name: session_data.child_name,
                         amount_cents: 0,
                         currency: 'USD',

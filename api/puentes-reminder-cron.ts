@@ -57,7 +57,7 @@ function buildReminderHtml(args: {
         eyebrow: 'A follow-up · ArgoPuente®',
         title: `One more idea for accompanying ${namesText}`,
         body: isMulti
-            ? `A few days ago you received the Argo reports of ${namesText}. Some parents and coaches have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements each child's. One purchase covers all of them.`
+            ? `A few days ago you received the Argo reports of ${namesText}. Some parents and coaches have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements each child's.`
             : `A few days ago you received ${namesText}'s Argo report. Some parents and coaches have found ArgoPuente® useful as a follow-up: a short questionnaire about your own style and how it complements ${namesText}'s.`,
         cta: 'Explore ArgoPuente®',
         price: priceLine,
@@ -67,7 +67,7 @@ function buildReminderHtml(args: {
         eyebrow: 'Continuação · ArgoPuente®',
         title: `Mais uma ideia para acompanhar ${namesText}`,
         body: isMulti
-            ? `Alguns dias atrás você recebeu os relatórios Argo de ${namesText}. Alguns pais e treinadores acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de cada criança. Uma compra cobre todos eles.`
+            ? `Alguns dias atrás você recebeu os relatórios Argo de ${namesText}. Alguns pais e treinadores acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de cada criança.`
             : `Alguns dias atrás você recebeu o relatório Argo de ${namesText}. Alguns pais e treinadores acharam o ArgoPuente® útil como continuação: um questionário curto sobre seu próprio estilo e como ele se complementa com o de ${namesText}.`,
         cta: 'Explorar ArgoPuente®',
         price: priceLine,
@@ -77,7 +77,7 @@ function buildReminderHtml(args: {
         eyebrow: 'Una continuación · ArgoPuente®',
         title: `Una idea más para acompañar a ${namesText}`,
         body: isMulti
-            ? `Hace unos días recibiste los informes Argo de ${namesText}. Algunos padres y entrenadores encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de cada niño. Una compra cubre a todos.`
+            ? `Hace unos días recibiste los informes Argo de ${namesText}. Algunos padres y entrenadores encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de cada niño.`
             : `Hace unos días recibiste el informe Argo de ${namesText}. Algunos padres y entrenadores encontraron útil ArgoPuente® como continuación: un cuestionario corto sobre tu propio estilo y cómo se complementa con el de ${namesText}.`,
         cta: 'Conocer ArgoPuente®',
         price: priceLine,

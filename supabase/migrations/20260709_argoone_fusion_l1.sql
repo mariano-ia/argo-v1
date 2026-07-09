@@ -37,6 +37,8 @@ ALTER TABLE public.adult_profiles ENABLE ROW LEVEL SECURITY;
 -- ── M2: children + responsible_adult_email + deletion_id (NO expires_at) ─────
 ALTER TABLE public.children ADD COLUMN IF NOT EXISTS responsible_adult_email text;
 ALTER TABLE public.children ADD COLUMN IF NOT EXISTS deletion_id text;
+-- M2b: DEFAULT so every NEW child mints its own token (like reprofile_token).
+ALTER TABLE public.children ALTER COLUMN deletion_id SET DEFAULT replace(gen_random_uuid()::text, '-', '');
 UPDATE public.children SET responsible_adult_email = adult_email WHERE responsible_adult_email IS NULL;
 UPDATE public.children SET deletion_id = replace(gen_random_uuid()::text,'-','') WHERE deletion_id IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS children_deletion_id_uniq ON public.children (deletion_id);

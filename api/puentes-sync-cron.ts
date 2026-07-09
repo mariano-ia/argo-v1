@@ -244,9 +244,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     return (name ?? '').toLowerCase().trim() === (session.child_name ?? '').toLowerCase().trim();
                 });
 
-                const isNewSibling = !matching;
+                // Per-child model (ArgoOne fusion): NEVER auto-create a bridge for a new
+                // sibling sharing this adult_email — that was the multi-child fan-out, and a
+                // paid $4.99 puente must not unlock a bridge for a child the buyer never paid
+                // for. Only REGENERATE an existing bridge whose child re-profiled (played again).
+                const isNewSibling = false;
                 const isReprofile = matching && matching.source_session_id !== session.id;
-                if (!isNewSibling && !isReprofile) continue;
+                if (!isReprofile) continue;
 
                 if (isNewSibling && (childCount ?? 0) >= MAX_CHILDREN_PER_PURCHASE) {
                     console.warn(`[puentes-sync-cron] Purchase ${paidPurchase.id} reached cap of ${MAX_CHILDREN_PER_PURCHASE} children; skipping new sibling ${session.id}`);

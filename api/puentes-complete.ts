@@ -169,7 +169,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (em) {
                     const bLang = purchase?.lang || 'es';
                     const nowIso = new Date().toISOString();
-                    const exp = new Date(); exp.setMonth(exp.getMonth() + 6);
+                    // +6 months, clamping end-of-month overflow (Aug 31 + 6 → Feb, not Mar 3)
+                    // so it matches Postgres' interval '6 months' used in the migration backfill.
+                    const exp = new Date();
+                    const expDay = exp.getDate();
+                    exp.setMonth(exp.getMonth() + 6);
+                    if (exp.getDate() !== expDay) exp.setDate(0);
                     const expIso = exp.toISOString();
 
                     // Upsert the reusable adult profile by normalized email (one row,
@@ -187,7 +192,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                             email: em, disc: profile, adult_answers: answers, lang: bLang,
                             computed_at: nowIso, expires_at: expIso,
                         }).select('id').single();
-                        adultProfileId = ins?.id;
+                        if (ins) {
+                            adultProfileId = ins.id;
+                        } else {
+                            // Lost an insert race on the unique email index: re-select the winner.
+                            const { data: reRow } = await sb.from('adult_profiles').select('id').eq('email', em).maybeSingle();
+                            adultProfileId = reRow?.id;
+                        }
                     }
 
                     // One bridge per child (adult x perfilamiento), DISC frozen at generation.

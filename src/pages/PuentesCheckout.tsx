@@ -36,7 +36,6 @@ export default function PuentesCheckout() {
     }, [sourceSessionId]);
 
     const c = useMemo(() => getPuentesCopy(lang), [lang]);
-    const isMP = ['AR', 'BR', 'CL', 'CO', 'MX', 'PE', 'UY'].includes(country.toUpperCase());
 
     const submit = async () => {
         if (!sourceSessionId) {
@@ -126,7 +125,7 @@ export default function PuentesCheckout() {
                             {lang === 'en' ? 'Price' : lang === 'pt' ? 'Preço' : 'Precio'}
                         </span>
                         <span className="text-2xl font-bold text-argo-navy tracking-tight">
-                            {isMP ? c.checkout.priceArs : c.checkout.priceUsd}
+                            {c.checkout.priceUsd}
                         </span>
                     </div>
 
