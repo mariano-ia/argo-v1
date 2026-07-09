@@ -568,6 +568,7 @@ REGLAS DE REDACCIÓN:
 - Nunca prescriptivo negativo. Siempre constructivo: qué puede hacer el adulto.
 - Siempre hablar en potencial: "tiende a", "puede", "probablemente".
 - Palabras prohibidas: error, control, débil, agresivo, problema, déficit, trastorno, diagnóstico.
+- Género: no conocemos el género del niño. Usa siempre su nombre y evita pronombres y adjetivos con marca de género (nada de él/ella, contento/a, solo/a, cansado/a). Cuando una concordancia en español sea inevitable, reformula la frase o usa el nombre en lugar del pronombre. Nunca asumas si es varón o mujer.
 - El objetivo es que el adulto sintonice con el niño, no que el niño cambie.
 - Español latam neutro, conjugación "tú", sin voseo.
 
@@ -640,6 +641,7 @@ WRITING RULES:
 - Never prescriptive negative. Always constructive: what the adult can do.
 - Always speak in potential: "tends to", "may", "probably".
 - Prohibited words: error, control, weak, aggressive, problem, deficit, disorder, diagnosis.
+- Gender: we don't know the child's gender. Use their name and singular they/them, and avoid any gendered assumption. Never assume the child is a boy or a girl.
 - The goal is for the adult to tune in to the child, not for the child to change.
 - Standard English, warm professional tone.
 
@@ -712,6 +714,7 @@ REGRAS DE REDAÇÃO:
 - Nunca prescritivo negativo. Sempre construtivo: o que o adulto pode fazer.
 - Sempre falar em potencial: "tende a", "pode", "provavelmente".
 - Palavras proibidas: erro, controle, fraco, agressivo, problema, déficit, transtorno, diagnóstico.
+- Gênero: não sabemos o gênero da criança. Use sempre o nome e evite pronomes e adjetivos com marca de gênero (nada de ele/ela, contente/a, sozinho/a, cansado/a). Quando uma concordância em português for inevitável, reformule a frase ou use o nome no lugar do pronome. Nunca presuma se é menino ou menina.
 - O objetivo é que o adulto sintonize com a criança, não que a criança mude.
 - Português brasileiro, tom profissional e acolhedor.
 
