@@ -44,7 +44,7 @@ function buildFreeInviteEmail(args: {
         what: `ArgoPuente® is a short questionnaire (about five minutes) that reveals your own DISC style as an adult and proposes four specific bridges to better accompany ${args.childName} in sport.`,
         highlight: args.siblingsNames.length > 0
             ? `Your invitation also covers ${args.siblingsNames.join(', ')}.`
-            : 'Includes all your children profiled with this email, at no cost.',
+            : 'Includes all children profiled with this email, at no cost.',
         cta: 'Start ArgoPuente®',
         note: 'This invitation is personal. No payment is required at any step.',
         footer: 'ArgoMethod® · ArgoPuente®',
@@ -56,7 +56,7 @@ function buildFreeInviteEmail(args: {
         what: `ArgoPuente® é um questionário curto (cerca de cinco minutos) que revela seu próprio estilo DISC como adulto e propõe quatro pontes específicas para acompanhar ${args.childName} melhor no esporte.`,
         highlight: args.siblingsNames.length > 0
             ? `Seu convite também inclui ${args.siblingsNames.join(', ')}.`
-            : 'Inclui todos os seus filhos perfilados com este email, sem custo.',
+            : 'Inclui todas as crianças perfiladas com este email, sem custo.',
         cta: 'Começar ArgoPuente®',
         note: 'Este convite é pessoal. Não é necessário nenhum pagamento em nenhum momento.',
         footer: 'ArgoMethod® · ArgoPuente®',
@@ -68,7 +68,7 @@ function buildFreeInviteEmail(args: {
         what: `ArgoPuente® es un cuestionario corto (unos cinco minutos) que revela tu propio estilo DISC como adulto y propone cuatro puentes específicos para acompañar a ${args.childName} mejor en su deporte.`,
         highlight: args.siblingsNames.length > 0
             ? `Tu invitación también incluye a ${args.siblingsNames.join(', ')}.`
-            : 'Incluye a todos tus hijos perfilados con este email, sin costo.',
+            : 'Incluye a todos los niños perfilados con este email, sin costo.',
         cta: 'Empezar ArgoPuente®',
         note: 'Esta invitación es personal. No es necesario ningún pago en ningún paso.',
         footer: 'ArgoMethod® · ArgoPuente®',

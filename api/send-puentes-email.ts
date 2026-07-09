@@ -77,7 +77,7 @@ function getCopy(lang: string) {
         viewOnline: 'View report online',
         emailNote: (email: string) => `This report has also been sent to ${email}. You can revisit it at the link above whenever you want.`,
         siblingsLabel: 'This ArgoPuente® also includes',
-        foreverNote: 'We keep your profile forever, so we can add your future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
+        foreverNote: 'We keep your profile forever, so we can add future children without charging you again. If you want us to delete it, write to hola@argomethod.com.',
         footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'This report is not a clinical or therapeutic service. It is an invitation to reflect.',
     };
@@ -97,7 +97,7 @@ function getCopy(lang: string) {
         viewOnline: 'Ver relatório online',
         emailNote: (email: string) => `Este relatório também foi enviado para ${email}. Você pode revisitá-lo no link acima quando quiser.`,
         siblingsLabel: 'Este ArgoPuente® também inclui',
-        foreverNote: 'Guardamos seu perfil para sempre, para podermos adicionar seus futuros filhos sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
+        foreverNote: 'Guardamos seu perfil para sempre, para podermos adicionar novas crianças sem cobrar novamente. Se quiser que apaguemos, escreva para hola@argomethod.com.',
         footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este relatório não é um serviço clínico nem terapêutico. É um convite à reflexão.',
     };
@@ -117,7 +117,7 @@ function getCopy(lang: string) {
         viewOnline: 'Ver informe en línea',
         emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Puedes volver al enlace de arriba cuando quieras.`,
         siblingsLabel: 'Este ArgoPuente® también incluye a',
-        foreverNote: 'Guardamos tu perfil para siempre, así sumamos a tus hijos futuros sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
+        foreverNote: 'Guardamos tu perfil para siempre, así sumamos a nuevos niños sin volver a cobrarte. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
         footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este informe no es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
     };

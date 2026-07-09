@@ -39,11 +39,11 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q1c', label: 'Escuchar sin interrumpir y validar lo que siente', axis: 'S' },
             { id: 'q1d', label: 'Hacer preguntas para entender exactamente qué pasó', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'Si {nombre} no quiere ir a entrenar un día, tu reacción más natural es:', options: [
+        { id: 'q2', block: 'disc', prompt: 'Si {nombre} no quiere ir a la actividad un día, tu reacción más natural es:', options: [
             { id: 'q2a', label: 'Acompañarlo en su sentir y dejar la decisión abierta', axis: 'S' },
             { id: 'q2b', label: 'Recordarle el compromiso y motivarlo a ir igual', axis: 'D' },
             { id: 'q2c', label: 'Indagar qué está pasando antes de decidir nada', axis: 'C' },
-            { id: 'q2d', label: 'Buscar algo que conecte el entrenamiento con su entusiasmo', axis: 'I' },
+            { id: 'q2d', label: 'Buscar algo que conecte la actividad con su entusiasmo', axis: 'I' },
         ] },
         { id: 'q3', block: 'disc', prompt: 'En la previa de un partido importante, tu energía suele ser:', options: [
             { id: 'q3a', label: 'Entusiasta, contagiando ánimo', axis: 'I' },
@@ -129,11 +129,11 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q1c', label: 'Listen without interrupting and validate what they feel', axis: 'S' },
             { id: 'q1d', label: 'Ask questions to understand exactly what happened', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'If {nombre} does not want to go to training one day, your most natural reaction is:', options: [
+        { id: 'q2', block: 'disc', prompt: 'If {nombre} does not want to go to the activity one day, your most natural reaction is:', options: [
             { id: 'q2a', label: 'Stay close to what they feel and leave the decision open', axis: 'S' },
             { id: 'q2b', label: 'Remind them of their commitment and motivate them to go anyway', axis: 'D' },
             { id: 'q2c', label: 'Ask what is going on before deciding anything', axis: 'C' },
-            { id: 'q2d', label: 'Find something that connects the practice to their enthusiasm', axis: 'I' },
+            { id: 'q2d', label: 'Find something that connects the activity to their enthusiasm', axis: 'I' },
         ] },
         { id: 'q3', block: 'disc', prompt: 'Before an important match, your energy tends to be:', options: [
             { id: 'q3a', label: 'Enthusiastic, lifting the mood', axis: 'I' },
@@ -219,11 +219,11 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q1c', label: 'Escutar sem interromper e validar o que sente', axis: 'S' },
             { id: 'q1d', label: 'Fazer perguntas para entender exatamente o que aconteceu', axis: 'C' },
         ] },
-        { id: 'q2', block: 'disc', prompt: 'Se {nombre} não quiser ir treinar um dia, sua reação mais natural é:', options: [
+        { id: 'q2', block: 'disc', prompt: 'Se {nombre} não quiser ir à atividade um dia, sua reação mais natural é:', options: [
             { id: 'q2a', label: 'Acompanhá-lo no que sente e deixar a decisão em aberto', axis: 'S' },
             { id: 'q2b', label: 'Lembrá-lo do compromisso e motivá-lo a ir mesmo assim', axis: 'D' },
             { id: 'q2c', label: 'Investigar o que está acontecendo antes de decidir', axis: 'C' },
-            { id: 'q2d', label: 'Buscar algo que conecte o treino ao seu entusiasmo', axis: 'I' },
+            { id: 'q2d', label: 'Buscar algo que conecte a atividade ao seu entusiasmo', axis: 'I' },
         ] },
         { id: 'q3', block: 'disc', prompt: 'No pré-jogo de uma partida importante, sua energia costuma ser:', options: [
             { id: 'q3a', label: 'Entusiasta, contagiando o ânimo', axis: 'I' },

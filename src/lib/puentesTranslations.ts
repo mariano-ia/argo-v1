@@ -78,7 +78,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         checkout: {
             eyebrow: 'ArgoPuente®',
             title: 'Tu Puente',
-            description: 'Recibirás un enlace por email para responder el cuestionario (5 a 7 minutos) y descubrir 4 puentes para acompañar a tu hijo en el deporte.',
+            description: 'Recibirás un enlace por email para responder el cuestionario (5 a 7 minutos) y descubrir 4 puentes para acompañar al niño en el deporte.',
             emailLabel: 'Tu email',
             nameLabel: 'Tu nombre',
             consentLabel: 'Acepto los términos y entiendo que este informe no es un servicio clínico ni terapéutico.',
@@ -122,7 +122,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         checkout: {
             eyebrow: 'ArgoPuente®',
             title: 'Your Bridge',
-            description: 'You will receive an email link to take the short questionnaire (5 to 7 minutes) and discover 4 bridges to accompany your child in their sport.',
+            description: 'You will receive an email link to take the short questionnaire (5 to 7 minutes) and discover 4 bridges to accompany the child in their sport.',
             emailLabel: 'Your email',
             nameLabel: 'Your name',
             consentLabel: 'I accept the terms and understand this is not a clinical or therapeutic service.',
@@ -166,7 +166,7 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         checkout: {
             eyebrow: 'ArgoPuente®',
             title: 'Sua Ponte',
-            description: 'Você receberá um link por email para responder o questionário curto (5 a 7 minutos) e descobrir 4 pontes para acompanhar seu filho no esporte.',
+            description: 'Você receberá um link por email para responder o questionário curto (5 a 7 minutos) e descobrir 4 pontes para acompanhar a criança no esporte.',
             emailLabel: 'Seu email',
             nameLabel: 'Seu nome',
             consentLabel: 'Aceito os termos e entendo que este não é um serviço clínico nem terapêutico.',
