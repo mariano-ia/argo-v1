@@ -170,7 +170,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
     /* ── Memoria del asistente (M2) ───────────────────────────────────── */
     const [memOpen, setMemOpen] = useState(false);
     const [memLoading, setMemLoading] = useState(false);
-    const [memSummary, setMemSummary] = useState('');
     const [memEvents, setMemEvents] = useState<MemEvent[]>([]);
     const [memBusy, setMemBusy] = useState(false);
     const [memMsg, setMemMsg] = useState<string | null>(null);
@@ -186,33 +185,17 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
             const res = await fetch(`/api/child-memory?child_id=${session.id}&tenant_id=${tenantId ?? ''}`, { headers: memHeaders(token) });
             if (res.ok) {
                 const d = await res.json();
-                setMemSummary(d.summary ?? '');
                 setMemEvents(d.events ?? []);
             }
         } finally { setMemLoading(false); }
     };
 
-    const saveMemory = async () => {
-        setMemBusy(true); setMemMsg(null);
-        try {
-            const token = await memToken();
-            if (!token) return;
-            const res = await fetch('/api/child-memory', {
-                method: 'POST', headers: memHeaders(token),
-                body: JSON.stringify({ action: 'update_summary', child_id: session.id, summary: memSummary, tenant_id: tenantId }),
-            });
-            setMemMsg(res.ok
-                ? (lang === 'en' ? 'Saved.' : lang === 'pt' ? 'Salvo.' : 'Guardado.')
-                : (lang === 'en' ? 'Could not save. Try again.' : lang === 'pt' ? 'Não foi possível salvar.' : 'No se pudo guardar. Intenta de nuevo.'));
-        } finally { setMemBusy(false); }
-    };
-
     const deleteMemEvent = async (ev: MemEvent) => {
         const ok = window.confirm(lang === 'en'
-            ? 'Remove this episode from the memory? The consolidated summary may still mention it until you edit it.'
+            ? 'Remove this episode from the memory?'
             : lang === 'pt'
-                ? 'Remover este episódio da memória? O resumo consolidado pode ainda mencioná-lo até você editá-lo.'
-                : '¿Quitar este episodio de la memoria? El resumen consolidado puede seguir mencionándolo hasta que lo edites.');
+                ? 'Remover este episódio da memória?'
+                : '¿Quitar este episodio de la memoria?');
         if (!ok) return;
         setMemEvents(prev => prev.filter(e => e.id !== ev.id));
         const token = await memToken();
@@ -238,7 +221,7 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                 method: 'POST', headers: memHeaders(token),
                 body: JSON.stringify({ action: 'delete', child_id: session.id, tenant_id: tenantId }),
             });
-            if (res.ok) { setMemSummary(''); setMemEvents([]); setMemMsg(lang === 'en' ? 'Memory deleted.' : lang === 'pt' ? 'Memória excluída.' : 'Memoria borrada.'); }
+            if (res.ok) { setMemEvents([]); setMemMsg(lang === 'en' ? 'Memory deleted.' : lang === 'pt' ? 'Memória excluída.' : 'Memoria borrada.'); }
         } finally { setMemBusy(false); }
     };
     const [resending, setResending] = useState(false);
@@ -749,118 +732,133 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                             /* Compact 2-column summary — the coach's purpose-built view (NOT the full
                                report; the full report is the PDF/email). Content is v4 when the report is
                                sealed, otherwise the legacy engine. Short excerpts, same slots as before. */
-                            <>
-                            {/* Confidence meter (v4): how defined the profile is today. Tells the coach
-                               how much to lean on the read (a "parejo" profile is barely differentiated). */}
-                            {compact.meter && (
-                                <div className="mb-5 pb-4 border-b border-argo-border">
-                                    <div className="flex items-baseline justify-between mb-1.5">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">{lang === 'en' ? 'How defined the profile is today' : lang === 'pt' ? 'Quão marcado está o perfil hoje' : 'Qué tan marcado está su perfil hoy'}</p>
-                                        <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: dot }}>{compact.meter.labels[compact.meter.level - 1]}</span>
-                                    </div>
-                                    <div className="grid grid-cols-4 gap-1.5">
-                                        {compact.meter.labels.map((l, i) => (
-                                            <div key={l} className="h-1.5 rounded-full" style={{ background: i < compact.meter!.level ? dot : '#EFEFF2' }} />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                {/* LEFT: lo esencial + palabras + checklist del día */}
-                                <div className="space-y-4">
-                                    {/* Lo esencial */}
+                                {/* LEFT: confidence meter (half width, above lo esencial) + lo esencial +
+                                   palabras + checklist. Divided like the right column so the two sides keep
+                                   the same rhythm; "lo esencial" gets extra room below to read as headline. */}
+                                <div>
+                                    {/* Confidence meter (v4): how defined the profile is today. Sits above
+                                       "lo esencial", occupying the left half. */}
+                                    {compact.meter && (
+                                        <div className="mb-5 pb-4 border-b border-argo-border">
+                                            <div className="flex items-baseline justify-between mb-1.5">
+                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">{lang === 'en' ? 'How defined the profile is today' : lang === 'pt' ? 'Quão marcado está o perfil hoje' : 'Qué tan marcado está su perfil hoy'}</p>
+                                                <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: dot }}>{compact.meter.labels[compact.meter.level - 1]}</span>
+                                            </div>
+                                            <div className="grid grid-cols-4 gap-1.5">
+                                                {compact.meter.labels.map((l, i) => (
+                                                    <div key={l} className="h-1.5 rounded-full" style={{ background: i < compact.meter!.level ? dot : '#EFEFF2' }} />
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="divide-y divide-argo-border">
+                                    {/* Lo esencial (headline — más aire debajo) */}
                                     {compact.esencia && (
-                                        <div>
+                                        <div className="pb-6 first:pt-0 last:pb-0">
                                             <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.loEsencial}</p>
                                             <p className="text-sm text-argo-navy leading-relaxed">{compact.esencia}</p>
                                         </div>
                                     )}
 
                                     {/* Palabras puente */}
-                                    {compact.palabrasPuente.length > 0 && (locked ? (
-                                        <LockedSection
-                                            label={dt.players.palabrasPuente}
-                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                            tooltip={lang === 'en' ? 'Key phrases to connect and communicate effectively with this profile. Words that resonate with their behavioral style.' : lang === 'pt' ? 'Frases-chave para conectar e comunicar de forma eficaz com este perfil. Palavras que ressoam com seu estilo comportamental.' : 'Frases clave para conectar y comunicarte de forma efectiva con este perfil. Palabras que resuenan con su estilo conductual.'}
-                                        >
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {compact.palabrasPuente.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
-                                                ))}
-                                            </div>
-                                        </LockedSection>
-                                    ) : (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {compact.palabrasPuente.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
-                                                ))}
-                                            </div>
+                                    {compact.palabrasPuente.length > 0 && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
+                                                <LockedSection
+                                                    label={dt.players.palabrasPuente}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'Key phrases to connect and communicate effectively with this profile. Words that resonate with their behavioral style.' : lang === 'pt' ? 'Frases-chave para conectar e comunicar de forma eficaz com este perfil. Palavras que ressoam com seu estilo comportamental.' : 'Frases clave para conectar y comunicarte de forma efectiva con este perfil. Palabras que resuenan con su estilo conductual.'}
+                                                >
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {compact.palabrasPuente.map((w, i) => (
+                                                            <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
+                                                        ))}
+                                                    </div>
+                                                </LockedSection>
+                                            ) : (
+                                                <>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.palabrasPuente}</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {compact.palabrasPuente.map((w, i) => (
+                                                            <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-green-50 text-green-700 border border-green-200">{w}</span>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                    ))}
+                                    )}
 
                                     {/* Evitar en la comunicación */}
-                                    {compact.palabrasRuido.length > 0 && (locked ? (
-                                        <LockedSection
-                                            label={dt.players.evitarComunicacion}
-                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                            tooltip={lang === 'en' ? 'Words and phrases that generate resistance or disconnection with this profile. Knowing them helps you avoid communication friction.' : lang === 'pt' ? 'Palavras e frases que geram resistência ou desconexão com este perfil. Conhecê-las ajuda a evitar ruído na comunicação.' : 'Palabras y frases que generan resistencia o desconexión con este perfil. Conocerlas te ayuda a evitar ruido en la comunicación.'}
-                                        >
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {compact.palabrasRuido.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
-                                                ))}
-                                            </div>
-                                        </LockedSection>
-                                    ) : (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {compact.palabrasRuido.map((w, i) => (
-                                                    <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
-                                                ))}
-                                            </div>
+                                    {compact.palabrasRuido.length > 0 && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
+                                                <LockedSection
+                                                    label={dt.players.evitarComunicacion}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'Words and phrases that generate resistance or disconnection with this profile. Knowing them helps you avoid communication friction.' : lang === 'pt' ? 'Palavras e frases que geram resistência ou desconexão com este perfil. Conhecê-las ajuda a evitar ruído na comunicação.' : 'Palabras y frases que generan resistencia o desconexión con este perfil. Conocerlas te ayuda a evitar ruido en la comunicación.'}
+                                                >
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {compact.palabrasRuido.map((w, i) => (
+                                                            <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
+                                                        ))}
+                                                    </div>
+                                                </LockedSection>
+                                            ) : (
+                                                <>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.evitarComunicacion}</p>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {compact.palabrasRuido.map((w, i) => (
+                                                            <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-medium bg-red-50 text-red-700 border border-red-200">{w}</span>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
                                         </div>
-                                    ))}
+                                    )}
 
                                     {/* Checklist del día */}
-                                    {compact.checklist && (locked ? (
-                                        <LockedSection
-                                            label={dt.players.checklistEntrenamiento}
-                                            cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
-                                            tooltip={lang === 'en' ? 'A before/during/after activity checklist tailored to this athlete\'s profile to make the most of each moment.' : lang === 'pt' ? 'Um checklist antes/durante/depois da atividade adaptado ao perfil deste atleta para aproveitar cada momento.' : 'Un checklist antes, durante y después de la actividad adaptado al perfil de este deportista para aprovechar cada momento.'}
-                                        >
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {[
-                                                    { label: dt.players.antes, text: compact.checklist.antes },
-                                                    { label: dt.players.durante, text: compact.checklist.durante },
-                                                    { label: dt.players.despues, text: compact.checklist.despues },
-                                                ].map(c => (
-                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                    {compact.checklist && (
+                                        <div className="py-4 first:pt-0 last:pb-0">
+                                            {locked ? (
+                                                <LockedSection
+                                                    label={dt.players.checklistEntrenamiento}
+                                                    cta={lang === 'en' ? 'Available in paid plans' : lang === 'pt' ? 'Disponível nos planos pagos' : 'Disponible en planes pagos'}
+                                                    tooltip={lang === 'en' ? 'A before/during/after activity checklist tailored to this athlete\'s profile to make the most of each moment.' : lang === 'pt' ? 'Um checklist antes/durante/depois da atividade adaptado ao perfil deste atleta para aproveitar cada momento.' : 'Un checklist antes, durante y después de la actividad adaptado al perfil de este deportista para aprovechar cada momento.'}
+                                                >
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { label: dt.players.antes, text: compact.checklist.antes },
+                                                            { label: dt.players.durante, text: compact.checklist.durante },
+                                                            { label: dt.players.despues, text: compact.checklist.despues },
+                                                        ].map(c => (
+                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        </LockedSection>
-                                    ) : (
-                                        <div>
-                                            <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
-                                            <div className="grid grid-cols-3 gap-2">
-                                                {[
-                                                    { label: dt.players.antes, text: compact.checklist.antes },
-                                                    { label: dt.players.durante, text: compact.checklist.durante },
-                                                    { label: dt.players.despues, text: compact.checklist.despues },
-                                                ].map(c => (
-                                                    <div key={c.label} className="bg-argo-bg rounded-xl p-3">
-                                                        <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
-                                                        <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                </LockedSection>
+                                            ) : (
+                                                <>
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.players.checklistEntrenamiento}</p>
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {[
+                                                            { label: dt.players.antes, text: compact.checklist.antes },
+                                                            { label: dt.players.durante, text: compact.checklist.durante },
+                                                            { label: dt.players.despues, text: compact.checklist.despues },
+                                                        ].map(c => (
+                                                            <div key={c.label} className="bg-argo-bg rounded-xl p-3">
+                                                                <p className="text-[10px] font-bold text-argo-violet-500 uppercase">{c.label}</p>
+                                                                <p className="text-[11px] text-argo-grey leading-relaxed mt-1">{c.text}</p>
+                                                            </div>
+                                                        ))}
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </>
+                                            )}
                                         </div>
-                                    ))}
+                                    )}
+                                    </div>
                                 </div>
 
                                 {/* RIGHT: the interpretive/coaching modules, one per row, divided */}
@@ -969,7 +967,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                     )}
                                 </div>
                             </div>
-                            </>
                             )}
 
                             {/* ── Memoria del asistente modal (M2) ─────────────────── */}
@@ -1002,34 +999,6 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                 <>
                                                     <div>
                                                         <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
-                                                            {lang === 'en' ? 'Consolidated summary' : lang === 'pt' ? 'Resumo consolidado' : 'Resumen consolidado'}
-                                                        </p>
-                                                        <textarea
-                                                            value={memSummary}
-                                                            onChange={(e) => setMemSummary(e.target.value)}
-                                                            rows={5}
-                                                            maxLength={1500}
-                                                            placeholder={lang === 'en'
-                                                                ? 'No summary yet. It builds automatically from your ArgoCoach consultations (nightly), or write your own here.'
-                                                                : lang === 'pt'
-                                                                    ? 'Ainda sem resumo. Ele se constrói automaticamente com suas consultas no ArgoCoach (à noite), ou escreva o seu aqui.'
-                                                                    : 'Todavía no hay resumen. Se construye solo con tus consultas en ArgoCoach (cada noche), o escribe el tuyo aquí.'}
-                                                            className="w-full resize-y rounded-xl border border-argo-border bg-argo-bg px-3.5 py-2.5 text-[13px] leading-relaxed outline-none focus:border-argo-violet-200 transition-colors"
-                                                        />
-                                                        <div className="flex items-center justify-between mt-2">
-                                                            <span className="text-[11px] text-argo-light">{memMsg ?? ''}</span>
-                                                            <button
-                                                                onClick={saveMemory}
-                                                                disabled={memBusy}
-                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-argo-navy text-white hover:bg-argo-navy/90 disabled:opacity-50 transition-colors"
-                                                            >
-                                                                {memBusy ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
-                                                                {lang === 'en' ? 'Save' : lang === 'pt' ? 'Salvar' : 'Guardar'}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">
                                                             {lang === 'en' ? 'Recent episodes' : lang === 'pt' ? 'Episódios recentes' : 'Episodios recientes'}
                                                         </p>
                                                         {memEvents.length === 0 ? (
@@ -1055,10 +1024,11 @@ export const PlayerRow: React.FC<{ session: SessionRow; dt: ReturnType<typeof ge
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="pt-2 border-t border-argo-border flex justify-end">
+                                                    <div className="pt-2 border-t border-argo-border flex items-center justify-between">
+                                                        <span className="text-[11px] text-argo-light">{memMsg ?? ''}</span>
                                                         <button
                                                             onClick={wipeMemory}
-                                                            disabled={memBusy || (memEvents.length === 0 && !memSummary)}
+                                                            disabled={memBusy || memEvents.length === 0}
                                                             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-argo-border text-argo-light hover:text-red-600 hover:border-red-200 hover:bg-red-50 active:text-red-600 active:bg-red-50 disabled:opacity-40 transition-all"
                                                         >
                                                             <Trash2 size={12} />
