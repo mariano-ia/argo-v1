@@ -259,14 +259,14 @@ ESTRUCTURA EXACTA (devuelve SOLO este JSON, sin markdown):
   "puentes": [
     {
       "titulo": "${titles[0]}",
-      "como_esta_el": "2-3 frases probabilísticas sobre cómo tiende a estar ${childName} antes de jugar, según su eje + motor",
+      "como_esta_el": "2-3 frases probabilísticas sobre cómo tiende a estar ${childName} antes de jugar, según su perfil",
       "lo_que_traes": "2-3 frases reconociendo lo que el adulto aporta naturalmente en ese momento, según su eje y motor",
       "el_puente": "3-4 frases. Cómo se combinan ambos perfiles aquí. Observaciones o pequeños ajustes (no prescripciones). Lenguaje de invitación.",
       "pregunta_reflexion": "Una pregunta abierta para sostener en el tiempo, en segunda persona"
     },
     {
       "titulo": "${titles[1]}",
-      "como_esta_el": "2-3 frases sobre cómo tiende a responder ${childName} cuando algo sale mal, según su eje + motor",
+      "como_esta_el": "2-3 frases sobre cómo tiende a responder ${childName} cuando algo sale mal, según su perfil",
       "lo_que_traes": "2-3 frases reconociendo cómo el adulto vive ese momento, según su eje",
       "el_puente": "3-4 frases. CRÍTICO: combinar el estilo del niño con el ESTILO BAJO PRESIÓN del adulto (${pressureLabel}). Este es el puente más sensible. Reconocer primero, invitar después.",
       "pregunta_reflexion": "Una pregunta para llevarse"

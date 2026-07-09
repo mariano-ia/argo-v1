@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (sourceIds.length > 0) {
             const { data: childRows } = await sb
                 .from('perfilamientos')
-                .select('id, child_name, eje, motor, archetype_label, sport, lang')
+                .select('id, child_name, eje, motor, archetype_label, sport, lang, report_v4')
                 .in('id', sourceIds);
             for (const c of childRows ?? []) {
                 childMap[c.id] = c;
@@ -86,7 +86,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 child_profile: child ? {
                     eje: child.eje,
                     motor: child.motor,
-                    archetype_label: child.archetype_label,
+                    // Prefer the v4 blend label ("Impulsor con veta Estratega") over the legacy
+                    // eje×motor archetype_label; fall back for pre-v4 rows. Mirrors generate-puentes.
+                    archetype_label: child.report_v4?.hero?.arquetipoLabel || child.archetype_label,
                     sport: child.sport,
                 } : null,
                 status: s.status,

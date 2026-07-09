@@ -36,11 +36,6 @@ interface Props {
 
 const EJE_ORDER: AdultAxis[] = ['D', 'I', 'S', 'C'];
 
-const MOTOR_DISPLAY: Record<string, Record<string, string>> = {
-    es: { agil: 'Ágil', equilibrado: 'Equilibrado', profundo: 'Profundo' },
-    en: { agil: 'Agile', equilibrado: 'Balanced', profundo: 'Deep' },
-    pt: { agil: 'Ágil', equilibrado: 'Equilibrado', profundo: 'Profundo' },
-};
 
 const PRESSURE_DISPLAY: Record<string, Record<string, string>> = {
     es: { regulado: 'Regulado', reactivo: 'Reactivo', evitativo: 'Evitativo' },
@@ -334,7 +329,6 @@ export function PuentesReport({
     const childAxis = activeChild?.child_profile?.eje;
     const childAxisColor = childAxis && AXIS_COLORS[childAxis] ? AXIS_COLORS[childAxis] : '#86868B';
     const violet = '#955FB5';
-    const motorDisplay = adultProfile ? (MOTOR_DISPLAY[lang]?.[adultProfile.motor] ?? adultProfile.motor) : '';
 
     const showSwitcher = useMemo(() => children.length > 1, [children]);
 
@@ -399,12 +393,9 @@ export function PuentesReport({
                         </span>
                         {adultProfile.eje_secondary && (
                             <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${AXIS_CHIP[adultProfile.eje_secondary] ?? 'bg-violet-50 text-violet-700 border-violet-200'}`}>
-                                +{AXIS_LABELS[adultProfile.eje_secondary]}
+                                con veta {AXIS_LABELS[adultProfile.eje_secondary]}
                             </span>
                         )}
-                        <span className="ml-auto text-xs font-semibold px-3 py-1 rounded-full border bg-argo-violet-50 text-argo-violet-600 border-argo-violet-100">
-                            {motorDisplay}
-                        </span>
                     </div>
                 )}
 
