@@ -107,6 +107,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     } catch (e) { console.warn('[child-memory-cron] heartbeat failed:', e); }
 
+    // Consolidated summary REMOVED (owner decision): the chat + ficha now use the raw episodic
+    // events directly, so there is nothing to distill and no Gemini spend. The heartbeat above
+    // keeps qa-monitor's dead-man's-switch satisfied. The events (child_memory_events) are
+    // untouched. Re-enable the nightly distillation by setting CHILD_MEMORY_SUMMARY=on.
+    if (process.env.CHILD_MEMORY_SUMMARY !== 'on') {
+        return res.status(200).json({ ok: true, disabled: true, reason: 'consolidated summary removed' });
+    }
+
     const stats = { groups: 0, consolidated: 0, skipped: 0, dirty: 0, errors: 0 };
     try {
         // 1. Discover groups with recent events (48h window covers a missed run).
