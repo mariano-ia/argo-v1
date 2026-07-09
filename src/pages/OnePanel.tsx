@@ -197,6 +197,7 @@ interface HubChildF {
     my_bridge: HubBridgeF | null;
     play_link: { slug: string; status: string } | null;
     deletion_id: string | null;
+    comp_token: string | null;
 }
 interface HubData {
     version: 2;
@@ -241,6 +242,7 @@ const TH = {
         noBridgeYet: (n: string) => `Todavía no sumaste tu puente hacia ${n}.`,
         addBridge: 'Sumar mi puente',
         buyerBridgePrompt: 'Tu puente te muestra cómo conectar con el niño. Adelántalo ahora (5 min).',
+        compBridgePrompt: 'Tu puente está incluido en tu compra. Créalo para conectar mejor con el niño.',
         createMyBridge: 'Crear mi puente',
         otherTitle: 'Perfila a otro niño',
         otherDesc: 'Otra aventura, otro informe. Para sumar más adultos a un niño que ya jugó, usa "Crear nuevo puente" en la tarjeta del niño.',
@@ -296,6 +298,7 @@ const TH = {
         noBridgeYet: (n: string) => `You haven't added your bridge with ${n} yet.`,
         addBridge: 'Add my bridge',
         buyerBridgePrompt: 'Your bridge shows you how to connect with the child. Get a head start now (5 min).',
+        compBridgePrompt: 'Your bridge is included in your purchase. Create it to connect better with the child.',
         createMyBridge: 'Create my bridge',
         otherTitle: 'Profile another child',
         otherDesc: 'Another adventure, another report. To add more adults to a child who already played, use "Create a new bridge" on the child\'s card.',
@@ -351,6 +354,7 @@ const TH = {
         noBridgeYet: (n: string) => `Você ainda não somou sua ponte com ${n}.`,
         addBridge: 'Somar minha ponte',
         buyerBridgePrompt: 'Sua ponte mostra como conectar com a criança. Adiante agora (5 min).',
+        compBridgePrompt: 'Sua ponte está incluída na sua compra. Crie-a para conectar melhor com a criança.',
         createMyBridge: 'Criar minha ponte',
         otherTitle: 'Perfilar outra criança',
         otherDesc: 'Outra aventura, outro relatório. Para somar mais adultos a uma criança que já jogou, use "Criar nova ponte" no cartão da criança.',
@@ -516,7 +520,16 @@ const HubChildCard: React.FC<{
                         </div>
                     );
                 }
-                // no bridge yet — only the responsible adult can self-add ($4.99)
+                // no bridge yet. A buyer with the included $12.99 comp creates it
+                // FREE; otherwise the responsible adult self-adds it for $4.99.
+                if (!child.my_bridge && reportReady && child.comp_token) {
+                    return (
+                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
+                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.compBridgePrompt}</div>
+                            <Link to={`/puentes/${child.comp_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors flex-shrink-0">{th.createMyBridge}</Link>
+                        </div>
+                    );
+                }
                 if (!child.my_bridge && child.is_responsible && reportReady) {
                     return (
                         <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
@@ -745,25 +758,25 @@ function buildDemoHub(state: string): HubData {
         key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-D', name: 'Juan', age: 10, sport: 'fútbol',
         report: rep('D', 'Impulsor con veta Conector', 'ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.'),
         is_buyer: true, is_responsible: true, is_invited: false,
-        my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1',
+        my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1', comp_token: null,
     };
     if (state === 'familia') {
         const sofia: HubChildF = {
             key: 'c2', child_id: 'c2', perfilamiento_id: 'demo-S', name: 'Sofía', age: 13, sport: 'hockey',
             report: rep('S', 'Sostenedor con veta Conector', 'ritmo sereno. Procesa con calma antes de moverse.', true),
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2',
+            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2', comp_token: 'demo-comp',
         };
         const mateo: HubChildF = {
             key: 'c3', child_id: 'c3', perfilamiento_id: 'demo-M', name: 'Mateo', age: 8, sport: 'básquet',
             report: { perfilamiento_id: 'demo-M', status: 'held', ready: false, share_token: null, archetype_label: null, eje: null, motor_line: null, expires_at: null, is_stale: false },
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3',
+            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3', comp_token: null,
         };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'family', children: [juan, sofia, mateo], available_slots: 0, can_upgrade_academy: true };
     }
     if (state === 'comprador') {
         const pending: HubChildF = {
             key: 'link:l1', child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null,
-            is_buyer: true, is_responsible: false, is_invited: false, my_bridge: null, play_link: { slug: 'demo-slug', status: 'available' }, deletion_id: null,
+            is_buyer: true, is_responsible: false, is_invited: false, my_bridge: null, play_link: { slug: 'demo-slug', status: 'available' }, deletion_id: null, comp_token: null,
         };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'buyer_no_child_yet', children: [pending], available_slots: 1, can_upgrade_academy: false };
     }

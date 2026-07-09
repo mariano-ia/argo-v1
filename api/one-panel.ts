@@ -175,6 +175,9 @@ interface HubChild {
     my_bridge: HubBridge | null;
     play_link: { slug: string; status: string } | null;
     deletion_id: string | null;
+    // The included $12.99 comp: when the viewer holds a paid comp puente toward
+    // this child's perfilamiento, they create their bridge FREE (not $4.99).
+    comp_token: string | null;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -274,7 +277,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const blank = (key: string): HubChild => {
         let hc = map.get(key);
         if (!hc) {
-            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null };
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null };
             map.set(key, hc);
         }
         return hc;
@@ -333,6 +336,19 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const children = [...map.values()];
     // Invited = reachable ONLY via a bridge (not owner, not buyer) => read-only.
     for (const hc of children) hc.is_invited = !hc.is_responsible && !hc.is_buyer && !!hc.my_bridge;
+
+    // Included $12.99 comp puentes (provider 'comp', paid): the viewer creates the
+    // bridge toward that perfilamiento for FREE. Maps by perfilamiento so the hub
+    // shows "Crear mi puente" (not the $4.99 add-on) where a comp exists.
+    const { data: comps } = await sb
+        .from('puentes_purchases')
+        .select('source_session_id, magic_token')
+        .ilike('recipient_email', esc)
+        .eq('provider', 'comp')
+        .eq('status', 'paid');
+    const compByPerf = new Map<string, string>();
+    for (const c of comps ?? []) if (c.source_session_id && c.magic_token) compByPerf.set(c.source_session_id, c.magic_token);
+    for (const hc of children) hc.comp_token = hc.perfilamiento_id ? (compByPerf.get(hc.perfilamiento_id) ?? null) : null;
 
     const availableSlots = links.filter((l) => l.status === 'available').length;
     const ownedPlayed = children.filter((c) => (c.is_responsible || c.is_buyer) && c.perfilamiento_id);
@@ -642,8 +658,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(200).json({ ok: true, deletion_url: `${origin}/eliminar/${child.deletion_id}` });
         }
 
-        // ── start-adult-profile: the generic adult questionnaire (F7) is not wired
-        //    yet; return a pending marker so the front can show a "coming soon". ──
+        // ── start-adult-profile: the standalone before-play adult questionnaire
+        //    (F7 saved-no-child) is not wired yet, so return a pending marker. A
+        //    comp toward an ALREADY-PLAYED child is surfaced by the hub directly as
+        //    a /puentes/:comp_token link (see buildHubPayload comp_token), not here. ──
         if (action === 'start-adult-profile') {
             return res.status(200).json({ ok: true, pending: true, reason: 'questionnaire_not_available' });
         }

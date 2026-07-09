@@ -251,6 +251,76 @@ async function sendConfirmationEmail(
     });
 }
 
+// ArgoOne fusion (B8): the unified $12.99 buyer gets a two-track HUB email —
+// (1) share the play link so the child plays, (2) do your own Puente — both from
+// the hub. Sent instead of the pack "generate links" email when ONE_UNIFIED_SKU
+// is on. Buyer-neutral, tuteo, ArgoOne® wordmark.
+async function sendHubEmail(email: string, accessToken: string, lang: string = 'es'): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) { console.warn('[one-webhook] Missing RESEND_API_KEY, skipping hub email'); return; }
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
+    const panelUrl = `${origin}/one/panel?token=${accessToken}`;
+    const PL = lang === 'en' ? {
+        subject: 'Your ArgoOne® is ready. Two steps, your order',
+        badge: 'Purchase confirmed', paid: 'Payment received', nextStep: 'Two steps, in any order',
+        s1t: 'Share the link so the child plays', s1b: 'From your panel, copy the link and send it to the adult who will accompany the child. The adventure takes under 10 minutes.',
+        s2t: 'Create your own bridge', s2b: 'Answer a short questionnaire about your own style. You get a personalized bridge to connect with the child, included in your purchase.',
+        cta: 'Go to my panel',
+        note: `Keep this link to come back anytime. You can also go to <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> and enter your email.`,
+        footer: 'ArgoMethod® · Behavioral profiling for young athletes',
+    } : lang === 'pt' ? {
+        subject: 'Seu ArgoOne® está pronto. Dois passos, na sua ordem',
+        badge: 'Compra confirmada', paid: 'Pagamento recebido', nextStep: 'Dois passos, na ordem que preferir',
+        s1t: 'Compartilhe o link para a criança jogar', s1b: 'No seu painel, copie o link e envie ao adulto que vai acompanhar a criança. A aventura leva menos de 10 minutos.',
+        s2t: 'Crie a sua própria ponte', s2b: 'Responda um breve questionário sobre o seu próprio estilo. Você recebe uma ponte personalizada para conectar com a criança, incluída na sua compra.',
+        cta: 'Ir ao meu painel',
+        note: `Guarde este link para voltar quando quiser. Você também pode acessar <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> com seu email.`,
+        footer: 'ArgoMethod® · Perfilamento comportamental para atletas jovens',
+    } : {
+        subject: 'Tu ArgoOne® está listo. Dos pasos, en tu orden',
+        badge: 'Compra confirmada', paid: 'Pago recibido', nextStep: 'Dos pasos, en el orden que prefieras',
+        s1t: 'Comparte el link para que el niño juegue', s1b: 'Desde tu panel, copia el link y envíaselo al adulto que va a acompañar al niño. La aventura toma menos de 10 minutos.',
+        s2t: 'Crea tu propio puente', s2b: 'Responde un breve cuestionario sobre tu propio estilo. Obtienes un puente personalizado para conectar con el niño, incluido en tu compra.',
+        cta: 'Ir a mi panel',
+        note: `Guarda este link para volver cuando quieras. También puedes entrar a <a href="${origin}/one/panel" style="color:#955FB5;text-decoration:none;">argomethod.com/one/panel</a> con tu email.`,
+        footer: 'ArgoMethod® · Perfilamiento conductual para deportistas jóvenes',
+    };
+    const step = (n: string, t: string, b: string) => `
+    <tr><td width="28" style="vertical-align:top;padding-bottom:14px;">
+        <div style="width:24px;height:24px;border-radius:6px;background:#F5F5F7;border:1px solid #E8E8ED;text-align:center;line-height:24px;font-size:11px;font-weight:700;color:#955FB5;">${n}</div>
+    </td><td style="vertical-align:top;padding-left:10px;padding-bottom:14px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#1D1D1F;">${t}</p>
+        <p style="margin:3px 0 0;font-size:12px;color:#86868B;line-height:1.5;">${b}</p>
+    </td></tr>`;
+    const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
+<tr><td style="background:#1D1D1F;padding:28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One®</span>
+    <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${PL.badge}</p>
+</td></tr>
+<tr><td style="padding:28px;">
+    <div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:10px;padding:14px 18px;margin-bottom:24px;">
+        <p style="margin:0;font-size:13px;font-weight:600;color:#16a34a;">${PL.paid}</p>
+    </div>
+    <p style="font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#AEAEB2;margin:0 0 14px;">${PL.nextStep}</p>
+    <table width="100%" cellpadding="0" cellspacing="0">${step('1', PL.s1t, PL.s1b)}${step('2', PL.s2t, PL.s2b)}</table>
+    <div style="text-align:center;margin:28px 0 0;">
+        <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:16px 40px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${PL.cta}</a>
+    </div>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
+</td></tr>
+<tr><td style="background:#F5F5F7;padding:18px 28px;text-align:center;border-top:1px solid #E8E8ED;">
+    <p style="font-size:11px;color:#AEAEB2;margin:0;">${PL.footer}</p>
+</td></tr>
+</table></td></tr></table></body></html>`;
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [email], subject: PL.subject, html }),
+    });
+}
+
 async function sendUpgradeEmail(email: string, plan: string, rosterLimit: number, lang: string = 'es'): Promise<void> {
     const resendKey = process.env.RESEND_API_KEY;
     if (!resendKey) return;
@@ -718,7 +788,12 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         relatedLogs: [`one_purchases.${purchaseId}`],
     });
 
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
+    // Unified $12.99 buyer → two-track HUB email; legacy pack → pack email.
+    if (process.env.ONE_UNIFIED_SKU === 'on') {
+        await sendHubEmail(existing.email, existing.access_token, existing.lang);
+    } else {
+        await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
+    }
 
     console.info(`[one-webhook] Stripe: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
     return res.status(200).json({ received: true, purchase_id: purchaseId });
@@ -905,7 +980,12 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
         relatedLogs: [`one_purchases.${purchaseId}`],
     });
 
-    await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
+    // Unified $12.99 buyer → two-track HUB email; legacy pack → pack email.
+    if (process.env.ONE_UNIFIED_SKU === 'on') {
+        await sendHubEmail(existing.email, existing.access_token, existing.lang);
+    } else {
+        await sendConfirmationEmail(existing.email, existing.access_token, existing.pack_size, existing.lang);
+    }
 
     console.info(`[one-webhook] MP: Purchase ${purchaseId} marked as paid (${existing.pack_size} pack)`);
     return res.status(200).json({ received: true, purchase_id: purchaseId });

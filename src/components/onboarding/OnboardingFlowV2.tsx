@@ -1058,6 +1058,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             link_id: oneLinkId,
+                            // The row-A perfilamiento already created + resolved by
+                            // /api/session (with report_v4). Under ONE_V2_COMPLETE,
+                            // one-complete LINKS this instead of creating a duplicate
+                            // (closes G2). Forward-safe: ignored when the flag is off.
+                            session_id: sessionIdRef.current,
                             session_data: {
                                 adult_name: adultData.nombreAdulto,
                                 adult_email: adultData.email,
