@@ -70,6 +70,7 @@ const OnePlay           = lazy(() => import('./pages/OnePlay').then(m => ({ defa
 const OnePanel          = lazy(() => import('./pages/OnePanel').then(m => ({ default: m.OnePanel })));
 const ConsentLanding    = lazy(() => import('./pages/ConsentLanding').then(m => ({ default: m.ConsentLanding })));
 const DeleteMyData      = lazy(() => import('./pages/DeleteMyData').then(m => ({ default: m.DeleteMyData })));
+const DeleteChildData   = lazy(() => import('./pages/DeleteChildData'));
 const DeleteLanding     = lazy(() => import('./pages/DeleteLanding').then(m => ({ default: m.DeleteLanding })));
 const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').then(m => ({ default: m.ResultRevealPreview })));
 const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
@@ -269,6 +270,7 @@ function App() {
                 <Route path="/consent/:token" element={<ConsentLanding />} />
                 <Route path="/delete" element={<DeleteMyData />} />
                 <Route path="/delete/:token" element={<DeleteLanding />} />
+                <Route path="/eliminar/:deletion_id" element={<DeleteChildData />} />
             <Route path="/blog"       element={<BlogIndex />} />
             <Route path="/blog/category/:category" element={<BlogCategory />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
