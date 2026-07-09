@@ -76,6 +76,7 @@ const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ de
 const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
 const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({ default: m.TestTormenta })));
 const PuentesFlow         = lazy(() => import('./pages/PuentesFlow'));
+const PuenteInvite        = lazy(() => import('./pages/PuenteInvite'));
 const PuentesCheckout     = lazy(() => import('./pages/PuentesCheckout'));
 const PuentesCheckoutSuccess = lazy(() => import('./pages/PuentesCheckoutSuccess'));
 const Deck                = lazy(() => import('./pages/Deck').then(m => ({ default: m.Deck })));
@@ -260,6 +261,7 @@ function App() {
             <Route path="/puentes/checkout/success" element={<PuentesCheckoutSuccess />} />
             <Route path="/puentes/checkout/cancel"  element={<PuentesCheckout />} />
             <Route path="/puentes/:token"           element={<PuentesFlow />} />
+            <Route path="/puente/invite/:token"     element={<PuenteInvite />} />
             <Route path="/deck"       element={<Deck />} />
             <Route path="/demo"       element={<Demo />} />
             <Route path="/terms"      element={<TermsPage />} />

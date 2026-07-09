@@ -100,12 +100,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             recipient_name,
             lang,
             consent_given,
+            invite_token,
         } = req.body as {
             source_session_id?: string;
             recipient_email?: string;
             recipient_name?: string;
             lang?: string;
             consent_given?: boolean;
+            // ArgoOne fusion (B13): an accepted bridge-invite authorizes an adult
+            // OTHER than the responsible one (e.g. a grandparent) to buy the $4.99
+            // add-on. The invite IS the authorization (R1), replacing the email gate.
+            invite_token?: string;
         };
 
         if (!source_session_id || !recipient_email) {
@@ -124,14 +129,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (srcErr || !srcSession) return res.status(404).json({ error: 'Source session not found' });
 
-        // Relationship gate: only the child's responsible adult may buy a bridge
-        // toward that child. Fail closed if the source has no adult_email on record
-        // (we cannot establish the relationship, so we deny).
-        if (!srcSession.adult_email || normEmail(recipient_email) !== normEmail(srcSession.adult_email)) {
-            return res.status(403).json({
-                error: 'not_authorized',
-                detail: "The ArgoPuente® add-on is only available to the child's responsible adult.",
-            });
+        // ── Authorization (R1/R2/R5) ────────────────────────────────────────
+        // Path A (invite): behind PUENTES_ADDON_V2, a valid pending/accepted
+        // bridge-invite toward THIS perfilamiento, addressed to THIS recipient,
+        // authorizes the buy (the responsible adult already vouched by inviting).
+        // Path B (fallback, unchanged): only the child's responsible adult
+        // (recipient_email == the source perfilamiento's adult_email) may buy.
+        // Honor the invite bypass whenever the hub that CREATES invites is live
+        // (VITE_BRIDGES_V2) OR the dedicated add-on flag is on. Coupling them means
+        // an invite is never emailed without the checkout able to honor it, so a
+        // legitimately-invited adult can't be stranded on a 403 during a partial
+        // rollout. (VITE_ vars are readable from process.env on Vercel functions.)
+        const inviteFlagOn = process.env.PUENTES_ADDON_V2 === 'on'
+            || ['1', 'on', 'true'].includes((process.env.VITE_BRIDGES_V2 || '').trim().toLowerCase());
+        let inviteRow: { id: string } | null = null;
+        if (inviteFlagOn && invite_token) {
+            const { data: inv } = await sb
+                .from('bridge_invites')
+                .select('id, invited_email, status, expires_at')
+                .eq('token', invite_token)
+                .eq('perfilamiento_id', source_session_id)
+                .maybeSingle();
+            const fresh = inv && (!inv.expires_at || new Date(inv.expires_at) > new Date());
+            const open = inv && (inv.status === 'pending' || inv.status === 'accepted');
+            if (inv && fresh && open && normEmail(inv.invited_email) === normEmail(recipient_email)) {
+                inviteRow = { id: inv.id };
+            }
+        }
+        if (!inviteRow) {
+            if (!srcSession.adult_email || normEmail(recipient_email) !== normEmail(srcSession.adult_email)) {
+                return res.status(403).json({
+                    error: 'not_authorized',
+                    detail: "The ArgoPuente® add-on is only available to the child's responsible adult or an invited adult.",
+                });
+            }
         }
 
         // Block double-purchase for THIS child only (per recipient_email x
@@ -182,6 +213,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (insErr || !purchase) {
             console.error('[puentes-checkout] Insert error:', insErr?.message);
             return res.status(500).json({ error: 'Failed to create purchase' });
+        }
+
+        // Mark the invite accepted (best-effort): the invitee engaged and reached
+        // checkout. Payment confirmation (status=paid + the puentes_session) is
+        // handled by the webhook; this flag is only the responsible adult's
+        // progress signal, not proof of payment.
+        if (inviteRow) {
+            await sb.from('bridge_invites').update({ status: 'accepted' }).eq('id', inviteRow.id);
         }
 
         const checkoutUrl = await createStripeCheckout({
