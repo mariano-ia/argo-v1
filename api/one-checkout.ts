@@ -77,8 +77,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return 'es';
         })();
         const lang = typeof bodyLang === 'string' && ['es', 'en', 'pt'].includes(bodyLang) ? bodyLang : headerLang;
-        const kind = bodyKind === 'one_puente' ? 'one_puente' : 'one';
-        const price = PRICES[kind];
+        // ONE_UNIFIED_SKU (ArgoOne fusion): a single product ArgoOne® $12.99 that ALWAYS
+        // includes the puente. Flag OFF = legacy two-SKU (one $9.99 / one_puente $12.99).
+        // The front keeps sending {kind} during the transition; when unified we ignore it
+        // and always charge the combo (the $9.99 no-puente SKU is retired).
+        const UNIFIED = process.env.ONE_UNIFIED_SKU === 'on';
+        const kind = UNIFIED ? 'one_puente' : (bodyKind === 'one_puente' ? 'one_puente' : 'one');
+        const price = UNIFIED
+            ? { usd_cents: 1299, label: 'ArgoOne®', includes_puente: true }
+            : PRICES[kind];
 
         // Validate + normalize: a well-formed address, already trimmed/lowercased so
         // the panel unifies purchases reliably and a poisoned value can't reach the

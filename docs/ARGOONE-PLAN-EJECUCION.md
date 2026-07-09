@@ -59,11 +59,21 @@ Cierra las 3 fugas de PII/plata vivas y limpia MP/precio, sobre el esquema actua
 - Verificación: MCP `apply_migration` (NO db push); `information_schema` + índices únicos + FKs; aserciones de backfill (responsible_adult_email/deletion_id/expires_at NULL == 0); NOTIFY pgrst + probe REST `?limit=0`; qa-monitor CHECK 8 verde. M7: probe a tenant-sessions → 200 + `security_invoker=true`.
 - Rollback: DROP TABLE (shadow) / DROP COLUMN (casi vacías). CHECKs siempre NOT VALID. Nada destructivo sobre legacy.
 
-### L2 — Flujo de pago ArgoOne v2 (checkout→webhook→start-play→complete) · shadow, flags OFF
-- Tareas: **B7, B8, B10, B9, B17**. Un pago fluye ENTERO en el lote. Flags `ONE_UNIFIED_SKU` + `ONE_V2_COMPLETE`.
-- Safe-stop: flujo de pago nuevo en develop con flags OFF → prod sigue legacy. Con flags ON en develop se hace E2E.
-- Verificación: `typecheck:api` + `check:api-imports` + `qa:unit`; Stripe unit_amount=1299; webhook idempotente; B10 email doble-confirmación (mismatch → 400); B9 → 1 child + 1 perfilamiento (G2), replay → append; B17 child ArgoOne → 402.
-- Rollback: flags OFF = prod legacy; git revert de 5 archivos.
+### L2 — Flujo de pago ArgoOne v2 · **PARCIAL 2026-07-09 (B7+B10+B17); B8/B9/G2 diferidos**
+- **B7 HECHO** (`one-checkout.ts`): tras `ONE_UNIFIED_SKU=on`, un solo SKU ArgoOne® $12.99 (includes_puente
+  siempre); acepta el `{kind}` legacy durante la transición pero lo ignora cuando unified. Flag OFF = dos-SKU legacy idéntico.
+- **B10 HECHO** (`one-start-play.ts`): devuelve `child_id` del one_link (set = replay atado a niño existente; null en link normal). Passthrough forward-safe.
+- **B17 CONFIRMADO SIN CAMBIO** (`start-reprofile.ts:84-87`): ya rechaza el re-perfil GRATIS de niños ArgoOne (`reprofile_not_supported`) → el re-juego debe pasar por checkout $12.99. Exactamente lo que pide el modelo.
+- **G2 TRACEADA (diferida al lote de front):** para ArgoOne, `OnboardingFlowV2` llama a `/api/session` (crea la
+  fila A con `report_v4`, setea `sessionIdRef`) Y a `one-complete` (crea la fila B legacy). Dos perfilamientos.
+  Es **orquestación del front**, no un bug de `one-complete` solo. Fix correcto = cambio coordinado: el front pasa
+  el id de la fila A a `one-complete`, y `one-complete` LINKea (`one_links.session_id`=fila A + setea los campos
+  ArgoOne del child) en vez de crear la fila B. Va con la reescritura de `OnboardingFlowV2` (front lote).
+- **B8 diferido:** el email HUB de dos pistas es cosmético/alineado al front; el ruteo de SKUs nuevas (replay/
+  add-on) aún no existe en checkout; el stub de `adult_profiles` no hace falta (el cuestionario lo crea en L3).
+- **Trigger de autofill (M2b) diferido a cutover-prep:** setear responsible_adult_email/deletion_id/expires_at en
+  filas nuevas solo hace falta cuando el código lector va live; en shadow los NULLs no molestan (nadie los lee).
+- Verificación hecha: `typecheck:api` + `check:api-imports` verdes. Rollback: flags OFF = legacy; git revert.
 
 ### L3 — Pipeline de puente sobre bridges/adult_profiles · dual-write, `PUENTES_BRIDGES` OFF
 - Tareas: **B11, B12, B18, B19**. Dual-write (puentes_sessions Y adult_profiles+bridges); resolver de 15 respuestas INLINE con paridad a `src/lib/puentesProfileResolver.ts`. Gate R2 estricto (solo bridge PAGADO).

@@ -55,10 +55,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(429).json({ error: 'rate_limited' });
         }
 
-        // Find the link
+        // Find the link. child_id is set only for a replay link (ArgoOne fusion: a
+        // $12.99 re-juego bound to an existing child); null for a first-play link.
         const { data: link } = await sb
             .from('one_links')
-            .select('id, status, purchase_id, recipient_email, child_name, sport')
+            .select('id, status, purchase_id, recipient_email, child_name, sport, child_id')
             .eq('slug', slug)
             .single();
 
@@ -87,6 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             recipient_email: link.recipient_email,
             child_name: link.child_name,
             sport: link.sport,
+            child_id: link.child_id ?? null,   // set = replay of this existing child
         });
     } catch (err) {
         console.error('[one-start-play] Error:', err);
