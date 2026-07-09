@@ -248,7 +248,7 @@ REGLAS DE REDACCIÓN (estrictas):
 6. NUNCA dar instrucciones prescriptivas ("debes", "tienes que"). Solo invitaciones ("podrías observar", "vale la pena registrar").
 7. NUNCA usar las siguientes palabras: error, problema, fallo, déficit, corregir, débil, agresivo, diagnóstico, trastorno, terapia, tratamiento, culpa, culpable.
 8. ${langInstruction}
-9. Sin guiones largos (em dash, en dash). Si necesitas pausa, usá comas, paréntesis o punto.
+9. Sin guiones largos (em dash, en dash). Si necesitas pausa, usa comas, paréntesis o punto.
 10. Cada puente debe combinar específicamente el perfil del niño con el del adulto. El Puente 2 (frustración) DEBE incorporar el estilo bajo presión del adulto (${pressureLabel}).
 
 ESTRUCTURA EXACTA (devuelve SOLO este JSON, sin markdown):

@@ -40,7 +40,7 @@ function buildFreeInviteEmail(args: {
         subject: `An ArgoPuente® invitation for you, no cost`,
         eyebrow: 'An invitation · ArgoPuente®',
         title: `We have a companion piece for you, on us.`,
-        intro: `A few days ago you received the Argo report for ${args.childName}. As a thank-you, we want to invite you to ArgoPuente® — completely free.`,
+        intro: `A few days ago you received the Argo report for ${args.childName}. As a thank-you, we want to invite you to ArgoPuente®, completely free.`,
         what: `ArgoPuente® is a short questionnaire (about five minutes) that reveals your own DISC style as an adult and proposes four specific bridges to better accompany ${args.childName} in sport.`,
         highlight: args.siblingsNames.length > 0
             ? `Your invitation also covers ${args.siblingsNames.join(', ')}.`
@@ -52,7 +52,7 @@ function buildFreeInviteEmail(args: {
         subject: `Um convite ArgoPuente® para você, sem custo`,
         eyebrow: 'Um convite · ArgoPuente®',
         title: `Temos um complemento para você, por nossa conta.`,
-        intro: `Há alguns dias você recebeu o relatório Argo de ${args.childName}. Como agradecimento, queremos convidá-lo para o ArgoPuente® — totalmente gratuito.`,
+        intro: `Há alguns dias você recebeu o relatório Argo de ${args.childName}. Como agradecimento, queremos convidá-lo para o ArgoPuente®, totalmente gratuito.`,
         what: `ArgoPuente® é um questionário curto (cerca de cinco minutos) que revela seu próprio estilo DISC como adulto e propõe quatro pontes específicas para acompanhar ${args.childName} melhor no esporte.`,
         highlight: args.siblingsNames.length > 0
             ? `Seu convite também inclui ${args.siblingsNames.join(', ')}.`
@@ -78,8 +78,8 @@ function buildFreeInviteEmail(args: {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 <tr><td style="background:${navy};padding:24px 28px;">
-<span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
-<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTES</span>
+<span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Method®</span>
+<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTE</span>
 </td></tr>
 <tr><td style="padding:28px;">
 <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${t.eyebrow}</p>

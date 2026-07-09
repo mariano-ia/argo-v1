@@ -295,7 +295,7 @@ function buildHtml(params: {
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td>
-            <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;"> Method</span>
+            <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;">Method®</span>
           </td>
         </tr>
         <tr>
