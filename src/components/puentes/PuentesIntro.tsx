@@ -6,12 +6,15 @@ import type { Lang } from '../../types/puentes';
 interface Props {
     lang: Lang;
     onStart: () => void;
+    // Fast-path (R6): the adult has a fresh saved profile, so the questionnaire
+    // is skipped — the intro explains it and the CTA generates directly.
+    fastPath?: boolean;
 }
 
 // The adult questionnaire is generic and reusable (it measures the adult, not a
 // specific child), so there is no child-anchor selector: one profile serves
 // every child the adult bridges toward.
-export function PuentesIntro({ lang, onStart }: Props) {
+export function PuentesIntro({ lang, onStart, fastPath = false }: Props) {
     const c = getPuentesCopy(lang);
 
     return (
@@ -28,15 +31,17 @@ export function PuentesIntro({ lang, onStart }: Props) {
                     {c.intro.title}
                 </h1>
                 <p className="mt-5 text-argo-secondary text-base leading-relaxed">
-                    {c.intro.subtitle}
+                    {fastPath ? c.intro.fastPathSubtitle : c.intro.subtitle}
                 </p>
-                <p className="mt-4 text-sm text-argo-grey">
-                    {c.intro.estimatedTime}
-                </p>
+                {!fastPath && (
+                    <p className="mt-4 text-sm text-argo-grey">
+                        {c.intro.estimatedTime}
+                    </p>
+                )}
 
                 <div className="mt-8">
                     <Button variant="violet" size="lg" onClick={onStart}>
-                        {c.intro.startCta}
+                        {fastPath ? c.intro.fastPathCta : c.intro.startCta}
                     </Button>
                 </div>
                 <p className="mt-6 text-xs text-argo-light leading-relaxed max-w-sm mx-auto">

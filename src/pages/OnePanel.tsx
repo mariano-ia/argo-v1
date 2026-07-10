@@ -198,6 +198,7 @@ interface HubChildF {
     play_link: { slug: string; status: string } | null;
     deletion_id: string | null;
     comp_token: string | null;
+    bridge_token: string | null;
 }
 interface HubData {
     version: 2;
@@ -237,6 +238,8 @@ const TH = {
         resend: 'Reenviar el link',
         bridgeReady: (n: string) => `Tu puente hacia ${n}: listo`,
         viewMyBridge: 'Ver mi puente',
+        continueMyBridge: 'Continuar mi puente',
+        bridgeInProgress: (n: string) => `Tu puente hacia ${n} está en curso.`,
         bridgeStale: (n: string) => `Tu puente hacia ${n} tiene más de 6 meses.`,
         refreshBridge: 'Refrescar mi puente',
         noBridgeYet: (n: string) => `Todavía no sumaste tu puente hacia ${n}.`,
@@ -293,6 +296,8 @@ const TH = {
         resend: 'Resend the link',
         bridgeReady: (n: string) => `Your bridge with ${n}: ready`,
         viewMyBridge: 'View my bridge',
+        continueMyBridge: 'Continue my bridge',
+        bridgeInProgress: (n: string) => `Your bridge with ${n} is in progress.`,
         bridgeStale: (n: string) => `Your bridge with ${n} is over 6 months old.`,
         refreshBridge: 'Refresh my bridge',
         noBridgeYet: (n: string) => `You haven't added your bridge with ${n} yet.`,
@@ -349,6 +354,8 @@ const TH = {
         resend: 'Reenviar o link',
         bridgeReady: (n: string) => `Sua ponte com ${n}: pronta`,
         viewMyBridge: 'Ver minha ponte',
+        continueMyBridge: 'Continuar minha ponte',
+        bridgeInProgress: (n: string) => `Sua ponte com ${n} está em andamento.`,
         bridgeStale: (n: string) => `Sua ponte com ${n} tem mais de 6 meses.`,
         refreshBridge: 'Atualizar minha ponte',
         noBridgeYet: (n: string) => `Você ainda não somou sua ponte com ${n}.`,
@@ -506,16 +513,34 @@ const HubChildCard: React.FC<{
                     return (
                         <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
                             <div className="text-[13px] text-argo-secondary flex-1 min-w-0"><b className="font-semibold text-argo-navy">{th.bridgeReady(name)}</b></div>
-                            <button onClick={onViewBridge} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</button>
+                            {child.bridge_token ? (
+                                <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</Link>
+                            ) : (
+                                <button onClick={onViewBridge} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</button>
+                            )}
+                        </div>
+                    );
+                }
+                // In-progress paid bridge (created/answered/generating): offer to
+                // CONTINUE it, never to buy it again.
+                if (child.my_bridge && !child.my_bridge.ready && child.bridge_token) {
+                    return (
+                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
+                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.bridgeInProgress(name)}</div>
+                            <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors flex-shrink-0">{th.continueMyBridge}</Link>
                         </div>
                     );
                 }
                 if (child.my_bridge && child.my_bridge.is_stale) {
+                    // NOTE: the $4.99 refresh CTA is deliberately absent — the
+                    // checkout is not cycle-aware yet (it 409s on the existing paid
+                    // purchase), so a refresh button could never complete. It rides
+                    // with the cycle-aware checkout at cutover.
                     return (
                         <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
                             <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.bridgeStale(name)}</div>
-                            {child.is_responsible && (
-                                <button onClick={() => onAddBridge(child)} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.refreshBridge} <span className="text-[11.5px] font-bold opacity-80">USD 4.99</span></button>
+                            {child.bridge_token && (
+                                <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</Link>
                             )}
                         </div>
                     );
@@ -758,25 +783,25 @@ function buildDemoHub(state: string): HubData {
         key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-D', name: 'Juan', age: 10, sport: 'fútbol',
         report: rep('D', 'Impulsor con veta Conector', 'ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.'),
         is_buyer: true, is_responsible: true, is_invited: false,
-        my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1', comp_token: null,
+        my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1', comp_token: null, bridge_token: 'demo',
     };
     if (state === 'familia') {
         const sofia: HubChildF = {
             key: 'c2', child_id: 'c2', perfilamiento_id: 'demo-S', name: 'Sofía', age: 13, sport: 'hockey',
             report: rep('S', 'Sostenedor con veta Conector', 'ritmo sereno. Procesa con calma antes de moverse.', true),
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2', comp_token: 'demo-comp',
+            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2', comp_token: 'demo-comp', bridge_token: null,
         };
         const mateo: HubChildF = {
             key: 'c3', child_id: 'c3', perfilamiento_id: 'demo-M', name: 'Mateo', age: 8, sport: 'básquet',
             report: { perfilamiento_id: 'demo-M', status: 'held', ready: false, share_token: null, archetype_label: null, eje: null, motor_line: null, expires_at: null, is_stale: false },
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3', comp_token: null,
+            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3', comp_token: null, bridge_token: null,
         };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'family', children: [juan, sofia, mateo], available_slots: 0, can_upgrade_academy: true };
     }
     if (state === 'comprador') {
         const pending: HubChildF = {
             key: 'link:l1', child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null,
-            is_buyer: true, is_responsible: false, is_invited: false, my_bridge: null, play_link: { slug: 'demo-slug', status: 'available' }, deletion_id: null, comp_token: null,
+            is_buyer: true, is_responsible: false, is_invited: false, my_bridge: null, play_link: { slug: 'demo-slug', status: 'available' }, deletion_id: null, comp_token: null, bridge_token: null,
         };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'buyer_no_child_yet', children: [pending], available_slots: 1, can_upgrade_academy: false };
     }

@@ -8,6 +8,9 @@ export interface PuentesCopy {
         startCta: string;
         estimatedTime: string;
         disclaimer: string;
+        // Fast-path (R6): a fresh saved profile skips the questionnaire.
+        fastPathSubtitle: string;
+        fastPathCta: string;
     };
     progress: {
         questionOf: (current: number, total: number) => string;
@@ -56,6 +59,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             startCta: 'Empezar el cuestionario',
             estimatedTime: '5 a 7 minutos',
             disclaimer: 'No es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
+            fastPathSubtitle: 'Ya tenemos tu perfil (respondiste el cuestionario hace menos de 6 meses). Vamos directo a generar tu puente.',
+            fastPathCta: 'Generar mi puente',
         },
         progress: { questionOf: (c, t) => `Pregunta ${c} de ${t}` },
         finish: {
@@ -100,6 +105,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             startCta: 'Start the questionnaire',
             estimatedTime: '5 to 7 minutes',
             disclaimer: 'This is not a clinical or therapeutic service. It is an invitation to reflect.',
+            fastPathSubtitle: 'We already have your profile (you answered the questionnaire less than 6 months ago). We go straight to generating your bridge.',
+            fastPathCta: 'Generate my bridge',
         },
         progress: { questionOf: (c, t) => `Question ${c} of ${t}` },
         finish: {
@@ -144,6 +151,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             startCta: 'Começar o questionário',
             estimatedTime: '5 a 7 minutos',
             disclaimer: 'Não é um serviço clínico nem terapêutico. É um convite à reflexão.',
+            fastPathSubtitle: 'Já temos seu perfil (você respondeu o questionário há menos de 6 meses). Vamos direto gerar sua ponte.',
+            fastPathCta: 'Gerar minha ponte',
         },
         progress: { questionOf: (c, t) => `Pergunta ${c} de ${t}` },
         finish: {

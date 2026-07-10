@@ -107,19 +107,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { puentes_session_id, answers } = req.body as {
+        const { puentes_session_id, answers, use_saved_profile } = req.body as {
             puentes_session_id?: string;
             answers?: { questionId: string; optionId: string }[];
+            // ArgoOne fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, reuse the
+            // adult's FRESH saved profile (adult_profiles by the purchase recipient
+            // email) instead of re-answering the 15 questions. The pipeline then
+            // proceeds identically (propagate to siblings, generate, email).
+            use_saved_profile?: boolean;
         };
-        if (!puentes_session_id || !Array.isArray(answers)) {
+        const fastPath = use_saved_profile === true && process.env.PUENTES_BRIDGES === 'on';
+        if (!puentes_session_id || (!fastPath && !Array.isArray(answers))) {
             return res.status(400).json({ error: 'Missing puentes_session_id or answers' });
-        }
-
-        let profile;
-        try {
-            profile = resolveAdultProfile(answers);
-        } catch (err: any) {
-            return res.status(400).json({ error: err.message || 'Invalid answers' });
         }
 
         // Find the purchase from the session, then propagate the answers +
@@ -132,6 +131,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (!anchor) return res.status(404).json({ error: 'Puentes session not found' });
 
+        let profile;
+        let finalAnswers: { questionId: string; optionId: string }[] = answers ?? [];
+        // Fast-path: when the profile was computed (so the bridge snapshot carries
+        // the REAL profile date, not "now").
+        let savedProfileComputedAt: string | null = null;
+        if (fastPath) {
+            // Load the fresh saved profile for the purchase's recipient email.
+            const { data: fpPurchase } = await sb
+                .from('puentes_purchases')
+                .select('recipient_email')
+                .eq('id', anchor.purchase_id)
+                .maybeSingle();
+            const em = (fpPurchase?.recipient_email || '').trim().toLowerCase();
+            if (!em) return res.status(409).json({ error: 'profile_not_available' });
+            const esc = em.replace(/([\\%_])/g, '\\$1');
+            const { data: ap } = await sb
+                .from('adult_profiles')
+                .select('disc, adult_answers, computed_at, expires_at')
+                .ilike('email', esc)
+                .maybeSingle();
+            const disc = ap?.disc as { eje_primary?: string; motor?: string; pressure_style?: string } | null;
+            const fresh = !!(ap?.expires_at && new Date(ap.expires_at) > new Date());
+            if (!fresh || !disc || !disc.eje_primary || !disc.motor || !disc.pressure_style) {
+                // Stale/missing/incomplete: the front falls back to the questionnaire.
+                return res.status(409).json({ error: 'profile_not_available' });
+            }
+            profile = disc;
+            finalAnswers = (Array.isArray(ap?.adult_answers) ? ap!.adult_answers : []) as { questionId: string; optionId: string }[];
+            savedProfileComputedAt = (ap?.computed_at as string | null) ?? null;
+        } else {
+            try {
+                profile = resolveAdultProfile(answers!);
+            } catch (err: any) {
+                return res.status(400).json({ error: err.message || 'Invalid answers' });
+            }
+        }
+
         const { data: siblings } = await sb
             .from('puentes_sessions')
             .select('id, source_session_id')
@@ -143,7 +179,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { error: updErr } = await sb
             .from('puentes_sessions')
             .update({
-                adult_answers: answers,
+                adult_answers: finalAnswers,
                 adult_profile: profile,
                 status: 'answered',
             })
@@ -178,18 +214,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     const expIso = exp.toISOString();
 
                     // Upsert the reusable adult profile by normalized email (one row,
-                    // overwritten on re-profile).
+                    // overwritten on re-profile). FAST-PATH EXCEPTION: reusing the
+                    // saved profile must NOT refresh computed_at/expires_at (that
+                    // would extend the profile's life without re-answering) — just
+                    // resolve its id for the bridge row.
                     let adultProfileId: string | undefined;
                     const { data: apRow } = await sb.from('adult_profiles').select('id').eq('email', em).maybeSingle();
-                    if (apRow) {
+                    if (apRow && fastPath) {
+                        adultProfileId = apRow.id;
+                    } else if (apRow) {
                         adultProfileId = apRow.id;
                         await sb.from('adult_profiles').update({
-                            disc: profile, adult_answers: answers, lang: bLang,
+                            disc: profile, adult_answers: finalAnswers, lang: bLang,
                             computed_at: nowIso, expires_at: expIso, updated_at: nowIso,
                         }).eq('id', apRow.id);
                     } else {
                         const { data: ins } = await sb.from('adult_profiles').insert({
-                            email: em, disc: profile, adult_answers: answers, lang: bLang,
+                            email: em, disc: profile, adult_answers: finalAnswers, lang: bLang,
                             computed_at: nowIso, expires_at: expIso,
                         }).select('id').single();
                         if (ins) {
@@ -209,7 +250,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                             perfilamiento_id: s.source_session_id,
                             adult_email: em,
                             disc_snapshot: profile,
-                            adult_profile_computed_at: nowIso,
+                            // Fast-path: the snapshot's profile date is the SAVED
+                            // profile's computed_at, not "now".
+                            adult_profile_computed_at: (fastPath && savedProfileComputedAt) ? savedProfileComputedAt : nowIso,
                             status: 'answered',
                             lang: bLang,
                             computed_at: nowIso,

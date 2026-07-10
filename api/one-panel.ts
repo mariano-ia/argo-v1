@@ -178,6 +178,10 @@ interface HubChild {
     // The included $12.99 comp: when the viewer holds a paid comp puente toward
     // this child's perfilamiento, they create their bridge FREE (not $4.99).
     comp_token: string | null;
+    // Magic token of the viewer's paid puente purchase toward this child. The
+    // /puentes/:token viewer handles every state (questionnaire, generating,
+    // report), so "Ver mi puente" always links here.
+    bridge_token: string | null;
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -277,7 +281,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const blank = (key: string): HubChild => {
         let hc = map.get(key);
         if (!hc) {
-            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null };
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null };
             map.set(key, hc);
         }
         return hc;
@@ -337,18 +341,76 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     // Invited = reachable ONLY via a bridge (not owner, not buyer) => read-only.
     for (const hc of children) hc.is_invited = !hc.is_responsible && !hc.is_buyer && !!hc.my_bridge;
 
-    // Included $12.99 comp puentes (provider 'comp', paid): the viewer creates the
-    // bridge toward that perfilamiento for FREE. Maps by perfilamiento so the hub
-    // shows "Crear mi puente" (not the $4.99 add-on) where a comp exists.
-    const { data: comps } = await sb
+    // The viewer's paid puente purchases (comps AND bought add-ons). They carry
+    // the magic_token that opens the /puentes/:token viewer for every state, and
+    // — while the shadow `bridges` table is unpopulated (dual-write off / M8 not
+    // run) — their puentes_sessions are the LEGACY source of the bridge state, so
+    // the hub shows real puentes today.
+    const { data: pps } = await sb
         .from('puentes_purchases')
-        .select('source_session_id, magic_token')
+        .select('id, source_session_id, magic_token, provider, created_at')
         .ilike('recipient_email', esc)
-        .eq('provider', 'comp')
         .eq('status', 'paid');
+    const ppRows = pps ?? [];
+    const ppIds = ppRows.map((p: any) => p.id);
+    const tokenByPurchase = new Map<string, string>();
+    for (const p of ppRows) if (p.magic_token) tokenByPurchase.set(p.id, p.magic_token);
+
+    // ALL legacy sessions of those purchases. A pre-L0 fan-out purchase carries
+    // several sessions (one per sibling child), each with its OWN
+    // source_session_id — so the bridge state must be keyed per SESSION, never
+    // per purchase (keying per purchase hid siblings' live bridges and let the
+    // hub re-offer a $4.99 the adult already owned). Deterministic order.
     const compByPerf = new Map<string, string>();
-    for (const c of comps ?? []) if (c.source_session_id && c.magic_token) compByPerf.set(c.source_session_id, c.magic_token);
-    for (const hc of children) hc.comp_token = hc.perfilamiento_id ? (compByPerf.get(hc.perfilamiento_id) ?? null) : null;
+    const tokenByPerf = new Map<string, string>();
+    const readyByPerf = new Map<string, HubBridge>();
+    const pendingByPerf = new Map<string, HubBridge>();
+    // Purchase-anchored pass first: covers comps/purchases whose session doesn't
+    // exist yet (e.g. an unmaterialized comp).
+    for (const p of ppRows) {
+        if (!p.source_session_id || !p.magic_token) continue;
+        if (!tokenByPerf.has(p.source_session_id)) tokenByPerf.set(p.source_session_id, p.magic_token);
+        if (p.provider === 'comp') compByPerf.set(p.source_session_id, p.magic_token);
+    }
+    if (ppIds.length) {
+        const { data: pSess } = await sb
+            .from('puentes_sessions')
+            .select('purchase_id, source_session_id, status, ai_sections, created_at')
+            .in('purchase_id', ppIds)
+            .order('created_at', { ascending: false });
+        for (const s of pSess ?? []) {
+            const perfId = s.source_session_id;
+            const token = tokenByPurchase.get(s.purchase_id);
+            if (!perfId) continue;
+            if (token) tokenByPerf.set(perfId, token);
+            if (s.ai_sections && (s.status === 'generated' || s.status === 'sent')) {
+                // A generated/sent session = a live bridge. Legacy expiry = session
+                // created_at + 6 months (mirrors the M8 backfill interval).
+                if (!readyByPerf.has(perfId)) {
+                    const created = Date.parse(s.created_at ?? '');
+                    const expMs = Number.isFinite(created) ? created + 183 * 24 * 3600 * 1000 : NaN;
+                    readyByPerf.set(perfId, {
+                        status: s.status,
+                        ready: true,
+                        expires_at: Number.isFinite(expMs) ? new Date(expMs).toISOString() : null,
+                        is_stale: Number.isFinite(expMs) ? expMs <= nowMs : false,
+                    });
+                }
+            } else if (!pendingByPerf.has(perfId)) {
+                // Paid but not generated yet (created/answered/generating/failed):
+                // an IN-PROGRESS bridge — the hub must offer to continue it, never
+                // to buy it again.
+                pendingByPerf.set(perfId, { status: s.status ?? 'created', ready: false, expires_at: null, is_stale: false });
+            }
+        }
+    }
+    for (const hc of children) {
+        if (!hc.perfilamiento_id) continue;
+        hc.comp_token = compByPerf.get(hc.perfilamiento_id) ?? null;
+        hc.bridge_token = tokenByPerf.get(hc.perfilamiento_id) ?? null;
+        // Prefer the new bridges row; else legacy ready; else legacy in-progress.
+        if (!hc.my_bridge) hc.my_bridge = readyByPerf.get(hc.perfilamiento_id) ?? pendingByPerf.get(hc.perfilamiento_id) ?? null;
+    }
 
     const availableSlots = links.filter((l) => l.status === 'available').length;
     const ownedPlayed = children.filter((c) => (c.is_responsible || c.is_buyer) && c.perfilamiento_id);

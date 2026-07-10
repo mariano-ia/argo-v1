@@ -41,6 +41,7 @@ export default function PuentesFlow() {
     const [answers, setAnswers] = useState<PuentesAnswer[]>([]);
     const [currentIdx, setCurrentIdx] = useState(0);
     const [adultProfile, setAdultProfile] = useState<AdultProfile | null>(null);
+    const [profileFresh, setProfileFresh] = useState(false);
     const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
     const [recipientName, setRecipientName] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState('');
@@ -140,6 +141,8 @@ export default function PuentesFlow() {
                 if (data.recipient_email) setRecipientEmail(data.recipient_email);
                 if (data.recipient_name) setRecipientName(data.recipient_name);
                 if (data.adult_profile) setAdultProfile(data.adult_profile);
+                // Fast-path (R6): a fresh saved profile skips the questionnaire.
+                if (data.profile_fresh) setProfileFresh(true);
 
                 const list: ChildEntry[] = data.children ?? [];
                 setChildren(list);
@@ -227,6 +230,30 @@ export default function PuentesFlow() {
         }
     };
 
+    // Fast-path (R6): generate from the saved fresh profile, skipping the
+    // questionnaire. A 409 means the profile is no longer usable (expired in the
+    // meantime / incomplete) — fall back to the normal questionnaire.
+    const submitFastPath = async () => {
+        if (!anchorChild) return;
+        setStage('generating');
+        try {
+            const res = await fetch('/api/puentes-complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    puentes_session_id: anchorChild.puentes_session_id,
+                    use_saved_profile: true,
+                }),
+            });
+            if (res.status === 409) { setProfileFresh(false); setStage('question'); return; }
+            if (!res.ok) throw new Error('complete failed');
+            await pollUntilReady();
+        } catch {
+            setStage('error');
+            setErrorMsg(getPuentesCopy(lang).errors.generic);
+        }
+    };
+
     if (stage === 'loading') {
         return <CenterScreen><PuentesGenerating lang={lang} /></CenterScreen>;
     }
@@ -254,7 +281,8 @@ export default function PuentesFlow() {
             {stage === 'intro' && (
                 <PuentesIntro
                     lang={lang}
-                    onStart={() => setStage('question')}
+                    fastPath={profileFresh}
+                    onStart={() => (profileFresh ? submitFastPath() : setStage('question'))}
                 />
             )}
             {stage === 'question' && (

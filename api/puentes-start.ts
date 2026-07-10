@@ -120,6 +120,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const alreadyAnswered = overall !== 'created';
         const allGenerated = sessions.length > 0 && sessions.every(s => !!s.ai_sections);
 
+        // ── ArgoOne fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, if this
+        // adult already has a FRESH reusable profile (adult_profiles by email,
+        // expires_at in the future) and hasn't answered here yet, tell the front —
+        // it can skip the 15 questions and POST puentes-complete with
+        // use_saved_profile instead. Read-only: nothing is written here. R6: a
+        // fresh profile skips the QUESTIONNAIRE, never the payment (we are behind
+        // a paid purchase already). Absent/false = legacy shape, front unaffected.
+        let profileFresh = false;
+        if (process.env.PUENTES_BRIDGES === 'on' && !alreadyAnswered && purchase.recipient_email) {
+            const esc = purchase.recipient_email.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+            const { data: ap } = await sb
+                .from('adult_profiles')
+                .select('disc, expires_at')
+                .ilike('email', esc)
+                .maybeSingle();
+            const disc = ap?.disc as { eje_primary?: string; motor?: string; pressure_style?: string } | null;
+            const fresh = !!(ap?.expires_at && new Date(ap.expires_at) > new Date());
+            // The saved disc must carry the computed keys generate-puentes consumes.
+            profileFresh = fresh && !!(disc && disc.eje_primary && disc.motor && disc.pressure_style);
+        }
+
         return res.status(200).json({
             purchase_id: purchase.id,
             recipient_email: purchase.recipient_email,
@@ -129,6 +150,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             overall_status: overall,
             already_answered: alreadyAnswered,
             all_generated: allGenerated,
+            profile_fresh: profileFresh,
             children,
         });
     } catch (err) {
