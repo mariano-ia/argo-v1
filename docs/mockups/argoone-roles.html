@@ -20,8 +20,9 @@
   .switch button{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--secondary);}
   .switch button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff;}
   .seclabel{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--light);font-weight:700;margin:20px 0 10px;}
-  .rows{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+  .rows{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:visible;}
   .row{padding:14px 16px;} .row+.row{border-top:1px solid var(--border);}
+  .rows .row:first-child{border-radius:14px 14px 0 0;} .rows .row:last-child{border-radius:0 0 14px 14px;}
   .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
   .lbl b{font-size:14px;} .lbl .m{font-size:12px;color:var(--grey);display:block;}
   .btn{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;padding:8px 14px;border-radius:9px;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
@@ -29,14 +30,25 @@
   .btn-orange{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-border);}
   .acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
   .price{font-size:11px;font-weight:700;opacity:.85;}
+  /* fila secundaria: acciones chicas debajo de los botones principales */
+  .subacts{display:flex;gap:14px;align-items:center;justify-content:flex-end;margin-top:8px;flex-wrap:wrap;}
+  .subact{font-family:inherit;background:none;border:none;cursor:pointer;font-size:11.5px;font-weight:600;color:var(--grey);text-decoration:none;padding:2px 0;border-bottom:1px dotted var(--light);}
+  .subact:hover{color:var(--violet);border-bottom-color:var(--violet);}
   .buyrow{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--violet-soft);border:1px solid var(--violet-border);border-radius:12px;margin-bottom:12px;flex-wrap:wrap;}
   .buyrow .t{font-size:13px;color:var(--secondary);}
   .note{font-size:12px;color:var(--light);margin:9px 2px 0;}
   .alertline{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--orange);flex-wrap:wrap;}
-  .alertline .ic{width:16px;height:16px;border-radius:50%;background:var(--orange-soft);border:1px solid var(--orange-border);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;flex:none;}
+  .alertline .txt{display:inline-flex;align-items:center;gap:6px;}
   .st{width:9px;height:9px;border-radius:50%;flex:none;background:#D2D2D7;}
   .linkrow{display:flex;align-items:center;gap:10px;} .linkrow .lbl{flex:1;min-width:0;font-size:13px;font-weight:500;} .linkrow .sub{font-size:11.5px;color:var(--grey);display:block;}
   .foot{margin-top:34px;font-size:11px;color:var(--light);text-align:center;line-height:1.7;} .foot a{color:var(--violet);text-decoration:none;}
+  /* tooltips */
+  .tip{position:relative;}
+  .tip .ic{width:15px;height:15px;border-radius:50%;background:var(--neutral);border:1px solid var(--border);color:var(--grey);display:inline-flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;font-style:normal;cursor:help;flex:none;}
+  .alertline .tip .ic{background:var(--orange-soft);border-color:var(--orange-border);color:var(--orange);}
+  .tip::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 9px);right:-6px;width:270px;background:var(--navy);color:var(--bg);font-size:11px;font-weight:400;line-height:1.55;padding:10px 12px;border-radius:9px;box-shadow:0 8px 28px rgba(0,0,0,.25);opacity:0;pointer-events:none;transform:translateY(4px);transition:opacity .12s,transform .12s;z-index:20;white-space:normal;text-align:left;}
+  .tip::before{content:"";position:absolute;bottom:calc(100% + 3px);right:6px;border:6px solid transparent;border-top-color:var(--navy);opacity:0;transition:opacity .12s;z-index:20;}
+  .tip:hover::after,.tip:hover::before{opacity:1;transform:translateY(0);}
   /* superficie familia: informe directo, no panel */
   .report{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:26px 24px;}
   .report h2{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px;}
@@ -86,20 +98,22 @@
     <div class="seclabel" id="kidscount">Niños</div>
     <div class="rows" style="margin-bottom:14px;">
 
-      <!-- PADRE: comprador y adulto, informe vigente -->
+      <!-- PADRE: comprador y adulto, informe vigente, puente jugado -->
       <div class="row" data-roles="padre">
         <div class="head">
           <span class="lbl"><b>Niñito</b><span class="m">13 años · Básquet</span></span>
           <div class="acts">
             <a class="btn btn-primary" href="#">Ver informe de Niñito</a>
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
-            <a class="btn btn-secondary" href="#">Compartir link de puentes</a>
-            <button class="btn btn-secondary" title="Adultos vinculados">👥 2</button>
           </div>
+        </div>
+        <div class="subacts">
+          <span class="tip" data-tip="Este es el link de puentes de Niñito. Compártelo con los adultos cercanos (abuelos, tíos, quien lo acompaña) para que cada uno cree su propio puente con él. Cada adulto paga el suyo (USD 4.99) y solo ve su puente, nunca el informe de Niñito. Solo tú puedes compartir este link."><a class="subact" href="#">Compartir link de puentes</a></span>
+          <span class="tip" data-tip="Los adultos que ya crearon su puente con Niñito a través de tu link. Si quieres frenar nuevas incorporaciones, puedes revocar el link y generar uno nuevo."><a class="subact" href="#">Adultos vinculados (2)</a></span>
         </div>
       </div>
 
-      <!-- COACH: comprador no adulto. Ve informe + su puente. NO comparte puentes. -->
+      <!-- COACH: comprador no adulto. Puente jugado. -->
       <div class="row" data-roles="coach">
         <div class="head">
           <span class="lbl"><b>Niñito</b><span class="m">13 años · Básquet</span></span>
@@ -109,6 +123,8 @@
           </div>
         </div>
       </div>
+
+      <!-- COACH: informe vencido (>6 meses). Re-perfilar renueva LOS DOS informes. -->
       <div class="row" data-roles="coach">
         <div class="head">
           <span class="lbl"><b>Keven</b><span class="m">13 años · Rugby</span></span>
@@ -117,30 +133,44 @@
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
           </div>
         </div>
-        <div class="alertline"><span class="ic">!</span><span>El informe tiene más de 6 meses. Te recomendamos re-perfilar.</span><a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a></div>
+        <div class="alertline">
+          <span class="txt">Ambos informes tienen más de 6 meses. Te recomendamos re-perfilar.
+            <span class="tip" data-tip="El perfil es una foto del momento. A esta edad los niños cambian rápido: nuevas experiencias y el propio crecimiento pueden mover lo que los motiva, cómo enfrentan los desafíos y qué los frena. Con una foto nueva, las recomendaciones vuelven a hablar del niño de hoy. Al re-perfilar se renuevan juntos el informe de Keven y tu puente: el niño vuelve a jugar y tú respondes de nuevo tu cuestionario."><i class="ic">i</i></span>
+          </span>
+          <a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a>
+        </div>
       </div>
+
+      <!-- COACH: todavía no jugó su cuestionario puente -->
       <div class="row" data-roles="coach">
         <div class="head">
           <span class="lbl"><b>Mirnam</b><span class="m">14 años · Volleyball</span></span>
           <div class="acts">
             <a class="btn btn-primary" href="#">Ver informe de Mirnam</a>
-            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <span class="tip" data-tip="Tu puente con Mirnam viene incluido en tu compra. Respondes un cuestionario breve sobre ti (unos minutos) y lo cruzamos con su perfil para mostrarte cómo conectas tú con ella."><a class="btn btn-secondary" href="#">Responder cuestionario puente</a></span>
           </div>
         </div>
       </div>
 
-      <!-- ADULTO (caso coach): autorizó a Keven. Siempre recibe el informe. Comparte puentes. Su puente no vino incluido: USD 4.99. -->
+      <!-- ADULTO (caso coach): autorizó a Keven. Siempre recibe el informe. Su puente no vino incluido: USD 4.99. -->
       <div class="row" data-roles="adulto">
         <div class="head">
           <span class="lbl"><b>Keven</b><span class="m">13 años · Rugby · lo autorizaste tú</span></span>
           <div class="acts">
             <a class="btn btn-primary" href="#">Ver informe de Keven</a>
-            <a class="btn btn-secondary" href="#">Crear mi puente <span class="price">USD 4.99</span></a>
-            <a class="btn btn-secondary" href="#">Compartir link de puentes</a>
-            <button class="btn btn-secondary" title="Adultos vinculados">👥 1</button>
+            <span class="tip" data-tip="Tu puente es un informe sobre el vínculo: cómo conectas tú con Keven, qué le sirve de ti y qué le hace ruido. Respondes un cuestionario breve sobre ti (unos minutos) y lo cruzamos con su perfil."><a class="btn btn-secondary" href="#">Crear mi puente <span class="price">USD 4.99</span></a></span>
           </div>
         </div>
-        <div class="alertline"><span class="ic">!</span><span>El informe tiene más de 6 meses. Te recomendamos re-perfilar.</span><a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a></div>
+        <div class="subacts">
+          <span class="tip" data-tip="Este es el link de puentes de Keven. Compártelo con los adultos cercanos (abuelos, tíos, quien lo acompaña) para que cada uno cree su propio puente con él. Cada adulto paga el suyo (USD 4.99) y solo ve su puente, nunca el informe de Keven. Solo tú puedes compartir este link."><a class="subact" href="#">Compartir link de puentes</a></span>
+          <span class="tip" data-tip="Los adultos que ya crearon su puente con Keven a través de tu link. Si quieres frenar nuevas incorporaciones, puedes revocar el link y generar uno nuevo."><a class="subact" href="#">Adultos vinculados (1)</a></span>
+        </div>
+        <div class="alertline">
+          <span class="txt">El informe de Keven tiene más de 6 meses. Te recomendamos re-perfilar.
+            <span class="tip" data-tip="El perfil es una foto del momento. A esta edad los niños cambian rápido: nuevas experiencias y el propio crecimiento pueden mover lo que los motiva, cómo enfrentan los desafíos y qué los frena. Con una foto nueva, las recomendaciones vuelven a hablar del niño de hoy. Como tú lo autorizaste, el informe nuevo también te llega a ti."><i class="ic">i</i></span>
+          </span>
+          <a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a>
+        </div>
       </div>
 
     </div>
