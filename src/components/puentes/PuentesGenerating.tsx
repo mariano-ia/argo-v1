@@ -15,7 +15,7 @@ export function PuentesGenerating({ lang }: { lang: Lang }) {
                 {c.finish.generating}
             </p>
             <p className="mt-2 text-sm text-argo-grey">
-                {lang === 'en' ? 'This may take up to 30 seconds.' : lang === 'pt' ? 'Pode levar até 30 segundos.' : 'Puede tardar hasta 30 segundos.'}
+                {lang === 'en' ? 'This may take up to a minute. Please keep this screen open.' : lang === 'pt' ? 'Pode levar até um minuto. Mantenha esta tela aberta.' : 'Puede tardar hasta un minuto. No cierres esta pantalla.'}
             </p>
         </motion.div>
     );

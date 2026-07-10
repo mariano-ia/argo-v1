@@ -199,6 +199,7 @@ interface HubChildF {
     deletion_id: string | null;
     comp_token: string | null;
     bridge_token: string | null;
+    invites?: { email: string; status: string }[];
 }
 interface HubData {
     version: 2;
@@ -266,6 +267,7 @@ const TH = {
         inviteRelation: 'Relación (opcional): abuela, tío, entrenador…',
         inviteSend: 'Enviar invitación',
         inviteSent: 'Invitación enviada.',
+        invitedLine: (e: string, accepted: boolean) => accepted ? `Invitaste a ${e}: aceptó, falta su cuestionario` : `Invitaste a ${e}: pendiente`,
         cancel: 'Cancelar',
         comingSoon: 'Muy pronto disponible.',
         genericError: 'Algo salió mal. Intenta de nuevo.',
@@ -324,6 +326,7 @@ const TH = {
         inviteRelation: 'Relationship (optional): grandmother, uncle, coach…',
         inviteSend: 'Send invitation',
         inviteSent: 'Invitation sent.',
+        invitedLine: (e: string, accepted: boolean) => accepted ? `You invited ${e}: accepted, questionnaire pending` : `You invited ${e}: pending`,
         cancel: 'Cancel',
         comingSoon: 'Available very soon.',
         genericError: 'Something went wrong. Try again.',
@@ -382,6 +385,7 @@ const TH = {
         inviteRelation: 'Relação (opcional): avó, tio, treinador…',
         inviteSend: 'Enviar convite',
         inviteSent: 'Convite enviado.',
+        invitedLine: (e: string, accepted: boolean) => accepted ? `Você convidou ${e}: aceitou, falta o questionário` : `Você convidou ${e}: pendente`,
         cancel: 'Cancelar',
         comingSoon: 'Disponível em breve.',
         genericError: 'Algo deu errado. Tente de novo.',
@@ -490,6 +494,13 @@ const HubChildCard: React.FC<{
                                 )}
                             </div>
 
+                            {(child.invites ?? []).length > 0 && (
+                                <div className="mt-2">
+                                    {(child.invites ?? []).map(iv => (
+                                        <p key={iv.email} className="text-[12px] text-argo-grey">{th.invitedLine(iv.email, iv.status === 'accepted')}</p>
+                                    ))}
+                                </div>
+                            )}
                             {child.is_invited && (
                                 <p className="text-[12px] text-argo-light mt-2">{th.roleNote}</p>
                             )}
@@ -570,7 +581,7 @@ const HubChildCard: React.FC<{
 };
 
 /* ── The hub itself ──────────────────────────────────────────────────────────── */
-const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boolean }> = ({ data, token, lang, demo }) => {
+const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boolean; onRefresh?: () => void }> = ({ data, token, lang, demo, onRefresh }) => {
     const th = TH[lang] ?? TH.es;
     const { toast } = useToast();
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://argomethod.com';
@@ -649,7 +660,7 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
         setBusy(true);
         const res = await postAction({ action: 'invite-adult', child_id: invite.child.child_id, invited_email: inviteEmail.trim(), relation: inviteRelation.trim() || undefined });
         setBusy(false);
-        if (res && res.ok) { toast('success', th.inviteSent); setInvite(null); setInviteEmail(''); setInviteRelation(''); }
+        if (res && res.ok) { toast('success', th.inviteSent); setInvite(null); setInviteEmail(''); setInviteRelation(''); onRefresh?.(); }
         else if (res) { toast('error', th.genericError); }
     };
 
@@ -770,7 +781,7 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
     );
 };
 
-const HubV2: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boolean }> = (props) => (
+const HubV2: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boolean; onRefresh?: () => void }> = (props) => (
     <ToastProvider><HubV2Inner {...props} /></ToastProvider>
 );
 
@@ -1034,7 +1045,7 @@ export const OnePanel: React.FC = () => {
     // to the legacy panel below when the backend flag is off).
     if (data && (data as HubData).version === 2) {
         const demoParam = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('demo') : null;
-        return <HubV2 data={data as HubData} token={token} lang={lang as HubLang} demo={!!demoParam && demoParam !== '1'} />;
+        return <HubV2 data={data as HubData} token={token} lang={lang as HubLang} demo={!!demoParam && demoParam !== '1'} onRefresh={fetchData} />;
     }
 
     const { purchase, links, summary } = data as PanelData;

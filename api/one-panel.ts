@@ -182,18 +182,32 @@ interface HubChild {
     // /puentes/:token viewer handles every state (questionnaire, generating,
     // report), so "Ver mi puente" always links here.
     bridge_token: string | null;
+    // Outgoing bridge invitations this viewer sent for this child (so the card
+    // shows "invitaste a X · pendiente" instead of looking like nothing happened).
+    invites: { email: string; status: string }[];
 }
+
+// Canonical axis archetype names (es), per docs/archetype-naming.md. Used as the
+// chip fallback for legacy rows: the old [Eje][Motor] compounds stored in
+// archetype_label ("Sostén Confiable", "Impulsor Rítmico") are FORBIDDEN in the
+// new canon and must not be displayed.
+const AXIS_CANONICAL: Record<string, string> = { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' };
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function buildReport(perf: any, nowMs: number): HubReport | null {
     if (!perf) return null;
     const ready = reportReady(perf.report_status);
+    // Chip label: the v4 blend name when the row has one; else the CANONICAL axis
+    // name derived from eje (never the retired compound in archetype_label).
+    const label = (perf.report_v4?.hero?.arquetipoLabel as string | undefined)
+        ?? (perf.eje ? AXIS_CANONICAL[perf.eje] ?? null : null)
+        ?? perf.archetype_label ?? null;
     return {
         perfilamiento_id: perf.id,
         status: perf.report_status ?? null,
         ready,
         share_token: perf.share_token ?? null,
-        archetype_label: perf.archetype_label ?? (perf.report_v4?.hero?.arquetipoLabel ?? null),
+        archetype_label: label,
         eje: perf.eje ?? null,
         motor_line: ready ? extractMotorLine(perf.report_v4) : null,
         expires_at: perf.expires_at ?? null,
@@ -281,7 +295,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const blank = (key: string): HubChild => {
         let hc = map.get(key);
         if (!hc) {
-            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null };
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, invites: [] };
             map.set(key, hc);
         }
         return hc;
@@ -410,6 +424,30 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
         hc.bridge_token = tokenByPerf.get(hc.perfilamiento_id) ?? null;
         // Prefer the new bridges row; else legacy ready; else legacy in-progress.
         if (!hc.my_bridge) hc.my_bridge = readyByPerf.get(hc.perfilamiento_id) ?? pendingByPerf.get(hc.perfilamiento_id) ?? null;
+    }
+
+    // Outgoing invitations the viewer sent (still open), so the card reflects the
+    // action ("invitaste a X · pendiente") instead of looking inert afterwards.
+    {
+        const perfIds = children.map((c) => c.perfilamiento_id).filter(Boolean) as string[];
+        if (perfIds.length) {
+            const { data: outInv } = await sb
+                .from('bridge_invites')
+                .select('perfilamiento_id, invited_email, status, expires_at')
+                .ilike('inviter_email', esc)
+                .in('perfilamiento_id', perfIds)
+                .in('status', ['pending', 'accepted']);
+            const invByPerf = new Map<string, { email: string; status: string }[]>();
+            for (const iv of outInv ?? []) {
+                if (iv.expires_at && Date.parse(iv.expires_at) <= nowMs) continue;
+                const arr = invByPerf.get(iv.perfilamiento_id) ?? [];
+                arr.push({ email: iv.invited_email as string, status: iv.status as string });
+                invByPerf.set(iv.perfilamiento_id, arr);
+            }
+            for (const hc of children) {
+                if (hc.perfilamiento_id) hc.invites = invByPerf.get(hc.perfilamiento_id) ?? [];
+            }
+        }
     }
 
     const availableSlots = links.filter((l) => l.status === 'available').length;
