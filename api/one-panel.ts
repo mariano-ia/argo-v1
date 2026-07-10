@@ -346,7 +346,10 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
             hc.age = hc.age ?? perf.child_age ?? null;
             hc.sport = hc.sport ?? perf.sport ?? null;
             hc.perfilamiento_id = perf.id;
-            hc.report = hc.report ?? buildReport(perf, nowMs);
+            // ENTITLEMENT CUT (frozen model 2026-07-10, ARGOONE-DECISIONES.md §3):
+            // a $4.99 bridge gives ONLY the bridge. A child reached exclusively via
+            // a bridge carries NO report (no share_token, no archetype, no motor):
+            // the individual report belongs to the buyer and the authorizing adult.
         }
         hc.my_bridge = buildBridge(b, nowMs);
     }

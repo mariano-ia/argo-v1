@@ -17,8 +17,10 @@ import type {
 
 interface ChildProfileSnapshot {
     eje: string;
-    motor: string;
-    archetype_label: string;
+    // Entitlement cut (frozen model 2026-07-10): puentes-start always sends null
+    // for the child's headline profile data — the $4.99 viewer gets ONLY the bridge.
+    motor: string | null;
+    archetype_label: string | null;
     sport: string;
 }
 
@@ -73,10 +75,13 @@ export default function PuentesFlow() {
                     puentes_session_id: 'demo-1',
                     source_session_id: 'demo-src-1',
                     child_name: 'Lucas',
+                    // Mirrors the real post-cut payload: headline profile data is
+                    // never shipped to the bridge viewer (and the old [Eje][Motor]
+                    // label scheme is forbidden anyway).
                     child_profile: {
                         eje: 'D',
-                        motor: 'Rápido',
-                        archetype_label: 'Impulsor Dinámico',
+                        motor: null,
+                        archetype_label: null,
                         sport: 'Fútbol',
                     },
                     status: 'generated',

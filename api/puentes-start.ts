@@ -70,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (sourceIds.length > 0) {
             const { data: childRows } = await sb
                 .from('perfilamientos')
-                .select('id, child_name, eje, motor, archetype_label, sport, lang, report_v4')
+                .select('id, child_name, eje, sport, lang')
                 .in('id', sourceIds);
             for (const c of childRows ?? []) {
                 childMap[c.id] = c;
@@ -83,12 +83,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 puentes_session_id: s.id,
                 source_session_id: s.source_session_id,
                 child_name: child?.child_name ?? null,
+                // ENTITLEMENT CUT (frozen model 2026-07-10, ARGOONE-DECISIONES.md §3):
+                // the $4.99 buyer gets ONLY their bridge. The child's headline profile
+                // data (archetype_label, motor) never ships to this viewer — `eje`
+                // stays solely as the render theme of the PAID bridge report, and
+                // `sport` as neutral context. The bridge narrative itself lives in
+                // ai_sections, generated server-side.
                 child_profile: child ? {
                     eje: child.eje,
-                    motor: child.motor,
-                    // Prefer the v4 blend label ("Impulsor con veta Estratega") over the legacy
-                    // eje×motor archetype_label; fall back for pre-v4 rows. Mirrors generate-puentes.
-                    archetype_label: child.report_v4?.hero?.arquetipoLabel || child.archetype_label,
+                    motor: null,
+                    archetype_label: null,
                     sport: child.sport,
                 } : null,
                 status: s.status,

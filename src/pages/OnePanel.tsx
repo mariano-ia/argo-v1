@@ -219,7 +219,7 @@ const TH = {
             one_and_done: { t: 'Tu panel', s: 'Todo lo tuyo en un lugar. Guarda este link para volver cuando quieras.' },
             family: { t: 'Tu panel', s: 'Aquí se acumula todo lo tuyo: los niños que autorizaste y tus puentes.' },
             buyer_no_child_yet: { t: '¡Gracias por tu compra!', s: 'Te quedan dos pasos, en el orden que prefieras.' },
-            invited_adult: { t: 'Te invitaron a un puente', s: 'Aquí tienes el informe del niño y tu propio puente.' },
+            invited_adult: { t: 'Tus puentes', s: 'Aquí tienes tu puente con cada niño. Queda guardado para siempre.' },
             empty: { t: 'Tu panel', s: 'Guarda este link para volver cuando quieras.' },
         } as Record<string, { t: string; s: string }>,
         kidsOne: 'El niño',
@@ -231,7 +231,8 @@ const TH = {
         updateReport: 'Actualizar el informe',
         newBridge: (n: string) => `Crear nuevo puente con ${n}`,
         newBridgeTip: (n: string) => `Invita a otro adulto que acompaña a ${n} (la abuela, la tía, el entrenador) a tener su propio puente hacia él. Recibe un link, responde su cuestionario y obtiene su informe puente por USD 4.99. Tú lo autorizas al invitarlo.`,
-        roleNote: 'Como adulto invitado ves el informe del niño y tu propio puente. Re-perfilar o invitar queda en manos de quien lo autorizó.',
+        roleTag: 'tu puente',
+        roleNote: 'Tu puente es tuyo para siempre. El informe individual del niño lo tiene el adulto que lo autorizó: si lo necesitas, pídeselo a él.',
         notPlayedTitle: 'El niño todavía no jugó',
         notPlayedDesc: 'Comparte este link con el adulto que va a acompañarlo. Cuando el niño complete la aventura (menos de 10 minutos), su informe aparece aquí.',
         copyLink: 'Copiar el link para compartir',
@@ -278,7 +279,7 @@ const TH = {
             one_and_done: { t: 'Your panel', s: 'Everything in one place. Save this link to come back anytime.' },
             family: { t: 'Your panel', s: 'Everything gathers here: the children you authorized and your bridges.' },
             buyer_no_child_yet: { t: 'Thanks for your purchase!', s: 'Two steps left, in whatever order you prefer.' },
-            invited_adult: { t: 'You were invited to a bridge', s: "Here is the child's report and your own bridge." },
+            invited_adult: { t: 'Your bridges', s: 'Here is your bridge with each child. It lives here forever.' },
             empty: { t: 'Your panel', s: 'Save this link to come back anytime.' },
         } as Record<string, { t: string; s: string }>,
         kidsOne: 'The child',
@@ -290,7 +291,8 @@ const TH = {
         updateReport: 'Update the report',
         newBridge: (n: string) => `Create a new bridge with ${n}`,
         newBridgeTip: (n: string) => `Invite another adult who accompanies ${n} (a grandparent, an aunt, the coach) to have their own bridge. They get a link, answer their questionnaire, and receive their bridge report for USD 4.99. You authorize them by inviting them.`,
-        roleNote: "As an invited adult you see the child's report and your own bridge. Re-profiling or inviting stays with whoever authorized the child.",
+        roleTag: 'your bridge',
+        roleNote: "Your bridge is yours forever. The child's individual report belongs to the adult who authorized them: if you need it, ask them.",
         notPlayedTitle: "The child hasn't played yet",
         notPlayedDesc: 'Share this link with the adult who will accompany them. When the child completes the adventure (under 10 minutes), their report appears here.',
         copyLink: 'Copy the link to share',
@@ -337,7 +339,7 @@ const TH = {
             one_and_done: { t: 'Seu painel', s: 'Tudo em um só lugar. Guarde este link para voltar quando quiser.' },
             family: { t: 'Seu painel', s: 'Aqui se acumula tudo seu: as crianças que você autorizou e suas pontes.' },
             buyer_no_child_yet: { t: 'Obrigado pela sua compra!', s: 'Faltam dois passos, na ordem que preferir.' },
-            invited_adult: { t: 'Você foi convidado a uma ponte', s: 'Aqui está o relatório da criança e a sua própria ponte.' },
+            invited_adult: { t: 'Suas pontes', s: 'Aqui está a sua ponte com cada criança. Ela vive aqui para sempre.' },
             empty: { t: 'Seu painel', s: 'Guarde este link para voltar quando quiser.' },
         } as Record<string, { t: string; s: string }>,
         kidsOne: 'A criança',
@@ -349,7 +351,8 @@ const TH = {
         updateReport: 'Atualizar o relatório',
         newBridge: (n: string) => `Criar nova ponte com ${n}`,
         newBridgeTip: (n: string) => `Convide outro adulto que acompanha ${n} (a avó, a tia, o treinador) a ter sua própria ponte. Ele recebe um link, responde seu questionário e obtém seu relatório de ponte por USD 4.99. Você o autoriza ao convidá-lo.`,
-        roleNote: 'Como adulto convidado você vê o relatório da criança e a sua própria ponte. Reperfilar ou convidar fica a cargo de quem a autorizou.',
+        roleTag: 'sua ponte',
+        roleNote: 'A sua ponte é sua para sempre. O relatório individual da criança pertence ao adulto que a autorizou: se precisar dele, peça a ele.',
         notPlayedTitle: 'A criança ainda não jogou',
         notPlayedDesc: 'Compartilhe este link com o adulto que vai acompanhá-la. Quando a criança completar a aventura (menos de 10 minutos), seu relatório aparece aqui.',
         copyLink: 'Copiar o link para compartilhar',
@@ -451,7 +454,7 @@ const HubChildCard: React.FC<{
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
                                     <p className="text-base font-bold text-argo-navy tracking-tight truncate">{name}</p>
-                                    {meta && <p className="text-[12.5px] text-argo-grey mt-0.5">{meta}{child.is_invited ? ` · ${th.roleNote.split('.')[0].toLowerCase()}` : ''}</p>}
+                                    {meta && <p className="text-[12.5px] text-argo-grey mt-0.5">{meta}{child.is_invited ? ` · ${th.roleTag}` : ''}</p>}
                                 </div>
                                 {reportReady && child.report?.archetype_label && (
                                     <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-argo-neutral text-argo-secondary flex-shrink-0">
@@ -817,7 +820,9 @@ function buildDemoHub(state: string): HubData {
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'buyer_no_child_yet', children: [pending], available_slots: 1, can_upgrade_academy: false };
     }
     if (state === 'invitada') {
-        const invited: HubChildF = { ...juan, is_buyer: false, is_responsible: false, is_invited: true, deletion_id: null };
+        // Mirrors the real payload post entitlement cut: a bridge-only child
+        // carries NO report (no share_token, no archetype, no motor).
+        const invited: HubChildF = { ...juan, report: null, is_buyer: false, is_responsible: false, is_invited: true, deletion_id: null };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'invited_adult', children: [invited], available_slots: 0, can_upgrade_academy: false };
     }
     // padre (one adult, one child)

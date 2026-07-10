@@ -80,8 +80,10 @@ export default function PuenteInvite() {
     useEffect(() => {
         if (!token) { setStatus('invalid'); return; }
         // DEV preview: /puente/invite/demo renders a sample offer (no API under Vite).
+        // Mirrors the real post-cut payload: pre-payment the endpoint ships ONLY the
+        // child's first name (age/sport/eje/archetype are null until onboarding+pago).
         if (import.meta.env.DEV && token === 'demo') {
-            setData({ perfilamiento_id: 'demo', invited_email: 'abuela@ejemplo.com', child_name: 'Juan', child_age: 10, sport: 'fútbol', eje: 'D', archetype_label: 'Impulsor con veta Conector', lang: 'es' });
+            setData({ perfilamiento_id: 'demo', invited_email: 'abuela@ejemplo.com', child_name: 'Juan', child_age: null, sport: null, eje: null, archetype_label: null, lang: 'es' });
             setStatus('ok');
             return;
         }

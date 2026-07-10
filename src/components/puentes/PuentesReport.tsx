@@ -12,8 +12,10 @@ import type {
 
 interface ChildProfileSnapshot {
     eje: string;
-    motor: string;
-    archetype_label: string;
+    // Entitlement cut (frozen model 2026-07-10): puentes-start always sends null
+    // for the child's headline profile data — the $4.99 viewer gets ONLY the bridge.
+    motor: string | null;
+    archetype_label: string | null;
     sport: string;
 }
 

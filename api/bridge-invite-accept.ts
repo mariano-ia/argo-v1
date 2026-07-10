@@ -73,28 +73,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // (child removed by the responsible adult) — fail closed the same way.
     const { data: perf } = await sb
         .from('perfilamientos')
-        .select('id, child_name, child_age, sport, eje, archetype_label, report_v4, report_status, lang, deleted_at')
+        .select('id, child_name, lang, deleted_at')
         .eq('id', inv.perfilamiento_id)
         .maybeSingle();
     if (!perf || perf.deleted_at) {
         return res.status(404).json({ error: 'invalid_invite' });
     }
 
-    const ready = perf.report_status == null || perf.report_status === 'ready' || perf.report_status === 'sent';
-    const label = (perf.report_v4 as { hero?: { arquetipoLabel?: string } } | null)?.hero?.arquetipoLabel
-        || (perf as { archetype_label?: string }).archetype_label
-        || null;
+    // PII CUT (frozen model 2026-07-10, ARGOONE-DECISIONES.md): pre-payment, a
+    // token bearer learns ONLY the child's first name. Age, sport, axis and
+    // archetype are profile data and never leave before onboarding + payment.
+    const firstName = ((perf.child_name as string | null) ?? '').trim().split(/\s+/)[0] || null;
 
     return res.status(200).json({
         ok: true,
         perfilamiento_id: perf.id,
         invited_email: inv.invited_email,
         relation: inv.relation ?? null,
-        child_name: perf.child_name ?? null,
-        child_age: perf.child_age ?? null,
-        sport: perf.sport ?? null,
-        eje: perf.eje ?? null,
-        archetype_label: ready ? label : null,
+        child_name: firstName,
+        child_age: null,
+        sport: null,
+        eje: null,
+        archetype_label: null,
         lang: perf.lang || 'es',
     });
 }

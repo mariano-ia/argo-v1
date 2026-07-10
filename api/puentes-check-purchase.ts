@@ -27,12 +27,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (error || !purchase) return res.status(404).json({ error: 'Purchase not found' });
 
-        // Only expose magic_token once paid. While pending, return status only.
+        // Only expose magic_token once paid. While pending, return status only —
+        // and, per the frozen model's pre-payment PII rule (ARGOONE-DECISIONES.md),
+        // only the child's FIRST name until the purchase is paid.
         if (purchase.status !== 'paid') {
+            const firstName = ((purchase.child_name as string | null) ?? '').trim().split(/\s+/)[0] || null;
             return res.status(200).json({
                 status: purchase.status,
                 recipient_email: purchase.recipient_email,
-                child_name: purchase.child_name,
+                child_name: firstName,
                 lang: purchase.lang,
             });
         }
