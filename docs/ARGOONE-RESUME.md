@@ -89,14 +89,34 @@ verificación typecheck/imports/qa/build + render Playwright → commit local). 
 - **NO cubierto (necesita humano/deploy):** compra Stripe test E2E en develop, verificación de emails reales,
   y el apply real de M7/M8.
 
-## LA PRÓXIMA TAREA: cutover (L9) — NECESITA OK DEL OWNER
-1. **Push a develop** + prender flags en develop.argomethod.com + **compra Stripe test E2E** (humano).
+## DEVELOP LIVE (2026-07-10): pusheado + flags ON + E2E de plata verificado
+- **Push a develop hecho** (21 commits `e87c07f`..`41f47b6`). Flags en Vercel **Preview (develop) SOLO** (Production
+  intacto): `ONE_UNIFIED_SKU/ONE_V2_COMPLETE/PUENTES_BRIDGES/PUENTES_ADDON_V2/RENEWAL_CRON_V2=on`,
+  `VITE_BRIDGES_V2=1`, `SITE_URL=https://develop.argomethod.com` (así success_url/emails apuntan a develop).
+  `CHILD_DELETE_ENABLED` deliberadamente AUSENTE (borrado = dry-run + traza).
+- **E2E de plata en develop, sin plata real** (método 13/13: webhook firmado sintético): one-checkout forzó
+  `one_puente` $12.99 con `kind:"one"` (SKU unificado VIVO) → webhook firmado 200 → compra `paid` +
+  `includes_puente` + 1 link → **one-panel devolvió el hub v2 REAL** (rol familia, 19 niños del owner, 6 slots)
+  → email HUB de dos pistas al inbox del owner. Probes: child-delete anti-enum OK, renewal-cron dry-run
+  `mode:renewal_v2, candidates:0` OK, pricing modal Comprar→email→(Stripe) OK.
+- **Compra sintética de prueba**: `one_purchases 04119d6e-…` (email del owner, $12.99 paid, provider sintético).
+  Sirve como fixture para el test manual del owner; al terminar, marcarla `refunded` vía SQL para no ensuciar
+  admin-revenue (o borrar el niño de prueba vía /eliminar cuando se habilite).
+- **BONUS — bug preexistente de PROD encontrado y arreglado** (`41f47b6`): el prerender borraba el `<script>` del
+  bundle de TODAS las páginas prerenderizadas salvo home (pricing/blog/legal muertas en carga directa, SEO/ads).
+  Fix verificado vivo en develop. **Producción sigue rota hasta que develop→main se apruebe.**
+
+## LA PRÓXIMA TAREA: pasada manual del owner en develop → cutover (L9)
+1. **Owner en develop.argomethod.com**: abrir el email HUB → panel → copiar link de juego → jugar un niño de
+   prueba → ver informe + puente comp gratis → invitar a otro adulto (o su compra real de $12.99, el "money-in
+   test" pendiente de PAYMENTS-READINESS).
 2. **M7 + M8** — aplicar a prod TRANSACCIONAL con ensayo/ROLLBACK + probe (SQL listo en
    `supabase/migrations/20260709_argoone_fusion_cutover_prep.sql`; ver caveat security_invoker).
-3. **Habilitar `CHILD_DELETE_ENABLED`** (borrado destructivo real) — tu OK.
-4. **L9 cutover** — prender flags en prod en orden (`ONE_UNIFIED_SKU` → `ONE_V2_COMPLETE` → `PUENTES_BRIDGES` →
-   `PUENTES_ADDON_V2` → `RENEWAL_CRON_V2` → `VITE_BRIDGES_V2`), verificando entre cada uno. Rollback = apagar flags.
-   Pendiente menor post-cutover: checkout cycle-aware (refresh $4.99 de un puente vencido) + F11 banner en /report.
+3. **Habilitar `CHILD_DELETE_ENABLED`** (borrado destructivo real) — OK del owner.
+4. **L9 cutover** — merge develop→main (con OK explícito) + prender flags en PRODUCTION en orden
+   (`ONE_UNIFIED_SKU` → `ONE_V2_COMPLETE` → `PUENTES_BRIDGES` → `PUENTES_ADDON_V2` → `RENEWAL_CRON_V2` →
+   `VITE_BRIDGES_V2`), verificando entre cada uno. Rollback = apagar flags. Post-cutover menor: checkout
+   cycle-aware (refresh $4.99) + F11 banner en /report.
 
 ## Deuda registrada (NO se te olvide)
 - **#3** reminder `skip-if-paid` sigue per-email (suprime recordatorios legítimos) → va con B16 (renewal-cron per-child).
