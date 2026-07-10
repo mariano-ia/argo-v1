@@ -34,6 +34,10 @@ interface StartSessionPayload {
     // Short-lived token issued by /api/start-play (tenant play only).
     playToken?: string;
     isDemo?: boolean;
+    // ArgoOne: the one_links.id of the play link, so the server binds
+    // link→session at START (the recovery sweep can then finish a completion
+    // even if the browser dies later). Server-side flag-gated.
+    oneLinkId?: string;
 }
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
@@ -104,6 +108,9 @@ export async function startSession(payload: StartSessionPayload): Promise<{ ok: 
     }
     if (payload.playToken) {
         body.play_token = payload.playToken;
+    }
+    if (payload.oneLinkId) {
+        body.one_link_id = payload.oneLinkId;
     }
 
     if (import.meta.env.DEV) {

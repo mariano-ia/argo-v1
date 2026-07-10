@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { randomBytes } from 'crypto';
 // Inlined Principia activity logger (best-effort, never throws). Vercel serverless
 // functions here don't bundle cross-directory imports, so importing ../src/lib
 // throws ERR_MODULE_NOT_FOUND at runtime (this broke this cron in prod).
@@ -137,6 +138,81 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     } catch (e) { console.warn('[report-recovery-cron] heartbeat failed:', e); }
     const origin = process.env.SITE_URL || 'https://www.argomethod.com';
+
+    // ── ArgoOne completion SWEEP (fusion; flag-gated, best-effort) ───────────
+    // The browser-driven one-complete can die with the tab. session.ts binds
+    // one_links.session_id at START; this sweep finds bound links whose play
+    // RESOLVED but whose completion never landed, and finishes it server-side
+    // (mirror of one-complete's V2 LINK path). Idempotent; a 10-minute age floor
+    // avoids racing the browser's own early completion. No user is ever left
+    // needing manual repair.
+    if (process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on') {
+        try {
+            const { data: staleLinks } = await sb
+                .from('one_links')
+                .select('id, session_id, purchase_id')
+                .in('status', ['pending', 'sent'])
+                .not('session_id', 'is', null)
+                .limit(10);
+            const ageFloor = Date.now() - 10 * 60 * 1000;
+            for (const l of staleLinks ?? []) {
+                const { data: perf } = await sb
+                    .from('perfilamientos')
+                    .select('id, status, child_id, adult_name, adult_email, child_name, lang, expires_at, created_at')
+                    .eq('id', l.session_id)
+                    .maybeSingle();
+                if (!perf || perf.status !== 'resolved') continue;
+                if (Date.parse(perf.created_at) > ageFloor) continue; // too fresh — browser may still complete it
+
+                await sb.from('one_links').update({
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                    ...(perf.child_id ? { child_id: perf.child_id } : {}),
+                }).eq('id', l.id).neq('status', 'completed');
+
+                if (perf.child_id) {
+                    await sb.from('children').update({
+                        responsible_adult_email: perf.adult_email,
+                    }).eq('id', perf.child_id).is('responsible_adult_email', null);
+                }
+                if (!perf.expires_at) {
+                    const d = new Date(perf.created_at);
+                    const day = d.getDate();
+                    d.setMonth(d.getMonth() + 6);
+                    if (d.getDate() !== day) d.setDate(0);
+                    await sb.from('perfilamientos').update({ expires_at: d.toISOString() }).eq('id', perf.id);
+                }
+                // Included comp puente → the BUYER (R4), idempotent per (email × perfilamiento).
+                const { data: op } = await sb.from('one_purchases').select('email, includes_puente').eq('id', l.purchase_id).maybeSingle();
+                if (op?.includes_puente && op.email) {
+                    const { data: existingComp } = await sb.from('puentes_purchases').select('id')
+                        .eq('recipient_email', op.email)
+                        .eq('source_session_id', perf.id)
+                        .eq('status', 'paid')
+                        .maybeSingle();
+                    if (!existingComp) {
+                        await sb.from('puentes_purchases').insert({
+                            source_session_id: perf.id,
+                            recipient_email: op.email,
+                            recipient_name: null,
+                            child_name: perf.child_name,
+                            amount_cents: 0,
+                            currency: 'USD',
+                            provider: 'comp',
+                            provider_payment_id: `combo_${l.purchase_id}`,
+                            status: 'paid',
+                            paid_at: new Date().toISOString(),
+                            magic_token: randomBytes(24).toString('base64url'),
+                            lang: perf.lang || 'es',
+                            source: 'argo_one',
+                            tenant_id: null,
+                        });
+                    }
+                }
+                console.info('[report-recovery] argoone completion swept for link', l.id);
+            }
+        } catch (e) { console.warn('[report-recovery] argoone sweep failed (non-blocking):', e); }
+    }
 
     // Hard floor: never recover any session created before this fix shipped.
     // This guarantees we only act "from now forward" and never back-email the

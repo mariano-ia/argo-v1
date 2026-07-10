@@ -206,7 +206,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     try {
         // ── Start session ────────────────────────────────────────────────────
         if (action === 'start') {
-            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token, play_token, is_demo } = fields;
+            const { adult_name, adult_email, child_name, child_age, sport, tenant_id, lang, consent_token, play_token, is_demo, one_link_id } = fields;
 
             if (!adult_email || !child_name) {
                 return res.status(400).json({ error: 'Missing required fields: adult_email, child_name' });
@@ -346,6 +346,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Link the consent to the perfilamiento + child for audit (COPPA chain).
             if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
                 await sb.from('parental_consents').update({ session_id: perf.id, child_id: childId }).eq('token', consent_token);
+            }
+
+            // ── ArgoOne fusion: bind the one_link to the session AT START ──────
+            // (ONE_V2_COMPLETE / ONE_UNIFIED_SKU). The browser-driven one-complete
+            // can die with the tab; binding link→session here (while the tab is
+            // provably alive) lets the report-recovery-cron sweep finish any
+            // completion server-side. Best-effort: only an UNBOUND, not-completed
+            // link may bind, and a failure never blocks the play.
+            if ((process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on') && typeof one_link_id === 'string' && one_link_id) {
+                try {
+                    await sb.from('one_links')
+                        .update({ session_id: perf.id })
+                        .eq('id', one_link_id)
+                        .neq('status', 'completed')
+                        .is('session_id', null);
+                } catch (e) {
+                    console.warn('[session:start] one_link bind failed (non-blocking):', e);
+                }
             }
 
             await ensureTeamMembership(sb, effectiveTeamId, childId);

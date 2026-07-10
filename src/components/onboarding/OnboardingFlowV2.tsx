@@ -288,6 +288,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             lang,
             consentToken: consentTokenRef.current ?? undefined,
             isDemo: demoMode,
+            oneLinkId: oneLinkId || undefined,
         }).then(result => {
             if (result.ok && result.id) {
                 sessionIdRef.current = result.id;
