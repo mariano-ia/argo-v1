@@ -75,6 +75,12 @@
   .menu a:hover { background:var(--neutral); }
   .menu .mnote { font-size:11px; color:var(--grey); font-weight:600; }
   .menu .danger { color:#DC2626; }
+  .linkrow.kid { display:block; }
+  .kmain { min-width:0; }
+  .khead { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .khead .lbl b { font-size:14px; }
+  .kactions { display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .moreWrap { position:relative; display:inline-flex; }
 
   /* ── Links tab: compact rows ── */
   .linkrows { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
@@ -107,102 +113,99 @@
     <button class="tab" role="tab" aria-selected="false" data-tab="links">Links de juego <span class="count">6</span></button>
   </div>
 
-  <!-- ══ TAB: NIÑOS — card mínima: identidad + UNA fila de acciones. ══
-       Regla: [Ver el informe] + EL botón de puente (su label ES el estado:
-       Ver / Crear incluido / Sumar $4.99 / Continuar) + menú ⋯ con lo demás
-       (invitar a otro adulto, actualizar, eliminar). Sin fila gris, sin motor. -->
+  <!-- Siempre visible, en las dos tabs -->
+  <div class="buyrow" style="border:1px solid var(--violet-border); border-radius:12px; margin-bottom:14px;">
+    <span class="t">Cada link es una aventura y un informe nuevo.</span>
+    <a class="btn btn-primary" href="#">Perfilar a otro niño <span class="price-tag">USD 12.99</span></a>
+  </div>
+
+  <!-- ══ TAB: NIÑOS — filas compactas (mismo tratamiento que Links de juego).
+       Sin avatar; el chip lleva el color del eje. Botón de informe nominal.
+       El menú ⋯ abre/cierra al tocarlo. ══ -->
   <div id="tab-ninos">
-    <!-- Niñito: puente listo -->
-    <div class="card">
-      <div class="pad">
-        <div class="row">
-          <div class="avatar" style="background:var(--ax-d)">N</div>
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-              <div><p class="name">Niñito</p><p class="meta">13 años · Básquet</p></div>
-              <span class="chip"><span class="dot" style="background:var(--ax-d)"></span>Impulsor con destellos de Conector</span>
-            </div>
-            <div class="actions">
-              <a class="btn btn-primary" href="#">Ver el informe</a>
-              <a class="btn btn-secondary" href="#">Ver mi puente</a>
-              <button class="btn btn-secondary more">⋯</button>
-            </div>
+    <div class="linkrows" style="overflow:visible;">
+
+      <!-- Niñito: puente listo -->
+      <div class="linkrow kid">
+        <div class="kmain">
+          <div class="khead">
+            <span class="lbl"><b>Niñito</b><span class="sub">13 años · Básquet</span></span>
+            <span class="chip"><span class="dot" style="background:var(--ax-d)"></span>Impulsor con destellos de Conector</span>
+          </div>
+          <div class="kactions">
+            <a class="btn btn-primary" href="#">Ver informe individual de Niñito</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
+              <div class="menu" hidden>
+                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
+                <a href="#">Actualizar el informe <span class="mnote">USD 12.99</span></a>
+                <a href="#" class="danger">Eliminar los datos de Niñito</a>
+              </div>
+            </span>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Keven: puente listo + invitación pendiente + menú ⋯ ABIERTO (ilustrativo) -->
-    <div class="card" style="overflow:visible;">
-      <div class="pad">
-        <div class="row">
-          <div class="avatar" style="background:var(--ax-s)">K</div>
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-              <div><p class="name">Keven</p><p class="meta">13 años · Rugby</p></div>
-              <span class="chip"><span class="dot" style="background:var(--ax-s)"></span>Sostenedor</span>
-            </div>
-            <div class="actions" style="position:relative;">
-              <a class="btn btn-primary" href="#">Ver el informe</a>
-              <a class="btn btn-secondary" href="#">Ver mi puente</a>
-              <button class="btn btn-secondary more" style="background:var(--neutral);">⋯</button>
-              <!-- menú abierto (así se ve al tocar ⋯) -->
-              <div class="menu">
+      <!-- Keven: puente listo + invitación pendiente -->
+      <div class="linkrow kid">
+        <div class="kmain">
+          <div class="khead">
+            <span class="lbl"><b>Keven</b><span class="sub">13 años · Rugby</span></span>
+            <span class="chip"><span class="dot" style="background:var(--ax-s)"></span>Sostenedor</span>
+          </div>
+          <div class="kactions">
+            <a class="btn btn-primary" href="#">Ver informe individual de Keven</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
+              <div class="menu" hidden>
                 <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
                 <a href="#">Actualizar el informe <span class="mnote">USD 12.99</span></a>
                 <a href="#" class="danger">Eliminar los datos de Keven</a>
               </div>
-            </div>
-            <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
+            </span>
           </div>
+          <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
         </div>
       </div>
-    </div>
 
-    <!-- Sofía: informe retrasado (tira ámbar fina) + sin puente -->
-    <div class="card">
-      <div class="pad">
-        <div class="row">
-          <div class="avatar" style="background:var(--ax-i)">S</div>
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-              <div><p class="name">Sofía</p><p class="meta">14 años · Volleyball</p></div>
-              <span class="chip"><span class="dot" style="background:var(--ax-i)"></span>Conector</span>
-            </div>
-            <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo.</p>
-            <div class="actions">
-              <a class="btn btn-secondary" href="#">Ver el informe</a>
-              <a class="btn btn-primary" href="#">Actualizar <span class="price-tag">USD 12.99</span></a>
-              <button class="btn btn-secondary more">⋯</button>
-            </div>
+      <!-- Sofía: informe retrasado, sin puente -->
+      <div class="linkrow kid">
+        <div class="kmain">
+          <div class="khead">
+            <span class="lbl"><b>Sofía</b><span class="sub">14 años · Volleyball</span></span>
+            <span class="chip"><span class="dot" style="background:var(--ax-i)"></span>Conector</span>
+          </div>
+          <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo.</p>
+          <div class="kactions">
+            <a class="btn btn-secondary" href="#">Ver informe individual de Sofía</a>
+            <a class="btn btn-primary" href="#">Actualizar <span class="price-tag">USD 12.99</span></a>
+            <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
+              <div class="menu" hidden>
+                <a href="#">Sumar mi puente <span class="mnote">USD 4.99</span></a>
+                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
+                <a href="#" class="danger">Eliminar los datos de Sofía</a>
+              </div>
+            </span>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Mateo: preparando -->
-    <div class="card">
-      <div class="pad">
-        <div class="row">
-          <div class="avatar" style="background:var(--neutral); color:var(--light)">M</div>
-          <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-              <div><p class="name">Mateo</p><p class="meta">8 años · Básquet · te avisamos por email cuando su informe esté listo</p></div>
-              <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
-            </div>
+      <!-- Mateo: preparando -->
+      <div class="linkrow kid">
+        <div class="kmain">
+          <div class="khead">
+            <span class="lbl"><b>Mateo</b><span class="sub">8 años · Básquet · te avisamos por email cuando su informe esté listo</span></span>
+            <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
   <!-- ══ TAB: LINKS DE JUEGO (filas compactas + CTA de compra) ══ -->
   <div id="tab-links" hidden>
     <div class="linkrows">
-      <div class="buyrow">
-        <span class="t">Cada link es una aventura y un informe nuevo.</span>
-        <a class="btn btn-primary" href="#">Perfilar a otro niño <span class="price-tag">USD 12.99</span></a>
-      </div>
       <div class="linkrow"><span class="st sent"></span><span class="lbl">Enviado a carla@ejemplo.com<span class="sub">esperando que juegue · hace 2 días</span></span><a class="btn btn-secondary" href="#">Copiar</a><a class="btn btn-ghost" href="#">Reenviar</a></div>
       <div class="linkrow"><span class="st sent"></span><span class="lbl">Enviado a tio.raul@ejemplo.com<span class="sub">esperando que juegue · hace 5 horas</span></span><a class="btn btn-secondary" href="#">Copiar</a><a class="btn btn-ghost" href="#">Reenviar</a></div>
       <div class="linkrow"><span class="st avail"></span><span class="lbl">Link disponible<span class="sub">compártelo con el adulto que acompaña al niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
@@ -230,6 +233,16 @@
 </div>
 
 <script>
+  document.querySelectorAll('.moreWrap .more').forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var menu = btn.parentElement.querySelector('.menu');
+      var wasHidden = menu.hidden;
+      document.querySelectorAll('.menu').forEach(function (m) { m.hidden = true; });
+      menu.hidden = !wasHidden;
+    });
+  });
+  document.addEventListener('click', function () { document.querySelectorAll('.menu').forEach(function (m) { m.hidden = true; }); });
   document.querySelectorAll('.tab').forEach(function (t) {
     t.addEventListener('click', function () {
       document.querySelectorAll('.tab').forEach(function (x) { x.setAttribute('aria-selected', String(x === t)); });
