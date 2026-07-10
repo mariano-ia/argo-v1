@@ -66,6 +66,15 @@
   .price-tag { font-size:11px; font-weight:700; opacity:.85; }
   .info { width:15px; height:15px; border-radius:50%; border:1px solid var(--light); color:var(--grey);
     font-size:9.5px; font-weight:700; font-style:italic; display:inline-flex; align-items:center; justify-content:center; cursor:help; flex:none; }
+  .more { padding:8px 11px; color:var(--grey); font-weight:800; letter-spacing:1px; }
+  .staleline { font-size:12px; color:var(--amber-fg); margin:7px 0 0; }
+  .menu { position:absolute; top:calc(100% + 6px); right:0; z-index:30; min-width:250px;
+    background:var(--card); border:1px solid var(--border); border-radius:12px; box-shadow:0 12px 32px rgba(29,29,31,0.14); padding:6px; }
+  .menu a { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:9px 12px;
+    border-radius:8px; font-size:13px; font-weight:500; color:var(--navy); text-decoration:none; }
+  .menu a:hover { background:var(--neutral); }
+  .menu .mnote { font-size:11px; color:var(--grey); font-weight:600; }
+  .menu .danger { color:#DC2626; }
 
   /* ── Links tab: compact rows ── */
   .linkrows { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
@@ -98,9 +107,12 @@
     <button class="tab" role="tab" aria-selected="false" data-tab="links">Links de juego <span class="count">6</span></button>
   </div>
 
-  <!-- ══ TAB: NIÑOS (solo los que jugaron; cards más bajas) ══ -->
+  <!-- ══ TAB: NIÑOS — card mínima: identidad + UNA fila de acciones. ══
+       Regla: [Ver el informe] + EL botón de puente (su label ES el estado:
+       Ver / Crear incluido / Sumar $4.99 / Continuar) + menú ⋯ con lo demás
+       (invitar a otro adulto, actualizar, eliminar). Sin fila gris, sin motor. -->
   <div id="tab-ninos">
-    <!-- Niñito: informe v4 + puente listo -->
+    <!-- Niñito: puente listo -->
     <div class="card">
       <div class="pad">
         <div class="row">
@@ -110,22 +122,18 @@
               <div><p class="name">Niñito</p><p class="meta">13 años · Básquet</p></div>
               <span class="chip"><span class="dot" style="background:var(--ax-d)"></span>Impulsor con destellos de Conector</span>
             </div>
-            <p class="motorline"><b>Su motor:</b> ritmo equilibrado. Combina impulso con pausas para leer el juego.</p>
-            <div class="actions"><a class="btn btn-primary" href="#">Ver el informe</a></div>
+            <div class="actions">
+              <a class="btn btn-primary" href="#">Ver el informe</a>
+              <a class="btn btn-secondary" href="#">Ver mi puente</a>
+              <button class="btn btn-secondary more">⋯</button>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="puente">
-        <div class="txt"><b>Tu puente hacia Niñito:</b> listo</div>
-        <div class="side">
-          <a class="btn btn-secondary" href="#">Ver mi puente</a>
-          <a class="btn btn-ghost" href="#">Invitar a otro adulto</a><span class="info">i</span>
         </div>
       </div>
     </div>
 
-    <!-- Keven: puente listo + invitación pendiente -->
-    <div class="card">
+    <!-- Keven: puente listo + invitación pendiente + menú ⋯ ABIERTO (ilustrativo) -->
+    <div class="card" style="overflow:visible;">
       <div class="pad">
         <div class="row">
           <div class="avatar" style="background:var(--ax-s)">K</div>
@@ -134,21 +142,24 @@
               <div><p class="name">Keven</p><p class="meta">13 años · Rugby</p></div>
               <span class="chip"><span class="dot" style="background:var(--ax-s)"></span>Sostenedor</span>
             </div>
+            <div class="actions" style="position:relative;">
+              <a class="btn btn-primary" href="#">Ver el informe</a>
+              <a class="btn btn-secondary" href="#">Ver mi puente</a>
+              <button class="btn btn-secondary more" style="background:var(--neutral);">⋯</button>
+              <!-- menú abierto (así se ve al tocar ⋯) -->
+              <div class="menu">
+                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
+                <a href="#">Actualizar el informe <span class="mnote">USD 12.99</span></a>
+                <a href="#" class="danger">Eliminar los datos de Keven</a>
+              </div>
+            </div>
             <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
-            <div class="actions"><a class="btn btn-primary" href="#">Ver el informe</a></div>
           </div>
-        </div>
-      </div>
-      <div class="puente">
-        <div class="txt"><b>Tu puente hacia Keven:</b> listo</div>
-        <div class="side">
-          <a class="btn btn-secondary" href="#">Ver mi puente</a>
-          <a class="btn btn-ghost" href="#">Invitar a otro adulto</a><span class="info">i</span>
         </div>
       </div>
     </div>
 
-    <!-- Sofía: informe retrasado -->
+    <!-- Sofía: informe retrasado (tira ámbar fina) + sin puente -->
     <div class="card">
       <div class="pad">
         <div class="row">
@@ -158,17 +169,14 @@
               <div><p class="name">Sofía</p><p class="meta">14 años · Volleyball</p></div>
               <span class="chip"><span class="dot" style="background:var(--ax-i)"></span>Conector</span>
             </div>
-            <div class="banner">! El informe tiene más de 6 meses. Puedes seguir consultándolo; para la foto de hoy, vuelve a jugar.</div>
+            <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo.</p>
             <div class="actions">
               <a class="btn btn-secondary" href="#">Ver el informe</a>
-              <a class="btn btn-primary" href="#">Actualizar el informe <span class="price-tag">USD 12.99</span></a>
+              <a class="btn btn-primary" href="#">Actualizar <span class="price-tag">USD 12.99</span></a>
+              <button class="btn btn-secondary more">⋯</button>
             </div>
           </div>
         </div>
-      </div>
-      <div class="puente">
-        <div class="txt">Todavía no sumaste tu puente hacia Sofía.</div>
-        <div class="side"><a class="btn btn-secondary" href="#">Sumar mi puente <span class="price-tag">USD 4.99</span></a></div>
       </div>
     </div>
 
@@ -178,11 +186,10 @@
         <div class="row">
           <div class="avatar" style="background:var(--neutral); color:var(--light)">M</div>
           <div style="flex:1; min-width:0;">
-            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
-              <div><p class="name">Mateo</p><p class="meta">8 años · Básquet</p></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+              <div><p class="name">Mateo</p><p class="meta">8 años · Básquet · te avisamos por email cuando su informe esté listo</p></div>
               <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
             </div>
-            <p class="motorline" style="color:var(--grey)">Su informe está en revisión. Te avisamos por email cuando esté listo.</p>
           </div>
         </div>
       </div>
