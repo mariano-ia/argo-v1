@@ -63,15 +63,40 @@ verificación typecheck/imports/qa/build + render Playwright → commit local). 
 - **Fase 5 / F4+F3** (`8abfeb1`) — `PricingPage` producto único $12.99 + modal de email → one-checkout/Stripe (detrás de
   `VITE_BRIDGES_V2`). Copy buyer-neutral ("el niño"). Sweep de copy limpio en toda la superficie fusión.
 
-## LA PRÓXIMA TAREA: cutover (Fase 6) — NECESITA OK DEL OWNER
-El SQL de cutover-prep está escrito **SIN aplicar** en `supabase/migrations/20260709_argoone_fusion_cutover_prep.sql`
-(M7 vista + expires_at con el caveat de security_invoker; M8 backfill 24 puentes + trigger). Falta:
-1. **M7 + M8** — aplicar a prod TRANSACCIONAL con ensayo/ROLLBACK + probe (tu OK; ver caveats en el .sql).
-2. **B12** (read-side puente sobre bridges) + **B16** (renewal-cron por vencimiento, arregla deuda #3) + **B20**
-   (check-purchase backward-compat) — código inerte-hasta-cutover (los crons no corren en preview). Sin construir aún.
+## Fase 7 (2026-07-10, `078d1ac`) — el último código: B12 fast-path + Ver mi puente + B16 + B20
+- **B12 fast-path (R6, `PUENTES_BRIDGES`):** `puentes-start` devuelve `profile_fresh`; `puentes-complete` acepta
+  `{use_saved_profile}` (reusa el disc guardado SIN refrescar computed_at/expires_at del perfil; el bridge snapshot
+  lleva el computed_at REAL; 409 → el front cae al cuestionario). `PuentesFlow`/`PuentesIntro` con copy fast-path.
+- **"Ver mi puente" REAL:** el hub mapea las compras puente pagadas + sessions legacy **por SESSION** (una compra
+  fan-out pre-L0 tiene varias — 6 compras / 23 sessions hermanas en prod; keyar por compra las escondía y podía
+  RE-COBRAR $4.99). `bridge_token` abre `/puentes/:token` en cualquier estado; in-progress = "Continuar mi puente";
+  el refresh $4.99 en stale queda deliberadamente AFUERA hasta que el checkout sea cycle-aware.
+- **B16 (`RENEWAL_CRON_V2`):** branch de renovación por vencimiento en el reminder-cron — solo el perfilamiento
+  CURRENT por niño (los superseded se neutralizan), demos excluidos, satélites en SU idioma con su magic link,
+  `?dry=1`, errores de mark visibles. Arregla deuda #3. Legacy intacto con flag off.
+- **B20:** verificado SIN cambio (lee una compra por id, ya es compatible per-child).
+- Review adversarial: 10 hallazgos aplicados (incl. el HIGH del doble cobro por hermanos fan-out).
+
+## QA (2026-07-10) — VERDE en todo lo automatizable
+- **Local:** typecheck api+front, check:api-imports, qa:unit, build, `check:security` 26/26, content lint. ✅
+- **Datos reales (read-only, prod):** children 163/163 con responsible/deletion_id; perfilamientos expires_at 100%;
+  0 orphans/cadenas rotas; 9 niños de compradores reales visibles en el hub; **24 puentes legacy listos** que el hub
+  mostrará vía fallback + 28 en curso ("Continuar"); **B16 mandaría 0 emails hoy** (sin blast al prender);
+  fast-path inerte hasta dual-write (0 adult_profiles frescos). ✅
+- **Ensayo M7/M8 (read-only):** M7 devuelve las mismas 152 filas + expires_at; M8 insertaría 4 adult_profiles +
+  24 bridges, 0 orphans. ✅
+- **Render Playwright:** 4 estados del hub + click-through hub → "Ver mi puente" → informe puente, 0 errores. ✅
+- **NO cubierto (necesita humano/deploy):** compra Stripe test E2E en develop, verificación de emails reales,
+  y el apply real de M7/M8.
+
+## LA PRÓXIMA TAREA: cutover (L9) — NECESITA OK DEL OWNER
+1. **Push a develop** + prender flags en develop.argomethod.com + **compra Stripe test E2E** (humano).
+2. **M7 + M8** — aplicar a prod TRANSACCIONAL con ensayo/ROLLBACK + probe (SQL listo en
+   `supabase/migrations/20260709_argoone_fusion_cutover_prep.sql`; ver caveat security_invoker).
 3. **Habilitar `CHILD_DELETE_ENABLED`** (borrado destructivo real) — tu OK.
-4. **L9 cutover** — push + prender flags en prod en orden (`ONE_UNIFIED_SKU` → `ONE_V2_COMPLETE` → `PUENTES_BRIDGES` →
+4. **L9 cutover** — prender flags en prod en orden (`ONE_UNIFIED_SKU` → `ONE_V2_COMPLETE` → `PUENTES_BRIDGES` →
    `PUENTES_ADDON_V2` → `RENEWAL_CRON_V2` → `VITE_BRIDGES_V2`), verificando entre cada uno. Rollback = apagar flags.
+   Pendiente menor post-cutover: checkout cycle-aware (refresh $4.99 de un puente vencido) + F11 banner en /report.
 
 ## Deuda registrada (NO se te olvide)
 - **#3** reminder `skip-if-paid` sigue per-email (suprime recordatorios legítimos) → va con B16 (renewal-cron per-child).
