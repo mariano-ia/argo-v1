@@ -77,9 +77,9 @@
   .menu .danger { color:#DC2626; }
   .linkrow.kid { display:block; }
   .kmain { min-width:0; }
-  .khead { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+  .khead { display:flex; align-items:center; justify-content:space-between; gap:14px; }
   .khead .lbl b { font-size:14px; }
-  .kactions { display:flex; align-items:center; gap:6px; margin-top:8px; flex-wrap:wrap; }
+  .kactions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .moreWrap { position:relative; display:inline-flex; }
 
   /* ── Links tab: compact rows ── */
@@ -125,13 +125,11 @@
   <div id="tab-ninos">
     <div class="linkrows" style="overflow:visible;">
 
-      <!-- Niñito: puente listo -->
+      <!-- STANDARD: nombre a la izquierda, acciones arriba a la derecha (donde iba el
+           chip). Sin nombre de perfil. Abajo queda libre para estados. -->
       <div class="linkrow kid">
-        <div class="kmain">
-          <div class="khead">
-            <span class="lbl"><b>Niñito</b><span class="sub">13 años · Básquet</span></span>
-            <span class="chip"><span class="dot" style="background:var(--ax-d)"></span>Impulsor con destellos de Conector</span>
-          </div>
+        <div class="khead">
+          <span class="lbl"><b>Niñito</b><span class="sub">13 años · Básquet</span></span>
           <div class="kactions">
             <a class="btn btn-primary" href="#">Ver informe individual de Niñito</a>
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
@@ -146,13 +144,10 @@
         </div>
       </div>
 
-      <!-- Keven: puente listo + invitación pendiente -->
+      <!-- CON ESTADO ABAJO: invitación pendiente -->
       <div class="linkrow kid">
-        <div class="kmain">
-          <div class="khead">
-            <span class="lbl"><b>Keven</b><span class="sub">13 años · Rugby</span></span>
-            <span class="chip"><span class="dot" style="background:var(--ax-s)"></span>Sostenedor</span>
-          </div>
+        <div class="khead">
+          <span class="lbl"><b>Keven</b><span class="sub">13 años · Rugby</span></span>
           <div class="kactions">
             <a class="btn btn-primary" href="#">Ver informe individual de Keven</a>
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
@@ -164,18 +159,14 @@
               </div>
             </span>
           </div>
-          <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
         </div>
+        <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
       </div>
 
-      <!-- Sofía: informe retrasado, sin puente -->
+      <!-- CON ESTADO ABAJO: informe vencido + puente sin sumar (dos líneas de estado) -->
       <div class="linkrow kid">
-        <div class="kmain">
-          <div class="khead">
-            <span class="lbl"><b>Sofía</b><span class="sub">14 años · Volleyball</span></span>
-            <span class="chip"><span class="dot" style="background:var(--ax-i)"></span>Conector</span>
-          </div>
-          <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo.</p>
+        <div class="khead">
+          <span class="lbl"><b>Sofía</b><span class="sub">14 años · Volleyball</span></span>
           <div class="kactions">
             <a class="btn btn-secondary" href="#">Ver informe individual de Sofía</a>
             <a class="btn btn-primary" href="#">Actualizar <span class="price-tag">USD 12.99</span></a>
@@ -188,15 +179,15 @@
             </span>
           </div>
         </div>
+        <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo, o actualizarlo.</p>
+        <p class="invline">Todavía no sumaste tu puente hacia Sofía.</p>
       </div>
 
-      <!-- Mateo: preparando -->
+      <!-- PREPARANDO: sin acciones, estado a la derecha -->
       <div class="linkrow kid">
-        <div class="kmain">
-          <div class="khead">
-            <span class="lbl"><b>Mateo</b><span class="sub">8 años · Básquet · te avisamos por email cuando su informe esté listo</span></span>
-            <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
-          </div>
+        <div class="khead">
+          <span class="lbl"><b>Mateo</b><span class="sub">8 años · Básquet · te avisamos por email cuando su informe esté listo</span></span>
+          <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
         </div>
       </div>
 
