@@ -81,6 +81,30 @@
   .khead .lbl b { font-size:14px; }
   .kactions { display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .moreWrap { position:relative; display:inline-flex; }
+  /* alert-style action (stale): looks like the amber text, NOT a primary button */
+  .btn-alert { background:transparent; color:var(--amber-fg); border-color:var(--amber-border); }
+  .btn-alert:hover { background:var(--amber-bg); }
+  .linked { display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; color:var(--grey);
+    background:var(--neutral); border:1px solid var(--border); border-radius:999px; padding:5px 11px; cursor:pointer; }
+  .linked .ct { font-weight:800; color:var(--secondary); }
+  /* state rows below the header */
+  .staterow { display:flex; align-items:center; gap:10px; margin-top:9px; }
+  .staterow .alerti { width:17px; height:17px; border-radius:50%; background:var(--amber-bg); color:var(--amber-fg);
+    font-weight:800; font-size:11px; display:inline-flex; align-items:center; justify-content:center; flex:none; cursor:help; position:relative; }
+  .staterow .alerti:hover .tip { opacity:1; visibility:visible; }
+  .staterow .alerti .tip { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); width:220px;
+    background:var(--navy); color:var(--card); font-size:11px; font-weight:400; line-height:1.5; padding:9px 11px; border-radius:8px;
+    opacity:0; visibility:hidden; transition:opacity .15s; z-index:40; text-align:left; }
+  /* modal */
+  .backdrop { position:fixed; inset:0; background:rgba(0,0,0,.32); display:flex; align-items:center; justify-content:center; padding:16px; z-index:60; }
+  .modal { background:var(--card); border-radius:16px; box-shadow:0 20px 60px rgba(0,0,0,.3); width:100%; max-width:420px; padding:22px; }
+  .modal h3 { margin:0 0 3px; font-size:17px; }
+  .modal .msub { margin:0 0 16px; font-size:12.5px; color:var(--grey); }
+  .adult { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:11px 0; border-top:1px solid var(--border); }
+  .adult .who { font-size:13.5px; font-weight:600; }
+  .adult .st2 { font-size:11.5px; }
+  .adult .st2.ok { color:var(--green-fg); } .adult .st2.pend { color:var(--amber-fg); }
+  .mfoot { margin-top:16px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
 
   /* ── Links tab: compact rows ── */
   .linkrows { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
@@ -125,65 +149,65 @@
   <div id="tab-ninos">
     <div class="linkrows" style="overflow:visible;">
 
-      <!-- STANDARD: nombre a la izquierda, acciones arriba a la derecha (donde iba el
-           chip). Sin nombre de perfil. Abajo queda libre para estados. -->
+      <!-- STANDARD (todo al día): 2 acciones + adultos vinculados + menú -->
       <div class="linkrow kid">
         <div class="khead">
           <span class="lbl"><b>Niñito</b><span class="sub">13 años · Básquet</span></span>
           <div class="kactions">
-            <a class="btn btn-primary" href="#">Ver informe individual de Niñito</a>
+            <a class="btn btn-primary" href="#">Ver informe de Niñito</a>
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <button class="linked" data-open="1">👥 Adultos <span class="ct">1</span></button>
             <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
-              <div class="menu" hidden>
-                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
-                <a href="#">Actualizar el informe <span class="mnote">USD 12.99</span></a>
-                <a href="#" class="danger">Eliminar los datos de Niñito</a>
-              </div>
+              <div class="menu" hidden><a href="#" class="danger">Eliminar los datos de Niñito</a></div>
             </span>
           </div>
         </div>
       </div>
 
-      <!-- CON ESTADO ABAJO: invitación pendiente -->
+      <!-- Keven: invitación pendiente (2 adultos vinculados) -->
       <div class="linkrow kid">
         <div class="khead">
           <span class="lbl"><b>Keven</b><span class="sub">13 años · Rugby</span></span>
           <div class="kactions">
-            <a class="btn btn-primary" href="#">Ver informe individual de Keven</a>
+            <a class="btn btn-primary" href="#">Ver informe de Keven</a>
             <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <button class="linked" data-open="1">👥 Adultos <span class="ct">2</span></button>
             <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
-              <div class="menu" hidden>
-                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
-                <a href="#">Actualizar el informe <span class="mnote">USD 12.99</span></a>
-                <a href="#" class="danger">Eliminar los datos de Keven</a>
-              </div>
+              <div class="menu" hidden><a href="#" class="danger">Eliminar los datos de Keven</a></div>
             </span>
           </div>
         </div>
         <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
       </div>
 
-      <!-- CON ESTADO ABAJO: informe vencido + puente sin sumar (dos líneas de estado) -->
+      <!-- SOFÍA: versión más cargada — informe vencido + puente vencido -->
       <div class="linkrow kid">
         <div class="khead">
           <span class="lbl"><b>Sofía</b><span class="sub">14 años · Volleyball</span></span>
           <div class="kactions">
-            <a class="btn btn-secondary" href="#">Ver informe individual de Sofía</a>
-            <a class="btn btn-primary" href="#">Actualizar <span class="price-tag">USD 12.99</span></a>
+            <a class="btn btn-secondary" href="#">Ver informe de Sofía</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <button class="linked" data-open="1">👥 Adultos <span class="ct">1</span></button>
             <span class="moreWrap"><button class="btn btn-secondary more">⋯</button>
-              <div class="menu" hidden>
-                <a href="#">Sumar mi puente <span class="mnote">USD 4.99</span></a>
-                <a href="#">Invitar a otro adulto <span class="mnote">su puente, USD 4.99</span></a>
-                <a href="#" class="danger">Eliminar los datos de Sofía</a>
-              </div>
+              <div class="menu" hidden><a href="#" class="danger">Eliminar los datos de Sofía</a></div>
             </span>
           </div>
         </div>
-        <p class="staleline">Informe de hace más de 6 meses. Puedes seguir consultándolo, o actualizarlo.</p>
-        <p class="invline">Todavía no sumaste tu puente hacia Sofía.</p>
+        <!-- niño vencido → compartir nuevo link (el niño re-juega) -->
+        <div class="staterow">
+          <span class="alerti">!<span class="tip">El informe de Sofía tiene más de 6 meses. Recomendamos que vuelva a jugar para actualizarlo.</span></span>
+          <span class="sub" style="flex:1; font-size:12.5px; color:var(--secondary);">El informe del niño quedó viejo</span>
+          <a class="btn btn-alert" href="#">Compartir nuevo link <span class="price-tag">USD 12.99</span></a>
+        </div>
+        <!-- adulto vencido → re-hacer tu cuestionario -->
+        <div class="staterow">
+          <span class="alerti">!<span class="tip">Tu perfil de adulto tiene más de 6 meses. Refresca tu puente para reflejar tu estilo de hoy.</span></span>
+          <span class="sub" style="flex:1; font-size:12.5px; color:var(--secondary);">Tu puente quedó viejo</span>
+          <a class="btn btn-alert" href="#">Refrescar mi puente <span class="price-tag">USD 4.99</span></a>
+        </div>
       </div>
 
-      <!-- PREPARANDO: sin acciones, estado a la derecha -->
+      <!-- Mateo: preparando -->
       <div class="linkrow kid">
         <div class="khead">
           <span class="lbl"><b>Mateo</b><span class="sub">8 años · Básquet · te avisamos por email cuando su informe esté listo</span></span>
@@ -223,7 +247,25 @@
   </p>
 </div>
 
+<div class="backdrop" id="backdrop" hidden>
+  <div class="modal" onclick="event.stopPropagation()">
+    <h3>Adultos vinculados a Sofía</h3>
+    <p class="msub">Cada adulto tiene su propio puente hacia Sofía.</p>
+    <div class="adult"><div><div class="who">Vos</div><div class="st2 ok">Puente listo</div></div><a class="btn btn-secondary" href="#">Ver</a></div>
+    <div class="adult"><div><div class="who">abuela@ejemplo.com</div><div class="st2 pend">Invitación pendiente</div></div><a class="btn btn-ghost" href="#">Reenviar</a></div>
+    <div class="mfoot">
+      <a class="btn btn-primary" href="#">Invitar a otro adulto <span class="price-tag">USD 4.99</span></a>
+      <button class="btn btn-secondary" id="closeModal">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <script>
+  var bd = document.getElementById('backdrop');
+  document.querySelectorAll('.linked').forEach(function (b) { b.addEventListener('click', function () { bd.hidden = false; }); });
+  bd.addEventListener('click', function () { bd.hidden = true; });
+  document.getElementById('closeModal').addEventListener('click', function () { bd.hidden = true; });
+
   document.querySelectorAll('.moreWrap .more').forEach(function (btn) {
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
