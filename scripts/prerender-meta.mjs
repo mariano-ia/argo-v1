@@ -64,14 +64,19 @@ function injectMeta(template, config) {
     html = html.replace(/<meta name="twitter:title" content="[^"]*"/, `<meta name="twitter:title" content="${esc(config.title)}"`);
     html = html.replace(/<meta name="twitter:description" content="[^"]*"/, `<meta name="twitter:description" content="${esc(config.description)}"`);
 
-    // JSON-LD: replace all existing structured data blocks with route-specific ones
+    // JSON-LD: replace all existing structured data blocks with route-specific ones.
+    // IMPORTANT: remove ONLY the JSON-LD <script> blocks themselves. The previous
+    // range-based wipe (everything between <!-- Structured Data --> and </head>)
+    // also swallowed Vite's injected module/css tags — every prerendered page
+    // except home shipped WITHOUT its JS bundle (dead page on direct load).
     if (config.jsonLd && config.jsonLd.length > 0) {
-        // Remove existing JSON-LD blocks (between <!-- Structured Data --> and </head>)
+        html = html.replace(/\s*<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '');
+        html = html.replace(/\s*<!-- Structured Data -->/, '');
         html = html.replace(
-            /\s*<!-- Structured Data -->[\s\S]*?(?=<\/head>)/,
+            '</head>',
             '\n  <!-- Structured Data -->\n' +
             config.jsonLd.map(schema => `  <script type="application/ld+json">\n  ${JSON.stringify(schema, null, 2).split('\n').join('\n  ')}\n  </script>`).join('\n') +
-            '\n',
+            '\n</head>',
         );
     }
 
