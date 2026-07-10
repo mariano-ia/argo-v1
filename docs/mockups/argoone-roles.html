@@ -1,0 +1,177 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArgoOne — Superficies por rol (mockup)</title>
+<style>
+  :root {
+    --navy:#1D1D1F; --secondary:#424245; --grey:#86868B; --light:#AEAEB2; --border:#E8E8ED;
+    --bg:#F8F8FA; --neutral:#F5F5F7; --card:#FFFFFF; --violet:#955FB5;
+    --violet-soft:rgba(149,95,181,.08); --violet-border:rgba(149,95,181,.22);
+    --orange:#EA7317; --orange-soft:rgba(234,115,23,.09); --orange-border:rgba(234,115,23,.3);
+    --shadow:0 1px 3px rgba(29,29,31,.04),0 6px 24px rgba(29,29,31,.05);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){:root{--navy:#F5F5F7;--secondary:#C7C7CC;--grey:#98989D;--light:#6E6E73;--border:#2C2C2E;--bg:#131315;--neutral:#1C1C1E;--card:#1F1F22;--violet:#C08FDB;--violet-soft:rgba(192,143,219,.12);--violet-border:rgba(192,143,219,.28);--orange:#F59E5B;--orange-soft:rgba(245,158,91,.13);--orange-border:rgba(245,158,91,.35);--shadow:0 1px 3px rgba(0,0,0,.4),0 6px 24px rgba(0,0,0,.35);}}
+  *{box-sizing:border-box;} body{margin:0;background:var(--bg);color:var(--navy);font-family:var(--font);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:740px;margin:0 auto;padding:26px 20px 80px;}
+  .wordmark{font-size:19px;letter-spacing:-.01em;} .wordmark .a{font-weight:800;} .wordmark .r{font-weight:300;} .wordmark .reg{font-weight:300;font-size:.62em;vertical-align:super;opacity:.7;}
+  h1{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:16px 0 3px;} .sub{font-size:13.5px;color:var(--grey);margin:0 0 18px;}
+  .switch{display:flex;flex-wrap:wrap;gap:8px;padding:11px 13px;margin-bottom:22px;background:var(--violet-soft);border:1px solid var(--violet-border);border-radius:12px;}
+  .switch .lbl{width:100%;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);font-weight:700;margin-bottom:2px;}
+  .switch button{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;padding:7px 13px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--secondary);}
+  .switch button[aria-pressed="true"]{background:var(--violet);border-color:var(--violet);color:#fff;}
+  .seclabel{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--light);font-weight:700;margin:20px 0 10px;}
+  .rows{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;}
+  .row{padding:14px 16px;} .row+.row{border-top:1px solid var(--border);}
+  .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .lbl b{font-size:14px;} .lbl .m{font-size:12px;color:var(--grey);display:block;}
+  .btn{font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;padding:8px 14px;border-radius:9px;border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+  .btn-primary{background:var(--violet);color:#fff;} .btn-secondary{background:var(--card);color:var(--navy);border-color:var(--border);}
+  .btn-orange{background:var(--orange-soft);color:var(--orange);border-color:var(--orange-border);}
+  .acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .price{font-size:11px;font-weight:700;opacity:.85;}
+  .buyrow{padding:13px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--violet-soft);border:1px solid var(--violet-border);border-radius:12px;margin-bottom:12px;flex-wrap:wrap;}
+  .buyrow .t{font-size:13px;color:var(--secondary);}
+  .note{font-size:12px;color:var(--light);margin:9px 2px 0;}
+  .alertline{display:flex;align-items:center;gap:8px;margin-top:9px;font-size:12px;color:var(--orange);flex-wrap:wrap;}
+  .alertline .ic{width:16px;height:16px;border-radius:50%;background:var(--orange-soft);border:1px solid var(--orange-border);display:inline-flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:800;flex:none;}
+  .st{width:9px;height:9px;border-radius:50%;flex:none;background:#D2D2D7;}
+  .linkrow{display:flex;align-items:center;gap:10px;} .linkrow .lbl{flex:1;min-width:0;font-size:13px;font-weight:500;} .linkrow .sub{font-size:11.5px;color:var(--grey);display:block;}
+  .foot{margin-top:34px;font-size:11px;color:var(--light);text-align:center;line-height:1.7;} .foot a{color:var(--violet);text-decoration:none;}
+  /* superficie familia: informe directo, no panel */
+  .report{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);padding:26px 24px;}
+  .report h2{font-size:21px;font-weight:700;letter-spacing:-.02em;margin:0 0 4px;}
+  .report .meta{font-size:12.5px;color:var(--grey);margin-bottom:18px;}
+  .ph{height:11px;border-radius:6px;background:var(--neutral);margin:9px 0;} .ph.w60{width:60%;} .ph.w85{width:85%;} .ph.w72{width:72%;}
+  .report .acts{justify-content:flex-start;margin-top:20px;}
+  [hidden]{display:none!important;}
+</style>
+
+<div class="wrap">
+
+  <div class="switch" role="group">
+    <span class="lbl">Mockup · elegir caso para previsualizar (este selector no existe en el producto)</span>
+    <button data-r="familia" aria-pressed="true">Familia (abuela) · recibe un puente</button>
+    <button data-r="coach" aria-pressed="false">Coach · comprador</button>
+    <button data-r="adulto" aria-pressed="false">Adulto · autoriza (caso coach)</button>
+    <button data-r="padre" aria-pressed="false">Padre · comprador y adulto</button>
+  </div>
+
+  <!-- ═════════ FAMILIA: sin panel, sin login. Email → informe directo. ═════════ -->
+  <div class="surface" data-surface="familia">
+    <div class="wordmark"><span class="a">Argo</span><span class="r">Puente</span><span class="reg">®</span></div>
+    <p class="sub" style="margin-top:14px;">Llegaste aquí desde el email que recibiste. Este enlace es tuyo y no vence.</p>
+    <div class="report">
+      <h2>Tu puente con Juan</h2>
+      <div class="meta">10 años · fútbol</div>
+      <div class="ph w85"></div><div class="ph w60"></div><div class="ph w72"></div><div class="ph w85"></div><div class="ph w60"></div>
+      <div class="acts">
+        <a class="btn btn-primary" href="#">Descargar</a>
+        <a class="btn btn-secondary" href="#">Compartir</a>
+      </div>
+    </div>
+    <p class="note">Un informe corresponde a un email. Sin cuenta, sin login. El informe completo de Juan lo tiene el adulto que lo autorizó.</p>
+  </div>
+
+  <!-- ═════════ PANEL: coach, adulto y padre (mismo panel, permisos distintos) ═════════ -->
+  <div class="surface" data-surface="panel" hidden>
+    <div class="wordmark"><span class="a">Argo</span><span class="r">One</span><span class="reg">®</span></div>
+    <h1>Tu panel</h1>
+    <p class="sub" id="panelsub">.</p>
+
+    <div class="buyrow" data-roles="coach padre">
+      <span class="t">Cada link es una aventura y un informe nuevo.</span>
+      <a class="btn btn-primary" href="#">Perfilar a otro niño <span class="price">USD 12.99</span></a>
+    </div>
+
+    <div class="seclabel" id="kidscount">Niños</div>
+    <div class="rows" style="margin-bottom:14px;">
+
+      <!-- PADRE: comprador y adulto, informe vigente -->
+      <div class="row" data-roles="padre">
+        <div class="head">
+          <span class="lbl"><b>Niñito</b><span class="m">13 años · Básquet</span></span>
+          <div class="acts">
+            <a class="btn btn-primary" href="#">Ver informe de Niñito</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+            <a class="btn btn-secondary" href="#">Compartir link de puentes</a>
+            <button class="btn btn-secondary" title="Adultos vinculados">👥 2</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- COACH: comprador no adulto. Ve informe + su puente. NO comparte puentes. -->
+      <div class="row" data-roles="coach">
+        <div class="head">
+          <span class="lbl"><b>Niñito</b><span class="m">13 años · Básquet</span></span>
+          <div class="acts">
+            <a class="btn btn-primary" href="#">Ver informe de Niñito</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+          </div>
+        </div>
+      </div>
+      <div class="row" data-roles="coach">
+        <div class="head">
+          <span class="lbl"><b>Keven</b><span class="m">13 años · Rugby</span></span>
+          <div class="acts">
+            <a class="btn btn-primary" href="#">Ver informe de Keven</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+          </div>
+        </div>
+        <div class="alertline"><span class="ic">!</span><span>El informe tiene más de 6 meses. Te recomendamos re-perfilar.</span><a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a></div>
+      </div>
+      <div class="row" data-roles="coach">
+        <div class="head">
+          <span class="lbl"><b>Mirnam</b><span class="m">14 años · Volleyball</span></span>
+          <div class="acts">
+            <a class="btn btn-primary" href="#">Ver informe de Mirnam</a>
+            <a class="btn btn-secondary" href="#">Ver mi puente</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADULTO (caso coach): autorizó a Keven. Siempre recibe el informe. Comparte puentes. Su puente no vino incluido: USD 4.99. -->
+      <div class="row" data-roles="adulto">
+        <div class="head">
+          <span class="lbl"><b>Keven</b><span class="m">13 años · Rugby · lo autorizaste tú</span></span>
+          <div class="acts">
+            <a class="btn btn-primary" href="#">Ver informe de Keven</a>
+            <a class="btn btn-secondary" href="#">Crear mi puente <span class="price">USD 4.99</span></a>
+            <a class="btn btn-secondary" href="#">Compartir link de puentes</a>
+            <button class="btn btn-secondary" title="Adultos vinculados">👥 1</button>
+          </div>
+        </div>
+        <div class="alertline"><span class="ic">!</span><span>El informe tiene más de 6 meses. Te recomendamos re-perfilar.</span><a class="btn btn-orange" href="#" style="margin-left:auto;">Re-perfilar <span class="price">USD 12.99</span></a></div>
+      </div>
+
+    </div>
+
+    <div class="seclabel" data-roles="coach padre">Links de juego</div>
+    <div class="rows" data-roles="coach padre">
+      <div class="linkrow row"><span class="st"></span><span class="lbl">Link disponible<span class="sub">compártelo para perfilar un niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
+    </div>
+    <p class="note" data-roles="coach padre">Un link no dice nada de nadie hasta que un niño juega. Cuando juega, aparece arriba con su nombre y su informe.</p>
+    <p class="note" data-roles="adulto">Autorizaste el juego de Keven, por eso su informe individual siempre llega a ti, en cada actualización.</p>
+
+    <p class="foot"><a href="#">Administrar o eliminar datos</a> · <a href="#">Términos</a></p>
+  </div>
+
+</div>
+
+<script>
+  var panelsub=document.getElementById('panelsub'), kc=document.getElementById('kidscount');
+  var copy={
+    familia:{surface:'familia'},
+    coach:{surface:'panel',s:'Tus niños, sus informes y tu puente con cada uno.',kids:'Niños (3)'},
+    adulto:{surface:'panel',s:'El niño que autorizaste, su informe y los puentes.',kids:'Niños (1)'},
+    padre:{surface:'panel',s:'Tu niño, tu puente y los adultos vinculados.',kids:'Niños (1)'}
+  };
+  function apply(r){
+    var c=copy[r];
+    document.querySelectorAll('.switch button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.r===r));});
+    document.querySelectorAll('.surface').forEach(function(s){s.hidden=s.dataset.surface!==c.surface;});
+    document.querySelectorAll('[data-roles]').forEach(function(el){el.hidden=el.dataset.roles.split(' ').indexOf(r)===-1;});
+    if(c.s)panelsub.textContent=c.s; if(c.kids)kc.textContent=c.kids;
+  }
+  document.querySelectorAll('.switch button').forEach(function(b){b.addEventListener('click',function(){apply(b.dataset.r);});});
+  apply('familia');
+</script>

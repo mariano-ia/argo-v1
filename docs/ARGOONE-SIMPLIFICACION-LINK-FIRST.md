@@ -3,8 +3,13 @@
 > Sale de un workflow multi-agente (5 lectores del código real → 3 diseñadores
 > independientes → crítico adversarial → síntesis), 2026-07-10. Ancla el principio
 > del owner ("todo el producto es compartir un link") contra el código vivo en
-> develop. **Propuesta para aprobar; nada implementado todavía.** Complementa
-> `ARGOONE-FLUJOS.md` (R1-R7) y `ARGOONE-MODELO-NUEVO.md` (decisiones cerradas).
+> develop. Complementa `ARGOONE-FLUJOS.md` (R1-R7) y `ARGOONE-MODELO-NUEVO.md`.
+>
+> **⚠️ LEER PRIMERO §9 — MODELO CONGELADO CON EL OWNER (2026-07-10).** La revisión
+> en vivo con el owner CERRÓ las decisiones abiertas de §7 y CORRIGIÓ parte de la
+> propuesta (§7 D1/D3/D5/D8 quedaron superseded; el "single-claim" murió a favor
+> del link único re-compartible + entitlement bridge-only). §1-§8 quedan como
+> registro del análisis; §9 es la especificación vigente.
 
 ## 1. Veredicto
 
@@ -149,3 +154,95 @@ separado cuando no queden datos in-flight. El motor DISC del adulto se reusa, no
 **En una línea:** el primitivo `one_links.kind` hecho ship-safe (aditivo, detrás de flags,
 single-claim obligatorio), organización en 3 capas SIN colapso de tablas, R1 derivado de
 `children`, y el orden de pago como propiedad `funding` por-tipo en vez de dos productos.
+
+## 9. MODELO CONGELADO CON EL OWNER (2026-07-10) — especificación vigente
+
+Cerrado en revisión en vivo. Donde contradiga §1-§8 o los docs previos (CASOS D3/D13,
+FLUJOS R2/F3/F5, MODELO-DATOS F6 "panel universal"), MANDA ESTA SECCIÓN.
+
+### 9.1 Vocabulario de roles (del owner, usar SIEMPRE estos términos)
+
+| Rol | Quién es | ¿Panel? | Qué recibe |
+|---|---|---|---|
+| **El comprador** | Quien paga los $12.99 (padre o coach) | SÍ | El informe individual de la jugada que pagó + su puente INCLUIDO (link para jugar su cuestionario) |
+| **El adulto** | Quien AUTORIZA el juego del niño (responsable) | SÍ | **SIEMPRE el informe individual de CADA jugada** (la haya pagado o no), porque autorizó. Único que comparte el link de puentes |
+| **La familia** | Adultos extra que reciben el link de puentes DEL adulto (abuela, tíos, etc.) | **NO** (sin login, sin cuenta, sin nada) | Un email con el link permanente a SU informe puente. Un informe = un email |
+
+En el caso self-serve, comprador = adulto (una persona, un panel con todo). En el caso
+coach son dos personas y CADA UNA tiene su panel (el del adulto entra por magic-link email).
+
+### 9.2 Reglas de entitlement (cerradas)
+
+1. **$12.99 (comprador):** informe individual del niño + puente propio incluido. El
+   comprador NUNCA paga $4.99 (su puente siempre viene en sus $12.99).
+2. **$4.99 (familia y adulto-no-comprador):** SOLO su informe puente. NUNCA el informe
+   individual del niño (si lo quiere, se lo pide al adulto). Esto REEMPLAZA a D13/R2
+   ("puente pagado da acceso al perfilamiento"): el entitlement del $4.99 es bridge-only.
+3. **Pay-FIRST en todo:** abrir link → email+nombre (+T&C) → Stripe (email pre-cargado)
+   → jugar. Muere el freemium pay-last del add-on.
+4. **1 puente por (email × niño):** la unicidad la da el email aprendido en el onboarding.
+5. **Consentimiento (texto a agregar):** el adulto que autoriza acepta explícito que
+   "quien pagó este perfilamiento recibirá el informe individual del niño y generará su
+   informe puente basado en ese perfil".
+6. **`children.responsible_adult_email` es INMUTABLE** entre jugadas: el re-perfilamiento
+   siempre pide autorización a ESE email (si murió, el niño no puede re-perfilarse). Nunca
+   se permite redirigirlo (un coach podría mandarlo a cualquier adulto).
+
+### 9.3 Link de puentes (cerrado)
+
+- **UN solo link de puentes por niño.** Lo comparte SOLO el adulto, cuantas veces quiera.
+- Cada adulto de la familia que lo abre: onboarding (email + nombre + T&C, sin
+  consentimiento parental) → paga SU $4.99 → juega su cuestionario → recibe por email el
+  link permanente a su puente. Sin panel.
+- Es seguro re-compartible PORQUE el $4.99 es bridge-only (9.2.2): lo peor que puede
+  pasar es que un desconocido pague y reciba un puente; jamás ve el informe del niño.
+- El "single-claim obligatorio" de §7-D3 queda **superseded** por este diseño.
+- El adulto puede ver los adultos vinculados y revocar el link (rotarlo).
+
+### 9.4 Links de juego (cerrado)
+
+- Un link de juego EN BLANCO no sabe nada de nadie. **PROHIBIDO** mostrar "enviado a
+  {email}, esperando que juegue": si conocemos un email es porque YA jugó.
+- Estados: `disponible (copiar/compartir)` → (alguien juega) → deja de ser link y pasa a
+  ser un NIÑO con nombre + informe en el panel. No existe el estado "preparando" como
+  identidad; un informe retenido por control de calidad es un resultado cuyo botón espera.
+
+### 9.5 Ciclo de 6 meses (cerrado)
+
+- **El puente nunca muere.** Todo informe (individual o puente) queda legible para
+  siempre en su link. Lo que envejece es el dato, no el acceso.
+- **REGLA DURA: el niño NO puede jugar de nuevo antes de los 6 meses.** (Ya existe como
+  gate en `start-reprofile`; se mantiene sin excepciones.)
+- Al vencer: alert de re-perfilar a **comprador Y adulto**, cada uno en su panel,
+  desacoplados (ninguno depende del otro).
+- Quien paga los $12.99 del re-perfilamiento:
+  - Foto vigente ≥6 meses → jugada nueva: email de autorización al adulto de la base
+    (inmutable), el niño juega, el informe nuevo va al adulto (siempre) + al pagador,
+    y el pagador recibe su link para re-jugar SU cuestionario puente (incluido).
+  - Foto vigente <6 meses (el otro ya actualizó) → recibe la foto fresca SIN que el
+    niño juegue + su link de puente propio. Pagar se paga siempre; la jugada no se repite.
+- Quien no paga se queda con su foto vieja para siempre — EXCEPTO el adulto, que recibe
+  el informe de cada jugada nueva sin pagar (porque autoriza cada una).
+- Los puentes de la familia no se renuevan solos: puente sobre foto nueva = otro $4.99.
+
+### 9.6 Matriz de acciones por panel
+
+**Coach (comprador, no adulto):** ver informe de cada niño que pagó · ver su puente ·
+enviar/copiar el link de juego · re-perfilar al vencer ($12.99) · comprar otro niño.
+NO comparte link de puentes, NO ve adultos vinculados, NO borra al niño.
+
+**Adulto (autoriza; con o sin compra):** ver el informe del niño (siempre, cada jugada) ·
+compartir el link de puentes (potestad exclusiva) · ver adultos vinculados / revocar link ·
+crear su propio puente ($4.99 si no es el comprador) · re-perfilar al vencer ($12.99) ·
+borrar los datos del niño.
+
+**Padre self-serve (comprador + adulto):** la unión de las dos columnas, con su puente
+incluido (no paga $4.99).
+
+**Familia:** sin panel. Email → informe puente permanente (ver / descargar / compartir).
+
+Mockup alineado: `docs/mockups/argoone-roles.html` (4 vistas). Los huecos de mecánica a
+resolver EN EL PLAN (no de modelo): rebuild del invite per-email → link único por niño;
+checkout $4.99 pay-first con email pre-cargado; panel del adulto no-comprador (resolución
+por `responsible_adult_email`, flag `is_responsible` ya existe); cierre de la fuga de PII
+pre-pago de `bridge-invite-accept` (§7-D4, sigue vigente).
