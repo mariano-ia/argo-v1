@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
 
 /**
  * ArgoOne® mini-panel API.
@@ -182,9 +183,16 @@ interface HubChild {
     // /puentes/:token viewer handles every state (questionnaire, generating,
     // report), so "Ver mi puente" always links here.
     bridge_token: string | null;
-    // Outgoing bridge invitations this viewer sent for this child (so the card
-    // shows "invitaste a X · pendiente" instead of looking like nothing happened).
+    // Dead field (frozen model §8): per-email invitations are retired. Kept as
+    // an always-empty array so older clients render nothing.
     invites: { email: string; status: string }[];
+    // The child's ONE shareable bridges-link token (frozen model §4). Only set
+    // for the authorizing adult (is_responsible); NULL until first minted via
+    // the share-bridge-link action.
+    bridge_link: string | null;
+    // Adults who created their bridge with this child (distinct by email, every
+    // perfilamiento). Only computed for is_responsible children.
+    linked_adults: number;
 }
 
 // Canonical axis archetype names (es), per docs/archetype-naming.md. Used as the
@@ -251,9 +259,16 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
 
     // ── owned children (responsible OR legacy adult email), not deleted ──
     const [respRes, adultRes] = await Promise.all([
-        sb.from('children').select('id, child_name, child_age, sport, deletion_id').ilike('responsible_adult_email', esc).is('deleted_at', null),
-        sb.from('children').select('id, child_name, child_age, sport, deletion_id').ilike('adult_email', esc).is('deleted_at', null),
+        sb.from('children').select('id, child_name, child_age, sport, deletion_id, bridge_link_token').ilike('responsible_adult_email', esc).is('deleted_at', null),
+        sb.from('children').select('id, child_name, child_age, sport, deletion_id, bridge_link_token').ilike('adult_email', esc).is('deleted_at', null),
     ]);
+    // Fail LOUD, never silent: a swallowed error here (e.g. a missing column
+    // after a bad deploy) would drop every owned child from the hub with a 200,
+    // invisible to the 5xx probe. Throwing surfaces it as a 500 that qa-monitor
+    // CHECK 8 catches.
+    if (respRes.error || adultRes.error) {
+        throw new Error(`hub owned-children query failed: ${respRes.error?.message || adultRes.error?.message}`);
+    }
     const ownedById = new Map<string, any>();
     for (const c of [...(respRes.data ?? []), ...(adultRes.data ?? [])]) ownedById.set(c.id, c);
     const ownedChildren = [...ownedById.values()];
@@ -295,7 +310,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const blank = (key: string): HubChild => {
         let hc = map.get(key);
         if (!hc) {
-            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, invites: [] };
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, invites: [], bridge_link: null, linked_adults: 0 };
             map.set(key, hc);
         }
         return hc;
@@ -309,6 +324,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
         hc.sport = c.sport ?? hc.sport;
         hc.is_responsible = true;
         hc.deletion_id = c.deletion_id ?? null;
+        hc.bridge_link = (c.bridge_link_token as string | null) ?? null;
         const perf = latestByChild.get(c.id);
         if (perf) { hc.perfilamiento_id = perf.id; hc.report = buildReport(perf, nowMs); }
     }
@@ -429,27 +445,57 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
         if (!hc.my_bridge) hc.my_bridge = readyByPerf.get(hc.perfilamiento_id) ?? pendingByPerf.get(hc.perfilamiento_id) ?? null;
     }
 
-    // Outgoing invitations the viewer sent (still open), so the card reflects the
-    // action ("invitaste a X · pendiente") instead of looking inert afterwards.
+    // Linked adults per owned child (frozen model §4: the "Adultos vinculados"
+    // list): distinct-by-email paid bridges toward ANY perfilamiento of the
+    // child, excluding the viewer. (Replaces the retired bridge_invites
+    // "invitaste a X · pendiente" producer — §8 kills that state.)
     {
-        const perfIds = children.map((c) => c.perfilamiento_id).filter(Boolean) as string[];
+        const perfToChild = new Map<string, string>();
+        for (const p of perfById.values()) {
+            if (p.child_id && ownedById.has(p.child_id)) perfToChild.set(p.id, p.child_id);
+        }
+        const perfIds = [...perfToChild.keys()];
         if (perfIds.length) {
-            const { data: outInv } = await sb
-                .from('bridge_invites')
-                .select('perfilamiento_id, invited_email, status, expires_at')
-                .ilike('inviter_email', esc)
-                .in('perfilamiento_id', perfIds)
-                .in('status', ['pending', 'accepted']);
-            const invByPerf = new Map<string, { email: string; status: string }[]>();
-            for (const iv of outInv ?? []) {
-                if (iv.expires_at && Date.parse(iv.expires_at) <= nowMs) continue;
-                const arr = invByPerf.get(iv.perfilamiento_id) ?? [];
-                arr.push({ email: iv.invited_email as string, status: iv.status as string });
-                invByPerf.set(iv.perfilamiento_id, arr);
-            }
+            const viewerKey = email.trim().toLowerCase();
+            const emailsByChild = new Map<string, Set<string>>();
+            const add = (perfId: string, adultEmail: string | null) => {
+                const childId = perfToChild.get(perfId);
+                const k = (adultEmail ?? '').trim().toLowerCase();
+                if (!childId || !k || k === viewerKey) return;
+                const set = emailsByChild.get(childId) ?? new Set<string>();
+                set.add(k);
+                emailsByChild.set(childId, set);
+            };
+            const [{ data: paidPps }, { data: brRows }] = await Promise.all([
+                sb.from('puentes_purchases').select('source_session_id, recipient_email').in('source_session_id', perfIds).eq('status', 'paid'),
+                sb.from('bridges').select('perfilamiento_id, adult_email').in('perfilamiento_id', perfIds),
+            ]);
+            for (const p of paidPps ?? []) add(p.source_session_id, p.recipient_email);
+            for (const b of brRows ?? []) add(b.perfilamiento_id, b.adult_email);
             for (const hc of children) {
-                if (hc.perfilamiento_id) hc.invites = invByPerf.get(hc.perfilamiento_id) ?? [];
+                if (hc.child_id && hc.is_responsible) hc.linked_adults = emailsByChild.get(hc.child_id)?.size ?? 0;
             }
+        }
+    }
+
+    // Pre-mint the bridges-link token for each authorizing adult's PLAYED child,
+    // so the payload always carries `bridge_link`. This lets the front copy the
+    // link SYNCHRONOUSLY inside the click gesture (WebKit rejects clipboard
+    // writes after an await), and keeps the token stable/idempotent. Only for
+    // is_responsible children with a resolved perfilamiento; the token is
+    // bridge-only, so pre-existence leaks nothing until the adult shares it.
+    {
+        const toMint = children.filter((hc) => hc.is_responsible && hc.child_id && hc.perfilamiento_id && !hc.bridge_link);
+        for (const hc of toMint) {
+            const fresh = crypto.randomBytes(18).toString('base64url');
+            const { error } = await sb
+                .from('children')
+                .update({ bridge_link_token: fresh })
+                .eq('id', hc.child_id as string)
+                .is('bridge_link_token', null);
+            if (error) continue;               // lost race / transient: leave null, front falls back to the action
+            const { data: again } = await sb.from('children').select('bridge_link_token').eq('id', hc.child_id as string).maybeSingle();
+            hc.bridge_link = (again?.bridge_link_token as string | null) ?? fresh;
         }
     }
 
@@ -527,57 +573,9 @@ async function sendPlayLinkEmail(email: string, slug: string, childName: string 
     });
 }
 
-// Send the ArgoPuente® adult-to-adult invite (v2 invite-adult). ArgoPuente®
-// wordmark (Argo bold + Puente thin + ® last), tuteo, buyer-neutral, es/en/pt.
-async function sendBridgeInviteEmail(email: string, token: string, childName: string | null, lang: string, origin: string): Promise<void> {
-    const resendKey = process.env.RESEND_API_KEY;
-    if (!resendKey) return;
-    const inviteUrl = `${origin}/puente/invite/${token}`;
-    const child = childName || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
-    const PL = lang === 'en' ? {
-        subject: `You've been invited to create your ArgoPuente® with ${child}`,
-        heading: `Your bridge with ${child}`,
-        body: `Someone who accompanies ${child} invited you to create your own ArgoPuente®: a short reading of how you connect with ${child}, built from your own profile. It takes about 5 minutes.`,
-        cta: 'Create my bridge',
-        note: 'This invitation is personal. If you were not expecting it, you can ignore this email.',
-    } : lang === 'pt' ? {
-        subject: `Você foi convidado a criar sua ArgoPuente® com ${child}`,
-        heading: `Sua ponte com ${child}`,
-        body: `Alguém que acompanha ${child} convidou você a criar sua própria ArgoPuente®: uma leitura breve de como você se conecta com ${child}, feita a partir do seu próprio perfil. Leva cerca de 5 minutos.`,
-        cta: 'Criar minha ponte',
-        note: 'Este convite é pessoal. Se você não o esperava, pode ignorar este email.',
-    } : {
-        subject: `Te invitaron a crear tu ArgoPuente® con ${child}`,
-        heading: `Tu puente con ${child}`,
-        body: `Alguien que acompaña a ${child} te invitó a crear tu propia ArgoPuente®: una lectura breve de cómo conectas con ${child}, hecha a partir de tu propio perfil. Toma unos 5 minutos.`,
-        cta: 'Crear mi puente',
-        note: 'Esta invitación es personal. Si no la esperabas, puedes ignorar este email.',
-    };
-    await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            from: 'Argo Method <hola@argomethod.com>',
-            to: [email],
-            subject: PL.subject,
-            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Puente®</span>
-</td></tr>
-<tr><td style="padding:28px;">
-    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
-    <p style="font-size:14px;color:#86868B;margin:0 0 24px;line-height:1.6;">${PL.body}</p>
-    <div style="text-align:center;">
-    <a href="${inviteUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a>
-    </div>
-    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
-</td></tr>
-</table></td></tr></table></body></html>`,
-        }),
-    });
-}
+// (invite-adult email retired — frozen model §8: the per-email invitation is
+// superseded by the child's ONE shareable bridges-link; see share-bridge-link.)
+
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -658,58 +656,108 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const { action } = req.body ?? {};
 
-        // ── invite-adult: responsible adult invites another adult (bridge_invite
-        //    + ArgoPuente® email). The invite IS the authorization (no re-play). ──
-        if (action === 'invite-adult') {
-            const childId = String(req.body.child_id || '');
-            const invited = normEmail(req.body.invited_email);
-            const relation = req.body.relation ? String(req.body.relation).slice(0, 60) : null;
-            if (!childId || !/.+@.+\..+/.test(invited)) return res.status(400).json({ error: 'Missing child_id or invited_email' });
-            if (invited === normEmail(email)) return res.status(400).json({ error: 'cannot_invite_self' });
-            const ip = clientIp(req);
-            if ((await rateLimited(`rl:one-invite:ip:${ip}`, 30, 3600)) || (await rateLimited(`rl:one-invite:email:${normEmail(email)}`, 20, 3600))) {
-                return res.status(429).json({ error: 'rate_limited' });
-            }
-            const { data: child } = await sb
+        // Owner check shared by the bridges-link sub-actions: only the child's
+        // authorizing adult (responsible_adult_email; adult_email = the legacy
+        // same-person column) may share, rotate or inspect the bridges link.
+        // A buyer who is NOT the authorizer (coach case) never passes it (§7).
+        const loadOwnedChild = async (childId: string) => {
+            const { data: child, error } = await sb
                 .from('children')
-                .select('id, child_name, responsible_adult_email, adult_email')
+                .select('id, child_name, responsible_adult_email, adult_email, bridge_link_token')
                 .eq('id', childId)
                 .is('deleted_at', null)
                 .maybeSingle();
-            if (!child) return res.status(404).json({ error: 'Child not found' });
+            // A DB error must NOT masquerade as "not authorized" (that would hide
+            // a 500-class fault as a 403). Throw → surfaces as a real error.
+            if (error) throw new Error(`loadOwnedChild failed: ${error.message}`);
+            if (!child) return null;
             const owns = normEmail(child.responsible_adult_email) === normEmail(email) || normEmail(child.adult_email) === normEmail(email);
-            if (!owns) return res.status(403).json({ error: 'not_authorized' });
-            const { data: perf } = await sb
+            return owns ? child : null;
+        };
+
+        // ── invite-adult (RETIRED, frozen model §8): the per-email invitation is
+        //    superseded by the child's ONE shareable bridges-link. ──
+        if (action === 'invite-adult') {
+            return res.status(410).json({ error: 'superseded_by_bridge_link' });
+        }
+
+        // ── share-bridge-link: mint (lazily) and return the child's ONE shareable
+        //    bridges-link (§4). Idempotent: same token until revoked. ──
+        if (action === 'share-bridge-link') {
+            const childId = String(req.body.child_id || '');
+            if (!childId) return res.status(400).json({ error: 'Missing child_id' });
+            const child = await loadOwnedChild(childId);
+            if (!child) return res.status(403).json({ error: 'not_authorized' });
+            let linkToken = child.bridge_link_token as string | null;
+            if (!linkToken) {
+                linkToken = crypto.randomBytes(18).toString('base64url');
+                const { error } = await sb
+                    .from('children')
+                    .update({ bridge_link_token: linkToken })
+                    .eq('id', childId)
+                    .is('bridge_link_token', null);
+                if (error) return res.status(500).json({ error: 'Failed to mint link' });
+                // Lost the mint race → re-read the winner's token.
+                const { data: again } = await sb.from('children').select('bridge_link_token').eq('id', childId).maybeSingle();
+                linkToken = (again?.bridge_link_token as string | null) ?? linkToken;
+            }
+            return res.status(200).json({ ok: true, url: `${origin}/puente/${linkToken}` });
+        }
+
+        // ── revoke-bridge-link: rotate the token. The old link dies; bridges
+        //    already paid are unaffected (they live on their own magic tokens). ──
+        if (action === 'revoke-bridge-link') {
+            const childId = String(req.body.child_id || '');
+            if (!childId) return res.status(400).json({ error: 'Missing child_id' });
+            const child = await loadOwnedChild(childId);
+            if (!child) return res.status(403).json({ error: 'not_authorized' });
+            const fresh = crypto.randomBytes(18).toString('base64url');
+            const { error } = await sb.from('children').update({ bridge_link_token: fresh }).eq('id', childId);
+            if (error) return res.status(500).json({ error: 'Failed to rotate link' });
+            return res.status(200).json({ ok: true, url: `${origin}/puente/${fresh}` });
+        }
+
+        // ── linked-adults: the adults who created their bridge with this child
+        //    (paid $4.99 or comp), across every perfilamiento of the child. ──
+        if (action === 'linked-adults') {
+            const childId = String(req.body.child_id || '');
+            if (!childId) return res.status(400).json({ error: 'Missing child_id' });
+            const child = await loadOwnedChild(childId);
+            if (!child) return res.status(403).json({ error: 'not_authorized' });
+            // Mirror the hub's linked_adults count EXACTLY: RESOLVED perfilamientos
+            // only, and exclude the viewer (the authorizing adult isn't a "linked
+            // adult"). Otherwise the modal list and the card count disagree.
+            const { data: perfs } = await sb
                 .from('perfilamientos')
                 .select('id')
                 .eq('child_id', childId)
                 .eq('status', 'resolved')
-                .order('last_profiled_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-            if (!perf) return res.status(400).json({ error: 'child_not_played' });
-            // Reuse a still-open invite for the same (perfilamiento, invited_email)
-            // instead of minting a duplicate token.
-            const { data: existing } = await sb
-                .from('bridge_invites')
-                .select('token')
-                .eq('perfilamiento_id', perf.id)
-                .ilike('invited_email', likeEscape(invited))
-                .in('status', ['pending', 'accepted'])
-                .maybeSingle();
-            let inviteToken = existing?.token as string | undefined;
-            if (!inviteToken) {
-                const exp = new Date(nowMs + 30 * 24 * 3600 * 1000).toISOString();
-                const { data: ins, error } = await sb
-                    .from('bridge_invites')
-                    .insert({ perfilamiento_id: perf.id, inviter_email: normEmail(email), invited_email: invited, relation, status: 'pending', expires_at: exp })
-                    .select('token')
-                    .single();
-                if (error || !ins) return res.status(500).json({ error: 'Failed to create invite' });
-                inviteToken = ins.token;
+                .is('deleted_at', null);
+            const perfIds = (perfs ?? []).map((p: { id: string }) => p.id);
+            const viewerKey = normEmail(email);
+            const byEmail = new Map<string, { email: string; name: string | null; created_at: string }>();
+            if (perfIds.length) {
+                const { data: pps2 } = await sb
+                    .from('puentes_purchases')
+                    .select('recipient_email, recipient_name, created_at')
+                    .in('source_session_id', perfIds)
+                    .eq('status', 'paid')
+                    .order('created_at', { ascending: true });
+                for (const p of pps2 ?? []) {
+                    const k = normEmail(p.recipient_email);
+                    if (k && k !== viewerKey && !byEmail.has(k)) byEmail.set(k, { email: p.recipient_email, name: p.recipient_name ?? null, created_at: p.created_at });
+                }
+                const { data: brs } = await sb
+                    .from('bridges')
+                    .select('adult_email, created_at')
+                    .in('perfilamiento_id', perfIds)
+                    .order('created_at', { ascending: true });
+                for (const b of brs ?? []) {
+                    const k = normEmail(b.adult_email);
+                    if (k && k !== viewerKey && !byEmail.has(k)) byEmail.set(k, { email: b.adult_email, name: null, created_at: b.created_at });
+                }
             }
-            await sendBridgeInviteEmail(invited, inviteToken as string, child.child_name || null, vLang, origin);
-            return res.status(200).json({ ok: true });
+            return res.status(200).json({ ok: true, adults: [...byEmail.values()] });
         }
 
         // ── resend-play-link: re-send the play email for a buyer's assigned slot ──

@@ -78,6 +78,7 @@ const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({
 const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({ default: m.TestTormenta })));
 const PuentesFlow         = lazy(() => import('./pages/PuentesFlow'));
 const PuenteInvite        = lazy(() => import('./pages/PuenteInvite'));
+const PuenteLink          = lazy(() => import('./pages/PuenteLink'));
 const PuentesCheckout     = lazy(() => import('./pages/PuentesCheckout'));
 const PuentesCheckoutSuccess = lazy(() => import('./pages/PuentesCheckoutSuccess'));
 const Deck                = lazy(() => import('./pages/Deck').then(m => ({ default: m.Deck })));
@@ -263,6 +264,9 @@ function App() {
             <Route path="/puentes/checkout/cancel"  element={<PuentesCheckout />} />
             <Route path="/puentes/:token"           element={<PuentesFlow />} />
             <Route path="/puente/invite/:token"     element={<PuenteInvite />} />
+            {/* Fase 1 (frozen model §4): the child's ONE shareable bridges-link.
+                Static "/puente/invite" ranks above the ":token" param, so both coexist. */}
+            <Route path="/puente/:token"            element={<PuenteLink />} />
             <Route path="/deck"       element={<Deck />} />
             <Route path="/demo"       element={<Demo />} />
             <Route path="/terms"      element={<TermsPage />} />

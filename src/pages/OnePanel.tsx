@@ -200,6 +200,9 @@ interface HubChildF {
     comp_token: string | null;
     bridge_token: string | null;
     invites?: { email: string; status: string }[];
+    // The child's ONE shareable bridges-link (frozen model §4); minted lazily.
+    bridge_link?: string | null;
+    linked_adults?: number;
 }
 interface HubData {
     version: 2;
@@ -229,8 +232,18 @@ const TH = {
         preparing: 'Preparando…',
         stale: 'El informe tiene más de 6 meses. Puede estar desactualizado, pero puedes seguir consultándolo. Si quieres la foto de hoy, vuelve a jugar.',
         updateReport: 'Actualizar el informe',
-        newBridge: (n: string) => `Crear nuevo puente con ${n}`,
-        newBridgeTip: (n: string) => `Invita a otro adulto que acompaña a ${n} (la abuela, la tía, el entrenador) a tener su propio puente hacia él. Recibe un link, responde su cuestionario y obtiene su informe puente por USD 4.99. Tú lo autorizas al invitarlo.`,
+        shareBridgeLink: 'Compartir link de puentes',
+        shareBridgeLinkTip: (n: string) => `Este es el link de puentes de ${n}. Compártelo con los adultos cercanos (abuelos, tíos, quien lo acompaña) para que cada uno cree su propio puente con ${n}. Cada adulto paga el suyo (USD 4.99) y solo ve su puente, nunca el informe de ${n}. Solo tú puedes compartirlo.`,
+        linkCopied: 'Link copiado. Ahora compártelo con quien quieras.',
+        linkedAdults: (n: number) => `Adultos vinculados (${n})`,
+        linkedTitle: (n: string) => `Adultos vinculados a ${n}`,
+        linkedSub: 'Crearon su puente con el link que compartiste.',
+        linkedEmpty: 'Todavía nadie creó su puente. Comparte el link con los adultos cercanos.',
+        linkedCreated: 'creó su puente',
+        revokeLink: 'Revocar link',
+        revokeConfirm: '¿Revocar el link? Se genera uno nuevo. Los puentes ya creados no se pierden; el link viejo deja de funcionar.',
+        linkRevoked: 'Link revocado. Se generó uno nuevo.',
+        close: 'Cerrar',
         roleTag: 'tu puente',
         roleNote: 'Tu puente es tuyo para siempre. El informe individual del niño lo tiene el adulto que lo autorizó: si lo necesitas, pídeselo a él.',
         notPlayedTitle: 'El niño todavía no jugó',
@@ -250,7 +263,7 @@ const TH = {
         compBridgePrompt: 'Tu puente está incluido en tu compra. Créalo para conectar mejor con el niño.',
         createMyBridge: 'Crear mi puente',
         otherTitle: 'Perfila a otro niño',
-        otherDesc: 'Otra aventura, otro informe. Para sumar más adultos a un niño que ya jugó, usa "Crear nuevo puente" en la tarjeta del niño.',
+        otherDesc: 'Otra aventura, otro informe. Para sumar más adultos a un niño que ya jugó, usa "Compartir link de puentes" en la tarjeta del niño.',
         otherCta: 'Perfilar a otro niño',
         academyEyebrow: '¿Acompañas a un equipo?',
         academyDesc: 'Un panel para todo tu grupo: química de equipo, un asistente que conoce a cada niño, y roles para varios adultos sin volver a autorizar de a uno.',
@@ -262,13 +275,6 @@ const TH = {
         footerPrices: 'Precios en dólares. Al comprar desde Argentina se cobra al valor del dólar del día.',
         manageData: 'Administrar o eliminar datos',
         terms: 'Términos',
-        inviteTitle: (n: string) => `Invitar un adulto a acompañar a ${n}`,
-        inviteDesc: 'Recibirá un link para crear su propio puente (USD 4.99). Tú lo autorizas al invitarlo.',
-        inviteEmail: 'Email del adulto',
-        inviteRelation: 'Relación (opcional): abuela, tío, entrenador…',
-        inviteSend: 'Enviar invitación',
-        inviteSent: 'Invitación enviada.',
-        invitedLine: (e: string, accepted: boolean) => accepted ? `Invitaste a ${e}: aceptó, falta su cuestionario` : `Invitaste a ${e}: pendiente`,
         cancel: 'Cancelar',
         comingSoon: 'Muy pronto disponible.',
         genericError: 'Algo salió mal. Intenta de nuevo.',
@@ -289,8 +295,18 @@ const TH = {
         preparing: 'Preparing…',
         stale: "This report is over 6 months old. It may be outdated, but you can still consult it. For today's snapshot, play again.",
         updateReport: 'Update the report',
-        newBridge: (n: string) => `Create a new bridge with ${n}`,
-        newBridgeTip: (n: string) => `Invite another adult who accompanies ${n} (a grandparent, an aunt, the coach) to have their own bridge. They get a link, answer their questionnaire, and receive their bridge report for USD 4.99. You authorize them by inviting them.`,
+        shareBridgeLink: 'Share the bridges link',
+        shareBridgeLinkTip: (n: string) => `This is ${n}'s bridges link. Share it with the adults close to ${n} (grandparents, uncles, whoever accompanies them) so each one creates their own bridge. Each adult pays their own (USD 4.99) and sees only their bridge, never ${n}'s report. Only you can share it.`,
+        linkCopied: 'Link copied. Now share it with whoever you want.',
+        linkedAdults: (n: number) => `Linked adults (${n})`,
+        linkedTitle: (n: string) => `Adults linked to ${n}`,
+        linkedSub: 'They created their bridge with the link you shared.',
+        linkedEmpty: 'No one has created their bridge yet. Share the link with the adults close to them.',
+        linkedCreated: 'created their bridge',
+        revokeLink: 'Revoke link',
+        revokeConfirm: 'Revoke the link? A new one is generated. Bridges already created are kept; the old link stops working.',
+        linkRevoked: 'Link revoked. A new one was generated.',
+        close: 'Close',
         roleTag: 'your bridge',
         roleNote: "Your bridge is yours forever. The child's individual report belongs to the adult who authorized them: if you need it, ask them.",
         notPlayedTitle: "The child hasn't played yet",
@@ -310,7 +326,7 @@ const TH = {
         compBridgePrompt: 'Your bridge is included in your purchase. Create it to connect better with the child.',
         createMyBridge: 'Create my bridge',
         otherTitle: 'Profile another child',
-        otherDesc: 'Another adventure, another report. To add more adults to a child who already played, use "Create a new bridge" on the child\'s card.',
+        otherDesc: 'Another adventure, another report. To add more adults to a child who already played, use "Share the bridges link" on the child\'s card.',
         otherCta: 'Profile another child',
         academyEyebrow: 'Do you accompany a team?',
         academyDesc: 'One panel for your whole group: team chemistry, an assistant that knows each child, and roles for several adults without authorizing one by one.',
@@ -322,13 +338,6 @@ const TH = {
         footerPrices: 'Prices in US dollars. When buying from Argentina you are charged at the day\'s dollar value.',
         manageData: 'Manage or delete data',
         terms: 'Terms',
-        inviteTitle: (n: string) => `Invite an adult to accompany ${n}`,
-        inviteDesc: 'They will receive a link to create their own bridge (USD 4.99). You authorize them by inviting them.',
-        inviteEmail: "Adult's email",
-        inviteRelation: 'Relationship (optional): grandmother, uncle, coach…',
-        inviteSend: 'Send invitation',
-        inviteSent: 'Invitation sent.',
-        invitedLine: (e: string, accepted: boolean) => accepted ? `You invited ${e}: accepted, questionnaire pending` : `You invited ${e}: pending`,
         cancel: 'Cancel',
         comingSoon: 'Available very soon.',
         genericError: 'Something went wrong. Try again.',
@@ -349,8 +358,18 @@ const TH = {
         preparing: 'Preparando…',
         stale: 'Este relatório tem mais de 6 meses. Pode estar desatualizado, mas você ainda pode consultá-lo. Para a foto de hoje, jogue de novo.',
         updateReport: 'Atualizar o relatório',
-        newBridge: (n: string) => `Criar nova ponte com ${n}`,
-        newBridgeTip: (n: string) => `Convide outro adulto que acompanha ${n} (a avó, a tia, o treinador) a ter sua própria ponte. Ele recebe um link, responde seu questionário e obtém seu relatório de ponte por USD 4.99. Você o autoriza ao convidá-lo.`,
+        shareBridgeLink: 'Compartilhar link de pontes',
+        shareBridgeLinkTip: (n: string) => `Este é o link de pontes de ${n}. Compartilhe com os adultos próximos (avós, tios, quem acompanha) para que cada um crie a sua própria ponte com ${n}. Cada adulto paga a sua (USD 4.99) e vê apenas a sua ponte, nunca o relatório de ${n}. Só você pode compartilhá-lo.`,
+        linkCopied: 'Link copiado. Agora compartilhe com quem quiser.',
+        linkedAdults: (n: number) => `Adultos vinculados (${n})`,
+        linkedTitle: (n: string) => `Adultos vinculados a ${n}`,
+        linkedSub: 'Criaram a sua ponte com o link que você compartilhou.',
+        linkedEmpty: 'Ainda ninguém criou a sua ponte. Compartilhe o link com os adultos próximos.',
+        linkedCreated: 'criou a sua ponte',
+        revokeLink: 'Revogar link',
+        revokeConfirm: 'Revogar o link? Um novo é gerado. As pontes já criadas não se perdem; o link antigo para de funcionar.',
+        linkRevoked: 'Link revogado. Um novo foi gerado.',
+        close: 'Fechar',
         roleTag: 'sua ponte',
         roleNote: 'A sua ponte é sua para sempre. O relatório individual da criança pertence ao adulto que a autorizou: se precisar dele, peça a ele.',
         notPlayedTitle: 'A criança ainda não jogou',
@@ -370,7 +389,7 @@ const TH = {
         compBridgePrompt: 'Sua ponte está incluída na sua compra. Crie-a para conectar melhor com a criança.',
         createMyBridge: 'Criar minha ponte',
         otherTitle: 'Perfilar outra criança',
-        otherDesc: 'Outra aventura, outro relatório. Para somar mais adultos a uma criança que já jogou, use "Criar nova ponte" no cartão da criança.',
+        otherDesc: 'Outra aventura, outro relatório. Para somar mais adultos a uma criança que já jogou, use "Compartilhar link de pontes" no cartão da criança.',
         otherCta: 'Perfilar outra criança',
         academyEyebrow: 'Você acompanha uma equipe?',
         academyDesc: 'Um painel para todo o seu grupo: química de equipe, um assistente que conhece cada criança, e papéis para vários adultos sem autorizar um a um.',
@@ -382,13 +401,6 @@ const TH = {
         footerPrices: 'Preços em dólares. Ao comprar da Argentina cobra-se pelo valor do dólar do dia.',
         manageData: 'Administrar ou excluir dados',
         terms: 'Termos',
-        inviteTitle: (n: string) => `Convidar um adulto para acompanhar ${n}`,
-        inviteDesc: 'Ele receberá um link para criar sua própria ponte (USD 4.99). Você o autoriza ao convidá-lo.',
-        inviteEmail: 'Email do adulto',
-        inviteRelation: 'Relação (opcional): avó, tio, treinador…',
-        inviteSend: 'Enviar convite',
-        inviteSent: 'Convite enviado.',
-        invitedLine: (e: string, accepted: boolean) => accepted ? `Você convidou ${e}: aceitou, falta o questionário` : `Você convidou ${e}: pendente`,
         cancel: 'Cancelar',
         comingSoon: 'Disponível em breve.',
         genericError: 'Algo deu errado. Tente de novo.',
@@ -408,12 +420,13 @@ const HubChildCard: React.FC<{
     onCopy: (slug: string) => void;
     copiedSlug: string | null;
     onResend: (linkId: string) => void;
-    onInvite: (child: HubChildF) => void;
+    onShareLink: (child: HubChildF) => void;
+    onLinkedAdults: (child: HubChildF) => void;
     onUpdate: (childId: string | null) => void;
     onAddBridge: (child: HubChildF) => void;
     onCreateBridge: () => void;
     onViewBridge: () => void;
-}> = ({ child, th, onCopy, copiedSlug, onResend, onInvite, onUpdate, onAddBridge, onCreateBridge, onViewBridge }) => {
+}> = ({ child, th, onCopy, copiedSlug, onResend, onShareLink, onLinkedAdults, onUpdate, onAddBridge, onCreateBridge, onViewBridge }) => {
     const name = child.name || th.kidsOne;
     const eje = child.report?.eje ?? null;
     const avatarBg = eje ? AXIS_COLORS[eje] : '#F5F5F7';
@@ -421,6 +434,11 @@ const HubChildCard: React.FC<{
     const meta = [child.age ? `${child.age} ${th.ageUnit}` : null, child.sport].filter(Boolean).join(' · ');
     const reportReady = !!(child.report && child.report.ready && child.report.perfilamiento_id);
     const reportPreparing = !!(child.report && !child.report.ready);
+    // "Played" = the child has a resolved perfilamiento, regardless of whether
+    // the REPORT display is ready (a 'held' report is still buildable-from). The
+    // bridges-link is available as soon as the child played, so a report in
+    // review never strips the authorizer's ability to invite adults.
+    const played = !!child.perfilamiento_id;
     const reportLink = child.report?.share_token
         ? `/report/${child.report.perfilamiento_id}?token=${child.report.share_token}`
         : null;
@@ -489,21 +507,20 @@ const HubChildCard: React.FC<{
                                         {th.updateReport} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
                                     </button>
                                 )}
-                                {reportReady && !child.is_invited && child.is_responsible && (
-                                    <span className="inline-flex items-center gap-1">
-                                        <button onClick={() => onInvite(child)} className="inline-flex items-center px-1 py-2 rounded-[10px] text-[13px] font-semibold text-argo-violet-500 hover:text-argo-violet-600 transition-colors">{th.newBridge(name)}</button>
-                                        <InfoTip text={th.newBridgeTip(name)} position="top" />
-                                    </span>
-                                )}
                             </div>
 
-                            {(child.invites ?? []).length > 0 && (
-                                <div className="mt-2">
-                                    {(child.invites ?? []).map(iv => (
-                                        <p key={iv.email} className="text-[12px] text-argo-grey">{th.invitedLine(iv.email, iv.status === 'accepted')}</p>
-                                    ))}
+                            {/* Bridges-link actions (frozen model §4): only the
+                                authorizing adult, available as soon as the child played. */}
+                            {played && !child.is_invited && child.is_responsible && (
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
+                                    <span className="inline-flex items-center gap-1">
+                                        <button onClick={() => onShareLink(child)} className="inline-flex items-center gap-1.5 py-1 text-[12.5px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors"><Copy size={12} /> {th.shareBridgeLink}</button>
+                                        <InfoTip text={th.shareBridgeLinkTip(name)} position="top" />
+                                    </span>
+                                    <button onClick={() => onLinkedAdults(child)} className="inline-flex items-center py-1 text-[12.5px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors">{th.linkedAdults(child.linked_adults ?? 0)}</button>
                                 </div>
                             )}
+
                             {child.is_invited && (
                                 <p className="text-[12px] text-argo-light mt-2">{th.roleNote}</p>
                             )}
@@ -589,10 +606,9 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
     const { toast } = useToast();
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://argomethod.com';
     const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
-    const [invite, setInvite] = useState<{ child: HubChildF } | null>(null);
-    const [inviteEmail, setInviteEmail] = useState('');
-    const [inviteRelation, setInviteRelation] = useState('');
     const [busy, setBusy] = useState(false);
+    type LinkedAdult = { email: string; name: string | null; created_at: string };
+    const [linked, setLinked] = useState<{ child: HubChildF; adults: LinkedAdult[] | null } | null>(null);
 
     const g = th.greeting[data.role] ?? th.greeting.empty;
     const played = data.children.filter(c => (c.is_responsible || c.is_buyer) && c.report);
@@ -658,12 +674,52 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
         setBusy(false);
     };
 
-    const submitInvite = async () => {
-        if (!invite || !inviteEmail.trim()) return;
-        setBusy(true);
-        const res = await postAction({ action: 'invite-adult', child_id: invite.child.child_id, invited_email: inviteEmail.trim(), relation: inviteRelation.trim() || undefined });
-        setBusy(false);
-        if (res && res.ok) { toast('success', th.inviteSent); setInvite(null); setInviteEmail(''); setInviteRelation(''); onRefresh?.(); }
+    // Frozen model §4: copy the child's ONE shareable bridges-link. The token is
+    // pre-minted server-side (present as child.bridge_link), so the common path
+    // copies SYNCHRONOUSLY inside the click gesture (WebKit rejects clipboard
+    // writes after an await). Only the rare not-yet-minted case awaits the
+    // action, where we fall back to the modal (a fresh gesture) instead of lying.
+    const shareBridgeLink = (child: HubChildF) => {
+        const url = child.bridge_link ? `${origin}/puente/${child.bridge_link}` : (demo ? `${origin}/puente/demo` : null);
+        if (url) {
+            navigator.clipboard?.writeText(url).catch(() => { /* denied: toast still guides */ });
+            toast('success', th.linkCopied);
+            return;
+        }
+        // No token yet: open the modal (which mints + offers a Copy button on a
+        // fresh gesture) rather than claim a copy that did not happen.
+        openLinkedAdults(child);
+    };
+
+    // Modal: the adults who created their bridge via this link + Copy + Revoke.
+    const openLinkedAdults = async (child: HubChildF) => {
+        setLinked({ child, adults: demo ? [] : null });
+        if (demo) return;
+        const res = await postAction({ action: 'linked-adults', child_id: child.child_id });
+        if (!res || !res.ok) { setLinked({ child, adults: [] }); return; }
+        const j = await res.json().catch(() => ({ adults: [] }));
+        setLinked({ child, adults: (j.adults as LinkedAdult[]) ?? [] });
+    };
+
+    const copyBridgeLinkFromModal = async (child: HubChildF) => {
+        let url = child.bridge_link ? `${origin}/puente/${child.bridge_link}` : (demo ? `${origin}/puente/demo` : null);
+        if (!url && !demo) {
+            const res = await postAction({ action: 'share-bridge-link', child_id: child.child_id });
+            const j = res && res.ok ? await res.json().catch(() => ({})) : {};
+            if (!j?.url) { toast('error', th.genericError); return; }
+            url = j.url as string;
+            onRefresh?.();
+        }
+        if (!url) return;
+        try { await navigator.clipboard?.writeText(url); } catch { /* denied */ }
+        toast('success', th.linkCopied);
+    };
+
+    const revokeBridgeLink = async (child: HubChildF) => {
+        if (demo) { toast('info', th.comingSoon); return; }
+        if (typeof window !== 'undefined' && !window.confirm(th.revokeConfirm)) return;
+        const res = await postAction({ action: 'revoke-bridge-link', child_id: child.child_id });
+        if (res && res.ok) { toast('success', th.linkRevoked); setLinked(null); onRefresh?.(); }
         else if (res) { toast('error', th.genericError); }
     };
 
@@ -702,7 +758,8 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                                     onCopy={copyPlayLink}
                                     copiedSlug={copiedSlug}
                                     onResend={resendPlayLink}
-                                    onInvite={c => setInvite({ child: c })}
+                                    onShareLink={shareBridgeLink}
+                                    onLinkedAdults={openLinkedAdults}
                                     onUpdate={startReplay}
                                     onAddBridge={refreshBridge}
                                     onCreateBridge={createMyBridge}
@@ -760,21 +817,41 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                 </p>
             </div>
 
-            {/* Invite modal */}
+            {/* Linked-adults modal (frozen model §4): the adults who created their
+                bridge via this link + copy the link + revoke (rotate). */}
             <AnimatePresence>
-                {invite && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4" onClick={() => setInvite(null)}>
-                        <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} onClick={e => e.stopPropagation()} className="bg-white rounded-2xl p-7 w-full max-w-sm shadow-xl">
-                            <div className="flex items-start justify-between mb-1 gap-3">
-                                <h3 className="text-base font-semibold text-argo-navy">{th.inviteTitle(invite.child.name || th.kidsOne)}</h3>
-                                <button onClick={() => setInvite(null)} className="text-argo-light hover:text-argo-grey transition-colors -mr-1"><X size={18} /></button>
+                {linked && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => setLinked(null)}>
+                        <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }} onClick={e => e.stopPropagation()} className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+                            <div className="flex items-start justify-between gap-3 mb-0.5">
+                                <div>
+                                    <h3 className="text-base font-bold text-argo-navy tracking-tight">{th.linkedTitle(linked.child.name || th.kidsOne)}</h3>
+                                    <p className="text-[12px] text-argo-grey mt-0.5">{th.linkedSub}</p>
+                                </div>
+                                <button onClick={() => setLinked(null)} aria-label={th.close} className="text-argo-light hover:text-argo-grey transition-colors -mr-1"><X size={17} /></button>
                             </div>
-                            <p className="text-[13px] text-argo-grey mb-5">{th.inviteDesc}</p>
-                            <input type="email" placeholder={th.inviteEmail} value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-3" />
-                            <input type="text" placeholder={th.inviteRelation} value={inviteRelation} onChange={e => setInviteRelation(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300 mb-5" />
-                            <div className="flex gap-3">
-                                <button onClick={() => setInvite(null)} className="flex-1 py-3 rounded-xl text-[13px] font-semibold border border-argo-border text-argo-grey hover:text-argo-navy transition-colors">{th.cancel}</button>
-                                <button onClick={submitInvite} disabled={busy || !inviteEmail.trim()} className="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50">{th.inviteSend}</button>
+
+                            <div className="mt-4 min-h-[48px]">
+                                {linked.adults === null ? (
+                                    <p className="text-[13px] text-argo-grey py-3">…</p>
+                                ) : linked.adults.length === 0 ? (
+                                    <p className="text-[13px] text-argo-grey py-3">{th.linkedEmpty}</p>
+                                ) : (
+                                    linked.adults.map(a => (
+                                        <div key={a.email} className="flex items-center justify-between gap-3 py-2.5 border-b border-argo-border last:border-0">
+                                            <div className="min-w-0">
+                                                {a.name && <p className="text-[13.5px] font-semibold text-argo-navy truncate">{a.name}</p>}
+                                                <p className="text-[12px] text-argo-grey truncate">{a.email}</p>
+                                            </div>
+                                            <span className="text-[11px] text-argo-light whitespace-nowrap">{th.linkedCreated}</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-argo-border">
+                                <button onClick={() => copyBridgeLinkFromModal(linked.child)} className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-argo-violet-500 hover:text-argo-violet-600 transition-colors"><Copy size={13} /> {th.shareBridgeLink}</button>
+                                <button onClick={() => revokeBridgeLink(linked.child)} className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors">{th.revokeLink}</button>
                             </div>
                         </motion.div>
                     </motion.div>
@@ -798,17 +875,20 @@ function buildDemoHub(state: string): HubData {
         report: rep('D', 'Impulsor con veta Conector', 'ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.'),
         is_buyer: true, is_responsible: true, is_invited: false,
         my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1', comp_token: null, bridge_token: 'demo',
+        bridge_link: 'demo-token', linked_adults: 2,
     };
     if (state === 'familia') {
         const sofia: HubChildF = {
             key: 'c2', child_id: 'c2', perfilamiento_id: 'demo-S', name: 'Sofía', age: 13, sport: 'hockey',
             report: rep('S', 'Sostenedor con veta Conector', 'ritmo sereno. Procesa con calma antes de moverse.', true),
             is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2', comp_token: 'demo-comp', bridge_token: null,
+            bridge_link: 'demo-token-2', linked_adults: 0,
         };
         const mateo: HubChildF = {
             key: 'c3', child_id: 'c3', perfilamiento_id: 'demo-M', name: 'Mateo', age: 8, sport: 'básquet',
             report: { perfilamiento_id: 'demo-M', status: 'held', ready: false, share_token: null, archetype_label: null, eje: null, motor_line: null, expires_at: null, is_stale: false },
             is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3', comp_token: null, bridge_token: null,
+            bridge_link: 'demo-token-3', linked_adults: 0,
         };
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'family', children: [juan, sofia, mateo], available_slots: 0, can_upgrade_academy: true };
     }

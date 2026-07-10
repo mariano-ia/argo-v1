@@ -28,6 +28,79 @@ function normEmail(s?: string | null): string {
     return (s || '').trim().toLowerCase();
 }
 
+// Escape LIKE metacharacters so an email containing % or _ can't widen an
+// ilike match beyond the exact (case-insensitive) address.
+function likeEscape(s: string): string {
+    return s.replace(/\\/g, '\\\\').replace(/%/g, '\\%').replace(/_/g, '\\_');
+}
+
+function clientIp(req: VercelRequest): string {
+    const fwd = req.headers['x-forwarded-for'];
+    const raw = Array.isArray(fwd) ? fwd[0] : (fwd ?? '');
+    return raw.split(',')[0].trim() || 'unknown';
+}
+
+// Fixed-window rate limit via Vercel KV (Upstash REST). Fail-open if unset.
+async function rateLimited(key: string, limit: number, windowSec: number): Promise<boolean> {
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return false;
+    try {
+        const incr = await fetch(`${url}/incr/${encodeURIComponent(key)}`, { headers: { Authorization: `Bearer ${token}` } });
+        const { result } = await incr.json();
+        if (result === 1) {
+            await fetch(`${url}/expire/${encodeURIComponent(key)}/${windowSec}`, { headers: { Authorization: `Bearer ${token}` } });
+        }
+        return typeof result === 'number' && result > limit;
+    } catch {
+        return false;
+    }
+}
+
+// Re-send an EXISTING ArgoPuente® magic link to its own recipient address (never
+// echoed in an HTTP response on the shareable-link path, so a token bearer who
+// types someone else's email can't capture their capability token). Minimal
+// body; the full report lives behind the magic link. ArgoPuente® wordmark.
+async function sendExistingBridgeEmail(email: string, magicToken: string, childFirstName: string, lang: string, origin: string): Promise<void> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return;
+    const url = `${origin}/puentes/${magicToken}`;
+    const n = childFirstName || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+    const PL = lang === 'en' ? {
+        subject: `Your ArgoPuente® with ${n}`,
+        body: `You already have your bridge with ${n}. Here is your permanent link.`,
+        cta: 'Open my bridge',
+    } : lang === 'pt' ? {
+        subject: `Sua ArgoPuente® com ${n}`,
+        body: `Você já tem a sua ponte com ${n}. Aqui está o seu link permanente.`,
+        cta: 'Abrir minha ponte',
+    } : {
+        subject: `Tu ArgoPuente® con ${n}`,
+        body: `Ya tienes tu puente con ${n}. Aquí está tu enlace permanente.`,
+        cta: 'Abrir mi puente',
+    };
+    await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            from: 'Argo Method <hola@argomethod.com>',
+            to: [email],
+            subject: PL.subject,
+            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Puente</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
+</td></tr>
+<tr><td style="padding:28px;">
+    <p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${PL.body}</p>
+    <div style="text-align:center;"><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a></div>
+</td></tr>
+</table></td></tr></table></body></html>`,
+        }),
+    });
+}
+
 /* ── Stripe checkout ─────────────────────────────────────────────────────── */
 
 async function createStripeCheckout(args: {
@@ -93,31 +166,78 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const sb = createClient(supabaseUrl, serviceKey);
 
+    // Throttle: this endpoint mints Stripe sessions and (on the shareable-link
+    // path) is reachable by any bearer, so cap creation per IP. Belt-and-braces
+    // against pending-row / checkout-session spam and the 409 existence oracle.
+    if (await rateLimited(`rl:puentes-checkout:ip:${clientIp(req)}`, 40, 3600)) {
+        return res.status(429).json({ error: 'rate_limited' });
+    }
+
     try {
         const {
-            source_session_id,
+            source_session_id: bodySourceId,
             recipient_email,
             recipient_name,
             lang,
             consent_given,
             invite_token,
+            bridge_link_token,
         } = req.body as {
             source_session_id?: string;
             recipient_email?: string;
             recipient_name?: string;
             lang?: string;
             consent_given?: boolean;
-            // ArgoOne fusion (B13): an accepted bridge-invite authorizes an adult
-            // OTHER than the responsible one (e.g. a grandparent) to buy the $4.99
-            // add-on. The invite IS the authorization (R1), replacing the email gate.
+            // ArgoOne fusion (B13, legado): an accepted bridge-invite authorizes an
+            // adult OTHER than the responsible one to buy the $4.99 add-on.
             invite_token?: string;
+            // Fase 1 (frozen model §4): the child's ONE shareable bridges-link.
+            // Shared only by the authorizing adult; whoever opens it onboards
+            // (name + email + T&C) and pays THEIR own $4.99. The link IS the
+            // authorization; it is safely re-shareable because the $4.99 buys
+            // ONLY the buyer's bridge (never the child's individual report).
+            bridge_link_token?: string;
         };
 
-        if (!source_session_id || !recipient_email) {
-            return res.status(400).json({ error: 'Missing source_session_id or recipient_email' });
-        }
         if (!consent_given) {
             return res.status(400).json({ error: 'Consent required' });
+        }
+        if (!recipient_email) {
+            return res.status(400).json({ error: 'Missing recipient_email' });
+        }
+
+        const flagOn = process.env.PUENTES_ADDON_V2 === 'on'
+            || ['1', 'on', 'true'].includes((process.env.VITE_BRIDGES_V2 || '').trim().toLowerCase());
+
+        // ── Path C (Fase 1): resolve the child + CURRENT perfilamiento from the
+        //    bridges-link token. The client never sends a perfilamiento id on this
+        //    path — the token alone picks the child's current photo server-side. ──
+        let source_session_id = bodySourceId;
+        let viaBridgeLink = false;
+        if (flagOn && bridge_link_token) {
+            const { data: linkChild } = await sb
+                .from('children')
+                .select('id')
+                .eq('bridge_link_token', String(bridge_link_token))
+                .is('deleted_at', null)
+                .maybeSingle();
+            if (!linkChild) return res.status(404).json({ error: 'invalid_link' });
+            const { data: cur } = await sb
+                .from('perfilamientos')
+                .select('id')
+                .eq('child_id', linkChild.id)
+                .eq('status', 'resolved')
+                .is('deleted_at', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (!cur) return res.status(404).json({ error: 'invalid_link' });
+            source_session_id = cur.id;
+            viaBridgeLink = true;
+        }
+
+        if (!source_session_id) {
+            return res.status(400).json({ error: 'Missing source_session_id or recipient_email' });
         }
 
         // Look up source perfilamiento: child name, lang fallback, tenant_id, and
@@ -130,20 +250,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (srcErr || !srcSession) return res.status(404).json({ error: 'Source session not found' });
 
         // ── Authorization (R1/R2/R5) ────────────────────────────────────────
-        // Path A (invite): behind PUENTES_ADDON_V2, a valid pending/accepted
+        // Path C (Fase 1, resolved above): the child's shareable bridges-link IS
+        // the authorization — only the authorizing adult can mint/share it, and
+        // it yields bridge-only entitlement, so ANY onboarded email may buy.
+        // Path A (invite, legado): behind PUENTES_ADDON_V2, a valid pending/accepted
         // bridge-invite toward THIS perfilamiento, addressed to THIS recipient,
         // authorizes the buy (the responsible adult already vouched by inviting).
         // Path B (fallback, unchanged): only the child's responsible adult
         // (recipient_email == the source perfilamiento's adult_email) may buy.
-        // Honor the invite bypass whenever the hub that CREATES invites is live
-        // (VITE_BRIDGES_V2) OR the dedicated add-on flag is on. Coupling them means
-        // an invite is never emailed without the checkout able to honor it, so a
-        // legitimately-invited adult can't be stranded on a 403 during a partial
-        // rollout. (VITE_ vars are readable from process.env on Vercel functions.)
-        const inviteFlagOn = process.env.PUENTES_ADDON_V2 === 'on'
-            || ['1', 'on', 'true'].includes((process.env.VITE_BRIDGES_V2 || '').trim().toLowerCase());
+        const inviteFlagOn = flagOn;
         let inviteRow: { id: string } | null = null;
-        if (inviteFlagOn && invite_token) {
+        if (!viaBridgeLink && inviteFlagOn && invite_token) {
             const { data: inv } = await sb
                 .from('bridge_invites')
                 .select('id, invited_email, status, expires_at')
@@ -156,7 +273,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 inviteRow = { id: inv.id };
             }
         }
-        if (!inviteRow) {
+        if (!viaBridgeLink && !inviteRow) {
             if (!srcSession.adult_email || normEmail(recipient_email) !== normEmail(srcSession.adult_email)) {
                 return res.status(403).json({
                     error: 'not_authorized',
@@ -166,19 +283,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Block double-purchase for THIS child only (per recipient_email x
-        // source_session_id). A paid bridge toward a different child is unaffected;
-        // the old "one purchase covers all their children" fan-out is gone.
+        // source_session_id — the frozen model's "1 puente por email × niño";
+        // a NEW perfilamiento after a re-profile deliberately allows a fresh
+        // $4.99, that's the "puente sobre foto nueva" rule). Case-insensitive
+        // so the same adult typing Marta@ vs marta@ can't buy twice.
         const { data: existing } = await sb
             .from('puentes_purchases')
             .select('id, magic_token')
-            .eq('recipient_email', recipient_email)
+            .ilike('recipient_email', likeEscape(normEmail(recipient_email)))
             .eq('source_session_id', source_session_id)
             .eq('status', 'paid')
+            .limit(1)
             .maybeSingle();
         if (existing) {
             const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
                 ? `https://${process.env.VERCEL_URL}`
                 : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com');
+            // Shareable-link path: the caller has NOT proven they own the typed
+            // email (the bridges-link is designed to be widely re-shared), so we
+            // must NOT echo the magic token — that would hand any bearer another
+            // adult's full report. Instead re-send the link to its own inbox and
+            // reply without the token. Paths A/B (invite / responsible-adult email
+            // match) proved authorization, so they keep the direct redirect.
+            if (viaBridgeLink) {
+                const firstName = (srcSession.child_name || '').trim().split(/\s+/)[0] || '';
+                await sendExistingBridgeEmail(normEmail(recipient_email), existing.magic_token, firstName, (lang || srcSession.lang || 'es') as string, origin);
+                return res.status(409).json({
+                    error: 'already_purchased',
+                    emailed: true,
+                    detail: 'This email already has a bridge with this child. We re-sent the link to that address.',
+                });
+            }
             return res.status(409).json({
                 error: 'already_purchased',
                 detail: 'This adult already has an active ArgoPuente® toward this child.',
