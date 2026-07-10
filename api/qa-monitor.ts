@@ -290,7 +290,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const norm = text.normalize('NFD').replace(/\p{Diacritic}/gu, '');
         const FORBIDDEN = ['sosten confiable', 'el tanque', 'la brujula', 'impulsor decidido', 'estratega reactivo', 'conector relacional'];
         add('coach canary: responds 200', status === 200 && text.length > 0, `status=${status}`);
-        add('coach canary: canonical naming (S+Medio = Sostenedor Rítmico)', norm.includes('sostenedor') && norm.includes('ritmico'), text.slice(0, 80));
+        // Canonical axis only. The old assertion required the [Eje][Motor] compound
+        // ("Sostenedor Rítmico"), but the 2026-07-06 naming redesign moved the tempo
+        // OUT of the name (docs/archetype-naming.md) — the coach may now correctly
+        // answer "sostenedor" with the motor as a separate reading, and the check
+        // must pass BOTH the legacy phrasing and the new canon (it flapped on
+        // 2026-07-10 when the model phrased it the new way).
+        add('coach canary: canonical axis (S = Sostenedor)', norm.includes('sostenedor'), text.slice(0, 80));
         add('coach canary: no forbidden old label', !FORBIDDEN.some(f => norm.includes(f)));
       }
     } catch (e) { add('coach canary reachable', false, String(e)); }

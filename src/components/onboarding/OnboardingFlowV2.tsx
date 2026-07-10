@@ -220,6 +220,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
+    // ArgoOne: set once the EARLY one-complete (pre-AI, v2 builds) succeeded, so
+    // the late block doesn't double-call.
+    const oneCompleteDoneRef = useRef(false);
 
     // Mini-game metrics for motor calculation
     const gameAMetricsRef  = useRef<IslandMetrics | null>(null);
@@ -969,6 +972,47 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 }
             }
 
+            // ── ArgoOne completion, EARLY (v2 builds) ───────────────────────
+            // The ~30s AI generation below is the fragile window: if the tab is
+            // closed/locked there (the child hands the device back), everything
+            // after it dies — the QA cycle hit exactly this (link stuck pending,
+            // no responsible stamp, no comp puente; only the email had a cron
+            // backstop). Under V2 one-complete LINKS the row-A perfilamiento and
+            // does not need ai_sections (row A gets them later via updateSession),
+            // so we complete the link NOW, with keepalive so even a closing tab
+            // delivers it. Legacy builds keep the old post-email order (row B
+            // needs ai_sections). The late block is skipped once this succeeds.
+            if (import.meta.env.VITE_BRIDGES_V2 === '1' && oneLinkId && sessionIdRef.current && !oneCompleteDoneRef.current) {
+                try {
+                    const res = await fetch('/api/one-complete', {
+                        method: 'POST',
+                        keepalive: true,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            link_id: oneLinkId,
+                            session_id: sessionIdRef.current,
+                            session_data: {
+                                adult_name: adultData.nombreAdulto,
+                                adult_email: adultData.email,
+                                child_name: adultData.nombreNino,
+                                child_age: adultData.edad,
+                                sport: adultData.deporte,
+                                eje: profile.eje,
+                                motor: profile.motor,
+                                eje_secundario: profile.ejeSecundario,
+                                archetype_label: report.arquetipo.label,
+                                answers,
+                                lang,
+                            },
+                        }),
+                    });
+                    if (res.ok) oneCompleteDoneRef.current = true;
+                    else console.warn('[Argo] early one-complete non-ok:', res.status);
+                } catch (err) {
+                    console.warn('[Argo] early one-complete failed (late block will retry):', err);
+                }
+            }
+
             // ── Generate AI sections ────────────────────────────────────────
             setAiLoading(true);
             const ctx: ReportContext = {
@@ -1050,8 +1094,9 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 console.error('[Argo] AI generation failed after retries — NOT sending report email (would be non-personalized). Session left with ai_sections=null for regeneration. sessionId:', sessionIdRef.current);
             }
 
-            // Mark ArgoOne® link as completed if applicable
-            if (oneLinkId && sessionIdRef.current) {
+            // Mark ArgoOne® link as completed if applicable (skipped when the
+            // early v2 completion above already succeeded).
+            if (oneLinkId && sessionIdRef.current && !oneCompleteDoneRef.current) {
                 try {
                     await fetch('/api/one-complete', {
                         method: 'POST',
