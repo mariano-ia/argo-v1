@@ -1,0 +1,233 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ArgoOne — Panel v3 (tabs, mockup)</title>
+<style>
+  :root {
+    --navy: #1D1D1F; --secondary: #424245; --grey: #86868B; --light: #AEAEB2;
+    --border: #E8E8ED; --bg: #F8F8FA; --neutral: #F5F5F7; --card: #FFFFFF;
+    --violet: #955FB5; --violet-soft: rgba(149, 95, 181, 0.08); --violet-border: rgba(149, 95, 181, 0.22);
+    --amber-bg: rgba(245, 158, 11, 0.10); --amber-fg: #B45309; --amber-border: rgba(245, 158, 11, 0.28);
+    --green-fg: #15803D;
+    --ax-d: #f97316; --ax-i: #f59e0b; --ax-s: #22c55e; --ax-c: #6366f1;
+    --shadow: 0 1px 3px rgba(29,29,31,0.04), 0 6px 24px rgba(29,29,31,0.05);
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --navy:#F5F5F7; --secondary:#C7C7CC; --grey:#98989D; --light:#6E6E73; --border:#2C2C2E;
+      --bg:#131315; --neutral:#1C1C1E; --card:#1F1F22; --violet:#C08FDB;
+      --violet-soft:rgba(192,143,219,0.12); --violet-border:rgba(192,143,219,0.28);
+      --amber-fg:#FBBF24; --green-fg:#4ADE80; --shadow:0 1px 3px rgba(0,0,0,0.4), 0 6px 24px rgba(0,0,0,0.35); }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--navy); font-family:var(--font); -webkit-font-smoothing:antialiased; line-height:1.5; }
+  .wrap { max-width:760px; margin:0 auto; padding:28px 20px 80px; }
+  .wordmark { font-size:20px; letter-spacing:-0.01em; }
+  .wordmark .a { font-weight:800; } .wordmark .r { font-weight:300; }
+  .wordmark .reg { font-weight:300; font-size:0.62em; vertical-align:super; opacity:0.7; }
+  h1.panel-title { font-size:26px; font-weight:700; letter-spacing:-0.02em; margin:18px 0 4px; }
+  .panel-sub { font-size:14px; color:var(--grey); margin:0 0 20px; }
+
+  /* ── Tabs ── */
+  .tabs { display:flex; gap:6px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+  .tab { font-family:inherit; font-size:14px; font-weight:600; color:var(--grey); background:none; border:none;
+    padding:10px 14px 12px; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; display:flex; align-items:center; gap:7px; }
+  .tab[aria-selected="true"] { color:var(--navy); border-bottom-color:var(--violet); }
+  .tab .count { font-size:11px; font-weight:700; background:var(--neutral); color:var(--secondary);
+    border-radius:999px; padding:1px 8px; }
+  .tab[aria-selected="true"] .count { background:var(--violet-soft); color:var(--violet); }
+
+  /* ── Child cards (slimmer) ── */
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); }
+  .card + .card { margin-top:12px; }
+  .pad { padding:16px 18px; }
+  .row { display:flex; align-items:flex-start; gap:12px; }
+  .avatar { width:40px; height:40px; border-radius:11px; flex:none; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:16px; color:#fff; }
+  .name { font-size:15px; font-weight:700; margin:0; }
+  .meta { font-size:12px; color:var(--grey); margin:1px 0 0; }
+  .chip { display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:600; padding:3px 9px; border-radius:999px; background:var(--neutral); color:var(--secondary); flex:none; }
+  .dot { width:7px; height:7px; border-radius:50%; }
+  .motorline { font-size:12.5px; color:var(--secondary); margin:8px 0 0; }
+  .motorline b { font-weight:600; color:var(--navy); }
+  .invline { font-size:11.5px; color:var(--grey); margin:6px 0 0; }
+  .btn { font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:none;
+    padding:8px 14px; border-radius:9px; border:1px solid transparent; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; }
+  .btn-primary { background:var(--violet); color:#fff; }
+  .btn-secondary { background:var(--card); color:var(--navy); border-color:var(--border); }
+  .btn-ghost { background:transparent; color:var(--violet); padding:8px 6px; }
+  .actions { margin-top:10px; }
+  .banner { display:flex; gap:8px; align-items:flex-start; padding:10px 13px; border-radius:9px; font-size:12.5px; margin-top:10px;
+    background:var(--amber-bg); border:1px solid var(--amber-border); color:var(--amber-fg); }
+  /* Puente footer row: bridge state + ALL bridge actions live here now */
+  .puente { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
+    padding:11px 18px; background:var(--neutral); border-top:1px solid var(--border); border-radius:0 0 14px 14px; }
+  .puente .txt { font-size:12.5px; color:var(--secondary); flex:1; min-width:180px; }
+  .puente .txt b { color:var(--navy); font-weight:600; }
+  .puente .side { display:flex; align-items:center; gap:6px; }
+  .price-tag { font-size:11px; font-weight:700; opacity:.85; }
+  .info { width:15px; height:15px; border-radius:50%; border:1px solid var(--light); color:var(--grey);
+    font-size:9.5px; font-weight:700; font-style:italic; display:inline-flex; align-items:center; justify-content:center; cursor:help; flex:none; }
+
+  /* ── Links tab: compact rows ── */
+  .linkrows { background:var(--card); border:1px solid var(--border); border-radius:14px; box-shadow:var(--shadow); overflow:hidden; }
+  .linkrow { display:flex; align-items:center; gap:12px; padding:12px 16px; }
+  .linkrow + .linkrow { border-top:1px solid var(--border); }
+  .st { width:9px; height:9px; border-radius:50%; flex:none; }
+  .st.avail { background:#D2D2D7; } .st.sent { background:#F59E0B; }
+  .linkrow .lbl { flex:1; min-width:0; font-size:13px; color:var(--navy); font-weight:500; }
+  .linkrow .sub { font-size:11.5px; color:var(--grey); font-weight:400; display:block; }
+  .buyrow { padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--violet-soft); }
+  .buyrow .t { font-size:13px; color:var(--secondary); }
+  .sec-label { font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--light); font-weight:700; margin:26px 0 10px; }
+  .academy { border-radius:14px; border:1px solid var(--violet-border); background:var(--violet-soft); padding:16px 18px;
+    display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .academy p { margin:0; } .academy .t { font-size:14px; font-weight:700; }
+  .academy .d { font-size:12.5px; color:var(--secondary); margin-top:3px; }
+  .foot { margin-top:36px; font-size:11px; color:var(--light); text-align:center; line-height:1.7; }
+  .foot a { color:var(--violet); text-decoration:none; }
+  [hidden] { display:none !important; }
+</style>
+
+<div class="wrap">
+  <div class="wordmark"><span class="a">Argo</span><span class="r">One</span><span class="reg">®</span></div>
+  <h1 class="panel-title">Tu panel</h1>
+  <p class="panel-sub">Todo lo tuyo en un lugar. Guarda este link para volver cuando quieras.</p>
+
+  <!-- ── TABS ── -->
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="ninos">Niños <span class="count">4</span></button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="links">Links de juego <span class="count">6</span></button>
+  </div>
+
+  <!-- ══ TAB: NIÑOS (solo los que jugaron; cards más bajas) ══ -->
+  <div id="tab-ninos">
+    <!-- Niñito: informe v4 + puente listo -->
+    <div class="card">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-d)">N</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+              <div><p class="name">Niñito</p><p class="meta">13 años · Básquet</p></div>
+              <span class="chip"><span class="dot" style="background:var(--ax-d)"></span>Impulsor con destellos de Conector</span>
+            </div>
+            <p class="motorline"><b>Su motor:</b> ritmo equilibrado. Combina impulso con pausas para leer el juego.</p>
+            <div class="actions"><a class="btn btn-primary" href="#">Ver el informe</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="puente">
+        <div class="txt"><b>Tu puente hacia Niñito:</b> listo</div>
+        <div class="side">
+          <a class="btn btn-secondary" href="#">Ver mi puente</a>
+          <a class="btn btn-ghost" href="#">Invitar a otro adulto</a><span class="info">i</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Keven: puente listo + invitación pendiente -->
+    <div class="card">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-s)">K</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+              <div><p class="name">Keven</p><p class="meta">13 años · Rugby</p></div>
+              <span class="chip"><span class="dot" style="background:var(--ax-s)"></span>Sostenedor</span>
+            </div>
+            <p class="invline">Invitaste a abuela@ejemplo.com: pendiente</p>
+            <div class="actions"><a class="btn btn-primary" href="#">Ver el informe</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="puente">
+        <div class="txt"><b>Tu puente hacia Keven:</b> listo</div>
+        <div class="side">
+          <a class="btn btn-secondary" href="#">Ver mi puente</a>
+          <a class="btn btn-ghost" href="#">Invitar a otro adulto</a><span class="info">i</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sofía: informe retrasado -->
+    <div class="card">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--ax-i)">S</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+              <div><p class="name">Sofía</p><p class="meta">14 años · Volleyball</p></div>
+              <span class="chip"><span class="dot" style="background:var(--ax-i)"></span>Conector</span>
+            </div>
+            <div class="banner">! El informe tiene más de 6 meses. Puedes seguir consultándolo; para la foto de hoy, vuelve a jugar.</div>
+            <div class="actions">
+              <a class="btn btn-secondary" href="#">Ver el informe</a>
+              <a class="btn btn-primary" href="#">Actualizar el informe <span class="price-tag">USD 12.99</span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="puente">
+        <div class="txt">Todavía no sumaste tu puente hacia Sofía.</div>
+        <div class="side"><a class="btn btn-secondary" href="#">Sumar mi puente <span class="price-tag">USD 4.99</span></a></div>
+      </div>
+    </div>
+
+    <!-- Mateo: preparando -->
+    <div class="card">
+      <div class="pad">
+        <div class="row">
+          <div class="avatar" style="background:var(--neutral); color:var(--light)">M</div>
+          <div style="flex:1; min-width:0;">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px;">
+              <div><p class="name">Mateo</p><p class="meta">8 años · Básquet</p></div>
+              <span class="chip" style="background:var(--amber-bg); color:var(--amber-fg);">Preparando…</span>
+            </div>
+            <p class="motorline" style="color:var(--grey)">Su informe está en revisión. Te avisamos por email cuando esté listo.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ TAB: LINKS DE JUEGO (filas compactas + CTA de compra) ══ -->
+  <div id="tab-links" hidden>
+    <div class="linkrows">
+      <div class="buyrow">
+        <span class="t">Cada link es una aventura y un informe nuevo.</span>
+        <a class="btn btn-primary" href="#">Perfilar a otro niño <span class="price-tag">USD 12.99</span></a>
+      </div>
+      <div class="linkrow"><span class="st sent"></span><span class="lbl">Enviado a carla@ejemplo.com<span class="sub">esperando que juegue · hace 2 días</span></span><a class="btn btn-secondary" href="#">Copiar</a><a class="btn btn-ghost" href="#">Reenviar</a></div>
+      <div class="linkrow"><span class="st sent"></span><span class="lbl">Enviado a tio.raul@ejemplo.com<span class="sub">esperando que juegue · hace 5 horas</span></span><a class="btn btn-secondary" href="#">Copiar</a><a class="btn btn-ghost" href="#">Reenviar</a></div>
+      <div class="linkrow"><span class="st avail"></span><span class="lbl">Link disponible<span class="sub">compártelo con el adulto que acompaña al niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
+      <div class="linkrow"><span class="st avail"></span><span class="lbl">Link disponible<span class="sub">compártelo con el adulto que acompaña al niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
+      <div class="linkrow"><span class="st avail"></span><span class="lbl">Link disponible<span class="sub">compártelo con el adulto que acompaña al niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
+      <div class="linkrow"><span class="st avail"></span><span class="lbl">Link disponible<span class="sub">compártelo con el adulto que acompaña al niño</span></span><a class="btn btn-primary" href="#">Copiar el link</a></div>
+    </div>
+  </div>
+
+  <!-- Academy (igual que hoy, gateado por escala) -->
+  <div class="sec-label">¿Acompañas a un equipo?</div>
+  <div class="academy">
+    <div style="flex:1; min-width:220px;">
+      <p class="t">Da el paso a <span style="font-weight:800">Argo</span><span style="font-weight:300">Academy®</span></p>
+      <p class="d">Un panel para todo tu grupo: química de equipo, un asistente que conoce a cada niño, y roles para varios adultos.</p>
+    </div>
+    <a class="btn btn-primary" href="#">Hacer upgrade</a>
+  </div>
+
+  <p class="foot">
+    Cada perfil (del niño y del adulto) se actualiza cada 6 meses.<br>
+    Precios en dólares. Al comprar desde Argentina se cobra al valor del dólar del día.<br>
+    <a href="#">Administrar o eliminar datos</a> · <a href="#">Términos</a>
+  </p>
+</div>
+
+<script>
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.addEventListener('click', function () {
+      document.querySelectorAll('.tab').forEach(function (x) { x.setAttribute('aria-selected', String(x === t)); });
+      document.getElementById('tab-ninos').hidden = t.dataset.tab !== 'ninos';
+      document.getElementById('tab-links').hidden = t.dataset.tab !== 'links';
+    });
+  });
+</script>
