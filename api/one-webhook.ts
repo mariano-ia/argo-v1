@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { buffer } from 'micro';
-import { createHmac, timingSafeEqual } from 'crypto';
+import { createHmac, timingSafeEqual, randomBytes } from 'crypto';
 // Inlined Principia activity logger + lifecycle emails (best-effort). Serverless
 // functions here do NOT bundle cross-directory imports — importing ../src/lib
 // throws ERR_MODULE_NOT_FOUND at runtime.
@@ -628,6 +628,192 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 }
 
+/* ── Fase 3: re-profile paid (ArgoOne 6-month cycle, behind ONE_REPROFILE) ─── */
+
+async function sendResendEmail(to: string, subject: string, html: string): Promise<void> {
+    const key = process.env.RESEND_API_KEY;
+    if (!key) return;
+    try {
+        await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [to], subject, html }),
+        });
+    } catch (e) { console.warn('[one-webhook] resend send failed (non-blocking):', e); }
+}
+
+function reproShell(headerWord: string, heading: string, body: string, cta: string, url: string, note: string): string {
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+  <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">${headerWord}</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
+</td></tr>
+<tr><td style="padding:28px;">
+  <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 10px;">${heading}</h2>
+  <p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${body}</p>
+  <div style="text-align:center;"><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${cta}</a></div>
+  <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;line-height:1.6;">${note}</p>
+</td></tr></table></td></tr></table></body></html>`;
+}
+
+// Same shell, two side-by-side buttons (primary + optional secondary).
+function reproShellTwo(headerWord: string, heading: string, body: string, cta1: string, url1: string, url2: string | null, cta2: string, note: string): string {
+    const btn = (url: string, label: string, primary: boolean) => `<a href="${url}" style="display:inline-block;background:${primary ? '#955FB5' : '#fff'};color:${primary ? '#fff' : '#1D1D1F'};border:1px solid ${primary ? '#955FB5' : '#E8E8ED'};font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin:4px 6px 4px 0;">${label}</a>`;
+    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+  <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">${headerWord}</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
+</td></tr>
+<tr><td style="padding:28px;">
+  <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 10px;">${heading}</h2>
+  <p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${body}</p>
+  <div>${btn(url1, cta1, true)}${url2 ? btn(url2, cta2, false) : ''}</div>
+  <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;line-height:1.6;">${note}</p>
+</td></tr></table></td></tr></table></body></html>`;
+}
+
+// The re-profile purchase is paid. Decide, from the single source of truth
+// (check_reprofile_cooldown), whether the child re-plays or the payer receives
+// the current fresh photo — never both. Idempotent via one_purchases.reprofile_status.
+async function handleReprofilePaid(args: { sb: any; purchaseId: string; providerPaymentId: string }): Promise<{ branch: string }> {
+    const { sb, purchaseId, providerPaymentId } = args;
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
+
+    const { data: purchase } = await sb
+        .from('one_purchases')
+        .select('id, email, lang, child_id, includes_puente, reprofile_status')
+        .eq('id', purchaseId)
+        .maybeSingle();
+    if (!purchase || !purchase.child_id) return { branch: 'no_child' };
+    if (purchase.reprofile_status && purchase.reprofile_status !== 'pending_payment') {
+        return { branch: 'already_' + purchase.reprofile_status };
+    }
+
+    const lang = (purchase.lang as string) || 'es';
+    const payer = String(purchase.email || '').trim().toLowerCase();
+
+    const { data: child } = await sb
+        .from('children')
+        .select('id, child_name, child_age, responsible_adult_email, adult_name, lang')
+        .eq('id', purchase.child_id)
+        .is('deleted_at', null)
+        .maybeSingle();
+    if (!child) return { branch: 'child_gone' };
+    const responsible = String(child.responsible_adult_email || '').trim().toLowerCase();
+    const childFirst = (child.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+
+    // Single source of truth for the 6-month decision.
+    const { data: cd, error: cdErr } = await sb.rpc('check_reprofile_cooldown', { p_child_id: purchase.child_id });
+    if (cdErr) { console.error('[one-webhook] reprofile cooldown RPC error:', cdErr.message); return { branch: 'cooldown_error' }; }
+    const expired = !cd || cd.allowed !== false; // allowed=true (or null) → ≥6mo → re-play
+
+    if (!expired) {
+        // ── FRESH photo: the child does NOT re-play. Deliver the current report to
+        //    the payer + their own included puente. ──
+        const { data: perf } = await sb
+            .from('perfilamientos')
+            .select('id, share_token')
+            .eq('child_id', purchase.child_id)
+            .eq('status', 'resolved')
+            .is('deleted_at', null)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        const reportUrl = perf?.share_token ? `${origin}/report/${perf.id}?token=${perf.share_token}` : `${origin}/one/panel`;
+
+        // The payer's included puente (comp) toward the CURRENT perfilamiento.
+        let bridgeUrl: string | null = null;
+        if (purchase.includes_puente && perf?.id && payer) {
+            const { data: exists } = await sb.from('puentes_purchases').select('id, magic_token')
+                .ilike('recipient_email', payer).eq('source_session_id', perf.id).eq('status', 'paid').maybeSingle();
+            if (exists?.magic_token) {
+                bridgeUrl = `${origin}/puentes/${exists.magic_token}`;
+            } else if (!exists) {
+                const mt = randomBytes(24).toString('base64url');
+                await sb.from('puentes_purchases').insert({
+                    source_session_id: perf.id, recipient_email: payer, recipient_name: null, child_name: child.child_name,
+                    amount_cents: 0, currency: 'USD', provider: 'comp', provider_payment_id: `reprofile_${purchaseId}`,
+                    status: 'paid', paid_at: new Date().toISOString(), magic_token: mt,
+                    lang, source: 'argo_one', tenant_id: null,
+                });
+                bridgeUrl = `${origin}/puentes/${mt}`;
+            }
+        }
+
+        const T = lang === 'en' ? { s: `${childFirst}'s profile is still current`, h: `${childFirst}'s profile is still current`, b: `Another adult refreshed ${childFirst}'s profile recently, so there's no need to play again yet. Here is the current report${bridgeUrl ? ', and your own bridge is ready to build' : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: 'The profile refreshes every 6 months.' }
+            : lang === 'pt' ? { s: `O perfil de ${childFirst} ainda está atual`, h: `O perfil de ${childFirst} ainda está atual`, b: `Outro adulto atualizou o perfil de ${childFirst} recentemente, então não é preciso jogar de novo por enquanto. Aqui está o relatório atual${bridgeUrl ? ', e a sua própria ponte já pode ser criada' : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: 'O perfil se atualiza a cada 6 meses.' }
+            : { s: `El perfil de ${childFirst} sigue vigente`, h: `El perfil de ${childFirst} sigue vigente`, b: `Otro adulto actualizó el perfil de ${childFirst} hace poco, así que no hace falta volver a jugar por ahora. Aquí tienes el informe actual${bridgeUrl ? ', y tu propio puente ya se puede crear' : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: 'El perfil se actualiza cada 6 meses.' };
+        if (payer) await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, (T as { c2?: string }).c2 || '', T.n));
+
+        await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'fresh_delivered' }).eq('id', purchaseId);
+        return { branch: 'fresh_delivered' };
+    }
+
+    // ── EXPIRED: the child re-plays. Mint a replay slot + email the IMMUTABLE
+    //    responsible adult for authorization (never an address the payer chose). ──
+    if (!responsible) {
+        // No authorizer on record → cannot re-profile (§2). Hold the purchase.
+        await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'no_authorizer' }).eq('id', purchaseId);
+        await alertOwner('[Argo] Re-perfilado sin adulto autorizante', `La compra ${purchaseId} (niño ${purchase.child_id}) no tiene responsible_adult_email. Queda en espera; sin reembolso automático.`);
+        return { branch: 'no_authorizer' };
+    }
+
+    // Per-child idempotency (backstop to the checkout dedup + Stripe retries): if
+    // an authorization is already in flight for this child (a non-completed replay
+    // slot bound to a paid reprofile purchase), do NOT mint a second slot/consent/
+    // email. The child re-plays ONCE; this purchase just waits on the same
+    // authorization. (Its own included puente is still delivered at completion via
+    // the payer's is_buyer link, and — if it never completes — no double-play.)
+    {
+        const { data: openSlots } = await sb.from('one_links')
+            .select('id, purchase_id')
+            .eq('child_id', purchase.child_id)
+            .neq('status', 'completed');
+        for (const s of openSlots ?? []) {
+            if (s.purchase_id === purchaseId) continue;
+            const { data: sp } = await sb.from('one_purchases').select('kind, payment_status').eq('id', s.purchase_id).maybeSingle();
+            if (sp?.kind === 'reprofile' && sp?.payment_status === 'paid') {
+                await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth' }).eq('id', purchaseId);
+                return { branch: 'awaiting_auth_shared' };
+            }
+        }
+    }
+
+    const slug = randomBytes(9).toString('hex');
+    const { data: slot } = await sb.from('one_links')
+        .insert({ purchase_id: purchaseId, child_id: purchase.child_id, status: 'available', slug })
+        .select('id, slug')
+        .single();
+    if (!slot) { console.error('[one-webhook] reprofile slot insert failed'); return { branch: 'slot_error' }; }
+
+    // Authorization record (works for any age; COPPA is enforced at play only for
+    // <13). 14-day TTL (owner-approved), not the 24h consent default.
+    const token = randomBytes(16).toString('hex');
+    await sb.from('parental_consents').insert({
+        token,
+        adult_name: child.adult_name || '',
+        adult_email: responsible,
+        child_name: child.child_name,
+        child_age: child.child_age,
+        flow_type: 'one',
+        one_link_id: slot.id,
+        lang,
+        status: 'pending',
+        expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    const authUrl = `${origin}/consent/${token}`;
+    const A = lang === 'en' ? { s: `Authorize ${childFirst}'s new profile`, h: `Time to refresh ${childFirst}'s profile`, b: `Someone requested a new profile for ${childFirst}. As the responsible adult, your authorization is needed. Whoever paid for this will receive ${childFirst}'s individual report and will build their bridge report from that profile. Tap to authorize, then hand the device to ${childFirst} to play.`, c: `Authorize and play`, n: 'This link is valid for 14 days.' }
+        : lang === 'pt' ? { s: `Autorize o novo perfil de ${childFirst}`, h: `Hora de atualizar o perfil de ${childFirst}`, b: `Alguém solicitou um novo perfil para ${childFirst}. Como adulto responsável, é necessária a sua autorização. Quem pagou receberá o relatório individual de ${childFirst} e criará o seu relatório de ponte a partir desse perfil. Toque para autorizar e passe o dispositivo para ${childFirst} jogar.`, c: 'Autorizar e jogar', n: 'Este link é válido por 14 dias.' }
+        : { s: `Autoriza el nuevo perfil de ${childFirst}`, h: `Es momento de actualizar el perfil de ${childFirst}`, b: `Alguien solicitó un nuevo perfil para ${childFirst}. Como adulto responsable, hace falta tu autorización. Quien lo pagó recibirá el informe individual de ${childFirst} y generará su informe puente basado en ese perfil. Toca para autorizar y pásale el dispositivo a ${childFirst} para que juegue.`, c: 'Autorizar y jugar', n: 'Este enlace es válido por 14 días.' };
+    await sendResendEmail(responsible, A.s, reproShell('One', A.h, A.b, A.c, authUrl, A.n));
+
+    await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth' }).eq('id', purchaseId);
+    return { branch: 'awaiting_auth' };
+}
+
 /* ── Stripe handler ──────────────────────────────────────────────────────── */
 
 async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnType<typeof createClient<any, any>>) {
@@ -762,12 +948,24 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
 
     const { data: existing } = await sb
         .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token, lang')
+        .select('id, payment_status, email, pack_size, access_token, lang, kind')
         .eq('id', purchaseId)
         .single();
 
     if (!existing) return res.status(404).json({ error: 'Purchase not found' });
     if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
+
+    // ── Fase 3: a re-profile purchase branches (fresh photo vs authorize+play);
+    //    it never sends the first-play hub/confirmation email. Gate on the DURABLE
+    //    kind (a kind='reprofile' row can only exist if ONE_REPROFILE was on at
+    //    checkout), NOT the runtime flag — so a flag flip between checkout and this
+    //    webhook can't misroute a paid re-profile into the first-play handler. ──
+    if (existing.kind === 'reprofile') {
+        const r = await handleReprofilePaid({ sb, purchaseId, providerPaymentId: session.id });
+        await logActivity(sb, { area: 'ventas', action: 'reprofile_paid', sourceType: 'webhook', severity: 'sano', resourceType: 'one_purchase', resourceId: String(purchaseId), reason: { provider: 'stripe', branch: r.branch, payment_id: session.id } });
+        console.info(`[one-webhook] Stripe: reprofile purchase ${purchaseId} → ${r.branch}`);
+        return res.status(200).json({ received: true, purchase_id: purchaseId, reprofile: r.branch });
+    }
 
     await sb.from('one_purchases').update({
         payment_status: 'paid',
@@ -954,12 +1152,21 @@ async function handleMercadoPago(req: VercelRequest, res: VercelResponse, sb: Re
 
     const { data: existing } = await sb
         .from('one_purchases')
-        .select('id, payment_status, email, pack_size, access_token, lang')
+        .select('id, payment_status, email, pack_size, access_token, lang, kind')
         .eq('id', purchaseId)
         .single();
 
     if (!existing) return res.status(404).json({ error: 'Purchase not found' });
     if (existing.payment_status === 'paid') return res.status(200).json({ received: true, already_processed: true });
+
+    // Defensive: re-profile checkout is Stripe-only, so a reprofile purchase should
+    // never settle via MercadoPago. If one ever did, route it to the same durable
+    // branch rather than the first-play hub email (which would strand the buyer).
+    if (existing.kind === 'reprofile') {
+        const r = await handleReprofilePaid({ sb, purchaseId, providerPaymentId: String(resourceId) });
+        console.info(`[one-webhook] MP: reprofile purchase ${purchaseId} → ${r.branch}`);
+        return res.status(200).json({ received: true, purchase_id: purchaseId, reprofile: r.branch });
+    }
 
     await sb.from('one_purchases').update({
         payment_status: 'paid',

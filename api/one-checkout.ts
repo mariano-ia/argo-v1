@@ -19,7 +19,11 @@ const PRICES: Record<string, { usd_cents: number; label: string; includes_puente
     one_puente: { usd_cents: 1299, label: 'ArgoOne+®', includes_puente: true },
 };
 
-async function createStripeCheckout(price: typeof PRICES['one'], email: string, purchaseId: string, accessToken: string): Promise<string> {
+function normEmail(s?: string | null): string {
+    return (s || '').trim().toLowerCase();
+}
+
+async function createStripeCheckout(price: { usd_cents: number; label: string }, email: string, purchaseId: string, accessToken: string): Promise<string> {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
 
@@ -65,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { email: rawEmail, kind: bodyKind, lang: bodyLang } = req.body as { email?: string; kind?: string; lang?: string };
+        const { email: rawEmail, kind: bodyKind, lang: bodyLang, child_id: bodyChildId } = req.body as { email?: string; kind?: string; lang?: string; child_id?: string };
         const email = String(rawEmail || '').trim().toLowerCase();
         // Prefer the language the client sent; otherwise fall back to the browser's
         // Accept-Language header so an English (or Portuguese) visitor gets emails in
@@ -94,6 +98,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Invalid email' });
         }
 
+        // ── Fase 3: re-profile of an EXISTING child (behind ONE_REPROFILE) ──────
+        // A $12.99 purchase bound to a child_id. The child does NOT play now; the
+        // webhook decides (fresh photo → deliver current report; expired → email
+        // the immutable responsible adult for authorization, then the child plays).
+        // So a re-profile purchase creates NO play-link slot here (that slot is
+        // minted after authorization). The payer must be the buyer or the child's
+        // responsible adult (anti-redirection, §2).
+        const REPROFILE_ON = process.env.ONE_REPROFILE === 'on';
+        let reprofileChildId: string | null = null;
+        if (REPROFILE_ON && typeof bodyChildId === 'string' && bodyChildId) {
+            const { data: child } = await sb
+                .from('children')
+                .select('id, tenant_id, responsible_adult_email, adult_email, archived_at, deleted_at, merged_into')
+                .eq('id', bodyChildId)
+                .maybeSingle();
+            if (!child || child.archived_at || child.deleted_at || child.merged_into) {
+                return res.status(404).json({ error: 'child_not_found' });
+            }
+            // ArgoOne children only — a tenant/club child re-profiles through the
+            // dashboard flow, never via this $12.99 checkout (else charged-but-
+            // undeliverable).
+            if (child.tenant_id) {
+                return res.status(400).json({ error: 'reprofile_not_supported_for_tenant_child' });
+            }
+            const isResponsible = normEmail(child.responsible_adult_email) === email || normEmail(child.adult_email) === email;
+            // The buyer of ANY of the child's reports may also re-profile it: a
+            // one_link for THIS child whose purchase email == the caller. Filtered
+            // by the caller's email (never an arbitrary link).
+            let isBuyer = isResponsible;
+            if (!isBuyer) {
+                const { data: buyerLinks } = await sb
+                    .from('one_links')
+                    .select('one_purchases!inner(email)')
+                    .eq('child_id', bodyChildId);
+                // The embedded relation can arrive as an object or a single-element
+                // array depending on the FK cardinality inference; handle both.
+                isBuyer = (buyerLinks ?? []).some((l: any) => {
+                    const op = Array.isArray(l.one_purchases) ? l.one_purchases[0] : l.one_purchases;
+                    return normEmail(op?.email) === email;
+                });
+            }
+            if (!isResponsible && !isBuyer) {
+                return res.status(403).json({ error: 'not_authorized_to_reprofile' });
+            }
+            // Dedup: one re-profile in flight per child. A second purchase (e.g. the
+            // buyer AND the adult both paying) would double-play the child inside the
+            // 6-month window — reject it before charging.
+            const { data: inFlight } = await sb
+                .from('one_purchases')
+                .select('id')
+                .eq('child_id', bodyChildId)
+                .eq('kind', 'reprofile')
+                .in('reprofile_status', ['pending_payment', 'awaiting_auth'])
+                .limit(1)
+                .maybeSingle();
+            if (inFlight) {
+                return res.status(409).json({ error: 'reprofile_already_in_progress' });
+            }
+            reprofileChildId = bodyChildId;
+        }
+
         // Create purchase record (pending). pack_size is always 1 (no packs for now).
         const { data: purchase, error: insertErr } = await sb
             .from('one_purchases')
@@ -106,6 +171,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 payment_status: 'pending',
                 includes_puente: price.includes_puente,
                 lang,
+                ...(reprofileChildId ? { kind: 'reprofile', child_id: reprofileChildId, reprofile_status: 'pending_payment' } : {}),
             })
             .select('id, access_token')
             .single();
@@ -115,8 +181,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Failed to create purchase' });
         }
 
-        // One play-link slot for the single report.
-        await sb.from('one_links').insert([{ purchase_id: purchase.id, status: 'available' }]);
+        // First-play purchases get a play-link slot immediately. A re-profile does
+        // NOT (its slot is minted by the webhook/consent after authorization).
+        if (!reprofileChildId) {
+            await sb.from('one_links').insert([{ purchase_id: purchase.id, status: 'available' }]);
+        }
 
         const checkoutUrl = await createStripeCheckout(price, email, purchase.id, purchase.access_token);
 

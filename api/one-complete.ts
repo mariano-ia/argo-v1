@@ -60,18 +60,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // buyer their bridge, so the SKU flip MUST also activate the comp-to-buyer
         // routing here — otherwise a UNIFIED-on / V2-off window orphans the comp and
         // re-opens G2. So UNIFIED implies V2-complete.
-        const V2 = process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on';
+        // ONE_REPROFILE implies V2: a re-profile MUST take the LINK/append path
+        // (reuse the row-A perfilamiento bound to the existing child), never the
+        // legacy new-child path — else a re-play would fork a duplicate child.
+        const V2 = process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on' || process.env.ONE_REPROFILE === 'on';
         const lang = session_data.lang || 'es';
 
         // Verify link exists and is not already completed
         const { data: link } = await sb
             .from('one_links')
-            .select('id, status, purchase_id')
+            .select('id, status, purchase_id, child_id')
             .eq('id', link_id)
             .single();
 
         if (!link) return res.status(404).json({ error: 'Link not found' });
         if (link.status === 'completed') return res.status(400).json({ error: 'Already completed' });
+
+        // A replay slot (link.child_id already set by the webhook) is a re-profile:
+        // it MUST take the LINK/append path (reuse the row-A perfilamiento bound to
+        // the existing child) regardless of the runtime flags — otherwise flipping a
+        // flag off between authorization and completion would fork a duplicate child.
+        // Durable signal, mirrors the flag-independence of the webhook/session gates.
+        const isReplaySlot = !!link.child_id;
+        if (isReplaySlot && !session_id) {
+            return res.status(400).json({ error: 'reprofile_requires_session_id' });
+        }
 
         // +6 months from now, clamping end-of-month overflow to match Postgres'
         // interval '6 months' (Aug 31 -> Feb 28/29, not Mar 3).
@@ -86,9 +99,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         let perfilamiento: { id: string } | null = null;
         let linkedChildId: string | null = null;  // the child bound to the completed link (V2)
 
-        // ── G2 LINK path (V2 + row-A id supplied): reuse the perfilamiento that
-        //    /api/session already created with report_v4; do NOT duplicate it. ──
-        if (V2 && session_id) {
+        // ── G2 LINK path (V2 OR a durable replay slot + row-A id supplied): reuse
+        //    the perfilamiento that /api/session already created; do NOT duplicate. ──
+        if ((V2 || isReplaySlot) && session_id) {
             const { data: rowA } = await sb
                 .from('perfilamientos')
                 .select('id, child_id, adult_email, expires_at')
@@ -236,6 +249,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         } catch (puentesErr) {
             console.warn('[one-complete] prepaid combo Puente failed:', puentesErr instanceof Error ? puentesErr.message : puentesErr);
+        }
+
+        // ── Fase 3: a re-profile completed. Advance its purchase(s) to a TERMINAL
+        //    reprofile_status so the checkout dedup ("one in flight per child") does
+        //    not block the NEXT 6-month re-profile forever. All the child's still-open
+        //    reprofile purchases (the payer + any shared-auth backstop) are fulfilled
+        //    by this single play. ──
+        if (isReplaySlot && linkedChildId) {
+            try {
+                await sb.from('one_purchases')
+                    .update({ reprofile_status: 'completed' })
+                    .eq('child_id', linkedChildId)
+                    .eq('kind', 'reprofile')
+                    .in('reprofile_status', ['pending_payment', 'awaiting_auth']);
+            } catch (e) { console.warn('[one-complete] reprofile_status terminal update failed (non-blocking):', e); }
+        }
+
+        // ── Fase 3: notify the PAYER of a re-profile (coach case, payer != the
+        //    authorizing adult): the new report + their included puente, so §5's
+        //    "el informe nuevo va al adulto Y al pagador" holds via an active send
+        //    (the adult gets it through the normal report email to their address). ──
+        try {
+            const { data: op } = await sb
+                .from('one_purchases')
+                .select('email, kind')
+                .eq('id', link.purchase_id)
+                .maybeSingle();
+            const payer = (op?.email || '').trim().toLowerCase();
+            const adult = (session_data.adult_email || '').trim().toLowerCase();
+            if (op?.kind === 'reprofile' && payer && payer !== adult) {
+                const origin = process.env.SITE_URL || 'https://argomethod.com';
+                const { data: perfRow } = await sb.from('perfilamientos').select('share_token').eq('id', perfilamiento.id).maybeSingle();
+                const reportUrl = perfRow?.share_token ? `${origin}/report/${perfilamiento.id}?token=${perfRow.share_token}` : `${origin}/one/panel`;
+                const { data: pp } = await sb.from('puentes_purchases').select('magic_token').ilike('recipient_email', payer.replace(/([\\%_])/g, '\\$1')).eq('source_session_id', perfilamiento.id).eq('status', 'paid').maybeSingle();
+                const bridgeUrl = pp?.magic_token ? `${origin}/puentes/${pp.magic_token}` : null;
+                const childFirst = (session_data.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+                const resendKey = process.env.RESEND_API_KEY;
+                if (resendKey) {
+                    const P = lang === 'en'
+                        ? { s: `${childFirst}'s new report is ready`, b: `The new profile for ${childFirst} is ready. Here is the report${bridgeUrl ? ', and your own bridge is ready to build' : ''}.`, c: 'Open the report', c2: 'Create my bridge' }
+                        : lang === 'pt'
+                        ? { s: `O novo relatório de ${childFirst} está pronto`, b: `O novo perfil de ${childFirst} está pronto. Aqui está o relatório${bridgeUrl ? ', e a sua própria ponte já pode ser criada' : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte' }
+                        : { s: `El nuevo informe de ${childFirst} está listo`, b: `El nuevo perfil de ${childFirst} está listo. Aquí tienes el informe${bridgeUrl ? ', y tu propio puente ya se puede crear' : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente' };
+                    const btn = (url: string, label: string, primary: boolean) => `<a href="${url}" style="display:inline-block;background:${primary ? '#955FB5' : '#fff'};color:${primary ? '#fff' : '#1D1D1F'};border:1px solid ${primary ? '#955FB5' : '#E8E8ED'};font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin:4px 6px 4px 0;">${label}</a>`;
+                    await fetch('https://api.resend.com/emails', {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from: 'Argo Method <hola@argomethod.com>',
+                            to: [payer],
+                            subject: P.s,
+                            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span></td></tr>
+<tr><td style="padding:28px;"><p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${P.b}</p><div>${btn(reportUrl, P.c, true)}${bridgeUrl ? btn(bridgeUrl, P.c2, false) : ''}</div></td></tr>
+</table></td></tr></table></body></html>`,
+                        }),
+                    });
+                }
+            }
+        } catch (payerErr) {
+            console.warn('[one-complete] reprofile payer notify failed (non-blocking):', payerErr instanceof Error ? payerErr.message : payerErr);
         }
 
         return res.status(200).json({

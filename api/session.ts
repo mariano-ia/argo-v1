@@ -219,6 +219,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             let effectiveTenantId: string | null = null;
             let effectiveTeamId: string | null = null;
             let reproChildId: string | null = null;
+            // For an ArgoOne re-profile of a child >=13 (no COPPA claim below), the
+            // authorization consent is claimed single-use HERE; hold its token so a
+            // later perfilamiento-insert failure can release it.
+            let reproAuthToken: string | null = null;
             if (tenant_id) {
                 const verified = verifyPlayToken(play_token, serviceKey);
                 if (!verified || verified.tenantId !== tenant_id) {
@@ -228,6 +232,84 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 effectiveTenantId = verified.tenantId;
                 effectiveTeamId = verified.teamId;
                 if (verified.mode === 'reprofile') reproChildId = verified.childId;
+            }
+
+            // ── ArgoOne re-profile (Fase 3) ──────────────────────────────────
+            // A replay one_link carries the child_id server-side (minted by the
+            // webhook). We trust that child_id (never the body), append to the
+            // existing child, and enforce, at play time: (1) a CONFIRMED
+            // authorization consent bound to THIS slot — the responsible adult
+            // clicked (both ages, closes the ">=13 no auth" hole); (2) the hard
+            // 6-month cooldown; (3) single-use of the authorization so the same paid
+            // re-profile can't append two perfilamientos. Gated on the DURABLE facts
+            // (replay slot child_id + paid reprofile purchase), not the runtime flag,
+            // so a flag flip mid-play can't misroute it into new-child creation.
+            // Tenant-less only, so the tenant reprofile path above is untouched.
+            if (!reproChildId && !tenant_id && typeof one_link_id === 'string' && one_link_id) {
+                const { data: rlink } = await sb.from('one_links')
+                    .select('id, child_id, status, purchase_id')
+                    .eq('id', one_link_id)
+                    .maybeSingle();
+                if (rlink?.child_id && rlink.status !== 'completed') {
+                    const { data: rp } = await sb.from('one_purchases')
+                        .select('payment_status, kind').eq('id', rlink.purchase_id).maybeSingle();
+                    if (rp?.payment_status === 'paid' && rp?.kind === 'reprofile') {
+                        // (1) Authorization: a confirmed consent bound to this slot.
+                        const { data: authC } = await sb.from('parental_consents')
+                            .select('token, status, expires_at, consumed_at')
+                            .eq('one_link_id', one_link_id)
+                            .eq('status', 'confirmed')
+                            .maybeSingle();
+                        if (!authC) return res.status(403).json({ error: 'reprofile_not_authorized' });
+                        if (new Date(authC.expires_at) < new Date()) return res.status(403).json({ error: 'reprofile_auth_expired' });
+
+                        // (2) Hard 6-month cooldown (belt to the webhook's gate).
+                        const { data: cd, error: cdErr } = await sb.rpc('check_reprofile_cooldown', { p_child_id: rlink.child_id });
+                        if (cdErr) {
+                            console.error('[session:start] one reprofile cooldown RPC error:', cdErr.message);
+                            return res.status(500).json({ error: 'Internal server error' });
+                        }
+                        if (cd && cd.allowed === false) {
+                            return res.status(403).json({ error: 'reprofile_too_soon', months_remaining: cd.months_remaining, available_at: cd.available_at });
+                        }
+
+                        // (2b) Concurrent double-play guard. The cooldown RPC counts
+                        // only RESOLVED perfilamientos, so two plays STARTED before
+                        // either resolves would both pass it. If a RECENT in_flight
+                        // perfilamiento already exists for this child (another play in
+                        // progress), reject. 30-min window so an abandoned play can be
+                        // retried later (single-use consent already blocks same-slot
+                        // retries; this closes the rare two-slot concurrency race).
+                        const { data: infl } = await sb.from('perfilamientos')
+                            .select('id')
+                            .eq('child_id', rlink.child_id)
+                            .eq('status', 'in_flight')
+                            .is('deleted_at', null)
+                            .gte('created_at', new Date(Date.now() - 30 * 60 * 1000).toISOString())
+                            .limit(1)
+                            .maybeSingle();
+                        if (infl) return res.status(409).json({ error: 'reprofile_in_progress' });
+
+                        // (3) Single-use. For <13 the COPPA gate below atomically
+                        // claims the same consent by consent_token, so here we only
+                        // BIND (the submitted token must be THIS authorization). For
+                        // >=13 (no COPPA claim) we atomically claim it now.
+                        if (typeof child_age === 'number' && child_age < 13) {
+                            if (consent_token !== authC.token) return res.status(403).json({ error: 'consent_mismatch' });
+                        } else {
+                            const { data: claimed } = await sb.from('parental_consents')
+                                .update({ consumed_at: new Date().toISOString() })
+                                .eq('token', authC.token)
+                                .is('consumed_at', null)
+                                .select('token')
+                                .maybeSingle();
+                            if (!claimed) return res.status(403).json({ error: 'reprofile_already_used' });
+                            reproAuthToken = authC.token as string;
+                        }
+
+                        reproChildId = rlink.child_id;
+                    }
+                }
             }
 
             // ── Sport is defined by the club, not the parent ─────────────────
@@ -279,6 +361,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const rollbackConsent = async () => {
                 if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
                     await sb.from('parental_consents').update({ consumed_at: null }).eq('token', consent_token);
+                }
+                // >=13 ArgoOne re-profile claimed its authorization above; release it
+                // so an insert failure doesn't strand a paid, unplayed re-profile.
+                if (reproAuthToken) {
+                    await sb.from('parental_consents').update({ consumed_at: null }).eq('token', reproAuthToken);
                 }
             };
 
