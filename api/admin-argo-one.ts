@@ -85,12 +85,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             links: { available: 0, sent: 0, pending: 0, completed: 0 },
         }));
 
-        const enriched = [...oneRows, ...puenteRows]
-            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            .slice(0, 200);
+        const merged = [...oneRows, ...puenteRows]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
-        const totalRevenue = enriched.filter(p => p.payment_status === 'paid').reduce((s, p) => s + p.amount_usd, 0);
-        const totalPurchases = enriched.filter(p => p.payment_status === 'paid').length;
+        // Totals over the full merged set, computed BEFORE the display cap, so the
+        // summary is not undercounted when the combined volume exceeds the row cap.
+        const totalRevenue = merged.filter(p => p.payment_status === 'paid').reduce((s, p) => s + p.amount_usd, 0);
+        const totalPurchases = merged.filter(p => p.payment_status === 'paid').length;
+
+        const enriched = merged.slice(0, 200);
 
         return res.status(200).json({
             purchases: enriched,

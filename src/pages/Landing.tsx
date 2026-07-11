@@ -928,8 +928,8 @@ export const Landing: React.FC = () => {
                 >
                     {L(
                         '10 minutos de juego para el niño, generan un mapa de sintonía inmediato para el club y la familia.',
-                        'Based on the DISC + Engine methodology, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.',
-                        'Através de uma dinâmica gamificada baseada em DISC + Motor, alinhamos o ambiente com a natureza do atleta. Uma solução técnica para eliminar o estresse e garantir o prazer genuíno das crianças.',
+                        'Based on the DISC behavioral model, we align the environment with the athlete\'s nature. A technical solution to eliminate sports stress and ensure children\'s genuine enjoyment.',
+                        'Através de uma dinâmica gamificada baseada no modelo DISC, alinhamos o ambiente com a natureza do atleta. Uma solução técnica para eliminar o estresse e garantir o prazer genuíno das crianças.',
                     )}
                 </motion.p>
 
