@@ -11,6 +11,9 @@ interface Purchase {
     payment_status: string;
     created_at: string;
     paid_at: string | null;
+    kind?: string | null;
+    includes_puente?: boolean;
+    product?: 'one' | 'combo' | 'reprofile' | 'puente';
     links: { available: number; sent: number; pending: number; completed: number };
 }
 
@@ -18,6 +21,13 @@ const statusColor: Record<string, string> = {
     paid: 'bg-green-100 text-green-700',
     pending: 'bg-amber-100 text-amber-700',
     failed: 'bg-red-100 text-red-700',
+};
+
+const productLabel: Record<string, string> = {
+    one: 'One',
+    combo: 'One + Puente',
+    reprofile: 'Re-perfil',
+    puente: 'Puente',
 };
 
 const fmt = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -76,7 +86,7 @@ export const AdminArgoOne: React.FC = () => {
                         <tr className="bg-gray-50 text-left">
                             <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Fecha</th>
                             <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Email</th>
-                            <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Pack</th>
+                            <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Producto</th>
                             <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Monto</th>
                             <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Estado</th>
                             <th className="px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Provider</th>
@@ -88,7 +98,7 @@ export const AdminArgoOne: React.FC = () => {
                             <tr key={p.id} className="hover:bg-gray-50/50">
                                 <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">{fmt(p.created_at)}</td>
                                 <td className="px-4 py-3 text-gray-700 truncate max-w-[180px]">{p.email}</td>
-                                <td className="px-4 py-3 text-gray-700 font-medium">{p.pack_size}</td>
+                                <td className="px-4 py-3 text-gray-700 font-medium">{productLabel[p.product ?? 'one'] ?? 'One'}</td>
                                 <td className="px-4 py-3 text-gray-900 font-semibold">${p.amount_usd.toFixed(2)}</td>
                                 <td className="px-4 py-3">
                                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${statusColor[p.payment_status] ?? 'bg-gray-100 text-gray-500'}`}>

@@ -51,22 +51,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // ArgoOne® revenue
         const { data: purchases } = await sb
             .from('one_purchases')
-            .select('id, pack_size, amount_cents, currency, payment_status, created_at, paid_at')
+            .select('id, pack_size, amount_cents, currency, payment_status, created_at, paid_at, kind, includes_puente')
             .eq('payment_status', 'paid');
 
         let oneRevenueUsd = 0;
         let onePurchaseCount = 0;
-        let oneProfilesSold = 0;
+        let oneProfilesSold = 0;   // new profiles only (excludes reprofiles)
+        let oneReprofileCount = 0; // paid re-profiles (kind='reprofile')
+        let oneComboCount = 0;     // purchases that include the buyer's puente
         const oneByMonth: Record<string, number> = {};
 
         for (const p of purchases ?? []) {
             const amount = p.amount_cents / 100;
-            oneRevenueUsd += amount;
+            oneRevenueUsd += amount; // reprofile money is real revenue, keep it in the total
             onePurchaseCount += 1;
-            oneProfilesSold += p.pack_size;
+            if (p.kind === 'reprofile') {
+                oneReprofileCount += 1;
+            } else {
+                // A new-profile sale. pack_size carries the profile count for legacy
+                // packs (3/5); the current model always inserts 1.
+                oneProfilesSold += p.pack_size ?? 1;
+            }
+            if (p.includes_puente) oneComboCount += 1;
 
             const month = new Date(p.paid_at ?? p.created_at).toISOString().slice(0, 7); // YYYY-MM
             oneByMonth[month] = (oneByMonth[month] ?? 0) + amount;
+        }
+
+        // ArgoPuente® add-on revenue: standalone bridges bought by an extra adult
+        // ($4.99, occasionally $9.99). Filter provider='stripe' AND status='paid' to
+        // EXCLUDE the comp/$0 puentes that ship included with a combo or are
+        // admin-granted (provider='comp'). There is no is_demo column here.
+        const { data: addons } = await sb
+            .from('puentes_purchases')
+            .select('id, amount_cents, created_at, paid_at')
+            .eq('status', 'paid')
+            .eq('provider', 'stripe');
+
+        let addonRevenueUsd = 0;
+        let addonCount = 0;
+        const addonByMonth: Record<string, number> = {};
+        for (const a of addons ?? []) {
+            const amount = a.amount_cents / 100;
+            addonRevenueUsd += amount;
+            addonCount += 1;
+            const month = new Date(a.paid_at ?? a.created_at).toISOString().slice(0, 7);
+            addonByMonth[month] = (addonByMonth[month] ?? 0) + amount;
         }
 
         // Tenant signups by month
@@ -93,6 +123,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 purchase_count: onePurchaseCount,
                 profiles_sold: oneProfilesSold,
                 by_month: oneByMonth,
+                mix: {
+                    new_profiles: oneProfilesSold,
+                    reprofiles: oneReprofileCount,
+                    combos: oneComboCount,
+                },
+                addon_revenue_usd: addonRevenueUsd,
+                addon_count: addonCount,
+                addon_by_month: addonByMonth,
             },
             signups: {
                 total: tenants?.length ?? 0,

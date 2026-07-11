@@ -5,7 +5,16 @@ import { supabase } from '../../lib/supabase';
 
 interface RevenueData {
     mrr: { estimate: number; by_plan: Record<string, number> };
-    argo_one: { total_revenue_usd: number; purchase_count: number; profiles_sold: number; by_month: Record<string, number> };
+    argo_one: {
+        total_revenue_usd: number;
+        purchase_count: number;
+        profiles_sold: number;
+        by_month: Record<string, number>;
+        mix: { new_profiles: number; reprofiles: number; combos: number };
+        addon_revenue_usd: number;
+        addon_count: number;
+        addon_by_month: Record<string, number>;
+    };
     signups: { total: number; by_month: Record<string, number> };
     conversion: { total_trials: number; total_paid: number; rate_percent: number };
 }
@@ -69,8 +78,14 @@ export const AdminRevenue: React.FC = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <Stat label="Revenue total" value={`$${argo_one.total_revenue_usd.toFixed(2)}`} accent />
                     <Stat label="Compras" value={argo_one.purchase_count} />
-                    <Stat label="Perfiles vendidos" value={argo_one.profiles_sold} />
-                    <Stat label="Ticket promedio" value={argo_one.purchase_count > 0 ? `$${(argo_one.total_revenue_usd / argo_one.purchase_count).toFixed(2)}` : '—'} />
+                    <Stat label="Perfiles nuevos" value={argo_one.mix.new_profiles} sub={`${argo_one.mix.combos} con Puente incluido`} />
+                    <Stat label="Re-perfiles" value={argo_one.mix.reprofiles} sub="Vueltas a jugar pagas" />
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                    <Stat label="Add-on ArgoPuente®" value={`$${argo_one.addon_revenue_usd.toFixed(2)}`} accent />
+                    <Stat label="Puentes add-on" value={argo_one.addon_count} sub="Adultos extra ($4.99)" />
+                    <Stat label="Ticket promedio One" value={argo_one.purchase_count > 0 ? `$${(argo_one.total_revenue_usd / argo_one.purchase_count).toFixed(2)}` : '—'} />
+                    <Stat label="Total one-time" value={`$${(argo_one.total_revenue_usd + argo_one.addon_revenue_usd).toFixed(2)}`} />
                 </div>
                 {oneMonths.length > 0 && (
                     <div className="bg-white rounded-lg border border-gray-200 mt-3 p-4">
