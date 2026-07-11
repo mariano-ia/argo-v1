@@ -90,3 +90,25 @@ Canónico: `docs/archetype-naming.md` + `docs/METODO-CALCULO-NUEVO.md` (tempo FU
 
 ## Orden sugerido
 0 (pricing home, urgente) → 1 (migración frontend) → 2 (naming arquetipos) → 6 (admin) → 7 (legal) → 4 (gates) → 9 (higiene). QA verde + commit por tanda; push cuando el owner lo pida.
+
+---
+
+## EJECUTADO (2026-07-11, sesión ultracode) — 7 commits en `develop`, SIN PUSH
+
+Ciclo de QA verde en cada tanda (tsc + typecheck:api + qa:unit + check:api-imports + build). Revisión adversarial multi-agente final sobre el diff completo (4 dimensiones + verificación); sus hallazgos confiables se arreglaron. Commits: `4f043b5` (P0+P1) · `56d9063` (P2) · `dd29d25` (P6) · `1cc33ef` (P7) · `23e6270` (P4) · `5e43ad3` (P9) · `3604ce1` (fixes de la revisión).
+
+- **P0 pricing home — HECHO.** `Landing.tsx`: ArgoOne® $12.99 (informe + puente incluido, destacada) + ArgoPuente® $4.99 (add-on informativo, sin checkout roto). Se acabó el mismatch $9.99/$12.99.
+- **P1 migración frontend — HECHO.** `/one` (ArgoOneLanding) a producto único $12.99; `/pricing` colapsado (borrada la rama V1 muerta + flag `bridgesV2`); TenantPricing a una card + comprador-neutral. Deck-slide 5 se hizo en P2.
+- **P2 naming eje×veta — HECHO** (superficies públicas/SEO + rediseño del flipcard de la home con 12 descripciones autoradas es/en/pt). index.html, LangContext, Landing (ARCHETYPES/descripciones/ROTATING_PROFILES/render, motor → "Su motor"), Deck.tsx (es+en, matriz reescrita), helpContent×3, PrivacyPage, llms.txt, argo-instituciones.html, blog-generate/blog-cron, archetypeData×3 (labels colapsados a primario puro). **Fuera:** superficies del dashboard tenant/motor v4 (ver pendientes).
+- **P6 admin analytics — HECHO.** admin-revenue (add-on $4.99 + mix new/reprofile/combo), admin-argo-one (unión puentes stripe, columna Producto), AdminRevenue/AdminArgoOne. (Corrección crítica: NO hay columna is_demo/is_synthetic en tablas de compras; predicado add-on = `provider='stripe' AND status='paid'`.)
+- **P7 legal — HECHO.** PrivacyPage sin MercadoPago (es/en/pt) + fecha; Terms §3 (ArgoOne = informe + puente incluido + ciclo 6m) y §6 reescrito al modelo de fusión (sin el funnel de upsell muerto) + fecha.
+- **P4 gates — HECHO (código).** one-checkout TTL en el dedup de reprofile; one-webhook payer-fallback (no más `no_authorizer` con plata trabada) + backfill; puentes-reminder-cron satélites por niño + dedup; session.ts COPPA ata `one_link_id` (soft). Todo inline (api/ no importa). **Fix 3 (one-complete):** sin cambio de código (niños actuales ya se estampan). **Fix 4b (puentes-start):** NO cambiado — renderizar el perfil congelado que el satélite pagó es intencional (`ARGOONE-DECISIONES` §5.7: puente sobre foto nueva = otro $4.99); el bug real era el cron, ya arreglado.
+- **P9 higiene — HECHO (código).** dashboardTranslations: keys de crédito muertas removidas + `pagoConfirmado` sin "créditos"; puentesTranslations `priceArs` borrado; deck-chat KB unificado. **Barrido in_flight: NO ejecutado** (ver pendientes).
+
+### Pendiente / decisiones del owner (surfaceado, no ejecutado)
+1. **Barrido DB de 10 in_flight >7d:** el clasificador de auto-mode bloqueó la mutación de datos de prod. Además, hallazgo: NO bloquean nada activo (todos los guards de `in_flight` usan ventana de 30 min). Es limpieza opcional. SQL reversible (soft-delete) listo para correr con aprobación:
+   `UPDATE perfilamientos SET deleted_at = now() WHERE status='in_flight' AND created_at < now() - interval '7 days' AND deleted_at IS NULL;` (prod `luutdozbhinfiogugjbv`).
+2. **Motor v4 / dashboard tenant (naming eje×motor vivo):** `TenantHome.tsx` `ARCHETYPE_LABELS`, `argosEngine.ts` `TENDENCIA_LABELS_I18N` ("brújula social", + copia en la región GENERATED de `tenant-chat.ts`), `TenantGroups/TenantPlayers` mocks. Son la migración del motor v4 (shadow-live), fuera de esta tanda. Emiten nombres eje×motor / "brújula" a usuarios logueados hasta que el v4 se prenda.
+3. **Funnel demo-unlock `$9.99`:** `api/unlock-checkout.ts` cobra $9.99 por el informe completo (sin puente) desde el demo ("Jugar gratis"). Diverge del modelo de fusión ($12.99). Pre-existente, fuera del changeset y de los targets del doc. Decisión de producto: ¿migrar a fusión o dejar el demo-unlock como entrada report-only más barata? (No muestra $9.99 en ninguna superficie Argo, solo en Stripe.)
+4. **Sistema de créditos a nivel DB:** `add_credits` RPC + `security-canary` probe + endpoint huérfano `api/create-checkout.ts` (labels con "créditos" + guiones). Decomiso = decisión + cambio de DB, no tocado.
+5. **Verificación humana (owner):** cobro real de Stripe punta a punta, render mobile/pixel-match, deliverability. **Push:** los 7 commits están en `develop` local, SIN pushear (esperando OK del owner; al pushear, `git push origin develop:main` mantiene sync).
