@@ -57,11 +57,14 @@ El niño nunca sabe que lo están perfilando. Para él es un juego.
 - Sostén (S): estabilidad, lealtad, constancia
 - Estratega (C): análisis, precisión, estructura
 
-## Motor de rendimiento
-Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (medio), o Sereno (pausado). Combinando eje + motor hay 12 arquetipos posibles.
+## El nombre del perfil (eje con veta)
+El nombre combina el eje principal con su veta (un eje secundario): 4 primarios puros (Impulsor, Conector, Sostenedor, Estratega) más 8 combinaciones "[Eje] con veta [Eje]", 12 arquetipos en total. Los ejes opuestos (Impulsor y Sostenedor, Conector y Estratega) no se combinan en el nombre.
+
+## Su motor
+Aparte del nombre, el informe mide el "motor" del niño (a qué ritmo procesa y decide) como una lectura propia, nunca como parte del nombre.
 
 ## El reporte incluye
-- Perfil conductual (eje + motor)
+- Perfil conductual (eje principal con su veta)
 - Factor Wow (cualidad única)
 - Combustible (qué lo motiva)
 - Reseteo (cómo se recupera del estrés)
@@ -77,15 +80,15 @@ Además del eje, cada perfil tiene un "motor": Dinámico (rápido), Rítmico (me
 - Link único: cada institución tiene su link para compartir
 - Multi-usuario: varios coaches, una cuenta
 
-## ArgoOne® (para padres)
-Compra única, sin suscripción. El adulto compra el informe del niño (One) o el informe más el Puente del adulto (One + Puente), recibe el link de juego y el reporte llega por email. No necesita crear cuenta.
+## ArgoOne® (para el adulto que acompaña)
+Compra única, sin suscripción. El adulto compra ArgoOne®, que incluye el informe del niño y su propio Puente con el niño. Recibe el link de juego y el reporte llega por email. No necesita crear cuenta. Otro adulto que acompañe al niño puede sumar su propio Puente con ArgoPuente® a través del enlace que comparte el adulto responsable; ese pago da solo el Puente, nunca el informe del niño.
 
 ## Precios
 - Trial: gratis 14 días, 8 jugadores
 - PRO: $49/mes, hasta 50 jugadores
 - Academy: $89/mes, hasta 100 jugadores, multi-usuario, soporte prioritario
 - Enterprise: precio custom, jugadores ilimitados, API, soporte dedicado
-- ArgoOne®: $9.99 (informe del niño). ArgoOne+® Puente: $12.99 (informe del niño + Puente del adulto, para padres o entrenadores).
+- ArgoOne®: $12.99 (informe del niño con el Puente del adulto comprador incluido). ArgoPuente®: $4.99 (Puente adicional para otro adulto que acompaña al niño; no incluye el informe del niño). USD, vía Stripe.
 
 El re-perfilado cada 6 meses está incluido en todos los planes. No hay costos adicionales por usar Argo Coach ni por generar reportes.
 
@@ -99,7 +102,6 @@ Funciona para cualquier deporte donde haya un entrenador o adulto responsable: f
 Basado en el modelo DISC, la metodología más validada de perfilamiento conductual, adaptada específicamente para el contexto deportivo juvenil. El motor determinístico es propiedad intelectual de Argo. La IA generativa personaliza la comunicación pero no decide el perfil.
 
 ## Lo que viene
-- Perfil de sintonización adulto: el padre hace un cuestionario corto que se empareja con el perfil de su hijo
 - Nuevas aventuras: el jugador que vuelve juega una historia diferente
 - Más KPIs: cada aventura mide nuevas dimensiones (resiliencia, liderazgo, reacción al fracaso)
 

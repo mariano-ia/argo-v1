@@ -42,7 +42,6 @@ export interface PuentesCopy {
         termsLink: string;
         payCta: string;
         priceUsd: string;
-        priceArs: string;
     };
     errors: {
         invalidToken: string;
@@ -90,7 +89,6 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             termsLink: 'Ver términos',
             payCta: 'Continuar al pago',
             priceUsd: 'USD 4.99',
-            priceArs: 'ARS 6.999',
         },
         errors: {
             invalidToken: 'Este enlace no es válido o ya expiró.',
@@ -136,7 +134,6 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             termsLink: 'View terms',
             payCta: 'Continue to payment',
             priceUsd: 'USD 4.99',
-            priceArs: 'ARS 6,999',
         },
         errors: {
             invalidToken: 'This link is no longer valid.',
@@ -182,7 +179,6 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
             termsLink: 'Ver termos',
             payCta: 'Continuar para o pagamento',
             priceUsd: 'USD 4.99',
-            priceArs: 'ARS 6.999',
         },
         errors: {
             invalidToken: 'Este link não é mais válido.',

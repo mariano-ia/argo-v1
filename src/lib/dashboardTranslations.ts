@@ -67,10 +67,6 @@ interface DashboardTexts {
     // Home
     home: {
         bienvenida: (name: string) => string;
-        creditos: string;
-        creditosDisponibles: string;
-        sinCreditos: string;
-        comprarPack: string;
         sesionesRealizadas: string;
         sinSesiones: string;
         sinSesionesDesc: string;
@@ -81,7 +77,6 @@ interface DashboardTexts {
         errorEnvio: string;
         pagoConfirmado: string;
         pagoCancelado: string;
-        errorPago: string;
         descripcionInicio: string;
         verTodas: string;
     };
@@ -188,8 +183,6 @@ interface DashboardTexts {
         copiarLink: string;
         copiado: string;
         compartir: string;
-        creditoNota: string;
-        creditoConteo: (n: number) => string;
     };
 
     // Settings
@@ -262,8 +255,6 @@ interface DashboardTexts {
     homeExtra: {
         tuLinkInvitacion: string;
         tuLinkInvitacionDesc: string;
-        creditoNota: string;
-        comprarCreditos: string;
         procesando: string;
         adulto: string;
     };
@@ -383,10 +374,6 @@ const es: DashboardTexts = {
     },
     home: {
         bienvenida: (name) => `Hola, ${name}`,
-        creditos: 'créditos',
-        creditosDisponibles: 'créditos disponibles',
-        sinCreditos: 'No tienes créditos disponibles. Compra un pack para seguir invitando deportistas.',
-        comprarPack: 'Comprar',
         sesionesRealizadas: 'Sesiones realizadas',
         sinSesiones: 'Todavía no hay sesiones registradas.',
         sinSesionesDesc: 'Comparte tu link para que empiecen a llegar.',
@@ -395,9 +382,8 @@ const es: DashboardTexts = {
         reenviarInforme: 'Reenviar informe',
         informeEnviado: 'Informe enviado con éxito',
         errorEnvio: 'Error al enviar el informe',
-        pagoConfirmado: 'Pago confirmado. Tus créditos fueron acreditados.',
+        pagoConfirmado: 'Pago confirmado.',
         pagoCancelado: 'Pago cancelado.',
-        errorPago: 'No se pudo iniciar el pago. Intenta de nuevo.',
         descripcionInicio: 'Vista general de tu cuenta',
         verTodas: 'Ver todas',
     },
@@ -492,8 +478,6 @@ const es: DashboardTexts = {
         copiarLink: 'Copiar link',
         copiado: 'Copiado',
         compartir: 'Compartir',
-        creditoNota: 'Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.',
-        creditoConteo: (n) => `Actualmente tienes ${n} crédito${n !== 1 ? 's' : ''}.`,
     },
     settings: {
         titulo: 'Ajustes',
@@ -522,8 +506,6 @@ const es: DashboardTexts = {
     homeExtra: {
         tuLinkInvitacion: 'Tu link de invitación',
         tuLinkInvitacionDesc: 'Comparte este link con los adultos que quieras invitar a realizar la experiencia Argo con sus deportistas.',
-        creditoNota: 'Cada vez que alguien inicie la experiencia desde este link, se descontará 1 crédito de tu cuenta.',
-        comprarCreditos: 'Comprar créditos',
         procesando: 'Procesando...',
         adulto: 'Adulto',
     },
@@ -686,10 +668,6 @@ const en: DashboardTexts = {
     },
     home: {
         bienvenida: (name) => `Hi, ${name}`,
-        creditos: 'credits',
-        creditosDisponibles: 'credits available',
-        sinCreditos: 'No credits available. Purchase a pack to keep inviting athletes.',
-        comprarPack: 'Buy',
         sesionesRealizadas: 'Completed sessions',
         sinSesiones: 'No sessions recorded yet.',
         sinSesionesDesc: 'Share your link to start receiving athletes.',
@@ -698,9 +676,8 @@ const en: DashboardTexts = {
         reenviarInforme: 'Resend report',
         informeEnviado: 'Report sent successfully',
         errorEnvio: 'Failed to send the report',
-        pagoConfirmado: 'Payment confirmed. Your credits have been added.',
+        pagoConfirmado: 'Payment confirmed.',
         pagoCancelado: 'Payment cancelled.',
-        errorPago: 'Could not start payment. Try again.',
         descripcionInicio: 'Overview of your account',
         verTodas: 'View all',
     },
@@ -795,8 +772,6 @@ const en: DashboardTexts = {
         copiarLink: 'Copy link',
         copiado: 'Copied',
         compartir: 'Share',
-        creditoNota: 'Each time someone starts the experience from this link, 1 credit will be deducted from your account.',
-        creditoConteo: (n) => `You currently have ${n} credit${n !== 1 ? 's' : ''}.`,
     },
     settings: {
         titulo: 'Settings',
@@ -825,8 +800,6 @@ const en: DashboardTexts = {
     homeExtra: {
         tuLinkInvitacion: 'Your invitation link',
         tuLinkInvitacionDesc: 'Share this link with adults you want to invite to the Argo experience with their athletes.',
-        creditoNota: 'Each time someone starts the experience from this link, 1 credit will be deducted from your account.',
-        comprarCreditos: 'Buy credits',
         procesando: 'Processing...',
         adulto: 'Adult',
     },
@@ -989,10 +962,6 @@ const pt: DashboardTexts = {
     },
     home: {
         bienvenida: (name) => `Olá, ${name}`,
-        creditos: 'créditos',
-        creditosDisponibles: 'créditos disponíveis',
-        sinCreditos: 'Sem créditos disponíveis. Compre um pacote para continuar convidando atletas.',
-        comprarPack: 'Comprar',
         sesionesRealizadas: 'Sessões realizadas',
         sinSesiones: 'Ainda não há sessões registradas.',
         sinSesionesDesc: 'Compartilhe seu link para começar a receber atletas.',
@@ -1001,9 +970,8 @@ const pt: DashboardTexts = {
         reenviarInforme: 'Reenviar relatório',
         informeEnviado: 'Relatório enviado com sucesso',
         errorEnvio: 'Erro ao enviar o relatório',
-        pagoConfirmado: 'Pagamento confirmado. Seus créditos foram adicionados.',
+        pagoConfirmado: 'Pagamento confirmado.',
         pagoCancelado: 'Pagamento cancelado.',
-        errorPago: 'Não foi possível iniciar o pagamento. Tente novamente.',
         descripcionInicio: 'Visão geral da sua conta',
         verTodas: 'Ver todas',
     },
@@ -1098,8 +1066,6 @@ const pt: DashboardTexts = {
         copiarLink: 'Copiar link',
         copiado: 'Copiado',
         compartir: 'Compartilhar',
-        creditoNota: 'Cada vez que alguém iniciar a experiência por este link, 1 crédito será descontado da sua conta.',
-        creditoConteo: (n) => `Atualmente você tem ${n} crédito${n !== 1 ? 's' : ''}.`,
     },
     settings: {
         titulo: 'Configurações',
@@ -1128,8 +1094,6 @@ const pt: DashboardTexts = {
     homeExtra: {
         tuLinkInvitacion: 'Seu link de convite',
         tuLinkInvitacionDesc: 'Compartilhe este link com os adultos que deseja convidar para a experiência Argo com seus atletas.',
-        creditoNota: 'Cada vez que alguém iniciar a experiência por este link, 1 crédito será descontado da sua conta.',
-        comprarCreditos: 'Comprar créditos',
         procesando: 'Processando...',
         adulto: 'Adulto',
     },
