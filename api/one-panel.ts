@@ -44,23 +44,26 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
     if (!resendKey) return;
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const panelUrl = `${origin}/one/panel?token=${accessToken}`;
+    // Buyer-neutral: the panel is now reached by a BUYER (play links + reports)
+    // OR an authorizing adult (their bridges). The copy must not promise
+    // buyer-only capabilities (frozen model §2 gives the authorizer a panel too).
     const PL = lang === 'en' ? {
         subject: 'Your ArgoOne® access link',
         heading: 'Here is your access link',
-        body: 'Open your panel to see your reports, the delivery status of each one, and to generate new play links.',
-        cta: 'Open my reports',
+        body: 'Open your panel to see everything that is yours in one place.',
+        cta: 'Open my panel',
         note: 'This link is personal. If you did not request it, you can ignore this email.',
     } : lang === 'pt' ? {
         subject: 'Seu link de acesso ao ArgoOne®',
         heading: 'Aqui está seu link de acesso',
-        body: 'Abra seu painel para ver seus relatórios, o status de envio de cada um e gerar novos links de jogo.',
-        cta: 'Abrir meus relatórios',
+        body: 'Abra seu painel para ver tudo o que é seu em um só lugar.',
+        cta: 'Abrir meu painel',
         note: 'Este link é pessoal. Se você não o solicitou, pode ignorar este email.',
     } : {
         subject: 'Tu link de acceso a ArgoOne®',
         heading: 'Aquí está tu link de acceso',
-        body: 'Abre tu panel para ver tus informes, el estado de envío de cada uno y generar nuevos links de juego.',
-        cta: 'Abrir mis informes',
+        body: 'Abre tu panel para ver todo lo tuyo en un solo lugar.',
+        cta: 'Abrir mi panel',
         note: 'Este link es personal. Si no lo solicitaste, puedes ignorar este email.',
     };
     await fetch('https://api.resend.com/emails', {
@@ -599,16 +602,57 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const capped = (await rateLimited(`rl:one-access:ip:${ip}`, 20, 3600))
             || (email && await rateLimited(`rl:one-access:email:${email}`, 5, 3600));
         if (!capped && email && /.+@.+\..+/.test(email)) {
+            const esc = email.replace(/([\\%_])/g, '\\$1');
+            // 1) A buyer: paid one_purchases token.
             const { data: p } = await sb
                 .from('one_purchases')
                 .select('access_token, lang')
-                .ilike('email', email.replace(/([\\%_])/g, '\\$1'))
+                .ilike('email', esc)
                 .eq('payment_status', 'paid')
                 .order('paid_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
             if (p?.access_token) {
                 await sendAccessLinkEmail(email, p.access_token, (p.lang as string) || 'es');
+            } else if (bridgesV2On()) {
+                // 2) An adult identity (frozen model §2: identity = email). An
+                // adult who already has a profile (did a bridge) enters with its
+                // token; an adult who ONLY authorized a child (coach case, no
+                // purchase, no bridge yet) gets a minimal profile row minted so
+                // they can reach their panel to share the bridges-link. Both are
+                // gated on being a REAL authorizer, so this never mints for a
+                // random email.
+                const { data: ap } = await sb
+                    .from('adult_profiles')
+                    .select('access_token, lang')
+                    .ilike('email', esc)
+                    .maybeSingle();
+                let apToken = ap?.access_token as string | undefined;
+                let apLang = (ap?.lang as string) || 'es';
+                if (!apToken) {
+                    const { data: kid } = await sb
+                        .from('children')
+                        .select('id, lang')
+                        .ilike('responsible_adult_email', esc)
+                        .is('deleted_at', null)
+                        .limit(1)
+                        .maybeSingle();
+                    if (kid) {
+                        apLang = (kid.lang as string) || 'es';
+                        const { data: ins } = await sb
+                            .from('adult_profiles')
+                            .insert({ email, lang: apLang })
+                            .select('access_token')
+                            .maybeSingle();
+                        apToken = ins?.access_token as string | undefined;
+                        if (!apToken) {
+                            // Lost the unique-email race → re-read the winner.
+                            const { data: again } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+                            apToken = again?.access_token as string | undefined;
+                        }
+                    }
+                }
+                if (apToken) await sendAccessLinkEmail(email, apToken, apLang);
             }
         }
         return res.status(200).json({ ok: true });

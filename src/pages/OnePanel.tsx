@@ -230,7 +230,9 @@ const TH = {
         motor: 'Su motor:',
         viewReport: 'Ver el informe',
         preparing: 'Preparando…',
-        stale: 'El informe tiene más de 6 meses. Puede estar desactualizado, pero puedes seguir consultándolo. Si quieres la foto de hoy, vuelve a jugar.',
+        staleReport: 'El informe tiene más de 6 meses. Te recomendamos re-perfilar.',
+        staleBoth: 'Ambos informes tienen más de 6 meses. Te recomendamos re-perfilar.',
+        staleTip: 'El perfil es una foto del momento. A esta edad los niños cambian rápido: nuevas experiencias y el propio crecimiento pueden mover lo que los motiva, cómo enfrentan los desafíos y qué los frena. Con una foto nueva, las recomendaciones vuelven a hablar del niño de hoy. Al re-perfilar, el niño vuelve a jugar y tu puente se actualiza con él.',
         updateReport: 'Actualizar el informe',
         shareBridgeLink: 'Compartir link de puentes',
         shareBridgeLinkTip: (n: string) => `Este es el link de puentes de ${n}. Compártelo con los adultos cercanos (abuelos, tíos, quien lo acompaña) para que cada uno cree su propio puente con ${n}. Cada adulto paga el suyo (USD 4.99) y solo ve su puente, nunca el informe de ${n}. Solo tú puedes compartirlo.`,
@@ -256,6 +258,7 @@ const TH = {
         continueMyBridge: 'Continuar mi puente',
         bridgeInProgress: (n: string) => `Tu puente hacia ${n} está en curso.`,
         bridgeStale: (n: string) => `Tu puente hacia ${n} tiene más de 6 meses.`,
+        bridgeThere: (n: string) => `Tu puente hacia ${n}.`,
         refreshBridge: 'Refrescar mi puente',
         noBridgeYet: (n: string) => `Todavía no sumaste tu puente hacia ${n}.`,
         addBridge: 'Sumar mi puente',
@@ -293,7 +296,9 @@ const TH = {
         motor: 'Their engine:',
         viewReport: 'View the report',
         preparing: 'Preparing…',
-        stale: "This report is over 6 months old. It may be outdated, but you can still consult it. For today's snapshot, play again.",
+        staleReport: 'This report is over 6 months old. We recommend re-profiling.',
+        staleBoth: 'Both reports are over 6 months old. We recommend re-profiling.',
+        staleTip: 'The profile is a snapshot in time. At this age children change fast: new experiences and their own growth can shift what motivates them, how they face challenges, and what holds them back. With a fresh snapshot, the recommendations speak about the child of today. When you re-profile, the child plays again and your bridge updates with them.',
         updateReport: 'Update the report',
         shareBridgeLink: 'Share the bridges link',
         shareBridgeLinkTip: (n: string) => `This is ${n}'s bridges link. Share it with the adults close to ${n} (grandparents, uncles, whoever accompanies them) so each one creates their own bridge. Each adult pays their own (USD 4.99) and sees only their bridge, never ${n}'s report. Only you can share it.`,
@@ -319,6 +324,7 @@ const TH = {
         continueMyBridge: 'Continue my bridge',
         bridgeInProgress: (n: string) => `Your bridge with ${n} is in progress.`,
         bridgeStale: (n: string) => `Your bridge with ${n} is over 6 months old.`,
+        bridgeThere: (n: string) => `Your bridge with ${n}.`,
         refreshBridge: 'Refresh my bridge',
         noBridgeYet: (n: string) => `You haven't added your bridge with ${n} yet.`,
         addBridge: 'Add my bridge',
@@ -356,7 +362,9 @@ const TH = {
         motor: 'Seu motor:',
         viewReport: 'Ver o relatório',
         preparing: 'Preparando…',
-        stale: 'Este relatório tem mais de 6 meses. Pode estar desatualizado, mas você ainda pode consultá-lo. Para a foto de hoje, jogue de novo.',
+        staleReport: 'O relatório tem mais de 6 meses. Recomendamos reperfilar.',
+        staleBoth: 'Ambos os relatórios têm mais de 6 meses. Recomendamos reperfilar.',
+        staleTip: 'O perfil é uma foto do momento. Nesta idade as crianças mudam rápido: novas experiências e o próprio crescimento podem mover o que as motiva, como enfrentam os desafios e o que as freia. Com uma foto nova, as recomendações voltam a falar da criança de hoje. Ao reperfilar, a criança joga de novo e a sua ponte se atualiza com ela.',
         updateReport: 'Atualizar o relatório',
         shareBridgeLink: 'Compartilhar link de pontes',
         shareBridgeLinkTip: (n: string) => `Este é o link de pontes de ${n}. Compartilhe com os adultos próximos (avós, tios, quem acompanha) para que cada um crie a sua própria ponte com ${n}. Cada adulto paga a sua (USD 4.99) e vê apenas a sua ponte, nunca o relatório de ${n}. Só você pode compartilhá-lo.`,
@@ -382,6 +390,7 @@ const TH = {
         continueMyBridge: 'Continuar minha ponte',
         bridgeInProgress: (n: string) => `Sua ponte com ${n} está em andamento.`,
         bridgeStale: (n: string) => `Sua ponte com ${n} tem mais de 6 meses.`,
+        bridgeThere: (n: string) => `Sua ponte com ${n}.`,
         refreshBridge: 'Atualizar minha ponte',
         noBridgeYet: (n: string) => `Você ainda não somou sua ponte com ${n}.`,
         addBridge: 'Somar minha ponte',
@@ -487,9 +496,10 @@ const HubChildCard: React.FC<{
                             )}
 
                             {reportReady && child.report?.is_stale && (
-                                <div className="flex gap-2.5 items-start px-4 py-3 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-700 text-[13px] mt-3.5">
-                                    <span className="font-extrabold">!</span>
-                                    <span>{th.stale}</span>
+                                <div className="flex gap-2.5 items-center px-4 py-3 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-700 text-[13px] mt-3.5">
+                                    <span className="font-extrabold flex-shrink-0">!</span>
+                                    <span className="flex-1">{child.my_bridge?.is_stale ? th.staleBoth : th.staleReport}</span>
+                                    <InfoTip text={th.staleTip} position="top" />
                                 </div>
                             )}
 
@@ -502,7 +512,7 @@ const HubChildCard: React.FC<{
                                         <ExternalLink size={13} /> {th.viewReport}
                                     </Link>
                                 )}
-                                {reportReady && child.report?.is_stale && child.is_responsible && (
+                                {reportReady && child.report?.is_stale && (child.is_responsible || child.is_buyer) && (
                                     <button onClick={() => onUpdate(child.child_id)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">
                                         {th.updateReport} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
                                     </button>
@@ -567,9 +577,14 @@ const HubChildCard: React.FC<{
                     // checkout is not cycle-aware yet (it 409s on the existing paid
                     // purchase), so a refresh button could never complete. It rides
                     // with the cycle-aware checkout at cutover.
+                    // When the REPORT is also stale, the amber "Ambos informes"
+                    // alert already states the staleness (and the single re-profile
+                    // refreshes both), so this row drops its own staleness sentence
+                    // to a neutral label and just offers to view the bridge.
+                    const reportAlsoStale = !!(child.report && child.report.ready && child.report.is_stale);
                     return (
                         <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.bridgeStale(name)}</div>
+                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{reportAlsoStale ? th.bridgeThere(name) : th.bridgeStale(name)}</div>
                             {child.bridge_token && (
                                 <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</Link>
                             )}

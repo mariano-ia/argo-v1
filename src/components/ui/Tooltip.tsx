@@ -115,7 +115,7 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, position = 'bottom' }) =
     // Rendered in a portal with fixed positioning so it can't be clipped by an
     // ancestor's overflow-hidden, and clamped to the viewport so it never runs
     // off the right edge (the icon often sits at the far right of a row).
-    const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+    const [coords, setCoords] = useState<{ top: number; left: number; pos: Position } | null>(null);
     const ref = useRef<HTMLButtonElement>(null);
 
     const WIDTH = 260;
@@ -124,8 +124,13 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, position = 'bottom' }) =
         if (!el) return;
         const r = el.getBoundingClientRect();
         const left = Math.min(Math.max(r.right - WIDTH, 8), window.innerWidth - WIDTH - 8);
-        const top = position === 'top' ? r.top - 6 : r.bottom + 6;
-        setCoords({ top, left });
+        // A 'top' tooltip grows UPWARD (translateY(-100%)); with no room above it
+        // clips off the viewport. When the anchor sits too near the top to fit a
+        // long tip, flip it below instead of clipping. (~150px covers the tallest
+        // tip in the panel.)
+        const pos: Position = position === 'top' && r.top < 150 ? 'bottom' : position;
+        const top = pos === 'top' ? r.top - 6 : r.bottom + 6;
+        setCoords({ top, left, pos });
     };
     const close = () => setCoords(null);
 
@@ -142,7 +147,7 @@ export const InfoTip: React.FC<InfoTipProps> = ({ text, position = 'bottom' }) =
             </button>
             {coords && createPortal(
                 <div
-                    style={{ position: 'fixed', top: coords.top, left: coords.left, width: WIDTH, zIndex: 9999, transform: position === 'top' ? 'translateY(-100%)' : undefined }}
+                    style={{ position: 'fixed', top: coords.top, left: coords.left, width: WIDTH, zIndex: 9999, transform: coords.pos === 'top' ? 'translateY(-100%)' : undefined }}
                     className="px-3 py-2.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed text-left shadow-lg pointer-events-none"
                 >
                     {text}
