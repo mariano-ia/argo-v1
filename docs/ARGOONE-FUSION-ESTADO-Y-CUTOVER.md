@@ -1,8 +1,32 @@
 # ArgoOne fusión — Estado y runbook de cutover (2026-07-10)
 
+> **CUTOVER HECHO — FUSIÓN VIVA EN PROD 2026-07-11.** El owner autorizó el cutover
+> completo ("ok a los flags de fusión también. Me refería a todo"). Los 8 flags están
+> `on`/`1` en Production, prod redeployeado (rebuild), y verificado: `one-panel`
+> devuelve `version:2` en runtime, cero 5xx en el camino de dinero, `/` y `/pricing`
+> 200. V4 ya entregaba en prod desde ~07-08 (`V4_SEAL=on`) y el merge quitó el gate
+> es-only → V4 en los 3 idiomas. Pre-flight adversarial contra prod: **GO, cero
+> blockers** (schema, migraciones 20260710231621/20260711004649, endpoints,
+> data-safety, flag-correctness). **Rollback:** poner cualquier flag en blanco (`vercel
+> env rm <FLAG> production`) + redeploy → vuelve a V1.
+>
+> **Flags en Production (verificados por pull):** `ONE_UNIFIED_SKU=on`,
+> `ONE_V2_COMPLETE=on`, `PUENTES_BRIDGES=on`, `PUENTES_ADDON_V2=on`,
+> `RENEWAL_CRON_V2=on`, `VITE_BRIDGES_V2=1`, `ONE_REPROFILE=on`, `V4_SEAL=on`.
+> Gotcha del método: `vercel env add` por **stdin (pipe/echo/redirect) setea VACÍO**
+> en el CLI 54.9.1; hay que usar `--value <v>`. Las vars sensibles-por-defecto se ven
+> **en blanco en `env pull`** (usar `--no-sensitive` para poder leerlas).
+>
+> **Watch no-bloqueante:** 11 perfilamientos `in_flight` viejos (>7d) podrían trabar
+> un futuro reprofile de esos niños vía el guard `in_flight`; sin impacto hoy (0
+> compras reprofile). Considerar expirarlos antes de empujar reprofile. Pendiente
+> aparte: `CHILD_DELETE_ENABLED` (borrado destructivo, OK del owner) + refund de la
+> compra sintética de prueba.
+>
+> ---
 > Build nocturno autónomo de la fusión ArgoOne contra el **modelo congelado**
-> (`ARGOONE-DECISIONES.md`). Fases 0-4 HECHAS, revisadas adversarialmente y **verdes
-> en local** (commits sin push). Fase 5 = cutover a producción, **owner-gated**.
+> (`ARGOONE-DECISIONES.md`). Fases 0-4 HECHAS, revisadas adversarialmente. Fase 5 =
+> cutover a producción — **HECHO 2026-07-11**.
 
 ## Lo hecho (todo commiteado local, sin push)
 
