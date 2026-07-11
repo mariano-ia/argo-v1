@@ -136,7 +136,7 @@ function buildCombinedEmail(args: {
             subject: `${repNames} ${verb} creciendo, y sus puentes contigo también`,
             eyebrow: 'Actualizado · ArgoPuente®',
             title: `${repNames} ${verb} creciendo, y ${possessive} puentes contigo también`,
-            body: `Actualizamos los puentes con ${repNames} usando su${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 'es' : ''} Argo más reciente${args.reprofiles.length > 1 ? 's' : ''}. Los chicos evolucionan, y las conversaciones también.`,
+            body: `Actualizamos los puentes con ${repNames} usando su${args.reprofiles.length > 1 ? 's' : ''} perfil${args.reprofiles.length > 1 ? 'es' : ''} Argo más reciente${args.reprofiles.length > 1 ? 's' : ''}. Los niños evolucionan, y las conversaciones también.`,
             cta: 'Ver puentes actualizados',
         };
     })();
@@ -145,8 +145,7 @@ function buildCombinedEmail(args: {
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 <tr><td style="background:${navy};padding:24px 28px;">
-<span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Method®</span>
-<span style="background:${violet};color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">PUENTE</span>
+<span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Puente</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
 </td></tr>
 <tr><td style="padding:28px;">
 <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.13em;text-transform:uppercase;color:${violet};">${t.eyebrow}</p>

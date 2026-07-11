@@ -295,7 +295,7 @@ function buildHtml(params: {
       <table width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td>
-            <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;">Method®</span>
+            <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:300;">One</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
           </td>
         </tr>
         <tr>
@@ -324,7 +324,7 @@ function buildHtml(params: {
             <span style="display:block;width:11px;height:11px;border-radius:50%;background:${axisColor};"></span>
           </td>
           <td style="vertical-align:middle;padding-right:12px;">
-            <span style="font-size:29px;font-weight:300;color:#1D1D1F;letter-spacing:-0.04em;line-height:1;">${params.arquetipo}</span>
+            <span style="font-size:23px;font-weight:400;color:#1D1D1F;letter-spacing:-0.03em;line-height:1.1;">${params.arquetipo}</span>
           </td>
           <td style="vertical-align:middle;">
             <span style="background:${motorStyle.bg};color:${motorStyle.text};font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;">${motorPrefix} ${motorLabel}</span>
@@ -515,7 +515,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
       <div style="font-size:18px;font-weight:600;color:#1D1D1F;letter-spacing:-0.01em;margin-top:8px;line-height:1.3;">${T.puenteTitle}</div>
       <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">${T.puenteBody}</div>
       <div style="margin-top:16px;">
-        <a href="${puentesUrl}" style="display:inline-block;background:#7A4D96;color:#FFFFFF;font-size:14px;font-weight:600;padding:11px 22px;border-radius:11px;text-decoration:none;">${T.puenteBtn}</a>
+        <a href="${puentesUrl}" style="display:inline-block;background:#FFFFFF;color:#7A4D96;border:1px solid #E8E8ED;font-size:14px;font-weight:600;padding:10px 22px;border-radius:11px;text-decoration:none;">${T.puenteBtn}</a>
         <span style="font-size:14px;color:#1D1D1F;font-weight:600;margin-left:12px;">USD 4.99</span>
       </div>
     </div>`;
@@ -526,7 +526,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
 <body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <div style="padding:28px 12px 40px;">
   <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
-    <div style="padding:22px 32px 0;"><span style="font-size:17px;font-weight:800;color:#1D1D1F;letter-spacing:-0.01em;">Argo</span><span style="font-size:17px;font-weight:300;color:#86868B;">Method®</span></div>
+    <div style="background:#1D1D1F;padding:22px 32px;"><span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em;">Argo</span><span style="font-size:18px;font-weight:300;color:#fff;">One</span><span style="font-size:10px;font-weight:300;color:#fff;vertical-align:super;">&reg;</span></div>
     <div style="padding:26px 32px 0;">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">${T.eyebrow}</div>
       <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">${T.title}</div>
@@ -534,7 +534,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
     </div>
     <div style="padding:22px 32px 0;">
       <div style="background:#F8F8FA;border:1px solid #E8E8ED;border-radius:14px;padding:20px 22px;">
-        <div style="font-size:26px;font-weight:600;letter-spacing:-0.02em;line-height:1.15;">${arquetipo}</div>
+        <div style="font-size:21px;font-weight:600;letter-spacing:-0.02em;line-height:1.2;">${arquetipo}</div>
         <div style="font-size:13.5px;color:#424245;margin-top:10px;line-height:1.55;">${rich(hero.lead ?? '')}</div>
       </div>
     </div>
