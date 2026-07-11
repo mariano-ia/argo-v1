@@ -251,7 +251,7 @@ async function sendConfirmationEmail(
     });
 }
 
-// ArgoOne fusion (B8): the unified $12.99 buyer gets a two-track HUB email —
+// ArgoOne® fusion (B8): the unified $12.99 buyer gets a two-track HUB email —
 // (1) share the play link so the child plays, (2) do your own Puente — both from
 // the hub. Sent instead of the pack "generate links" email when ONE_UNIFIED_SKU
 // is on. Buyer-neutral, tuteo, ArgoOne® wordmark.
@@ -628,7 +628,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 }
 
-/* ── Fase 3: re-profile paid (ArgoOne 6-month cycle, behind ONE_REPROFILE) ─── */
+/* ── Fase 3: re-profile paid (ArgoOne® 6-month cycle, behind ONE_REPROFILE) ─── */
 
 async function sendResendEmail(to: string, subject: string, html: string): Promise<void> {
     const key = process.env.RESEND_API_KEY;

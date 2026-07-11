@@ -67,7 +67,7 @@ function deleteEmailES(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirmar eliminación</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Solicitud de eliminación</h1>
       <p>Recibimos una solicitud para eliminar permanentemente ${scope} de los sistemas de ArgoMethod®.</p>
       <div class="warn"><strong>Esta acción es irreversible.</strong> Una vez confirmada, todos los datos se borran de forma permanente: respuestas del deportista, perfil generado, secciones de IA y registros relacionados.</div>
@@ -99,7 +99,7 @@ function deleteEmailEN(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirm deletion</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Data deletion request</h1>
       <p>We received a request to permanently delete ${scope} from ArgoMethod®'s systems.</p>
       <div class="warn"><strong>This action is irreversible.</strong> Once confirmed, all data is permanently deleted: athlete answers, generated profile, AI sections, and related records.</div>
@@ -131,7 +131,7 @@ function deleteEmailPT(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirmar eliminação</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Solicitação de eliminação</h1>
       <p>Recebemos uma solicitação para eliminar permanentemente ${scope} dos sistemas do ArgoMethod®.</p>
       <div class="warn"><strong>Esta ação é irreversível.</strong> Uma vez confirmada, todos os dados são eliminados permanentemente: respostas do atleta, perfil gerado, seções de IA e registros relacionados.</div>

@@ -64,7 +64,7 @@ function consentEmailES(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirma tu identidad</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Hola ${aName},</h1>
       <p>${cName} está a punto de comenzar su odisea en ArgoMethod®. Antes de que comience, necesitamos que confirmes que eres el padre, madre o tutor legal responsable de ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirmar y continuar</a>
@@ -94,7 +94,7 @@ function consentEmailEN(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirm your identity</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Hi ${aName},</h1>
       <p>${cName} is about to start their odyssey on ArgoMethod®. Before they begin, we need you to confirm that you are the parent or legal guardian responsible for ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirm and continue</a>
@@ -124,7 +124,7 @@ function consentEmailPT(args: TemplateArgs): EmailTemplate {
         html: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Confirme sua identidade</title><style>${baseStyles}</style></head><body>
   <div class="wrap">
     <div class="card">
-      <div class="brand"><b>Argo</b><span> Method</span></div>
+      <div class="brand"><b>Argo</b><span>Method</span><span style="font-size:0.6em;font-weight:300;vertical-align:super;">&reg;</span></div>
       <h1>Olá ${aName},</h1>
       <p>${cName} está prestes a começar sua odisseia no ArgoMethod®. Antes de começar, precisamos que você confirme que é o pai, mãe ou responsável legal por ${cName}.</p>
       <a class="cta" href="${cUrl}">Confirmar e continuar</a>

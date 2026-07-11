@@ -139,7 +139,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     } catch (e) { console.warn('[report-recovery-cron] heartbeat failed:', e); }
     const origin = process.env.SITE_URL || 'https://www.argomethod.com';
 
-    // ── ArgoOne completion SWEEP (fusion; flag-gated, best-effort) ───────────
+    // ── ArgoOne® completion SWEEP (fusion; flag-gated, best-effort) ───────────
     // The browser-driven one-complete can die with the tab. session.ts binds
     // one_links.session_id at START; this sweep finds bound links whose play
     // RESOLVED but whose completion never landed, and finishes it server-side

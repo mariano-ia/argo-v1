@@ -51,7 +51,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(400).json({ error: 'Missing link_id or session_data' });
         }
 
-        // ArgoOne fusion (B9): forward-only, flag-gated. OFF = legacy behavior
+        // ArgoOne® fusion (B9): forward-only, flag-gated. OFF = legacy behavior
         // (create a fresh child + perfilamiento). ON = additive identity/expiry
         // fields, replay-aware, and — when the front passes the row-A session_id —
         // LINK that row instead of creating a duplicate (closes G2).

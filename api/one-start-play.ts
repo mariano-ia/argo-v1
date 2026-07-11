@@ -55,7 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(429).json({ error: 'rate_limited' });
         }
 
-        // Find the link. child_id is set only for a replay link (ArgoOne fusion: a
+        // Find the link. child_id is set only for a replay link (ArgoOne® fusion: a
         // $12.99 re-juego bound to an existing child); null for a first-play link.
         const { data: link } = await sb
             .from('one_links')

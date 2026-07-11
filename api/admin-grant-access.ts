@@ -154,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 
 <tr><td style="background:#1D1D1F;padding:28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span>
     <p style="margin:16px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;line-height:1.2;">${L.heading}</p>
 </td></tr>
 

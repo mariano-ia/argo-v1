@@ -93,7 +93,7 @@ async function sendAccessLinkEmail(email: string, accessToken: string, lang: str
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
- * ArgoOne fusion — HUB v2 (behind VITE_BRIDGES_V2)
+ * ArgoOne® fusion — HUB v2 (behind VITE_BRIDGES_V2)
  * ────────────────────────────────────────────────────────────────────────────
  * When VITE_BRIDGES_V2 is OFF this endpoint behaves EXACTLY as the v1 pack panel
  * below. When ON, GET resolves a state-adaptive hub BY EMAIL and returns a
@@ -515,7 +515,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     else role = 'family';
 
     // Academy CTA is gated by SCALE, never shown to plain families (owner rule).
-    // ArgoOne standalone has no coach signal, so child count is the scale proxy.
+    // ArgoOne® standalone has no coach signal, so child count is the scale proxy.
     const distinctOwned = new Set(children.filter((c) => c.is_responsible || c.is_buyer).map((c) => c.child_id ?? c.key)).size;
     const canUpgradeAcademy = distinctOwned >= 3;
 
@@ -661,7 +661,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const token = req.query.token as string;
     if (!token) return res.status(401).json({ error: 'Missing access token' });
 
-    // ══ ArgoOne fusion HUB v2 (behind VITE_BRIDGES_V2) ═══════════════════════
+    // ══ ArgoOne® fusion HUB v2 (behind VITE_BRIDGES_V2) ═══════════════════════
     // Self-contained branch: resolves the viewer's email from EITHER a
     // one_purchases OR an adult_profiles access_token (both 64-hex), returns the
     // { version: 2 } hub on GET, and handles the 4 inline sub-actions on POST.

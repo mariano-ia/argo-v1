@@ -124,7 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const alreadyAnswered = overall !== 'created';
         const allGenerated = sessions.length > 0 && sessions.every(s => !!s.ai_sections);
 
-        // ── ArgoOne fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, if this
+        // ── ArgoOne® fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, if this
         // adult already has a FRESH reusable profile (adult_profiles by email,
         // expires_at in the future) and hasn't answered here yet, tell the front —
         // it can skip the 15 questions and POST puentes-complete with

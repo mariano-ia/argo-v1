@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/bridge-link-resolve
  * Body: { link_token }
  *
- * ArgoOne fusion Fase 1 (frozen model, docs/ARGOONE-DECISIONES.md §4): resolves
+ * ArgoOne® fusion Fase 1 (frozen model, docs/ARGOONE-DECISIONES.md §4): resolves
  * a child's shareable bridges-link so the /puente/:token onboarding page can
  * render the offer. The link is freely re-shareable BECAUSE the $4.99 buys ONLY
  * the buyer's own bridge, never the child's individual report.

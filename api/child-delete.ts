@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * /api/child-delete  (B15 — ArgoOne fusion)
+ * /api/child-delete  (B15 — ArgoOne® fusion)
  *
  * Deterministic, per-child data deletion by the high-entropy `deletion_id` that
  * rides in the footer of every email to the child's responsible adult and in the
@@ -18,7 +18,7 @@ import { createClient } from '@supabase/supabase-js';
  * Cascade: deleting the child cascades its perfilamientos, and each perfilamiento
  * cascades (FK ON DELETE CASCADE) its bridges, bridge_invites, puentes_purchases and
  * puentes_sessions — so the ArgoPuente bridge purchases toward this child are
- * hard-deleted too (only one_purchases, the ArgoOne payment, has no child FK and is
+ * hard-deleted too (only one_purchases, the ArgoOne® payment, has no child FK and is
  * preserved). We also hard-delete feedback/chat_messages/parental_consents (keyed by
  * perfilamiento), group_members/chem_group_members + child_memory (keyed by child),
  * and scrub the child's PII from one_links (kept as the buyer's slot). adult_profiles

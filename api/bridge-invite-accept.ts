@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/bridge-invite-accept
  * Body: { invite_token }
  *
- * ArgoOne fusion (B14). Validates a bridge-invite token and returns the child
+ * ArgoOne® fusion (B14). Validates a bridge-invite token and returns the child
  * context so the /puente/invite/:token page (F8) can render the offer for the
  * invited adult. Read-only: it does NOT create the bridge or the purchase — the
  * invited adult then pays $4.99 via puentes-checkout with the same invite_token

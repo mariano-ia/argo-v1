@@ -82,7 +82,7 @@ function buildEnterpriseWelcomeEmail(ownerName: string, institutionName: string,
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 
 <tr><td style="background:#1D1D1F;padding:32px 28px 36px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;"> Method</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span>
     <span style="background:#16a34a;color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:0.06em;margin-left:6px;vertical-align:middle;">ENTERPRISE</span>
     <p style="margin:18px 0 0;font-size:26px;font-weight:300;color:#fff;letter-spacing:-0.03em;line-height:1.2;">${L.heading}</p>
     <p style="margin:8px 0 0;font-size:14px;color:#86868B;">${L.subtitle}</p>

@@ -72,7 +72,7 @@ function buildInviteEmail(tenantName: string, actionLink: string, lang = 'es'): 
   <tr>
     <td style="background:#1D1D1F;padding:26px 28px 30px;">
       <div>
-        <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;"> Method</span>
+        <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span>
       </div>
       <p style="margin:16px 0 0;font-size:22px;font-weight:300;color:#ffffff;letter-spacing:-0.4px;line-height:1.3;">
         ${c.headline(tenantName)}

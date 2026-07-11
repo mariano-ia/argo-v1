@@ -118,7 +118,7 @@ interface CandidateSession {
     created_at: string;
 }
 
-/* ── ArgoOne fusion (B16): renewal reminder by EXPIRY, per child ─────────────
+/* ── ArgoOne® fusion (B16): renewal reminder by EXPIRY, per child ─────────────
  * Behind RENEWAL_CRON_V2. Replaces the 3-days-post-creation upsell with a
  * renewal nudge when the perfilamiento's expires_at passes (R7: soft, the
  * report stays readable). Granularity is PER CHILD (keyed on the perfilamiento
@@ -220,7 +220,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const { data: cands, error: candErr } = await sb
                 .from('perfilamientos')
                 .select('id, child_id, adult_email, child_name, lang, expires_at')
-                .is('tenant_id', null)  // ArgoOne only; tenant renewals live in the dashboard
+                .is('tenant_id', null)  // ArgoOne® only; tenant renewals live in the dashboard
                 .eq('status', 'resolved')
                 .is('deleted_at', null)
                 .eq('is_demo', false)   // demo plays never had a consultable report — no nudge

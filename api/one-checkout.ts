@@ -81,7 +81,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return 'es';
         })();
         const lang = typeof bodyLang === 'string' && ['es', 'en', 'pt'].includes(bodyLang) ? bodyLang : headerLang;
-        // ONE_UNIFIED_SKU (ArgoOne fusion): a single product ArgoOne® $12.99 that ALWAYS
+        // ONE_UNIFIED_SKU (ArgoOne® fusion): a single product ArgoOne® $12.99 that ALWAYS
         // includes the puente. Flag OFF = legacy two-SKU (one $9.99 / one_puente $12.99).
         // The front keeps sending {kind} during the transition; when unified we ignore it
         // and always charge the combo (the $9.99 no-puente SKU is retired).
@@ -116,7 +116,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (!child || child.archived_at || child.deleted_at || child.merged_into) {
                 return res.status(404).json({ error: 'child_not_found' });
             }
-            // ArgoOne children only — a tenant/club child re-profiles through the
+            // ArgoOne® children only — a tenant/club child re-profiles through the
             // dashboard flow, never via this $12.99 checkout (else charged-but-
             // undeliverable).
             if (child.tenant_id) {

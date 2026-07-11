@@ -110,7 +110,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const { puentes_session_id, answers, use_saved_profile } = req.body as {
             puentes_session_id?: string;
             answers?: { questionId: string; optionId: string }[];
-            // ArgoOne fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, reuse the
+            // ArgoOne® fusion (B12 fast-path, R6): behind PUENTES_BRIDGES, reuse the
             // adult's FRESH saved profile (adult_profiles by the purchase recipient
             // email) instead of re-answering the 15 questions. The pipeline then
             // proceeds identically (propagate to siblings, generate, email).
@@ -189,7 +189,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(500).json({ error: 'Could not save answers' });
         }
 
-        // ── ArgoOne fusion (L3) dual-write ──────────────────────────────────
+        // ── ArgoOne® fusion (L3) dual-write ──────────────────────────────────
         // Behind PUENTES_BRIDGES: also populate adult_profiles (reusable by email)
         // + bridges (adult x perfilamiento, with a frozen DISC snapshot). SHADOW:
         // nothing reads these until the read side flips, so this is best-effort and

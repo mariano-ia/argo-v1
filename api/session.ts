@@ -219,7 +219,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             let effectiveTenantId: string | null = null;
             let effectiveTeamId: string | null = null;
             let reproChildId: string | null = null;
-            // For an ArgoOne re-profile of a child >=13 (no COPPA claim below), the
+            // For an ArgoOne® re-profile of a child >=13 (no COPPA claim below), the
             // authorization consent is claimed single-use HERE; hold its token so a
             // later perfilamiento-insert failure can release it.
             let reproAuthToken: string | null = null;
@@ -234,7 +234,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (verified.mode === 'reprofile') reproChildId = verified.childId;
             }
 
-            // ── ArgoOne re-profile (Fase 3) ──────────────────────────────────
+            // ── ArgoOne® re-profile (Fase 3) ──────────────────────────────────
             // A replay one_link carries the child_id server-side (minted by the
             // webhook). We trust that child_id (never the body), append to the
             // existing child, and enforce, at play time: (1) a CONFIRMED
@@ -362,7 +362,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (typeof child_age === 'number' && child_age < 13 && typeof consent_token === 'string') {
                     await sb.from('parental_consents').update({ consumed_at: null }).eq('token', consent_token);
                 }
-                // >=13 ArgoOne re-profile claimed its authorization above; release it
+                // >=13 ArgoOne® re-profile claimed its authorization above; release it
                 // so an insert failure doesn't strand a paid, unplayed re-profile.
                 if (reproAuthToken) {
                     await sb.from('parental_consents').update({ consumed_at: null }).eq('token', reproAuthToken);
@@ -435,7 +435,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 await sb.from('parental_consents').update({ session_id: perf.id, child_id: childId }).eq('token', consent_token);
             }
 
-            // ── ArgoOne fusion: bind the one_link to the session AT START ──────
+            // ── ArgoOne® fusion: bind the one_link to the session AT START ──────
             // (ONE_V2_COMPLETE / ONE_UNIFIED_SKU). The browser-driven one-complete
             // can die with the tab; binding link→session here (while the tab is
             // provably alive) lets the report-recovery-cron sweep finish any

@@ -188,7 +188,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             recipient_name?: string;
             lang?: string;
             consent_given?: boolean;
-            // ArgoOne fusion (B13, legado): an accepted bridge-invite authorizes an
+            // ArgoOne® fusion (B13, legado): an accepted bridge-invite authorizes an
             // adult OTHER than the responsible one to buy the $4.99 add-on.
             invite_token?: string;
             // Fase 1 (frozen model §4): the child's ONE shareable bridges-link.
