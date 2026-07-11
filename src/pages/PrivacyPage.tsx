@@ -19,9 +19,9 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 // between a translations map and a rendering component.
 
 const LAST_UPDATED = {
-    es: 'Última actualización: 15 de abril de 2026',
-    en: 'Last updated: April 15, 2026',
-    pt: 'Última atualização: 15 de abril de 2026',
+    es: 'Última actualización: 11 de julio de 2026',
+    en: 'Last updated: July 11, 2026',
+    pt: 'Última atualização: 11 de julho de 2026',
 };
 
 // eslint-disable-next-line react/display-name
@@ -55,7 +55,7 @@ const ContentES: React.FC = () => (
 
         <Section title="5. Servicios de terceros">
             <p>Utilizamos los siguientes proveedores para operar la Plataforma. Cada uno tiene su propia política de privacidad y procesa los datos únicamente para los servicios descritos:</p>
-            <p><strong>Supabase</strong> (base de datos PostgreSQL y autenticación) · <strong>Google Gemini</strong> (generación de texto narrativo, con datos anonimizados) · <strong>Resend</strong> (envío de emails transaccionales desde hola@argomethod.com) · <strong>Vercel</strong> (hosting, funciones serverless y analítica de sitio privacy-first) · <strong>Stripe</strong> y <strong>MercadoPago</strong> (procesamiento de pagos de suscripciones y compras únicas).</p>
+            <p><strong>Supabase</strong> (base de datos PostgreSQL y autenticación) · <strong>Google Gemini</strong> (generación de texto narrativo, con datos anonimizados) · <strong>Resend</strong> (envío de emails transaccionales desde hola@argomethod.com) · <strong>Vercel</strong> (hosting, funciones serverless y analítica de sitio privacy-first) · <strong>Stripe</strong> (procesamiento de pagos de suscripciones y compras únicas).</p>
             <p>La analítica de sitio (Vercel Analytics) se ejecuta únicamente en rutas de marketing (landing, blog, precios, términos, privacidad, dashboard). <strong>Las rutas del juego no ejecutan ninguna herramienta de analítica</strong>. No utilizamos cookies de terceros ni herramientas de tracking publicitario.</p>
         </Section>
 
@@ -124,7 +124,7 @@ const ContentEN: React.FC = () => (
 
         <Section title="5. Third-party services">
             <p>We use the following providers to operate the Platform. Each has its own privacy policy and processes data only for the services described:</p>
-            <p><strong>Supabase</strong> (PostgreSQL database and authentication) · <strong>Google Gemini</strong> (narrative text generation, with anonymized data) · <strong>Resend</strong> (transactional email delivery from hola@argomethod.com) · <strong>Vercel</strong> (hosting, serverless functions, and privacy-first site analytics) · <strong>Stripe</strong> and <strong>MercadoPago</strong> (subscription and one-time payment processing).</p>
+            <p><strong>Supabase</strong> (PostgreSQL database and authentication) · <strong>Google Gemini</strong> (narrative text generation, with anonymized data) · <strong>Resend</strong> (transactional email delivery from hola@argomethod.com) · <strong>Vercel</strong> (hosting, serverless functions, and privacy-first site analytics) · <strong>Stripe</strong> (subscription and one-time payment processing).</p>
             <p>Site analytics (Vercel Analytics) runs only on marketing routes (landing, blog, pricing, terms, privacy, dashboard). <strong>Game routes run no analytics at all.</strong> We do not use third-party cookies or advertising tracking tools.</p>
         </Section>
 
@@ -193,7 +193,7 @@ const ContentPT: React.FC = () => (
 
         <Section title="5. Serviços de terceiros">
             <p>Usamos os seguintes provedores para operar a Plataforma. Cada um tem sua própria política de privacidade e processa os dados apenas para os serviços descritos:</p>
-            <p><strong>Supabase</strong> (banco de dados PostgreSQL e autenticação) · <strong>Google Gemini</strong> (geração de texto narrativo, com dados anonimizados) · <strong>Resend</strong> (envio de emails transacionais a partir de hola@argomethod.com) · <strong>Vercel</strong> (hosting, funções serverless e analytics privacy-first do site) · <strong>Stripe</strong> e <strong>MercadoPago</strong> (processamento de pagamentos de assinaturas e compras únicas).</p>
+            <p><strong>Supabase</strong> (banco de dados PostgreSQL e autenticação) · <strong>Google Gemini</strong> (geração de texto narrativo, com dados anonimizados) · <strong>Resend</strong> (envio de emails transacionais a partir de hola@argomethod.com) · <strong>Vercel</strong> (hosting, funções serverless e analytics privacy-first do site) · <strong>Stripe</strong> (processamento de pagamentos de assinaturas e compras únicas).</p>
             <p>A analítica do site (Vercel Analytics) roda apenas em rotas de marketing (landing, blog, preços, termos, privacidade, dashboard). <strong>As rotas do jogo não executam nenhuma ferramenta de analítica.</strong> Não usamos cookies de terceiros nem ferramentas de tracking publicitário.</p>
         </Section>
 

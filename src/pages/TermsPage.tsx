@@ -20,7 +20,7 @@ export const TermsPage: React.FC = () => (
                     </span>
                 </Link>
                 <h1 className="text-2xl font-bold text-argo-navy tracking-tight">Términos de Servicio</h1>
-                <p className="text-sm text-argo-grey mt-2">Última actualización: 22 de junio de 2026</p>
+                <p className="text-sm text-argo-grey mt-2">Última actualización: 11 de julio de 2026</p>
                 <div className="mt-4">
                     <CoppaBadge />
                 </div>
@@ -36,7 +36,7 @@ export const TermsPage: React.FC = () => (
             </Section>
 
             <Section title="3. Planes y suscripciones">
-                <p><strong>ArgoOne®:</strong> compra puntual de perfiles individuales. Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard.</p>
+                <p><strong>ArgoOne®:</strong> compra puntual que incluye el informe individual del niño y el Puente del adulto comprador (entregado sin costo adicional una vez que el niño juega). Sin suscripción. El informe se entrega por email. No incluye acceso al dashboard. El niño puede volver a jugar (re-perfilarse) cada 6 meses.</p>
                 <p><strong>Planes institucionales (PRO, Academy, Enterprise):</strong> suscripciones mensuales o anuales que incluyen acceso al dashboard, jugadores activos según el plan contratado, y Argo Coach incluido.</p>
                 <p><strong>Trial:</strong> periodo de prueba gratuito de 14 días con hasta 8 jugadores activos y funcionalidades limitadas. Al vencer el trial, el dashboard pasa a solo lectura. Los perfiles no se eliminan.</p>
             </Section>
@@ -52,18 +52,19 @@ export const TermsPage: React.FC = () => (
                 <p>El Argo Coach proporciona orientaciones basadas en la metodología Argo y los perfiles registrados. Las respuestas son orientativas y no reemplazan el criterio profesional del entrenador o adulto responsable.</p>
             </Section>
 
-            <Section title="6. ArgoPuente® (servicio complementario)">
-                <p>Tras la entrega del informe del deportista, podemos ofrecerte el servicio complementario "ArgoPuente®", que consiste en un cuestionario breve para el adulto responsable y un informe personalizado de cuatro puentes de vínculo entre tu estilo y el del deportista.</p>
+            <Section title="6. ArgoPuente® (el puente del adulto)">
+                <p>ArgoPuente® es el informe puente del adulto: un cuestionario breve sobre su propio estilo y un informe personalizado de cuatro puentes de vínculo entre ese estilo y el del niño, basado en el modelo DISC.</p>
+                <p>El Puente del comprador de ArgoOne® está incluido en su compra y se entrega sin costo adicional una vez que el niño juega. Otros adultos que acompañan al niño (por ejemplo, familia o entrenador) pueden sumar su propio puente por separado a través del enlace de puentes que comparte el adulto responsable. Ese pago da acceso únicamente al puente del adulto, nunca al informe individual del niño.</p>
                 <p>ArgoPuente®:</p>
                 <p>(a) No constituye un servicio clínico, terapéutico ni de diagnóstico psicológico.</p>
                 <p>(b) Es un material de auto-conocimiento e invitación a la reflexión, basado en el modelo DISC.</p>
-                <p>(c) Reutiliza el perfil del deportista (ya recolectado al momento del informe del menor) para generar contenido específico.</p>
-                <p>(d) Puede ofrecerse en hasta dos comunicaciones por correo electrónico tras la entrega del informe principal: una en el propio email del informe y una segunda comunicación tres días más tarde si la propuesta no ha sido aceptada.</p>
-                <p>(e) Puedes solicitar dejar de recibir esta propuesta en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
+                <p>(c) Reutiliza el perfil del niño (ya recolectado al momento de su informe) para generar contenido específico.</p>
+                <p>(d) Podemos enviarte recordatorios ocasionales por correo electrónico relacionados con ArgoPuente® y con el ciclo de re-perfilamiento (por ejemplo, cuando el perfil del niño cumple 6 meses y puede volver a jugar). Enviamos como máximo un recordatorio por cada caso.</p>
+                <p>(e) Puedes solicitar dejar de recibir estos recordatorios en cualquier momento respondiendo al correo o usando el enlace de baja.</p>
                 <p>Las compras de ArgoPuente® son finales una vez que se ha completado el cuestionario y se ha entregado el informe correspondiente.</p>
                 <p><strong>Alcance por niño y conservación del perfil:</strong></p>
-                <p>(f) Una compra de ArgoPuente® genera el puente del adulto hacia un niño. Cada niño distinto requiere su propia compra.</p>
-                <p>(g) El perfil del adulto generado por ArgoPuente® se conserva para reutilizarlo en nuevos puentes sin repetir el cuestionario. Si un niño ya perfilado vuelve a jugar Argo y obtiene un nuevo perfil, su puente con el adulto se actualiza.</p>
+                <p>(f) Una compra de ArgoPuente® genera el puente de un adulto hacia un niño. Cada niño distinto requiere su propia compra.</p>
+                <p>(g) El perfil del adulto generado por ArgoPuente® se conserva para reutilizarlo en nuevos puentes sin repetir el cuestionario.</p>
                 <p>(h) Para solicitar la eliminación del perfil del adulto y todos los puentes asociados, escríbenos a hola@argomethod.com. La eliminación es definitiva y no se puede revertir.</p>
             </Section>
 
