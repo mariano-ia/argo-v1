@@ -144,7 +144,7 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
           <div className="text-[13px] font-semibold tracking-wide text-argo-grey">{kidMeta}</div>
           {adulto && <div className="mt-0.5 text-[12px] text-argo-light">{ui.adulto}: {adulto}</div>}
         </div>
-        <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+        <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
           <span style={{ color: accent }}>{hero.primarioLabel}</span>
           {vetaDisplay && (
             <>

@@ -53,7 +53,7 @@ const T = {
         modalTitle: 'Generar link de juego',
         modalDesc: 'Ingresa el email del adulto responsable. Recibirá las instrucciones y luego el informe.',
         emailPlaceholder: 'Email del adulto responsable',
-        namePlaceholder: 'Nombre del deportista (opcional)',
+        namePlaceholder: 'Nombre del deportista',
         sportSelect: 'Deporte del deportista',
         sportOtherPlaceholder: 'Escribe el deporte...',
         sports: ['Fútbol', 'Hockey', 'Básquet', 'Rugby', 'Tenis', 'Natación', 'Voley', 'Atletismo', 'Handball', 'Béisbol', 'Otro'],
@@ -95,7 +95,7 @@ const T = {
         modalTitle: 'Generate play link',
         modalDesc: 'Enter the responsible adult\'s email. They will receive instructions and then the report.',
         emailPlaceholder: 'Responsible adult\'s email',
-        namePlaceholder: 'Athlete\'s name (optional)',
+        namePlaceholder: 'Athlete\'s name',
         sportSelect: 'Athlete\'s sport',
         sportOtherPlaceholder: 'Type the sport...',
         sports: ['Soccer', 'Hockey', 'Basketball', 'Rugby', 'Tennis', 'Swimming', 'Volleyball', 'Track & Field', 'Handball', 'Baseball', 'Other'],
@@ -137,7 +137,7 @@ const T = {
         modalTitle: 'Gerar link de jogo',
         modalDesc: 'Insira o email do adulto responsável. Ele receberá as instruções e depois o relatório.',
         emailPlaceholder: 'Email do adulto responsável',
-        namePlaceholder: 'Nome do atleta (opcional)',
+        namePlaceholder: 'Nome do atleta',
         sportSelect: 'Esporte do atleta',
         sportOtherPlaceholder: 'Digite o esporte...',
         sports: ['Futebol', 'Hóquei', 'Basquete', 'Rugby', 'Tênis', 'Natação', 'Vôlei', 'Atletismo', 'Handebol', 'Beisebol', 'Outro'],
@@ -1035,7 +1035,7 @@ export const OnePanel: React.FC = () => {
     };
 
     const handleGenerate = async () => {
-        if (!modal || !modalEmail || !sportFinal) return;
+        if (!modal || !modalEmail || !modalName.trim() || !sportFinal) return;
         setSending(true);
         await fetch(`/api/one-panel?token=${token}`, {
             method: 'POST',
@@ -1348,7 +1348,7 @@ export const OnePanel: React.FC = () => {
                                 </button>
                                 <button
                                     onClick={handleGenerate}
-                                    disabled={sending || !modalEmail || !sportFinal}
+                                    disabled={sending || !modalEmail || !modalName.trim() || !sportFinal}
                                     className="flex-1 py-3 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50"
                                 >
                                     {sending ? '...' : t.generateAndSend}

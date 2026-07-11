@@ -1274,6 +1274,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         teamSlug={teamSlug}
                         reprofileToken={reprofileToken}
                         initialValues={initialAdultData ?? undefined}
+                        lockIdentity={!!initialAdultData}
                         readOnlySport={oneLinkId ? (linkSport || undefined) : tenantId ? (institutionSport || undefined) : undefined}
                         institutionName={tenantId ? (institutionName || undefined) : undefined}
                         onComplete={async data => {

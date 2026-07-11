@@ -29,6 +29,10 @@ interface Props {
     reprofileToken?: string;
     /** Re-profile: pre-fill the form with the existing child's identity (adult confirms). */
     initialValues?: AdultData;
+    /** When the prefilled email + child name are authoritative (came from the purchase /
+     *  invite / re-profile link, not typed here), render them read-only so the adult can't
+     *  silently change who the report is about or where it lands. */
+    lockIdentity?: boolean;
     onComplete: (data: AdultData) => void;
     onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
@@ -43,6 +47,7 @@ export const AdultRegistration: React.FC<Props> = ({
     teamSlug,
     reprofileToken,
     initialValues,
+    lockIdentity = false,
     onComplete,
     onConsentRequired,
 }) => {
@@ -154,9 +159,9 @@ export const AdultRegistration: React.FC<Props> = ({
             {/* Form fields */}
             <div className="space-y-4">
                 {[
-                    { label: ot.yourName, value: nombreAdulto, setter: setNombreAdulto, placeholder: ot.yourNamePlaceholder, type: 'text' },
-                    ...(!userEmail ? [{ label: ot.yourEmail, value: email, setter: setEmail, placeholder: ot.yourEmailPlaceholder, type: 'email' }] : []),
-                    { label: ot.athleteName, value: nombreNino, setter: setNombreNino, placeholder: ot.athleteNamePlaceholder, type: 'text' },
+                    { label: ot.yourName, value: nombreAdulto, setter: setNombreAdulto, placeholder: ot.yourNamePlaceholder, type: 'text', readOnly: false },
+                    ...(!userEmail ? [{ label: ot.yourEmail, value: email, setter: setEmail, placeholder: ot.yourEmailPlaceholder, type: 'email', readOnly: lockIdentity && !!initialValues?.email }] : []),
+                    { label: ot.athleteName, value: nombreNino, setter: setNombreNino, placeholder: ot.athleteNamePlaceholder, type: 'text', readOnly: lockIdentity && !!initialValues?.nombreNino },
                 ].map(f => (
                     <div key={f.label} className="space-y-1.5">
                         <label className="text-[10px] font-bold text-argo-grey uppercase tracking-widest">
@@ -167,7 +172,13 @@ export const AdultRegistration: React.FC<Props> = ({
                             value={f.value}
                             onChange={e => f.setter(e.target.value)}
                             placeholder={f.placeholder}
-                            className="w-full border border-[#D2D2D7] rounded-xl px-4 py-3 text-sm text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F] transition-colors"
+                            readOnly={f.readOnly}
+                            aria-readonly={f.readOnly || undefined}
+                            className={`w-full border rounded-xl px-4 py-3 text-sm transition-colors ${
+                                f.readOnly
+                                    ? 'border-[#E8E8ED] bg-argo-bg text-argo-secondary cursor-default'
+                                    : 'border-[#D2D2D7] text-[#1D1D1F] focus:outline-none focus:border-[#1D1D1F]'
+                            }`}
                         />
                     </div>
                 ))}
