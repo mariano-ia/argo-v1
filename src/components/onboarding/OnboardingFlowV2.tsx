@@ -216,6 +216,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     const [answers, setAnswers]         = useState<QuestionAnswer[]>([]);
     const [aiSections, setAiSections]   = useState<AISections | null>(null);
     const [aiLoading, setAiLoading]     = useState(false);
+    // Flips true the instant the (synchronous) profile is resolved, so the child's
+    // final reveal mounts immediately — NOT after the ~4 sequential network writes
+    // (variant/profile save/shadow/one-complete) that used to gate the first
+    // re-render via setAiLoading(true). reportRef is a ref, so setting it alone
+    // never re-renders; this state is what surfaces the reveal.
+    const [revealReady, setRevealReady] = useState(false);
     const [saveError, setSaveError]     = useState<string | null>(null);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
@@ -870,6 +876,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 ejeSecundario: profile.ejeSecundario,
                 tendenciaLabel: profile.tendenciaLabel,
             };
+            // Surface the child's reveal NOW (profile is deterministic + done). The
+            // saves + v4 shadow + one-complete + ~30s AI generation below all run in
+            // the background; none of them feed the child screen. Before this, the
+            // reveal waited behind that whole chain and the child stared at a blank
+            // scene for seconds (owner-reported).
+            setRevealReady(true);
 
             if (profile.tiebreakerApplied) {
                 console.info('[profileResolver] Tiebreaker applied → eje:', profile.eje, 'motor:', profile.motor);
@@ -1390,7 +1402,31 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     />
                 )}
 
-                {screen.type === 'child-result' && !demoMode && reportRef.current && adultData && (
+                {/* Bridge the (near-instant) gap between the last answer and the
+                    resolved profile so the child never faces a blank scene. */}
+                {screen.type === 'child-result' && !demoMode && !revealReady && (
+                    <motion.div
+                        key="child-result-loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 flex flex-col items-center justify-center gap-5 bg-[#0b1a2a] px-8 text-center"
+                        style={{ zIndex: 10 }}
+                    >
+                        <motion.div
+                            className="w-12 h-12 rounded-full border-[3px] border-white/20 border-t-white/80"
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 0.9, repeat: Infinity, ease: 'linear' }}
+                        />
+                        <p className="font-quest text-white/80 text-lg font-medium leading-snug">
+                            {lang === 'en' ? 'Charting your course…'
+                                : lang === 'pt' ? 'Traçando tua rota…'
+                                : 'Trazando tu rumbo…'}
+                        </p>
+                    </motion.div>
+                )}
+
+                {screen.type === 'child-result' && !demoMode && revealReady && reportRef.current && adultData && (
                     <ChildResultReveal
                         key="child-result"
                         nombreNino={nombre}
