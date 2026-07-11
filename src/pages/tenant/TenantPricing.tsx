@@ -27,7 +27,7 @@ const T = {
         contactSales: 'Contactar ventas',
         familiesLabel: 'Padres y familias',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Tu hijo juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor, y orientaciones concretas para acompañarlo. Sin suscripción, sin crear cuenta.',
+        familiesDesc: 'El niño juega una aventura de 10 minutos y recibes un informe personalizado con su perfil conductual, palabras clave para comunicarte mejor y orientaciones concretas para acompañarlo, con tu Puente con el niño incluido. Sin suscripción, sin crear cuenta.',
         report: 'informe',
         reports: 'informes',
         perReport: 'por informe',
@@ -65,7 +65,7 @@ const T = {
         contactSales: 'Contact sales',
         familiesLabel: 'Parents & families',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Your child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance. No subscription, no account needed.',
+        familiesDesc: 'The child plays a 10-minute adventure and you receive a personalized report with their behavioral profile, key communication phrases, and concrete guidance, with your Bridge with the child included. No subscription, no account needed.',
         report: 'report',
         reports: 'reports',
         perReport: 'per report',
@@ -103,7 +103,7 @@ const T = {
         contactSales: 'Contatar vendas',
         familiesLabel: 'Pais e famílias',
         familiesTitle: 'ArgoOne®',
-        familiesDesc: 'Seu filho joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas. Sem assinatura, sem criar conta.',
+        familiesDesc: 'A criança joga uma aventura de 10 minutos e você recebe um relatório personalizado com o perfil comportamental, palavras-chave para se comunicar melhor e orientações concretas, com a sua Ponte com a criança incluída. Sem assinatura, sem criar conta.',
         report: 'relatório',
         reports: 'relatórios',
         perReport: 'por relatório',
@@ -325,19 +325,9 @@ export const TenantPricing: React.FC = () => {
                         <p className="text-[15px] font-semibold text-argo-navy mb-1">{t.familiesTitle}</p>
                         <p className="text-[13px] text-argo-grey leading-relaxed">{t.familiesDesc}</p>
                     </div>
-                    <div className="flex gap-3 flex-shrink-0">
-                        {[
-                            { name: 'ArgoOne®', price: '$9.99' },
-                            { name: 'ArgoOne+®', price: '$12.99' },
-                        ].map(p => (
-                            <button
-                                key={p.name}
-                                className="text-center px-5 py-3 rounded-xl border border-argo-border hover:border-argo-violet-300 transition-colors min-w-[96px]"
-                            >
-                                <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>
-                                <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">{p.price}</p>
-                            </button>
-                        ))}
+                    <div className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[112px] flex-shrink-0">
+                        <p className="text-[15px] font-medium text-argo-navy">ArgoOne®</p>
+                        <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">$12.99</p>
                     </div>
                 </div>
             </div>

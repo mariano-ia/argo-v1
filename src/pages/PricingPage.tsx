@@ -164,9 +164,9 @@ export const PricingPage: React.FC = () => {
     const [annual, setAnnual] = useState(true);
     const t = T[lang as keyof typeof T] ?? T.es;
 
-    // ArgoOne fusion (F4): behind VITE_BRIDGES_V2, the families card sells the
-    // single $12.99 product and a small email modal goes straight to Stripe.
-    const bridgesV2 = import.meta.env.VITE_BRIDGES_V2 === '1';
+    // ArgoOne fusion (F4): the families card sells the single $12.99 ArgoOne®
+    // (informe del niño + Puente incluido) and a small email modal goes straight
+    // to Stripe. The old two-tier scheme ($9.99 / ArgoOne+®) is retired.
     const [buyOpen, setBuyOpen] = useState(false);
     const [buyEmail, setBuyEmail] = useState('');
     const [buyConsent, setBuyConsent] = useState(false);
@@ -334,32 +334,18 @@ export const PricingPage: React.FC = () => {
                             <p className="text-[15px] font-semibold text-argo-navy mb-1">{t.familiesTitle}</p>
                             <p className="text-[13px] text-argo-grey leading-relaxed">{t.familiesDesc}</p>
                         </div>
-                        {bridgesV2 ? (
-                            <div className="flex items-center gap-4 flex-shrink-0">
-                                <div className="text-right">
-                                    <p className="text-[15px] font-semibold text-argo-navy">ArgoOne®</p>
-                                    <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">USD 12.99</p>
-                                </div>
-                                <button
-                                    onClick={() => { setBuyOpen(true); setBuyEmail(''); setBuyConsent(false); setBuyErr(''); }}
-                                    className="px-5 py-2.5 rounded-lg text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
-                                >
-                                    {t.buyCta}
-                                </button>
+                        <div className="flex items-center gap-4 flex-shrink-0">
+                            <div className="text-right">
+                                <p className="text-[15px] font-semibold text-argo-navy">ArgoOne®</p>
+                                <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">USD 12.99</p>
                             </div>
-                        ) : (
-                            <div className="flex gap-3 flex-shrink-0">
-                                {[
-                                    { name: 'ArgoOne®', price: '$9.99' },
-                                    { name: 'ArgoOne+®', price: '$12.99' },
-                                ].map(p => (
-                                    <div key={p.name} className="text-center px-5 py-3 rounded-xl border border-argo-border min-w-[96px]">
-                                        <p className="text-[15px] font-medium text-argo-navy">{p.name}</p>
-                                        <p className="text-[13px] font-semibold text-argo-violet-500 mt-0.5">{p.price}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                            <button
+                                onClick={() => { setBuyOpen(true); setBuyEmail(''); setBuyConsent(false); setBuyErr(''); }}
+                                className="px-5 py-2.5 rounded-lg text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                            >
+                                {t.buyCta}
+                            </button>
+                        </div>
                     </div>
                 </div>
 

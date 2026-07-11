@@ -1,36 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Clock, Mail, ChevronDown } from 'lucide-react';
+import { Shield, Clock, Mail, ChevronDown, Check } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 
 /**
  * Dedicated ArgoOne® landing page — optimized for ad conversion.
- * Route: /one  (/one?kind=puente preselects the combo)
- * Mobile-first, responsive: single column on phones, a desktop two-column
- * hero (pitch + selector left, report preview right) on lg+. USD via Stripe.
+ * Route: /one
+ * Single unified product (ArgoOne® fusion): the child's report + the buyer's
+ * Puente included, $12.99 USD via Stripe. No tiers, no account, no subscription.
  */
 
-type OneKind = 'one' | 'one_puente';
-
-const OPTIONS: { kind: OneKind; title: string; price: string; regular: string; desc: string; popular: boolean }[] = [
-    { kind: 'one',        title: 'ArgoOne®',   price: '$9.99',  regular: '$12.99', desc: 'El informe del perfil del niño.',                    popular: false },
-    { kind: 'one_puente', title: 'ArgoOne+®', price: '$12.99', regular: '$14.99', desc: 'El informe del niño y tu propio Puente con el niño.', popular: true },
-];
-
-// Brand-styled product name (Argo bold + One light + "+" bold), matching the home pricing card.
-const BrandName: React.FC<{ kind: OneKind }> = ({ kind }) => (
+// Brand-styled product name (Argo bold + One light + ®), joined + ®.
+const BrandName: React.FC = () => (
     <>
         <span style={{ fontWeight: 800 }}>Argo</span>
         <span style={{ fontWeight: 300 }}>One</span>
-        {kind === 'one_puente' && <span style={{ fontWeight: 800 }}>+</span>}
         <span style={{ fontWeight: 300 }}>®</span>
     </>
 );
 
+const INCLUDED = [
+    'El arquetipo del niño y qué lo mueve en el deporte.',
+    'Su motor: a qué ritmo procesa y decide.',
+    'Palabras que conectan y palabras que suelen generar ruido.',
+    'Guía rápida y checklist del día: antes, durante y después.',
+    'Tu Puente con el niño, incluido: cómo acompañar desde tu propio estilo.',
+];
+
 const FAQ_ITEMS = [
     { q: '¿Es un test psicológico?', a: 'No. No diagnostica, no clasifica, no predice. Es una herramienta para entender y comunicarte mejor.' },
     { q: '¿En qué se diferencia de un test psicológico?', a: 'Un test psicológico diagnostica y clasifica. Argo no. Es una herramienta de comunicación basada en el modelo DISC que te muestra cómo el niño procesa decisiones y presión en el deporte, para que puedas acompañar mejor.' },
+    { q: '¿Qué incluye la compra?', a: 'El informe individual del niño y tu propio Puente con el niño, ya incluido. Un solo pago, sin suscripción.' },
     { q: '¿Qué edad debe tener?', a: 'Entre 8 y 16 años.' },
     { q: '¿Cuánto toma?', a: '10 a 12 minutos de aventura interactiva.' },
     { q: '¿Necesito crear cuenta?', a: 'No. Solo un email para recibir el informe. Sin suscripción, sin compromisos.' },
@@ -58,14 +58,10 @@ const FaqItem: React.FC<{ q: string; a: string }> = ({ q, a }) => {
 };
 
 const ArgoOneLanding: React.FC = () => {
-    const [searchParams] = useSearchParams();
     const { lang } = useLang();
-    const initialKind: OneKind = searchParams.get('kind') === 'puente' ? 'one_puente' : 'one';
-    const [selectedKind, setSelectedKind] = useState<OneKind>(initialKind);
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const selected = OPTIONS.find(o => o.kind === selectedKind) ?? OPTIONS[0];
 
     // Navigating here from the home pricing card carries the previous scroll
     // position; reset so the buyer lands on the hero (price + email + CTA).
@@ -79,7 +75,7 @@ const ArgoOneLanding: React.FC = () => {
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, kind: selectedKind, lang }),
+                body: JSON.stringify({ email, kind: 'one_puente', lang }),
             });
             const data = await res.json();
             if (data.checkout_url) {
@@ -120,54 +116,35 @@ const ArgoOneLanding: React.FC = () => {
                             Cada niño vive el deporte a su manera.
                         </h1>
                         <p style={{ fontSize: '16px', color: '#424245', lineHeight: 1.6 }}>
-                            Conoce sus tendencias en 10 minutos. El informe te da las claves para acompañar mejor y que disfrute más del juego.
+                            Conoce sus tendencias en 10 minutos. El informe te da las claves para acompañar mejor y que disfrute más del juego, con tu Puente con el niño incluido.
                         </p>
                     </motion.div>
 
                     {/* Checkout card — the single focal point */}
                     <motion.div {...fade(0.1)}>
                         <div style={{ background: '#fff', borderRadius: '18px', border: '1px solid #EDE4F5', boxShadow: '0 14px 48px rgba(149,95,181,0.14)', padding: '24px' }}>
-                            <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#86868B', marginBottom: '14px' }}>
-                                Elige tu opción
-                            </p>
 
-                            {/* Selector */}
-                            <div className="flex flex-col gap-2.5">
-                                {OPTIONS.map((o) => (
-                                    <button
-                                        key={o.kind}
-                                        onClick={() => setSelectedKind(o.kind)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            padding: '14px 16px', borderRadius: '12px', cursor: 'pointer',
-                                            border: selectedKind === o.kind ? '2px solid #955FB5' : '1px solid #E8E8ED',
-                                            background: selectedKind === o.kind ? 'rgba(149,95,181,0.05)' : '#fff',
-                                            transition: 'all 0.15s', position: 'relative', textAlign: 'left', width: '100%',
-                                        }}
-                                    >
-                                        {o.popular && (
-                                            <span style={{
-                                                position: 'absolute', top: '-9px', left: '14px',
-                                                fontSize: '9px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-                                                background: '#955FB5', color: '#fff', padding: '2px 10px', borderRadius: '5px',
-                                            }}>
-                                                Recomendado
-                                            </span>
-                                        )}
-                                        <div style={{ paddingRight: '12px' }}>
-                                            <p style={{ fontSize: '15px', color: '#1D1D1F' }}><BrandName kind={o.kind} /></p>
-                                            <p style={{ fontSize: '11px', color: '#86868B', marginTop: '2px' }}>{o.desc}</p>
-                                        </div>
-                                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                                            <p style={{ fontSize: '11px', color: '#AEAEB2', textDecoration: 'line-through' }}>{o.regular}</p>
-                                            <p style={{ fontSize: '19px', fontWeight: 700, letterSpacing: '-0.02em', color: o.kind === 'one_puente' ? '#955FB5' : '#1D1D1F' }}>{o.price}</p>
-                                        </div>
-                                    </button>
-                                ))}
+                            {/* Product summary — single unified ArgoOne® */}
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '16px' }}>
+                                <div>
+                                    <p style={{ fontSize: '17px', color: '#1D1D1F', marginBottom: '2px' }}><BrandName /></p>
+                                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5 }}>El informe del niño, con tu Puente incluido.</p>
+                                </div>
+                                <p style={{ fontSize: '26px', fontWeight: 700, letterSpacing: '-0.02em', color: '#955FB5', flexShrink: 0 }}>$12.99</p>
                             </div>
 
+                            {/* What's included */}
+                            <ul style={{ listStyle: 'none', marginBottom: '18px' }}>
+                                {INCLUDED.map((item, i) => (
+                                    <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '5px 0' }}>
+                                        <Check size={14} style={{ color: '#955FB5', flexShrink: 0, marginTop: '3px' }} />
+                                        <span style={{ fontSize: '13px', color: '#424245', lineHeight: 1.4 }}>{item}</span>
+                                    </li>
+                                ))}
+                            </ul>
+
                             {/* Email + buy CTA */}
-                            <div className="flex flex-col gap-2.5" style={{ marginTop: '16px' }}>
+                            <div className="flex flex-col gap-2.5">
                                 <input
                                     type="email"
                                     placeholder="Tu email (para recibir el informe)"
@@ -192,7 +169,7 @@ const ArgoOneLanding: React.FC = () => {
                                         boxShadow: email ? '0 4px 18px rgba(149,95,181,0.25)' : 'none',
                                     }}
                                 >
-                                    {loading ? 'Procesando...' : <>Comprar <BrandName kind={selectedKind} /> · {selected.price}</>}
+                                    {loading ? 'Procesando...' : <>Comprar <BrandName /> · $12.99</>}
                                 </button>
                                 {error && <p style={{ fontSize: '12px', color: '#DC2626', textAlign: 'center' }}>{error}</p>}
                             </div>
@@ -225,7 +202,7 @@ const ArgoOneLanding: React.FC = () => {
                     </h2>
                     <div className="grid gap-8 lg:grid-cols-3 lg:gap-10">
                         {[
-                            { n: '1', title: 'Compras y recibes el enlace', desc: <>Eliges <BrandName kind="one" /> o <BrandName kind="one_puente" />, pagas con tarjeta y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción.</> },
+                            { n: '1', title: 'Compras y recibes el enlace', desc: <>Pagas con tarjeta y al instante recibes un enlace único para que el niño juegue. Sin crear cuenta ni suscripción, con tu Puente con el niño incluido.</> },
                             { n: '2', title: 'El niño juega 10 minutos', desc: 'Desde el celular vive una aventura náutica. No hay preguntas directas ni respuestas correctas: sus decisiones muestran cómo vive el juego, la presión y el equipo.' },
                             { n: '3', title: 'Recibes el informe por email', desc: 'Un informe claro con su perfil, qué lo motiva, las palabras que lo conectan y orientaciones concretas para acompañar en la cancha.' },
                         ].map(s => (

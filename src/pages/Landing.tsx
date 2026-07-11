@@ -702,56 +702,59 @@ const PricingSection: React.FC<{
             {/* Three columns */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
 
-                {/* ── COL 1: ArgoOne® ─────────────────────────────────────── */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+                {/* ── COL 1: ArgoOne® (informe del niño + puente incluido, destacada) ─── */}
+                <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
+                    <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
+                        {L('Recomendado', 'Recommended', 'Recomendado')}
+                    </span>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('Informe individual del niño', "The child's individual report", 'Relatório individual da criança')}
+                        {L('El informe del niño, con tu Puente incluido', "The child's report, with your Bridge included", 'O relatório da criança, com a sua Ponte incluída')}
                     </p>
-                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em' }}>$9.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$12.99</span></p>
-                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
+                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em' }}>$12.99</span></p>
+                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '16px' }}>
                         <ReportItem title={L('Arquetipo', 'Archetype', 'Arquétipo')} desc={L('Su forma natural de moverse en el deporte.', 'Their natural way of moving in sport.', 'Sua forma natural de se mover no esporte.')} />
                         <ReportItem title={L('Qué lo mueve', 'What drives them', 'O que o motiva')} desc={L('Lo que lo enciende y lo sostiene.', 'What lights them up and keeps them going.', 'O que o acende e o sustenta.')} />
-                        <ReportItem title={L('Motor de rendimiento', 'Performance engine', 'Motor de desempenho')} desc={L('A qué ritmo procesa y decide.', 'The pace at which they process and decide.', 'Em que ritmo processa e decide.')} />
+                        <ReportItem title={L('Su motor', 'Their engine', 'Seu motor')} desc={L('A qué ritmo procesa y decide.', 'The pace at which they process and decide.', 'Em que ritmo processa e decide.')} />
                         <ReportItem title={L('Palabras puente', 'Bridge words', 'Palavras ponte')} desc={L('Cómo hablarle para conectar.', 'How to speak so you connect.', 'Como falar com ele para conectar.')} />
                         <ReportItem title={L('Palabras que suelen generar ruido', 'Words that tend to create noise', 'Palavras que costumam gerar ruído')} desc={L('Las que conviene cuidar.', 'The ones worth being careful with.', 'As que vale a pena cuidar.')} />
-                        <ReportItem title={L('Guía rápida', 'Quick guide', 'Guia rápido')} desc={L('Qué activar y qué considerar.', 'What to activate and what to consider.', 'O que ativar e o que considerar.')} />
-                        <ReportItem title={L('Checklist del día', 'Daily checklist', 'Checklist do dia')} desc={L('Antes, durante y después.', 'Before, during and after.', 'Antes, durante e depois.')} />
+                        <ReportItem title={L('Guía rápida y checklist del día', 'Quick guide & daily checklist', 'Guia rápido e checklist do dia')} desc={L('Qué activar, antes, durante y después.', 'What to activate, before, during and after.', 'O que ativar, antes, durante e depois.')} />
                     </ul>
+                    <div style={{ background: 'rgba(149,95,181,0.06)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
+                        <p style={{ fontSize: '12px', fontWeight: 600, color: '#7A4D96', marginBottom: '2px' }}>
+                            {L('Tu Puente con el niño, incluido', 'Your Bridge with the child, included', 'Sua Ponte com a criança, incluída')}
+                        </p>
+                        <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: 0 }}>
+                            {L('Cómo acompañar desde tu propio estilo: la previa, la frustración, la conversación después del partido y el largo plazo.', 'How to support from your own style: before the game, frustration, the conversation after the match and the long run.', 'Como acompanhar a partir do seu estilo: o pré-jogo, a frustração, a conversa depois do jogo e o longo prazo.')}
+                        </p>
+                    </div>
                     <button
                         onClick={() => navigate('/one')}
-                        style={{ width: '100%', padding: '13px', borderRadius: '12px', border: '1px solid #E8E8ED', background: '#fff', color: '#1D1D1F', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}
+                        style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
                     >
                         {L('Comprar', 'Buy', 'Comprar')} <ProductName rest="One" />
                     </button>
                 </div>
 
-                {/* ── COL 2: ArgoOne+® Puente (destacada) ────────────────── */}
-                <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
-                    <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                        {L('Recomendado', 'Recommended', 'Recomendado')}
-                    </span>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span><span style={{ fontWeight: 300 }}>®</span></p>
+                {/* ── COL 2: ArgoPuente® (add-on del adulto, informativo) ────────────────── */}
+                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="Puente" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('Informe individual del niño + Informe Puente con el adulto', "The child's individual report + Bridge report with the adult", 'Relatório individual da criança + Relatório Ponte com o adulto')}
+                        {L('El Puente de otro adulto con un niño que ya jugó', "Another adult's Bridge with a child who already played", 'A Ponte de outro adulto com uma criança que já jogou')}
                     </p>
-                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#955FB5', letterSpacing: '-0.03em' }}>$12.99</span><span style={{ fontSize: '16px', fontWeight: 500, color: '#AEAEB2', textDecoration: 'line-through', marginLeft: '8px' }}>$14.99</span></p>
-                    <p style={{ fontSize: '12px', fontWeight: 600, color: '#1D1D1F', marginBottom: '8px' }}>
-                        {L('Todo el informe de ArgoOne®, y además tu Puente con el niño:', 'The full ArgoOne® report, plus your Bridge with the child:', 'Todo o relatório do ArgoOne®, e mais a sua Ponte com a criança:')}
-                    </p>
-                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '20px' }}>
+                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em' }}>$4.99</span></p>
+                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '16px' }}>
                         <ReportItem title={L('Tu estilo natural', 'Your natural style', 'Seu estilo natural')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
                         <ReportItem title={L('La previa', 'Before the game', 'O pré-jogo')} desc={L('Cómo estar antes de que juegue.', 'How to be before they play.', 'Como estar antes de ele jogar.')} />
                         <ReportItem title={L('La frustración', 'Frustration', 'A frustração')} desc={L('Acompañar cuando algo no sale.', 'Being there when something goes wrong.', 'Acompanhar quando algo não sai.')} />
                         <ReportItem title={L('La conversación', 'The conversation', 'A conversa')} desc={L('Qué decir después del partido.', 'What to say after the match.', 'O que dizer depois do jogo.')} />
                         <ReportItem title={L('El largo plazo', 'The long run', 'O longo prazo')} desc={L('Cuidar su vínculo por el deporte.', 'Protecting their bond with sport.', 'Cuidar do vínculo dele com o esporte.')} />
                     </ul>
-                    <button
-                        onClick={() => navigate('/one?kind=puente')}
-                        style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', background: '#955FB5', color: '#fff', fontSize: '14px', fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 18px rgba(149,95,181,0.25)' }}
-                    >
-                        {L('Comprar', 'Buy', 'Comprar')} <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 300 }}>One</span><span style={{ fontWeight: 800 }}>+</span><span style={{ fontWeight: 300 }}>®</span>
-                    </button>
+                    <div style={{ borderRadius: '12px', padding: '12px 14px', border: '1px solid #E8E8ED', background: '#F8F8FA' }}>
+                        <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: 0 }}>
+                            {L('Se suma desde el enlace que comparte quien acompaña al niño. Cada adulto (familia o entrenador) crea su propio Puente.', 'Added from the link shared by whoever accompanies the child. Each adult (family or coach) creates their own Bridge.', 'Adiciona-se pelo link que compartilha quem acompanha a criança. Cada adulto (família ou treinador) cria a sua própria Ponte.')}
+                        </p>
+                    </div>
                 </div>
 
                 {/* ── COL 3: Argo Academy ─────────────────────────────────── */}
