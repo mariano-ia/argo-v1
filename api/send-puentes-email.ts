@@ -294,7 +294,7 @@ function buildHtml(args: {
     <tr><td style="padding-bottom:12px;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#1D1D1F;border-radius:12px;">
             <tr><td style="padding:22px 28px;">
-                <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Puente</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
+                <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Puente</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
                 <p style="margin:14px 0 0;font-size:11px;letter-spacing:0.13em;text-transform:uppercase;color:#86868B;">${t.eyebrow}</p>
                 <p style="margin:6px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;line-height:1.25;">${subject}</p>
             </td></tr>

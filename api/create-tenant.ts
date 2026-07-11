@@ -30,7 +30,7 @@ async function sendWelcomeEmail(to: string, lang: string, displayName: string, s
     const html = `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span></td></tr>
+<tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Method</span><span style="font-size:11px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span></td></tr>
 <tr><td style="padding:28px;">
 <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 12px;">${t.heading}</h2>
 <p style="font-size:14px;color:#86868B;margin:0 0 12px;line-height:1.6;">${t.b1}</p>

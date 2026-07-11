@@ -51,7 +51,7 @@ const baseStyles = `
   .footer { font-size: 12px; color: #86868B; text-align: center; margin-top: 24px; }
   .footer a { color: #86868B; }
   .brand { font-size: 14px; letter-spacing: -0.01em; color: #1D1D1F; margin-bottom: 20px; }
-  .brand b { font-weight: 800; } .brand span { font-weight: 100; }
+  .brand b { font-weight: 800; } .brand span { font-weight: 300; }
 `;
 
 function consentEmailES(args: TemplateArgs): EmailTemplate {

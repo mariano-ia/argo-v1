@@ -94,7 +94,7 @@ function buildInviteEmail(tenantName: string, actionLink: string, lang = 'es'): 
   <tr>
     <td style="background:#1D1D1F;padding:26px 28px 30px;">
       <div>
-        <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span>
+        <span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:300;">Method</span><span style="font-size:11px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
       </div>
       <p style="margin:16px 0 0;font-size:22px;font-weight:300;color:#ffffff;letter-spacing:-0.4px;line-height:1.3;">
         ${c.headline(tenantName)}
@@ -162,7 +162,7 @@ function buildAddedEmail(tenantName: string, dashUrl: string, lang = 'es'): stri
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
   <tr><td style="background:#1D1D1F;padding:26px 28px 30px;">
-    <div><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:100;">Method</span><span style="font-size:11px;color:#fff;font-weight:100;vertical-align:super;">&reg;</span></div>
+    <div><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;letter-spacing:-0.02em;color:#fff;font-weight:300;">Method</span><span style="font-size:11px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span></div>
     <p style="margin:16px 0 0;font-size:22px;font-weight:300;color:#ffffff;letter-spacing:-0.4px;line-height:1.3;">${c.headline}</p>
     <p style="margin:8px 0 0;font-size:13px;color:#86868B;">${c.sub}</p>
   </td></tr>
