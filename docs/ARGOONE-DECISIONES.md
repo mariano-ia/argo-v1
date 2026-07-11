@@ -56,6 +56,15 @@ generado vive **para siempre** en su propio link.
 - Quien no paga, se queda con su foto vieja para siempre. Excepción: el adulto recibe cada informe nuevo sin pagar, porque autoriza cada jugada.
 - Los puentes de la familia no se renuevan solos: puente sobre la foto nueva = otro $4.99.
 
+### 5.1. "Pagué, pero la jugada no se concreta" (decisión del owner, 2026-07-10)
+
+Dos caras del mismo caso: el email del adulto autorizante está muerto (o nunca hace click), o el adulto autoriza pero el niño nunca juega. Política:
+
+- **Sin reembolso automático** (coherente con "sin reembolsos"). La compra queda **en espera como una jugada pendiente**.
+- La **autorización vive 14 días**. Si vence, se puede volver a disparar (siempre al mismo adulto de la base, inmutable).
+- Si el email del adulto está genuinamente muerto: la jugada queda trabada (el niño no puede re-perfilarse, §2) y lo resuelve **soporte caso por caso**, nunca un reembolso automático.
+- El pagador nunca pierde la plata: queda como jugada a completar. La compra no se libera para otra jugada hasta completarse (dedup: un re-perfilamiento en curso por niño).
+
 ## 6. Consentimiento
 
 - El adulto que autoriza acepta, explícito en el texto: *"quien pagó este perfilamiento
