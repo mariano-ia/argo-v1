@@ -1,5 +1,15 @@
 # Informe v4 — estado y runbook de activación
 
+> **⚠️ ACTUALIZACIÓN 2026-07-11 — V4 YA ESTÁ ACTIVADO EN PRODUCCIÓN. Este doc (de abajo) quedó
+> desactualizado.** El render flip (ReportPage: v4 por default cuando `report_status` es ready/sent),
+> el email v4 (`buildHtmlV4`, keyed en report_status) y el sello server-side (`sealV4` en session.ts)
+> **ya estaban en el código de prod** desde el cutover. Estado real: `V4_SEAL="on"` **y** `V4_CAPA2="on"`
+> en Production (Vercel), `main == develop == 2e2d3d0`. Entrega v4 VIVA (Capa 1 determinista + Capa 2
+> variación IA grounded/fail-closed) en Academy y ArgoOne — informes, emails, panel de jugadores,
+> Argo Coach y TenantHome, todos con naming canónico eje×veta. Sella solo jugadas nuevas (forward-only).
+> As-built del cierre: `docs/ARGOONE-POST-CUTOVER-TAREAS.md` ("EJECUTADO as-built final").
+> Lo que dice más abajo sobre "falta el flip / render solo bajo ?engine=v4 / email pendiente" es HISTÓRICO.
+>
 > Autoritativo al 2026-07-07 (corrida autónoma). Todo **local en `develop`, sin push** (regla del owner: push necesita OK explícito). El camino **legacy sigue siendo el default vivo**: todo lo v4 es **aditivo o detrás de flag**, así que producción no cambió su comportamiento. Diseño: `METODO-FALLBACK-INFORME.md` (fail-closed) · voz aprobada: maqueta equipo/individual (artifact) · cálculo: `METODO-CALCULO-NUEVO.md`.
 
 ## TL;DR

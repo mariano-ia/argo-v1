@@ -1,5 +1,11 @@
 # ArgoOne fusión — Tareas post-cutover (handoff para sesión nueva)
 
+> **✅ COMPLETADO Y EN PRODUCCIÓN (2026-07-11).** Todas las tareas en alcance de este doc
+> están hechas, QA-verde, revisadas adversarialmente y **desplegadas en `main` (producción)**.
+> `main == develop == 2e2d3d0`. **V4 está VIVO en prod de punta a punta** (`V4_SEAL=on` +
+> `V4_CAPA2=on`) en Academy y ArgoOne. Detalle completo abajo en **"EJECUTADO (as-built final)"**.
+> El resto de este doc queda como registro histórico del plan.
+>
 > **Estado (2026-07-11):** La fusión ArgoOne está **LIVE en producción**. Cutover hecho:
 > 8 flags on/1 en Production (`ONE_UNIFIED_SKU`, `ONE_V2_COMPLETE`, `PUENTES_BRIDGES`,
 > `PUENTES_ADDON_V2`, `RENEWAL_CRON_V2`, `VITE_BRIDGES_V2=1`, `ONE_REPROFILE`, `V4_SEAL`),
@@ -93,22 +99,34 @@ Canónico: `docs/archetype-naming.md` + `docs/METODO-CALCULO-NUEVO.md` (tempo FU
 
 ---
 
-## EJECUTADO (2026-07-11, sesión ultracode) — 7 commits en `develop`, SIN PUSH
+## EJECUTADO (as-built final, 2026-07-11) — LIVE EN PRODUCCIÓN
 
-Ciclo de QA verde en cada tanda (tsc + typecheck:api + qa:unit + check:api-imports + build). Revisión adversarial multi-agente final sobre el diff completo (4 dimensiones + verificación); sus hallazgos confiables se arreglaron. Commits: `4f043b5` (P0+P1) · `56d9063` (P2) · `dd29d25` (P6) · `1cc33ef` (P7) · `23e6270` (P4) · `5e43ad3` (P9) · `3604ce1` (fixes de la revisión).
+**14 commits, `e209817..2e2d3d0`. `main == develop == 2e2d3d0`, desplegado y verificado sano
+(www.argomethod.com home 200 / /one 200 / /api/one-panel 401 sin 5xx).** Ciclo de QA verde en
+cada tanda (tsc + typecheck:api + qa:unit + check:api-imports + build). Descubrimiento y revisión
+final con workflows adversariales multi-agente (hallazgos confiables corregidos).
 
-- **P0 pricing home — HECHO.** `Landing.tsx`: ArgoOne® $12.99 (informe + puente incluido, destacada) + ArgoPuente® $4.99 (add-on informativo, sin checkout roto). Se acabó el mismatch $9.99/$12.99.
-- **P1 migración frontend — HECHO.** `/one` (ArgoOneLanding) a producto único $12.99; `/pricing` colapsado (borrada la rama V1 muerta + flag `bridgesV2`); TenantPricing a una card + comprador-neutral. Deck-slide 5 se hizo en P2.
-- **P2 naming eje×veta — HECHO** (superficies públicas/SEO + rediseño del flipcard de la home con 12 descripciones autoradas es/en/pt). index.html, LangContext, Landing (ARCHETYPES/descripciones/ROTATING_PROFILES/render, motor → "Su motor"), Deck.tsx (es+en, matriz reescrita), helpContent×3, PrivacyPage, llms.txt, argo-instituciones.html, blog-generate/blog-cron, archetypeData×3 (labels colapsados a primario puro). **Fuera:** superficies del dashboard tenant/motor v4 (ver pendientes).
-- **P6 admin analytics — HECHO.** admin-revenue (add-on $4.99 + mix new/reprofile/combo), admin-argo-one (unión puentes stripe, columna Producto), AdminRevenue/AdminArgoOne. (Corrección crítica: NO hay columna is_demo/is_synthetic en tablas de compras; predicado add-on = `provider='stripe' AND status='paid'`.)
-- **P7 legal — HECHO.** PrivacyPage sin MercadoPago (es/en/pt) + fecha; Terms §3 (ArgoOne = informe + puente incluido + ciclo 6m) y §6 reescrito al modelo de fusión (sin el funnel de upsell muerto) + fecha.
-- **P4 gates — HECHO (código).** one-checkout TTL en el dedup de reprofile; one-webhook payer-fallback (no más `no_authorizer` con plata trabada) + backfill; puentes-reminder-cron satélites por niño + dedup; session.ts COPPA ata `one_link_id` (soft). Todo inline (api/ no importa). **Fix 3 (one-complete):** sin cambio de código (niños actuales ya se estampan). **Fix 4b (puentes-start):** NO cambiado — renderizar el perfil congelado que el satélite pagó es intencional (`ARGOONE-DECISIONES` §5.7: puente sobre foto nueva = otro $4.99); el bug real era el cron, ya arreglado.
-- **P9 higiene — HECHO (código).** dashboardTranslations: keys de crédito muertas removidas + `pagoConfirmado` sin "créditos"; puentesTranslations `priceArs` borrado; deck-chat KB unificado. **Barrido in_flight: NO ejecutado** (ver pendientes).
+### Tanda 1 — migración frontend (P0-P9), commits `4f043b5`..`3604ce1`
+- **P0 + P1 — pricing / matar dos niveles.** Fixeado el mismatch en vivo ($9.99 mostrado / $12.99 cobrado). `/one` (ArgoOneLanding) a producto único $12.99 (informe + puente incluido); `/pricing` público **borrado por completo** (página + ruta + import; el `/dashboard/pricing` del tenant se conserva); TenantPricing a una card + copy comprador-neutral.
+- **P2 — naming eje×veta.** Todas las superficies públicas/SEO: index.html (JSON-LD FAQ + noscript), LangContext, Landing (ARCHETYPES + 12 descripciones autoradas es/en/pt + ROTATING_PROFILES + render, motor → "Su motor"), Deck.tsx (es+en, matriz reescrita a eje×veta), helpContent×3, PrivacyPage, llms.txt, argo-instituciones.html, blog-generate/blog-cron, archetypeData×3 (labels legacy colapsados a primario puro).
+- **P6 — admin analytics.** admin-revenue (ingreso del add-on $4.99 + mix new/reprofile/combo), admin-argo-one (unión de puentes stripe + columna Producto), AdminRevenue/AdminArgoOne. (No hay columna is_demo/is_synthetic en las tablas de compras; predicado add-on = `provider='stripe' AND status='paid'`.)
+- **P7 — legal.** PrivacyPage sin MercadoPago (es/en/pt) + fecha; Terms §3 (ArgoOne = informe + puente incluido + ciclo 6m) y §6 reescrito al modelo de fusión (sin el funnel de upsell muerto).
+- **P4 — gates de plata/datos.** one-checkout TTL en el dedup de reprofile; one-webhook payer-fallback (no más `no_authorizer` con plata trabada) + backfill; puentes-reminder-cron satélites por niño + dedup; session.ts COPPA ata `one_link_id` (soft). Todo inline. `puentes-start` NO cambiado a propósito (render del perfil congelado que el satélite pagó = intencional, `ARGOONE-DECISIONES` §5.7).
+- **P9 — higiene (código).** créditos/ARS muertos removidos; deck-chat KB unificado.
 
-### Pendiente / decisiones del owner (surfaceado, no ejecutado)
-1. **Barrido DB de 10 in_flight >7d:** el clasificador de auto-mode bloqueó la mutación de datos de prod. Además, hallazgo: NO bloquean nada activo (todos los guards de `in_flight` usan ventana de 30 min). Es limpieza opcional. SQL reversible (soft-delete) listo para correr con aprobación:
-   `UPDATE perfilamientos SET deleted_at = now() WHERE status='in_flight' AND created_at < now() - interval '7 days' AND deleted_at IS NULL;` (prod `luutdozbhinfiogugjbv`).
-2. **Motor v4 / dashboard tenant (naming eje×motor vivo):** `TenantHome.tsx` `ARCHETYPE_LABELS`, `argosEngine.ts` `TENDENCIA_LABELS_I18N` ("brújula social", + copia en la región GENERATED de `tenant-chat.ts`), `TenantGroups/TenantPlayers` mocks. Son la migración del motor v4 (shadow-live), fuera de esta tanda. Emiten nombres eje×motor / "brújula" a usuarios logueados hasta que el v4 se prenda.
-3. **Funnel demo-unlock `$9.99`:** `api/unlock-checkout.ts` cobra $9.99 por el informe completo (sin puente) desde el demo ("Jugar gratis"). Diverge del modelo de fusión ($12.99). Pre-existente, fuera del changeset y de los targets del doc. Decisión de producto: ¿migrar a fusión o dejar el demo-unlock como entrada report-only más barata? (No muestra $9.99 en ninguna superficie Argo, solo en Stripe.)
-4. **Sistema de créditos a nivel DB:** `add_credits` RPC + `security-canary` probe + endpoint huérfano `api/create-checkout.ts` (labels con "créditos" + guiones). Decomiso = decisión + cambio de DB, no tocado.
-5. **Verificación humana (owner):** cobro real de Stripe punta a punta, render mobile/pixel-match, deliverability. **Push:** los 7 commits están en `develop` local, SIN pushear (esperando OK del owner; al pushear, `git push origin develop:main` mantiene sync).
+### Tanda 2 — directivas del owner tras ver develop, commits `ddf22a1`..`63d3a8a`
+- **Home widget = ArgoOne® + ArgoAcademy® (2 columnas).** Quitada la columna de ArgoPuente® (el $4.99 no es un plan del home; vive en el flujo del link del adulto). `/pricing` borrado.
+- **Demo unlock → ArgoOne $12.99 con Puente.** `unlock-checkout` precio 1299; `handleUnlockPaid` ahora setea full_access + mintea el puente comp del comprador + manda email con informe + puente (antes era informe solo por $9.99).
+- **Créditos "de todos lados".** Borrado el endpoint huérfano `api/create-checkout.ts`, removidos los probes add_credits/deduct_credit del canary + expected-denied.json, renombrada la key `noCredits`→`rosterFull`. **DROPeadas las 2 RPCs** `add_credits`/`deduct_credit` en la DB prod. La columna `tenants.credits_remaining` se **DEJA** (decisión del owner) — quedó 100% huérfana (0 código / 0 policies / 0 RPCs).
+- **V4 naming en el dashboard.** TenantHome ahora seal-aware canónico (`report_v4.hero.arquetipoLabel ?? getArchetypeLabel(eje)`, retirado el mapa eje×motor); descriptor de veta "brújula social" → "con don para conectar" en argosEngine + tenant-chat (fuera de las regiones GENERATED; check:coach-gen verde).
+- **Barrido in_flight.** 10 perfilamientos in_flight >7d soft-deleted (reversible). Nota: no bloqueaban nada activo (los guards usan ventana de 30 min).
+
+### Cutover a producción + V4 activado, commit `2e2d3d0`
+- **`git push origin develop:main`** (fast-forward `e209817..63d3a8a`) — todo lo de estos días quedó definitivamente en `main`.
+- **V4 VIVO en prod de punta a punta.** `V4_SEAL="on"` (ya estaba desde el cutover; el render flip + email v4 + sealV4 ya estaban en el código de prod) → informes + emails + panel de jugadores + Argo Coach + TenantHome, todos con naming canónico eje×veta, en **Academy (tenant)** y **ArgoOne (consumidor)**. Sella solo jugadas nuevas (forward-only; las viejas quedan legacy). Fail-closed: un informe que no pasa el gate cae en "preparando" (cola de retenidos + cron para liberar).
+- **`V4_CAPA2="on"`** en prod (variación con IA, Capa 2): la IA solo reescribe la prosa; arquetipo/ejes/contadores/palabras curadas quedan inmutables de Capa 1; 3 recaudos (distinción <55% trigramas, hechos preservados, gate completo) y ante cualquier fallo → Capa 1 (piso). Commit trigger `2e2d3d0` para que el runtime lo tome.
+- Flags Vercel: se setean con `vercel env add <NAME> <env> [branch] --value <v> --force --no-sensitive` (el stdin setea VACÍO en CLI 54.9.1). V4_SEAL y V4_CAPA2 = `on` en Production; develop en sync.
+
+### Notas / seguimiento
+- **`credits_remaining`** (columna) sigue en la DB por decisión del owner (inerte, inofensiva). Si algún día se quiere borrar: `ALTER TABLE public.tenants DROP COLUMN credits_remaining;` (el auto-mode classifier bloquea los DROP de columnas por seguridad; correr con OK explícito).
+- **Verificación humana (owner):** cobro real de Stripe punta a punta, render mobile/pixel-match, deliverability de emails, y el eyeball de informes v4 reales en prod (`report_qc.pass` como tasa de gate).
