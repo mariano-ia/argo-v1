@@ -698,14 +698,11 @@ const PricingSection: React.FC<{
                 </p>
             </div>
 
-            {/* Three columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-stretch">
+            {/* Two products: consumer (ArgoOne®) + institution (ArgoAcademy®) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch max-w-3xl mx-auto">
 
-                {/* ── COL 1: ArgoOne® (informe del niño + puente incluido, destacada) ─── */}
+                {/* ── ArgoOne® (informe del niño + puente incluido) ── */}
                 <div style={{ background: 'rgba(149,95,181,0.02)', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 8px 28px rgba(149,95,181,0.18)', display: 'flex', flexDirection: 'column', border: '2px solid #955FB5', position: 'relative' }}>
-                    <span style={{ position: 'absolute', top: '-11px', left: '50%', transform: 'translateX(-50%)', background: '#955FB5', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '3px 14px', borderRadius: '20px', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>
-                        {L('Recomendado', 'Recommended', 'Recomendado')}
-                    </span>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="One" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
                         {L('El informe del niño, con tu Puente incluido', "The child's report, with your Bridge included", 'O relatório da criança, com a sua Ponte incluída')}
@@ -735,28 +732,7 @@ const PricingSection: React.FC<{
                     </button>
                 </div>
 
-                {/* ── COL 2: ArgoPuente® (add-on del adulto, informativo) ────────────────── */}
-                <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-                    <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="Puente" /></p>
-                    <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '12px' }}>
-                        {L('El Puente de otro adulto con un niño que ya jugó', "Another adult's Bridge with a child who already played", 'A Ponte de outro adulto com uma criança que já jogou')}
-                    </p>
-                    <p style={{ marginBottom: '18px' }}><span style={{ fontSize: '30px', fontWeight: 700, color: '#1D1D1F', letterSpacing: '-0.03em' }}>$4.99</span></p>
-                    <ul style={{ listStyle: 'none', flex: 1, marginBottom: '16px' }}>
-                        <ReportItem title={L('Tu estilo natural', 'Your natural style', 'Seu estilo natural')} desc={L('Cómo acompañas desde tu propio estilo.', 'How you support from your own style.', 'Como você acompanha a partir do seu estilo.')} />
-                        <ReportItem title={L('La previa', 'Before the game', 'O pré-jogo')} desc={L('Cómo estar antes de que juegue.', 'How to be before they play.', 'Como estar antes de ele jogar.')} />
-                        <ReportItem title={L('La frustración', 'Frustration', 'A frustração')} desc={L('Acompañar cuando algo no sale.', 'Being there when something goes wrong.', 'Acompanhar quando algo não sai.')} />
-                        <ReportItem title={L('La conversación', 'The conversation', 'A conversa')} desc={L('Qué decir después del partido.', 'What to say after the match.', 'O que dizer depois do jogo.')} />
-                        <ReportItem title={L('El largo plazo', 'The long run', 'O longo prazo')} desc={L('Cuidar su vínculo por el deporte.', 'Protecting their bond with sport.', 'Cuidar do vínculo dele com o esporte.')} />
-                    </ul>
-                    <div style={{ borderRadius: '12px', padding: '12px 14px', border: '1px solid #E8E8ED', background: '#F8F8FA' }}>
-                        <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, margin: 0 }}>
-                            {L('Se suma desde el enlace que comparte quien acompaña al niño. Cada adulto (familia o entrenador) crea su propio Puente.', 'Added from the link shared by whoever accompanies the child. Each adult (family or coach) creates their own Bridge.', 'Adiciona-se pelo link que compartilha quem acompanha a criança. Cada adulto (família ou treinador) cria a sua própria Ponte.')}
-                        </p>
-                    </div>
-                </div>
-
-                {/* ── COL 3: Argo Academy ─────────────────────────────────── */}
+                {/* ── ArgoAcademy® ─────────────────────────────────── */}
                 <div style={{ background: '#fff', borderRadius: '16px', padding: '28px 24px', boxShadow: '0 2px 12px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
                     <p style={{ fontSize: '19px', color: '#1D1D1F', marginBottom: '2px' }}><ProductName rest="Academy" /></p>
                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5, marginBottom: '18px' }}>
