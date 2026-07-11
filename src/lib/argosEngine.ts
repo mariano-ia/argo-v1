@@ -67,9 +67,9 @@ function injectNombre(text: string, nombre: string): string {
 }
 
 const TENDENCIA_LABELS_I18N: Record<string, Record<string, string>> = {
-    es: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
-    en: { D: 'with a spark of action', I: 'with a social compass', S: 'with firm roots', C: 'with an eye for detail' },
-    pt: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
+    es: { D: 'con chispa de acción', I: 'con don para conectar', S: 'con raíz firme', C: 'con ojo de detalle' },
+    en: { D: 'with a spark of action', I: 'with a gift for connecting', S: 'with firm roots', C: 'with an eye for detail' },
+    pt: { D: 'com faísca de ação', I: 'com um dom para conectar', S: 'com raiz firme', C: 'com olho de detalhe' },
 };
 
 export function getLocalizedTendenciaLabel(axis: string, lang: string = 'es'): string {

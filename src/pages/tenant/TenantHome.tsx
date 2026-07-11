@@ -13,40 +13,21 @@ import { calcAxisDistribution, getGroupTypes } from '../../lib/groupBalance';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
 import type { MemberProfile } from '../../lib/groupBalance';
 import { AXIS_COLORS, AXIS_CHIP_STYLE, AXIS_LABELS } from '../../lib/designTokens';
+import { getArchetypeLabel } from '../../lib/archetypeContentV4';
+import type { ReportV4 } from '../../lib/reportV4';
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
-interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; }
+interface SessionRow { id: string; child_name: string; child_age: number; adult_name: string; adult_email: string; sport: string | null; archetype_label: string; eje: string; motor: string; eje_secundario: string | null; lang: string | null; created_at: string; report_v4?: ReportV4 | null; report_status?: string | null; }
 
 
+// Short, tempo-free descriptor per DISC axis. The old eje×motor scheme is retired;
+// the archetype name comes from the sealed v4 report (blend name) or the pure eje.
 const MICRO_DESC: Record<string, Record<string, string>> = {
-    'D-Rápido': { es: 'Lidera con acción directa', en: 'Leads with direct action', pt: 'Lidera com ação direta' },
-    'D-Medio':  { es: 'Decide con propósito claro', en: 'Decides with clear purpose', pt: 'Decide com propósito claro' },
-    'D-Lento':  { es: 'Persiste con determinación firme', en: 'Persists with steady resolve', pt: 'Persiste com determinação firme' },
-    'I-Rápido': { es: 'Contagia entusiasmo al grupo', en: 'Spreads enthusiasm to the group', pt: 'Contagia o grupo com entusiasmo' },
-    'I-Medio':  { es: 'Conecta a través del vínculo', en: 'Connects through relationship', pt: 'Conecta pelo vínculo' },
-    'I-Lento':  { es: 'Observa y conecta en profundidad', en: 'Observes and connects deeply', pt: 'Observa e conecta em profundidade' },
-    'S-Rápido': { es: 'Responde rápido para apoyar', en: 'Responds quickly to support', pt: 'Responde rápido para apoiar' },
-    'S-Medio':  { es: 'Sostiene con consistencia', en: 'Sustains with consistency', pt: 'Sustenta com consistência' },
-    'S-Lento':  { es: 'Estabiliza desde la calma', en: 'Stabilizes from a place of calm', pt: 'Estabiliza a partir da calma' },
-    'C-Rápido': { es: 'Analiza y ejecuta al instante', en: 'Analyzes and acts instantly', pt: 'Analisa e executa na hora' },
-    'C-Medio':  { es: 'Procesa con método y precisión', en: 'Processes with method and precision', pt: 'Processa com método e precisão' },
-    'C-Lento':  { es: 'Observa antes de intervenir', en: 'Observes before acting', pt: 'Observa antes de intervir' },
-};
-
-const ARCHETYPE_LABELS: Record<string, Record<string, string>> = {
-    'D-Rápido': { es: 'Impulsor Dinámico',    en: 'Dynamic Driver',        pt: 'Impulsionador Dinâmico' },
-    'D-Medio':  { es: 'Impulsor Rítmico',      en: 'Rhythmic Driver',       pt: 'Impulsionador Rítmico' },
-    'D-Lento':  { es: 'Impulsor Sereno',       en: 'Serene Driver',         pt: 'Impulsionador Sereno' },
-    'I-Rápido': { es: 'Conector Dinámico',     en: 'Dynamic Connector',     pt: 'Conector Dinâmico' },
-    'I-Medio':  { es: 'Conector Rítmico',      en: 'Rhythmic Connector',    pt: 'Conector Rítmico' },
-    'I-Lento':  { es: 'Conector Sereno',       en: 'Serene Connector',      pt: 'Conector Sereno' },
-    'S-Rápido': { es: 'Sostenedor Dinámico',   en: 'Dynamic Sustainer',     pt: 'Sustentador Dinâmico' },
-    'S-Medio':  { es: 'Sostenedor Rítmico',    en: 'Rhythmic Sustainer',    pt: 'Sustentador Rítmico' },
-    'S-Lento':  { es: 'Sostenedor Sereno',     en: 'Serene Sustainer',      pt: 'Sustentador Sereno' },
-    'C-Rápido': { es: 'Estratega Dinámico',    en: 'Dynamic Strategist',    pt: 'Estrategista Dinâmico' },
-    'C-Medio':  { es: 'Estratega Rítmico',     en: 'Rhythmic Strategist',   pt: 'Estrategista Rítmico' },
-    'C-Lento':  { es: 'Estratega Observador',  en: 'Observant Strategist',  pt: 'Estrategista Observador' },
-};
+    D: { es: 'Lidera con acción directa', en: 'Leads with direct action', pt: 'Lidera com ação direta' },
+    I: { es: 'Conecta a través del vínculo', en: 'Connects through relationship', pt: 'Conecta pelo vínculo' },
+    S: { es: 'Sostiene con consistencia', en: 'Sustains with consistency', pt: 'Sustenta com consistência' },
+    C: { es: 'Procesa con método y precisión', en: 'Processes with method and precision', pt: 'Processa com método e precisão' },
+}
 
 /* ── Activity digest. 5 cases ───────────────────────────────────────────── */
 function getActivityDigest(sessions: SessionRow[], lang: string): string {
@@ -138,9 +119,9 @@ function getDistributionDigest(sessions: SessionRow[], lang: string): string {
 
 /* ── Dev mock data ───────────────────────────────────────────────────────── */
 const DEV_SESSIONS: SessionRow[] = [
-    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'Impulsor Dinámico', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
-    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'Conector Rítmico', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
-    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'Estratega Observador', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 21 * 86400000).toISOString() },
+    { id: 'dev-1', child_name: 'Valentina López', child_age: 11, adult_name: 'Carlos López', adult_email: 'carlos@example.com', sport: 'Fútbol', archetype_label: 'Impulsor con veta Conector', eje: 'D', motor: 'Rápido', eje_secundario: 'I', lang: 'es', created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
+    { id: 'dev-2', child_name: 'Tomás Herrera', child_age: 9, adult_name: 'Ana Herrera', adult_email: 'ana@example.com', sport: 'Básquet', archetype_label: 'Conector con veta Sostenedor', eje: 'I', motor: 'Medio', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 14 * 86400000).toISOString() },
+    { id: 'dev-3', child_name: 'Sofía Martínez', child_age: 13, adult_name: 'Luis Martínez', adult_email: 'luis@example.com', sport: 'Natación', archetype_label: 'Estratega con veta Sostenedor', eje: 'C', motor: 'Lento', eje_secundario: 'S', lang: 'es', created_at: new Date(Date.now() - 21 * 86400000).toISOString() },
 ];
 
 /* ── Component ───────────────────────────────────────────────────────────── */
@@ -434,9 +415,11 @@ export const TenantHome: React.FC = () => {
                                 {sessions.slice(0, 3).map((s, idx) => {
                                     const chip = AXIS_CHIP_STYLE[s.eje] ?? AXIS_CHIP_STYLE.C;
                                     const dot = AXIS_COLORS[s.eje] ?? '#6366f1';
-                                    const key = `${s.eje}-${s.motor}`;
-                                    const micro = MICRO_DESC[key]?.[lang] ?? '';
-                                    const archetypeLabel = ARCHETYPE_LABELS[key]?.[lang] ?? s.archetype_label;
+                                    const sealed = s.report_status === 'ready' || s.report_status === 'sent';
+                                    const v4Label = (sealed && s.report_v4?.hero) ? s.report_v4.hero.arquetipoLabel : null;
+                                    // v4 blend name when sealed; otherwise the PRIMARY eje only (never eje×tempo).
+                                    const archetypeLabel = v4Label ?? getArchetypeLabel(s.eje as 'D' | 'I' | 'S' | 'C', lang as 'es' | 'en' | 'pt');
+                                    const micro = MICRO_DESC[s.eje]?.[lang] ?? '';
                                     return (
                                         <motion.div
                                             key={s.id}

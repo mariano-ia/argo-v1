@@ -771,9 +771,9 @@ Resposta correta (primeiro turno, falta contexto): "O que você descreve costuma
 // ─── Tendencia labels per language ──────────────────────────────────────────
 
 const TENDENCIA: Record<string, Record<string, string>> = {
-    es: { D: 'con chispa de acción', I: 'con brújula social', S: 'con raíz firme', C: 'con ojo de detalle' },
-    en: { D: 'with a spark of action', I: 'with a social compass', S: 'with firm roots', C: 'with an eye for detail' },
-    pt: { D: 'com faísca de ação', I: 'com bússola social', S: 'com raiz firme', C: 'com olho de detalhe' },
+    es: { D: 'con chispa de acción', I: 'con don para conectar', S: 'con raíz firme', C: 'con ojo de detalle' },
+    en: { D: 'with a spark of action', I: 'with a gift for connecting', S: 'with firm roots', C: 'with an eye for detail' },
+    pt: { D: 'com faísca de ação', I: 'com um dom para conectar', S: 'com raiz firme', C: 'com olho de detalhe' },
 };
 
 
@@ -2476,9 +2476,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 S: ['impulsor', 'driver', 'conector', 'connector', 'estratega', 'strategist'],
                 C: ['impulsor', 'driver', 'conector', 'connector', 'sostén', 'sostenedor', 'sustainer'],
             };
-            // A player's SECONDARY axis (brújula) is legitimate to mention, so don't
-            // flag it as a wrong-axis attribution (e.g. an S player with a D compass
-            // discussed as "su brújula de Impulsor").
+            // A player's SECONDARY axis (veta) is legitimate to mention, so don't
+            // flag it as a wrong-axis attribution (e.g. an S player with a D veta
+            // discussed as "su veta de Impulsor").
             const axisWords: Record<string, string[]> = {
                 D: ['impulsor', 'driver'], I: ['conector', 'connector'],
                 S: ['sostén', 'sostenedor', 'sustainer'], C: ['estratega', 'strategist'],
