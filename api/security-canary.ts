@@ -29,8 +29,6 @@ const FORBIDDEN = {
   deletes: ['perfilamientos', 'children', 'leads', 'one_links', 'one_purchases', 'admin_audit_log'],
   rpcs: [
     { name: 'merge_children', args: { p_survivor: NIL_UUID, p_absorbed: NIL_UUID, p_actor: 'security-canary' } },
-    { name: 'add_credits', args: { p_tenant_id: NIL_UUID, p_credits: 0, p_stripe_event_id: 'security-canary', p_pack_id: 'security-canary' } },
-    { name: 'deduct_credit', args: { tenant_slug: 'security-canary-nonexistent' } },
     { name: 'increment_ai_queries', args: { p_tenant_id: NIL_UUID } },
   ],
 };

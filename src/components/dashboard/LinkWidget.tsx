@@ -8,13 +8,13 @@ interface Props {
     disabled?: boolean;
 }
 
-const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string; noCredits: string; why: string }> = {
+const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copied: string; rosterFull: string; why: string }> = {
     es: {
         label: 'Invita deportistas a jugar con tu link',
         tooltip: 'Al compartir este link, los deportistas pueden completar la experiencia y sus perfiles quedan asociados a la plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
-        noCredits: 'Tu cupo está lleno. Archiva jugadores para liberar lugar.',
+        rosterFull: 'Tu cupo está lleno. Archiva jugadores para liberar lugar.',
         why: '¿Por qué?',
     },
     en: {
@@ -22,7 +22,7 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         tooltip: 'When you share this link, athletes can complete the experience and their profiles are linked to your platform.',
         copy: 'Copy link',
         copied: 'Copied',
-        noCredits: 'Your roster is full. Archive players to free up space.',
+        rosterFull: 'Your roster is full. Archive players to free up space.',
         why: 'Why?',
     },
     pt: {
@@ -30,7 +30,7 @@ const TEXTS: Record<string, { label: string; tooltip: string; copy: string; copi
         tooltip: 'Ao compartilhar este link, os atletas podem completar a experiencia e seus perfis ficam associados à plataforma.',
         copy: 'Copiar link',
         copied: 'Copiado',
-        noCredits: 'Seu elenco está cheio. Arquive jogadores para liberar espaço.',
+        rosterFull: 'Seu elenco está cheio. Arquive jogadores para liberar espaço.',
         why: 'Por quê?',
     },
 };
@@ -62,14 +62,14 @@ export const LinkWidget: React.FC<Props> = ({ slug, lang, disabled = false }) =>
                 </button>
                 {showTooltip && (
                     <div className="absolute top-full right-0 mt-1.5 z-50 w-[260px] px-3 py-2.5 rounded-lg bg-argo-navy text-white text-[11px] leading-relaxed text-left shadow-lg">
-                        {disabled ? t.noCredits : t.tooltip}
+                        {disabled ? t.rosterFull : t.tooltip}
                     </div>
                 )}
             </div>
             <button
                 onClick={handleCopy}
                 disabled={disabled}
-                title={disabled ? t.noCredits : undefined}
+                title={disabled ? t.rosterFull : undefined}
                 className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[11px] font-semibold transition-colors ${
                     disabled
                         ? 'bg-argo-bg border border-argo-border text-argo-light cursor-not-allowed'
