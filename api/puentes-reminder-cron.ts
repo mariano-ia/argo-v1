@@ -237,6 +237,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const candList = cands ?? [];
             const childIds = [...new Set(candList.map(c => c.child_id).filter(Boolean))] as string[];
             const latestByChild = new Map<string, string>();
+            // All resolved perfilamiento ids per child. Satellites pin their puente to
+            // the perfilamiento they bought against, and perfilamientos are append-only,
+            // so a prior-cycle satellite must be looked up across ALL the child's
+            // perfilamientos, not just the current one.
+            const perfIdsByChild = new Map<string, string[]>();
             if (childIds.length) {
                 const { data: allPerfs } = await sb
                     .from('perfilamientos')
@@ -246,7 +251,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .is('deleted_at', null)
                     .order('created_at', { ascending: false });
                 for (const p of allPerfs ?? []) {
-                    if (p.child_id && !latestByChild.has(p.child_id)) latestByChild.set(p.child_id, p.id);
+                    if (p.child_id) {
+                        if (!latestByChild.has(p.child_id)) latestByChild.set(p.child_id, p.id);
+                        const arr = perfIdsByChild.get(p.child_id) ?? [];
+                        arr.push(p.id);
+                        perfIdsByChild.set(p.child_id, arr);
+                    }
                 }
             }
             const toSend: typeof candList = [];
@@ -270,14 +280,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const lang = c.lang || 'es';
                 const responsible = (c.adult_email || '').trim();
                 if (!responsible) continue;
-                // Satellites: other adults with a PAID puente toward THIS child.
+                // Satellites: other adults with a PAID puente toward THIS child,
+                // across ALL of the child's perfilamientos (a prior-cycle satellite
+                // pinned to an old perfilamiento id must still be found). Deduped by
+                // recipient so an adult who bought across cycles is nudged once, with
+                // their freshest magic link.
+                const childPerfIds = (c.child_id ? perfIdsByChild.get(c.child_id) : null) ?? [c.id];
                 const { data: sats } = await sb
                     .from('puentes_purchases')
-                    .select('recipient_email, magic_token, lang')
-                    .eq('source_session_id', c.id)
-                    .eq('status', 'paid');
-                const satellites = (sats ?? []).filter(s =>
-                    s.recipient_email && s.recipient_email.trim().toLowerCase() !== responsible.toLowerCase());
+                    .select('recipient_email, magic_token, lang, created_at')
+                    .in('source_session_id', childPerfIds)
+                    .eq('status', 'paid')
+                    .order('created_at', { ascending: false });
+                const seenSat = new Set<string>();
+                const satellites = (sats ?? []).filter(s => {
+                    const email = (s.recipient_email || '').trim().toLowerCase();
+                    if (!email || email === responsible.toLowerCase()) return false;
+                    if (seenSat.has(email)) return false;
+                    seenSat.add(email);
+                    return true;
+                });
 
                 if (dryRun) {
                     preview.push({ perfilamiento_id: c.id, to: responsible, satellites: satellites.map(s => s.recipient_email as string) });

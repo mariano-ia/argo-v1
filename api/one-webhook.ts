@@ -700,7 +700,7 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
         .is('deleted_at', null)
         .maybeSingle();
     if (!child) return { branch: 'child_gone' };
-    const responsible = String(child.responsible_adult_email || '').trim().toLowerCase();
+    let responsible = String(child.responsible_adult_email || '').trim().toLowerCase();
     const childFirst = (child.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
 
     // Single source of truth for the 6-month decision.
@@ -753,10 +753,25 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
     // ── EXPIRED: the child re-plays. Mint a replay slot + email the IMMUTABLE
     //    responsible adult for authorization (never an address the payer chose). ──
     if (!responsible) {
-        // No authorizer on record → cannot re-profile (§2). Hold the purchase.
-        await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'no_authorizer' }).eq('id', purchaseId);
-        await alertOwner('[Argo] Re-perfilado sin adulto autorizante', `La compra ${purchaseId} (niño ${purchase.child_id}) no tiene responsible_adult_email. Queda en espera; sin reembolso automático.`);
-        return { branch: 'no_authorizer' };
+        if (payer) {
+            // No authorizer on record (a legacy pre-fusion child carries NULL
+            // responsible_adult_email). The payer already cleared the checkout
+            // authorization gate (isResponsible || isBuyer) and is a real adult
+            // who explicitly paid, so adopt them as the immutable responsible
+            // adult instead of stranding the money. Backfill the child so future
+            // cycles are clean. Then fall through to the normal authorize+play path.
+            responsible = payer;
+            await sb.from('children')
+                .update({ responsible_adult_email: payer })
+                .eq('id', purchase.child_id)
+                .is('responsible_adult_email', null);
+        } else {
+            // Truly no email anywhere (should be unreachable — checkout requires a
+            // payer email). Hold the purchase and alert; no automatic refund.
+            await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'no_authorizer' }).eq('id', purchaseId);
+            await alertOwner('[Argo] Re-perfilado sin adulto autorizante', `La compra ${purchaseId} (niño ${purchase.child_id}) no tiene responsible_adult_email ni email del pagador. Queda en espera; sin reembolso automático.`);
+            return { branch: 'no_authorizer' };
+        }
     }
 
     // Per-child idempotency (backstop to the checkout dedup + Stripe retries): if

@@ -341,7 +341,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
                 const { data: consent, error: consentErr } = await sb
                     .from('parental_consents')
-                    .select('token, status, expires_at, child_name, child_age, consumed_at')
+                    .select('token, status, expires_at, child_name, child_age, consumed_at, one_link_id')
                     .eq('token', consent_token)
                     .maybeSingle();
                 if (consentErr) {
@@ -353,6 +353,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (consent.consumed_at) return res.status(403).json({ error: 'consent_already_used' });
                 if (new Date(consent.expires_at) < new Date()) return res.status(403).json({ error: 'consent_expired' });
                 if (consent.child_name !== child_name || consent.child_age !== child_age) {
+                    return res.status(403).json({ error: 'consent_mismatch' });
+                }
+                // Bind the consent to the slot it was issued for (mirrors the reprofile
+                // path above). Soft check: only enforced when both ids are present, so
+                // legacy or tenant consents without a one_link_id are unaffected.
+                if (consent.one_link_id && typeof one_link_id === 'string' && one_link_id && consent.one_link_id !== one_link_id) {
                     return res.status(403).json({ error: 'consent_mismatch' });
                 }
             }

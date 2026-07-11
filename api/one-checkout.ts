@@ -145,15 +145,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Dedup: one re-profile in flight per child. A second purchase (e.g. the
             // buyer AND the adult both paying) would double-play the child inside the
             // 6-month window — reject it before charging.
-            const { data: inFlight } = await sb
+            //
+            // TTL guard: no cron reaps one_purchases, so a row must not block forever.
+            // A 'pending_payment' row means a checkout was created but Stripe payment
+            // never confirmed — it only blocks within the Stripe checkout window
+            // (~24h). An 'awaiting_auth' row means the authorizing adult was emailed —
+            // it only blocks within the 14-day consent TTL (matches the consent
+            // expires_at set by one-webhook). Stale attempts are ignored so an
+            // abandoned checkout never bricks the child for re-profiling.
+            const { data: inFlightRows } = await sb
                 .from('one_purchases')
-                .select('id')
+                .select('id, reprofile_status, created_at')
                 .eq('child_id', bodyChildId)
                 .eq('kind', 'reprofile')
-                .in('reprofile_status', ['pending_payment', 'awaiting_auth'])
-                .limit(1)
-                .maybeSingle();
-            if (inFlight) {
+                .in('reprofile_status', ['pending_payment', 'awaiting_auth']);
+            const nowMs = Date.now();
+            const PENDING_TTL_MS = 24 * 60 * 60 * 1000;       // Stripe checkout session TTL
+            const AWAITING_TTL_MS = 14 * 24 * 60 * 60 * 1000; // parental consent TTL
+            const blocking = (inFlightRows ?? []).some((r: any) => {
+                const ageMs = nowMs - new Date(r.created_at).getTime();
+                if (r.reprofile_status === 'pending_payment') return ageMs < PENDING_TTL_MS;
+                if (r.reprofile_status === 'awaiting_auth') return ageMs < AWAITING_TTL_MS;
+                return false;
+            });
+            if (blocking) {
                 return res.status(409).json({ error: 'reprofile_already_in_progress' });
             }
             reprofileChildId = bodyChildId;
