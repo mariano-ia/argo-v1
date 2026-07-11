@@ -57,11 +57,26 @@ export function gateReportV4(report: unknown, ficha: unknown, nombre: string, la
     const low = text.toLowerCase();
     for (const w of V4_PROHIBITED) { if (new RegExp(`\\b${w}\\b`, 'i').test(low)) return hold('guard_prohibido'); }
     const n = nm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const det = [
+    // Deterministic-labeling guard, per language (a report must not decree what the
+    // child IS/WILL ALWAYS be). The es set ran for all langs before, which is
+    // harmless (Spanish anchors don't match en/pt) but LEAKY — it let deterministic
+    // English/Portuguese phrasing through. Now each language has parity.
+    const detEs = [
         new RegExp(`(?:${n}|él|ella|el niño|la niña)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
         new RegExp(`(?:${n}|él|ella)\\s+(?:siempre|nunca|jamás)(?![\\p{L}])`, 'iu'),
         /\bva a ser\b/iu, /\bsin duda\b/iu, /\bnació para\b/iu, /\bdefinitivamente\b/iu,
     ];
+    const detEn = [
+        new RegExp(`(?:${n}|he|she|the child)\\s+is\\s+an?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${n}|he|she)\\s+(?:always|never)(?![\\p{L}])`, 'iu'),
+        /\bwill always\b/iu, /\bwithout a doubt\b/iu, /\bborn to\b/iu, /\bis going to be\b/iu, /\bdefinitely\b/iu,
+    ];
+    const detPt = [
+        new RegExp(`(?:${n}|ele|ela|a criança|o menino|a menina)\\s+é\\s+um[a]?\\s+\\p{L}`, 'iu'),
+        new RegExp(`(?:${n}|ele|ela)\\s+(?:sempre|nunca|jamais)(?![\\p{L}])`, 'iu'),
+        /\bvai ser\b/iu, /\bsem dúvida\b/iu, /\bnasceu para\b/iu, /\bcom certeza\b/iu, /\bdefinitivamente\b/iu,
+    ];
+    const det = lang === 'en' ? detEn : lang === 'pt' ? detPt : detEs;
     for (const re of det) { if (re.test(text)) return hold('guard_determinista'); }
     if (lang === 'es' && V4_VOSEO.test(text)) return hold('guard_voseo'); // voseo: solo español
     if (/[—–]/.test(text)) return hold('guard_guion'); // no-guiones: regla universal (es/en/pt)

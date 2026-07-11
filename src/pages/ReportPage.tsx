@@ -555,13 +555,16 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     // Locked rows (trial/demo without full_access) keep the LEGACY path so the abridged report +
     // upsell (revenue) is preserved. Held/pending already short-circuited above ("preparando").
     // Inert until V4_SEAL is on (no row is sealed 'ready'/'sent' => nothing renders v4 by default).
-    // Coherence with the email: the v4 email is es-only for now (its chrome isn't translated yet), so
-    // the DEFAULT v4 web render is also es-only — en/pt sealed rows stay fully legacy (web + email) until
-    // the email is translated, keeping each language coherent. The ?engine=v4 preview works in any language.
+    // i18n (2026-07-11): the v4 CONTENT (COPY[lang]), the v4 EMAIL (buildHtmlV4 es/en/pt) and this
+    // VIEW (ReportV4View reads all copy from the report) are all language-aware, so the DEFAULT v4
+    // render now serves es/en/pt alike. The previous `lang === 'es'` gate was a stale guard from when
+    // the v4 email wasn't yet translated. Safety is structural: a sealed row already passed the
+    // server gate (>=5 secciones, >=900 chars, no placeholder/basura) in ITS language, so a sealed
+    // en/pt row is a complete en/pt report. The ?engine=v4 preview works in any language.
     const wantV4 = new URLSearchParams(window.location.search).get('engine') === 'v4';
     const isSealedV4 = !!session.report_v4 && (session.report_status === 'ready' || session.report_status === 'sent');
     const paywallLocked = (session.tenant_plan === 'trial' || session.is_demo) && !session.full_access;
-    const showV4 = !!session.report_v4 && (wantV4 || (isSealedV4 && !paywallLocked && lang === 'es'));
+    const showV4 = !!session.report_v4 && (wantV4 || (isSealedV4 && !paywallLocked));
     if (showV4 && session.report_v4) {
         return (
             <div className="min-h-screen bg-argo-neutral" style={{ fontFamily: 'Inter, -apple-system, sans-serif' }}>

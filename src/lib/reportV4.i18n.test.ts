@@ -80,7 +80,9 @@ test('label + títulos en el idioma del informe', () => {
   assert.match(rPt.hero.arquetipoLabel, PT_ARQ, 'pt arquetipoLabel');
   assert.ok(rEn.secciones.some((s) => s.titulo === 'Their mix'), 'en título "Their mix"');
   assert.ok(rPt.secciones.some((s) => s.titulo === 'Sua mistura'), 'pt título "Sua mistura"');
-  // veta: en usa "with a ... lean", pt "com veta ...", es "con veta ..."
-  assert.ok(rEn.hero.veta && rEn.hero.veta.pre === 'with a' && rEn.hero.veta.post === 'lean', 'en veta pieces');
-  assert.ok(rPt.hero.veta && rPt.hero.veta.pre === 'com veta' && rPt.hero.veta.post === '', 'pt veta pieces');
+  // veta: graduada por banda (B2) en cada idioma — en usa "with ..." (tones/lean/…),
+  // pt "com ..." (tons/veta/…), es "con ..." (tonos/veta/…). Chequeamos el idioma del
+  // conector, no la banda exacta, para no romper cuando la graduación cambia.
+  assert.ok(rEn.hero.veta && /^with\b/.test(rEn.hero.veta.pre), 'en veta pieces');
+  assert.ok(rPt.hero.veta && /^com\b/.test(rPt.hero.veta.pre), 'pt veta pieces');
 });
