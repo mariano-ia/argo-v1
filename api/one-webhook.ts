@@ -572,17 +572,21 @@ async function handleUnlockPaid(args: {
     sb: ReturnType<typeof createClient<any, any>>;
     sessionId: string;
     providerPaymentId: string;
+    payerEmail?: string | null;
 }) {
-    const { sb, sessionId, providerPaymentId } = args;
+    const { sb, sessionId, providerPaymentId, payerEmail } = args;
+    const origin = process.env.SITE_URL || 'https://argomethod.com';
     const { data: session } = await sb
         .from('perfilamientos')
-        .select('id, full_access')
+        .select('id, full_access, adult_email, child_name, share_token, lang')
         .eq('id', sessionId)
         .maybeSingle();
     if (!session) {
         console.warn(`[one-webhook] unlock: session ${sessionId} not found`);
         return;
     }
+    // Idempotent: full_access is the marker that this unlock was already delivered
+    // (report + comp Puente). Webhook retries return early — never re-email.
     if (session.full_access) {
         console.info(`[one-webhook] unlock: session ${sessionId} already unlocked`);
         return;
@@ -595,7 +599,49 @@ async function handleUnlockPaid(args: {
         console.error(`[one-webhook] unlock update failed for ${sessionId}:`, error.message);
         return;
     }
-    console.info(`[one-webhook] report unlocked: ${sessionId} (payment ${providerPaymentId})`);
+
+    // ArgoOne® fusion: the unlock is now the unified ArgoOne® ($12.99) — the full
+    // report PLUS the buyer's own included Puente (comp), delivered like the combo.
+    // Mint the bridge toward this perfilamiento for the payer (once) and email both
+    // links. The payer email comes from the checkout; fall back to the session's.
+    const payer = String(payerEmail || session.adult_email || '').trim().toLowerCase();
+    const lang = (session.lang as string) || 'es';
+    const reportUrl = session.share_token
+        ? `${origin}/report/${sessionId}?token=${encodeURIComponent(session.share_token)}`
+        : `${origin}/report/${sessionId}`;
+    if (payer && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer)) {
+        let bridgeUrl: string | null = null;
+        const { data: existing } = await sb.from('puentes_purchases')
+            .select('id, magic_token')
+            .ilike('recipient_email', payer)
+            .eq('source_session_id', sessionId)
+            .eq('status', 'paid')
+            .maybeSingle();
+        if (existing?.magic_token) {
+            bridgeUrl = `${origin}/puentes/${existing.magic_token}`;
+        } else if (!existing) {
+            const mt = randomBytes(24).toString('base64url');
+            const { error: pErr } = await sb.from('puentes_purchases').insert({
+                source_session_id: sessionId, recipient_email: payer, recipient_name: null,
+                child_name: session.child_name, amount_cents: 0, currency: 'USD',
+                provider: 'comp', provider_payment_id: `unlock_${sessionId}`, status: 'paid',
+                paid_at: new Date().toISOString(), magic_token: mt, lang, source: 'argo_one', tenant_id: null,
+            });
+            if (!pErr) bridgeUrl = `${origin}/puentes/${mt}`;
+        }
+        const childFirst = (session.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+        const T = lang === 'en'
+            ? { s: `${childFirst}'s full report is ready`, h: `${childFirst}'s ArgoOne® report is ready`, b: `Here is the full report${bridgeUrl ? `, and your own bridge with ${childFirst} is ready to build` : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: 'One-time purchase. No subscription.' }
+            : lang === 'pt'
+            ? { s: `O relatório completo de ${childFirst} está pronto`, h: `O relatório ArgoOne® de ${childFirst} está pronto`, b: `Aqui está o relatório completo${bridgeUrl ? `, e a sua própria ponte com ${childFirst} já pode ser criada` : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: 'Compra única. Sem assinatura.' }
+            : { s: `El informe completo de ${childFirst} está listo`, h: `El informe ArgoOne® de ${childFirst} está listo`, b: `Aquí tienes el informe completo${bridgeUrl ? `, y tu propio puente con ${childFirst} ya se puede crear` : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: 'Compra única. Sin suscripción.' };
+        try {
+            await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, T.c2, T.n));
+        } catch (e) {
+            console.warn(`[one-webhook] unlock: email to payer failed for ${sessionId}:`, e instanceof Error ? e.message : e);
+        }
+    }
+    console.info(`[one-webhook] report unlocked + bridge delivered: ${sessionId} (payment ${providerPaymentId})`);
 }
 
 /* ── Main handler ────────────────────────────────────────────────────────── */
@@ -950,7 +996,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     if (source === 'unlock') {
         const unlockSessionId = session.metadata?.session_id;
         if (!unlockSessionId) return res.status(200).json({ received: true, ignored: true, reason: 'missing unlock session_id' });
-        await handleUnlockPaid({ sb, sessionId: unlockSessionId, providerPaymentId: session.id });
+        await handleUnlockPaid({ sb, sessionId: unlockSessionId, providerPaymentId: session.id, payerEmail: session.customer_email || session.customer_details?.email || null });
         return res.status(200).json({ received: true, kind: 'unlock', session_id: unlockSessionId });
     }
 

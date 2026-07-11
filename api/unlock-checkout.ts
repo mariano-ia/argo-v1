@@ -6,14 +6,15 @@ import { createClient } from '@supabase/supabase-js';
  * Body: { session_id, country?, lang? }
  * Returns: { checkout_url }
  *
- * One-time $9.99 checkout that unlocks the FULL report for an existing (demo)
- * perfilamiento. On payment, one-webhook (source='unlock' / external_reference
- * 'unlock_<id>') sets full_access=true on that session. Provider routing
- * (Stripe USD / MercadoPago ARS) mirrors one-checkout.ts. No one_purchases row:
- * the unlocked session itself is the deliverable.
+ * One-time $12.99 ArgoOne® checkout that unlocks the FULL report for an existing
+ * (demo) perfilamiento AND delivers the buyer's included Puente. On payment,
+ * one-webhook (source='unlock') sets full_access=true, mints the comp Puente
+ * toward that perfilamiento for the payer, and emails both links. Provider
+ * routing (Stripe USD / MercadoPago ARS) mirrors one-checkout.ts. No
+ * one_purchases row: the unlocked session itself is the deliverable.
  */
 
-const PRICE_USD_CENTS = 999; // $9.99
+const PRICE_USD_CENTS = 1299; // $12.99 — unified ArgoOne® (report + Puente incluido)
 
 const MP_COUNTRIES = ['AR', 'MX', 'BR', 'CO', 'CL', 'UY', 'PE'];
 
