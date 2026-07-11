@@ -171,13 +171,13 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         id: 'entender-arquetipos',
         category: 'players',
         title: 'What do the 12 profiles mean?',
-        body: 'Each profile combines an axis (how the child decides and relates: Driver, Connector, Sustainer or Strategist) with a motor (their pace: Dynamic, Rhythmic or Serene). That gives the 12 profiles, such as Dynamic Driver or Serene Strategist.\n\nNo profile is better than another. Dynamic is not better than Serene: they simply describe different ways of moving through the world. The profile is a snapshot of the present, not a label for life.',
+        body: 'Each profile starts from a primary axis (how the child decides and relates: Driver, Connector, Sustainer or Strategist). Sometimes a lean is added, which is the child\'s second strongest axis. That gives the 12 profiles: the 4 pure axes (such as Driver or Strategist) and 8 combinations (such as Driver with a Connector lean).\n\nNo profile is better than another: they simply describe different ways of moving through the world. Apart from the name, the report measures their engine (the pace at which they process and decide) as its own reading. The profile is a snapshot of the present, not a label for life.',
     },
     {
         id: 'brujula-palabras',
         category: 'players',
-        title: 'What are the secondary compass and the bridge words?',
-        body: 'The secondary compass is the child\'s second strongest axis: it nuances their main profile.\n\nThe bridge words are phrases that connect with them and motivate them. The words to avoid are the ones that create friction or resistance. They give you a concrete way to talk to each child.',
+        title: 'What are the secondary lean and the bridge words?',
+        body: 'The secondary lean is the child\'s second strongest axis: it nuances their main profile.\n\nThe bridge words are phrases that connect with them and motivate them. The words to avoid are the ones that create friction or resistance. They give you a concrete way to talk to each child.',
         trialNote: 'These sections unlock on a paid plan.',
     },
     {

@@ -26,81 +26,81 @@ const fadeUp = (delay = 0) => ({
 
 // ─── Twelve archetypes ───────────────────────────────────────────────────────
 const ARCHETYPES = [
-    { labelEs: 'Impulsor Dinámico',    labelEn: 'Dynamic Driver',        labelPt: 'Impulsionador Dinâmico',    motorEs: 'Dinámico', motorEn: 'Fast',     motorPt: 'Dinâmico', eje: 'D' },
-    { labelEs: 'Impulsor Rítmico',     labelEn: 'Rhythmic Driver',       labelPt: 'Impulsionador Rítmico',     motorEs: 'Rítmico',  motorEn: 'Rhythmic', motorPt: 'Rítmico',  eje: 'D' },
-    { labelEs: 'Impulsor Sereno',      labelEn: 'Serene Driver',         labelPt: 'Impulsionador Sereno',      motorEs: 'Sereno',   motorEn: 'Serene',   motorPt: 'Sereno',   eje: 'D' },
-    { labelEs: 'Conector Dinámico',    labelEn: 'Dynamic Connector',     labelPt: 'Conector Dinâmico',         motorEs: 'Dinámico', motorEn: 'Fast',     motorPt: 'Dinâmico', eje: 'I' },
-    { labelEs: 'Conector Rítmico',     labelEn: 'Rhythmic Connector',    labelPt: 'Conector Rítmico',          motorEs: 'Rítmico',  motorEn: 'Rhythmic', motorPt: 'Rítmico',  eje: 'I' },
-    { labelEs: 'Conector Sereno',      labelEn: 'Serene Connector',      labelPt: 'Conector Sereno',           motorEs: 'Sereno',   motorEn: 'Serene',   motorPt: 'Sereno',   eje: 'I' },
-    { labelEs: 'Sostenedor Dinámico',  labelEn: 'Dynamic Sustainer',     labelPt: 'Sustentador Dinâmico',      motorEs: 'Dinámico', motorEn: 'Fast',     motorPt: 'Dinâmico', eje: 'S' },
-    { labelEs: 'Sostenedor Rítmico',   labelEn: 'Rhythmic Sustainer',    labelPt: 'Sustentador Rítmico',       motorEs: 'Rítmico',  motorEn: 'Rhythmic', motorPt: 'Rítmico',  eje: 'S' },
-    { labelEs: 'Sostenedor Sereno',    labelEn: 'Serene Sustainer',      labelPt: 'Sustentador Sereno',        motorEs: 'Sereno',   motorEn: 'Serene',   motorPt: 'Sereno',   eje: 'S' },
-    { labelEs: 'Estratega Dinámico',   labelEn: 'Dynamic Strategist',    labelPt: 'Estrategista Dinâmico',     motorEs: 'Dinámico', motorEn: 'Fast',     motorPt: 'Dinâmico', eje: 'C' },
-    { labelEs: 'Estratega Rítmico',    labelEn: 'Rhythmic Strategist',   labelPt: 'Estrategista Rítmico',      motorEs: 'Rítmico',  motorEn: 'Rhythmic', motorPt: 'Rítmico',  eje: 'C' },
-    { labelEs: 'Estratega Observador', labelEn: 'Observant Strategist',  labelPt: 'Estrategista Observador',   motorEs: 'Sereno',   motorEn: 'Serene',   motorPt: 'Sereno',   eje: 'C' },
+    { labelEs: 'Impulsor', labelEn: 'Driver', labelPt: 'Impulsionador', eje: 'D' },
+    { labelEs: 'Impulsor con veta Conector', labelEn: 'Driver with a Connector lean', labelPt: 'Impulsionador com veta Conector', eje: 'D' },
+    { labelEs: 'Impulsor con veta Estratega', labelEn: 'Driver with a Strategist lean', labelPt: 'Impulsionador com veta Estrategista', eje: 'D' },
+    { labelEs: 'Conector', labelEn: 'Connector', labelPt: 'Conector', eje: 'I' },
+    { labelEs: 'Conector con veta Impulsor', labelEn: 'Connector with a Driver lean', labelPt: 'Conector com veta Impulsionador', eje: 'I' },
+    { labelEs: 'Conector con veta Sostenedor', labelEn: 'Connector with a Sustainer lean', labelPt: 'Conector com veta Sustentador', eje: 'I' },
+    { labelEs: 'Sostenedor', labelEn: 'Sustainer', labelPt: 'Sustentador', eje: 'S' },
+    { labelEs: 'Sostenedor con veta Conector', labelEn: 'Sustainer with a Connector lean', labelPt: 'Sustentador com veta Conector', eje: 'S' },
+    { labelEs: 'Sostenedor con veta Estratega', labelEn: 'Sustainer with a Strategist lean', labelPt: 'Sustentador com veta Estrategista', eje: 'S' },
+    { labelEs: 'Estratega', labelEn: 'Strategist', labelPt: 'Estrategista', eje: 'C' },
+    { labelEs: 'Estratega con veta Impulsor', labelEn: 'Strategist with a Driver lean', labelPt: 'Estrategista com veta Impulsionador', eje: 'C' },
+    { labelEs: 'Estratega con veta Sostenedor', labelEn: 'Strategist with a Sustainer lean', labelPt: 'Estrategista com veta Sustentador', eje: 'C' },
 ];
 
 // ─── Archetype descriptions (ES + EN + PT) ──────────────────────────────────
 const ARCHETYPE_DESCRIPTIONS: Record<Lang, string>[] = [
     {
-        es: 'Vive el deporte desde la acción. Su energía no espera instrucciones, necesita movimiento constante para estar en su zona. Bajo presión, acelera. Cuando se lo frena sin razón, pierde la chispa. El reto permanente y la autonomía son su combustible.',
-        en: 'Lives sport through action. Their energy does not wait for instructions. It needs constant movement to stay in the zone. Under pressure, they accelerate. When held back without reason, they lose their spark. Constant challenge and autonomy are their fuel.',
-        pt: 'Vive o esporte pela ação. Sua energia não espera instruções. Precisa de movimento constante para estar na zona. Sob pressão, acelera. Quando é freado sem razão, perde a centelha. O desafio permanente e a autonomia são seu combustível.',
+        es: 'Suele buscar la acción y no teme tomar decisiones cuando el juego lo pide. Le atraen los retos y tiende a avanzar con energía, muchas veces tomando la iniciativa. En el deporte se motiva cuando puede proponer y hacer. Le ayuda tener metas claras y espacio para intentar a su manera.',
+        en: 'Tends to look for action and isn\'t afraid to make decisions when the game calls for it. Challenges draw them in, and they often move forward with energy, frequently taking the initiative. In sport they feel motivated when they can propose and act. Clear goals and room to try their own way help them.',
+        pt: 'Costuma buscar a ação e não teme tomar decisões quando o jogo pede. Os desafios o atraem e tende a avançar com energia, muitas vezes tomando a iniciativa. No esporte se motiva quando pode propor e fazer. Ajuda ter metas claras e espaço para tentar do seu jeito.',
     },
     {
-        es: 'Combina la determinación del líder con la capacidad de dosificar energía en el momento justo. No es el primero en salir, pero tampoco el último en llegar. Decide con claridad y actúa con propósito. Necesita objetivos claros y espacio para ejecutarlos a su ritmo.',
-        en: 'Combines a leader\'s determination with the ability to pace their energy at exactly the right moment. Not the first to leave, but never the last to arrive. Decides clearly and acts with purpose. Needs clear objectives and space to execute at their own rhythm.',
-        pt: 'Combina a determinação de um líder com a capacidade de dosar energia no momento certo. Não é o primeiro a sair, mas também não é o último a chegar. Decide com clareza e age com propósito. Precisa de objetivos claros e espaço para executá-los no seu ritmo.',
+        es: 'Suele ir al frente y buscar la acción, con ganas de tomar la iniciativa cuando el juego lo pide, y a la vez conecta con sus compañeros y contagia entusiasmo. En la cancha empuja al equipo hacia adelante. Le ayuda sentir que su energía suma al grupo y que puede proponer.',
+        en: 'Tends to go to the front and look for action, ready to take the initiative when the game calls for it, and at the same time connects with teammates and spreads enthusiasm. On the field they push the team forward. Feeling that their energy adds to the group, and having room to propose, helps them.',
+        pt: 'Costuma ir à frente e buscar a ação, com vontade de tomar a iniciativa quando o jogo pede, e ao mesmo tempo se conecta com os colegas e contagia entusiasmo. Em campo empurra a equipe para a frente. Ajuda sentir que sua energia soma ao grupo e que pode propor.',
     },
     {
-        es: 'Tiene la voluntad de un líder y la paciencia de un estratega. Procesa antes de actuar, pero cuando decide, lo hace con convicción absoluta. No se precipita, pero tampoco retrocede. Necesita tiempo para comprender el plan y luego libertad para ejecutarlo sin interrupciones.',
-        en: 'Has a leader\'s will and a strategist\'s patience. Processes before acting, but when they decide, they do so with absolute conviction. Does not rush, but does not retreat. Needs time to understand the plan, then freedom to execute it without interruption.',
-        pt: 'Tem a vontade de um líder e a paciência de um estrategista. Processa antes de agir, mas quando decide, faz com convicção absoluta. Não se precipita, mas também não recua. Precisa de tempo para compreender o plano e depois liberdade para executá-lo sem interrupções.',
+        es: 'Suele buscar la acción y avanzar con seguridad cuando llega el momento, y suma una mirada atenta que observa la jugada antes de moverse. Tiende a ir al frente con un plan en mente. En el deporte disfruta los retos que puede pensar. Le ayuda entender el porqué y tener un objetivo claro.',
+        en: 'Tends to look for action and move forward confidently when the moment comes, and adds a watchful eye that reads the play before moving. They often go to the front with a plan in mind. In sport they enjoy challenges they can think through. Understanding the why and having a clear goal help them.',
+        pt: 'Costuma buscar a ação e avançar com segurança quando chega o momento, e soma um olhar atento que observa a jogada antes de se mover. Tende a ir à frente com um plano em mente. No esporte gosta dos desafios que pode pensar. Ajuda entender o porquê e ter um objetivo claro.',
     },
     {
-        es: 'El equipo es su hábitat natural. Se activa con el contacto, el juego y la energía colectiva. Reacciona rápido y habla rápido. Su entusiasmo contagia al grupo, pero también puede dispersarse si no hay estructura que lo contenga. Necesita un entorno dinámico que no apague su llama.',
-        en: 'The team is their natural habitat. They activate through contact, play, and collective energy. They react fast and speak fast. Their enthusiasm is contagious, but they can also scatter if there is no structure to contain them. Needs a dynamic environment that does not dim their flame.',
-        pt: 'A equipe é seu habitat natural. Ativa-se com o contato, o jogo e a energia coletiva. Reage rápido e fala rápido. Seu entusiasmo contagia o grupo, mas também pode se dispersar se não houver estrutura que o contenha. Precisa de um ambiente dinâmico que não apague sua chama.',
+        es: 'Suele moverse mejor cuando hay otros cerca. Le entusiasma el juego compartido, celebra a sus compañeros y contagia energía al grupo. En general busca la conversación, el gesto de aliento y el trabajo en equipo. Se siente en su lugar cuando el deporte lo conecta con los demás.',
+        en: 'Tends to move best when others are around. Shared play energizes this child, who celebrates teammates and spreads energy through the group. Often looks for conversation, an encouraging gesture and teamwork. Feels at home when the sport connects them with the people around.',
+        pt: 'Costuma se sair melhor quando há outros por perto. A brincadeira compartilhada o entusiasma, celebra os colegas e contagia o grupo com energia. Em geral busca a conversa, o gesto de incentivo e o trabalho em equipe. Sente-se no seu lugar quando o esporte o conecta com os demais.',
     },
     {
-        es: 'Construye puentes con calma y convicción. Se relaciona con todos y sabe cuándo hablar y cuándo escuchar. No corre detrás de cada estímulo. Selecciona los momentos para brillar. Necesita espacios de reconocimiento genuino y un equipo donde sentir que importa.',
-        en: 'Builds bridges with calm and conviction. Connects with everyone and knows when to speak and when to listen. Does not chase every stimulus. Selects their moments to shine. Needs genuine recognition and a team where they feel they matter.',
-        pt: 'Constrói pontes com calma e convicção. Relaciona-se com todos e sabe quando falar e quando ouvir. Não corre atrás de cada estímulo. Seleciona os momentos para brilhar. Precisa de espaços de reconhecimento genuíno e uma equipe onde sinta que importa.',
+        es: 'Suele encender al grupo con su entusiasmo y su gusto por estar con los demás, y a eso le suma empuje: cuando algo hay que arrancar, tiende a dar el primer paso. Disfruta motivar a sus compañeros y también animarse a los retos. En la cancha, une energía con ganas de avanzar.',
+        en: 'Tends to light up the group with enthusiasm and a love for being with others, and adds drive to it: when something needs to get going, this child often takes the first step. Enjoys motivating teammates and also taking on challenges. On the field, blends energy with a wish to move forward.',
+        pt: 'Costuma animar o grupo com seu entusiasmo e seu gosto por estar com os outros, e a isso soma impulso: quando algo precisa começar, tende a dar o primeiro passo. Gosta de motivar os colegas e também de encarar desafios. Em campo, une energia com vontade de avançar.',
     },
     {
-        es: 'La profundidad no es debilidad, es su superpoder silencioso. Conecta con los demás desde la escucha y la empatía, no desde el ruido. Observa antes de participar, pero cuando lo hace, deja huella. Necesita un ambiente de confianza donde el vínculo sea más importante que el resultado.',
-        en: 'Depth is not weakness. It is their silent superpower. Connects with others through listening and empathy, not noise. Observes before participating, but when they do, they leave a mark. Needs a trusting environment where the bond matters more than the result.',
-        pt: 'A profundidade não é fraqueza. É seu superpoder silencioso. Conecta-se com os outros pela escuta e empatia, não pelo ruído. Observa antes de participar, mas quando o faz, deixa marca. Precisa de um ambiente de confiança onde o vínculo seja mais importante que o resultado.',
+        es: 'Suele buscar el vínculo y contagiar entusiasmo al grupo, y lo hace con una base de apoyo constante: está atento a cómo se siente cada compañero y sostiene el buen clima. Le gusta incluir y acompañar. En la cancha, une la chispa de conectar con la calma de cuidar a los demás.',
+        en: 'Tends to seek connection and spread enthusiasm through the group, and does so with a base of steady support: stays aware of how each teammate feels and holds up the good mood. Likes to include and accompany others. On the field, blends the spark of connecting with the calm of caring for others.',
+        pt: 'Costuma buscar o vínculo e contagiar o grupo com entusiasmo, e faz isso com uma base de apoio constante: fica atento a como cada colega se sente e sustenta o bom clima. Gosta de incluir e acompanhar. Em campo, une a faísca de conectar com a calma de cuidar dos demais.',
     },
     {
-        es: 'Tiene el corazón del equipo y los pies de un velocista. Es el primero en dar la mano y también en llegar a la pelota. Estabiliza el grupo desde la acción, no solo desde el apoyo. Necesita sentir que su aporte es visible y que el equipo lo reconoce como parte esencial.',
-        en: 'Has the heart of the team and the feet of a sprinter. First to offer a hand and first to reach the ball. Stabilizes the group through action, not just support. Needs to feel their contribution is visible and that the team recognizes them as essential.',
-        pt: 'Tem o coração da equipe e os pés de um velocista. É o primeiro a estender a mão e também a chegar à bola. Estabiliza o grupo pela ação, não apenas pelo apoio. Precisa sentir que sua contribuição é visível e que a equipe o reconhece como parte essencial.',
+        es: 'Suele ser un punto de apoyo para el equipo. En la cancha tiende a sostener el ritmo con constancia, cumplir su parte sin buscar el foco y transmitir calma cuando algo se complica. Se siente cómodo en ambientes estables y confía en quienes lo acompañan. Le ayuda sentir que su aporte se nota.',
+        en: 'Tends to be a point of support for the team. On the field they often keep the rhythm steady, do their part without seeking the spotlight, and bring calm when things get tricky. They feel comfortable in stable settings and trust those around them. It helps them to feel their contribution is noticed.',
+        pt: 'Costuma ser um ponto de apoio para a equipe. Em campo, tende a manter o ritmo com constância, cumprir a sua parte sem buscar os holofotes e transmitir calma quando algo complica. Sente-se à vontade em ambientes estáveis e confia em quem o acompanha. Ajuda sentir que a sua contribuição é percebida.',
     },
     {
-        es: 'La columna vertebral del equipo. No busca el protagonismo, pero sin esta figura nada funciona. Ejecuta con consistencia, apoya sin condiciones y mantiene el ritmo cuando los demás fallan. Necesita un entorno predecible y relaciones estables para dar lo mejor de sí.',
-        en: 'The backbone of the team. Does not seek the spotlight, but without them nothing works. Executes with consistency, supports unconditionally, and keeps the rhythm when others falter. Needs a predictable environment and stable relationships to give their best.',
-        pt: 'A coluna vertebral da equipe. Não busca o protagonismo, mas sem ele nada funciona. Executa com consistência, apoia sem condições e mantém o ritmo quando os outros falham. Precisa de um ambiente previsível e relações estáveis para dar o melhor de si.',
+        es: 'Suele ser el sostén tranquilo del equipo, constante y confiable en lo suyo, y suma una veta conectora: le importan los vínculos y disfruta que todos se sientan parte. Muchas veces cuida el clima del grupo y se acerca a quien está más solo. Se apoya en la confianza y el buen trato.',
+        en: 'Tends to be the team\'s quiet anchor, steady and reliable in their role, and adds a connector lean: relationships matter to them and they enjoy when everyone feels included. They often look after the group\'s mood and reach out to whoever seems left out. They lean on trust and warm treatment.',
+        pt: 'Costuma ser o apoio tranquilo da equipe, constante e confiável no que lhe cabe, e soma uma veta conectora: os vínculos importam para ele e gosta quando todos se sentem parte. Muitas vezes cuida do clima do grupo e se aproxima de quem está mais sozinho. Apoia-se na confiança e no bom trato.',
     },
     {
-        es: 'La calma en medio de la tormenta. Procesa cada situación con paciencia y actúa con una consistencia que pocos logran mantener. No reacciona, responde. Necesita tiempo y confianza para adaptarse a los cambios, pero una vez que lo hace, es el ancla del grupo.',
-        en: 'Calm in the eye of the storm. Processes every situation with patience and acts with a consistency few can sustain. Does not react. Responds. Needs time and trust to adapt to changes, but once they do, they become the group\'s anchor.',
-        pt: 'A calma no meio da tempestade. Processa cada situação com paciência e age com uma consistência que poucos conseguem manter. Não reage. Responde. Precisa de tempo e confiança para se adaptar às mudanças, mas uma vez que o faz, torna-se a âncora do grupo.',
+        es: 'Suele ser el sostén estable del equipo, constante y confiable, y suma una veta estratega: observa con atención y le gusta entender cómo funcionan las cosas antes de actuar. Muchas veces hace su parte con orden y cuidado por los detalles, y aporta calma cuando conviene pensar el próximo paso.',
+        en: 'Tends to be the team\'s steady anchor, constant and reliable, and adds a strategist lean: they watch closely and like to understand how things work before acting. They often do their part with order and care for detail, and bring calm when it helps to think through the next step.',
+        pt: 'Costuma ser o apoio estável da equipe, constante e confiável, e soma uma veta estrategista: observa com atenção e gosta de entender como as coisas funcionam antes de agir. Muitas vezes faz a sua parte com ordem e cuidado com os detalhes, e traz calma quando convém pensar o próximo passo.',
     },
     {
-        es: 'Analiza en segundos lo que otros tardan minutos en ver. Combina velocidad de procesamiento con precisión táctica, una rareza que convierte cada partido en un ejercicio de inteligencia aplicada. Necesita retos complejos y espacio para liderar desde el análisis, sin que nadie interrumpa su proceso.',
-        en: 'Analyzes in seconds what others take minutes to see. Combines processing speed with tactical precision. A rarity that turns every game into applied intelligence. Needs complex challenges and space to lead from analysis, without anyone interrupting their process.',
-        pt: 'Analisa em segundos o que outros levam minutos para ver. Combina velocidade de processamento com precisão tática. Uma raridade que transforma cada jogo em um exercício de inteligência aplicada. Precisa de desafios complexos e espaço para liderar pela análise, sem que ninguém interrompa seu processo.',
+        es: 'Suele observar antes de actuar. Le gusta entender cómo funcionan las cosas, leer la jugada y buscar la manera más precisa de resolverla. En la cancha tiende a jugar con criterio y a cuidar los detalles. Lo ayuda que le expliquen el porqué y darle tiempo para pensar su respuesta.',
+        en: 'Tends to observe before acting. Likes to understand how things work, read the play and look for the most precise way to solve it. In the sport, often plays with good judgment and pays attention to detail. It helps to explain the why and give room to think through a response.',
+        pt: 'Costuma observar antes de agir. Gosta de entender como as coisas funcionam, ler a jogada e buscar a forma mais precisa de resolvê-la. Na atividade, tende a jogar com critério e a cuidar dos detalhes. Ajuda explicar o porquê e dar tempo para pensar a resposta.',
     },
     {
-        es: 'Piensa antes de hablar y habla antes de actuar. Su proceso no es lento, es exacto. Cada decisión está sustentada en observación y criterio. Prefiere la calidad a la velocidad y la precisión al volumen. Necesita un entorno que valore el análisis y no lo presione a actuar antes de estar listo.',
-        en: 'Thinks before speaking and speaks before acting. Their process is not slow. It is exact. Every decision is grounded in observation and judgment. Prefers quality over speed and precision over volume. Needs an environment that values analysis and does not pressure them to act before they are ready.',
-        pt: 'Pensa antes de falar e fala antes de agir. Seu processo não é lento. É exato. Cada decisão é sustentada em observação e critério. Prefere qualidade à velocidade e precisão ao volume. Precisa de um ambiente que valorize a análise e não o pressione a agir antes de estar pronto.',
+        es: 'Suele analizar la situación y elegir con criterio antes de moverse, y cuando lo tiene claro se anima a decidir y a tomar la iniciativa. En el deporte tiende a combinar la lectura del juego con ganas de resolver. Lo ayuda entender el plan y tener espacio para proponer sus ideas.',
+        en: 'Tends to analyze the situation and choose with good judgment before moving, and once it is clear, feels ready to decide and take the initiative. In sport, often blends reading the game with a drive to resolve. It helps to understand the plan and have space to offer ideas.',
+        pt: 'Costuma analisar a situação e escolher com critério antes de se mover, e quando tem clareza se anima a decidir e a tomar a iniciativa. No esporte, tende a combinar a leitura do jogo com vontade de resolver. Ajuda entender o plano e ter espaço para propor suas ideias.',
     },
     {
-        es: 'Su talento no está en la velocidad de la carrera, sino en la claridad de su mirada. Tiende a procesar el entorno con profundidad antes de actuar, aportando calma y orden táctico incluso en momentos de presión. El deporte es un tablero que prefiere comprender antes de ejecutar.',
-        en: 'Their talent lies not in the speed of the run, but in the clarity of their gaze. Tends to process the environment deeply before acting, bringing calm and tactical order even under pressure. For them, sport is a board they prefer to understand before executing.',
-        pt: 'Seu talento não está na velocidade da corrida, mas na clareza do seu olhar. Tende a processar o ambiente com profundidade antes de agir, trazendo calma e ordem tática mesmo em momentos de pressão. Para ele, o esporte é um tabuleiro que prefere compreender antes de executar.',
+        es: 'Suele observar con atención y buscar la forma más cuidada de hacer las cosas, y acompaña eso con constancia y con ganas de sostener al equipo. En la actividad tiende a aportar orden y calma. Lo ayuda tener referencias claras y saber que su aporte cuenta para el grupo.',
+        en: 'Tends to observe closely and look for the most careful way to do things, and pairs that with steadiness and a wish to support the team. In the activity, often brings order and calm. It helps to have clear reference points and to know that this contribution counts for the group.',
+        pt: 'Costuma observar com atenção e buscar a forma mais cuidadosa de fazer as coisas, e acompanha isso com constância e vontade de sustentar o time. Na atividade, tende a trazer ordem e calma. Ajuda ter referências claras e saber que sua contribuição conta para o grupo.',
     },
 ];
 
@@ -113,11 +113,11 @@ const ROTATING_PROFILES = [
         behaviorsEs: ['Domina', 'Decide', 'Compite'],
         behaviorsEn: ['Dominates', 'Decides', 'Competes'],
         behaviorsPt: ['Domina', 'Decide', 'Compete'],
-        motorEs: 'Dinámico',             motorEn: 'Fast',              motorPt: 'Dinâmico',         motorBars: 3,
+        motorBars: 3, descIdx: 0,
         motorDescEs: 'Responde en segundos. Necesita acción constante.',
         motorDescEn: 'Responds in seconds. Needs constant action.',
         motorDescPt: 'Responde em segundos. Precisa de ação constante.',
-        archetypeEs: 'Impulsor Dinámico', archetypeEn: 'Dynamic Driver', archetypePt: 'Impulsionador Dinâmico',
+        archetypeEs: 'Impulsor', archetypeEn: 'Driver', archetypePt: 'Impulsionador',
         archetypeDescEs: 'Necesita reto constante y autonomía. Responde al feedback directo.',
         archetypeDescEn: 'Needs constant challenge and autonomy. Responds to direct feedback.',
         archetypeDescPt: 'Precisa de desafio constante e autonomia. Responde ao feedback direto.',
@@ -128,11 +128,11 @@ const ROTATING_PROFILES = [
         behaviorsEs: ['Estabiliza', 'Cuida', 'Persiste'],
         behaviorsEn: ['Stabilizes', 'Nurtures', 'Persists'],
         behaviorsPt: ['Estabiliza', 'Cuida', 'Persiste'],
-        motorEs: 'Sereno',               motorEn: 'Serene',            motorPt: 'Sereno',           motorBars: 1,
+        motorBars: 1, descIdx: 6,
         motorDescEs: 'Procesa en profundidad antes de actuar.',
         motorDescEn: 'Processes in depth before acting.',
         motorDescPt: 'Processa em profundidade antes de agir.',
-        archetypeEs: 'Sostenedor Sereno', archetypeEn: 'Serene Sustainer', archetypePt: 'Sustentador Sereno',
+        archetypeEs: 'Sostenedor', archetypeEn: 'Sustainer', archetypePt: 'Sustentador',
         archetypeDescEs: 'Necesita tiempo y seguridad. Evita los cambios abruptos sin aviso.',
         archetypeDescEn: 'Needs time and security. Avoids abrupt changes without warning.',
         archetypeDescPt: 'Precisa de tempo e segurança. Evita mudanças abruptas sem aviso.',
@@ -143,11 +143,11 @@ const ROTATING_PROFILES = [
         behaviorsEs: ['Influye', 'Entusiasma', 'Conecta'],
         behaviorsEn: ['Influences', 'Enthuses', 'Connects'],
         behaviorsPt: ['Influencia', 'Entusiasma', 'Conecta'],
-        motorEs: 'Rítmico',              motorEn: 'Rhythmic',          motorPt: 'Rítmico',          motorBars: 2,
+        motorBars: 2, descIdx: 3,
         motorDescEs: 'Equilibra impulso y reflexión.',
         motorDescEn: 'Balances impulse and reflection.',
         motorDescPt: 'Equilibra impulso e reflexão.',
-        archetypeEs: 'Conector Rítmico',  archetypeEn: 'Rhythmic Connector', archetypePt: 'Conector Rítmico',
+        archetypeEs: 'Conector', archetypeEn: 'Connector', archetypePt: 'Conector',
         archetypeDescEs: 'Se motiva con el equipo. Necesita reconocimiento y variedad.',
         archetypeDescEn: 'Motivated by the team. Needs recognition and variety.',
         archetypeDescPt: 'Se motiva com a equipe. Precisa de reconhecimento e variedade.',
@@ -158,11 +158,11 @@ const ROTATING_PROFILES = [
         behaviorsEs: ['Analiza', 'Planifica', 'Precisa'],
         behaviorsEn: ['Analyzes', 'Plans', 'Executes'],
         behaviorsPt: ['Analisa', 'Planeja', 'Precisa'],
-        motorEs: 'Dinámico',             motorEn: 'Fast',              motorPt: 'Dinâmico',         motorBars: 3,
+        motorBars: 3, descIdx: 9,
         motorDescEs: 'Responde en segundos. Actúa con precisión.',
         motorDescEn: 'Responds in seconds. Acts with precision.',
         motorDescPt: 'Responde em segundos. Age com precisão.',
-        archetypeEs: 'Estratega Dinámico', archetypeEn: 'Dynamic Strategist', archetypePt: 'Estrategista Dinâmico',
+        archetypeEs: 'Estratega', archetypeEn: 'Strategist', archetypePt: 'Estrategista',
         archetypeDescEs: 'Analiza rápido y necesita estructura clara. Odia la improvisación.',
         archetypeDescEn: 'Analyzes quickly and needs clear structure. Hates improvisation.',
         archetypeDescPt: 'Analisa rápido e precisa de estrutura clara. Odeia improvisação.',
@@ -311,7 +311,6 @@ const ANALYSIS_LABELS: Record<string, Record<Lang, string>> = {
     C: { es: 'Análisis y precisión',    en: 'Analysis and precision',  pt: 'Análise e precisão' },
 };
 
-const DISC_IDX: Record<string, number> = { D: 0, I: 1, S: 2, C: 3 };
 
 const STEP_LABELS: Record<Lang, [string, string, string]> = {
     es: ['El niño juega',  'Argo procesa',   'El perfil'],
@@ -388,10 +387,10 @@ const FlipCard: React.FC = () => {
 
     const archetypeName = lang === 'es' ? fp.archetypeEs   : lang === 'pt' ? fp.archetypePt   : fp.archetypeEn;
     const ejeLabel      = lang === 'es' ? fp.ejeLabelEs    : lang === 'pt' ? fp.ejeLabelPt    : fp.ejeLabelEn;
-    const motorLabel    = lang === 'es' ? fp.motorEs       : lang === 'pt' ? fp.motorPt       : fp.motorEn;
+    const motorLabel    = lang === 'es' ? 'Su motor' : lang === 'pt' ? 'Seu motor' : 'Their engine';
     const motorDesc     = lang === 'es' ? fp.motorDescEs   : lang === 'pt' ? fp.motorDescPt   : fp.motorDescEn;
     const behaviors     = lang === 'es' ? fp.behaviorsEs   : lang === 'pt' ? fp.behaviorsPt   : fp.behaviorsEn;
-    const archIdx       = DISC_IDX[fp.eje] * 3 + (3 - fp.motorBars);
+    const archIdx       = fp.descIdx;
     const richDesc      = ARCHETYPE_DESCRIPTIONS[archIdx]?.[lang] ?? '';
     const comm          = COMM_TIPS[fp.eje] ?? COMM_TIPS.D;
     const bridge        = lang === 'es' ? comm.bridgeEs : lang === 'pt' ? comm.bridgePt : comm.bridgeEn;
@@ -1207,7 +1206,7 @@ export const Landing: React.FC = () => {
                                         }} />
                                     ))}
                                     <span style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginLeft: 6 }}>
-                                        {pk(profile, 'motor')}
+                                        {lang === 'es' ? 'Su motor' : lang === 'pt' ? 'Seu motor' : 'Their engine'}
                                     </span>
                                 </div>
                                 <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
@@ -1264,7 +1263,6 @@ export const Landing: React.FC = () => {
                     {ARCHETYPES.map((arch, i) => {
                         const isSelected = selectedIdx === i;
                         const label = pk(arch, 'label');
-                        const motor = pk(arch, 'motor');
                         return (
                             <motion.div
                                 key={i}
@@ -1278,11 +1276,8 @@ export const Landing: React.FC = () => {
                                 className="p-3 md:p-6"
                             >
                                 <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isSelected ? 'rgba(255,255,255,0.6)' : AXIS_COLORS[arch.eje], marginBottom: '10px' }} />
-                                <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3, marginBottom: '6px' }}>
+                                <p style={{ fontWeight: 500, fontSize: '12px', color: isSelected ? '#ffffff' : '#1D1D1F', lineHeight: 1.3 }}>
                                     {label}
-                                </p>
-                                <p style={{ fontWeight: 400, fontSize: '10px', color: isSelected ? 'rgba(255,255,255,0.7)' : '#86868B', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                                    {motor}
                                 </p>
                             </motion.div>
                         );

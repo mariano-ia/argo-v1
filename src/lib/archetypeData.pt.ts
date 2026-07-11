@@ -26,7 +26,7 @@ export interface TendenciaTranslation {
 
 export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   impulsor_dinamico: {
-    label: `Impulsionador Dinâmico`,
+    label: `Impulsionador`,
     perfil: `Ação Direta e Resolução Imediata`,
     perfilExtended: `Tende a mover-se antes que a maioria termine de processar a situação. Tende a precisar sentir que suas ações produzem um impacto visível para se manter motivado e conectado. Nos momentos de maior inércia do time, costuma ser quem ativa o movimento.`,
     bienvenida: `Este mapa é um convite para nos aproximarmos da maneira como {nombre} tende a viver e sentir o esporte hoje. Assim como um mapa de navegação não qualifica o terreno como "bom" ou "ruim", mas sugere qual equipamento levar para percorrê-lo com prazer, este relatório oferece pistas para que a experiência esportiva seja um espaço de alegria e não de pressão. Nota importante: Este relatório não avalia o talento nem prediz o futuro esportivo. Seus achados são probabilísticos e dinâmicos: descrevem tendências atuais que muito provavelmente evoluirão junto com a maturação natural de {nombre}. Não são traços fixos, mas uma fotografia de sua sintonia presente.`,
@@ -52,7 +52,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   impulsor_decidido: {
-    label: `Impulsionador Rítmico`,
+    label: `Impulsionador`,
     perfil: `Iniciativa Estratégica e Execução com Propósito`,
     perfilExtended: `Tende a combinar o impulso de agir com a clareza de saber para onde vai. Tende a tomar a iniciativa quando o objetivo está definido, com uma força e foco que transformam a intenção em resultados tangíveis. Sua força tende a estar na consistência da execução, não na impulsividade.`,
     bienvenida: `Este mapa é um convite para entender como {nombre} se conecta com o esporte nesta fase de sua vida. Não é uma definição de sua personalidade para sempre, mas uma "fotografia do presente" que nos ajuda a afinar nossa comunicação. Nota de segurança: Este relatório não avalia o talento. Seu único fim é que {nombre} se sinta compreendido e desfrute mais de cada partida, reduzindo a fricção emocional entre suas necessidades e nossas expectativas.`,
@@ -78,7 +78,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   impulsor_persistente: {
-    label: `Impulsionador Sereno`,
+    label: `Impulsionador`,
     perfil: `Determinação Constante e Resiliência no Esforço`,
     perfilExtended: `Sua força tende a não estar na velocidade, mas na permanência. Tende a sustentar o esforço quando outros param, com uma determinação que cresce quanto mais difícil fica o caminho. O time pode contar com sua vontade nos momentos que exigem resistência mais do que velocidade.`,
     bienvenida: `Este mapa é um convite para entender como {nombre} processa e habita o esporte hoje. Na Nave Argo sabemos que cada esportista tem seu próprio compasso. Este relatório não busca "acelerar" {nombre}, mas identificar as condições sob as quais sua persistência natural se torna sua maior fonte de prazer. Nota de segurança: Os dados aqui apresentados são uma "fotografia do presente". O desenvolvimento infantil é fluido; essas tendências descrevem sua zona de conforto atual para que possamos acompanhar sem pressionar.`,
@@ -104,7 +104,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   conector_vibrante: {
-    label: `Conector Dinâmico`,
+    label: `Conector`,
     perfil: `Entusiasmo Contagiante e Coesão pela Energia`,
     perfilExtended: `Sua presença tende a ativar o entorno de forma quase imediata. Tende a ser quem eleva o ânimo do grupo quando a energia cai, celebrando a conquista de um companheiro com mais força do que a própria. Sua contribuição mais valiosa costuma ser o clima emocional que cria ao seu redor.`,
     bienvenida: `Este mapa é um convite para olhar o esporte pelos olhos de {nombre}. Não é uma sentença sobre quem é, mas uma "fotografia do presente" que nos mostra em quais condições tende a fluir com mais alegria. Nota de segurança: No Método Argo não avaliamos o talento nem diagnosticamos a personalidade. O desenvolvimento infantil é dinâmico; este relatório simplesmente nos ajuda a fazer com que o entorno esportivo seja um lugar onde {nombre} se sinta seguro, visto e motivado para continuar jogando.`,
@@ -130,7 +130,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   conector_relacional: {
-    label: `Conector Rítmico`,
+    label: `Conector`,
     perfil: `Vínculo Equilibrado e Coesão a Ritmo Firme`,
     perfilExtended: `Costuma saber quando animar e quando escutar, e essa leitura tende a fazê-la de forma intuitiva. Sua habilidade para ler o estado de ânimo de seus companheiros tende a torná-lo a ponte entre os perfis mais intensos e os mais reservados. Sua presença traz calma e coesão sem tirar a alegria do grupo.`,
     bienvenida: `Este mapa é uma janela para entender como {nombre} habita o mundo do esporte hoje. Na Nave Argo, cada ritmo é vital. Este relatório não é uma etiqueta definitiva, mas uma "fotografia do presente" criada para que os adultos possamos sintonizar com sua natureza, protegendo sempre seu prazer e sua autoestima. Nota de segurança: Não avaliamos capacidade técnica nem saúde mental. Este documento é uma ferramenta para reduzir a fricção e aumentar o bem-estar de {nombre} em seu time.`,
@@ -156,7 +156,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   conector_reflexivo: {
-    label: `Conector Sereno`,
+    label: `Conector`,
     perfil: `Coesão Profunda e Observação do Clima do Grupo`,
     perfilExtended: `Tende a perceber o estado emocional do time com uma sensibilidade pouco frequente. Tende a ser a cola silenciosa que faz todos se sentirem parte de algo maior, sem precisar ser o centro das atenções. Sua força tende a estar na sabedoria social: tende a detectar quando alguém precisa de apoio antes que o resto perceba.`,
     bienvenida: `Este mapa é um convite para entender como {nombre} percebe e sente o esporte neste momento. Na Nave Argo, a força não está apenas no remo, mas na capacidade de ler o vento e o mar. Este relatório é uma "fotografia do presente" criada para que os adultos possamos sintonizar com seu ritmo natural, protegendo seu bem-estar e garantindo que o esporte continue sendo seu lugar seguro. Nota de segurança: Não realizamos diagnósticos nem avaliamos o rendimento. Nosso objetivo é identificar o contexto onde {nombre} flui com menor fricção emocional para favorecer sua continuidade esportiva.`,
@@ -175,14 +175,14 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
     reseteo: `Quando {nombre} comete um erro, seu sistema tende a "congelar" emocionalmente. Pode se sentir desconectado do grupo pelo ocorrido. Acompanhamento sugerido: Oferecer-lhe uma saída que use sua força: a observação. Dizer-lhe: "Não se preocupe com essa jogada, agora fique atento a como eles se movem para que na próxima você saiba onde estar". Isso lhe dá uma tarefa de processamento que pode tirá-lo da emoção e devolvê-lo ao jogo desde sua zona de conforto: a análise do clima.`,
     ecos: `Em casa: Tende a precisar de "tempo de descompressão" ao chegar da escola. É provável que seja melhor não perguntar "como foi?" assim que chega; deixar que seu ritmo baixe e ele virá por conta própria contar as coisas quando se sentir em sintonia. Na escola: Costuma ser um excelente companheiro, alguém que ouve e que prefere os ambientes de aprendizagem tranquilos. Pode precisar de mais tempo para entregar tarefas criativas porque tende a colocar muita carga emocional e detalhe nelas.`,
     checklist: {
-      antes: `Chegar com tempo extra para que possa ver o ambiente. O caos de chegar tarde tende a desajustar seu ritmo de Conector Sereno para toda a partida.`,
+      antes: `Chegar com tempo extra para que possa ver o ambiente. O caos de chegar tarde tende a desajustar seu ritmo para toda a partida.`,
       durante: `Evitar as indicações em voz alta. Sua presença silenciosa e um gesto de aprovação ocasional costumam ser suficientes.`,
       despues: `Valorizar o bem-estar. Perguntar: "Como você se sentiu hoje com seus amigos?", "Houve algum momento que te fez sorrir?".`,
     },
   },
 
   sosten_agil: {
-    label: `Sustentador Dinâmico`,
+    label: `Sustentador`,
     perfil: `Auxílio Veloz e Apoio Dinâmico`,
     perfilExtended: `Tende a ter um radar especial para detectar quando um companheiro precisa de ajuda ou quando fica um espaço vazio em campo. Combina a disposição natural de acompanhar com um ritmo de resposta ágil, agindo antes de ser solicitado. Sua presença traz segurança reativa sem frear o movimento do time.`,
     bienvenida: `Este mapa nos convida a entender como {nombre} escolhe habitar o esporte hoje. Na Nave Argo, a segurança da travessia depende de quem garante que cada peça esteja em seu lugar. Este relatório não é uma etiqueta fixa, mas uma "fotografia do presente" criada para que os adultos possamos sintonizar com sua natureza, protegendo sua autoestima e sua vontade de continuar jogando. Nota de segurança: Não avaliamos talento nem realizamos diagnósticos. Nosso objetivo é identificar o contexto onde {nombre} flui com maior conforto e menor estresse.`,
@@ -208,7 +208,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   sosten_confiable: {
-    label: `Sustentador Rítmico`,
+    label: `Sustentador`,
     perfil: `Consistência Serena e Apoio Estruturado`,
     perfilExtended: `Sua maior força tende a ser a previsibilidade positiva: o time costuma poder contar que estará onde precisa estar. Tende a manter a calma e a ordem quando outros começam a perder os nervos, sendo a base estável do grupo. Não busca os holofotes, mas sua ausência seria sentida imediatamente.`,
     bienvenida: `Este mapa é um convite para compreender como {nombre} escolhe habitar o esporte hoje. Na Nave Argo, a segurança da viagem não depende apenas da velocidade, mas da solidez de quem mantém o rumo sem fraquejar. Este relatório é uma "fotografia do presente" criada para que os adultos possamos sintonizar com seu ritmo, protegendo seu bem-estar e garantindo que o esporte seja seu lugar de confiança. Nota de segurança: Não avaliamos talento nem realizamos diagnósticos de saúde mental. Nosso objetivo é identificar o contexto onde {nombre} flui com maior conforto para evitar o estresse desnecessário.`,
@@ -234,7 +234,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   sosten_sereno: {
-    label: `Sustentador Sereno`,
+    label: `Sustentador`,
     perfil: `Imperturbabilidade e Calma Estrutural`,
     perfilExtended: `Tende a manter a calma quando a pressão aumenta, transmitindo uma estabilidade que organiza quem o rodeia. Seu ritmo profundo não se trata de lentidão: costuma ser sua maneira de sustentar o time quando a partida fica desordenada. Sua melhor versão costuma aparecer quando o cansaço começa a afetar os demais.`,
     bienvenida: `Este mapa é um convite para compreender como {nombre} escolhe habitar o esporte hoje. Na Nave Argo, a segurança da missão depende de quem mantém a calma quando o restante da tripulação entra em alerta. Este relatório é uma "fotografia do presente" criada para que os adultos possamos sintonizar com seu ritmo, protegendo seu bem-estar e garantindo que o esporte seja seu refúgio de confiança. Nota de segurança: Não avaliamos talento nem realizamos diagnósticos de saúde mental. Nosso objetivo é identificar o contexto onde {nombre} flui com maior conforto para evitar o estresse desnecessário e estimular seu prazer.`,
@@ -260,7 +260,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_reactivo: {
-    label: `Estrategista Dinâmico`,
+    label: `Estrategista`,
     perfil: `Precisão Instantânea e Ajuste Tático Veloz`,
     perfilExtended: `Tende a ler o jogo com rapidez e a agir sobre o que analisa sem demora. Tende a detectar quando um companheiro está mal posicionado ou quando um acordo não está sendo cumprido, antes que os demais notem. Sua combinação de análise e imediatez tende a torná-lo o olho do treinador dentro do campo.`,
     bienvenida: `Este mapa é um convite para entender como {nombre} processa o esporte hoje. Na Nave Argo, a vitória depende de quem sabe ler as estrelas e ajustar as velas a tempo. Este relatório é uma "fotografia do presente" criada para que os adultos acompanhemos sua natureza analítica, protegendo sua autoestima e garantindo que sua busca pela precisão seja uma fonte de prazer. Nota de segurança: Isso não é um diagnóstico clínico. É uma ferramenta para identificar o contexto onde {nombre} flui com menor fricção emocional.`,
@@ -286,7 +286,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_analitico: {
-    label: `Estrategista Rítmico`,
+    label: `Estrategista`,
     perfil: `Processamento Técnico e Execução com Propósito`,
     perfilExtended: `Tende a processar a informação antes de ativar a resposta, o que lhe dá uma precisão na execução que se destaca dentro do time. Tende a precisar entender o sentido do que faz, e uma vez que entende, aplica o plano com uma fidelidade que traz ordem coletiva. Sua força tende a estar na qualidade de suas decisões, não na velocidade.`,
     bienvenida: `Este mapa é um convite para compreender como {nombre} processa e habita o esporte hoje. Na Nave Argo, o sucesso da missão não depende apenas da força, mas da exatidão dos cálculos. Este relatório é uma "fotografia do presente" criada para que os adultos possamos sintonizar com seu ritmo analítico, protegendo sua autoestima e garantindo que o esporte seja um espaço de aprendizado e prazer. Nota de segurança: Não avaliamos talento nem realizamos diagnósticos. Nosso objetivo é identificar o contexto onde {nombre} flui com maior conforto e menor estresse.`,
@@ -312,7 +312,7 @@ export const ARCHETYPE_DATA_PT: Record<string, ArchetypeTranslation> = {
   },
 
   estratega_observador: {
-    label: `Estrategista Observador`,
+    label: `Estrategista`,
     perfil: `Análise Profunda do Ambiente e Precisão Lógica`,
     perfilExtended: `Tende a processar a informação com uma profundidade pouco comum, analisando posições, espaços e padrões antes de agir. Tende a observar a partida mesmo enquanto joga, com uma clareza estratégica que tende a torná-lo a âncora inteligente do time. O que pode parecer lentidão costuma ser rigor: quando decide, o faz a partir de uma compreensão muito completa da situação.`,
     bienvenida: `Este mapa é um convite para descobrir como {nombre} processa o mundo do esporte hoje. Na Nave Argo, o sucesso não dependia apenas da força dos remadores, mas da capacidade do vigia para ler as correntes invisíveis. Este relatório é uma "fotografia do presente" criada para que os adultos sintonizem com seu ritmo analítico, protegendo sua autoestima e garantindo que sua inteligência seja sua maior fonte de prazer. Nota de segurança: Não avaliamos talento nem realizamos diagnósticos. Nosso objetivo é identificar o contexto onde {nombre} flui com menor fricção emocional para que nunca queira parar de jogar.`,

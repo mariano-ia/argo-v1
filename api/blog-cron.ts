@@ -60,11 +60,13 @@ const ARCHETYPES = [
     'estratega_agil', 'estratega_preciso', 'estratega_cauteloso',
 ];
 
+// Canonical eje×veta naming (docs/archetype-naming.md): 4 primarios puros + 8 blends.
+// Tempo (motor) is NOT part of the name; it is a separate per-child insight.
 const ARCHETYPE_LABELS: Record<string, string> = {
-    impulsor_dinamico: 'Impulsor Dinámico', impulsor_decidido: 'Impulsor Rítmico', impulsor_persistente: 'Impulsor Sereno',
-    conector_expresivo: 'Conector Dinámico', conector_armonico: 'Conector Rítmico', conector_profundo: 'Conector Sereno',
-    sosten_adaptable: 'Sostenedor Dinámico', sosten_estable: 'Sostenedor Rítmico', sosten_reflexivo: 'Sostenedor Sereno',
-    estratega_agil: 'Estratega Dinámico', estratega_preciso: 'Estratega Rítmico', estratega_cauteloso: 'Estratega Observador',
+    impulsor_dinamico: 'Impulsor', impulsor_decidido: 'Impulsor con veta Conector', impulsor_persistente: 'Impulsor con veta Estratega',
+    conector_expresivo: 'Conector', conector_armonico: 'Conector con veta Impulsor', conector_profundo: 'Conector con veta Sostenedor',
+    sosten_adaptable: 'Sostenedor', sosten_estable: 'Sostenedor con veta Conector', sosten_reflexivo: 'Sostenedor con veta Estratega',
+    estratega_agil: 'Estratega', estratega_preciso: 'Estratega con veta Impulsor', estratega_cauteloso: 'Estratega con veta Sostenedor',
 };
 
 // ─── Topic idea generation ──────────────────────────────────────────────────

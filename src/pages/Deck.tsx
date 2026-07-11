@@ -33,13 +33,13 @@ const T = {
             header: 'Informe de sintonía',
             meta: '11 años · Fútbol',
             profileLabel: 'Informe de perfil',
-            archetype: 'Sostenedor Rítmico',
-            secondary: 'con brújula social',
+            archetype: 'Sostenedor con veta Conector',
+            secondary: 'lee y sostiene al grupo',
             profileBold: 'Joaquín tiende a leer al grupo antes de moverse.',
             profileRest:
                 ' Su presencia ordena el clima del equipo aun cuando no es el más vocal. Sostiene el ritmo cuando otros se aceleran o se quedan. Es probable que su mayor aporte no se note en el resultado, sino en cómo el equipo se siente cuando él está.',
-            motorLabel: 'Motor de rendimiento',
-            motorBold: 'Su tempo es rítmico.',
+            motorLabel: 'Su motor',
+            motorBold: 'No es el más rápido ni el más lento en decidir.',
             motorRest:
                 ' Procesa antes de actuar, pero no se queda quieto. Necesita un momento breve para integrar la jugada y luego responde con consistencia.',
             fuelLabel: 'Qué lo mueve',
@@ -57,7 +57,7 @@ const T = {
             bridgeWords: ['Cuento contigo', 'Tu turno', 'Mantén el equipo', 'Calma'],
             avoidLabel: 'Evitar',
             avoidWords: ['Ya', 'Reacciona', 'Más rápido', 'Solo'],
-            secLabel: 'Tendencia secundaria · con brújula social',
+            secLabel: 'Tendencia secundaria · veta Conector',
             secBody:
                 'Lo social no es ruido para Joaquín. Es información. Lee gestos, tonos, cambios de ánimo del grupo. Esa sensibilidad lo convierte en un puente natural entre los que empujan y los que se quedan atrás.',
             checklistLabel: 'Checklist del día',
@@ -103,36 +103,36 @@ const T = {
                 'Una odisea náutica de doce minutos. Tres mini juegos de reacción y doce decisiones contadas como capítulos de una historia. Sin formularios, sin preguntas clínicas, sin etiquetas.',
             step2Title: 'Nuestro modelo procesa',
             step2Body:
-                'Cada decisión y cada reacción se traducen en dos dimensiones: cómo se comporta en grupo (conducta) y a qué tempo decide y procesa (motor). Doce arquetipos y doce tendencias secundarias resuelven la combinación.',
+                'Cada decisión y cada reacción se traducen en dos lecturas: cómo se comporta en grupo (su eje de conducta y su veta) y a qué ritmo decide y procesa (su motor, una lectura aparte). Así se resuelve su arquetipo entre los doce posibles.',
             step3Title: 'El adulto recibe',
             step3Body:
                 'Un informe completo con arquetipo, tendencia secundaria, combustible interno, palabras puente, checklist del día y consejos de acompañamiento. Llega al coach y a la familia por correo.',
             mapLabel: 'El mapa primario',
-            matrixHeaders: ['Dinámico', 'Rítmico', 'Sereno'],
             matrixAxes: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' } as Record<'D' | 'I' | 'S' | 'C', string>,
-            matrixCObservador: 'Observador',
-            captionA: 'Cuatro ejes de conducta. Tres tempos de procesamiento. Doce arquetipos primarios.',
-            captionB: 'Cada uno se cruza con una de doce tendencias secundarias. ',
-            captionBold: 'Más de cien combinaciones posibles.',
-            captionC: ' Ninguna mejor que otra.',
+            matrixBlends: { D: ['Conector', 'Estratega'], I: ['Impulsor', 'Sostenedor'], S: ['Conector', 'Estratega'], C: ['Impulsor', 'Sostenedor'] } as Record<'D' | 'I' | 'S' | 'C', [string, string]>,
+            matrixColHeaders: ['Puro', 'Con veta', 'Con veta'],
+            captionA: 'Cuatro ejes de conducta. Cada uno puede ir puro o con una veta (un eje secundario).',
+            captionB: 'Así se forman los doce arquetipos: cuatro puros y ocho combinaciones. ',
+            captionBold: 'Ninguno es mejor que otro.',
+            captionC: ' El motor (a qué ritmo procesa y decide) es una lectura aparte.',
         },
         intel: {
             eyebrow: 'La inteligencia detrás de Argo',
             h1: 'El informe es solo el comienzo.',
             h2: 'La IA acompaña al coach durante toda la temporada.',
             sub:
-                'Tres capas conectadas, entrenadas sobre los doce arquetipos, las doce tendencias secundarias y cincuenta y siete situaciones reales de coaching infantil.',
+                'Tres capas conectadas, entrenadas sobre los doce arquetipos y cincuenta y siete situaciones reales de coaching infantil.',
             layer1: 'Capa 1',
             layer1Title: 'Argo Coach',
             layer1Body:
                 'Un asistente conversacional al que el coach puede preguntarle cualquier cosa sobre cualquier jugador. La IA trabaja con el perfil de tendencias que mostró cada niño y responde con lenguaje cercano, concreto, probabilístico, libre de jerga clínica.',
-            layer1Quote: '"¿Cómo motivo a un Sostenedor Rítmico que no quiere empezar a jugar?"',
+            layer1Quote: '"¿Cómo motivo a un Sostenedor con veta Conector que no quiere empezar a jugar?"',
             layer2: 'Capa 2',
             layer2Title: 'Equipos Equilibrados',
             layer2Body:
                 'Lee la composición conductual del grupo y sugiere agrupamientos. Detecta cuándo un equipo está dominado por una sola energía, cuándo le falta sostén, qué duplas se potencian. El coach decide. Argo informa.',
             layer2Quote:
-                'Energía competitiva alta. Sugerencia: rotar al Estratega Rítmico al medio para anclar la presión.',
+                'Energía competitiva alta. Sugerencia: rotar al Estratega con veta Impulsor al medio para anclar la presión.',
             layer3: 'Capa 3',
             layer3Title: 'Predictor de situaciones',
             layer3Body:
@@ -172,7 +172,7 @@ const T = {
         email: {
             from: 'De: ArgoMethod®',
             subject: 'El perfil de Joaquín está listo',
-            archetype: 'Sostenedor Rítmico',
+            archetype: 'Sostenedor con veta Conector',
             body: 'Joaquín tiende a leer al grupo antes de moverse…',
             cta: 'Leer reporte completo',
         },
@@ -203,13 +203,13 @@ const T = {
             header: 'Attunement report',
             meta: 'age 11 · soccer',
             profileLabel: 'Profile',
-            archetype: 'Rhythmic Sustainer',
-            secondary: 'with a social compass',
+            archetype: 'Sustainer with a Connector lean',
+            secondary: 'reads and steadies the group',
             profileBold: 'Joaquín tends to read the group before he moves.',
             profileRest:
                 ' His presence settles the team\'s mood even when he isn\'t the loudest voice. He holds the rhythm when others speed up or fall behind. His biggest contribution is unlikely to show up in the score. It shows up in how the team feels when he\'s on the field.',
-            motorLabel: 'Performance tempo',
-            motorBold: 'His tempo is rhythmic.',
+            motorLabel: 'His engine',
+            motorBold: 'Not the fastest nor the slowest to decide.',
             motorRest:
                 ' He processes before acting, but he doesn\'t freeze. He needs a brief moment to absorb the play, then responds with consistency.',
             fuelLabel: 'What moves him',
@@ -227,7 +227,7 @@ const T = {
             bridgeWords: ['Counting on you', 'Your turn', 'Hold the team', 'Easy'],
             avoidLabel: 'Avoid',
             avoidWords: ['Now!', 'React!', 'Faster!', 'Alone'],
-            secLabel: 'Secondary tendency · with a social compass',
+            secLabel: 'Secondary tendency · Connector lean',
             secBody:
                 'The social layer isn\'t noise for Joaquín. It\'s information. He reads gestures, tones, shifts in the group\'s mood. That sensitivity makes him a natural bridge between the kids who push and the ones who fall behind.',
             checklistLabel: 'Daily checklist',
@@ -273,36 +273,36 @@ const T = {
                 'A twelve-minute nautical odyssey. Three reaction mini-games and twelve decisions told as chapters of a story. No forms, no clinical questions, no labels.',
             step2Title: 'Our model processes',
             step2Body:
-                'Every decision and every reaction translates into two dimensions: how they behave in a group (conduct) and at what tempo they decide and process (motor). Twelve archetypes and twelve secondary tendencies resolve the combination.',
+                'Every decision and every reaction translates into two readings: how they behave in a group (their behavioral axis and its lean) and the pace at which they decide and process (their engine, a separate reading). That resolves their archetype among the twelve possible ones.',
             step3Title: 'The adult receives',
             step3Body:
                 'A complete report with archetype, secondary tendency, internal fuel, bridge words, daily checklist, and accompaniment advice. Delivered to the coach and the family by email.',
             mapLabel: 'The primary map',
-            matrixHeaders: ['Dynamic', 'Rhythmic', 'Serene'],
             matrixAxes: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' } as Record<'D' | 'I' | 'S' | 'C', string>,
-            matrixCObservador: 'Observant',
-            captionA: 'Four behavioral axes. Three processing tempos. Twelve primary archetypes.',
-            captionB: 'Each crosses with one of twelve secondary tendencies. ',
-            captionBold: 'Over a hundred possible combinations.',
-            captionC: ' None better than another.',
+            matrixBlends: { D: ['Connector', 'Strategist'], I: ['Driver', 'Sustainer'], S: ['Connector', 'Strategist'], C: ['Driver', 'Sustainer'] } as Record<'D' | 'I' | 'S' | 'C', [string, string]>,
+            matrixColHeaders: ['Pure', 'With a lean', 'With a lean'],
+            captionA: 'Four behavioral axes. Each can stand pure or with a lean (a secondary axis).',
+            captionB: 'That forms the twelve archetypes: four pure and eight blends. ',
+            captionBold: 'None better than another.',
+            captionC: ' The engine (the pace at which they process) is a separate reading.',
         },
         intel: {
             eyebrow: 'The intelligence behind Argo',
             h1: 'The report is just the beginning.',
             h2: 'The AI walks with the coach through the entire season.',
             sub:
-                'Three connected layers, trained on the twelve archetypes, the twelve secondary tendencies, and fifty-seven real situations from youth coaching.',
+                'Three connected layers, trained on the twelve archetypes and fifty-seven real situations from youth coaching.',
             layer1: 'Layer 1',
             layer1Title: 'Argo Coach',
             layer1Body:
                 'A conversational assistant the coach can ask anything about any player. The AI knows the real profile of every child on the team and answers in concrete, probabilistic language, free of clinical jargon.',
-            layer1Quote: '"How do I motivate a Rhythmic Sustainer who doesn\'t want to start playing?"',
+            layer1Quote: '"How do I motivate a Sustainer with a Connector lean who doesn\'t want to start playing?"',
             layer2: 'Layer 2',
             layer2Title: 'Balanced Teams',
             layer2Body:
                 'Reads the group\'s behavioral composition and suggests pairings. Detects when a team is dominated by a single energy, when it lacks support, which pairs amplify each other. The coach decides. Argo informs.',
             layer2Quote:
-                'High competitive energy. Suggestion: rotate the Rhythmic Strategist to the center to anchor the pressure.',
+                'High competitive energy. Suggestion: rotate the Strategist with a Driver lean to the center to anchor the pressure.',
             layer3: 'Layer 3',
             layer3Title: 'Situation Predictor',
             layer3Body:
@@ -342,7 +342,7 @@ const T = {
         email: {
             from: 'From: ArgoMethod®',
             subject: 'Joaquín\'s profile is ready',
-            archetype: 'Rhythmic Sustainer',
+            archetype: 'Sustainer with a Connector lean',
             body: 'Joaquín tends to read the group before he moves…',
             cta: 'Read full report',
         },
@@ -861,9 +861,9 @@ const Matrix: React.FC = () => {
                 style={{ gridTemplateColumns: '160px 1fr 1fr 1fr', borderBottom: '1px solid #E8E8ED', backgroundColor: '#FBFBFD' }}
             >
                 <div />
-                {t.matrixHeaders.map((m) => (
+                {t.matrixColHeaders.map((m, ci) => (
                     <div
-                        key={m}
+                        key={ci}
                         className="px-4 py-3 text-center"
                         style={{
                             fontSize: 11,
@@ -879,10 +879,8 @@ const Matrix: React.FC = () => {
             </div>
 
             {axesOrder.map((eje, idx) => {
-                const motors =
-                    eje === 'C'
-                        ? [t.matrixHeaders[0], t.matrixHeaders[1], t.matrixCObservador]
-                        : t.matrixHeaders;
+                // Each row: the pure primary, then its two non-opposite vetas (eje×veta blends).
+                const cells = [t.matrixAxes[eje], t.matrixBlends[eje][0], t.matrixBlends[eje][1]];
                 return (
                     <div
                         key={eje}
@@ -901,14 +899,17 @@ const Matrix: React.FC = () => {
                                 {t.matrixAxes[eje]}
                             </span>
                         </div>
-                        {motors.map((motor) => (
+                        {cells.map((cell, ci) => (
                             <div
-                                key={motor}
+                                key={ci}
                                 className="px-4 py-5 text-center text-argo-secondary border-l"
                                 style={{ fontSize: 13, borderColor: '#F0F0F3', fontWeight: 400 }}
                             >
-                                <span style={{ color: AXIS_COLORS[eje], fontWeight: 600 }}>{t.matrixAxes[eje]}</span>{' '}
-                                <span style={{ color: '#86868B' }}>{motor}</span>
+                                {ci === 0 ? (
+                                    <span style={{ color: AXIS_COLORS[eje], fontWeight: 600 }}>{cell}</span>
+                                ) : (
+                                    <span style={{ color: '#86868B' }}>{cell}</span>
+                                )}
                             </div>
                         ))}
                     </div>

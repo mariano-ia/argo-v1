@@ -41,7 +41,7 @@ const ContentES: React.FC = () => (
         </Section>
 
         <Section title="3. Cómo usamos los datos">
-            <p>Los datos del deportista se utilizan <strong>exclusivamente</strong> para generar el informe de perfil conductual basado en la metodología DISC + Motor de ArgoMethod®. Los datos del adulto se utilizan para entregar el informe, gestionar la cuenta, y comunicarnos sobre el servicio.</p>
+            <p>Los datos del deportista se utilizan <strong>exclusivamente</strong> para generar el informe de perfil conductual basado en la metodología DISC de ArgoMethod®. Los datos del adulto se utilizan para entregar el informe, gestionar la cuenta, y comunicarnos sobre el servicio.</p>
             <p><strong>No vendemos, alquilamos ni cedemos datos a terceros con fines publicitarios.</strong> No utilizamos los datos de menores para publicidad bajo ninguna circunstancia.</p>
             <p>Las respuestas del deportista se procesan mediante inteligencia artificial (Google Gemini) para personalizar las secciones narrativas del informe. Antes de enviar cualquier dato al proveedor de IA, eliminamos o anonimizamos la información identificable del menor (reemplazamos su nombre por un marcador genérico). El proveedor de IA procesa los datos de forma transitoria y no los almacena.</p>
         </Section>
@@ -110,7 +110,7 @@ const ContentEN: React.FC = () => (
         </Section>
 
         <Section title="3. How we use the data">
-            <p>Athlete data is used <strong>exclusively</strong> to generate the behavioral profile report based on ArgoMethod®'s DISC + Motor methodology. Adult data is used to deliver the report, manage the account, and communicate about the service.</p>
+            <p>Athlete data is used <strong>exclusively</strong> to generate the behavioral profile report based on ArgoMethod®'s DISC methodology. Adult data is used to deliver the report, manage the account, and communicate about the service.</p>
             <p><strong>We do not sell, rent, or share data with third parties for advertising purposes.</strong> We never use children's data for advertising under any circumstances.</p>
             <p>Athlete answers are processed by artificial intelligence (Google Gemini) to personalize the narrative sections of the report. Before sending any data to the AI provider, we strip or anonymize identifying information about the child (we replace their name with a generic placeholder). The AI provider processes the data transiently and does not store it.</p>
         </Section>
@@ -179,7 +179,7 @@ const ContentPT: React.FC = () => (
         </Section>
 
         <Section title="3. Como usamos os dados">
-            <p>Os dados do atleta são usados <strong>exclusivamente</strong> para gerar o relatório de perfil comportamental baseado na metodologia DISC + Motor do ArgoMethod®. Os dados do adulto são usados para entregar o relatório, gerenciar a conta e comunicar sobre o serviço.</p>
+            <p>Os dados do atleta são usados <strong>exclusivamente</strong> para gerar o relatório de perfil comportamental baseado na metodologia DISC do ArgoMethod®. Os dados do adulto são usados para entregar o relatório, gerenciar a conta e comunicar sobre o serviço.</p>
             <p><strong>Não vendemos, alugamos nem compartilhamos dados com terceiros para fins publicitários.</strong> Nunca usamos dados de menores para publicidade sob nenhuma circunstância.</p>
             <p>As respostas do atleta são processadas por inteligência artificial (Google Gemini) para personalizar as seções narrativas do relatório. Antes de enviar qualquer dado ao provedor de IA, removemos ou anonimizamos a informação identificável do menor (substituímos seu nome por um marcador genérico). O provedor de IA processa os dados de forma transitória e não os armazena.</p>
         </Section>

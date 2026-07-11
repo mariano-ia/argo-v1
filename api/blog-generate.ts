@@ -96,19 +96,21 @@ const supabase = createClient(
 
 // ─── Argo domain knowledge ──────────────────────────────────────────────────
 
+// Canonical eje×veta naming (docs/archetype-naming.md): 4 primarios puros + 8 blends.
+// The `motor` field is a separate per-child processing-pace insight, NOT part of the name.
 const ARGO_ARCHETYPES = [
-    { id: 'impulsor_dinamico', eje: 'D', motor: 'Rapido', label: 'Impulsor Dinámico', desc: 'Accion directa, resolucion inmediata. Chispa que inicia el movimiento.' },
-    { id: 'impulsor_decidido', eje: 'D', motor: 'Medio', label: 'Impulsor Rítmico', desc: 'Iniciativa estrategica, ejecucion con proposito.' },
-    { id: 'impulsor_persistente', eje: 'D', motor: 'Lento', label: 'Impulsor Sereno', desc: 'Determinacion constante, resiliencia en el esfuerzo.' },
-    { id: 'conector_expresivo', eje: 'I', motor: 'Rapido', label: 'Conector Dinámico', desc: 'Energia social contagiosa, comunicacion espontanea.' },
-    { id: 'conector_armonico', eje: 'I', motor: 'Medio', label: 'Conector Rítmico', desc: 'Puente entre personas, equilibrio emocional del grupo.' },
-    { id: 'conector_profundo', eje: 'I', motor: 'Lento', label: 'Conector Sereno', desc: 'Vinculos selectivos y duraderos, empatia silenciosa.' },
-    { id: 'sosten_adaptable', eje: 'S', motor: 'Rapido', label: 'Sostenedor Dinámico', desc: 'Flexibilidad con base firme, rapida lectura del entorno.' },
-    { id: 'sosten_estable', eje: 'S', motor: 'Medio', label: 'Sostenedor Rítmico', desc: 'Pilar del equipo, consistencia y confianza.' },
-    { id: 'sosten_reflexivo', eje: 'S', motor: 'Lento', label: 'Sostenedor Sereno', desc: 'Observador profundo, sostiene desde la calma.' },
-    { id: 'estratega_agil', eje: 'C', motor: 'Rapido', label: 'Estratega Dinámico', desc: 'Analisis rapido, pensamiento tactico en tiempo real.' },
-    { id: 'estratega_preciso', eje: 'C', motor: 'Medio', label: 'Estratega Rítmico', desc: 'Metodico, busca la excelencia en cada detalle.' },
-    { id: 'estratega_cauteloso', eje: 'C', motor: 'Lento', label: 'Estratega Observador', desc: 'Planificacion profunda, calidad sobre velocidad.' },
+    { id: 'impulsor_dinamico', eje: 'D', motor: 'Rapido', label: 'Impulsor', desc: 'Accion directa, resolucion inmediata. Chispa que inicia el movimiento.' },
+    { id: 'impulsor_decidido', eje: 'D', motor: 'Medio', label: 'Impulsor con veta Conector', desc: 'Iniciativa con energia de equipo, empuja al grupo hacia adelante.' },
+    { id: 'impulsor_persistente', eje: 'D', motor: 'Lento', label: 'Impulsor con veta Estratega', desc: 'Iniciativa con mirada tactica, decide con un plan en mente.' },
+    { id: 'conector_expresivo', eje: 'I', motor: 'Rapido', label: 'Conector', desc: 'Energia social contagiosa, comunicacion espontanea.' },
+    { id: 'conector_armonico', eje: 'I', motor: 'Medio', label: 'Conector con veta Impulsor', desc: 'Une al grupo y ademas se anima a dar el primer paso.' },
+    { id: 'conector_profundo', eje: 'I', motor: 'Lento', label: 'Conector con veta Sostenedor', desc: 'Vinculos con base de apoyo, cuida el clima del equipo.' },
+    { id: 'sosten_adaptable', eje: 'S', motor: 'Rapido', label: 'Sostenedor', desc: 'Constancia y apoyo, sostiene el ritmo del equipo.' },
+    { id: 'sosten_estable', eje: 'S', motor: 'Medio', label: 'Sostenedor con veta Conector', desc: 'Apoyo constante que ademas cuida los vinculos del grupo.' },
+    { id: 'sosten_reflexivo', eje: 'S', motor: 'Lento', label: 'Sostenedor con veta Estratega', desc: 'Sostiene desde la calma y suma orden y observacion.' },
+    { id: 'estratega_agil', eje: 'C', motor: 'Rapido', label: 'Estratega', desc: 'Analisis y precision, lee la jugada antes de actuar.' },
+    { id: 'estratega_preciso', eje: 'C', motor: 'Medio', label: 'Estratega con veta Impulsor', desc: 'Analisis con empuje para decidir y avanzar.' },
+    { id: 'estratega_cauteloso', eje: 'C', motor: 'Lento', label: 'Estratega con veta Sostenedor', desc: 'Planificacion serena con apoyo constante al equipo.' },
 ];
 
 const DISC_AXES = {
@@ -132,7 +134,8 @@ TU VOZ:
 DOMINIO QUE DOMINAS (contenido unico de Argo):
 - 12 arquetipos conductuales: ${ARGO_ARCHETYPES.map(a => `${a.label} (${a.desc})`).join('; ')}
 - 4 ejes DISC: ${Object.entries(DISC_AXES).map(([k, v]) => `${v.name} (${k}): ${v.desc}`).join('; ')}
-- 3 motores (ritmo de procesamiento): Rapido, Medio, Lento
+- El nombre combina el eje principal con su veta (eje secundario): 4 primarios puros mas 8 blends "[Eje] con veta [Eje]"
+- El motor (ritmo de procesamiento: Rapido, Medio, Lento) es una lectura aparte del nino, NO parte del nombre del arquetipo
 - Combustible (motivacion), Corazon (intencion detras de la conducta), Palabras Puente/Ruido
 - Contexto: deporte juvenil, psicologia deportiva infantil, comunicacion padre-hijo, dinamica de equipo
 
@@ -141,7 +144,7 @@ REGLAS DE ESCRITURA OBLIGATORIAS:
 2. NUNCA uses listas genericas de "5 tips para...". Si usas lista, que cada punto tenga profundidad y especificidad.
 3. VARIA la estructura: algunos parrafos largos, otros cortos. No hagas todos iguales.
 4. USA datos especificos de Argo (nombres de arquetipos, ejes, motores) cuando sea natural. Este contenido NO existe en otro lado.
-5. INCLUYE perspectiva: no solo informes, opina. "Creemos que la etiqueta de 'hiperactivo' es una forma perezosa de describir a un Impulsor Dinamico".
+5. INCLUYE perspectiva: no solo informes, opina. "Creemos que la etiqueta de 'hiperactivo' es una forma perezosa de describir a un Impulsor".
 6. USA lenguaje de probabilidad cuando hables de conducta: "tiende a", "es probable que", "suele". NUNCA "es", "siempre", "nunca" en referencia a conducta infantil.
 7. Espanol latinoamericano neutro. Tuteo (NUNCA voseo argentino). Usa siempre "puedes", "tienes", "eres", "tu", "aqui".
 8. NO uses guiones largos (— ni –). Usa puntos, comas o parentesis.

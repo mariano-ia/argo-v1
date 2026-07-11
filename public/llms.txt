@@ -4,7 +4,7 @@
 
 ## What is Argo Method?
 
-Argo Method is a sports behavioral profiling tool for children aged 8–16. It uses the DISC methodology (Dominance, Influence, Steadiness, Conscientiousness) combined with a Motor dimension (processing speed) to generate a personalized behavioral profile for each young athlete.
+Argo Method is a sports behavioral profiling tool for children aged 8 to 16. It uses the DISC methodology (Dominance, Influence, Steadiness, Conscientiousness) to generate a personalized behavioral profile for each young athlete, plus a separate reading of the child's engine (their processing pace).
 
 The tool helps coaches, parents, and sports institutions understand how each child processes pressure, relates to their team, and makes decisions — so the adult can adapt their communication and create the right environment for the child to enjoy and stay in sport.
 
@@ -16,14 +16,14 @@ The tool helps coaches, parents, and sports institutions understand how each chi
 
 ## The 12 Archetypes
 
-Argo identifies 12 base archetypes by combining 4 behavioral axes with 3 motor types:
+Argo identifies 12 archetypes from 4 behavioral axes: the 4 pure primaries plus 8 blends named "[primary axis] con veta [secondary axis]" (the secondary axis is the veta). Diagonal opposites (Impulsor↔Sostenedor, Conector↔Estratega) never combine into a name.
 
-- **Impulsor (Driver)**: Dinámico, Rítmico, Sereno — leads through action, needs challenge and autonomy
-- **Conector (Connector)**: Dinámico, Rítmico, Sereno — thrives in social settings, needs recognition and variety
-- **Sostenedor (Sustainer)**: Dinámico, Rítmico, Sereno — stabilizes the group, needs predictability and trust
-- **Estratega (Strategist)**: Dinámico, Rítmico, Observador — analyzes before acting, needs structure and space
+- **Impulsor (Driver)**: leads through action, needs challenge and autonomy. Blends: con veta Conector, con veta Estratega
+- **Conector (Connector)**: thrives in social settings, needs recognition and variety. Blends: con veta Impulsor, con veta Sostenedor
+- **Sostenedor (Sustainer)**: stabilizes the group, needs predictability and trust. Blends: con veta Conector, con veta Estratega
+- **Estratega (Strategist)**: analyzes before acting, needs structure and space. Blends: con veta Impulsor, con veta Sostenedor
 
-Each archetype includes a secondary compass (brújula secundaria) creating 36 unique profile variants.
+Apart from the name, the report reads the child's engine (their processing pace) as a separate per-child insight, never as part of the name.
 
 ## The Report includes
 
@@ -46,7 +46,7 @@ Argo is based on the DISC behavioral model, which identifies four primary behavi
 
 ## Key facts
 
-- Free to use (beta)
+- ArgoOne (consumer report): US$12.99, includes the buyer's Puente (bridge). ArgoPuente add-on for an extra adult: US$4.99. Academy (institutions): subscription with a free trial
 - 12-minute experience
 - No app installation required
 - Report delivered via email

@@ -255,13 +255,13 @@ export const HELP_ARTICLES: HelpArticle[] = [
         id: 'entender-arquetipos',
         category: 'players',
         title: '¿Qué significan los 12 perfiles?',
-        body: 'Cada perfil combina un eje (cómo decide y se relaciona: Impulsor, Conector, Sostenedor o Estratega) con un motor (su ritmo: Dinámico, Rítmico o Sereno). De ahí salen los 12 perfiles, como Impulsor Dinámico o Estratega Sereno.\n\nNingún perfil es mejor que otro. Dinámico no es mejor que Sereno: solo describen formas distintas de moverse en el mundo. El perfil es una foto del presente, no una etiqueta para siempre.',
+        body: 'Cada perfil parte de un eje principal (cómo decide y se relaciona: Impulsor, Conector, Sostenedor o Estratega). A veces se suma una veta, que es el segundo eje más marcado del niño. Así salen los 12 perfiles: los 4 ejes puros (como Impulsor o Estratega) y 8 combinaciones (como Impulsor con veta Conector).\n\nNingún perfil es mejor que otro: solo describen formas distintas de moverse en el mundo. Aparte del nombre, el informe mide su motor (a qué ritmo procesa y decide) como una lectura propia. El perfil es una foto del presente, no una etiqueta para siempre.',
     },
     {
         id: 'brujula-palabras',
         category: 'players',
-        title: '¿Qué son la brújula secundaria y las palabras puente?',
-        body: 'La brújula secundaria es el segundo eje más fuerte del niño: matiza su perfil principal.\n\nLas palabras puente son frases que conectan con él y lo motivan. Las palabras a evitar son las que le generan ruido o resistencia. Te dan una forma concreta de hablarle a cada niño.',
+        title: '¿Qué son la veta secundaria y las palabras puente?',
+        body: 'La veta secundaria es el segundo eje más fuerte del niño: matiza su perfil principal.\n\nLas palabras puente son frases que conectan con él y lo motivan. Las palabras a evitar son las que le generan ruido o resistencia. Te dan una forma concreta de hablarle a cada niño.',
         trialNote: 'Estas secciones se desbloquean al pasar a un plan pago.',
     },
     {

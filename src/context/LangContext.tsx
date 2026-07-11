@@ -64,12 +64,12 @@ export const translations = {
         archetypes: {
             eyebrow: 'Los 12 arquetipos',
             headline: '12 perfiles. Cada deportista en uno.',
-            sub: 'Combinando eje dominante y motor de ritmo, Argo mapea 12 arquetipos únicos de comportamiento deportivo.',
+            sub: 'Argo combina el eje principal del niño con su veta secundaria para mapear 12 arquetipos de comportamiento deportivo.',
             profiles: [
-                'Impulsor Dinámico', 'Impulsor Rítmico', 'Impulsor Sereno',
-                'Conector Dinámico', 'Conector Rítmico', 'Conector Sereno',
-                'Sostenedor Dinámico', 'Sostenedor Rítmico', 'Sostenedor Sereno',
-                'Estratega Dinámico', 'Estratega Rítmico', 'Estratega Observador',
+                'Impulsor', 'Impulsor con veta Conector', 'Impulsor con veta Estratega',
+                'Conector', 'Conector con veta Impulsor', 'Conector con veta Sostenedor',
+                'Sostenedor', 'Sostenedor con veta Conector', 'Sostenedor con veta Estratega',
+                'Estratega', 'Estratega con veta Impulsor', 'Estratega con veta Sostenedor',
             ],
         },
         audience: {
@@ -163,12 +163,12 @@ export const translations = {
         archetypes: {
             eyebrow: 'The 12 archetypes',
             headline: '12 profiles. Every athlete fits one.',
-            sub: 'By combining dominant axis and rhythm engine, Argo maps 12 unique sports behavioral archetypes.',
+            sub: "Argo combines the child's primary axis with a secondary lean to map 12 sports behavioral archetypes.",
             profiles: [
-                'Dynamic Driver', 'Rhythmic Driver', 'Serene Driver',
-                'Dynamic Connector', 'Rhythmic Connector', 'Serene Connector',
-                'Dynamic Sustainer', 'Rhythmic Sustainer', 'Serene Sustainer',
-                'Dynamic Strategist', 'Rhythmic Strategist', 'Observant Strategist',
+                'Driver', 'Driver with a Connector lean', 'Driver with a Strategist lean',
+                'Connector', 'Connector with a Driver lean', 'Connector with a Sustainer lean',
+                'Sustainer', 'Sustainer with a Connector lean', 'Sustainer with a Strategist lean',
+                'Strategist', 'Strategist with a Driver lean', 'Strategist with a Sustainer lean',
             ],
         },
         audience: {
@@ -262,12 +262,12 @@ export const translations = {
         archetypes: {
             eyebrow: 'Os 12 arquétipos',
             headline: '12 perfis. Cada atleta em um.',
-            sub: 'Combinando eixo dominante e motor de ritmo, Argo mapeia 12 arquétipos únicos de comportamento esportivo.',
+            sub: 'Argo combina o eixo principal da criança com a sua veta secundária para mapear 12 arquétipos de comportamento esportivo.',
             profiles: [
-                'Impulsionador Dinâmico', 'Impulsionador Rítmico', 'Impulsionador Sereno',
-                'Conector Dinâmico', 'Conector Rítmico', 'Conector Sereno',
-                'Sustentador Dinâmico', 'Sustentador Rítmico', 'Sustentador Sereno',
-                'Estrategista Dinâmico', 'Estrategista Rítmico', 'Estrategista Observador',
+                'Impulsionador', 'Impulsionador com veta Conector', 'Impulsionador com veta Estrategista',
+                'Conector', 'Conector com veta Impulsionador', 'Conector com veta Sustentador',
+                'Sustentador', 'Sustentador com veta Conector', 'Sustentador com veta Estrategista',
+                'Estrategista', 'Estrategista com veta Impulsionador', 'Estrategista com veta Sustentador',
             ],
         },
         audience: {

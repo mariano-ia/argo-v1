@@ -171,13 +171,13 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         id: 'entender-arquetipos',
         category: 'players',
         title: 'O que significam os 12 perfis?',
-        body: 'Cada perfil combina um eixo (como a criança decide e se relaciona: Impulsionador, Conector, Sustentador ou Estrategista) com um motor (o seu ritmo: Dinâmico, Rítmico ou Sereno). Daí saem os 12 perfis, como Impulsionador Dinâmico ou Estrategista Sereno.\n\nNenhum perfil é melhor que outro. Dinâmico não é melhor que Sereno: apenas descrevem formas diferentes de se mover no mundo. O perfil é uma foto do presente, não um rótulo para sempre.',
+        body: 'Cada perfil parte de um eixo principal (como a criança decide e se relaciona: Impulsionador, Conector, Sustentador ou Estrategista). Às vezes se soma uma veta, que é o segundo eixo mais marcado da criança. Assim saem os 12 perfis: os 4 eixos puros (como Impulsionador ou Estrategista) e 8 combinações (como Impulsionador com veta Conector).\n\nNenhum perfil é melhor que outro: apenas descrevem formas diferentes de se mover no mundo. Além do nome, o relatório mede o seu motor (em que ritmo processa e decide) como uma leitura própria. O perfil é uma foto do presente, não um rótulo para sempre.',
     },
     {
         id: 'brujula-palabras',
         category: 'players',
-        title: 'O que são a bússola secundária e as palavras ponte?',
-        body: 'A bússola secundária é o segundo eixo mais forte da criança: dá nuance ao perfil principal.\n\nAs palavras ponte são frases que conectam com ela e a motivam. As palavras a evitar são as que geram ruído ou resistência. Elas dão a você uma forma concreta de falar com cada criança.',
+        title: 'O que são a veta secundária e as palavras ponte?',
+        body: 'A veta secundária é o segundo eixo mais forte da criança: dá nuance ao perfil principal.\n\nAs palavras ponte são frases que conectam com ela e a motivam. As palavras a evitar são as que geram ruído ou resistência. Elas dão a você uma forma concreta de falar com cada criança.',
         trialNote: 'Estas seções são desbloqueadas ao passar para um plano pago.',
     },
     {
