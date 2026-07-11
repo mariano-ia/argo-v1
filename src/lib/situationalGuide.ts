@@ -352,7 +352,7 @@ export const SITUATION_CARDS: SituationCard[] = [
             'Dile la instrucción paso a paso: "Primero hacemos esto... bien, ahora esto otro". No todo junto.',
             'Dale unos segundos después de la consigna antes de esperar que arranque. Ese silencio es su tiempo de procesamiento.',
         ],
-        ifNotResponding: 'Hacé una demostración rápida del ejercicio. El Sostén procesa mucho mejor viendo que escuchando.',
+        ifNotResponding: 'Haz una demostración rápida del ejercicio. El Sostén procesa mucho mejor viendo que escuchando.',
     },
     {
         situationId: 'no-hace-lo-que-pido',
@@ -606,7 +606,7 @@ export const SITUATION_CARDS: SituationCard[] = [
             'Convertí el ejercicio en algo social: en duplas, con comunicación entre ellos, o con roles que requieran hablar.',
             'Usa su sociabilidad como herramienta: "Explícale a tu compañero cómo se hace este ejercicio".',
         ],
-        ifNotResponding: 'Ponlo en un rol de ayudante tuyo: "Vení, ayudame a organizar esto". La cercanía social con el adulto recaptura su atención.',
+        ifNotResponding: 'Ponlo en un rol de ayudante tuyo: "Ven, ayúdame a organizar esto". La cercanía social con el adulto recaptura su atención.',
     },
     {
         situationId: 'se-distrae',
@@ -660,7 +660,7 @@ export const SITUATION_CARDS: SituationCard[] = [
             'Identifica qué cambió: "¿Hay algo que antes te gustaba y ahora no?". El Sostén puede señalar exactamente el punto de quiebre.',
             'Si puedes, restaura algo del contexto anterior: el mismo horario, el mismo grupo, las mismas rutinas.',
         ],
-        ifNotResponding: 'Dale tiempo. No le pidas una decisión definitiva. "No hace falta que decidas ahora. Vení la semana que viene y vemos". El Sostén necesita procesar los cambios lentamente.',
+        ifNotResponding: 'Dale tiempo. No le pidas una decisión definitiva. "No hace falta que decidas ahora. Ven la semana que viene y vemos". El Sostén necesita procesar los cambios lentamente.',
     },
     {
         situationId: 'quiere-dejar',

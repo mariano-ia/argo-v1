@@ -27,7 +27,7 @@ const SUCCESS_COPY: Record<Lang, {
         readyBody: (email) => `Te enviamos el enlace a ${email} para que puedas volver más tarde. Si quieres, empieza el cuestionario ahora.`,
         cta: 'Empezar ahora',
         timeoutTitle: 'Aún estamos confirmando el pago',
-        timeoutBody: 'El pago puede tardar un poco más de lo esperado. Te enviaremos el enlace al email apenas se confirme. Podés cerrar esta pantalla con tranquilidad.',
+        timeoutBody: 'El pago puede tardar un poco más de lo esperado. Te enviaremos el enlace al email apenas se confirme. Puedes cerrar esta pantalla con tranquilidad.',
         backToHome: 'Volver al inicio',
     },
     en: {

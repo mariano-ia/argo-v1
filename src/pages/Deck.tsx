@@ -90,7 +90,7 @@ const T = {
             p2Bold: 'No hay niños incorrectos. Hay niños mal ubicados.',
             p2Rest: ' Detrás de cada uno, casi siempre, un adulto que no lo terminó de entender.',
             p3:
-                'Argo existe para cambiar eso. Para que los chicos disfruten más del deporte y los adultos los acompañen mejor.',
+                'Argo existe para cambiar eso. Para que los niños disfruten más del deporte y los adultos los acompañen mejor.',
         },
         how: {
             eyebrow: 'Cómo funciona',

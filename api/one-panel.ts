@@ -530,21 +530,21 @@ async function sendPlayLinkEmail(email: string, slug: string, childName: string 
     const playUrl = `${origin}/one/${slug}`;
     const child = childName || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
     const PL = lang === 'en' ? {
-        subject: `ArgoMethod®: ${child}'s experience is ready`,
+        subject: `ArgoOne®: ${child}'s experience is ready`,
         heading: `${child}'s experience is ready`,
         body1: `Someone invited ${child} to play an interactive adventure of under 10 minutes. When it ends, you'll receive a personalized behavioral profile report at this email.`,
         body2: 'Complete the registration, hand the device to the athlete, and you are done.',
         cta: 'Start the experience',
         note: 'This link is single-use. Once the experience is completed, it cannot be used again.',
     } : lang === 'pt' ? {
-        subject: `ArgoMethod®: a experiência de ${child} está pronta`,
+        subject: `ArgoOne®: a experiência de ${child} está pronta`,
         heading: `A experiência de ${child} está pronta`,
         body1: `Alguém convidou ${child} para jogar uma aventura interativa de menos de 10 minutos. Ao terminar, você receberá um relatório de perfil comportamental personalizado neste email.`,
         body2: 'Complete o registro, passe o dispositivo ao atleta, e pronto.',
         cta: 'Começar a experiência',
         note: 'Este link é de uso único. Uma vez completada a experiência, não poderá ser usado novamente.',
     } : {
-        subject: `ArgoMethod®: la experiencia de ${child} está lista`,
+        subject: `ArgoOne®: la experiencia de ${child} está lista`,
         heading: `La experiencia de ${child} está lista`,
         body1: `Alguien te invitó a que ${child} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.`,
         body2: 'Completa el registro, pásale el dispositivo al deportista, y listo.',
@@ -968,21 +968,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const pl = (purchase.lang as string) || 'es';
             const childDisplay = child_name?.trim() || (pl === 'en' ? 'the child' : pl === 'pt' ? 'a criança' : 'el niño');
             const PL = pl === 'en' ? {
-                subject: `ArgoMethod®: ${childDisplay}'s experience is ready`,
+                subject: `ArgoOne®: ${childDisplay}'s experience is ready`,
                 heading: `${childDisplay}'s experience is ready`,
                 body1: `Someone invited ${childDisplay} to play an interactive adventure of under 10 minutes. When it ends, you'll receive a personalized behavioral profile report at this email.`,
                 body2: 'Complete the registration, hand the device to the athlete, and you are done.',
                 cta: 'Start the experience',
                 note: 'This link is single-use. Once the experience is completed, it cannot be used again.',
             } : pl === 'pt' ? {
-                subject: `ArgoMethod®: a experiência de ${childDisplay} está pronta`,
+                subject: `ArgoOne®: a experiência de ${childDisplay} está pronta`,
                 heading: `A experiência de ${childDisplay} está pronta`,
                 body1: `Alguém convidou ${childDisplay} para jogar uma aventura interativa de menos de 10 minutos. Ao terminar, você receberá um relatório de perfil comportamental personalizado neste email.`,
                 body2: 'Complete o registro, passe o dispositivo ao atleta, e pronto.',
                 cta: 'Começar a experiência',
                 note: 'Este link é de uso único. Uma vez completada a experiência, não poderá ser usado novamente.',
             } : {
-                subject: `ArgoMethod®: la experiencia de ${childDisplay} está lista`,
+                subject: `ArgoOne®: la experiencia de ${childDisplay} está lista`,
                 heading: `La experiencia de ${childDisplay} está lista`,
                 body1: `Alguien te invitó a que ${childDisplay} juegue una aventura interactiva de menos de 10 minutos. Al terminar, recibirás un informe de perfil conductual personalizado en este email.`,
                 body2: 'Completa el registro, pásale el dispositivo al deportista, y listo.',

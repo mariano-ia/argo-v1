@@ -508,12 +508,16 @@ const HubChildCard: React.FC<{
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">{th.preparing}</span>
                                 )}
                                 {reportReady && reportLink && (
-                                    <Link to={reportLink} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
+                                    <Link to={reportLink} className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold transition-colors ${
+                                        child.report?.is_stale && (child.is_responsible || child.is_buyer)
+                                            ? 'bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral'
+                                            : 'bg-argo-violet-500 text-white hover:bg-argo-violet-600'
+                                    }`}>
                                         <ExternalLink size={13} /> {th.viewReport}
                                     </Link>
                                 )}
                                 {reportReady && child.report?.is_stale && (child.is_responsible || child.is_buyer) && (
-                                    <button onClick={() => onUpdate(child.child_id)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">
+                                    <button onClick={() => onUpdate(child.child_id)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
                                         {th.updateReport} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
                                     </button>
                                 )}
