@@ -3,7 +3,6 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, ExternalLink, X } from 'lucide-react';
 import { useLang } from '../context/LangContext';
-import { AXIS_COLORS } from '../lib/designTokens';
 import { InfoTip, ToastProvider, useToast } from '../components/ui';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -219,8 +218,8 @@ type HubLang = 'es' | 'en' | 'pt';
 const TH = {
     es: {
         greeting: {
-            one_and_done: { t: 'Tu panel', s: 'Todo lo tuyo en un lugar. Guarda este link para volver cuando quieras.' },
-            family: { t: 'Tu panel', s: 'Aquí se acumula todo lo tuyo: los niños que autorizaste y tus puentes.' },
+            one_and_done: { t: 'Tu panel', s: 'Tu niño, tu puente y los adultos vinculados.' },
+            family: { t: 'Tu panel', s: 'Tus niños, sus informes y tu puente con cada uno.' },
             buyer_no_child_yet: { t: '¡Gracias por tu compra!', s: 'Te quedan dos pasos, en el orden que prefieras.' },
             invited_adult: { t: 'Tus puentes', s: 'Aquí tienes tu puente con cada niño. Queda guardado para siempre.' },
             empty: { t: 'Tu panel', s: 'Guarda este link para volver cuando quieras.' },
@@ -233,7 +232,7 @@ const TH = {
         staleReport: 'El informe tiene más de 6 meses. Te recomendamos re-perfilar.',
         staleBoth: 'Ambos informes tienen más de 6 meses. Te recomendamos re-perfilar.',
         staleTip: 'El perfil es una foto del momento. A esta edad los niños cambian rápido: nuevas experiencias y el propio crecimiento pueden mover lo que los motiva, cómo enfrentan los desafíos y qué los frena. Con una foto nueva, las recomendaciones vuelven a hablar del niño de hoy. Al re-perfilar, el niño vuelve a jugar y tu puente se actualiza con él.',
-        updateReport: 'Actualizar el informe',
+        updateReport: 'Re-perfilar',
         shareBridgeLink: 'Compartir link de puentes',
         shareBridgeLinkTip: (n: string) => `Este es el link de puentes de ${n}. Compártelo con los adultos cercanos (abuelos, tíos, quien lo acompaña) para que cada uno cree su propio puente con ${n}. Cada adulto paga el suyo (USD 4.99) y solo ve su puente, nunca el informe de ${n}. Solo tú puedes compartirlo.`,
         linkCopied: 'Link copiado. Ahora compártelo con quien quieras.',
@@ -266,13 +265,26 @@ const TH = {
         compBridgePrompt: 'Tu puente está incluido en tu compra. Créalo para conectar mejor con el niño.',
         createMyBridge: 'Crear mi puente',
         otherTitle: 'Perfila a otro niño',
-        otherDesc: 'Otra aventura, otro informe. Para sumar más adultos a un niño que ya jugó, usa "Compartir link de puentes" en la tarjeta del niño.',
+        otherDesc: 'Cada link es una aventura y un informe nuevo.',
         otherCta: 'Perfilar a otro niño',
         academyEyebrow: '¿Acompañas a un equipo?',
         academyDesc: 'Un panel para todo tu grupo: química de equipo, un asistente que conoce a cada niño, y roles para varios adultos sin volver a autorizar de a uno.',
         academyLead: 'Da el paso a',
         academyCta: 'Hacer upgrade a',
         ageUnit: 'años',
+        kidsCount: (n: number) => `Niños (${n})`,
+        playLinksLabel: 'Links de juego',
+        linkAvailable: 'Link disponible',
+        linkAvailableSub: 'compártelo para perfilar un niño',
+        copyPlayLinkCta: 'Copiar el link',
+        playLinksNote: 'Un link no dice nada de nadie hasta que un niño juega. Cuando juega, aparece arriba con su nombre y su informe.',
+        adultoNote: (n: string) => `Autorizaste el juego de ${n}, por eso su informe individual siempre llega a ti, en cada actualización.`,
+        answerBridge: 'Responder cuestionario puente',
+        viewReportOf: (n: string) => `Ver informe de ${n}`,
+        autorizasteTag: 'lo autorizaste tú',
+        subCoach: 'Tus niños, sus informes y tu puente con cada uno.',
+        subAdulto: 'El niño que autorizaste, su informe y los puentes.',
+        subPadre: 'Tu niño, tu puente y los adultos vinculados.',
         linkResent: 'Link reenviado.',
         footerRefresh: 'Cada perfil (del niño y del adulto) se actualiza cada 6 meses.',
         footerPrices: 'Precios en dólares. Al comprar desde Argentina se cobra al valor del dólar del día.',
@@ -285,8 +297,8 @@ const TH = {
     },
     en: {
         greeting: {
-            one_and_done: { t: 'Your panel', s: 'Everything in one place. Save this link to come back anytime.' },
-            family: { t: 'Your panel', s: 'Everything gathers here: the children you authorized and your bridges.' },
+            one_and_done: { t: 'Your panel', s: 'Your child, your bridge and the linked adults.' },
+            family: { t: 'Your panel', s: 'Your children, their reports and your bridge with each one.' },
             buyer_no_child_yet: { t: 'Thanks for your purchase!', s: 'Two steps left, in whatever order you prefer.' },
             invited_adult: { t: 'Your bridges', s: 'Here is your bridge with each child. It lives here forever.' },
             empty: { t: 'Your panel', s: 'Save this link to come back anytime.' },
@@ -299,7 +311,7 @@ const TH = {
         staleReport: 'This report is over 6 months old. We recommend re-profiling.',
         staleBoth: 'Both reports are over 6 months old. We recommend re-profiling.',
         staleTip: 'The profile is a snapshot in time. At this age children change fast: new experiences and their own growth can shift what motivates them, how they face challenges, and what holds them back. With a fresh snapshot, the recommendations speak about the child of today. When you re-profile, the child plays again and your bridge updates with them.',
-        updateReport: 'Update the report',
+        updateReport: 'Re-profile',
         shareBridgeLink: 'Share the bridges link',
         shareBridgeLinkTip: (n: string) => `This is ${n}'s bridges link. Share it with the adults close to ${n} (grandparents, uncles, whoever accompanies them) so each one creates their own bridge. Each adult pays their own (USD 4.99) and sees only their bridge, never ${n}'s report. Only you can share it.`,
         linkCopied: 'Link copied. Now share it with whoever you want.',
@@ -332,13 +344,26 @@ const TH = {
         compBridgePrompt: 'Your bridge is included in your purchase. Create it to connect better with the child.',
         createMyBridge: 'Create my bridge',
         otherTitle: 'Profile another child',
-        otherDesc: 'Another adventure, another report. To add more adults to a child who already played, use "Share the bridges link" on the child\'s card.',
+        otherDesc: 'Each link is an adventure and a new report.',
         otherCta: 'Profile another child',
         academyEyebrow: 'Do you accompany a team?',
         academyDesc: 'One panel for your whole group: team chemistry, an assistant that knows each child, and roles for several adults without authorizing one by one.',
         academyLead: 'Take the step to',
         academyCta: 'Upgrade to',
         ageUnit: 'years',
+        kidsCount: (n: number) => `Children (${n})`,
+        playLinksLabel: 'Play links',
+        linkAvailable: 'Link available',
+        linkAvailableSub: 'share it to profile a child',
+        copyPlayLinkCta: 'Copy the link',
+        playLinksNote: 'A link says nothing about anyone until a child plays. When they play, they appear above with their name and report.',
+        adultoNote: (n: string) => `You authorized ${n}'s play, so their individual report always reaches you, on every update.`,
+        answerBridge: 'Answer bridge questionnaire',
+        viewReportOf: (n: string) => `View ${n}'s report`,
+        autorizasteTag: 'you authorized them',
+        subCoach: 'Your children, their reports and your bridge with each one.',
+        subAdulto: 'The child you authorized, their report and the bridges.',
+        subPadre: 'Your child, your bridge and the linked adults.',
         linkResent: 'Link resent.',
         footerRefresh: 'Each profile (the child\'s and the adult\'s) refreshes every 6 months.',
         footerPrices: 'Prices in US dollars. When buying from Argentina you are charged at the day\'s dollar value.',
@@ -351,8 +376,8 @@ const TH = {
     },
     pt: {
         greeting: {
-            one_and_done: { t: 'Seu painel', s: 'Tudo em um só lugar. Guarde este link para voltar quando quiser.' },
-            family: { t: 'Seu painel', s: 'Aqui se acumula tudo seu: as crianças que você autorizou e suas pontes.' },
+            one_and_done: { t: 'Seu painel', s: 'Sua criança, sua ponte e os adultos vinculados.' },
+            family: { t: 'Seu painel', s: 'Suas crianças, seus relatórios e sua ponte com cada uma.' },
             buyer_no_child_yet: { t: 'Obrigado pela sua compra!', s: 'Faltam dois passos, na ordem que preferir.' },
             invited_adult: { t: 'Suas pontes', s: 'Aqui está a sua ponte com cada criança. Ela vive aqui para sempre.' },
             empty: { t: 'Seu painel', s: 'Guarde este link para voltar quando quiser.' },
@@ -365,7 +390,7 @@ const TH = {
         staleReport: 'O relatório tem mais de 6 meses. Recomendamos reperfilar.',
         staleBoth: 'Ambos os relatórios têm mais de 6 meses. Recomendamos reperfilar.',
         staleTip: 'O perfil é uma foto do momento. Nesta idade as crianças mudam rápido: novas experiências e o próprio crescimento podem mover o que as motiva, como enfrentam os desafios e o que as freia. Com uma foto nova, as recomendações voltam a falar da criança de hoje. Ao reperfilar, a criança joga de novo e a sua ponte se atualiza com ela.',
-        updateReport: 'Atualizar o relatório',
+        updateReport: 'Reperfilar',
         shareBridgeLink: 'Compartilhar link de pontes',
         shareBridgeLinkTip: (n: string) => `Este é o link de pontes de ${n}. Compartilhe com os adultos próximos (avós, tios, quem acompanha) para que cada um crie a sua própria ponte com ${n}. Cada adulto paga a sua (USD 4.99) e vê apenas a sua ponte, nunca o relatório de ${n}. Só você pode compartilhá-lo.`,
         linkCopied: 'Link copiado. Agora compartilhe com quem quiser.',
@@ -398,13 +423,26 @@ const TH = {
         compBridgePrompt: 'Sua ponte está incluída na sua compra. Crie-a para conectar melhor com a criança.',
         createMyBridge: 'Criar minha ponte',
         otherTitle: 'Perfilar outra criança',
-        otherDesc: 'Outra aventura, outro relatório. Para somar mais adultos a uma criança que já jogou, use "Compartilhar link de pontes" no cartão da criança.',
+        otherDesc: 'Cada link é uma aventura e um relatório novo.',
         otherCta: 'Perfilar outra criança',
         academyEyebrow: 'Você acompanha uma equipe?',
         academyDesc: 'Um painel para todo o seu grupo: química de equipe, um assistente que conhece cada criança, e papéis para vários adultos sem autorizar um a um.',
         academyLead: 'Dê o passo para',
         academyCta: 'Fazer upgrade para',
         ageUnit: 'anos',
+        kidsCount: (n: number) => `Crianças (${n})`,
+        playLinksLabel: 'Links de jogo',
+        linkAvailable: 'Link disponível',
+        linkAvailableSub: 'compartilhe para perfilar uma criança',
+        copyPlayLinkCta: 'Copiar o link',
+        playLinksNote: 'Um link não diz nada de ninguém até uma criança jogar. Quando joga, aparece acima com seu nome e seu relatório.',
+        adultoNote: (n: string) => `Você autorizou o jogo de ${n}, por isso o relatório individual dele sempre chega até você, a cada atualização.`,
+        answerBridge: 'Responder questionário ponte',
+        viewReportOf: (n: string) => `Ver relatório de ${n}`,
+        autorizasteTag: 'você autorizou',
+        subCoach: 'Suas crianças, seus relatórios e sua ponte com cada uma.',
+        subAdulto: 'A criança que você autorizou, seu relatório e as pontes.',
+        subPadre: 'Sua criança, sua ponte e os adultos vinculados.',
         linkResent: 'Link reenviado.',
         footerRefresh: 'Cada perfil (da criança e do adulto) se atualiza a cada 6 meses.',
         footerPrices: 'Preços em dólares. Ao comprar da Argentina cobra-se pelo valor do dólar do dia.',
@@ -426,200 +464,107 @@ const Wordmark: React.FC<{ rest: string }> = ({ rest }) => (
 const HubChildCard: React.FC<{
     child: HubChildF;
     th: typeof TH['es'];
-    onCopy: (slug: string) => void;
-    copiedSlug: string | null;
-    onResend: (linkId: string) => void;
     onShareLink: (child: HubChildF) => void;
     onLinkedAdults: (child: HubChildF) => void;
     onUpdate: (childId: string | null) => void;
     onAddBridge: (child: HubChildF) => void;
-    onCreateBridge: () => void;
     onViewBridge: () => void;
-}> = ({ child, th, onCopy, copiedSlug, onResend, onShareLink, onLinkedAdults, onUpdate, onAddBridge, onCreateBridge, onViewBridge }) => {
+}> = ({ child, th, onShareLink, onLinkedAdults, onUpdate, onAddBridge, onViewBridge }) => {
     const name = child.name || th.kidsOne;
-    const eje = child.report?.eje ?? null;
-    const avatarBg = eje ? AXIS_COLORS[eje] : '#F5F5F7';
-    const avatarFg = eje ? '#fff' : '#AEAEB2';
     const meta = [child.age ? `${child.age} ${th.ageUnit}` : null, child.sport].filter(Boolean).join(' · ');
     const reportReady = !!(child.report && child.report.ready && child.report.perfilamiento_id);
     const reportPreparing = !!(child.report && !child.report.ready);
-    // "Played" = the child has a resolved perfilamiento, regardless of whether
-    // the REPORT display is ready (a 'held' report is still buildable-from). The
-    // bridges-link is available as soon as the child played, so a report in
-    // review never strips the authorizer's ability to invite adults.
     const played = !!child.perfilamiento_id;
     const reportLink = child.report?.share_token
         ? `/report/${child.report.perfilamiento_id}?token=${child.report.share_token}`
         : null;
+    // The authorizing adult who did NOT buy (their bridge is the $4.99 add-on).
+    const metaExtra = child.is_responsible && !child.is_buyer && !child.is_invited ? ` · ${th.autorizasteTag}` : '';
+
+    const btnBase = 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold transition-colors whitespace-nowrap';
+    const btnSecondary = `${btnBase} bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral`;
+    const btnPrimary = `${btnBase} bg-argo-violet-500 text-white hover:bg-argo-violet-600`;
+    const price = (p: string) => <span className="text-[11.5px] font-bold opacity-80">{p}</span>;
+
+    // Inline bridge action (mockup: sits in the actions row next to "Ver informe").
+    const bridgeBtn = (() => {
+        if (child.my_bridge && child.my_bridge.ready && !child.my_bridge.is_stale) {
+            return child.bridge_token
+                ? <Link to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>
+                : <button onClick={onViewBridge} className={btnSecondary}>{th.viewMyBridge}</button>;
+        }
+        if (child.my_bridge && !child.my_bridge.ready && child.bridge_token) {
+            return <Link to={`/puentes/${child.bridge_token}`} className={btnPrimary}>{th.continueMyBridge}</Link>;
+        }
+        if (child.my_bridge && child.my_bridge.is_stale && child.bridge_token) {
+            return <Link to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>;
+        }
+        // Included puente (buyer's comp): respond the short questionnaire.
+        if (!child.my_bridge && reportReady && child.comp_token) {
+            return (
+                <span className="inline-flex items-center gap-1">
+                    <Link to={`/puentes/${child.comp_token}`} className={btnSecondary}>{th.answerBridge}</Link>
+                    <InfoTip text={th.compBridgePrompt} position="top" />
+                </span>
+            );
+        }
+        // Authorizing adult, not the buyer: their bridge is the $4.99 add-on (PRIMARY).
+        if (!child.my_bridge && child.is_responsible && !child.is_buyer && reportReady) {
+            return (
+                <span className="inline-flex items-center gap-1">
+                    <button onClick={() => onAddBridge(child)} className={btnPrimary}>{th.createMyBridge} {price('USD 4.99')}</button>
+                    <InfoTip text={th.buyerBridgePrompt} position="top" />
+                </span>
+            );
+        }
+        return null;
+    })();
 
     return (
-        <div className="bg-white rounded-[14px] shadow-argo border border-argo-border overflow-hidden">
-            <div className="px-5 py-5">
-                {child.play_link && !child.report ? (
-                    /* Buyer, not played yet */
-                    <div className="flex items-start gap-3.5">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-[17px] bg-argo-neutral text-argo-light">?</div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-base font-bold text-argo-navy tracking-tight">{th.notPlayedTitle}</p>
-                            <p className="text-[13px] text-argo-secondary mt-2 leading-relaxed">{th.notPlayedDesc}</p>
-                            <div className="flex flex-wrap gap-2 mt-3">
-                                <button onClick={() => onCopy(child.play_link!.slug)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
-                                    {copiedSlug === child.play_link!.slug ? <><Check size={13} /> {th.copied}</> : <><Copy size={13} /> {th.copyLink}</>}
-                                </button>
-                                {child.play_link!.status === 'sent' && (
-                                    <button onClick={() => onResend(child.key.replace(/^link:/, ''))} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">{th.resend}</button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex items-start gap-3.5">
-                        <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-[17px]" style={{ background: avatarBg, color: avatarFg }}>
-                            {name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0">
-                                    <p className="text-base font-bold text-argo-navy tracking-tight truncate">{name}</p>
-                                    {meta && <p className="text-[12.5px] text-argo-grey mt-0.5">{meta}{child.is_invited ? ` · ${th.roleTag}` : ''}</p>}
-                                </div>
-                                {reportReady && child.report?.archetype_label && (
-                                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-argo-neutral text-argo-secondary flex-shrink-0">
-                                        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: eje ? AXIS_COLORS[eje] : '#AEAEB2' }} />
-                                        {child.report.archetype_label}
-                                    </span>
-                                )}
-                            </div>
-
-                            {reportReady && child.report?.motor_line && (
-                                <p className="text-[13px] text-argo-secondary mt-3"><b className="font-semibold text-argo-navy">{th.motor}</b> {child.report.motor_line}</p>
-                            )}
-
-                            {reportReady && child.report?.is_stale && (
-                                <div className="flex gap-2.5 items-center px-4 py-3 rounded-[10px] bg-amber-50 border border-amber-200 text-amber-700 text-[13px] mt-3.5">
-                                    <span className="font-extrabold flex-shrink-0">!</span>
-                                    <span className="flex-1">{child.my_bridge?.is_stale ? th.staleBoth : th.staleReport}</span>
-                                    <InfoTip text={th.staleTip} position="top" />
-                                </div>
-                            )}
-
-                            <div className="flex flex-wrap items-center gap-2 mt-3.5">
-                                {reportPreparing && (
-                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">{th.preparing}</span>
-                                )}
-                                {reportReady && reportLink && (
-                                    <Link to={reportLink} className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold transition-colors ${
-                                        child.report?.is_stale && (child.is_responsible || child.is_buyer)
-                                            ? 'bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral'
-                                            : 'bg-argo-violet-500 text-white hover:bg-argo-violet-600'
-                                    }`}>
-                                        <ExternalLink size={13} /> {th.viewReport}
-                                    </Link>
-                                )}
-                                {reportReady && child.report?.is_stale && (child.is_responsible || child.is_buyer) && (
-                                    <button onClick={() => onUpdate(child.child_id)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
-                                        {th.updateReport} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Bridges-link actions (frozen model §4): only the
-                                authorizing adult, available as soon as the child played. */}
-                            {played && !child.is_invited && child.is_responsible && (
-                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
-                                    <span className="inline-flex items-center gap-1">
-                                        <button onClick={() => onShareLink(child)} className="inline-flex items-center gap-1.5 py-1 text-[12.5px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors"><Copy size={12} /> {th.shareBridgeLink}</button>
-                                        <InfoTip text={th.shareBridgeLinkTip(name)} position="top" />
-                                    </span>
-                                    <button onClick={() => onLinkedAdults(child)} className="inline-flex items-center py-1 text-[12.5px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors">{th.linkedAdults(child.linked_adults ?? 0)}</button>
-                                </div>
-                            )}
-
-                            {child.is_invited && (
-                                <p className="text-[12px] text-argo-light mt-2">{th.roleNote}</p>
-                            )}
-                        </div>
-                    </div>
-                )}
+        <div className="px-5 py-4">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                    <p className="text-[14px] font-bold text-argo-navy">{name}</p>
+                    {meta && <p className="text-[12px] text-argo-grey mt-0.5">{meta}{metaExtra}{child.is_invited ? ` · ${th.roleTag}` : ''}</p>}
+                </div>
+                <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                    {reportPreparing && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">{th.preparing}</span>
+                    )}
+                    {reportReady && reportLink && (
+                        <Link to={reportLink} className={btnSecondary}><ExternalLink size={13} /> {th.viewReportOf(name)}</Link>
+                    )}
+                    {bridgeBtn}
+                </div>
             </div>
 
-            {/* Puente row */}
-            {(() => {
-                // buyer, not played → prompt to get a head start on their bridge
-                if (child.play_link && !child.report) {
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.buyerBridgePrompt}</div>
-                            <button onClick={onCreateBridge} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors flex-shrink-0">{th.createMyBridge}</button>
-                        </div>
-                    );
-                }
-                if (child.my_bridge && child.my_bridge.ready && !child.my_bridge.is_stale) {
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0"><b className="font-semibold text-argo-navy">{th.bridgeReady(name)}</b></div>
-                            {child.bridge_token ? (
-                                <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</Link>
-                            ) : (
-                                <button onClick={onViewBridge} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</button>
-                            )}
-                        </div>
-                    );
-                }
-                // In-progress paid bridge (created/answered/generating): offer to
-                // CONTINUE it, never to buy it again.
-                if (child.my_bridge && !child.my_bridge.ready && child.bridge_token) {
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.bridgeInProgress(name)}</div>
-                            <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors flex-shrink-0">{th.continueMyBridge}</Link>
-                        </div>
-                    );
-                }
-                if (child.my_bridge && child.my_bridge.is_stale) {
-                    // NOTE: the $4.99 refresh CTA is deliberately absent — the
-                    // checkout is not cycle-aware yet (it 409s on the existing paid
-                    // purchase), so a refresh button could never complete. It rides
-                    // with the cycle-aware checkout at cutover.
-                    // When the REPORT is also stale, the amber "Ambos informes"
-                    // alert already states the staleness (and the single re-profile
-                    // refreshes both), so this row drops its own staleness sentence
-                    // to a neutral label and just offers to view the bridge.
-                    const reportAlsoStale = !!(child.report && child.report.ready && child.report.is_stale);
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{reportAlsoStale ? th.bridgeThere(name) : th.bridgeStale(name)}</div>
-                            {child.bridge_token && (
-                                <Link to={`/puentes/${child.bridge_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.viewMyBridge}</Link>
-                            )}
-                        </div>
-                    );
-                }
-                // no bridge yet. A buyer with the included $12.99 comp creates it
-                // FREE; otherwise the responsible adult self-adds it for $4.99.
-                if (!child.my_bridge && reportReady && child.comp_token) {
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.compBridgePrompt}</div>
-                            <Link to={`/puentes/${child.comp_token}`} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors flex-shrink-0">{th.createMyBridge}</Link>
-                        </div>
-                    );
-                }
-                if (!child.my_bridge && child.is_responsible && reportReady) {
-                    return (
-                        <div className="flex items-center justify-between gap-3 px-5 py-3.5 bg-argo-neutral border-t border-argo-border">
-                            <div className="text-[13px] text-argo-secondary flex-1 min-w-0">{th.noBridgeYet(name)}</div>
-                            <button onClick={() => onAddBridge(child)} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors flex-shrink-0">{th.addBridge} <span className="text-[11.5px] font-bold opacity-80">USD 4.99</span></button>
-                        </div>
-                    );
-                }
-                return null;
-            })()}
+            {/* Bridges-link actions (frozen model §4): ONLY the authorizing adult. */}
+            {played && !child.is_invited && child.is_responsible && (
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5 justify-end">
+                    <span className="inline-flex items-center gap-1">
+                        <button onClick={() => onShareLink(child)} className="inline-flex items-center gap-1.5 py-0.5 text-[12px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors"><Copy size={12} /> {th.shareBridgeLink}</button>
+                        <InfoTip text={th.shareBridgeLinkTip(name)} position="top" />
+                    </span>
+                    <button onClick={() => onLinkedAdults(child)} className="inline-flex items-center py-0.5 text-[12px] font-semibold text-argo-grey border-b border-dotted border-argo-light hover:text-argo-violet-500 hover:border-argo-violet-500 transition-colors">{th.linkedAdults(child.linked_adults ?? 0)}</button>
+                </div>
+            )}
+
+            {/* Stale report → re-profile (mockup: orange alertline). */}
+            {reportReady && child.report?.is_stale && (child.is_responsible || child.is_buyer) && (
+                <div className="flex items-center gap-2 mt-2.5 text-[12px] text-orange-600 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 flex-1 min-w-0">
+                        {child.my_bridge?.is_stale ? th.staleBoth : th.staleReport}
+                        <InfoTip text={th.staleTip} position="top" />
+                    </span>
+                    <button onClick={() => onUpdate(child.child_id)} className={`${btnBase} bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100`}>{th.updateReport} {price('USD 12.99')}</button>
+                </div>
+            )}
+
+            {child.is_invited && <p className="text-[12px] text-argo-light mt-2">{th.roleNote}</p>}
         </div>
     );
 };
 
-/* ── The hub itself ──────────────────────────────────────────────────────────── */
 const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boolean; onRefresh?: () => void }> = ({ data, token, lang, demo, onRefresh }) => {
     const th = TH[lang] ?? TH.es;
     const { toast } = useToast();
@@ -630,9 +575,18 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
     const [linked, setLinked] = useState<{ child: HubChildF; adults: LinkedAdult[] | null } | null>(null);
 
     const g = th.greeting[data.role] ?? th.greeting.empty;
-    const played = data.children.filter(c => (c.is_responsible || c.is_buyer) && c.report);
-    const kidsLabel = played.length > 1 || data.children.length > 1 ? th.kidsMany : th.kidsOne;
-    const showOther = data.role === 'family' || played.length >= 1;
+    // Played children (have a perfilamiento) vs still-available play links.
+    const playedKids = data.children.filter(c => !!c.perfilamiento_id);
+    const availableLinks = data.children.filter(c => c.play_link && !c.report && !c.perfilamiento_id);
+    // Buyer surfaces (coach/padre): the buy row + the "Links de juego" section.
+    const isBuyer = data.children.some(c => c.is_buyer) || data.available_slots > 0;
+    // Pure authorizing adult (authorizes, did not buy) → the adulto note.
+    const isPureAdulto = !isBuyer && data.children.some(c => c.is_responsible);
+    const firstResponsibleName = data.children.find(c => c.is_responsible)?.name || th.kidsOne;
+    const subCopy = isPureAdulto ? th.subAdulto
+        : (isBuyer && data.children.some(c => c.is_buyer && c.is_responsible)) ? th.subPadre
+        : isBuyer ? th.subCoach
+        : g.s;
 
     const copyPlayLink = (slug: string) => {
         navigator.clipboard?.writeText(`${origin}/one/${slug}`);
@@ -747,11 +701,6 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
         if (res && res.ok) toast('success', th.linkResent);
     };
 
-    const createMyBridge = async () => {
-        const res = await postAction({ action: 'start-adult-profile' });
-        if (res) { const j = await res.json().catch(() => ({})); toast('info', j?.pending ? th.comingSoon : th.comingSoon); }
-    };
-
     return (
         <div className="min-h-screen bg-argo-neutral">
             <div className="max-w-[760px] mx-auto px-5 py-10 pb-24">
@@ -762,53 +711,69 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                     </Link>
                 </div>
                 <h1 className="text-[26px] font-bold text-argo-navy tracking-tight mt-4 mb-1 text-balance">{g.t}</h1>
-                <p className="text-sm text-argo-grey mb-6">{g.s}</p>
+                <p className="text-sm text-argo-grey mb-6">{subCopy}</p>
 
-                {/* Kids */}
-                {data.children.length > 0 && (
+                {/* Buy row (buyer only) — perfilar a otro niño, at the top per the mockup */}
+                {isBuyer && (
+                    <div className="flex items-center justify-between gap-3 flex-wrap px-4 py-3.5 rounded-xl bg-argo-violet-500/[0.06] border border-argo-violet-500/20 mb-3">
+                        <span className="text-[13px] text-argo-secondary">{th.otherDesc}</span>
+                        <button disabled={busy} onClick={() => startReplay(null)} className="inline-flex items-center gap-2 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50">
+                            {th.otherCta} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
+                        </button>
+                    </div>
+                )}
+
+                {/* Niños (N) — played children in one container with dividers */}
+                {playedKids.length > 0 && (
                     <>
-                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-7 mb-3">{kidsLabel}</div>
-                        <div className="space-y-3.5">
-                            {data.children.map(child => (
+                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-6 mb-2.5">{th.kidsCount(playedKids.length)}</div>
+                        <div className="bg-white rounded-[14px] shadow-argo border border-argo-border divide-y divide-argo-border overflow-hidden">
+                            {playedKids.map(child => (
                                 <HubChildCard
                                     key={child.key}
                                     child={child}
                                     th={th}
-                                    onCopy={copyPlayLink}
-                                    copiedSlug={copiedSlug}
-                                    onResend={resendPlayLink}
                                     onShareLink={shareBridgeLink}
                                     onLinkedAdults={openLinkedAdults}
                                     onUpdate={startReplay}
                                     onAddBridge={refreshBridge}
-                                    onCreateBridge={createMyBridge}
                                     onViewBridge={() => toast('info', th.comingSoon)}
                                 />
                             ))}
                         </div>
+                        {isPureAdulto && <p className="text-[12px] text-argo-light mt-2.5 px-0.5">{th.adultoNote(firstResponsibleName)}</p>}
                     </>
                 )}
 
-                {/* Other child */}
-                {showOther && (
+                {/* Links de juego (buyer only) */}
+                {isBuyer && availableLinks.length > 0 && (
                     <>
-                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-8 mb-3">{th.otherTitle}</div>
-                        <div className="bg-white rounded-[14px] shadow-argo border border-argo-border px-5 py-5">
-                            <p className="text-[15px] font-bold text-argo-navy">{th.otherTitle}</p>
-                            <p className="text-[13px] text-argo-secondary mt-1 leading-relaxed">{th.otherDesc}</p>
-                            <div className="mt-3">
-                                <button disabled={busy} onClick={() => startReplay(null)} className="inline-flex items-center gap-2 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors disabled:opacity-50">
-                                    {th.otherCta} <span className="text-[11.5px] font-bold opacity-80">USD 12.99</span>
-                                </button>
-                            </div>
+                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-7 mb-2.5">{th.playLinksLabel}</div>
+                        <div className="bg-white rounded-[14px] shadow-argo border border-argo-border divide-y divide-argo-border overflow-hidden">
+                            {availableLinks.map(link => (
+                                <div key={link.key} className="flex items-center gap-3 px-5 py-4 flex-wrap">
+                                    <span className="w-2 h-2 rounded-full bg-argo-light flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[13px] font-medium text-argo-navy">{th.linkAvailable}</p>
+                                        <p className="text-[11.5px] text-argo-grey">{th.linkAvailableSub}</p>
+                                    </div>
+                                    <button onClick={() => copyPlayLink(link.play_link!.slug)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
+                                        {copiedSlug === link.play_link!.slug ? <><Check size={13} /> {th.copied}</> : <><Copy size={13} /> {th.copyPlayLinkCta}</>}
+                                    </button>
+                                    {link.play_link!.status === 'sent' && (
+                                        <button onClick={() => resendPlayLink(link.key.replace(/^link:/, ''))} className="px-3 py-2 rounded-[10px] text-[12.5px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">{th.resend}</button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
+                        <p className="text-[12px] text-argo-light mt-2.5 px-0.5">{th.playLinksNote}</p>
                     </>
                 )}
 
                 {/* Academy — gated by scale */}
                 {data.can_upgrade_academy && (
                     <>
-                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-8 mb-3">{th.academyEyebrow}</div>
+                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-7 mb-2.5">{th.academyEyebrow}</div>
                         <div className="rounded-[14px] border border-argo-violet-500/20 bg-argo-violet-500/[0.06] px-5 py-5">
                             <div className="flex items-center justify-between gap-4 flex-wrap">
                                 <div className="flex-1 min-w-[220px]">
@@ -823,10 +788,8 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                     </>
                 )}
 
-                {/* Footer */}
-                <p className="text-center text-[11.5px] text-argo-light mt-10 leading-relaxed">
-                    {th.footerRefresh}<br />
-                    {th.footerPrices}<br />
+                {/* Footer (mockup: minimal — manage data · terms) */}
+                <p className="text-center text-[11.5px] text-argo-light mt-9 leading-relaxed">
                     {(() => {
                         const first = data.children.find(c => c.is_responsible && c.deletion_id);
                         return first ? <a className="text-argo-violet-500 hover:underline" href={`/eliminar/${first.deletion_id}`}>{th.manageData}</a> : <span>{th.manageData}</span>;
@@ -886,46 +849,42 @@ const HubV2: React.FC<{ data: HubData; token: string; lang: HubLang; demo: boole
 
 /* DEV-only sample hub payloads: /one/panel?demo=padre|familia|comprador|invitada */
 function buildDemoHub(state: string): HubData {
-    const rep = (eje: string, label: string, motor: string, stale = false): HubReportF => ({
-        perfilamiento_id: `demo-${eje}`, status: 'ready', ready: true, share_token: 'demo', archetype_label: label, eje, motor_line: motor, expires_at: null, is_stale: stale,
+    const rep = (eje: string, label: string, stale = false): HubReportF => ({
+        perfilamiento_id: `demo-${eje}`, status: 'ready', ready: true, share_token: 'demo', archetype_label: label, eje, motor_line: null, expires_at: null, is_stale: stale,
     });
-    const juan: HubChildF = {
-        key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-D', name: 'Juan', age: 10, sport: 'fútbol',
-        report: rep('D', 'Impulsor con veta Conector', 'ritmo dinámico. Arranca rápido y necesita mover el juego para engancharse.'),
-        is_buyer: true, is_responsible: true, is_invited: false,
-        my_bridge: { status: 'ready', ready: true, expires_at: null, is_stale: false }, play_link: null, deletion_id: 'del1', comp_token: null, bridge_token: 'demo',
-        bridge_link: 'demo-token', linked_adults: 2,
-    };
-    if (state === 'familia') {
-        const sofia: HubChildF = {
-            key: 'c2', child_id: 'c2', perfilamiento_id: 'demo-S', name: 'Sofía', age: 13, sport: 'hockey',
-            report: rep('S', 'Sostenedor con veta Conector', 'ritmo sereno. Procesa con calma antes de moverse.', true),
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del2', comp_token: 'demo-comp', bridge_token: null,
-            bridge_link: 'demo-token-2', linked_adults: 0,
-        };
-        const mateo: HubChildF = {
-            key: 'c3', child_id: 'c3', perfilamiento_id: 'demo-M', name: 'Mateo', age: 8, sport: 'básquet',
-            report: { perfilamiento_id: 'demo-M', status: 'held', ready: false, share_token: null, archetype_label: null, eje: null, motor_line: null, expires_at: null, is_stale: false },
-            is_buyer: true, is_responsible: true, is_invited: false, my_bridge: null, play_link: null, deletion_id: 'del3', comp_token: null, bridge_token: null,
-            bridge_link: 'demo-token-3', linked_adults: 0,
-        };
-        return { version: 2, email: 'tu@email.com', lang: 'es', role: 'family', children: [juan, sofia, mateo], available_slots: 0, can_upgrade_academy: true };
+    const base = (over: Partial<HubChildF>): HubChildF => ({
+        key: 'c', child_id: 'c', perfilamiento_id: 'demo-D', name: 'Niño', age: 12, sport: 'fútbol', report: rep('D', 'Impulsor con veta Conector'),
+        is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, bridge_link: null, linked_adults: 0,
+        ...over,
+    });
+    const readyBridge = { status: 'ready', ready: true, expires_at: null, is_stale: false };
+
+    // COACH — comprador NO adulto: 3 niños, sin subacts (no comparte puentes), + link disponible.
+    if (state === 'coach') {
+        const ninito = base({ key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-S', name: 'Niñito', age: 13, sport: 'Básquet', report: rep('S', 'Sostenedor con veta Conector'), is_buyer: true, my_bridge: readyBridge, bridge_token: 'demo' });
+        const keven = base({ key: 'c2', child_id: 'c2', perfilamiento_id: 'demo-C', name: 'Keven', age: 13, sport: 'Rugby', report: rep('C', 'Estratega con veta Impulsor', true), is_buyer: true, my_bridge: { ...readyBridge, is_stale: true }, bridge_token: 'demo' });
+        const mirnam = base({ key: 'c3', child_id: 'c3', perfilamiento_id: 'demo-I', name: 'Mirnam', age: 14, sport: 'Volleyball', report: rep('I', 'Conector con veta Sostenedor'), is_buyer: true, my_bridge: null, comp_token: 'demo-comp' });
+        const link = base({ key: 'link:l1', child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: true, play_link: { slug: 'demo-slug', status: 'available' } });
+        return { version: 2, email: 'coach@club.com', lang: 'es', role: 'family', children: [ninito, keven, mirnam, link], available_slots: 1, can_upgrade_academy: true };
     }
+    // ADULTO — autoriza (caso coach): 1 niño, su puente es el add-on $4.99, comparte link + adultos vinculados.
+    if (state === 'adulto') {
+        const keven = base({ key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-C', name: 'Keven', age: 13, sport: 'Rugby', report: rep('C', 'Estratega con veta Impulsor', true), is_responsible: true, my_bridge: null, comp_token: null, bridge_link: 'demo-token', linked_adults: 1, deletion_id: 'del1' });
+        return { version: 2, email: 'adulto@ejemplo.com', lang: 'es', role: 'adulto', children: [keven], available_slots: 0, can_upgrade_academy: false };
+    }
+    // FAMILIA — sin panel; su superficie real es /puente/:token (ver PuenteLink). El demo del panel muestra el caso invited_adult (solo su puente).
+    if (state === 'familia' || state === 'invitada') {
+        const invited = base({ key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-D', name: 'Juan', age: 10, sport: 'fútbol', report: null, is_invited: true, my_bridge: readyBridge, bridge_token: 'demo' });
+        return { version: 2, email: 'abuela@ejemplo.com', lang: 'es', role: 'invited_adult', children: [invited], available_slots: 0, can_upgrade_academy: false };
+    }
+    // COMPRADOR sin niño aún (link comprado, todavía no jugó).
     if (state === 'comprador') {
-        const pending: HubChildF = {
-            key: 'link:l1', child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null,
-            is_buyer: true, is_responsible: false, is_invited: false, my_bridge: null, play_link: { slug: 'demo-slug', status: 'available' }, deletion_id: null, comp_token: null, bridge_token: null,
-        };
+        const pending = base({ key: 'link:l1', child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: true, play_link: { slug: 'demo-slug', status: 'available' } });
         return { version: 2, email: 'tu@email.com', lang: 'es', role: 'buyer_no_child_yet', children: [pending], available_slots: 1, can_upgrade_academy: false };
     }
-    if (state === 'invitada') {
-        // Mirrors the real payload post entitlement cut: a bridge-only child
-        // carries NO report (no share_token, no archetype, no motor).
-        const invited: HubChildF = { ...juan, report: null, is_buyer: false, is_responsible: false, is_invited: true, deletion_id: null };
-        return { version: 2, email: 'tu@email.com', lang: 'es', role: 'invited_adult', children: [invited], available_slots: 0, can_upgrade_academy: false };
-    }
-    // padre (one adult, one child)
-    return { version: 2, email: 'tu@email.com', lang: 'es', role: 'one_and_done', children: [juan], available_slots: 0, can_upgrade_academy: false };
+    // PADRE (default) — comprador y adulto: 1 niño, puente incluido (Ver mi puente), comparte link + adultos vinculados.
+    const ninito = base({ key: 'c1', child_id: 'c1', perfilamiento_id: 'demo-D', name: 'Niñito', age: 13, sport: 'Básquet', report: rep('D', 'Impulsor con veta Conector'), is_buyer: true, is_responsible: true, my_bridge: readyBridge, bridge_token: 'demo', bridge_link: 'demo-token', linked_adults: 2, deletion_id: 'del1' });
+    return { version: 2, email: 'tu@email.com', lang: 'es', role: 'one_and_done', children: [ninito], available_slots: 0, can_upgrade_academy: false };
 }
 
 /* ── Component ─────────────────────────────────────────────────────────────── */
@@ -958,7 +917,9 @@ export const OnePanel: React.FC = () => {
         // DEV preview: /one/panel?demo=<state> on localhost renders a sample hub v2
         // (padre|familia|comprador|invitada), or ?demo=1 the legacy v1 panel. The
         // /api is not available under Vite. No-op in production.
-        const demoParam = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('demo') : null;
+        const demoHost = typeof window !== 'undefined' ? window.location.hostname : '';
+        const demoAllowed = import.meta.env.DEV || demoHost.startsWith('develop.') || demoHost.endsWith('.vercel.app'); // preview only, never prod
+        const demoParam = demoAllowed ? new URLSearchParams(window.location.search).get('demo') : null;
         if (demoParam && demoParam !== '1') {
             setData(buildDemoHub(demoParam));
             setStatus('ok');
@@ -1148,7 +1109,9 @@ export const OnePanel: React.FC = () => {
     // Hub v2: branch by payload shape (backward-compat — old v1 packs fall through
     // to the legacy panel below when the backend flag is off).
     if (data && (data as HubData).version === 2) {
-        const demoParam = import.meta.env.DEV ? new URLSearchParams(window.location.search).get('demo') : null;
+        const demoHost = typeof window !== 'undefined' ? window.location.hostname : '';
+        const demoAllowed = import.meta.env.DEV || demoHost.startsWith('develop.') || demoHost.endsWith('.vercel.app'); // preview only, never prod
+        const demoParam = demoAllowed ? new URLSearchParams(window.location.search).get('demo') : null;
         return <HubV2 data={data as HubData} token={token} lang={lang as HubLang} demo={!!demoParam && demoParam !== '1'} onRefresh={fetchData} />;
     }
 
