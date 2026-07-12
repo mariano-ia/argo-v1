@@ -127,6 +127,16 @@ final con workflows adversariales multi-agente (hallazgos confiables corregidos)
 - **`V4_CAPA2="on"`** en prod (variación con IA, Capa 2): la IA solo reescribe la prosa; arquetipo/ejes/contadores/palabras curadas quedan inmutables de Capa 1; 3 recaudos (distinción <55% trigramas, hechos preservados, gate completo) y ante cualquier fallo → Capa 1 (piso). Commit trigger `2e2d3d0` para que el runtime lo tome.
 - Flags Vercel: se setean con `vercel env add <NAME> <env> [branch] --value <v> --force --no-sensitive` (el stdin setea VACÍO en CLI 54.9.1). V4_SEAL y V4_CAPA2 = `on` en Production; develop en sync.
 
+### Panel ArgoOne reconstruido al mockup aprobado, commit `e7bd791` (LIVE en main)
+El panel v2 (`src/pages/OnePanel.tsx`, `HubV2`) se había desviado del diseño aprobado. Reconstruido **fiel a `docs/mockups/argoone-roles.html`**, manteniendo el contrato de datos del backend y los estados reales que el mockup estático no dibuja. Roles documentados en `ARGOONE-DECISIONES.md` §2 (los tres roles) + §7 (qué puede cada uno):
+- **Familia** (satélite): **sin panel**, solo su informe puente en `/puente/:token` (`PuenteLink.tsx`, ya fiel con wordmark **ArgoPuente®** + "Tu puente con {niño}" + $4.99 + la nota de que el informe del niño lo tiene el adulto). No se tocó.
+- **Coach** (comprador no adulto): ve informe + su puente (incluido) de cada niño, sección **"Links de juego"** + **"Perfilar a otro niño $12.99"** arriba. **NO** comparte link de puentes ni ve adultos vinculados.
+- **Adulto** (autoriza): comparte el **link de puentes** (exclusivo) + ve/**revoca** adultos vinculados; su puente es el add-on **$4.99** ("Crear mi puente $4.99", único botón violeta); **sin** Links de juego / Perfilar a otro niño.
+- **Padre** (comprador + adulto): todo junto, puente **incluido** ("Ver mi puente").
+- **Cambios de UI (mockup):** filas minimalistas (sin avatar/chip/motor) en un contenedor con divisores; **"Ver informe de {nombre}"**; puente **inline** en la fila (Ver / Continuar / Responder cuestionario [comp incluido] / Crear $4.99 [adulto]); subacts (compartir link + adultos vinculados) **solo** para el adulto autorizante; **"Re-perfilar $12.99"** en naranja; **buyrow arriba** (solo comprador); **"Links de juego"** aparte (solo comprador); saludo por rol (coach/adulto/padre) derivado de los flags; footer minimalista; es/en/pt.
+- **Estados reales preservados** (el mockup no los dibuja): informe **"preparando"** (gate/held), puente **en curso** ("Continuar mi puente"), comprador que **aún no jugó** (va a "Links de juego").
+- **Preview:** `?demo=coach|adulto|padre|familia|comprador` ahora funciona también en develop + `*.vercel.app` (bloqueado en prod) para verificar las 4 vistas.
+
 ### Notas / seguimiento
 - **`credits_remaining`** (columna) sigue en la DB por decisión del owner (inerte, inofensiva). Si algún día se quiere borrar: `ALTER TABLE public.tenants DROP COLUMN credits_remaining;` (el auto-mode classifier bloquea los DROP de columnas por seguridad; correr con OK explícito).
 - **Verificación humana (owner):** cobro real de Stripe punta a punta, render mobile/pixel-match, deliverability de emails, y el eyeball de informes v4 reales en prod (`report_qc.pass` como tasa de gate).
