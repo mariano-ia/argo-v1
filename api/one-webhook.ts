@@ -182,7 +182,7 @@ async function sendConfirmationEmail(
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 
 <tr><td style="background:#1D1D1F;padding:28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One®</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
     <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${PL.badge}</p>
 </td></tr>
 
@@ -296,7 +296,7 @@ async function sendHubEmail(email: string, accessToken: string, lang: string = '
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
 <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 32px rgba(29,29,31,0.07);">
 <tr><td style="background:#1D1D1F;padding:28px;">
-    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One®</span>
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
     <p style="margin:14px 0 0;font-size:22px;font-weight:300;color:#fff;letter-spacing:-0.02em;">${PL.badge}</p>
 </td></tr>
 <tr><td style="padding:28px;">
