@@ -60,7 +60,7 @@ const METER_LEVEL: Record<Registro, number> = { parejo: 1, matices: 2, claro: 3,
 
 export interface ReportHero {
   nombre: string;
-  arquetipoLabel: string;        // "Impulsor con veta Estratega" (SIEMPRE presente)
+  arquetipoLabel: string;        // "Impulsor con veta Estratega" (primario PURO si 2º=0 votos o veta opuesta §3.2)
   primarioLabel: string;
   vetaLabel: string | null;
   // Piezas para pintar el H1 con color por idioma: "con veta"/"with a"/"com veta" + arquetipo + sufijo
@@ -79,7 +79,9 @@ function leadParagraph(v: VotesEvidence, ctx: ReportContext): string {
   const n = ctx.nombre;
   const corta = pack.eje_word[v.ejePrimario].corta;
   const tail = pack.eje_lead[v.ejePrimario];
-  const veta = v.secondCount >= 1
+  // La cláusula de veta del lead se omite si la veta es OPUESTA (§3.2): el opuesto se narra en el
+  // cuerpo (contingencia/receta), no como "veta" en el encabezado. En 'parejo' el lead usa dosCortas.
+  const veta = (v.secondCount >= 1 && !v.vetaOpuesta)
     ? fill(pack.lead.veta_clause, { vetaLabel: pack.veta_word[v.ejeSecundario], largaSec: pack.eje_word[v.ejeSecundario].larga })
     : '';
   const dosCortas = listaClara([corta, pack.eje_word[v.ejeSecundario].corta], pack.bodies.receta_verbos.y, pack.bodies.receta_verbos.ytambien);
@@ -91,15 +93,17 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
   const lang = langOf(ctx);
   const pack = COPY[lang];
   const v = ficha.votes;
-  // arquetipoLabel lang-aware: reproduce la regla dura del resolver (SIEMPRE primario + veta; veta solo
-  // si el 2º eje tuvo ≥1 voto). getBlendName es idéntico al label es del resolver (snapshot-guarded).
-  const arquetipoLabel = v.secondCount >= 1
+  // arquetipoLabel lang-aware: reproduce la regla de nombre del resolver. Muestra primario + veta salvo
+  // (a) 2º eje con 0 votos o (b) veta OPUESTA (§3.2): en esos casos, primario PURO y el opuesto se narra
+  // en el cuerpo. getBlendName es idéntico al label es del resolver (snapshot-guarded).
+  const nameVeta = v.secondCount >= 1 && !v.vetaOpuesta;
+  const arquetipoLabel = nameVeta
     ? getBlendName(v.ejePrimario, v.ejeSecundario, lang, v.vetaBanda)
     : getArchetypeLabel(v.ejePrimario, lang);
-  const vetaLabel = v.secondCount >= 1 ? getVetaLabel(v.ejeSecundario, lang, v.vetaBanda) : null;
+  const vetaLabel = nameVeta ? getVetaLabel(v.ejeSecundario, lang, v.vetaBanda) : null;
   // Descompone el vetaLabel en (prefijo, arquetipo, sufijo) para pintar cada parte con su color.
   let veta: ReportHero['veta'] = null;
-  if (v.secondCount >= 1) {
+  if (nameVeta) {
     const word = getArchetypeLabel(v.ejeSecundario, lang);
     const full = vetaLabel ?? word;
     const idx = full.indexOf(word);

@@ -30,6 +30,7 @@ Los pares diagonales del círculo DISC **nunca forman nombre compuesto**:
 - **Impulsor ↔ Sostenedor** (D↔S) y **Conector ↔ Estratega** (I↔C).
 - Si la veta cae en el eje opuesto del primario, **el nombre se queda en el primario puro** (aunque `B2 ≥ 4`). La veta opuesta se **narra en el cuerpo** del informe como dos conductas dependientes del contexto que co-ocurren, con vocabulario de eje **positivo**, **sin** los adjetivos "raro / inusual / en tensión / contradictorio" y **sin** el "pero" de conflicto (se usa "y"). Ver `METODO-CALCULO-NUEVO.md` §3.2.
 - **La tabla NO agrega filas por opuestos.** No existe "Impulsor con veta Sostenedor" como nombre.
+- **Aplicado en código el 2026-07-13** (owner): `buildVotesEvidence` (ficha) y `buildReportHero` (informe/email/dashboard/coach) devuelven el **primario puro** cuando `veta_opuesta = true`, y el lead omite la cláusula de veta. Esto **revierte** la "regla dura" del 2026-07-07 (que nombraba también los opuestos) y realinea el código con esta regla. Forward-only: los informes ya guardados conservan su label viejo.
 
 ## Nombres canónicos
 

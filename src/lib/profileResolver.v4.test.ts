@@ -47,13 +47,13 @@ test('veta afirmada no-opuesta (D con veta C)', () => {
   assert.strictEqual(v.arquetipoLabel, 'Impulsor con veta Estratega');
 });
 
-test('veta OPUESTA (D con veta S): SIGUE mostrando perfil + veta (owner), flag para copy', () => {
+test('veta OPUESTA (D con veta S): el nombre se queda en el primario PURO (§3.2), opuesto al cuerpo', () => {
   const v = buildVotesEvidence(vec(7, 0, 5, 0)); // D=7, S=5
   assert.strictEqual(v.ejePrimario, 'D');
   assert.strictEqual(v.ejeSecundario, 'S');
-  assert.strictEqual(v.vetaOpuesta, true);       // el copy la enmarca como co-ocurrencia ("conviven")
-  assert.strictEqual(v.vetaEnNombre, false);     // "afirmada fuerte" no, por opuesta — informa al gráfico
-  assert.strictEqual(v.arquetipoLabel, 'Impulsor con veta Sostenedor'); // pero el nombre igual la muestra
+  assert.strictEqual(v.vetaOpuesta, true);       // D↔S diagonal
+  assert.strictEqual(v.vetaEnNombre, false);     // opuesta => nunca al nombre
+  assert.strictEqual(v.arquetipoLabel, 'Impulsor'); // primario puro; el opuesto se narra como co-ocurrencia
 });
 
 test('motor: sin juegos => no narratable, sin zona', () => {

@@ -64,8 +64,16 @@ test('hero rotundo (10-1-1-0): "de lleno" y cita el número', () => {
 test('hero parejo (6-6-0-0): igual da perfil + veta, nombra los dos motores', () => {
   const h = buildReportHero(fichaFor({ D: 6, I: 6, S: 0, C: 0 }), CTX('Sofi', 'f'));
   assert.strictEqual(h.registro, 'parejo');
-  assert.strictEqual(h.arquetipoLabel, 'Impulsor con veta Conector');
+  assert.strictEqual(h.arquetipoLabel, 'Impulsor con veta Conector'); // D+I NO son opuestos => compuesto
   assert.match(h.lead, /dos motores bien parejos/);
+});
+
+test('hero veta OPUESTA (D-7 S-5): nombre primario PURO, sin veta en el encabezado (§3.2)', () => {
+  const h = buildReportHero(fichaFor({ D: 7, I: 0, S: 5, C: 0 }), CTX('Ivo'));
+  assert.strictEqual(h.arquetipoLabel, 'Impulsor'); // D↔S opuestos => primario puro
+  assert.strictEqual(h.vetaLabel, null);
+  assert.strictEqual(h.veta, null);
+  assert.ok(!/veta|tonos de|destellos de/.test(h.lead), 'el lead no nombra la veta opuesta');
 });
 
 // ── Secciones data-driven ──

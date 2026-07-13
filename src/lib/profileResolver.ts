@@ -308,13 +308,16 @@ export function buildVotesEvidence(vector: Record<Axis, number>): VotesEvidence 
     const vetaOpuesta = isOppositeAxis(ejePrimario, ejeSecundario);
     const vetaEnNombre = vetaBanda === 'afirmada' && !vetaOpuesta && nombrarPrimario;
 
-    // REGLA DURA (owner 2026-07-07): SIEMPRE perfil + veta en el encabezado. El registro/gráfico
-    // comunica cuán definido está; nunca se oculta el nombre. Solo se omite la veta si el 2º eje
-    // no tuvo NINGÚN voto (mostrarla sería inventar una inclinación inexistente).
-    // CONECTOR GRADUADO por B2 (owner D2 2026-07-08): siempre compuesto, pero el conector carga
-    // la confianza. Debe coincidir con getVetaLabel(es) del report (snapshot-guarded).
+    // REGLA DE NOMBRE (owner 2026-07-13, concilia con docs/archetype-naming.md §3.2 + METODO-CALCULO-NUEVO §3.2):
+    // el encabezado muestra el primario + veta EXCEPTO cuando la veta es el eje diagonal OPUESTO
+    // (D↔S, I↔C): ahí el nombre se queda en el primario PURO y el opuesto se narra en el cuerpo como
+    // co-ocurrencia dependiente del contexto (opuesto-guard). El registro/gráfico comunica cuán definido
+    // está. La veta tampoco se muestra si el 2º eje no tuvo NINGÚN voto. Esto REEMPLAZA la "regla dura"
+    // del 2026-07-07 (que nombraba también los opuestos).
+    // CONECTOR GRADUADO por B2 (owner D2 2026-07-08): en los blends no-opuestos el conector carga la
+    // confianza. Debe coincidir con getBlendName(es) del report (snapshot-guarded).
     const ES_VETA_CONN = { afirmada: 'con veta', tentativa: 'con tonos de', sin: 'con destellos de' } as const;
-    const vetaTxt = secondCount >= 1 ? ` ${ES_VETA_CONN[vetaBanda]} ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}` : '';
+    const vetaTxt = (secondCount >= 1 && !vetaOpuesta) ? ` ${ES_VETA_CONN[vetaBanda]} ${AXIS_ARCHETYPE_LABEL_ES[ejeSecundario]}` : '';
     const arquetipoLabel = `${AXIS_ARCHETYPE_LABEL_ES[ejePrimario]}${vetaTxt}`;
 
     return {

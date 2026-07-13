@@ -44,10 +44,11 @@ export function getArchetypeLabel(axis: Axis, lang: Lang): string {
 }
 
 /**
- * Conector de la veta GRADUADO por su fuerza (B2), owner D2 (2026-07-08): el perfil es
- * SIEMPRE compuesto, pero el conector carga la confianza. afirmada (B2≥4) = "con veta";
- * tentativa (B2 2-3) = "con tonos de"; sin (B2≤1) = "con destellos de". Ej: "Conector con
- * destellos de Impulsor". Aplica también a la veta opuesta (siempre compuesto, sea como sea).
+ * Conector de la veta GRADUADO por su fuerza (B2), owner D2 (2026-07-08): en los blends NO opuestos
+ * el conector carga la confianza. afirmada (B2≥4) = "con veta"; tentativa (B2 2-3) = "con tonos de";
+ * sin (B2≤1) = "con destellos de". Ej: "Conector con destellos de Impulsor". La veta OPUESTA (D↔S,
+ * I↔C) NO se nombra (owner 2026-07-13, §3.2): el llamador (buildReportHero / buildVotesEvidence) no
+ * invoca esta función en ese caso y el opuesto se narra en el cuerpo.
  */
 export function getVetaLabel(axis: Axis, lang: Lang, banda: VetaBanda = 'afirmada'): string {
   const label = AXIS_ARCHETYPE_LABEL[lang][axis];
