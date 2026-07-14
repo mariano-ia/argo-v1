@@ -13,30 +13,31 @@ const SLIDE_TEXT = {
         s0: {
             tag: 'La experiencia',
             title: '¿Qué vivirá el deportista?',
-            body: 'El deportista juega una aventura interactiva de menos de 10 minutos. No sabe que es un test conductual. Al terminar, el adulto responsable recibe un informe de perfil personalizado por email y el perfil aparece automáticamente en tu dashboard.',
-            flow: ['Deportista', 'La odisea\nmenos de 10 min', 'Informe\npor email', 'Adulto\nresponsable'],
+            body: 'El deportista juega de forma lúdica, sin sentirse analizado, y así el perfil refleja mejor cómo vive el deporte. Al terminar, el adulto responsable recibe por email un informe de perfil personalizado y el perfil aparece automáticamente en tu dashboard.',
+            flow: ['Deportista', 'La odisea\nmenos de 10 min', 'Informe por email\nal adulto responsable'],
         },
         s1: {
             tag: 'La estructura',
             title: 'Planteles, entrenadores y jugadores',
-            shareNote: 'Organizas a tus jugadores en planteles. A cada plantel le asignas un entrenador, que comparte el link de su plantel con los adultos responsables. El jugador que entra por ese link queda en ese plantel.',
+            shareNote: 'Organizas a tus jugadores en planteles. A cada plantel le asignas uno o más entrenadores, que comparten el link del juego con los adultos responsables. Cada link corresponde a un plantel.',
             creditNote: 'Cada jugador que juega ocupa un lugar en tu cupo. Si no completa la experiencia, el perfil queda pendiente y puedes reintentar.',
         },
         s2: {
             tag: 'Tu plataforma',
             title: 'Qué encontrarás en tu dashboard',
             items: [
+                { label: 'Argo Coach', desc: 'Conversa con él sobre tus jugadores por nombre: te hace preguntas para entender mejor, sugiere cómo acompañar y recuerda la historia de cada niño entre consultas.' },
                 { label: 'Jugadores', desc: 'Todos los perfiles generados. Accede al informe completo de cada deportista.' },
-                { label: 'Planteles', desc: 'Organiza a tus jugadores en planteles y asigna entrenadores. Cada plantel tiene su propio link de juego.' },
+                { label: 'Planteles', desc: 'Cada plantel agrupa a tus jugadores, tiene un deporte asignado y su propio link de juego.' },
+                { label: 'Entrenadores', desc: 'Das de alta a tus entrenadores y los asignas a los planteles. Un plantel puede tener más de un entrenador.' },
                 { label: 'Química de grupos', desc: 'Agrupa a tus jugadores y analiza su química: cómo se complementan o tensionan los perfiles.' },
                 { label: 'Predictor Conductual', desc: 'Situaciones habituales de la actividad, organizadas por categoría. Para cada una, orientaciones según el perfil del deportista.' },
-                { label: 'Argo Coach', desc: 'Conversa con él sobre tus jugadores por nombre: te hace preguntas para entender mejor, sugiere cómo acompañar y recuerda la historia de cada niño entre consultas.' },
             ],
         },
         s3: {
             tag: 'Listo para empezar',
             title: 'Tu primer paso: crea un plantel',
-            body: 'Crea tu primer plantel y asígnale un entrenador. El entrenador comparte el link del plantel con los adultos responsables y el sistema hace el resto.',
+            body: 'Crea tu primer plantel y asígnale un entrenador (o varios). El perfil de cada entrenador puedes crearlo antes o después.',
             hint: 'Creas planteles y asignas entrenadores desde la sección Planteles del dashboard.',
             orNote: 'o antes configura los datos de tu institución',
         },
@@ -48,30 +49,31 @@ const SLIDE_TEXT = {
         s0: {
             tag: 'The experience',
             title: 'What will the athlete experience?',
-            body: 'The athlete plays an interactive adventure of less than 10 minutes. They do not know it is a behavioral test. When finished, the responsible adult receives a personalized profile report by email and the profile appears automatically in your dashboard.',
-            flow: ['Athlete', 'The odyssey\nless than 10 min', 'Report\nby email', 'Responsible\nadult'],
+            body: 'The athlete plays in a fun, game-like way, without feeling analyzed, so the profile better reflects how they live the sport. When finished, the responsible adult receives a personalized profile report by email and the profile appears automatically in your dashboard.',
+            flow: ['Athlete', 'The odyssey\nless than 10 min', 'Report by email\nto the responsible adult'],
         },
         s1: {
             tag: 'The structure',
             title: 'Teams, coaches and players',
-            shareNote: 'You organize your players into teams. Each team gets a coach who shares the team link with the responsible adults. The player who joins through that link lands in that team.',
+            shareNote: 'You organize your players into teams. Each team gets one or more coaches, who share the play link with the responsible adults. Each link belongs to one team.',
             creditNote: 'Each player who plays takes a spot on your roster. If they don\'t complete the experience, the profile stays pending and you can retry.',
         },
         s2: {
             tag: 'Your platform',
             title: "What you'll find in your dashboard",
             items: [
-                { label: 'Players',      desc: 'All generated profiles. Access the full report of each athlete.' },
-                { label: 'Teams',        desc: 'Organize your players into teams and assign coaches. Each team has its own play link.' },
+                { label: 'Argo Coach', desc: 'Talk with it about your players by name: it asks questions to understand better, suggests how to support them and remembers the history of each child across consultations.' },
+                { label: 'Players', desc: 'All generated profiles. Access the full report of each athlete.' },
+                { label: 'Teams', desc: 'Each team groups your players, has an assigned sport and its own play link.' },
+                { label: 'Coaches', desc: 'You add your coaches and assign them to teams. A team can have more than one coach.' },
                 { label: 'Group chemistry', desc: 'Group your players and analyze their chemistry: how profiles complement or tension each other.' },
                 { label: 'Behavioral Predictor', desc: 'Common activity situations, organized by category. Guidance based on the athlete\'s profile.' },
-                { label: 'Argo Coach', desc: 'Talk with it about your players by name: it asks questions to understand better, suggests how to support them and remembers the history of each child across consultations.' },
             ],
         },
         s3: {
             tag: 'Ready to start',
             title: 'Your first step: create a team',
-            body: 'Create your first team and assign it a coach. The coach shares the team link with the responsible adults and the system does the rest.',
+            body: 'Create your first team and assign it a coach (or several). You can create each coach\'s profile before or after.',
             hint: 'You create teams and assign coaches from the Teams section of your dashboard.',
             orNote: 'or first set up your institution details',
         },
@@ -83,30 +85,31 @@ const SLIDE_TEXT = {
         s0: {
             tag: 'A experiência',
             title: 'O que o atleta viverá?',
-            body: 'O atleta joga uma aventura interativa de menos de 10 minutos. Ele não sabe que é um teste comportamental. Ao terminar, o adulto responsável recebe um relatório de perfil personalizado por email e o perfil aparece automaticamente no seu dashboard.',
-            flow: ['Atleta', 'A odisseia\nmenos de 10 min', 'Relatório\npor email', 'Adulto\nresponsável'],
+            body: 'O atleta joga de forma lúdica, sem se sentir analisado, e assim o perfil reflete melhor como ele vive o esporte. Ao terminar, o adulto responsável recebe por email um relatório de perfil personalizado e o perfil aparece automaticamente no seu dashboard.',
+            flow: ['Atleta', 'A odisseia\nmenos de 10 min', 'Relatório por email\nao adulto responsável'],
         },
         s1: {
             tag: 'A estrutura',
             title: 'Plantéis, treinadores e jogadores',
-            shareNote: 'Você organiza seus jogadores em plantéis. A cada plantel você atribui um treinador, que compartilha o link do plantel com os adultos responsáveis. O jogador que entra por esse link fica nesse plantel.',
+            shareNote: 'Você organiza seus jogadores em plantéis. A cada plantel você atribui um ou mais treinadores, que compartilham o link do jogo com os adultos responsáveis. Cada link corresponde a um plantel.',
             creditNote: 'Cada jogador que joga ocupa um lugar no seu elenco. Se não completar a experiência, o perfil fica pendente e você pode tentar novamente.',
         },
         s2: {
             tag: 'Sua plataforma',
             title: 'O que você encontrará no seu dashboard',
             items: [
-                { label: 'Jogadores',    desc: 'Todos os perfis gerados. Acesse o relatório completo de cada atleta.' },
-                { label: 'Plantéis',     desc: 'Organize seus jogadores em plantéis e atribua treinadores. Cada plantel tem seu próprio link de jogo.' },
+                { label: 'Argo Coach', desc: 'Converse com ele sobre seus jogadores pelo nome: ele faz perguntas para entender melhor, sugere como acompanhar e lembra a história de cada criança entre consultas.' },
+                { label: 'Jogadores', desc: 'Todos os perfis gerados. Acesse o relatório completo de cada atleta.' },
+                { label: 'Plantéis', desc: 'Cada plantel agrupa seus jogadores, tem um esporte atribuído e seu próprio link de jogo.' },
+                { label: 'Treinadores', desc: 'Você cadastra seus treinadores e os atribui aos plantéis. Um plantel pode ter mais de um treinador.' },
                 { label: 'Química de grupos', desc: 'Agrupe seus jogadores e analise a química: como os perfis se complementam ou tensionam.' },
                 { label: 'Preditor Comportamental', desc: 'Situações comuns da atividade, organizadas por categoria. Orientações com base no perfil do atleta.' },
-                { label: 'Argo Coach', desc: 'Converse com ele sobre seus jogadores pelo nome: ele faz perguntas para entender melhor, sugere como acompanhar e lembra a história de cada criança entre consultas.' },
             ],
         },
         s3: {
             tag: 'Pronto para começar',
             title: 'Seu primeiro passo: crie um plantel',
-            body: 'Crie seu primeiro plantel e atribua um treinador. O treinador compartilha o link do plantel com os adultos responsáveis e o sistema faz o resto.',
+            body: 'Crie seu primeiro plantel e atribua um treinador (ou vários). O perfil de cada treinador você pode criá-lo antes ou depois.',
             hint: 'Você cria plantéis e atribui treinadores na seção Plantéis do dashboard.',
             orNote: 'ou antes configure os dados da sua instituição',
         },
@@ -284,14 +287,14 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         <User size={20} />,
         <Monitor size={20} />,
         <Mail size={20} />,
-        <Users size={20} />,
     ];
     const DASH_ICONS = [
+        <MessageCircle size={15} />,
         <Users size={15} />,
         <Shield size={15} />,
+        <User size={15} />,
         <Layers size={15} />,
         <Compass size={15} />,
-        <MessageCircle size={15} />,
     ];
 
     return (
@@ -350,19 +353,24 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                                                 </div>
                                                 <span className="text-[10px] font-medium text-argo-grey leading-tight whitespace-pre-line">{label}</span>
                                             </div>
-                                            {i < 3 && (
+                                            {i < sl.s0.flow.length - 1 && (
                                                 <div className="flex items-center flex-shrink-0 text-argo-border" style={{ height: '44px', fontSize: '18px' }}>›</div>
                                             )}
                                         </React.Fragment>
                                     ))}
                                 </div>
-                                <p className="text-sm text-argo-secondary leading-relaxed">
-                                    {sl.s0.body.split('No sabe que es un test conductual.')[0]}
-                                    <strong className="text-argo-navy">
-                                        {lang === 'en' ? 'They do not know it is a behavioral test.' : lang === 'pt' ? 'Ele não sabe que é um teste comportamental.' : 'No sabe que es un test conductual.'}
-                                    </strong>
-                                    {sl.s0.body.split(/No sabe que es un test conductual\.|They do not know it is a behavioral test\.|Ele não sabe que é um teste comportamental\./)[1]}
-                                </p>
+                                {(() => {
+                                    const boldPhrase = lang === 'en' ? 'without feeling analyzed' : lang === 'pt' ? 'sem se sentir analisado' : 'sin sentirse analizado';
+                                    const idx = sl.s0.body.indexOf(boldPhrase);
+                                    if (idx === -1) return <p className="text-sm text-argo-secondary leading-relaxed">{sl.s0.body}</p>;
+                                    return (
+                                        <p className="text-sm text-argo-secondary leading-relaxed">
+                                            {sl.s0.body.slice(0, idx)}
+                                            <strong className="text-argo-navy">{boldPhrase}</strong>
+                                            {sl.s0.body.slice(idx + boldPhrase.length)}
+                                        </p>
+                                    );
+                                })()}
                             </>
                         )}
 
@@ -372,7 +380,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                                 <p className="text-[10px] font-bold tracking-[0.12em] uppercase text-argo-violet-500 mb-2.5">{sl.s1.tag}</p>
                                 <h2 className="text-[22px] font-bold text-argo-navy tracking-tight leading-snug mb-5">{sl.s1.title}</h2>
                                 <div className="flex items-center gap-1.5 mb-5">
-                                    {[{ icon: <Shield size={16} />, label: lang === 'en' ? 'Team' : lang === 'pt' ? 'Plantel' : 'Plantel' }, { icon: <Users size={16} />, label: lang === 'en' ? 'Coach' : lang === 'pt' ? 'Treinador' : 'Entrenador' }, { icon: <Mail size={16} />, label: lang === 'en' ? 'Families' : lang === 'pt' ? 'Famílias' : 'Familias' }].map((s, i) => (
+                                    {[{ icon: <Shield size={16} />, label: lang === 'en' ? 'Team' : lang === 'pt' ? 'Plantel' : 'Plantel' }, { icon: <User size={16} />, label: lang === 'en' ? 'Coach' : lang === 'pt' ? 'Treinador' : 'Entrenador' }, { icon: <Users size={16} />, label: lang === 'en' ? 'Players' : lang === 'pt' ? 'Jogadores' : 'Jugadores' }].map((s, i) => (
                                         <React.Fragment key={i}>
                                             <div className="flex flex-col items-center gap-1.5 flex-1 text-center">
                                                 <div className="w-10 h-10 rounded-[12px] border border-argo-border bg-argo-bg flex items-center justify-center text-argo-violet-500">{s.icon}</div>
