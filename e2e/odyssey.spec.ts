@@ -11,9 +11,11 @@ test('player entry: language -> intro -> registration form renders', async ({ pa
   await reachRegistrationForm(page);
 
   await expect(page.locator('input[type=email]')).toBeVisible();
-  // In the club (tenant) flow the sport is defined by the institution, so the
-  // parent is NOT asked for it (it shows read-only). The old sport-chip selector
-  // must be gone — asserting its absence locks in that intended behavior.
+  // In the club flow the sport comes from the club's structures (per-plantel since
+  // 2026-07-14, with tenants.sport as the legacy default — the QA tenant has one),
+  // so the parent is NOT asked for it (it shows read-only) and the sport-chip
+  // selector must not render. Chips would only appear as the last-resort fallback
+  // when a legacy tenant has no sport anywhere; that is not this tenant.
   await expect(page.getByRole('button', { name: 'Fútbol' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: /continuar/i })).toBeVisible();
 

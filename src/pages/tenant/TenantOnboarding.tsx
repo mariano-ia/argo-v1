@@ -193,7 +193,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
     // Step 1 — institution
     const [displayName, setDisplayName] = useState(tenant.display_name ?? '');
     const [tipo,        setTipo]        = useState(tenant.institution_type ?? '');
-    const [sport,       setSport]       = useState(tenant.sport ?? '');
     const [country,     setCountry]     = useState(tenant.country ?? '');
     const [city,        setCity]        = useState(tenant.city ?? '');
     const [logoFile,    setLogoFile]    = useState<File | null>(null);
@@ -260,7 +259,6 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
         const body: Record<string, unknown> = { onboarding_completed: true, tenant_id: tenant?.id };
         if (displayName.trim())  body.display_name        = displayName.trim();
         if (tipo)                body.institution_type    = tipo;
-        if (sport.trim() && sport !== '_other') body.sport = sport.trim();
         if (country)             body.country             = country;
         if (city.trim())         body.city                = city.trim();
         if (fullName.trim())     body.full_name           = fullName.trim();
@@ -554,28 +552,9 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                             </div>
                         </Field>
 
-                        <Field label={o.deporte}>
-                            <select
-                                className={selectClass}
-                                value={o.deportes.includes(sport) ? sport : (sport ? '_other' : '')}
-                                onChange={e => setSport(e.target.value)}
-                            >
-                                <option value="">{o.seleccionarDeporte}</option>
-                                {o.deportes.map(d => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
-                                <option value="_other">{o.deporteOtro}</option>
-                            </select>
-                            {sport && !o.deportes.includes(sport) && (
-                                <input
-                                    className={`${inputClass} mt-2`}
-                                    value={sport === '_other' ? '' : sport}
-                                    onChange={e => setSport(e.target.value || '_other')}
-                                    placeholder={o.deporteOtroPlaceholder}
-                                    autoFocus
-                                />
-                            )}
-                        </Field>
+                        {/* Sport left institution setup on 2026-07-14: it is now set
+                            per plantel (required at plantel creation), covering
+                            multi-sport institutions. */}
 
                         <div className="grid grid-cols-2 gap-4">
                             <Field label={o.pais}>
@@ -631,7 +610,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
 
             {/* Footer */}
             <div className="flex items-center justify-between mt-6">
-                {/* Step 1 (institution name + sport) is mandatory, so no skip there */}
+                {/* Step 1 (institution name) is mandatory, so no skip there */}
                 {step === 1 ? (
                     <span />
                 ) : (
@@ -661,7 +640,7 @@ export const TenantOnboarding: React.FC<Props> = ({ tenant, onComplete, lang }) 
                         <button
                             type="button"
                             onClick={() => setStep(2)}
-                            disabled={!displayName.trim() || !(sport.trim() && sport !== '_other')}
+                            disabled={!displayName.trim()}
                             className="px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {o.siguiente}

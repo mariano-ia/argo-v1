@@ -68,10 +68,13 @@ export const AdultRegistration: React.FC<Props> = ({
     const deporteFinal = deporte === lastSport ? deporteCustom : deporte;
     const emailFinal = userEmail || email.trim();
 
-    // The sport is only asked when nobody chose it earlier. The club (tenant)
-    // defines it, and ArgoOne® now captures it at link generation; in both
-    // cases it arrives as readOnlySport and is shown read-only, never asked.
-    const askSport = !readOnlySport && flowType !== 'tenant';
+    // The sport is only asked when nobody chose it earlier. The club defines it
+    // (per-plantel since 2026-07-14, with the tenant's legacy default as fallback)
+    // and ArgoOne® captures it at link generation; in both cases it arrives as
+    // readOnlySport and is shown read-only. Asking is the last resort (e.g. the
+    // general link of a legacy tenant that never set a sport) so no play is ever
+    // sport-less.
+    const askSport = !readOnlySport;
 
     const isValid =
         nombreAdulto.trim() &&

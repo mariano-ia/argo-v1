@@ -33,9 +33,10 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
     {
         id: 'deporte-bloqueado',
         category: 'getting-started',
-        title: 'Why can\'t I change the sport?',
-        body: 'The sport is locked once the first child completes their adventure. This is intentional: the odyssey questions and the profiles already generated are tied to that sport, and changing it afterwards would make those reports meaningless.\n\nIf you need a different sport, write to us and we will sort it out with you.',
+        title: 'How does each team\'s sport work?',
+        body: 'The sport is set per team, not per institution. When you create a team you choose its sport, and that is the sport carried by the profiles of the players who join through that team\'s link. A multi-sport institution can therefore have teams for different sports.\n\nYou can edit a team\'s sport from the Teams section. Reports already generated keep the sport they were created with (they are a snapshot of that moment).',
         audience: 'admin',
+        links: [{ label: 'Go to Teams', to: '/dashboard/planteles' }],
     },
     {
         id: 'primer-plantel',

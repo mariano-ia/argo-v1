@@ -118,7 +118,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
                 const { data: group, error: grpError } = await sb
                     .from('groups')
-                    .select('id, name, slug, created_at')
+                    .select('id, name, slug, sport, created_at')
                     .eq('id', groupId)
                     .eq('tenant_id', tenant.id)
                     .is('deleted_at', null)
@@ -187,7 +187,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // ── GET without id: List teams ────────────────────────────────
             let listQuery = sb
                 .from('groups')
-                .select('id, name, slug, created_at, group_members(count)')
+                .select('id, name, slug, sport, created_at, group_members(count)')
                 .eq('tenant_id', tenant.id)
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false });
@@ -206,6 +206,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 id: g.id,
                 name: g.name,
                 slug: g.slug,
+                sport: g.sport ?? null,
                 created_at: g.created_at,
                 member_count: Array.isArray(g.group_members) && g.group_members[0]
                     ? (g.group_members[0] as { count: number }).count
@@ -223,15 +224,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // ── create ────────────────────────────────────────────────────────
         if (action === 'create') {
-            const { name } = req.body;
+            const { name, sport } = req.body;
             const trimmed = typeof name === 'string' ? name.trim() : '';
+            const sportTrimmed = typeof sport === 'string' ? sport.trim() : '';
             if (!trimmed) return res.status(400).json({ error: 'El nombre del equipo es requerido' });
             if (trimmed.length > 100) return res.status(400).json({ error: 'El nombre no puede superar 100 caracteres' });
+            // Per-plantel sport (2026-07-14): every plantel carries its own sport; it is
+            // REQUIRED at creation (multi-sport institutions).
+            if (!sportTrimmed) return res.status(400).json({ error: 'El deporte del plantel es requerido' });
+            if (sportTrimmed.length > 60) return res.status(400).json({ error: 'El deporte no puede superar 60 caracteres' });
 
             const { data: group, error: insertError } = await sb
                 .from('groups')
-                .insert({ tenant_id: tenant.id, name: trimmed })
-                .select('id, name, slug')
+                .insert({ tenant_id: tenant.id, name: trimmed, sport: sportTrimmed })
+                .select('id, name, slug, sport')
                 .single();
 
             if (insertError) {
@@ -244,16 +250,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // ── rename ────────────────────────────────────────────────────────
+        // Also accepts an optional `sport` to edit the plantel's sport in the same
+        // action (per-plantel model). When present it must be non-empty: a plantel
+        // never goes back to sport-less.
         if (action === 'rename') {
-            const { id, name } = req.body;
+            const { id, name, sport } = req.body;
             const trimmed = typeof name === 'string' ? name.trim() : '';
             if (!id) return res.status(400).json({ error: 'Team ID required' });
             if (!trimmed) return res.status(400).json({ error: 'El nombre es requerido' });
             if (trimmed.length > 100) return res.status(400).json({ error: 'El nombre no puede superar 100 caracteres' });
 
+            const update: Record<string, string> = { name: trimmed };
+            if (sport !== undefined) {
+                const sportTrimmed = typeof sport === 'string' ? sport.trim() : '';
+                if (!sportTrimmed) return res.status(400).json({ error: 'El deporte del plantel es requerido' });
+                if (sportTrimmed.length > 60) return res.status(400).json({ error: 'El deporte no puede superar 60 caracteres' });
+                update.sport = sportTrimmed;
+            }
+
             const { error: updateError } = await sb
                 .from('groups')
-                .update({ name: trimmed })
+                .update(update)
                 .eq('id', id)
                 .eq('tenant_id', tenant.id);
 

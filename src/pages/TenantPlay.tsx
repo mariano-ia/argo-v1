@@ -41,7 +41,9 @@ export const TenantPlay: React.FC = () => {
                     setTenantId(data.tenant_id);
                     setPlayToken(data.play_token ?? '');
                     setTenantName(data.tenant_name ?? '');
-                    setTenantSport(data.tenant_sport ?? '');
+                    // Per-plantel model: the plantel's sport wins over the institution's
+                    // legacy default, matching what api/session.ts stamps on the child.
+                    setTenantSport(data.team_sport ?? data.tenant_sport ?? '');
                     setStatus('ready');
                 } else if (res.status === 404) {
                     setStatus('not_found');

@@ -84,17 +84,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Optional per-team play: resolve the team slug within this tenant. If it
         // doesn't resolve, the play falls back to tenant-level (admin can assign later).
+        // The plantel's sport (per-plantel model, 2026-07-14) rides along so the play
+        // UI shows the same sport api/session.ts will stamp on the child.
         let teamId: string | null = null;
         let teamName: string | null = null;
+        let teamSport: string | null = null;
         if (team_slug && typeof team_slug === 'string') {
             const { data: team } = await sb
                 .from('groups')
-                .select('id, name')
+                .select('id, name, sport')
                 .eq('tenant_id', tenant.id)
                 .eq('slug', team_slug)
                 .is('deleted_at', null)
                 .maybeSingle();
-            if (team) { teamId = team.id; teamName = team.name; }
+            if (team) { teamId = team.id; teamName = team.name; teamSport = team.sport ?? null; }
         }
 
         // Check trial expiration
@@ -128,6 +131,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             tenant_sport: tenant.sport,
             team_id: teamId,
             team_name: teamName,
+            team_sport: teamSport,
             roster_limit: data.roster_limit,
             active_count: data.active_count,
             available: data.available,

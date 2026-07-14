@@ -12,7 +12,7 @@ import { PlayerRow, type SessionRow } from './TenantPlayers';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
-interface GroupRow { id: string; name: string; slug?: string; created_at: string; member_count: number; }
+interface GroupRow { id: string; name: string; slug?: string; sport?: string | null; created_at: string; member_count: number; }
 interface MemberRow { id: string; session_id: string; added_at: string; child_name: string; child_age: number | null; sport: string; archetype_label: string; eje: string; motor: string; eje_secundario: string; }
 interface CoachRow { member_id: string; email: string; full_name: string | null; status: string; }
 interface TenantMemberLite { id: string; email: string; role: string; status: string; full_name?: string | null; }
@@ -24,8 +24,8 @@ const tt = (lang: string, es: string, en: string, pt: string) => (lang === 'en' 
 
 /* ── Dev mock data ─────────────────────────────────────────────────────────── */
 const DEV_GROUPS: GroupRow[] = [
-    { id: 'dev-g1', name: 'Sub-12 Fútbol', slug: 'devteam1', created_at: new Date().toISOString(), member_count: 3 },
-    { id: 'dev-g2', name: 'Sub-15 Básquet', slug: 'devteam2', created_at: new Date().toISOString(), member_count: 2 },
+    { id: 'dev-g1', name: 'Sub-12 Fútbol', slug: 'devteam1', sport: 'Fútbol', created_at: new Date().toISOString(), member_count: 3 },
+    { id: 'dev-g2', name: 'Sub-15 Básquet', slug: 'devteam2', sport: 'Básquet', created_at: new Date().toISOString(), member_count: 2 },
 ];
 const DEV_MEMBERS: Record<string, MemberRow[]> = {
     'dev-g1': [
@@ -53,16 +53,22 @@ export const TenantGroups: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [showCreate, setShowCreate] = useState(false);
     const [newName, setNewName] = useState('');
+    // Per-plantel sport (2026-07-14): required at creation. "_other" reveals a
+    // free-text input, mirroring the sport picker the institution form used to have.
+    const [newSport, setNewSport] = useState('');
+    const [newSportCustom, setNewSportCustom] = useState('');
     const [creating, setCreating] = useState(false);
 
     // Detail
     const [selectedId, setSelectedId] = useState<string | null>(null);
-    const [detailGroup, setDetailGroup] = useState<{ id: string; name: string; slug?: string } | null>(null);
+    const [detailGroup, setDetailGroup] = useState<{ id: string; name: string; slug?: string; sport?: string | null } | null>(null);
     const [coaches, setCoaches] = useState<CoachRow[]>([]);
 
-    // Rename
+    // Rename (edits name + sport together)
     const [editing, setEditing] = useState(false);
     const [editName, setEditName] = useState('');
+    const [editSport, setEditSport] = useState('');
+    const [editSportCustom, setEditSportCustom] = useState('');
 
     // Assign coach
     const [allMembers, setAllMembers] = useState<TenantMemberLite[]>([]);
@@ -94,14 +100,15 @@ export const TenantGroups: React.FC = () => {
     useEffect(() => { if (tenant) fetchGroups(); }, [tenant, fetchGroups]);
 
     /* ── Create team ───────────────────────────────────────────────────────── */
+    const newSportFinal = newSport === '_other' ? newSportCustom.trim() : newSport;
     const handleCreate = async () => {
-        if (!newName.trim()) return;
+        if (!newName.trim() || !newSportFinal) return;
         setCreating(true);
         const token = await getToken();
         if (!token) return;
         try {
-            const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), tenant_id: tenant?.id }) });
-            if (res.ok) { setNewName(''); setShowCreate(false); fetchGroups(); toast('success', dt.groups.grupoCreado); }
+            const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'create', name: newName.trim(), sport: newSportFinal, tenant_id: tenant?.id }) });
+            if (res.ok) { setNewName(''); setNewSport(''); setNewSportCustom(''); setShowCreate(false); fetchGroups(); toast('success', dt.groups.grupoCreado); }
         } finally { setCreating(false); }
     };
 
@@ -109,7 +116,7 @@ export const TenantGroups: React.FC = () => {
     const fetchDetail = useCallback(async (groupId: string) => {
         if (devBypass) {
             const g = DEV_GROUPS.find(g => g.id === groupId);
-            setDetailGroup(g ? { id: g.id, name: g.name, slug: g.slug } : null);
+            setDetailGroup(g ? { id: g.id, name: g.name, slug: g.slug, sport: g.sport } : null);
             const dm = DEV_MEMBERS[groupId] ?? [];
             setCoaches([]);
             setPlantelSessions(dm.map((m): SessionRow => ({
@@ -143,16 +150,36 @@ export const TenantGroups: React.FC = () => {
         fetchDetail(id);
     };
 
-    /* ── Rename ────────────────────────────────────────────────────────────── */
+    /* ── Rename (name + sport) ─────────────────────────────────────────────── */
+    const editSportFinal = editSport === '_other' ? editSportCustom.trim() : editSport;
     const handleRename = async () => {
-        if (!editName.trim() || !selectedId) return;
+        if (!editName.trim() || !editSportFinal || !selectedId) return;
         const token = await getToken();
         if (!token) return;
-        await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim(), tenant_id: tenant?.id }) });
+        const res = await fetch('/api/tenant-groups', { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ action: 'rename', id: selectedId, name: editName.trim(), sport: editSportFinal, tenant_id: tenant?.id }) });
+        // Surface server rejections (e.g. duplicate name, length caps) instead of
+        // closing the editor with a false success toast.
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({} as { error?: string }));
+            toast('error', err.error ?? tt(lang, 'No se pudo guardar el plantel', 'Could not save the team', 'Não foi possível salvar o plantel'));
+            return;
+        }
         setEditing(false);
         fetchDetail(selectedId);
         fetchGroups();
         toast('success', dt.groups.grupoRenombrado);
+    };
+
+    // Seed the edit form from the current plantel (sport may be a custom value
+    // outside the standard list → falls into the "_other" free-text branch).
+    const startEditing = () => {
+        setEditName(detailGroup?.name ?? '');
+        const s = detailGroup?.sport ?? '';
+        if (s && dt.onboarding.deportes.includes(s)) { setEditSport(s); setEditSportCustom(''); }
+        else if (s) { setEditSport('_other'); setEditSportCustom(s); }
+        else { setEditSport(''); setEditSportCustom(''); }
+        setEditing(true);
+        setShowMenu(false);
     };
 
     /* ── Delete ─────────────────────────────────────────────────────────────── */
@@ -262,21 +289,44 @@ export const TenantGroups: React.FC = () => {
                 <div className="space-y-3">
                     {/* Create button / inline form (admin only) */}
                     {isAdmin && (showCreate ? (
-                        <div className="flex items-center gap-2">
+                        <div className="bg-white rounded-[14px] shadow-argo p-4 space-y-2.5">
                             <input
                                 value={newName}
                                 onChange={e => setNewName(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleCreate()}
                                 placeholder={dt.groups.nombrePlaceholder}
-                                className="flex-1 px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
                                 autoFocus
                             />
-                            <button onClick={handleCreate} disabled={creating || !newName.trim()} className="px-3.5 py-2.5 rounded-lg bg-argo-navy text-white text-[12px] font-semibold hover:bg-argo-navy/90 disabled:opacity-40 transition-colors">
-                                {creating ? <Loader2 size={14} className="animate-spin" /> : dt.common.crear}
-                            </button>
-                            <button onClick={() => { setShowCreate(false); setNewName(''); }} className="p-2 rounded-lg text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
-                                <X size={14} />
-                            </button>
+                            {/* Per-plantel sport (required): each plantel carries its own sport. */}
+                            <select
+                                value={newSport}
+                                onChange={e => setNewSport(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors bg-white"
+                            >
+                                <option value="">{dt.onboarding.seleccionarDeporte}</option>
+                                {dt.onboarding.deportes.map(d => <option key={d} value={d}>{d}</option>)}
+                                <option value="_other">{dt.onboarding.deporteOtro}</option>
+                            </select>
+                            {newSport === '_other' && (
+                                <input
+                                    value={newSportCustom}
+                                    onChange={e => setNewSportCustom(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleCreate()}
+                                    placeholder={dt.onboarding.deporteOtroPlaceholder}
+                                    maxLength={60}
+                                    className="w-full px-3.5 py-2.5 rounded-lg border border-argo-border text-[13px] outline-none focus:border-argo-violet-200 transition-colors"
+                                    autoFocus
+                                />
+                            )}
+                            <div className="flex items-center justify-end gap-2">
+                                <button onClick={() => { setShowCreate(false); setNewName(''); setNewSport(''); setNewSportCustom(''); }} className="px-3 py-2 rounded-lg text-[12px] text-argo-light hover:text-argo-grey hover:bg-argo-bg transition-colors">
+                                    {tt(lang, 'Cancelar', 'Cancel', 'Cancelar')}
+                                </button>
+                                <button onClick={handleCreate} disabled={creating || !newName.trim() || !newSportFinal} className="px-3.5 py-2 rounded-lg bg-argo-navy text-white text-[12px] font-semibold hover:bg-argo-navy/90 disabled:opacity-40 transition-colors">
+                                    {creating ? <Loader2 size={14} className="animate-spin" /> : dt.common.crear}
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 text-[13px] font-medium text-argo-navy hover:bg-argo-bg px-3 py-2.5 rounded-lg transition-colors">
@@ -312,7 +362,7 @@ export const TenantGroups: React.FC = () => {
                                             {g.name}
                                         </p>
                                         <p className="text-[11px] text-argo-light mt-0.5">
-                                            {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}
+                                            {g.member_count} {g.member_count === 1 ? dt.common.jugador : dt.common.jugadores}{g.sport ? ` · ${g.sport}` : ''}
                                         </p>
                                     </button>
                                 );
@@ -349,22 +399,44 @@ export const TenantGroups: React.FC = () => {
                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                     <div className="flex items-center justify-between">
                                         {editing ? (
-                                            <div className="flex items-center gap-2 flex-1">
-                                                <input
-                                                    value={editName}
-                                                    onChange={e => setEditName(e.target.value)}
-                                                    onKeyDown={e => e.key === 'Enter' && handleRename()}
-                                                    className="flex-1 text-lg font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
-                                                    autoFocus
-                                                />
-                                                <Tooltip text={tt(lang, 'Confirmar', 'Confirm', 'Confirmar')}><button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600"><Check size={14} /></button></Tooltip>
-                                                <Tooltip text={tt(lang, 'Cancelar', 'Cancel', 'Cancelar')}><button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button></Tooltip>
+                                            <div className="flex-1 space-y-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <input
+                                                        value={editName}
+                                                        onChange={e => setEditName(e.target.value)}
+                                                        onKeyDown={e => e.key === 'Enter' && handleRename()}
+                                                        className="flex-1 text-lg font-bold text-argo-navy border-b-2 border-argo-violet-500 bg-transparent outline-none"
+                                                        autoFocus
+                                                    />
+                                                    <Tooltip text={tt(lang, 'Confirmar', 'Confirm', 'Confirmar')}><button onClick={handleRename} className="p-1.5 rounded-lg hover:bg-argo-bg text-emerald-600 disabled:opacity-40" disabled={!editName.trim() || !editSportFinal}><Check size={14} /></button></Tooltip>
+                                                    <Tooltip text={tt(lang, 'Cancelar', 'Cancel', 'Cancelar')}><button onClick={() => setEditing(false)} className="p-1.5 rounded-lg hover:bg-argo-bg text-argo-light"><X size={14} /></button></Tooltip>
+                                                </div>
+                                                {/* Per-plantel sport: edited together with the name. */}
+                                                <select
+                                                    value={editSport}
+                                                    onChange={e => setEditSport(e.target.value)}
+                                                    className="w-full px-3 py-2 rounded-lg border border-argo-border text-[12px] outline-none focus:border-argo-violet-200 transition-colors bg-white"
+                                                >
+                                                    <option value="">{dt.onboarding.seleccionarDeporte}</option>
+                                                    {dt.onboarding.deportes.map(d => <option key={d} value={d}>{d}</option>)}
+                                                    <option value="_other">{dt.onboarding.deporteOtro}</option>
+                                                </select>
+                                                {editSport === '_other' && (
+                                                    <input
+                                                        value={editSportCustom}
+                                                        onChange={e => setEditSportCustom(e.target.value)}
+                                                        onKeyDown={e => e.key === 'Enter' && handleRename()}
+                                                        placeholder={dt.onboarding.deporteOtroPlaceholder}
+                                                        maxLength={60}
+                                                        className="w-full px-3 py-2 rounded-lg border border-argo-border text-[12px] outline-none focus:border-argo-violet-200 transition-colors"
+                                                    />
+                                                )}
                                             </div>
                                         ) : (
                                             <>
                                                 <div>
                                                     <h2 className="text-lg font-bold text-argo-navy">{detailGroup?.name ?? '...'}</h2>
-                                                    <p className="text-[11px] text-argo-light mt-0.5">{plantelSessions.length} {plantelSessions.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
+                                                    <p className="text-[11px] text-argo-light mt-0.5">{detailGroup?.sport ? `${detailGroup.sport} · ` : ''}{plantelSessions.length} {plantelSessions.length === 1 ? dt.common.jugador : dt.common.jugadores}</p>
                                                 </div>
                                                 {/* Ask ArgoCoach about this plantel (#2): the name in the prompt
                                                     fires the chat's group-mention matcher + composition injection. */}
@@ -389,7 +461,7 @@ export const TenantGroups: React.FC = () => {
                                                         </Tooltip>
                                                         {showMenu && (
                                                             <div className="absolute right-0 top-full mt-1 z-20 bg-white rounded-lg shadow-argo-hover border border-argo-border py-1 w-40">
-                                                                <button onClick={() => { setEditName(detailGroup?.name ?? ''); setEditing(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
+                                                                <button onClick={startEditing} className="w-full text-left px-3 py-2 text-xs text-argo-secondary hover:bg-argo-bg transition-colors flex items-center gap-2">
                                                                     <Pencil size={12} /> {tt(lang, 'Renombrar', 'Rename', 'Renomear')}
                                                                 </button>
                                                                 <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} className="w-full text-left px-3 py-2 text-xs text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2">

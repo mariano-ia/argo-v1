@@ -117,9 +117,10 @@ export const HELP_ARTICLES: HelpArticle[] = [
     {
         id: 'deporte-bloqueado',
         category: 'getting-started',
-        title: '¿Por qué no puedo cambiar el deporte?',
-        body: 'El deporte queda fijo en cuanto el primer niño completa su aventura. Es a propósito: las preguntas de la odisea y los perfiles ya generados están ligados a ese deporte, y cambiarlo después dejaría esos reportes sin sentido.\n\nSi necesitas otro deporte, escríbenos y lo vemos contigo.',
+        title: '¿Cómo funciona el deporte de cada plantel?',
+        body: 'El deporte se define por plantel, no por institución. Al crear un plantel eliges su deporte, y ese es el que llevan los perfiles de los jugadores que entran por el link de ese plantel. Así una institución polideportiva puede tener planteles de distintos deportes.\n\nPuedes editar el deporte de un plantel desde la sección Planteles. Los informes ya generados conservan el deporte con el que se crearon (son una fotografía del momento).',
         audience: 'admin',
+        links: [{ label: 'Ir a Planteles', to: '/dashboard/planteles' }],
     },
     {
         id: 'primer-plantel',

@@ -123,7 +123,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             child_age: target.child_age,
             adult_name: target.adult_name,
             adult_email: target.adult_email,
-            sport: tenant.sport ?? target.sport,
+            // Per-plantel model: a re-profile keeps the child's frozen sport (stamped
+            // from their plantel at first play); tenant.sport is only the legacy fallback.
+            sport: target.sport ?? tenant.sport,
             lang: target.lang ?? 'es',
             play_token: signReprofileToken(tenant.id, target.id, serviceKey),
         });

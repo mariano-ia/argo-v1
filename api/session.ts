@@ -150,6 +150,26 @@ async function ensureTeamMembership(sb: SB, teamId: string | null, childId: stri
     if (error) console.error('[session] ensureTeamMembership failed to attribute child to plantel:', error.message, { childId, teamId });
 }
 
+// ── Sport resolution (per-plantel, 2026-07-14) ───────────────────────────────
+// Sport comes from the club's structures, NEVER trusted from the client body:
+// a re-profile keeps the child's frozen sport; a team-link play takes the SIGNED
+// plantel's sport (groups.sport); tenants.sport remains only as the legacy
+// account-level default (general /play/:slug link, pre-sport planteles). The
+// client value applies last, only when the club has no server-side sport at all
+// (sport-less legacy tenant via the general link, where the adult is asked).
+async function resolveClubSport(sb: SB, tenantId: string, teamId: string | null, reproChildId: string | null, clientSport: string | null): Promise<string | null> {
+    if (reproChildId) {
+        const { data: child } = await sb.from('children').select('sport').eq('id', reproChildId).maybeSingle();
+        if (child?.sport) return child.sport;
+    }
+    if (teamId) {
+        const { data: team } = await sb.from('groups').select('sport').eq('id', teamId).maybeSingle();
+        if (team?.sport) return team.sport;
+    }
+    const { data: tenantRow } = await sb.from('tenants').select('sport').eq('id', tenantId).maybeSingle();
+    return tenantRow?.sport ?? clientSport ?? null;
+}
+
 // ── Tenant free ArgoPuente® grant ────────────────────────────────────────────
 // When a tenant has free_puentes enabled, every resolved (non-demo) perfilamiento
 // grants the responsible adult a complimentary ($0, provider='comp') ArgoPuente®
@@ -328,10 +348,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
 
             // ── Sport is defined by the club, not the parent ─────────────────
+            // Per-plantel (2026-07-14): signed team's sport wins; re-profile keeps
+            // the child's frozen sport; tenants.sport is the legacy fallback.
             let effectiveSport: string | null = sport || null;
             if (effectiveTenantId) {
-                const { data: tenantRow } = await sb.from('tenants').select('sport').eq('id', effectiveTenantId).maybeSingle();
-                effectiveSport = tenantRow?.sport ?? null;
+                effectiveSport = await resolveClubSport(sb, effectiveTenantId, effectiveTeamId, reproChildId, sport || null);
             }
 
             // ── COPPA gate: children under 13 require a confirmed consent token ──
@@ -588,10 +609,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 if (verified.mode === 'reprofile') saveReproChildId = verified.childId;
             }
 
+            // Per-plantel sport resolution — mirrors the start branch above.
             let saveSport: string | null = sport || null;
             if (saveTenantId) {
-                const { data: tenantRow } = await sb.from('tenants').select('sport').eq('id', saveTenantId).maybeSingle();
-                saveSport = tenantRow?.sport ?? null;
+                saveSport = await resolveClubSport(sb, saveTenantId, saveTeamId, saveReproChildId, sport || null);
             }
 
             const resolved = typeof eje === 'string' && eje !== '_pending';

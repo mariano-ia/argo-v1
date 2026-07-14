@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useOutletContext, useNavigate, Link } from 'react-router-dom';
+import { useOutletContext, useNavigate } from 'react-router-dom';
 import { getDashboardT } from '../../lib/dashboardTranslations';
 import { useLang } from '../../context/LangContext';
 import type { Lang } from '../../context/LangContext';
@@ -68,7 +68,6 @@ export const TenantSettings: React.FC = () => {
     /* ── All editable state ──────────────────────────────────────────── */
     const [displayName, setDisplayName] = useState('');
     const [tipo,        setTipo]        = useState('');
-    const [sport,       setSport]       = useState('');
     const [country,     setCountry]     = useState('');
     const [city,        setCity]        = useState('');
     const [logoFile,    setLogoFile]    = useState<File | null>(null);
@@ -80,17 +79,11 @@ export const TenantSettings: React.FC = () => {
     const [deleting,    setDeleting]    = useState(false);
     const fileRef = useRef<HTMLInputElement>(null);
 
-    // Sport is chosen once (signup / first login) and defines every player's
-    // session. Once set it is read-only; only an unset (legacy/skipped) sport
-    // can still be filled in here, one time.
-    const sportLocked = !!(tenant?.sport);
-
     /* ── Sync with context ──────────────────────────────────────────── */
     useEffect(() => {
         if (tenant) {
             setDisplayName(tenant.display_name ?? '');
             setTipo(tenant.institution_type ?? '');
-            setSport(tenant.sport ?? '');
             setCountry(tenant.country ?? '');
             setCity(tenant.city ?? '');
             setLogoPreview(tenant.logo_url ?? null);
@@ -146,8 +139,6 @@ export const TenantSettings: React.FC = () => {
         const body: Record<string, unknown> = {};
         if (displayName.trim()) body.display_name = displayName.trim();
         body.institution_type = tipo || null;
-        // Never overwrite a sport that is already set (read-only once chosen).
-        if (!sportLocked) body.sport = (sport.trim() && sport !== '_other') ? sport.trim() : null;
         body.country = country || null;
         body.city = city.trim() || null;
         body.full_name = fullName.trim() || null;
@@ -273,29 +264,10 @@ export const TenantSettings: React.FC = () => {
                             </div>
                         </Field>
 
-                        <Field label={o.deporte}>
-                            {sportLocked ? (
-                                <div className="flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border border-argo-border bg-argo-neutral">
-                                    <span className="text-[14px] text-argo-navy">{tenant?.sport}</span>
-                                    <Link to="/dashboard/help#deporte-bloqueado" className="text-[11px] text-argo-light hover:text-argo-violet-500 hover:underline transition-colors">{o.deporteBloqueado}</Link>
-                                </div>
-                            ) : (
-                                <>
-                                    <select
-                                        className={selectClass}
-                                        value={o.deportes.includes(sport) ? sport : (sport ? '_other' : '')}
-                                        onChange={e => setSport(e.target.value)}
-                                    >
-                                        <option value="">{o.seleccionarDeporte}</option>
-                                        {o.deportes.map(d => <option key={d} value={d}>{d}</option>)}
-                                        <option value="_other">{o.deporteOtro}</option>
-                                    </select>
-                                    {sport && !o.deportes.includes(sport) && (
-                                        <input className={`${inputClass} mt-2`} value={sport === '_other' ? '' : sport} onChange={e => setSport(e.target.value || '_other')} placeholder={o.deporteOtroPlaceholder} autoFocus />
-                                    )}
-                                </>
-                            )}
-                        </Field>
+                        {/* Sport left the institution card on 2026-07-14: it is now
+                            set per plantel (Planteles section), covering multi-sport
+                            institutions. tenants.sport stays in the DB only as the
+                            legacy fallback for the general play link. */}
 
                         <div className="grid grid-cols-2 gap-4">
                             <Field label={o.pais}>
