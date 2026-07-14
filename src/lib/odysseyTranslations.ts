@@ -239,7 +239,7 @@ const es: OdysseyTranslations = {
     handoffLabel: 'El Traspaso',
     handoffTitle: (adult, child) => `${adult}, es el turno de ${child}`,
     handoffBody: 'El juego consta de 12 decisiones rápidas. Es importante que las responda por su cuenta, sin ayuda, en un ambiente tranquilo.',
-    handoffNote: 'No hay respuestas correctas ni incorrectas.',
+    handoffNote: 'No se gana ni se pierde, y no hay respuestas correctas ni incorrectas.',
     handoffCta: (child) => `Entregar dispositivo a ${child}`,
 
     phases: {
@@ -271,7 +271,7 @@ const es: OdysseyTranslations = {
     fullReport: 'Informe completo',
     saveErrorTitle: 'No se pudo guardar la sesión',
 
-    reportHeader: 'Informe de Sintonía Deportiva',
+    reportHeader: 'Informe Argo',
     motorTag: 'Motor',
     generatingAI: 'Generando...',
     aiTag: 'IA',
@@ -279,7 +279,7 @@ const es: OdysseyTranslations = {
     dominantAxis: 'Eje dominante',
     discLabels: { D: 'Dominio', I: 'Influencia', S: 'Estabilidad', C: 'Conciencia' },
 
-    compassLabel: 'Brújula de sintonía',
+    compassLabel: 'Brújula del perfil',
     axisNames: { D: 'Impulsor', I: 'Conector', S: 'Sostenedor', C: 'Estratega' },
     motorGaugeLabel: 'Ritmo de procesamiento',
     motorDisplayNames: { 'Rápido': 'Dinámico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
@@ -292,7 +292,7 @@ const es: OdysseyTranslations = {
     reviewSub: 'Solo 4 preguntas · 30 segundos',
 
     reportSections: {
-        contract: 'Retrato de Sintonía',
+        contract: 'Retrato del deportista',
         disclaimer: 'Este informe no evalúa talento ni predice el futuro deportivo. Describe tendencias presentes que pueden evolucionar. Es una fotografía del momento, no una etiqueta permanente.',
         placeInShip: 'Su lugar en la Nave',
         secondaryCompass: 'La Brújula Secundaria',
@@ -304,7 +304,7 @@ const es: OdysseyTranslations = {
         bridgeWords: 'Palabras Puente',
         noiseWords: 'Palabras Ruido',
         byTendency: 'Por su tendencia',
-        tuningGuide: 'Guía de Sintonía',
+        tuningGuide: 'Guía de conexión',
         activators: 'Activadores',
         toAvoid: 'A evitar',
         adjustmentManagement: 'Gestión del Desajuste',
@@ -315,8 +315,8 @@ const es: OdysseyTranslations = {
         afterTraining: 'Después',
     },
 
-    emailSubject: (child, archetype) => `Informe de Sintonía Argo · ${child} · ${archetype}`,
-    emailHeader: 'Informe de Sintonía',
+    emailSubject: (child, archetype) => `Informe Argo · ${child} · ${archetype}`,
+    emailHeader: 'Informe Argo',
     emailPreparedFor: (name) => `Preparado para ${name}`,
     emailArchetypeOf: (name) => `Arquetipo de ${name}`,
     emailFooter: 'ArgoMethod® · Este informe es una fotografía del presente, no una etiqueta permanente.',
@@ -324,7 +324,7 @@ const es: OdysseyTranslations = {
     emailMaturationBody: 'Los perfiles DISC en la infancia temprana (menores de 7 años) son altamente plásticos. Se recomienda revisitar este perfil en 6 meses para observar la evolución de las tendencias.',
 
     emailSections: {
-        contract: 'Retrato de Sintonía',
+        contract: 'Retrato del deportista',
         disclaimer: 'Este informe no evalúa talento ni predice el futuro deportivo. Describe tendencias presentes que pueden evolucionar. Es una fotografía del momento, no una etiqueta permanente.',
         placeInShip: 'Su lugar en la Nave',
         secondaryCompass: 'La Brújula Secundaria',
@@ -336,7 +336,7 @@ const es: OdysseyTranslations = {
         bridgeWords: 'Palabras Puente',
         noiseWords: 'Palabras Ruido',
         byTendency: 'Por su tendencia',
-        tuningGuide: 'Guía de Sintonía',
+        tuningGuide: 'Guía de conexión',
         activators: 'Activadores',
         toAvoid: 'A evitar',
         adjustmentManagement: 'Gestión del Desajuste',
@@ -347,8 +347,8 @@ const es: OdysseyTranslations = {
         afterTraining: 'Después',
         calloutNotaFundamental: 'Nota fundamental',
         calloutNotaSeguridad: 'Nota de seguridad',
-        calloutInvitacion: 'Invitación de sintonía',
-        calloutFeedback: 'Feedback de sintonía',
+        calloutInvitacion: 'Invitación',
+        calloutFeedback: 'Feedback',
         calloutTermometro: 'Termómetro emocional',
         calloutAcompanamiento: 'Acompañamiento sugerido',
     },
@@ -411,7 +411,7 @@ const en: OdysseyTranslations = {
     handoffLabel: 'The Handoff',
     handoffTitle: (adult, child) => `${adult}, it's ${child}'s turn`,
     handoffBody: 'The game consists of 12 quick decisions. It\'s important that they answer on their own, without help, in a calm environment.',
-    handoffNote: 'There are no right or wrong answers.',
+    handoffNote: 'There is no winning or losing, and no right or wrong answers.',
     handoffCta: (child) => `Hand device to ${child}`,
 
     phases: {
@@ -443,7 +443,7 @@ const en: OdysseyTranslations = {
     fullReport: 'Full report',
     saveErrorTitle: 'Session could not be saved',
 
-    reportHeader: 'Sports Tuning Report',
+    reportHeader: 'Argo Report',
     motorTag: 'Motor',
     generatingAI: 'Generating...',
     aiTag: 'AI',
@@ -451,7 +451,7 @@ const en: OdysseyTranslations = {
     dominantAxis: 'Dominant axis',
     discLabels: { D: 'Dominance', I: 'Influence', S: 'Steadiness', C: 'Conscientiousness' },
 
-    compassLabel: 'Tuning compass',
+    compassLabel: 'Profile compass',
     axisNames: { D: 'Driver', I: 'Connector', S: 'Sustainer', C: 'Strategist' },
     motorGaugeLabel: 'Processing pace',
     motorDisplayNames: { 'Rápido': 'Dynamic', 'Medio': 'Rhythmic', 'Lento': 'Serene' },
@@ -464,7 +464,7 @@ const en: OdysseyTranslations = {
     reviewSub: 'Just 4 questions · 30 seconds',
 
     reportSections: {
-        contract: 'Tuning Portrait',
+        contract: 'Athlete Portrait',
         disclaimer: 'This report does not evaluate talent or predict athletic future. It describes present tendencies that may evolve. It is a snapshot, not a permanent label.',
         placeInShip: 'Their Place on the Ship',
         secondaryCompass: 'The Secondary Compass',
@@ -476,7 +476,7 @@ const en: OdysseyTranslations = {
         bridgeWords: 'Bridge Words',
         noiseWords: 'Noise Words',
         byTendency: 'By their tendency',
-        tuningGuide: 'Tuning Guide',
+        tuningGuide: 'Connection Guide',
         activators: 'Activators',
         toAvoid: 'To avoid',
         adjustmentManagement: 'Adjustment Management',
@@ -487,8 +487,8 @@ const en: OdysseyTranslations = {
         afterTraining: 'After',
     },
 
-    emailSubject: (child, archetype) => `Argo Tuning Report · ${child} · ${archetype}`,
-    emailHeader: 'Tuning Report',
+    emailSubject: (child, archetype) => `Argo Report · ${child} · ${archetype}`,
+    emailHeader: 'Argo Report',
     emailPreparedFor: (name) => `Prepared for ${name}`,
     emailArchetypeOf: (name) => `${name}'s Archetype`,
     emailFooter: 'ArgoMethod® · This report is a snapshot of the present, not a permanent label.',
@@ -496,7 +496,7 @@ const en: OdysseyTranslations = {
     emailMaturationBody: 'DISC profiles in early childhood (under 7 years) are highly plastic. We recommend revisiting this profile in 6 months to observe the evolution of tendencies.',
 
     emailSections: {
-        contract: 'Tuning Portrait',
+        contract: 'Athlete Portrait',
         disclaimer: 'This report does not evaluate talent or predict athletic future. It describes present tendencies that may evolve. It is a snapshot, not a permanent label.',
         placeInShip: 'Their Place on the Ship',
         secondaryCompass: 'The Secondary Compass',
@@ -508,7 +508,7 @@ const en: OdysseyTranslations = {
         bridgeWords: 'Bridge Words',
         noiseWords: 'Noise Words',
         byTendency: 'By their tendency',
-        tuningGuide: 'Tuning Guide',
+        tuningGuide: 'Connection Guide',
         activators: 'Activators',
         toAvoid: 'To avoid',
         adjustmentManagement: 'Adjustment Management',
@@ -519,8 +519,8 @@ const en: OdysseyTranslations = {
         afterTraining: 'After',
         calloutNotaFundamental: 'Key note',
         calloutNotaSeguridad: 'Safety note',
-        calloutInvitacion: 'Tuning invitation',
-        calloutFeedback: 'Tuning feedback',
+        calloutInvitacion: 'Invitation',
+        calloutFeedback: 'Feedback',
         calloutTermometro: 'Emotional thermometer',
         calloutAcompanamiento: 'Suggested support',
     },
@@ -583,7 +583,7 @@ const pt: OdysseyTranslations = {
     handoffLabel: 'A Passagem',
     handoffTitle: (adult, child) => `${adult}, é a vez de ${child}`,
     handoffBody: 'O jogo consiste em 12 decisões rápidas. É importante que responda sozinho/a, sem ajuda, em um ambiente tranquilo.',
-    handoffNote: 'Não existem respostas certas ou erradas.',
+    handoffNote: 'Não se ganha nem se perde, e não existem respostas certas ou erradas.',
     handoffCta: (child) => `Entregar dispositivo para ${child}`,
 
     phases: {
@@ -615,7 +615,7 @@ const pt: OdysseyTranslations = {
     fullReport: 'Relatório completo',
     saveErrorTitle: 'Não foi possível salvar a sessão',
 
-    reportHeader: 'Relatório de Sintonia Esportiva',
+    reportHeader: 'Relatório Argo',
     motorTag: 'Motor',
     generatingAI: 'Gerando...',
     aiTag: 'IA',
@@ -623,7 +623,7 @@ const pt: OdysseyTranslations = {
     dominantAxis: 'Eixo dominante',
     discLabels: { D: 'Domínio', I: 'Influência', S: 'Estabilidade', C: 'Consciência' },
 
-    compassLabel: 'Bússola de sintonia',
+    compassLabel: 'Bússola do perfil',
     axisNames: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
     motorGaugeLabel: 'Ritmo de processamento',
     motorDisplayNames: { 'Rápido': 'Dinâmico', 'Medio': 'Rítmico', 'Lento': 'Sereno' },
@@ -636,7 +636,7 @@ const pt: OdysseyTranslations = {
     reviewSub: 'Apenas 4 perguntas · 30 segundos',
 
     reportSections: {
-        contract: 'Retrato de Sintonia',
+        contract: 'Retrato do atleta',
         disclaimer: 'Este relatório não avalia talento nem prevê o futuro esportivo. Descreve tendências presentes que podem evoluir. É uma fotografia do momento, não um rótulo permanente.',
         placeInShip: 'Seu Lugar no Navio',
         secondaryCompass: 'A Bússola Secundária',
@@ -648,7 +648,7 @@ const pt: OdysseyTranslations = {
         bridgeWords: 'Palavras Ponte',
         noiseWords: 'Palavras Ruído',
         byTendency: 'Por sua tendência',
-        tuningGuide: 'Guia de Sintonia',
+        tuningGuide: 'Guia de conexão',
         activators: 'Ativadores',
         toAvoid: 'A evitar',
         adjustmentManagement: 'Gestão do Desajuste',
@@ -659,8 +659,8 @@ const pt: OdysseyTranslations = {
         afterTraining: 'Depois',
     },
 
-    emailSubject: (child, archetype) => `Relatório de Sintonia Argo · ${child} · ${archetype}`,
-    emailHeader: 'Relatório de Sintonia',
+    emailSubject: (child, archetype) => `Relatório Argo · ${child} · ${archetype}`,
+    emailHeader: 'Relatório Argo',
     emailPreparedFor: (name) => `Preparado para ${name}`,
     emailArchetypeOf: (name) => `Arquétipo de ${name}`,
     emailFooter: 'ArgoMethod® · Este relatório é uma fotografia do presente, não um rótulo permanente.',
@@ -668,7 +668,7 @@ const pt: OdysseyTranslations = {
     emailMaturationBody: 'Os perfis DISC na primeira infância (menores de 7 anos) são altamente plásticos. Recomenda-se revisitar este perfil em 6 meses para observar a evolução das tendências.',
 
     emailSections: {
-        contract: 'Retrato de Sintonia',
+        contract: 'Retrato do atleta',
         disclaimer: 'Este relatório não avalia talento nem prevê o futuro esportivo. Descreve tendências presentes que podem evoluir. É uma fotografia do momento, não um rótulo permanente.',
         placeInShip: 'Seu Lugar no Navio',
         secondaryCompass: 'A Bússola Secundária',
@@ -680,7 +680,7 @@ const pt: OdysseyTranslations = {
         bridgeWords: 'Palavras Ponte',
         noiseWords: 'Palavras Ruído',
         byTendency: 'Por sua tendência',
-        tuningGuide: 'Guia de Sintonia',
+        tuningGuide: 'Guia de conexão',
         activators: 'Ativadores',
         toAvoid: 'A evitar',
         adjustmentManagement: 'Gestão do Desajuste',
@@ -691,8 +691,8 @@ const pt: OdysseyTranslations = {
         afterTraining: 'Depois',
         calloutNotaFundamental: 'Nota fundamental',
         calloutNotaSeguridad: 'Nota de segurança',
-        calloutInvitacion: 'Convite de sintonia',
-        calloutFeedback: 'Feedback de sintonia',
+        calloutInvitacion: 'Convite',
+        calloutFeedback: 'Feedback',
         calloutTermometro: 'Termômetro emocional',
         calloutAcompanamiento: 'Acompanhamento sugerido',
     },

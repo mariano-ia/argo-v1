@@ -17,8 +17,8 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         },
         {
             id: 'adult_intro_3',
-            title: 'El Informe de Sintonía',
-            body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo que mejor describe sus tendencias actuales, su motor de motivación, claves de comunicación y sugerencias concretas para acompañarlo en su actividad. Todo generado con inteligencia artificial.',
+            title: 'El Informe',
+            body: 'Al finalizar, te enviamos a tu email un informe personalizado con el arquetipo que mejor describe sus tendencias actuales, su motor de motivación, claves de comunicación y sugerencias concretas para acompañarlo en su actividad.',
         },
     ],
 
@@ -35,8 +35,8 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         },
         {
             id: 'adult_intro_3',
-            title: 'The Attunement Report',
-            body: 'When it\'s done, we send a personalized report to your email with the archetype that best describes the athlete\'s current tendencies, their motivation engine, communication keys, and concrete suggestions to support them in their activity. All generated with artificial intelligence.',
+            title: 'The Report',
+            body: 'When it\'s done, we send a personalized report to your email with the archetype that best describes the athlete\'s current tendencies, their motivation engine, communication keys, and concrete suggestions to support them in their activity.',
         },
     ],
 
@@ -53,8 +53,8 @@ const ADULT_INTRO_SLIDES_I18N: Record<Lang, StorySlideData[]> = {
         },
         {
             id: 'adult_intro_3',
-            title: 'O Relatório de Sintonia',
-            body: 'Ao finalizar, enviamos para o seu e-mail um relatório personalizado com o arquétipo que melhor descreve suas tendências atuais, seu motor de motivação, chaves de comunicação e sugestões concretas para acompanhá-lo na sua atividade. Tudo gerado com inteligência artificial.',
+            title: 'O Relatório',
+            body: 'Ao finalizar, enviamos para o seu e-mail um relatório personalizado com o arquétipo que melhor descreve suas tendências atuais, seu motor de motivação, chaves de comunicação e sugestões concretas para acompanhá-lo na sua atividade.',
         },
     ],
 };

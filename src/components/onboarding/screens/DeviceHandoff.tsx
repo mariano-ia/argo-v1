@@ -36,7 +36,7 @@ export const DeviceHandoff: React.FC<Props> = ({ nombreAdulto, nombreNino, onCon
                 <p className="text-base text-[#424245] leading-relaxed">
                     {ot.handoffBody}
                 </p>
-                <p className="text-sm text-[#86868B] italic">
+                <p className="text-lg font-medium text-[#1D1D1F] leading-snug">
                     {ot.handoffNote}
                 </p>
             </div>

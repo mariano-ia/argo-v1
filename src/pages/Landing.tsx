@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Plus, Minus, Check } from 'lucide-react';
@@ -205,13 +205,6 @@ const FAQS: Record<Lang, { q: string; a: string }[]> = {
         { q: 'Quais dados são coletados?', a: 'Nome do adulto, email, nome da criança, idade e esporte. As respostas do jogo são usadas exclusivamente para gerar o relatório. Não vendemos nem compartilhamos dados com terceiros.' },
     ],
 };
-
-// ─── Slot machine — generates a fresh random config per transition ────────────
-const randomSlotConf = () => [0, 1, 2].map(() => ({
-    dir: Math.random() > 0.5 ? 1 : -1,
-    delay: Math.random() * 0.22,
-    dur: 0.24 + Math.random() * 0.14,
-}));
 
 // ─── Language cycling ─────────────────────────────────────────────────────────
 const OTHER_LANGS: Record<Lang, [Lang, Lang]> = { es: ['en', 'pt'], en: ['es', 'pt'], pt: ['es', 'en'] };
@@ -777,27 +770,12 @@ export const Landing: React.FC = () => {
     const langKey = (base: string) =>
         `${base}${lang === 'es' ? 'Es' : lang === 'pt' ? 'Pt' : 'En'}` as const;
 
-    // Rotating profile index + random slot config per transition
-    const [profileIdx, setProfileIdx] = useState(0);
-    const slotConfRef = useRef(randomSlotConf());
-    useEffect(() => {
-        const id = setInterval(() => {
-            slotConfRef.current = randomSlotConf();
-            setProfileIdx(i => (i + 1) % ROTATING_PROFILES.length);
-        }, 3000);
-        return () => clearInterval(id);
-    }, []);
-    const profile = ROTATING_PROFILES[profileIdx];
-    const slotConf = slotConfRef.current;
-
     // Selected archetype for description card (index into ARCHETYPES)
     const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 
     // Helper to read suffix-keyed fields from profile/archetype objects
     const pk = (obj: Record<string, unknown>, base: string) =>
         obj[langKey(base)] as string;
-    const pkArr = (obj: Record<string, unknown>, base: string) =>
-        obj[langKey(base)] as string[];
 
     return (
         <div style={{ backgroundColor: '#ffffff', color: '#1D1D1F', fontFamily: 'Inter, sans-serif' }}
@@ -1074,145 +1052,6 @@ export const Landing: React.FC = () => {
                             )}
                         </p>
                     </motion.div>
-                </div>
-            </section>
-            </div>
-
-            {/* ── EL SISTEMA ── */}
-            <div style={{ backgroundColor: '#F5F5F7' }}>
-            <section className="max-w-5xl mx-auto px-4 md:px-6 py-16 md:py-32">
-                <motion.div {...fadeUp(0)} className="mb-16">
-                    <SectionLabel>
-                        {L('El sistema · Tres dimensiones', 'The system · Three dimensions', 'O sistema · Três dimensões')}
-                    </SectionLabel>
-                    <h2 style={{ fontWeight: 300, fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', lineHeight: 1.1, letterSpacing: '-0.025em' }}>
-                        {L('Conducta + Motor: las dimensiones del Método', 'Behavior + Engine: the dimensions of the Method', 'Conduta + Motor: as dimensões do Método')}
-                    </h2>
-                    <p style={{ fontWeight: 400, fontSize: '16px', color: '#424245', marginTop: '16px', maxWidth: '640px', lineHeight: 1.75 }}>
-                        {L(
-                            'Una base científica adaptada al deporte juvenil y enriquecida con el Motor, el ritmo al que cada niño procesa. El resultado es su sintonía: dónde tiende a disfrutar y a rendir.',
-                            'A scientific foundation adapted to youth sport and enriched with the Engine, the pace at which each child processes. The result is their synergy: where they tend to thrive.',
-                            'Uma base científica adaptada ao esporte juvenil e enriquecida com o Motor, o ritmo em que cada criança processa. O resultado é a sua sintonia: onde costuma aproveitar e render.',
-                        )}
-                    </p>
-
-                    {/* Inline definitions */}
-                    <div className="flex flex-wrap items-start gap-8 mt-8">
-                        <div style={{ maxWidth: '160px' }}>
-                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                                {L('Conducta', 'Behavior', 'Conduta')}
-                            </p>
-                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
-                                {L('Cómo actúa bajo presión y en equipo', 'How they act under pressure and in a team', 'Como age sob pressão e em equipe')}
-                            </p>
-                        </div>
-                        <span style={{ fontWeight: 300, fontSize: '22px', color: '#D2D2D7', paddingTop: '2px' }}>+</span>
-                        <div style={{ maxWidth: '160px' }}>
-                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                                Motor
-                            </p>
-                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
-                                {L('A qué ritmo procesa y toma decisiones', 'At what pace they process and decide', 'Em que ritmo processa e toma decisões')}
-                            </p>
-                        </div>
-                        <span style={{ fontWeight: 300, fontSize: '22px', color: '#D2D2D7', paddingTop: '2px' }}>=</span>
-                        <div style={{ maxWidth: '180px' }}>
-                            <p style={{ fontWeight: 500, fontSize: '11px', color: '#1D1D1F', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '5px' }}>
-                                {L('Sintonía', 'Synergy', 'Sintonia')}
-                            </p>
-                            <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.5 }}>
-                                {L('Los lugares donde tiende a disfrutar y rendir', 'The places where they tend to thrive', 'Os lugares onde costuma aproveitar e render')}
-                            </p>
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Slot-machine rotating profile card */}
-                <div
-                    className="grid grid-cols-1 md:grid-cols-3 gap-px"
-                    style={{ border: '1px solid #D2D2D7', borderRadius: '12px', overflow: 'hidden', backgroundColor: '#D2D2D7' }}
-                >
-                    {/* Conducta */}
-                    <div className="p-6 md:p-10 bg-white overflow-hidden">
-                        <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
-                            01 · {L('Conducta', 'Behavior', 'Conduta')}
-                        </p>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={`c-${profileIdx}`}
-                                initial={{ opacity: 0, y: slotConf[0].dir * 24 }}
-                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[0].dur, delay: slotConf[0].delay, ease: [0.25, 0, 0, 1] } }}
-                                exit={{ opacity: 0, y: slotConf[0].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
-                            >
-                                <div className="flex items-center gap-2 mb-5">
-                                    <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: AXIS_COLORS[profile.eje], flexShrink: 0 }} />
-                                    <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
-                                        {pk(profile, 'ejeLabel')}
-                                    </p>
-                                </div>
-                                <div className="space-y-2">
-                                    {pkArr(profile, 'behaviors').map(b => (
-                                        <div key={b} className="flex items-center gap-2">
-                                            <div style={{ width: 4, height: 4, borderRadius: '50%', backgroundColor: '#D2D2D7', flexShrink: 0 }} />
-                                            <span style={{ fontWeight: 400, fontSize: '13px', color: '#424245' }}>{b}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Motor */}
-                    <div className="p-6 md:p-10 bg-white overflow-hidden">
-                        <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
-                            02 · Motor
-                        </p>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={`m-${profileIdx}`}
-                                initial={{ opacity: 0, y: slotConf[1].dir * 24 }}
-                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[1].dur, delay: slotConf[1].delay, ease: [0.25, 0, 0, 1] } }}
-                                exit={{ opacity: 0, y: slotConf[1].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
-                            >
-                                <div className="flex items-center gap-2 mb-5">
-                                    {[1, 2, 3].map(b => (
-                                        <div key={b} style={{
-                                            height: 4, width: 24, borderRadius: 2,
-                                            backgroundColor: b <= profile.motorBars ? '#1D1D1F' : '#D2D2D7',
-                                        }} />
-                                    ))}
-                                    <span style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginLeft: 6 }}>
-                                        {lang === 'es' ? 'Su motor' : lang === 'pt' ? 'Seu motor' : 'Their engine'}
-                                    </span>
-                                </div>
-                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
-                                    {pk(profile, 'motorDesc')}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-
-                    {/* Sintonía */}
-                    <div className="p-6 md:p-10 bg-white overflow-hidden">
-                        <p style={{ fontWeight: 600, fontSize: '10px', letterSpacing: '0.14em', color: '#86868B' }} className="uppercase mb-6">
-                            03 · {L('Sintonía', 'Synergy', 'Sintonia')}
-                        </p>
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={`s-${profileIdx}`}
-                                initial={{ opacity: 0, y: slotConf[2].dir * 24 }}
-                                animate={{ opacity: 1, y: 0, transition: { duration: slotConf[2].dur, delay: slotConf[2].delay, ease: [0.25, 0, 0, 1] } }}
-                                exit={{ opacity: 0, y: slotConf[2].dir * -24, transition: { duration: 0.2, ease: [0.25, 0, 0, 1] } }}
-                            >
-                                <p style={{ fontWeight: 300, fontSize: '20px', letterSpacing: '-0.02em', color: '#1D1D1F', marginBottom: '12px', lineHeight: 1.2 }}>
-                                    {pk(profile, 'archetype')}
-                                </p>
-                                <p style={{ fontWeight: 400, fontSize: '13px', color: '#86868B', lineHeight: 1.55 }}>
-                                    {pk(profile, 'archetypeDesc')}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
                 </div>
             </section>
             </div>
