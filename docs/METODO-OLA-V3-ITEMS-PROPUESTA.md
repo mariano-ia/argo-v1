@@ -1,6 +1,8 @@
 # Ola v3 de preguntas — Propuesta para aprobación del owner
 
-> Fecha: 2026-07-08. Estado: **PROPUESTA, nada aplicado**. Origen: panel de expertos (`METODO-REVISION-EXPERTOS-JUEGO-20260708.md`; IDs refieren al anexo).
+> **ESTADO 2026-07-15 — APLICADO AL CÓDIGO (sin push).** El set final del owner (PDF `docs/ARGO-PREGUNTAS-V3-NINOS.pdf`) quedó aplicado a la banca viva `src/lib/onboardingDataI18n.ts` (es/en/pt) y a la banca admin `src/lib/onboardingData.ts` (es). Q5 fue **reescrita por el owner** superando la del PDF ("la tormenta se acerca", fix de situación fuerte; ver `METODO-OLA-V3-COPY-NINOS.md` §Q5). `INSTRUMENT_VERSION` bumpeado a `v3-items-20260715` para no mezclar wordings. Los monitores de esta sección ya no son teóricos: viven en el cron `api/item-quality-cron.ts` (cada 200 jugadas reales del instrumento vivo computa entropía/share por eje/piso de eje/sesgo posicional, guarda snapshot en `item_quality_snapshots` y alerta al owner por Telegram+email; `?force=1` corre el análisis on-demand). Pendiente: revisión nativa de las traducciones en/pt (hechas en esta pasada) y regenerar el PDF (su Q5 quedó vieja). NO pusheado.
+>
+> Fecha: 2026-07-08. Estado original: **PROPUESTA, nada aplicado**. Origen: panel de expertos (`METODO-REVISION-EXPERTOS-JUEGO-20260708.md`; IDs refieren al anexo).
 > Regla de ejecución acordada: **una sola ola versionada** (`question_version: v3-...`), con re-mapeo de contextos y pasada final de rúbrica sobre el set completo, para no resetear el reloj de normas dos veces (M8) ni fabricar imanes nuevos (riesgo R4 del crítico).
 > Ya ejecutado por separado (no es parte de esta aprobación): shuffle + telemetría + versionado + desempates grupales apagados (commit `b501e33`).
 

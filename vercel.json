@@ -13,6 +13,10 @@
   ],
   "crons": [
     {
+      "path": "/api/item-quality-cron",
+      "schedule": "0 */6 * * *"
+    },
+    {
       "path": "/api/blog-cron",
       "schedule": "0 10 * * 1,4"
     },

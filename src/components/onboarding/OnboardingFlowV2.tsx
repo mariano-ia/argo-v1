@@ -12,7 +12,10 @@ import { QuestionAnswer, resolveFromAnswers, resolveEvidenceFicha } from '../../
 // expert-panel item rewrite (de-magnet Q1/Q5/Q7/Q8/Q10, S-function restored,
 // Q9 -> substitution scene, lexicon to the 8yo floor) into ONE launch so the
 // norm clock resets only once (never shipped v2 to prod).
-const INSTRUMENT_VERSION = 'v3-items-20260708';
+// Bump on every material item-wording change so the norm clock / analysis never
+// pools answers across different wordings. 20260715 = final expert-panel set (the
+// ARGO-PREGUNTAS-V3-NINOS PDF) + reworked Q5 ("la tormenta se acerca", anti strong-situation).
+const INSTRUMENT_VERSION = 'v3-items-20260715';
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../../lib/argosEngine';
 import { runReportPipeline } from '../../lib/reportPipeline';
 import { sportFrame, buildReportV4 } from '../../lib/reportV4';

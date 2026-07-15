@@ -129,8 +129,12 @@ $9.99 y $12.99 dando vueltas (ArgoOne / ArgoOne+ / mail recordatorio). Unificar 
   intro → su cuestionario → desbloqueo del puente + informe por $4.99 (cuestionario primero, pago al final).
 - **Frontera One → Academy (CTA en el hub):** el caso "un coach quiere sumar a su ayudante en varios niños" NO
   es ArgoOne (consentimiento de a un adulto por niño); es **ArgoAcademy®**, donde la institución maneja el
-  consentimiento con roles. El hub lleva un CTA "Hacer upgrade a ArgoAcademy®" en el estado familia (señal de
-  escala). El upgrade que migra los niños al dashboard sigue diferido (§7.2).
+  consentimiento con roles. El upgrade que migra los niños al dashboard sigue diferido (§7.2).
+  - **Gate del CTA "Hacer upgrade a ArgoAcademy®" (CERRADO 2026-07-09):** se muestra por **escala** (un
+    comprador que gestiona MUCHOS niños = coach/institución), **nunca** a un padre/familia/autorizador/invitado.
+    Una familia no va a gestionar 10 niños, así que familia ≠ comprador de Academy. En el build el gate es por
+    cantidad de niños del comprador (umbral coach), no por "es comprador" a secas. En el mockup se muestra como
+    placeholder en el estado del comprador.
 - **3 idiomas (STRICT):** todo lo del hub, el flujo de invitación, la landing y los emails nuevos se
   construyen en **es/en/pt** (como el resto del producto). Los mockups de revisión van en es.
 
