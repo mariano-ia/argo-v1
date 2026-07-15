@@ -361,7 +361,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
                 { label: 'Learning tricks so my oar slips into the water without a splash.', axis: 'C' },
                 { label: 'Rowing steady to help keep the boat from slowing down.', axis: 'S' },
                 { label: 'Telling stories with the others while the boat moves along.', axis: 'I' },
-                { label: 'Feeling us go faster and faster toward the island.', axis: 'D' },
+                { label: 'Feeling like we\'re going faster and faster toward the island.', axis: 'D' },
             ],
         },
         {
@@ -372,7 +372,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
                 { label: 'I ask everyone which path they like best.', axis: 'I' },
                 { label: 'I look closely at the map and the wind before choosing.', axis: 'C' },
                 { label: 'I pick the shortest path to get there sooner.', axis: 'D' },
-                { label: 'I\'d rather take the path we already know so we all stay at ease.', axis: 'S' },
+                { label: 'I\'d rather take the path we already know so we all feel calm.', axis: 'S' },
             ],
         },
         {
@@ -381,9 +381,9 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             intro: 'The storm is coming. What do you do?',
             options: [
                 { label: 'I get moving now, without waiting for it to hit.', axis: 'D' },
-                { label: 'I look at the sky and check what\'s worth securing first.', axis: 'C' },
+                { label: 'I look at the sky and check what we should tie down first.', axis: 'C' },
                 { label: 'I gather the team so we\'re all together.', axis: 'I' },
-                { label: 'I keep steady with my part so the boat doesn\'t slow down.', axis: 'S' },
+                { label: 'I stick to my part so the boat doesn\'t slow down.', axis: 'S' },
             ],
         },
         {
@@ -425,7 +425,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             intro: 'It\'s your turn to rest while others adjust the sails. What do you do in that little while?',
             options: [
                 { label: 'I watch how they do it to learn their tricks.', axis: 'C' },
-                { label: 'I wait alert for the signal to row again.', axis: 'D' },
+                { label: 'I stay alert for the signal to row again.', axis: 'D' },
                 { label: 'I rest calmly so I\'m ready when the team needs me.', axis: 'S' },
                 { label: 'I cheer on the ones adjusting the sails.', axis: 'I' },
             ],
@@ -458,7 +458,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             intro: 'We made it! The boat touches the sand. As you step onto the beach... what\'s the first thing you think?',
             options: [
                 { label: 'What a great adventure to share with the team!', axis: 'I' },
-                { label: 'Our trip\'s plan worked out so well!', axis: 'C' },
+                { label: 'Our plan for the trip worked out great!', axis: 'C' },
                 { label: 'I\'m glad I helped us all get there safe!', axis: 'S' },
                 { label: 'We did it! What\'s the next island?', axis: 'D' },
             ],
@@ -485,7 +485,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
                 { label: 'Primeiro quero entender por que se faz assim.', axis: 'C' },
                 { label: 'Já experimento na hora com meus próprios braços.', axis: 'D' },
                 { label: 'Repito passo a passo pra remar no ritmo da equipe.', axis: 'S' },
-                { label: 'Pratico com meus amigos pra nos divertirmos.', axis: 'I' },
+                { label: 'Pratico com meus amigos pra gente se divertir.', axis: 'I' },
             ],
         },
         {
@@ -516,7 +516,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             intro: 'A tempestade se aproxima. O que você faz?',
             options: [
                 { label: 'Já começo a agir, sem esperar ela chegar.', axis: 'D' },
-                { label: 'Olho o céu e vejo o que convém prender antes.', axis: 'C' },
+                { label: 'Olho o céu e vejo o que é melhor prender antes.', axis: 'C' },
                 { label: 'Reúno a equipe pra ficarmos todos juntos.', axis: 'I' },
                 { label: 'Sigo firme na minha parte pro barco não frear.', axis: 'S' },
             ],
@@ -549,7 +549,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             intro: 'A equipe está cansada e está difícil continuar remando. O que você tem vontade de fazer?',
             options: [
                 { label: 'Ponho mais energia pro barco avançar.', axis: 'D' },
-                { label: 'Reparo bem como mover o remo pra ficar mais fácil.', axis: 'C' },
+                { label: 'Vejo bem como mexer no remo pra ficar mais fácil.', axis: 'C' },
                 { label: 'Sigo remando parelho pro barco não parar.', axis: 'S' },
                 { label: 'Digo algo divertido pra animar a equipe.', axis: 'I' },
             ],
@@ -557,7 +557,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
         {
             number: 9,
             title: 'A Espera',
-            intro: 'Chega sua vez de descansar enquanto outros ajeitam as velas. O que você faz nesse tempinho?',
+            intro: 'Chegou a sua vez de descansar enquanto outros ajeitam as velas. O que você faz nesse tempinho?',
             options: [
                 { label: 'Olho como fazem pra aprender os truques deles.', axis: 'C' },
                 { label: 'Espero atento o sinal pra voltar a remar.', axis: 'D' },
@@ -570,7 +570,7 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
             title: 'O Apoio',
             intro: 'Um companheiro deixa o remo escapar e fica um pouco triste. O que sai do seu coração?',
             options: [
-                { label: 'Passo o remo pra ele rápido pra seguir remando.', axis: 'D' },
+                { label: 'Passo o remo pra ele rápido, pra continuar remando.', axis: 'D' },
                 { label: 'Mostro um truque pra segurar melhor o remo.', axis: 'C' },
                 { label: 'Remo do lado dele pra não se sentir sozinho.', axis: 'S' },
                 { label: 'Faço uma piada pra ele rir.', axis: 'I' },
@@ -579,12 +579,12 @@ const QUESTIONS_I18N: Record<Lang, Question[]> = {
         {
             number: 11,
             title: 'A Prática Final',
-            intro: 'Pra chegar à margem é preciso repetir o mesmo movimento muitas vezes. O que te ajuda a não ficar entediado?',
+            intro: 'Pra chegar na praia é preciso repetir o mesmo movimento muitas vezes. O que te ajuda a não ficar entediado?',
             options: [
                 { label: 'Melhorar algum detalhe a cada tentativa.', axis: 'C' },
                 { label: 'Sentir que é uma brincadeira com meus amigos.', axis: 'I' },
                 { label: 'Sentir que meu ritmo ajuda o barco.', axis: 'S' },
-                { label: 'Inventar um desafio novo cada vez.', axis: 'D' },
+                { label: 'Inventar um desafio novo a cada vez.', axis: 'D' },
             ],
         },
         {
