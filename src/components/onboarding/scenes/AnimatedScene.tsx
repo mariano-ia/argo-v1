@@ -35,6 +35,13 @@ const SCENE_VIDEOS: Partial<Record<Phase, string[]>> = {
     'island':   ['/scenes/video/island.mp4'],
 };
 
+// Optional one-shot intro clip per phase: plays once, then the phase's loop video
+// takes over. The beach arrival clip ends on the loop's first frame, so it flows
+// straight into the looping beached shot.
+const SCENE_INTRO_VIDEOS: Partial<Record<Phase, string>> = {
+    'island': '/scenes/video/island-intro.mp4',
+};
+
 // Reads the preview flag and remembers it for the tab session, so it survives
 // client-side navigation during the flow. `?bgvideo=1` turns it on, `?bgvideo=0` off.
 function videoBackgroundsEnabled(): boolean {
@@ -231,23 +238,34 @@ const RockingBoat: React.FC = () => (
 
 // ─── Parallax background ─────────────────────────────────────────────────────
 
-const ParallaxBg: React.FC<{ src: string; videoSrc?: string }> = ({ src, videoSrc }) => (
+// Renders a scene video: plays an optional one-shot intro clip, then the looping clip.
+const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string }> = ({ loopSrc, introSrc, poster }) => {
+    const [introDone, setIntroDone] = React.useState(false);
+    React.useEffect(() => { setIntroDone(false); }, [introSrc, loopSrc]);
+    const showIntro = Boolean(introSrc) && !introDone;
+    return (
+        <video
+            key={showIntro ? introSrc : loopSrc}
+            src={showIntro ? introSrc : loopSrc}
+            poster={poster}
+            autoPlay
+            muted
+            playsInline
+            loop={!showIntro}
+            onEnded={showIntro ? () => setIntroDone(true) : undefined}
+            className="absolute inset-0 w-full h-full object-cover"
+        />
+    );
+};
+
+const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string }> = ({ src, videoSrc, introSrc }) => (
     <motion.div
         className="absolute inset-0"
         animate={{ scale: [1.02, 1.06, 1.02] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
         {videoSrc ? (
-            <video
-                key={videoSrc}
-                src={videoSrc}
-                poster={src}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="absolute inset-0 w-full h-full object-cover"
-            />
+            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} />
         ) : (
             <img
                 src={src}
@@ -377,6 +395,8 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
     // Opt-in video background for this phase (falls back to the PNG when off/missing).
     const videos = videoBackgroundsEnabled() ? SCENE_VIDEOS[phase] : undefined;
     const videoSrc = videos ? videos[imageIndex % videos.length] : undefined;
+    // Intro clip only on the first background of a phase (e.g. the beach arrival).
+    const introSrc = videoSrc && imageIndex === 0 ? SCENE_INTRO_VIDEOS[phase] : undefined;
     const overlaysOn = !videoSrc;
 
     return (
@@ -390,7 +410,7 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
                 transition={{ duration: 0.8 }}
             >
                 {/* Background with parallax sway (video when opted in, else PNG) */}
-                <ParallaxBg src={src} videoSrc={videoSrc} />
+                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} />
 
                 {/* Phase overlays — skipped when a video already carries the motion */}
                 {overlaysOn && phase === 'port' && <PortOverlay />}

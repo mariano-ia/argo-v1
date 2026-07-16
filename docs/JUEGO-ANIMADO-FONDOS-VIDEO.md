@@ -143,3 +143,16 @@ Primer paso de integración, **todo detrás de un flag apagado por defecto** (pr
   (mar/tormenta/calma) cortan en el loop (costura) hasta que se pre-cierren en edición o se acepte el corte.
 - **Pendiente de rollout real:** decidir cómo se enciende para usuarios (flip del default por fase),
   optimización de peso/carga en mobile, y el cierre de loops de las escenas movidas.
+
+**Preview enriquecido (2026-07-16):** `/preview/escenas` muestra el **juego completo**: fondo (video)
++ **UI real de preguntas** (`QuestionScreenV2`, alineada al marco con un `transform` que contiene su
+`fixed`) + **audio real** (tema de fondo `argo_background.mp3` + efectos por fase `effects_01/02/03`,
+sincronizados) + switcher **ES/EN/PT** + toggles Preguntas/Sonido/Video. La fase `island` usa
+`SCENE_INTRO_VIDEOS`: reproduce la **llegada** (`island-intro.mp4`) una vez y encadena al **loop**
+(`island.mp4`) — verificado headless (a los 3s corre el intro, a los 7s el loop).
+El audio del juego real NO se toca (los videos son `muted`); queda sincronizado solo porque el mismo
+`screenIndex` maneja fase, video y audio.
+
+**TODO pendiente (pedido del owner, 2026-07-16):** el `<video loop>` corta un poco **brusco** en el
+punto de loop (todas las escenas). Agregar un **crossfade dentro del componente de video** (dos
+instancias solapadas cerca del corte, sin re-encodear) para que el loop no se note. Aplica a las 5 fases.
