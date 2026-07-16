@@ -47,3 +47,6 @@ playwright/.cache/
 
 # QA eval output (regenerated each run)
 docs/qa/ai-eval-report.md
+
+# Animated-game master assets (large local working folder; served copies live in public/scenes/video/)
+Argo Anitamed Game/

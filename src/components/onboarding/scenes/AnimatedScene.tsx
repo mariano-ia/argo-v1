@@ -21,6 +21,30 @@ function getPhase(questionIndex: number): Phase {
     return 'island';
 }
 
+// ─── Optional animated video backgrounds (opt-in, off by default) ─────────────
+// Preview flag: append `?bgvideo=1` to the URL. Without it, scenes render exactly
+// as before (PNG + overlays) — zero change for prod. Rollout is per-phase: a phase
+// NOT listed here keeps its PNG. When a phase has a video, its PNG becomes the
+// <video> poster (graceful fallback) and that phase's SVG/CSS overlay is skipped
+// (the video already carries the ambient motion). Indices align with SCENE_ASSETS.
+const SCENE_VIDEOS: Partial<Record<Phase, string[]>> = {
+    'port': ['/scenes/video/port.mp4', '/scenes/video/port-2.mp4'],
+};
+
+// Reads the preview flag and remembers it for the tab session, so it survives
+// client-side navigation during the flow. `?bgvideo=1` turns it on, `?bgvideo=0` off.
+function videoBackgroundsEnabled(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+        const q = new URLSearchParams(window.location.search).get('bgvideo');
+        if (q === '1') window.sessionStorage.setItem('bgvideo', '1');
+        else if (q === '0') window.sessionStorage.removeItem('bgvideo');
+        return window.sessionStorage.getItem('bgvideo') === '1';
+    } catch {
+        return new URLSearchParams(window.location.search).get('bgvideo') === '1';
+    }
+}
+
 // ─── Big SVG ocean waves (scrolling sine, very visible) ──────────────────────
 
 const OceanWaves: React.FC<{
@@ -203,18 +227,31 @@ const RockingBoat: React.FC = () => (
 
 // ─── Parallax background ─────────────────────────────────────────────────────
 
-const ParallaxBg: React.FC<{ src: string }> = ({ src }) => (
+const ParallaxBg: React.FC<{ src: string; videoSrc?: string }> = ({ src, videoSrc }) => (
     <motion.div
         className="absolute inset-0"
         animate={{ scale: [1.02, 1.06, 1.02] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
-        <img
-            src={src}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
-        />
+        {videoSrc ? (
+            <video
+                key={videoSrc}
+                src={videoSrc}
+                poster={src}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+            />
+        ) : (
+            <img
+                src={src}
+                alt=""
+                className="absolute inset-0 w-full h-full object-cover"
+                draggable={false}
+            />
+        )}
     </motion.div>
 );
 
@@ -333,6 +370,11 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
     const imageIndex = Math.floor(screenIndex / 2) % images.length;
     const src = images[imageIndex];
 
+    // Opt-in video background for this phase (falls back to the PNG when off/missing).
+    const videos = videoBackgroundsEnabled() ? SCENE_VIDEOS[phase] : undefined;
+    const videoSrc = videos ? videos[imageIndex % videos.length] : undefined;
+    const overlaysOn = !videoSrc;
+
     return (
         <AnimatePresence mode="wait">
             <motion.div
@@ -343,15 +385,15 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.8 }}
             >
-                {/* Background with parallax sway */}
-                <ParallaxBg src={src} />
+                {/* Background with parallax sway (video when opted in, else PNG) */}
+                <ParallaxBg src={src} videoSrc={videoSrc} />
 
-                {/* Phase overlays */}
-                {phase === 'port' && <PortOverlay />}
-                {phase === 'open-sea' && <OpenSeaOverlay />}
-                {phase === 'storm' && <StormOverlay />}
-                {phase === 'calm' && <CalmOverlay />}
-                {phase === 'island' && <IslandOverlay />}
+                {/* Phase overlays — skipped when a video already carries the motion */}
+                {overlaysOn && phase === 'port' && <PortOverlay />}
+                {overlaysOn && phase === 'open-sea' && <OpenSeaOverlay />}
+                {overlaysOn && phase === 'storm' && <StormOverlay />}
+                {overlaysOn && phase === 'calm' && <CalmOverlay />}
+                {overlaysOn && phase === 'island' && <IslandOverlay />}
 
                 {/* Vignette */}
                 <div
