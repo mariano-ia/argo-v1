@@ -164,18 +164,24 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
 **Refinamiento de loops por escena (2026-07-16, tras revisión visual del owner):**
-- **Tormenta (v2, salto a cuadro gemelo):** además del flash blanco DOBLE (golpe 0.85→0 en 450ms + eco 0.55→0 en 250ms ~550ms después,
-  como un relámpago real; `SCENE_LOOP_FLASH`), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
+- **Tormenta (v3, salto + crossfade + doble flash espaciado):** flash DOBLE (golpe 0.85→0 en 450ms +
+  eco 0.55→0 en 250ms **1.2s después** — el owner pidió más aire entre ambos; `SCENE_LOOP_FLASH`), y el
+  **crossfade convive con el salto**: la copia B trabaja sobre el segmento efectivo `[in, out]`
+  (offset de medio segmento, wrap propio en `out`→`in`, resync mientras está oculta), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
   cuadros más parecidos estructuralmente** (métrica ciega a lluvia/relámpagos: downscale+blur+
   normalización de brillo, con peso en la franja del barco) y salta de `out`→`in` con el flash encima
   (`VIDEO_LOOP_JUMPS`): storm 4.583→1.583s (39% menos discontinuidad), storm-2 4.708→0.833s (20%),
   storm-3 4.667→0.083s (24%). Un solo decoder (sin crossfade B). Verificado: los saltos caen exactos
   y el flash dispara en cada uno.
-- **Calma:** el clip original avanzaba +13px y el regen `first=last` salió peor (deriva -25px hacia
-  atrás: ruleta del modelo). Solución final: **boomerang** (ida 5s + vuelta 5s con ffmpeg `reverse`) =
-  loop matemáticamente perfecto (seam 0.62%); el vaivén se lee como mecida natural. Master:
-  `Argo Anitamed Game/calma/calma_boomerang.mp4` → servido como `calm.mp4` (10s).
-  Descartes: `calma02_inplace_loop.mp4` (deriva hacia atrás).
+- **Calma (v3, anclada):** el clip original avanzaba +13px; un regen `first=last` salió peor (-25px
+  hacia atrás) y el boomerang intermedio no convenció al owner. Ganó el **re-regen anclado** (2
+  variantes en paralelo con prompt endurecido "ship pinned like a building" + first==last): la
+  variante A quedó **inmóvil de verdad** (drift neto +0.2px, rango 0.9px, seam 1.23%). Master:
+  `Argo Anitamed Game/calma/calma03a_anchored.mp4` → servido como `calm.mp4` (5s) **con crossfade**.
+  Descartes: `calma02_inplace_loop.mp4` (-25px), `calma_boomerang.mp4` (superado), `calma03b` (drift -2px).
+- **Crossfade por defecto en casi todo:** el ojo del owner nota costuras ~1.3%, así que solo `island`
+  queda como loop nativo de un decoder (seam 0.65% + handoff del intro); puerto, mar, calma y las 3
+  tormentas usan el doble decoder.
 - **Playa:** el flashazo entre llegada y loop era el POSTER (el island.png viejo, arte tropical
   distinto) mostrado mientras el loop montaba y decodificaba. Fix: el loop se monta **precargado y
   pausado debajo del intro** (`active=false`) y arranca de su frame 0 ya decodificado al terminar la

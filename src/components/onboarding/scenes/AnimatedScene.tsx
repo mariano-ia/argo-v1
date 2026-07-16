@@ -49,12 +49,11 @@ const SCENE_LOOP_FLASH: Partial<Record<Phase, boolean>> = {
 };
 
 // Phases whose clips loop natively and play on a SINGLE <video loop> — no second
-// decoder, no crossfade — which is cheaper (matters on mobile): calm (boomerang,
-// mathematically perfect) and island (first==last, seam 0.65%). Port also has a
-// near-native seam (~1.3%) but the owner's eye caught it, so it keeps the
-// dual-decoder crossfade along with open-sea.
+// decoder, no crossfade — which is cheaper (matters on mobile): island only
+// (first==last, seam 0.65%, plus its intro handoff). Port (~1.3%) and calm
+// (anchored regen, ~1.2%) both have seams the owner's eye caught at that level,
+// so they run the dual-decoder crossfade along with open-sea and the storms.
 const SCENE_NATIVE_LOOP: Partial<Record<Phase, boolean>> = {
-    'calm': true,
     'island': true,
 };
 
@@ -309,7 +308,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
         };
         burst(0.85, 450);
         window.clearTimeout(flashTimerRef.current);
-        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250), 550);
+        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250), 1200);
     }, []);
     React.useEffect(() => () => window.clearTimeout(flashTimerRef.current), []);
 
@@ -360,16 +359,23 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
     }, [active, dur]);
 
     // Drive B's opacity from A's position; correct any drift only while B is hidden.
+    // When a matched-frame jump is configured, the effective loop segment is [in, out]
+    // (not [0, dur]): distances, B's half-offset and B's own wrap all use that segment.
     React.useEffect(() => {
         if (!crossfade) return;
         const a = aRef.current, b = bRef.current;
         if (!a || !b || !dur || !active) return;
-        const F = Math.min(fade, dur / 3);
+        const jIn = loopJump ? loopJump.in : 0;
+        const jOut = loopJump ? loopJump.out : dur;
+        const L = Math.max(jOut - jIn, 0.5);
+        const F = Math.min(fade, L / 3);
         const guard = Math.min(0.1, F * 0.35);   // plateau half-width (~2-3 frames): full coverage at the seam
         let raf = 0;
         const tick = () => {
             const tA = a.currentTime;
-            const dist = Math.min(tA, dur - tA);            // 0 at A's cut, dur/2 mid-clip
+            const dist = loopJump
+                ? Math.min(Math.max(tA - jIn, 0), Math.max(jOut - tA, 0))   // 0 at the segment seam
+                : Math.min(tA, dur - tA);                                    // 0 at A's cut, dur/2 mid-clip
             if (dist > F) startedRef.current = true;         // we have been safely mid-clip
             const bReady = b.readyState >= 2;                // HAVE_CURRENT_DATA — B has a real frame
             // Only cover A's cut once B can present a frame and we are past the initial start;
@@ -378,19 +384,24 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
                 ? Math.min(Math.max((F - dist) / (F - guard), 0), 1)   // 0..1, plateaus at 1 within `guard` of the cut
                 : 0;
             b.style.opacity = String(opacityB);
+            if (loopJump && b.currentTime >= jOut) {         // B wraps its own segment (always while hidden)
+                try { b.currentTime = jIn; } catch { /* ignore */ }
+            }
             if (opacityB < 0.02) {                           // B is invisible: safe to resync any drift
-                const target = (tA + dur / 2) % dur;
+                const target = loopJump
+                    ? jIn + ((((tA - jIn) + L / 2) % L) + L) % L
+                    : (tA + dur / 2) % dur;
                 if (Math.abs(b.currentTime - target) > 0.15) { try { b.currentTime = target; } catch { /* ignore */ } }
             }
-            // Loop-boundary flash: when A wraps, fire the lightning burst to hide
-            // whatever residue the crossfade leaves.
-            if (flashOnLoop && startedRef.current && prevTARef.current - tA > dur / 2) fireFlash();
+            // Loop-boundary flash on the plain wrap path (jump loops flash from their
+            // own effect; guard against double-firing).
+            if (flashOnLoop && !loopJump && startedRef.current && prevTARef.current - tA > dur / 2) fireFlash();
             prevTARef.current = tA;
             raf = requestAnimationFrame(tick);
         };
         raf = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(raf);
-    }, [dur, fade, active, flashOnLoop, crossfade, fireFlash]);
+    }, [dur, fade, active, flashOnLoop, crossfade, fireFlash, loopJump]);
 
     const cls = 'absolute inset-0 w-full h-full object-cover';
     const base = transform ? { transform } : undefined;
@@ -599,7 +610,7 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
                 transition={{ duration: 0.8 }}
             >
                 {/* Background with parallax sway (video when opted in, else PNG) */}
-                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase] && !(videoSrc && VIDEO_LOOP_JUMPS[videoSrc])} loopJump={videoSrc ? VIDEO_LOOP_JUMPS[videoSrc] : undefined} />
+                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase]} loopJump={videoSrc ? VIDEO_LOOP_JUMPS[videoSrc] : undefined} />
 
                 {/* Phase overlays — skipped when a video already carries the motion */}
                 {overlaysOn && phase === 'port' && <PortOverlay />}
