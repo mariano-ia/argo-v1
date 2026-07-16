@@ -292,17 +292,26 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
     const prevTARef = React.useRef(0);
     const [dur, setDur] = React.useState(0);
 
-    // Quick white burst (reads as lightning); shared by the wrap- and jump-loop paths.
+    // White burst (reads as lightning); shared by the wrap- and jump-loop paths.
+    // Fires TWICE — a main strike and a short echo right after, like real lightning —
+    // which keeps the eye busy while the loop seam settles underneath.
+    const flashTimerRef = React.useRef(0);
     const fireFlash = React.useCallback(() => {
-        const fl = flashRef.current;
-        if (!fl) return;
-        fl.style.transition = 'none';
-        fl.style.opacity = '0.85';
-        requestAnimationFrame(() => {
-            fl.style.transition = 'opacity 450ms ease-out';
-            fl.style.opacity = '0';
-        });
+        const burst = (peak: number, decayMs: number) => {
+            const fl = flashRef.current;
+            if (!fl) return;
+            fl.style.transition = 'none';
+            fl.style.opacity = String(peak);
+            requestAnimationFrame(() => {
+                fl.style.transition = `opacity ${decayMs}ms ease-out`;
+                fl.style.opacity = '0';
+            });
+        };
+        burst(0.85, 450);
+        window.clearTimeout(flashTimerRef.current);
+        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250), 550);
     }, []);
+    React.useEffect(() => () => window.clearTimeout(flashTimerRef.current), []);
 
     // Matched-frame jump loop: on reaching `out`, flash and seek to `in` (the most
     // structurally similar frame, found offline) instead of wrapping to frame 0.

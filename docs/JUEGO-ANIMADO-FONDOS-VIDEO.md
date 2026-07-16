@@ -164,8 +164,8 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
 **Refinamiento de loops por escena (2026-07-16, tras revisión visual del owner):**
-- **Tormenta (v2, salto a cuadro gemelo):** además del flash blanco (0.85→0 en 450ms,
-  `SCENE_LOOP_FLASH`), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
+- **Tormenta (v2, salto a cuadro gemelo):** además del flash blanco DOBLE (golpe 0.85→0 en 450ms + eco 0.55→0 en 250ms ~550ms después,
+  como un relámpago real; `SCENE_LOOP_FLASH`), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
   cuadros más parecidos estructuralmente** (métrica ciega a lluvia/relámpagos: downscale+blur+
   normalización de brillo, con peso en la franja del barco) y salta de `out`→`in` con el flash encima
   (`VIDEO_LOOP_JUMPS`): storm 4.583→1.583s (39% menos discontinuidad), storm-2 4.708→0.833s (20%),
