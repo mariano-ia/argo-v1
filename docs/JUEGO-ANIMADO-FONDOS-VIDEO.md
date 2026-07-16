@@ -163,6 +163,13 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 (`p-3`→`p-2.5`, badge `h-10`→`h-9`, label `15px`→`text-sm`) en `QuestionScreenV2` — OJO: esto afecta el
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
-**TODO pendiente (pedido del owner, 2026-07-16):** el `<video loop>` corta un poco **brusco** en el
-punto de loop (todas las escenas). Agregar un **crossfade dentro del componente de video** (dos
-instancias solapadas cerca del corte, sin re-encodear) para que el loop no se note. Aplica a las 5 fases.
+**Crossfade de loop (HECHO 2026-07-16):** `CrossfadeLoopVideo` monta **dos decodificadores** del mismo
+clip desfasados **medio loop**; cerca del corte de A se funde la copia B (que está a mitad de clip,
+suave), con **plateau** para tapar el 100% de la costura. Endurecido tras **revisión adversarial** (7
+hallazgos confirmados): poster PNG en AMBAS copias, B solo aparece cuando tiene frame real
+(`readyState>=2`) y A ya pasó por el medio (no tapa el arranque ni muestra capa negra — era el bug HIGH),
+degradación a loop simple si B no puede reproducir, y el intro de la playa tiene fallback
+`onError`+timeout (no se traba nunca). Verificado headless: B=0 en el arranque, opacidad **1.00 exacta**
+en la costura, 0 en el medio, sin ghosting. **Limitación a probar en device:** son 2 decoders
+simultáneos; en iPhones viejos/con throttling el límite de videos concurrentes podría pausar uno (el
+código degrada a loop simple). Testear en mobile real (está en los pendientes de rollout).

@@ -249,25 +249,100 @@ const RockingBoat: React.FC = () => (
 
 // ─── Parallax background ─────────────────────────────────────────────────────
 
-// Renders a scene video: plays an optional one-shot intro clip, then the looping clip.
+// Crossfade loop: two decoders of the same clip, offset by half its length, with an
+// opacity crossfade near each loop boundary. A plain <video loop> hard-cuts from the
+// last frame to the first; here, as copy A nears its cut we fade in copy B — which is
+// mid-clip (smooth) because it runs half a loop ahead — so the cut is never seen.
+// No re-encode; the fade window is short so there is no mid-loop ghosting. Copy B only
+// fades in once it has a real frame AND A has been mid-clip at least once, so it never
+// masks the initial start or shows a blank layer; if B can't play, we degrade to A's
+// plain loop. Both copies carry the PNG poster as a last-resort fallback.
+const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: string; fade?: number }> = ({ src, poster, transform, fade = 0.6 }) => {
+    const aRef = React.useRef<HTMLVideoElement>(null);
+    const bRef = React.useRef<HTMLVideoElement>(null);
+    const startedRef = React.useRef(false);   // A has been safely mid-clip at least once
+    const [dur, setDur] = React.useState(0);
+
+    // Learn the duration and seed copy B half a loop ahead.
+    React.useEffect(() => {
+        startedRef.current = false;
+        const a = aRef.current, b = bRef.current;
+        if (!a || !b) return;
+        const onMeta = () => {
+            const d = a.duration;
+            if (d && isFinite(d)) { setDur(d); try { b.currentTime = d / 2; } catch { /* ignore */ } }
+        };
+        if (a.readyState >= 1 && a.duration) onMeta();
+        a.addEventListener('loadedmetadata', onMeta);
+        return () => a.removeEventListener('loadedmetadata', onMeta);
+    }, [src]);
+
+    // Drive B's opacity from A's position; correct any drift only while B is hidden.
+    React.useEffect(() => {
+        const a = aRef.current, b = bRef.current;
+        if (!a || !b || !dur) return;
+        const F = Math.min(fade, dur / 3);
+        const guard = Math.min(0.1, F * 0.35);   // plateau half-width (~2-3 frames): full coverage at the seam
+        let raf = 0;
+        const tick = () => {
+            const tA = a.currentTime;
+            const dist = Math.min(tA, dur - tA);            // 0 at A's cut, dur/2 mid-clip
+            if (dist > F) startedRef.current = true;         // we have been safely mid-clip
+            const bReady = b.readyState >= 2;                // HAVE_CURRENT_DATA — B has a real frame
+            // Only cover A's cut once B can present a frame and we are past the initial start;
+            // otherwise stay on A (graceful fall back to a plain loop, never a blank layer).
+            const opacityB = (startedRef.current && bReady)
+                ? Math.min(Math.max((F - dist) / (F - guard), 0), 1)   // 0..1, plateaus at 1 within `guard` of the cut
+                : 0;
+            b.style.opacity = String(opacityB);
+            if (opacityB < 0.02) {                           // B is invisible: safe to resync any drift
+                const target = (tA + dur / 2) % dur;
+                if (Math.abs(b.currentTime - target) > 0.15) { try { b.currentTime = target; } catch { /* ignore */ } }
+            }
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [dur, fade]);
+
+    const cls = 'absolute inset-0 w-full h-full object-cover';
+    const base = transform ? { transform } : undefined;
+    return (
+        <>
+            <video ref={aRef} src={src} poster={poster} autoPlay loop muted playsInline preload="auto" className={cls} style={base} />
+            <video ref={bRef} src={src} poster={poster} autoPlay loop muted playsInline preload="auto" className={cls} style={{ ...base, opacity: 0 }} />
+        </>
+    );
+};
+
+// Renders a scene video: an optional one-shot intro clip, then a crossfaded loop.
 const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string }> = ({ loopSrc, introSrc, poster, transform }) => {
     const [introDone, setIntroDone] = React.useState(false);
     React.useEffect(() => { setIntroDone(false); }, [introSrc, loopSrc]);
-    const showIntro = Boolean(introSrc) && !introDone;
-    return (
-        <video
-            key={showIntro ? introSrc : loopSrc}
-            src={showIntro ? introSrc : loopSrc}
-            poster={poster}
-            autoPlay
-            muted
-            playsInline
-            loop={!showIntro}
-            onEnded={showIntro ? () => setIntroDone(true) : undefined}
-            className="absolute inset-0 w-full h-full object-cover"
-            style={transform ? { transform } : undefined}
-        />
-    );
+    // Safety: if the intro never plays/ends (autoplay blocked, decode/404 failure), hand
+    // off to the loop anyway so the beach can never get stuck on a frozen arrival.
+    React.useEffect(() => {
+        if (!introSrc || introDone) return;
+        const t = setTimeout(() => setIntroDone(true), 8000);
+        return () => clearTimeout(t);
+    }, [introSrc, introDone]);
+    if (introSrc && !introDone) {
+        return (
+            <video
+                key={introSrc}
+                src={introSrc}
+                poster={poster}
+                autoPlay
+                muted
+                playsInline
+                onEnded={() => setIntroDone(true)}
+                onError={() => setIntroDone(true)}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={transform ? { transform } : undefined}
+            />
+        );
+    }
+    return <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} />;
 };
 
 const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; videoTransform?: string }> = ({ src, videoSrc, introSrc, videoTransform }) => (
