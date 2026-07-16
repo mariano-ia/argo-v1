@@ -153,6 +153,13 @@ sincronizados) + switcher **ES/EN/PT** + toggles Preguntas/Sonido/Video. La fase
 El audio del juego real NO se toca (los videos son `muted`); queda sincronizado solo porque el mismo
 `screenIndex` maneja fase, video y audio.
 
+**Reencuadre del video (fix "las preguntas tapan el barco"):** los clips tienen la nave centrada
+vertical, así que la tarjeta de preguntas (mitad inferior) le tapaba la mitad de abajo. Solución CSS
+**sin re-generar**: `DEFAULT_VIDEO_REFRAME` / `SCENE_VIDEO_REFRAME` aplican `transform: translateY(-14%)
+scale(1.26)` **solo al `<video>`** (el PNG / prod queda intacto), subiendo la nave a la franja despejada
+de arriba. Verificado en las 6 escenas: nave completa sobre las preguntas, sin borde negro. Tunable por
+fase con un override (p.ej. Mar Abierto queda un toque bajo).
+
 **TODO pendiente (pedido del owner, 2026-07-16):** el `<video loop>` corta un poco **brusco** en el
 punto de loop (todas las escenas). Agregar un **crossfade dentro del componente de video** (dos
 instancias solapadas cerca del corte, sin re-encodear) para que el loop no se note. Aplica a las 5 fases.
