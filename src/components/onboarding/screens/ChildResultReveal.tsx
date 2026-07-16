@@ -1,3 +1,4 @@
+import { videoBackgroundsEnabled } from '../scenes/AnimatedScene';
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail } from 'lucide-react';
@@ -185,12 +186,25 @@ export const ChildResultReveal: React.FC<Props> = ({
                 animate={{ scale: [1.02, 1.06, 1.02] }}
                 transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
             >
-                <img
-                    src="/scenes/island.png"
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
-                    draggable={false}
-                />
+                {videoBackgroundsEnabled() ? (
+                    <video
+                        src="/scenes/video/island.mp4"
+                        poster="/scenes/video/posters/island.jpg"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : (
+                    <img
+                        src="/scenes/island.png"
+                        alt=""
+                        className="absolute inset-0 w-full h-full object-cover"
+                        draggable={false}
+                    />
+                )}
             </motion.div>
 
             {/* Animated overlays — island phase */}

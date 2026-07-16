@@ -1,3 +1,4 @@
+import { videoBackgroundsEnabled } from '../onboarding/scenes/AnimatedScene';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMiniGameTexts } from './islas/translations';
@@ -338,7 +339,7 @@ export const LaTormenta: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             {/* Storm background — swaying inside an overflow-hidden container */}
             <div className="absolute inset-0 overflow-hidden">
                 <motion.img
-                    src="/scenes/storm.png"
+                    src={videoBackgroundsEnabled() ? '/scenes/video/posters/storm-3.jpg' : '/scenes/storm.png'}
                     alt=""
                     className="absolute object-cover"
                     style={{

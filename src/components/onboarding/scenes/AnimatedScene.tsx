@@ -35,6 +35,13 @@ const SCENE_VIDEOS: Partial<Record<Phase, string[]>> = {
     'island':   ['/scenes/video/island.mp4'],
 };
 
+// Poster = the clip's OWN first frame (extracted offline into /scenes/video/posters/).
+// The videos must never poster-flash the OLD png art while decoding: on every phase or
+// variant mount, what paints first is pixel-identical to the clip's first frame.
+function videoPosterFor(videoSrc: string): string {
+    return videoSrc.replace('/video/', '/video/posters/').replace(/\.mp4$/, '.jpg');
+}
+
 // Optional one-shot intro clip per phase: plays once, then the phase's loop video
 // takes over. The beach arrival clip ends on the loop's first frame, so it flows
 // straight into the looping beached shot.
@@ -96,7 +103,7 @@ const SCENE_VIDEO_REFRAME: Partial<Record<Phase, string>> = {
 // client-side navigation during the flow. `?bgvideo=1` turns it on, `?bgvideo=0` off.
 // A deployment built with VITE_BGVIDEO_DEFAULT=1 (isolated preview deploys only)
 // defaults to ON; the query/session override still wins in both directions.
-function videoBackgroundsEnabled(): boolean {
+export function videoBackgroundsEnabled(): boolean {
     if (typeof window === 'undefined') return false;
     const envDefault = import.meta.env.VITE_BGVIDEO_DEFAULT === '1';
     try {
@@ -488,7 +495,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
 // Renders a scene video: an optional one-shot intro clip over a preloaded, paused
 // loop. The loop starts (from its first frame, already decoded) the moment the intro
 // ends, so the handoff shows no poster/blank flash frame.
-const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number }; extraStrikes?: number[] }> = ({ loopSrc, introSrc, poster, transform, flashOnLoop, crossfade, loopJump, extraStrikes }) => {
+const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number }; extraStrikes?: number[] }> = ({ loopSrc, introSrc, transform, flashOnLoop, crossfade, loopJump, extraStrikes }) => {
     const [introDone, setIntroDone] = React.useState(false);
     React.useEffect(() => { setIntroDone(false); }, [introSrc, loopSrc]);
     // Safety: if the intro never plays/ends (autoplay blocked, decode/404 failure), hand
@@ -501,12 +508,12 @@ const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string;
     const showIntro = Boolean(introSrc) && !introDone;
     return (
         <>
-            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
+            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={videoPosterFor(loopSrc)} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
             {showIntro && (
                 <video
                     key={introSrc}
                     src={introSrc}
-                    poster={poster}
+                    poster={videoPosterFor(introSrc!)}
                     autoPlay
                     muted
                     playsInline
@@ -527,7 +534,7 @@ const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; 
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
         {videoSrc ? (
-            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
+            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
         ) : (
             <img
                 src={src}

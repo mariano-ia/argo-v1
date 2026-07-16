@@ -37,7 +37,7 @@ import { ChildResultReveal } from './screens/ChildResultReveal';
 import { DemoEndScreen } from './screens/DemoEndScreen';
 import { sendReport } from '../../lib/emailService';
 import { CHILD_REVEAL_TEXTS, CHILD_REVEAL_TEXTS_EN, CHILD_REVEAL_TEXTS_PT } from '../../lib/childRevealTexts';
-import { AnimatedScene } from './scenes/AnimatedScene';
+import { AnimatedScene, videoBackgroundsEnabled } from './scenes/AnimatedScene';
 import { IslasDesconocidas, IslandMetrics } from '../games/IslasDesconocidas';
 import { MiniGame1, RhythmMetrics } from './screens/MiniGame1';
 import { LaTormenta, AdaptationMetrics } from '../games/LaTormenta';
@@ -734,13 +734,25 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     useEffect(() => {
         ['/audio/argo_background.mp3', '/audio/effects_01.mp3', '/audio/effects_02.mp3', '/audio/effects_03.mp3']
             .forEach(src => { fetch(src).catch(() => {}); });
-        [
-            '/scenes/port.png', '/scenes/port-2.png',
-            '/scenes/open-sea.png', '/scenes/open-sea-2.png', '/scenes/open-sea-3.png',
-            '/scenes/storm.png', '/scenes/storm-2.png', '/scenes/storm-3.png',
-            '/scenes/calm.png', '/scenes/calm-2.png',
-            '/scenes/island.png',
-        ].forEach(src => { const img = new Image(); img.src = src; });
+        (videoBackgroundsEnabled()
+            ? [
+                // video mode: prime every clip's first-frame poster (what paints at each
+                // phase/variant mount) plus the lightning bolt overlay
+                '/scenes/video/posters/port.jpg', '/scenes/video/posters/port-2.jpg',
+                '/scenes/video/posters/open-sea.jpg',
+                '/scenes/video/posters/storm.jpg', '/scenes/video/posters/storm-2.jpg', '/scenes/video/posters/storm-3.jpg',
+                '/scenes/video/posters/calm.jpg',
+                '/scenes/video/posters/island.jpg', '/scenes/video/posters/island-intro.jpg',
+                '/scenes/video/bolt.png',
+            ]
+            : [
+                '/scenes/port.png', '/scenes/port-2.png',
+                '/scenes/open-sea.png', '/scenes/open-sea-2.png', '/scenes/open-sea-3.png',
+                '/scenes/storm.png', '/scenes/storm-2.png', '/scenes/storm-3.png',
+                '/scenes/calm.png', '/scenes/calm-2.png',
+                '/scenes/island.png',
+            ]
+        ).forEach(src => { const img = new Image(); img.src = src; });
     }, []);
 
     // Cleanup audio on unmount
