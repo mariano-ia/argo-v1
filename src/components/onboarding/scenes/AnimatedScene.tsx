@@ -48,7 +48,9 @@ const SCENE_INTRO_VIDEOS: Partial<Record<Phase, string>> = {
 // path exclusively, so the PNG fallback / prod stays byte-for-byte unchanged.
 const DEFAULT_VIDEO_REFRAME = 'translateY(-14%) scale(1.26)';
 const SCENE_VIDEO_REFRAME: Partial<Record<Phase, string>> = {
-    // Per-phase override (e.g. a ship framed higher/lower). Falls back to the default.
+    // These clips frame the ship lower/smaller, so lift them more than the default.
+    'open-sea': 'translateY(-22%) scale(1.42)',
+    'calm':     'translateY(-22%) scale(1.42)',
 };
 
 // Reads the preview flag and remembers it for the tab session, so it survives

@@ -157,8 +157,11 @@ El audio del juego real NO se toca (los videos son `muted`); queda sincronizado 
 vertical, así que la tarjeta de preguntas (mitad inferior) le tapaba la mitad de abajo. Solución CSS
 **sin re-generar**: `DEFAULT_VIDEO_REFRAME` / `SCENE_VIDEO_REFRAME` aplican `transform: translateY(-14%)
 scale(1.26)` **solo al `<video>`** (el PNG / prod queda intacto), subiendo la nave a la franja despejada
-de arriba. Verificado en las 6 escenas: nave completa sobre las preguntas, sin borde negro. Tunable por
-fase con un override (p.ej. Mar Abierto queda un toque bajo).
+de arriba. Verificado en las 6 escenas: nave completa sobre las preguntas, sin borde negro. Tunable por fase:
+**Mar Abierto y Calma** usan `translateY(-22%) scale(1.42)` (naves más chicas/bajas en el arte).
+Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los botones de respuesta
+(`p-3`→`p-2.5`, badge `h-10`→`h-9`, label `15px`→`text-sm`) en `QuestionScreenV2` — OJO: esto afecta el
+juego real, **todas las preguntas** (no solo con video), no es video-only.
 
 **TODO pendiente (pedido del owner, 2026-07-16):** el `<video loop>` corta un poco **brusco** en el
 punto de loop (todas las escenas). Agregar un **crossfade dentro del componente de video** (dos

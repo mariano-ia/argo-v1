@@ -173,7 +173,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
             <div className="flex-1 relative" style={{ zIndex: 2 }} />
 
             {/* ── Bottom: narrator + question card + options (Stitch pattern) ── */}
-            <main className="relative px-5 pb-8 flex flex-col gap-3" style={{ zIndex: 2 }}>
+            <main className="relative px-5 pb-6 flex flex-col gap-2.5" style={{ zIndex: 2 }}>
                 {/* Narrator pill — Stitch: primary bg, white text */}
                 <motion.div
                     initial={{ opacity: 0, x: -10 }}
@@ -200,7 +200,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1, type: 'spring', stiffness: 300, damping: 25 }}
-                    className="font-adventure text-white text-3xl font-light leading-tight tracking-normal px-2"
+                    className="font-adventure text-white text-2xl font-light leading-tight tracking-normal px-2"
                 >
                     {displayed}
                     {!done && (
@@ -213,7 +213,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
                 </motion.p>
 
                 {/* Option buttons — Stitch glass-button: white 0.08, blur 12, white border 0.15 */}
-                <div className="flex flex-col gap-3 mt-1">
+                <div className="flex flex-col gap-2.5 mt-1">
                     {displayOptions.map((opt, i) => {
                         const isChosen = chosen === i;
                         const isOther = chosen !== null && chosen !== i;
@@ -227,7 +227,7 @@ export const QuestionScreenV2: React.FC<Props> = ({
                                 onClick={() => handleSelect(i)}
                                 disabled={isChosen || isOther}
                                 whileTap={!isChosen && !isOther ? { scale: 0.95 } : {}}
-                                className="flex items-center p-3 rounded-lg text-left"
+                                className="flex items-center p-2.5 rounded-lg text-left"
                                 style={{
                                     background: isChosen ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.08)',
                                     backdropFilter: 'blur(12px)',
@@ -244,21 +244,21 @@ export const QuestionScreenV2: React.FC<Props> = ({
                                             key="check"
                                             initial={{ scale: 0, rotate: -30 }}
                                             animate={{ scale: 1, rotate: 0 }}
-                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white font-bold text-lg shadow-lg"
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white font-bold text-base shadow-lg"
                                             style={{ background: BADGE_BG[i] }}
                                         >
                                             ✓
                                         </motion.div>
                                     ) : (
                                         <div
-                                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white font-bold text-lg shadow-lg font-quest"
+                                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white font-bold text-base shadow-lg font-quest"
                                             style={{ background: BADGE_BG[i] }}
                                         >
                                             {LETTERS[i]}
                                         </div>
                                     )}
                                 </AnimatePresence>
-                                <span className="ml-4 text-white font-medium font-quest text-[15px]">
+                                <span className="ml-3 text-white font-medium font-quest text-sm">
                                     {opt.label}
                                 </span>
                             </motion.button>
