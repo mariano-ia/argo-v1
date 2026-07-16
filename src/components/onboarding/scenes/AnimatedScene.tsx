@@ -72,6 +72,15 @@ const VIDEO_LOOP_JUMPS: Record<string, { out: number; in: number }> = {
     '/scenes/video/storm-3.mp4': { out: 4.625, in: 0.167 },
 };
 
+// Extra mid-clip strikes, synced to each clip's own baked-in lightning surges
+// (found offline: the timestamps where the clip's luminance jumps hardest). Our
+// giant bolt lands ON those surges — amplifying the baked flash into a full-screen
+// strike and masking its abrupt cut-in. Single burst, no echo, softer veil.
+const VIDEO_EXTRA_STRIKES: Record<string, number[]> = {
+    '/scenes/video/storm-2.mp4': [3.58],
+    '/scenes/video/storm-3.mp4': [1.50, 2.58],
+};
+
 // Video-only reframe: the clips have the ship vertically centered, so the question
 // panel (bottom ~half of the screen) would cover its lower half. Shift the video up
 // into the clear top zone. CSS transform only, no re-encode; applied to the <video>
@@ -287,7 +296,7 @@ const RockingBoat: React.FC = () => (
 // fades in once it has a real frame AND A has been mid-clip at least once, so it never
 // masks the initial start or shows a blank layer; if B can't play, we degrade to A's
 // plain loop. Both copies carry the PNG poster as a last-resort fallback.
-const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: string; fade?: number; active?: boolean; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ src, poster, transform, fade = 0.6, active = true, flashOnLoop = false, crossfade = true, loopJump }) => {
+const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: string; fade?: number; active?: boolean; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number }; extraStrikes?: number[] }> = ({ src, poster, transform, fade = 0.6, active = true, flashOnLoop = false, crossfade = true, loopJump, extraStrikes }) => {
     const aRef = React.useRef<HTMLVideoElement>(null);
     const bRef = React.useRef<HTMLVideoElement>(null);
     const flashRef = React.useRef<HTMLDivElement>(null);
@@ -300,7 +309,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
     // Fires TWICE — a main strike and a short echo right after, like real lightning —
     // which keeps the eye busy while the loop seam settles underneath.
     const flashTimerRef = React.useRef(0);
-    const fireFlash = React.useCallback(() => {
+    const fireFlash = React.useCallback((skipEcho = false) => {
         const burst = (peak: number, decayMs: number, boltPeak: number) => {
             const fl = flashRef.current, bo = boltRef.current;
             if (fl) {
@@ -319,28 +328,52 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
         };
         burst(0.85, 450, 1);
         window.clearTimeout(flashTimerRef.current);
-        // the echo re-illuminates the same channel, dimmer — like a real return stroke
-        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250, 0.5), 1200);
+        // the echo re-illuminates the same channel, dimmer — like a real return stroke.
+        // Skipped when a scheduled mid-clip strike would land right on top of it.
+        if (!skipEcho) flashTimerRef.current = window.setTimeout(() => burst(0.55, 250, 0.5), 1200);
+    }, []);
+    // Mid-clip strike: a single softer burst (no echo) that lands on one of the
+    // clip's own baked-in lightning surges.
+    const fireMidStrike = React.useCallback(() => {
+        const fl = flashRef.current, bo = boltRef.current;
+        if (fl) { fl.style.transition = 'none'; fl.style.opacity = '0.6'; }
+        if (bo) { bo.style.transition = 'none'; bo.style.opacity = '0.85'; }
+        requestAnimationFrame(() => {
+            if (fl) { fl.style.transition = 'opacity 350ms ease-out'; fl.style.opacity = '0'; }
+            if (bo) { bo.style.transition = 'opacity 500ms ease-out'; bo.style.opacity = '0'; }
+        });
     }, []);
     React.useEffect(() => () => window.clearTimeout(flashTimerRef.current), []);
 
     // Matched-frame jump loop: on reaching `out`, flash and seek to `in` (the most
     // structurally similar frame, found offline) instead of wrapping to frame 0.
     // The `loop` attr stays on as a fallback if a tick is missed while hidden.
+    // Also fires the extra mid-clip strikes when playback crosses their timestamps.
     React.useEffect(() => {
         const a = aRef.current;
         if (!a || !loopJump || !active) return;
         let raf = 0;
+        let prev = a.currentTime;
         const tick = () => {
-            if (a.currentTime >= loopJump.out) {
-                if (flashOnLoop) fireFlash();
-                try { a.currentTime = loopJump.in; } catch { /* ignore */ }
+            const t = a.currentTime;
+            if (flashOnLoop && extraStrikes && t >= prev) {
+                for (const st of extraStrikes) {
+                    if (prev < st && t >= st) { fireMidStrike(); break; }
+                }
+            }
+            prev = t;
+            if (t >= loopJump.out) {
+                // If a mid-clip strike is scheduled where the echo would land (~in+1.2s),
+                // skip the echo — otherwise they fire almost back to back.
+                const echoConflict = Boolean(extraStrikes?.some(st => Math.abs(st - (loopJump.in + 1.2)) < 0.8));
+                if (flashOnLoop) fireFlash(echoConflict);
+                try { a.currentTime = loopJump.in; prev = loopJump.in; } catch { /* ignore */ }
             }
             raf = requestAnimationFrame(tick);
         };
         raf = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(raf);
-    }, [loopJump, active, flashOnLoop, fireFlash]);
+    }, [loopJump, active, flashOnLoop, fireFlash, fireMidStrike, extraStrikes]);
 
     // Learn the duration and seed copy B half a loop ahead.
     React.useEffect(() => {
@@ -447,7 +480,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
 // Renders a scene video: an optional one-shot intro clip over a preloaded, paused
 // loop. The loop starts (from its first frame, already decoded) the moment the intro
 // ends, so the handoff shows no poster/blank flash frame.
-const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ loopSrc, introSrc, poster, transform, flashOnLoop, crossfade, loopJump }) => {
+const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number }; extraStrikes?: number[] }> = ({ loopSrc, introSrc, poster, transform, flashOnLoop, crossfade, loopJump, extraStrikes }) => {
     const [introDone, setIntroDone] = React.useState(false);
     React.useEffect(() => { setIntroDone(false); }, [introSrc, loopSrc]);
     // Safety: if the intro never plays/ends (autoplay blocked, decode/404 failure), hand
@@ -460,7 +493,7 @@ const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string;
     const showIntro = Boolean(introSrc) && !introDone;
     return (
         <>
-            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} />
+            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
             {showIntro && (
                 <video
                     key={introSrc}
@@ -479,14 +512,14 @@ const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string;
     );
 };
 
-const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; videoTransform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ src, videoSrc, introSrc, videoTransform, flashOnLoop, crossfade, loopJump }) => (
+const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; videoTransform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number }; extraStrikes?: number[] }> = ({ src, videoSrc, introSrc, videoTransform, flashOnLoop, crossfade, loopJump, extraStrikes }) => (
     <motion.div
         className="absolute inset-0"
         animate={{ scale: [1.02, 1.06, 1.02] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
         {videoSrc ? (
-            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} />
+            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} extraStrikes={extraStrikes} />
         ) : (
             <img
                 src={src}
@@ -632,7 +665,7 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
                 transition={{ duration: 0.8 }}
             >
                 {/* Background with parallax sway (video when opted in, else PNG) */}
-                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase]} loopJump={videoSrc ? VIDEO_LOOP_JUMPS[videoSrc] : undefined} />
+                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase]} loopJump={videoSrc ? VIDEO_LOOP_JUMPS[videoSrc] : undefined} extraStrikes={videoSrc ? VIDEO_EXTRA_STRIKES[videoSrc] : undefined} />
 
                 {/* Phase overlays — skipped when a video already carries the motion */}
                 {overlaysOn && phase === 'port' && <PortOverlay />}

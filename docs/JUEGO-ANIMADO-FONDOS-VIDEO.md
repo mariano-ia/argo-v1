@@ -170,6 +170,13 @@ juego real, **todas las preguntas** (no solo con video), no es video-only.
   cuelgan del cielo, escalado a ~115% de pantalla, re-glow violeta, + telaraña de `tormenta03.png`
   tenue arriba). El rayo aparece a opacidad 1 en el golpe (decae 150ms más lento que el velo blanco,
   como afterimage) y el eco re-ilumina el mismo canal a 0.5 (return stroke). Cero créditos gastados.
+- **Tormenta (v5, rayos extra sincronizados):** escaneo de discontinuidades DENTRO del segmento de
+  loop → los picos son los relámpagos horneados del propio clip entrando de golpe. `VIDEO_EXTRA_STRIKES`
+  dispara nuestro rayo gigante JUSTO sobre esas subidas (single burst 0.85 bolt / 0.6 velo, sin eco):
+  storm-2 en t=3.58s; storm-3 (la que más acepta) en t=1.50s y t=2.58s. Guard anti-colisión: si un
+  strike programado cae donde aterrizaría el eco de la costura (~in+1.2s), el eco se suprime (en
+  storm-3 quedaban a 130ms). Cadencia verificada: separación mínima entre destellos 1.08s (storm-3:
+  3 rayos/loop; storm-2: 2+eco; storm-1: costura+eco).
 - **Tormenta (v3, salto + crossfade + doble flash espaciado):** flash DOBLE (golpe 0.85→0 en 450ms +
   eco 0.55→0 en 250ms **1.2s después** — el owner pidió más aire entre ambos; `SCENE_LOOP_FLASH`), y el
   **crossfade convive con el salto**: la copia B trabaja sobre el segmento efectivo `[in, out]`
