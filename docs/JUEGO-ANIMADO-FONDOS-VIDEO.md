@@ -121,3 +121,25 @@ Todos: **9:16 vertical (720×1280), 5s, H.264, sin audio, ~1.5-5 MB**. El loop s
 - Nivel de movimiento por escena: aprobado el actual.
 - Playa llegada: quedó el acercamiento **suave** (~125px); pendiente si se quiere una versión "desde más lejos".
 - Los frames de referencia son cuadrados/2:3; se generó 9:16 y Seedance recompuso bien (extiende cielo/primer plano).
+
+---
+
+## 8. As-built de la integración (rama `feature/bg-video`, 2026-07-16)
+
+Primer paso de integración, **todo detrás de un flag apagado por defecto** (prod/develop sin cambios):
+
+- **`AnimatedScene.tsx`**: mapa `SCENE_VIDEOS` (las 5 fases cableadas: port ×2, open-sea, storm ×3,
+  calm, island) + helper `videoBackgroundsEnabled()`. El flag `?bgvideo=1` (persistido en
+  `sessionStorage`; `?bgvideo=0` lo limpia) hace que `ParallaxBg` renderice
+  `<video autoPlay loop muted playsInline poster={png}>` en vez del `<img>`, con el PNG como
+  fallback y **saltando el overlay** de esa fase (el video ya trae el movimiento). Sin flag: PNG idéntico a hoy.
+- **Assets servidos**: `public/scenes/video/{port,port-2,open-sea,storm,storm-2,storm-3,calm,island}.mp4` (~20 MB).
+  Los masters siguen en `Argo Anitamed Game/` (gitignoreada).
+- **Link de preview directo (sin registro):** ruta **`/preview/escenas`** (`src/pages/ScenePreview.tsx`,
+  no linkeada, solo fondos). Botones para cambiar de escena + toggle Video/PNG. Deep-link con `?s=<índice>`.
+  Verificado headless: cada escena monta su `<video>` correcto, reproduce, 720×1280, 0 errores de consola.
+- **Cobertura:** `develop` intacto; volver = `git checkout develop`. Nada pusheado.
+- **Loop en runtime:** las nativas (puerto, playa) cierran solas con `<video loop>`; las movidas
+  (mar/tormenta/calma) cortan en el loop (costura) hasta que se pre-cierren en edición o se acepte el corte.
+- **Pendiente de rollout real:** decidir cómo se enciende para usuarios (flip del default por fase),
+  optimización de peso/carga en mobile, y el cierre de loops de las escenas movidas.

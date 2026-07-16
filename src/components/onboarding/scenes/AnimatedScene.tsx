@@ -28,7 +28,11 @@ function getPhase(questionIndex: number): Phase {
 // <video> poster (graceful fallback) and that phase's SVG/CSS overlay is skipped
 // (the video already carries the ambient motion). Indices align with SCENE_ASSETS.
 const SCENE_VIDEOS: Partial<Record<Phase, string[]>> = {
-    'port': ['/scenes/video/port.mp4', '/scenes/video/port-2.mp4'],
+    'port':     ['/scenes/video/port.mp4', '/scenes/video/port-2.mp4'],
+    'open-sea': ['/scenes/video/open-sea.mp4'],
+    'storm':    ['/scenes/video/storm.mp4', '/scenes/video/storm-2.mp4', '/scenes/video/storm-3.mp4'],
+    'calm':     ['/scenes/video/calm.mp4'],
+    'island':   ['/scenes/video/island.mp4'],
 };
 
 // Reads the preview flag and remembers it for the tab session, so it survives
