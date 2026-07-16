@@ -63,9 +63,13 @@ const SCENE_NATIVE_LOOP: Partial<Record<Phase, boolean>> = {
 // the lightning flash covers the seek. Single decoder, no crossfade needed. Keyed by
 // video src; times in seconds (analysis: docs/JUEGO-ANIMADO-FONDOS-VIDEO.md).
 const VIDEO_LOOP_JUMPS: Record<string, { out: number; in: number }> = {
-    '/scenes/video/storm.mp4':   { out: 4.583, in: 1.583 },
-    '/scenes/video/storm-2.mp4': { out: 4.708, in: 0.833 },
-    '/scenes/video/storm-3.mp4': { out: 4.667, in: 0.083 },
+    // v2 pairs (2026-07-16): matched on the SHIP'S BOB PHASE — per-frame tracking of the
+    // ship's x/y position AND velocity, so the ship exits and re-enters at the same
+    // height moving in the same direction (owner: "si termina arriba, busquemos un
+    // cuadro arriba"). storm-2's old pair jumped ~19px vertically with reversed motion.
+    '/scenes/video/storm.mp4':   { out: 4.542, in: 1.542 },
+    '/scenes/video/storm-2.mp4': { out: 4.958, in: 0.750 },
+    '/scenes/video/storm-3.mp4': { out: 4.625, in: 0.167 },
 };
 
 // Video-only reframe: the clips have the ship vertically centered, so the question

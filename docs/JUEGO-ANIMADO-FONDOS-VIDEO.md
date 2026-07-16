@@ -170,9 +170,12 @@ juego real, **todas las preguntas** (no solo con video), no es video-only.
   (offset de medio segmento, wrap propio en `out`→`in`, resync mientras está oculta), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
   cuadros más parecidos estructuralmente** (métrica ciega a lluvia/relámpagos: downscale+blur+
   normalización de brillo, con peso en la franja del barco) y salta de `out`→`in` con el flash encima
-  (`VIDEO_LOOP_JUMPS`): storm 4.583→1.583s (39% menos discontinuidad), storm-2 4.708→0.833s (20%),
-  storm-3 4.667→0.083s (24%). Un solo decoder (sin crossfade B). Verificado: los saltos caen exactos
-  y el flash dispara en cada uno.
+  (`VIDEO_LOOP_JUMPS`, **v2 fase-del-barco**): el owner notó que el barco salía "arriba" y entraba
+  "abajo" → se re-buscaron los pares rastreando por cuadro la posición x/y del barco Y su velocidad
+  (fase del cabeceo): storm 4.542→1.542s, storm-2 4.958→0.750s (el viejo saltaba ~19px verticales con
+  dirección invertida; el nuevo Δy=-0.1px misma dirección), storm-3 4.625→0.167s (Δy≈0). Verificado con
+  overlays rojo/cian (salida vs entrada): el barco queda alineado; las olas no coinciden nunca (caos)
+  y eso lo tapan crossfade+flash.
 - **Calma (v3, anclada):** el clip original avanzaba +13px; un regen `first=last` salió peor (-25px
   hacia atrás) y el boomerang intermedio no convenció al owner. Ganó el **re-regen anclado** (2
   variantes en paralelo con prompt endurecido "ship pinned like a building" + first==last): la
