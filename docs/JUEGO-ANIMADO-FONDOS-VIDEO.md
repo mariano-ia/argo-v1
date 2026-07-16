@@ -164,6 +164,12 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
 **Refinamiento de loops por escena (2026-07-16, tras revisión visual del owner):**
+- **Tormenta (v4, + rayo gigante):** en cada salto de loop, además del doble flash, cae un **rayo
+  gigante de pantalla completa** (`public/scenes/video/bolt.png`, overlay `mix-blend-mode: screen`):
+  extraído del propio arte (`tormenta02.png` luminance-key filtrado a tonos fríos + componentes que
+  cuelgan del cielo, escalado a ~115% de pantalla, re-glow violeta, + telaraña de `tormenta03.png`
+  tenue arriba). El rayo aparece a opacidad 1 en el golpe (decae 150ms más lento que el velo blanco,
+  como afterimage) y el eco re-ilumina el mismo canal a 0.5 (return stroke). Cero créditos gastados.
 - **Tormenta (v3, salto + crossfade + doble flash espaciado):** flash DOBLE (golpe 0.85→0 en 450ms +
   eco 0.55→0 en 250ms **1.2s después** — el owner pidió más aire entre ambos; `SCENE_LOOP_FLASH`), y el
   **crossfade convive con el salto**: la copia B trabaja sobre el segmento efectivo `[in, out]`

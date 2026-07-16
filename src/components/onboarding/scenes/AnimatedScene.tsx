@@ -291,6 +291,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
     const aRef = React.useRef<HTMLVideoElement>(null);
     const bRef = React.useRef<HTMLVideoElement>(null);
     const flashRef = React.useRef<HTMLDivElement>(null);
+    const boltRef = React.useRef<HTMLImageElement>(null);
     const startedRef = React.useRef(false);   // A has been safely mid-clip at least once
     const prevTARef = React.useRef(0);
     const [dur, setDur] = React.useState(0);
@@ -300,19 +301,26 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
     // which keeps the eye busy while the loop seam settles underneath.
     const flashTimerRef = React.useRef(0);
     const fireFlash = React.useCallback(() => {
-        const burst = (peak: number, decayMs: number) => {
-            const fl = flashRef.current;
-            if (!fl) return;
-            fl.style.transition = 'none';
-            fl.style.opacity = String(peak);
+        const burst = (peak: number, decayMs: number, boltPeak: number) => {
+            const fl = flashRef.current, bo = boltRef.current;
+            if (fl) {
+                fl.style.transition = 'none';
+                fl.style.opacity = String(peak);
+            }
+            if (bo) {
+                bo.style.transition = 'none';
+                bo.style.opacity = String(boltPeak);
+            }
             requestAnimationFrame(() => {
-                fl.style.transition = `opacity ${decayMs}ms ease-out`;
-                fl.style.opacity = '0';
+                if (fl) { fl.style.transition = `opacity ${decayMs}ms ease-out`; fl.style.opacity = '0'; }
+                // the bolt outlives the white veil slightly, reading as the strike's afterimage
+                if (bo) { bo.style.transition = `opacity ${decayMs + 150}ms ease-out`; bo.style.opacity = '0'; }
             });
         };
-        burst(0.85, 450);
+        burst(0.85, 450, 1);
         window.clearTimeout(flashTimerRef.current);
-        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250), 1200);
+        // the echo re-illuminates the same channel, dimmer — like a real return stroke
+        flashTimerRef.current = window.setTimeout(() => burst(0.55, 250, 0.5), 1200);
     }, []);
     React.useEffect(() => () => window.clearTimeout(flashTimerRef.current), []);
 
@@ -416,11 +424,21 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
                 <video ref={bRef} src={src} poster={poster} loop muted playsInline preload="auto" className={cls} style={{ ...base, opacity: 0 }} />
             )}
             {flashOnLoop && (
-                <div
-                    ref={flashRef}
-                    className="absolute inset-0 pointer-events-none bg-white"
-                    style={{ opacity: 0 }}
-                />
+                <>
+                    <img
+                        ref={boltRef}
+                        src="/scenes/video/bolt.png"
+                        alt=""
+                        draggable={false}
+                        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                        style={{ opacity: 0, mixBlendMode: 'screen' }}
+                    />
+                    <div
+                        ref={flashRef}
+                        className="absolute inset-0 pointer-events-none bg-white"
+                        style={{ opacity: 0 }}
+                    />
+                </>
             )}
         </>
     );
