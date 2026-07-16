@@ -163,6 +163,24 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 (`p-3`→`p-2.5`, badge `h-10`→`h-9`, label `15px`→`text-sm`) en `QuestionScreenV2` — OJO: esto afecta el
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
+**Refinamiento de loops por escena (2026-07-16, tras revisión visual del owner):**
+- **Tormenta:** flash blanco (0.85→0 en 450ms) disparado exactamente en el wrap del loop
+  (`SCENE_LOOP_FLASH`); se lee como un relámpago más y tapa el residuo del crossfade.
+- **Calma:** el clip original avanzaba +13px y el regen `first=last` salió peor (deriva -25px hacia
+  atrás: ruleta del modelo). Solución final: **boomerang** (ida 5s + vuelta 5s con ffmpeg `reverse`) =
+  loop matemáticamente perfecto (seam 0.62%); el vaivén se lee como mecida natural. Master:
+  `Argo Anitamed Game/calma/calma_boomerang.mp4` → servido como `calm.mp4` (10s).
+  Descartes: `calma02_inplace_loop.mp4` (deriva hacia atrás).
+- **Playa:** el flashazo entre llegada y loop era el POSTER (el island.png viejo, arte tropical
+  distinto) mostrado mientras el loop montaba y decodificaba. Fix: el loop se monta **precargado y
+  pausado debajo del intro** (`active=false`) y arranca de su frame 0 ya decodificado al terminar la
+  llegada. Verificado: handoff max diff 3.99%, sin frames >8%.
+- **Un solo decoder donde el loop es nativo** (`SCENE_NATIVE_LOOP`: port, calm, island) — sin copia B
+  ni rAF; el crossfade doble queda solo en open-sea y storm. Menos carga en mobile.
+- Medición de origen (frame a frame de los 8 clips): el movimiento es 24fps real (sin judder 12fps);
+  seams crudos: calmas <2%, mar 8%, storm 6.7-10.9%; en la salida compuesta el wrap NO genera pico
+  extra vs el movimiento propio del clip.
+
 **Crossfade de loop (HECHO 2026-07-16):** `CrossfadeLoopVideo` monta **dos decodificadores** del mismo
 clip desfasados **medio loop**; cerca del corte de A se funde la copia B (que está a mitad de clip,
 suave), con **plateau** para tapar el 100% de la costura. Endurecido tras **revisión adversarial** (7
