@@ -164,8 +164,13 @@ Complemento: se **compactó** el enunciado (`text-3xl`→`text-2xl`) y los boton
 juego real, **todas las preguntas** (no solo con video), no es video-only.
 
 **Refinamiento de loops por escena (2026-07-16, tras revisión visual del owner):**
-- **Tormenta:** flash blanco (0.85→0 en 450ms) disparado exactamente en el wrap del loop
-  (`SCENE_LOOP_FLASH`); se lee como un relámpago más y tapa el residuo del crossfade.
+- **Tormenta (v2, salto a cuadro gemelo):** además del flash blanco (0.85→0 en 450ms,
+  `SCENE_LOOP_FLASH`), el loop ya NO envuelve a frame 0 (el salto máximo): busca offline el **par de
+  cuadros más parecidos estructuralmente** (métrica ciega a lluvia/relámpagos: downscale+blur+
+  normalización de brillo, con peso en la franja del barco) y salta de `out`→`in` con el flash encima
+  (`VIDEO_LOOP_JUMPS`): storm 4.583→1.583s (39% menos discontinuidad), storm-2 4.708→0.833s (20%),
+  storm-3 4.667→0.083s (24%). Un solo decoder (sin crossfade B). Verificado: los saltos caen exactos
+  y el flash dispara en cada uno.
 - **Calma:** el clip original avanzaba +13px y el regen `first=last` salió peor (deriva -25px hacia
   atrás: ruleta del modelo). Solución final: **boomerang** (ida 5s + vuelta 5s con ffmpeg `reverse`) =
   loop matemáticamente perfecto (seam 0.62%); el vaivén se lee como mecida natural. Master:

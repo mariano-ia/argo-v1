@@ -51,11 +51,22 @@ const SCENE_LOOP_FLASH: Partial<Record<Phase, boolean>> = {
 // Phases whose clips loop natively (first frame == last: port/island were generated
 // with the first==last trick, calm is a boomerang). These play on a SINGLE <video loop>
 // — no second decoder, no crossfade — which is cheaper (matters on mobile). The
-// dual-decoder crossfade stays only where the seam needs masking: open-sea and storm.
+// dual-decoder crossfade stays only where the seam needs masking: open-sea.
 const SCENE_NATIVE_LOOP: Partial<Record<Phase, boolean>> = {
     'port': true,
     'calm': true,
     'island': true,
+};
+
+// Matched-frame jump loops (storm): instead of wrapping end -> frame 0 (the maximal
+// jump), seek from `out` to `in` — the pair of frames found offline to be the most
+// STRUCTURALLY similar (ship pose/position measured rain- and lightning-blind) — while
+// the lightning flash covers the seek. Single decoder, no crossfade needed. Keyed by
+// video src; times in seconds (analysis: docs/JUEGO-ANIMADO-FONDOS-VIDEO.md).
+const VIDEO_LOOP_JUMPS: Record<string, { out: number; in: number }> = {
+    '/scenes/video/storm.mp4':   { out: 4.583, in: 1.583 },
+    '/scenes/video/storm-2.mp4': { out: 4.708, in: 0.833 },
+    '/scenes/video/storm-3.mp4': { out: 4.667, in: 0.083 },
 };
 
 // Video-only reframe: the clips have the ship vertically centered, so the question
@@ -273,13 +284,43 @@ const RockingBoat: React.FC = () => (
 // fades in once it has a real frame AND A has been mid-clip at least once, so it never
 // masks the initial start or shows a blank layer; if B can't play, we degrade to A's
 // plain loop. Both copies carry the PNG poster as a last-resort fallback.
-const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: string; fade?: number; active?: boolean; flashOnLoop?: boolean; crossfade?: boolean }> = ({ src, poster, transform, fade = 0.6, active = true, flashOnLoop = false, crossfade = true }) => {
+const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: string; fade?: number; active?: boolean; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ src, poster, transform, fade = 0.6, active = true, flashOnLoop = false, crossfade = true, loopJump }) => {
     const aRef = React.useRef<HTMLVideoElement>(null);
     const bRef = React.useRef<HTMLVideoElement>(null);
     const flashRef = React.useRef<HTMLDivElement>(null);
     const startedRef = React.useRef(false);   // A has been safely mid-clip at least once
     const prevTARef = React.useRef(0);
     const [dur, setDur] = React.useState(0);
+
+    // Quick white burst (reads as lightning); shared by the wrap- and jump-loop paths.
+    const fireFlash = React.useCallback(() => {
+        const fl = flashRef.current;
+        if (!fl) return;
+        fl.style.transition = 'none';
+        fl.style.opacity = '0.85';
+        requestAnimationFrame(() => {
+            fl.style.transition = 'opacity 450ms ease-out';
+            fl.style.opacity = '0';
+        });
+    }, []);
+
+    // Matched-frame jump loop: on reaching `out`, flash and seek to `in` (the most
+    // structurally similar frame, found offline) instead of wrapping to frame 0.
+    // The `loop` attr stays on as a fallback if a tick is missed while hidden.
+    React.useEffect(() => {
+        const a = aRef.current;
+        if (!a || !loopJump || !active) return;
+        let raf = 0;
+        const tick = () => {
+            if (a.currentTime >= loopJump.out) {
+                if (flashOnLoop) fireFlash();
+                try { a.currentTime = loopJump.in; } catch { /* ignore */ }
+            }
+            raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(raf);
+    }, [loopJump, active, flashOnLoop, fireFlash]);
 
     // Learn the duration and seed copy B half a loop ahead.
     React.useEffect(() => {
@@ -332,25 +373,15 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
                 const target = (tA + dur / 2) % dur;
                 if (Math.abs(b.currentTime - target) > 0.15) { try { b.currentTime = target; } catch { /* ignore */ } }
             }
-            // Loop-boundary flash (storm): when A wraps, fire a quick white burst that
-            // reads as lightning and hides whatever residue the crossfade leaves.
-            if (flashOnLoop && startedRef.current && prevTARef.current - tA > dur / 2) {
-                const fl = flashRef.current;
-                if (fl) {
-                    fl.style.transition = 'none';
-                    fl.style.opacity = '0.85';
-                    requestAnimationFrame(() => {
-                        fl.style.transition = 'opacity 450ms ease-out';
-                        fl.style.opacity = '0';
-                    });
-                }
-            }
+            // Loop-boundary flash: when A wraps, fire the lightning burst to hide
+            // whatever residue the crossfade leaves.
+            if (flashOnLoop && startedRef.current && prevTARef.current - tA > dur / 2) fireFlash();
             prevTARef.current = tA;
             raf = requestAnimationFrame(tick);
         };
         raf = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(raf);
-    }, [dur, fade, active, flashOnLoop, crossfade]);
+    }, [dur, fade, active, flashOnLoop, crossfade, fireFlash]);
 
     const cls = 'absolute inset-0 w-full h-full object-cover';
     const base = transform ? { transform } : undefined;
@@ -374,7 +405,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
 // Renders a scene video: an optional one-shot intro clip over a preloaded, paused
 // loop. The loop starts (from its first frame, already decoded) the moment the intro
 // ends, so the handoff shows no poster/blank flash frame.
-const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean }> = ({ loopSrc, introSrc, poster, transform, flashOnLoop, crossfade }) => {
+const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string; transform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ loopSrc, introSrc, poster, transform, flashOnLoop, crossfade, loopJump }) => {
     const [introDone, setIntroDone] = React.useState(false);
     React.useEffect(() => { setIntroDone(false); }, [introSrc, loopSrc]);
     // Safety: if the intro never plays/ends (autoplay blocked, decode/404 failure), hand
@@ -387,7 +418,7 @@ const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string;
     const showIntro = Boolean(introSrc) && !introDone;
     return (
         <>
-            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} />
+            <CrossfadeLoopVideo key={loopSrc} src={loopSrc} poster={poster} transform={transform} active={!showIntro} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} />
             {showIntro && (
                 <video
                     key={introSrc}
@@ -406,14 +437,14 @@ const SceneVideo: React.FC<{ loopSrc: string; introSrc?: string; poster: string;
     );
 };
 
-const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; videoTransform?: string; flashOnLoop?: boolean; crossfade?: boolean }> = ({ src, videoSrc, introSrc, videoTransform, flashOnLoop, crossfade }) => (
+const ParallaxBg: React.FC<{ src: string; videoSrc?: string; introSrc?: string; videoTransform?: string; flashOnLoop?: boolean; crossfade?: boolean; loopJump?: { out: number; in: number } }> = ({ src, videoSrc, introSrc, videoTransform, flashOnLoop, crossfade, loopJump }) => (
     <motion.div
         className="absolute inset-0"
         animate={{ scale: [1.02, 1.06, 1.02] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
     >
         {videoSrc ? (
-            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} />
+            <SceneVideo loopSrc={videoSrc} introSrc={introSrc} poster={src} transform={videoTransform} flashOnLoop={flashOnLoop} crossfade={crossfade} loopJump={loopJump} />
         ) : (
             <img
                 src={src}
@@ -559,7 +590,7 @@ export const AnimatedScene: React.FC<AnimatedSceneProps> = ({ questionIndex, scr
                 transition={{ duration: 0.8 }}
             >
                 {/* Background with parallax sway (video when opted in, else PNG) */}
-                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase]} />
+                <ParallaxBg src={src} videoSrc={videoSrc} introSrc={introSrc} videoTransform={videoTransform} flashOnLoop={SCENE_LOOP_FLASH[phase]} crossfade={!SCENE_NATIVE_LOOP[phase] && !(videoSrc && VIDEO_LOOP_JUMPS[videoSrc])} loopJump={videoSrc ? VIDEO_LOOP_JUMPS[videoSrc] : undefined} />
 
                 {/* Phase overlays — skipped when a video already carries the motion */}
                 {overlaysOn && phase === 'port' && <PortOverlay />}
