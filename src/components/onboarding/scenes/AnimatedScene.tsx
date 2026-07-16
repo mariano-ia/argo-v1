@@ -48,12 +48,12 @@ const SCENE_LOOP_FLASH: Partial<Record<Phase, boolean>> = {
     'storm': true,
 };
 
-// Phases whose clips loop natively (first frame == last: port/island were generated
-// with the first==last trick, calm is a boomerang). These play on a SINGLE <video loop>
-// — no second decoder, no crossfade — which is cheaper (matters on mobile). The
-// dual-decoder crossfade stays only where the seam needs masking: open-sea.
+// Phases whose clips loop natively and play on a SINGLE <video loop> — no second
+// decoder, no crossfade — which is cheaper (matters on mobile): calm (boomerang,
+// mathematically perfect) and island (first==last, seam 0.65%). Port also has a
+// near-native seam (~1.3%) but the owner's eye caught it, so it keeps the
+// dual-decoder crossfade along with open-sea.
 const SCENE_NATIVE_LOOP: Partial<Record<Phase, boolean>> = {
-    'port': true,
     'calm': true,
     'island': true,
 };
