@@ -94,15 +94,23 @@ const SCENE_VIDEO_REFRAME: Partial<Record<Phase, string>> = {
 
 // Reads the preview flag and remembers it for the tab session, so it survives
 // client-side navigation during the flow. `?bgvideo=1` turns it on, `?bgvideo=0` off.
+// A deployment built with VITE_BGVIDEO_DEFAULT=1 (isolated preview deploys only)
+// defaults to ON; the query/session override still wins in both directions.
 function videoBackgroundsEnabled(): boolean {
     if (typeof window === 'undefined') return false;
+    const envDefault = import.meta.env.VITE_BGVIDEO_DEFAULT === '1';
     try {
         const q = new URLSearchParams(window.location.search).get('bgvideo');
         if (q === '1') window.sessionStorage.setItem('bgvideo', '1');
-        else if (q === '0') window.sessionStorage.removeItem('bgvideo');
-        return window.sessionStorage.getItem('bgvideo') === '1';
+        else if (q === '0') window.sessionStorage.setItem('bgvideo', '0');
+        const stored = window.sessionStorage.getItem('bgvideo');
+        if (stored === '1') return true;
+        if (stored === '0') return false;
+        return envDefault;
     } catch {
-        return new URLSearchParams(window.location.search).get('bgvideo') === '1';
+        const q = new URLSearchParams(window.location.search).get('bgvideo');
+        if (q === '0') return false;
+        return q === '1' || envDefault;
     }
 }
 

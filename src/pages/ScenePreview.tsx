@@ -50,8 +50,9 @@ export const ScenePreview: React.FC = () => {
     // it during render) picks up the current value with no flicker.
     if (typeof window !== 'undefined') {
         try {
-            if (videoOn) window.sessionStorage.setItem('bgvideo', '1');
-            else window.sessionStorage.removeItem('bgvideo');
+            // explicit '0' (not key removal) so the toggle also wins over a
+            // deployment built with VITE_BGVIDEO_DEFAULT=1
+            window.sessionStorage.setItem('bgvideo', videoOn ? '1' : '0');
         } catch { /* sessionStorage may be unavailable; ignore */ }
     }
 
