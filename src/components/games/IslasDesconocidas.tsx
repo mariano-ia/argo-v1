@@ -260,7 +260,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                 <div className="absolute inset-0">
                     {/* Open chest still — the resting backdrop once opened (under everything) */}
                     <img
-                        src="/scenes/video/posters/cofre-abierto.jpg"
+                        src="/scenes/video/posters/cofre-abierto.webp"
                         alt=""
                         draggable={false}
                         className="absolute inset-0 w-full h-full object-cover"
@@ -269,7 +269,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                     {(phase === 'loading' || phase === 'intro') && (
                         <video
                             src="/scenes/video/cofre-loop.mp4"
-                            poster="/scenes/video/posters/cofre-cerrado.jpg"
+                            poster="/scenes/video/posters/cofre-cerrado.webp"
                             autoPlay
                             loop
                             muted
@@ -284,7 +284,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                         <video
                             ref={openingRef}
                             src="/scenes/video/cofre-apertura.mp4"
-                            poster="/scenes/video/posters/cofre-cerrado.jpg"
+                            poster="/scenes/video/posters/cofre-cerrado.webp"
                             muted
                             playsInline
                             preload="auto"

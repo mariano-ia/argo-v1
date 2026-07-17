@@ -39,7 +39,7 @@ const SCENE_VIDEOS: Partial<Record<Phase, string[]>> = {
 // The videos must never poster-flash the OLD png art while decoding: on every phase or
 // variant mount, what paints first is pixel-identical to the clip's first frame.
 function videoPosterFor(videoSrc: string): string {
-    return videoSrc.replace('/video/', '/video/posters/').replace(/\.mp4$/, '.jpg');
+    return videoSrc.replace('/video/', '/video/posters/').replace(/\.mp4$/, '.webp');
 }
 
 // Optional one-shot intro clip per phase: plays once, then the phase's loop video
@@ -475,7 +475,7 @@ const CrossfadeLoopVideo: React.FC<{ src: string; poster: string; transform?: st
                 <>
                     <img
                         ref={boltRef}
-                        src="/scenes/video/bolt.png"
+                        src="/scenes/video/bolt.webp"
                         alt=""
                         draggable={false}
                         className="absolute inset-0 w-full h-full object-cover pointer-events-none"

@@ -168,6 +168,15 @@ del fondo nuevo empieza a ~68%; a 60% "navegaban por el cielo"). Métricas de ri
 solo definen visual+velocidad); flag off = SVGs y arte original idénticos. GOTCHA: gpt-image-2 NO
 soporta `background=transparent` — sprites SIEMPRE con gpt-image-1.
 
+**Optimización de peso (2026-07-17):** paquete video-mode de **~34MB → 9MB (-74%)** sin pérdida
+visual medible. Videos: re-encode H.264 `crf 24` (tormentas/estallido) y `crf 26` (calmas), `preset
+veryslow -tune animation +faststart`, con **piso de calidad SSIM ≥0.975 verificado por clip** (todos
+quedaron ≥0.977; 29.1MB→7.9MB). Posters JPG→**WebP q80** (1.9MB→0.9MB), sprites PNG→**WebP alpha q90**
+(377→103KB), rayo bolt.png→WebP (309→25KB). Masters intactos en `Argo Anitamed Game/`. Todas las
+referencias en código pasadas a .webp; formatos viejos purgados de public/. Verificado: 0 requests
+fallidos en escenas+minijuegos, videos reproduciendo. PENDIENTE prod (fuera de scope de la rama):
+`public/scenes/*.png` legacy ~32MB y `public/audio` 21MB (effects_02 9.7MB) merecen la misma pasada.
+
 **Preview enriquecido (2026-07-16):** `/preview/escenas` muestra el **juego completo**: fondo (video)
 + **UI real de preguntas** (`QuestionScreenV2`, alineada al marco con un `transform` que contiene su
 `fixed`) + **audio real** (tema de fondo `argo_background.mp3` + efectos por fase `effects_01/02/03`,

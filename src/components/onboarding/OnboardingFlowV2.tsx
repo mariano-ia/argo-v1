@@ -738,12 +738,12 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             ? [
                 // video mode: prime every clip's first-frame poster (what paints at each
                 // phase/variant mount) plus the lightning bolt overlay
-                '/scenes/video/posters/port.jpg', '/scenes/video/posters/port-2.jpg',
-                '/scenes/video/posters/open-sea.jpg',
-                '/scenes/video/posters/storm.jpg', '/scenes/video/posters/storm-2.jpg', '/scenes/video/posters/storm-3.jpg',
-                '/scenes/video/posters/calm.jpg',
-                '/scenes/video/posters/island.jpg', '/scenes/video/posters/island-intro.jpg',
-                '/scenes/video/bolt.png',
+                '/scenes/video/posters/port.webp', '/scenes/video/posters/port-2.webp',
+                '/scenes/video/posters/open-sea.webp',
+                '/scenes/video/posters/storm.webp', '/scenes/video/posters/storm-2.webp', '/scenes/video/posters/storm-3.webp',
+                '/scenes/video/posters/calm.webp',
+                '/scenes/video/posters/island.webp', '/scenes/video/posters/island-intro.webp',
+                '/scenes/video/bolt.webp',
             ]
             : [
                 '/scenes/port.png', '/scenes/port-2.png',

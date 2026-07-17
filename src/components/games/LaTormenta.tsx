@@ -343,7 +343,7 @@ export const LaTormenta: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                 {videoBackgroundsEnabled() ? (
                     <video
                         src="/scenes/video/calma-juego.mp4"
-                        poster="/scenes/video/posters/calma-juego.jpg"
+                        poster="/scenes/video/posters/calma-juego.webp"
                         autoPlay
                         loop
                         muted

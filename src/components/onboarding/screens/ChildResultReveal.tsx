@@ -189,7 +189,7 @@ export const ChildResultReveal: React.FC<Props> = ({
                 {videoBackgroundsEnabled() ? (
                     <video
                         src="/scenes/video/island.mp4"
-                        poster="/scenes/video/posters/island.jpg"
+                        poster="/scenes/video/posters/island.webp"
                         autoPlay
                         loop
                         muted

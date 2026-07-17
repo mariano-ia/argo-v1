@@ -102,10 +102,10 @@ const OBSTACLE_COMPONENTS: Record<ObstacleType, React.FC> = {
     rock: RockObs,
     wave: WaveObs,
     vortex: VortexObs,
-    ballena: spriteObs('/scenes/video/sprites/obst-ballena.png', 78, -26),
-    piano:   spriteObs('/scenes/video/sprites/obst-piano.png',   84, -32),
-    pato:    spriteObs('/scenes/video/sprites/obst-pato.png',    74, -24),
-    pulpo:   spriteObs('/scenes/video/sprites/obst-pulpo.png',   78, -28),
+    ballena: spriteObs('/scenes/video/sprites/obst-ballena.webp', 78, -26),
+    piano:   spriteObs('/scenes/video/sprites/obst-piano.webp',   84, -32),
+    pato:    spriteObs('/scenes/video/sprites/obst-pato.webp',    74, -24),
+    pulpo:   spriteObs('/scenes/video/sprites/obst-pulpo.webp',   78, -28),
 };
 
 // ─── Animated overlays ─────────────────────────────────────────────
@@ -324,7 +324,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             {videoBackgroundsEnabled() ? (
                 <video
                     src="/scenes/video/mar-juego.mp4"
-                    poster="/scenes/video/posters/mar-juego.jpg"
+                    poster="/scenes/video/posters/mar-juego.webp"
                     autoPlay
                     loop
                     muted
@@ -367,7 +367,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             >
                 {videoBackgroundsEnabled() ? (
                     <img
-                        src="/scenes/video/sprites/mini-argo.png"
+                        src="/scenes/video/sprites/mini-argo.webp"
                         alt=""
                         draggable={false}
                         style={{ height: 84, transform: 'translateY(-6px)' }}
