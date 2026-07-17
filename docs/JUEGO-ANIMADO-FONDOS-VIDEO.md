@@ -1,10 +1,6 @@
 # Juego Animado — Fondos en Video (Fase 1)
 
-**Estado 2026-07-16: INTEGRADO y desplegado en preview aislado. Juego completo jugable con videos en
-https://argo-juego-animado.vercel.app (deploy de preview vía Vercel CLI, `--build-env
-VITE_BGVIDEO_DEFAULT=1`, NO toca prod ni develop, sin git push; rama `feature/bg-video`, 17 commits
-locales). En esa URL los videos van POR DEFECTO; `?bgvideo=0` compara contra PNG. En cualquier otro
-deploy el flag sigue apagado = prod intacta.**
+**EN PRODUCCIÓN desde 2026-07-17 (merge 2b2a156 a main, autorizado por el owner).** El juego animado ES el juego: `videoBackgroundsEnabled()` default ON; `?bgvideo=0` queda como escape de debug por sesión hacia el arte PNG legacy. develop sincronizada con main. Gates corridos antes del flip: qa:unit, check:api-imports, tsc, build (lint del repo es no-op: sin config, pre-existente). Verificado en prod sin flag: escenas con video + rayo, Cofre de Jasón, 0 requests fallidos. Rollback: revert del merge o `?bgvideo=0` para diagnóstico.
 
 Iniciativa: reemplazar los fondos del onboarding (hoy PNG estáticos + overlays CSS/SVG) por
 **loops de video estilo dibujo animado**. Generados con **Seedance 2.0 vía kie.ai** a partir de
