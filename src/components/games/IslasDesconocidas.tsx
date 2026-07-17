@@ -44,7 +44,12 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
     // an opening clip on tap, then the open chest held as the playing backdrop.
     const chestMode = videoBackgroundsEnabled();
     const [phase, setPhase] = useState<'loading' | 'intro' | 'opening' | 'playing' | 'complete'>('loading');
+    const [openingDone, setOpeningDone] = useState(false);
     const openingRef = useRef<HTMLVideoElement>(null);
+    // Measured on the clip: the lid visibly opens at ~1.17s (light burst peaks ~1.75s).
+    // The cards launch at this moment — the first card materializes right in the flash —
+    // while the clip keeps playing underneath to its end.
+    const LID_OPENS_AT = 1.15;
     const [cards, setCards] = useState<CardData[]>([]);
     const [activeCardIdx, setActiveCardIdx] = useState(-1);
     const [showCompletion, setShowCompletion] = useState(false);
@@ -115,19 +120,29 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
     const handleStart = useCallback(() => {
         if (phase !== 'intro') return;
         if (chestMode) {
-            // Play the chest-opening clip first; the game starts when it ends.
+            // Play the chest-opening clip; the game launches the instant the lid opens
+            // (timeupdate >= LID_OPENS_AT) while the clip finishes underneath.
             setPhase('opening');
             const v = openingRef.current;
-            if (v) { v.style.opacity = '1'; v.play().catch(() => { /* fall through via timeout */ }); }
+            if (v) {
+                v.style.opacity = '1';
+                v.ontimeupdate = () => {
+                    if (v.currentTime >= LID_OPENS_AT) {
+                        v.ontimeupdate = null;
+                        startGame();
+                    }
+                };
+                v.play().catch(() => { /* fall through via timeout */ });
+            }
         } else {
             startGame();
         }
-    }, [phase, chestMode, startGame]);
+    }, [phase, chestMode, startGame, LID_OPENS_AT]);
 
     // Safety: if the opening clip stalls or fails, start the game anyway.
     useEffect(() => {
         if (phase !== 'opening') return;
-        const tmo = setTimeout(() => startGame(), 6000);
+        const tmo = setTimeout(() => { setOpeningDone(true); startGame(); }, 6000);
         return () => clearTimeout(tmo);
     }, [phase, startGame]);
 
@@ -263,8 +278,9 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                             className="absolute inset-0 w-full h-full object-cover"
                         />
                     )}
-                    {/* Opening clip — preloaded hidden, revealed and played on tap */}
-                    {(phase === 'loading' || phase === 'intro' || phase === 'opening') && (
+                    {/* Opening clip — preloaded hidden, revealed on tap; stays mounted
+                        until it finishes (the game may already be running on top) */}
+                    {!openingDone && (
                         <video
                             ref={openingRef}
                             src="/scenes/video/cofre-apertura.mp4"
@@ -272,16 +288,20 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                             muted
                             playsInline
                             preload="auto"
-                            onEnded={startGame}
-                            onError={() => { if (phase === 'opening') startGame(); }}
+                            onEnded={() => setOpeningDone(true)}
+                            onError={() => { setOpeningDone(true); if (phase === 'opening') startGame(); }}
                             className="absolute inset-0 w-full h-full object-cover"
                             style={{ opacity: 0 }}
                         />
                     )}
-                    {/* Soft veil for card readability while playing */}
-                    {(phase === 'playing' || phase === 'complete') && (
-                        <div className="absolute inset-0 bg-black/25" />
-                    )}
+                    {/* Soft veil for card readability — fades in as the game starts */}
+                    <div
+                        className="absolute inset-0 bg-black pointer-events-none"
+                        style={{
+                            opacity: (phase === 'playing' || phase === 'complete') ? 0.25 : 0,
+                            transition: 'opacity 700ms ease-out',
+                        }}
+                    />
                 </div>
             ) : (
                 <OceanScene progress={progress} showShip={!showCompletion} />
@@ -376,7 +396,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0, transition: { duration: 0.4 } }}
-                        className={`absolute inset-0 flex flex-col items-center px-6 ${chestMode ? 'justify-end pb-12' : 'justify-center'}`}
+                        className={`absolute inset-0 flex flex-col items-center px-6 ${chestMode ? 'justify-start pt-12' : 'justify-center'}`}
                         style={{ zIndex: Z.overlay }}
                         onClick={handleStart}
                         onTouchStart={(e) => { e.preventDefault(); handleStart(); }}
