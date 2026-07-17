@@ -4,13 +4,12 @@
   "installCommand": "npm install",
   "framework": "vite",
   "rewrites": [
-    { "source": "/", "destination": "/sales/argo-home.html" },
     { "source": "/blog", "destination": "/blog/index.html" },
     { "source": "/blog/category/:cat", "destination": "/blog/category/:cat/index.html" },
     { "source": "/pricing", "destination": "/pricing/index.html" },
     { "source": "/terms", "destination": "/terms/index.html" },
     { "source": "/privacy", "destination": "/privacy/index.html" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/((?!api/).*)", "destination": "/app.html" }
   ],
   "crons": [
     {

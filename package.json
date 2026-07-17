@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && node scripts/prerender-meta.mjs",
+    "build": "tsc && vite build && node scripts/prerender-meta.mjs && node scripts/promote-home.mjs",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "test:e2e": "playwright test e2e/odyssey.spec.ts e2e/auth-dashboard.spec.ts e2e/argo-one.spec.ts e2e/report.spec.ts e2e/chat.spec.ts e2e/health.spec.ts e2e/audio-health.spec.ts",
