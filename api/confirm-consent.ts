@@ -44,6 +44,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         one_link_id: string | null;
         team_slug?: string | null;
         reprofile_token?: string | null;
+        is_demo?: boolean | null;
         lang: string;
     }) {
         let tenantSlug: string | null = null;
@@ -76,13 +77,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             team_slug: data.team_slug ?? null,
             one_link_slug: oneLinkSlug,
             reprofile_token: data.reprofile_token ?? null,
+            is_demo: data.is_demo ?? false,
         };
     }
 
     try {
         const { data, error } = await sb
             .from('parental_consents')
-            .select('token, status, expires_at, adult_name, adult_email, child_name, child_age, sport, flow_type, tenant_id, one_link_id, team_slug, reprofile_token, lang')
+            .select('token, status, expires_at, adult_name, adult_email, child_name, child_age, sport, flow_type, tenant_id, one_link_id, team_slug, reprofile_token, is_demo, lang')
             .eq('token', token)
             .maybeSingle() as {
                 data: {
@@ -98,6 +100,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     tenant_id: string | null;
                     one_link_id: string | null;
                     team_slug: string | null;
+                    is_demo: boolean | null;
                     lang: string;
                 } | null;
                 error: { message: string } | null;

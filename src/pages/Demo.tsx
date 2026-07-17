@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { OnboardingFlowV2 } from '../components/onboarding/OnboardingFlowV2';
+import type { AdultData } from '../components/onboarding/OnboardingFlowV2';
 import { DemoEndScreen } from '../components/onboarding/screens/DemoEndScreen';
 import { getReportData } from '../lib/argosEngine';
+import { takeConsentResume } from '../lib/consentStore';
 import { useLang } from '../context/LangContext';
 import type { QuestionAnswer } from '../lib/profileResolver';
 
@@ -37,6 +39,17 @@ export const Demo: React.FC = () => {
     const [searchParams] = useSearchParams();
     const [blocked, setBlocked] = useState(false);
     const L = (es: string, en: string, pt: string) => (lang === 'es' ? es : lang === 'pt' ? pt : en);
+
+    // Resume after an under-13 parental consent: the confirmation-link landing
+    // redirects here as /demo?consent=TOKEN. Pull the pre-filled adult data from
+    // sessionStorage so we skip the form and jump straight back into the game.
+    const consentTokenFromUrl = searchParams.get('consent');
+    const [initialConsent] = useState<{ token: string; adultData: AdultData } | null>(() => {
+        if (!consentTokenFromUrl) return null;
+        const resume = takeConsentResume(consentTokenFromUrl);
+        if (!resume) return null;
+        return { token: resume.token, adultData: resume.adultData };
+    });
 
     const preview = searchParams.get('preview');
     if (preview === 'loading') {
@@ -86,7 +99,7 @@ export const Demo: React.FC = () => {
         );
     }
 
-    return <OnboardingFlowV2 demoMode onDemoBlocked={() => setBlocked(true)} />;
+    return <OnboardingFlowV2 demoMode initialConsent={initialConsent} onDemoBlocked={() => setBlocked(true)} />;
 };
 
 export default Demo;

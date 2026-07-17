@@ -1284,6 +1284,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         key="adult-reg"
                         userEmail={userEmail}
                         flowType={tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth'}
+                        isDemo={demoMode}
                         tenantId={tenantId}
                         oneLinkId={oneLinkId}
                         teamSlug={teamSlug}
@@ -1331,6 +1332,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                             flowType: tenantId ? 'tenant' : oneLinkId ? 'one' : 'auth',
                             tenantId,
                             oneLinkId,
+                            isDemo: demoMode,
                             lang,
                         }}
                         onConfirmed={(tok) => {

@@ -180,7 +180,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const {
         adult_name, adult_email, child_name, child_age, sport,
-        flow_type, tenant_id, one_link_id, team_slug, reprofile_token, lang,
+        flow_type, tenant_id, one_link_id, team_slug, reprofile_token, is_demo, lang,
     } = req.body ?? {};
 
     // Basic validation
@@ -215,6 +215,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // return to /play/<slug>/<team_slug> and re-attach the child to it.
             team_slug: typeof team_slug === 'string' && team_slug.trim() ? team_slug.trim() : null,
             reprofile_token: typeof reprofile_token === 'string' && /^[a-f0-9]{32}$/.test(reprofile_token) ? reprofile_token : null,
+            is_demo: is_demo === true,
             lang: langSafe,
             expires_at: expiresAt,
         });

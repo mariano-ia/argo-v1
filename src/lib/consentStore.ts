@@ -13,6 +13,10 @@ export interface RequestConsentInput {
     /** Set on a re-profile: the child's reprofile_token, so the consent-landing
      * redirect returns to /play/r/<token> and the play appends to that child. */
     reprofileToken?: string;
+    /** True when the play is the free demo (/demo). Demo shares flow_type='auth'
+     * with the legacy /app flow, so this flag is what tells the consent landing to
+     * redirect back to /demo (not the login-gated /app). */
+    isDemo?: boolean;
     lang: string;
 }
 
@@ -38,6 +42,7 @@ export async function requestConsent(input: RequestConsentInput): Promise<Reques
         one_link_id: input.oneLinkId ?? null,
         team_slug:   input.teamSlug ?? null,
         reprofile_token: input.reprofileToken ?? null,
+        is_demo:     input.isDemo ?? false,
         lang:        input.lang,
     };
 
@@ -94,6 +99,7 @@ export interface ConsentDataFromServer {
     team_slug?: string | null;
     one_link_slug: string | null;
     reprofile_token?: string | null;
+    is_demo?: boolean;
 }
 
 export async function confirmConsent(token: string): Promise<{

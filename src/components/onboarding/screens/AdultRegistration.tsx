@@ -33,6 +33,9 @@ interface Props {
      *  invite / re-profile link, not typed here), render them read-only so the adult can't
      *  silently change who the report is about or where it lands. */
     lockIdentity?: boolean;
+    /** True in the free demo (/demo). Threaded into the consent request so the
+     *  confirmation-link landing returns to /demo instead of the login-gated /app. */
+    isDemo?: boolean;
     onComplete: (data: AdultData) => void;
     onConsentRequired: (args: { token: string; adultData: AdultData }) => void;
 }
@@ -48,6 +51,7 @@ export const AdultRegistration: React.FC<Props> = ({
     reprofileToken,
     initialValues,
     lockIdentity = false,
+    isDemo = false,
     onComplete,
     onConsentRequired,
 }) => {
@@ -105,6 +109,7 @@ export const AdultRegistration: React.FC<Props> = ({
                 oneLinkId,
                 teamSlug,
                 reprofileToken,
+                isDemo,
                 lang,
             });
             setSubmitting(false);

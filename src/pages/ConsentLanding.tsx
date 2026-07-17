@@ -57,7 +57,12 @@ export const ConsentLanding: React.FC = () => {
                     } else if (cd.flow_type === 'one' && cd.one_link_slug) {
                         target = `/one/${cd.one_link_slug}?consent=${token}`;
                     } else if (cd.flow_type === 'auth') {
-                        target = `/app?consent=${token}`;
+                        // The free demo and the legacy /app flow share flow_type='auth';
+                        // is_demo routes the demo back to /demo (public) instead of the
+                        // login-gated /app the demo player has no account for.
+                        target = cd.is_demo
+                            ? `/demo?consent=${token}`
+                            : `/app?consent=${token}`;
                     }
                 }
 
