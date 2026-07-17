@@ -39,7 +39,7 @@ function confirmEmail(name: string, lang: string): { subject: string; html: stri
       <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#424245;">${body}</p>
       <p style="margin:0;font-size:15px;line-height:1.65;color:#424245;">${closing}</p>
     </div>
-    <p style="margin:20px 0 0;text-align:center;font-size:12px;color:#86868B;">Argo Method &middot; argomethod.com</p>
+    <p style="margin:20px 0 0;text-align:center;font-size:12px;color:#86868B;"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">Method</span><span style="font-weight:300;font-size:9px;vertical-align:top;">&reg;</span> &middot; argomethod.com</p>
   </div>
 </body></html>`,
     });
