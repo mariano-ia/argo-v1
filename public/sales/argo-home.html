@@ -577,6 +577,85 @@ a { color: inherit; }
 .price-card__cta--demo {
   border: 1px solid var(--border); background: #fff; color: var(--text-primary);
 }
+.price-card__cta--demo:hover { border-color: var(--accent-soft); color: var(--accent); }
+
+/* ═══════════════════════════════════════
+   DEMO REQUEST MODAL
+   ═══════════════════════════════════════ */
+.demo-modal {
+  position: fixed; inset: 0; z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  padding: 20px; background: rgba(29,29,31,0.55); backdrop-filter: blur(4px);
+  opacity: 0; transition: opacity 0.2s ease;
+}
+.demo-modal.is-open { display: flex; opacity: 1; }
+.demo-modal__panel {
+  width: 100%; max-width: 460px; max-height: calc(100vh - 40px); overflow-y: auto;
+  background: var(--bg-page); border-radius: 20px; padding: 28px;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+  transform: translateY(12px); transition: transform 0.25s ease;
+}
+.demo-modal.is-open .demo-modal__panel { transform: translateY(0); }
+.demo-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 6px; }
+.demo-modal__title { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.demo-modal__sub { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 20px; }
+.demo-modal__close {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--border);
+  background: #fff; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.demo-modal__close:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.demo-modal__close i, .demo-modal__close svg { width: 16px; height: 16px; }
+
+.demo-field { margin-bottom: 14px; }
+.demo-field__label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.demo-field__opt { font-weight: 400; color: var(--text-light); }
+.demo-input, .demo-select {
+  width: 100%; box-sizing: border-box; padding: 11px 13px; font-size: 14px;
+  font-family: var(--font-body); color: var(--text-primary);
+  background: #fff; border: 1px solid var(--border-strong); border-radius: 11px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease; appearance: none;
+}
+.demo-input:focus, .demo-select:focus {
+  outline: none; border-color: var(--accent-soft); box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.demo-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2386868B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; cursor: pointer;
+}
+.demo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.demo-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+.demo-consent { display: flex; align-items: flex-start; gap: 9px; margin: 6px 0 18px; }
+.demo-consent input { margin-top: 2px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; cursor: pointer; }
+.demo-consent label { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+.demo-consent a { color: var(--accent); text-decoration: underline; }
+
+.demo-submit {
+  width: 100%; padding: 13px; border: none; border-radius: 12px; cursor: pointer;
+  background: #955FB5; color: #fff; font-size: 14px; font-weight: 600; font-family: var(--font-body);
+  box-shadow: 0 4px 18px rgba(149,95,181,0.25); transition: opacity 0.15s ease;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.demo-submit:hover { opacity: 0.92; }
+.demo-submit:disabled { opacity: 0.6; cursor: default; }
+.demo-error { font-size: 12px; color: #DC2626; margin: 0 0 12px; display: none; }
+.demo-error.is-visible { display: block; }
+.demo-spinner {
+  width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+  border-radius: 999px; animation: demoSpin 0.7s linear infinite;
+}
+@keyframes demoSpin { to { transform: rotate(360deg); } }
+
+.demo-success { text-align: center; padding: 12px 0; }
+.demo-success__icon {
+  width: 56px; height: 56px; border-radius: 999px; margin: 0 auto 16px;
+  background: var(--accent-wash); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.demo-success__icon i, .demo-success__icon svg { width: 26px; height: 26px; }
+.demo-success__title { font-size: 18px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+.demo-success__text { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 22px; }
+@media (max-width: 480px) { .demo-row { grid-template-columns: 1fr; } .demo-modal__panel { padding: 22px; } }
 
 /* ═══════════════════════════════════════
    FAQ (ported from the home)
@@ -1291,7 +1370,7 @@ a { color: inherit; }
           <li class="report-item"><i data-lucide="check"></i><span><span class="report-item__title">Planteles y grupos</span><span class="report-item__desc">Organiza tu institución por equipos y categorías, sin límite.</span></span></li>
           <li class="report-item"><i data-lucide="check"></i><span><span class="report-item__title">Palabras puente y checklist</span><span class="report-item__desc">Cómo conectar con cada jugador y una guía para acompañarlo.</span></span></li>
         </ul>
-        <a class="price-card__cta price-card__cta--demo" href="mailto:hola@argomethod.com">Solicitar demo</a>
+        <button type="button" class="price-card__cta price-card__cta--demo" data-open-demo>Solicitar demo</button>
       </div>
 
     </div>
@@ -1748,6 +1827,209 @@ document.addEventListener('DOMContentLoaded', function() { lucide.createIcons();
   input.addEventListener('keydown', function(e) { if (e.key === 'Enter') send(input.value); });
   suggestionsEl.querySelectorAll('.chat-chip').forEach(function(chip) {
     chip.addEventListener('click', function() { send(chip.textContent); });
+  });
+})();
+</script>
+
+<!-- ══════════════ SOLICITAR DEMO (ArgoAcademy®) ══════════════ -->
+<div class="demo-modal" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoTitle">
+  <div class="demo-modal__panel">
+    <div id="demoFormWrap">
+      <div class="demo-modal__head">
+        <p class="demo-modal__title" id="demoTitle">Solicitar demo de <span style="font-weight:800;">Argo</span><span style="font-weight:300;">Academy</span><span style="font-weight:300;font-size:12px;vertical-align:top;">&reg;</span></p>
+        <button type="button" class="demo-modal__close" data-close-demo aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <p class="demo-modal__sub">Déjanos tus datos y el equipo te contacta para coordinar una demo, sin compromiso.</p>
+
+      <form id="demoForm" novalidate>
+        <p class="demo-error" id="demoError"></p>
+
+        <div class="demo-field">
+          <label class="demo-field__label" for="demoName">Nombre y apellido</label>
+          <input class="demo-input" id="demoName" name="name" type="text" autocomplete="name" required>
+        </div>
+        <div class="demo-field">
+          <label class="demo-field__label" for="demoEmail">Email</label>
+          <input class="demo-input" id="demoEmail" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="demo-field">
+          <label class="demo-field__label" for="demoInstitution">Institución o equipo</label>
+          <input class="demo-input" id="demoInstitution" name="institution" type="text" autocomplete="organization" required>
+        </div>
+        <div class="demo-row">
+          <div class="demo-field">
+            <label class="demo-field__label" for="demoWhatsapp">WhatsApp</label>
+            <input class="demo-input" id="demoWhatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="+54 11 ..." autocomplete="tel" required>
+          </div>
+          <div class="demo-field">
+            <label class="demo-field__label" for="demoCountry">País</label>
+            <select class="demo-select" id="demoCountry" name="country" required>
+              <option value="" disabled selected>Selecciona</option>
+              <option>Argentina</option>
+              <option>México</option>
+              <option>Colombia</option>
+              <option>Chile</option>
+              <option>Perú</option>
+              <option>Uruguay</option>
+              <option>Paraguay</option>
+              <option>Bolivia</option>
+              <option>Ecuador</option>
+              <option>Venezuela</option>
+              <option>Brasil</option>
+              <option>España</option>
+              <option>Estados Unidos</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="demo-row">
+          <div class="demo-field">
+            <label class="demo-field__label" for="demoSport">Deporte <span class="demo-field__opt">(opcional)</span></label>
+            <select class="demo-select" id="demoSport" name="sport">
+              <option value="" selected>Selecciona</option>
+              <option>Fútbol</option>
+              <option>Básquet</option>
+              <option>Vóley</option>
+              <option>Handball</option>
+              <option>Rugby</option>
+              <option>Hockey</option>
+              <option>Tenis</option>
+              <option>Natación</option>
+              <option>Atletismo</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="demo-field">
+            <label class="demo-field__label" for="demoTeamSize">Cantidad de niños <span class="demo-field__opt">(opcional)</span></label>
+            <select class="demo-select" id="demoTeamSize" name="team_size">
+              <option value="" selected>Selecciona</option>
+              <option value="1-15">1 a 15</option>
+              <option value="16-50">16 a 50</option>
+              <option value="51-100">51 a 100</option>
+              <option value="100+">Más de 100</option>
+            </select>
+          </div>
+        </div>
+
+        <input class="demo-hp" type="text" name="company_url" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+        <div class="demo-consent">
+          <input type="checkbox" id="demoConsent" name="consent" required>
+          <label for="demoConsent">Acepto que Argo me contacte por este medio y acepto los <a href="/terms" target="_blank" rel="noopener">Términos</a>.</label>
+        </div>
+
+        <button type="submit" class="demo-submit" id="demoSubmit">Enviar solicitud</button>
+      </form>
+    </div>
+
+    <div id="demoSuccess" style="display:none;">
+      <div class="demo-modal__head" style="justify-content:flex-end;">
+        <button type="button" class="demo-modal__close" data-close-demo aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <div class="demo-success">
+        <div class="demo-success__icon"><i data-lucide="check"></i></div>
+        <p class="demo-success__title">Recibimos tu solicitud</p>
+        <p class="demo-success__text">Gracias por tu interés. Nuestro equipo te va a contactar muy pronto. Te enviamos una confirmación a tu email.</p>
+        <button type="button" class="demo-submit" data-close-demo style="max-width:200px;margin:0 auto;">Listo</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var modal = document.getElementById('demoModal');
+  if (!modal) return;
+  var form = document.getElementById('demoForm');
+  var errorEl = document.getElementById('demoError');
+  var submitBtn = document.getElementById('demoSubmit');
+  var formWrap = document.getElementById('demoFormWrap');
+  var successWrap = document.getElementById('demoSuccess');
+  var lastFocus = null;
+
+  function open() {
+    lastFocus = document.activeElement;
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+    var first = document.getElementById('demoName');
+    if (first) setTimeout(function() { first.focus(); }, 60);
+  }
+  function close() {
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  function showError(msg) {
+    errorEl.textContent = msg;
+    errorEl.classList.add('is-visible');
+  }
+  function clearError() { errorEl.classList.remove('is-visible'); }
+
+  document.querySelectorAll('[data-open-demo]').forEach(function(btn) {
+    btn.addEventListener('click', open);
+  });
+  document.querySelectorAll('[data-close-demo]').forEach(function(btn) {
+    btn.addEventListener('click', close);
+  });
+  modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    clearError();
+
+    // Read via FormData: form.name would collide with HTMLFormElement.name.
+    var fd = new FormData(form);
+    function g(k) { var v = fd.get(k); return (v == null ? '' : String(v)).trim(); }
+    var consentEl = document.getElementById('demoConsent');
+    var data = {
+      name: g('name'),
+      email: g('email'),
+      institution: g('institution'),
+      whatsapp: g('whatsapp'),
+      country: g('country'),
+      sport: g('sport'),
+      team_size: g('team_size'),
+      consent: !!(consentEl && consentEl.checked),
+      company_url: g('company_url'),
+      source: 'home',
+      lang: 'es'
+    };
+
+    if (!data.name || !data.email || !data.institution || !data.whatsapp || !data.country) {
+      showError('Completa los campos obligatorios.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
+      showError('Revisa tu email.');
+      return;
+    }
+    if (!data.consent) {
+      showError('Necesitamos tu permiso para contactarte.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="demo-spinner"></span> Enviando...';
+
+    fetch('/api/demo-request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+      .then(function(res) { return res.json().then(function(j) { return { ok: res.ok, body: j }; }); })
+      .then(function(r) {
+        if (!r.ok) throw new Error((r.body && r.body.error) || 'error');
+        formWrap.style.display = 'none';
+        successWrap.style.display = 'block';
+        lucide.createIcons();
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar solicitud';
+        showError('No pudimos enviar tu solicitud. Intenta de nuevo en un momento.');
+      });
   });
 })();
 </script>
