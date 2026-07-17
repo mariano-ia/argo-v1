@@ -203,7 +203,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
         if (done || airborneRef.current) return;
         setAirborne(true);
         clearTimeout(jumpTimerRef.current);
-        jumpTimerRef.current = setTimeout(() => setAirborne(false), 540);
+        jumpTimerRef.current = setTimeout(() => setAirborne(false), videoBackgroundsEnabled() ? 620 : 540);
     }, [done]);
 
     const handleTap = useCallback(() => {
@@ -295,6 +295,16 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                 duration: OBSTACLE_SPEEDS[Math.floor(Math.random() * OBSTACLE_SPEEDS.length)],
             }]);
         };
+        if (videoBackgroundsEnabled()) {
+            // Chained: first at 1.4s, then evenly every 2.2s — the legacy parallel
+            // timeout+interval made obstacles 1 and 2 land only ~700ms apart.
+            let interval: ReturnType<typeof setInterval> | undefined;
+            const first = setTimeout(() => {
+                spawn();
+                interval = setInterval(spawn, 2200);
+            }, 1400);
+            return () => { clearTimeout(first); if (interval) clearInterval(interval); };
+        }
         const first    = setTimeout(spawn, SPAWN_FIRST_MS);
         const interval = setInterval(spawn, SPAWN_INTERVAL_MS);
         return () => { clearTimeout(first); clearInterval(interval); };
@@ -346,7 +356,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                 className="absolute pointer-events-none"
                 style={{ left: '12%', top: videoBackgroundsEnabled() ? 'calc(78% - 44px)' : 'calc(60% - 44px)' }}
                 animate={{
-                    y:      airborne ? -130 : [0, -8, 0, -5, 0],
+                    y:      airborne ? (videoBackgroundsEnabled() ? -205 : -130) : [0, -8, 0, -5, 0],
                     rotate: airborne ? -18  : [0, 3, 0, -3, 0],
                 }}
                 transition={
@@ -360,7 +370,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                         src="/scenes/video/sprites/mini-argo.png"
                         alt=""
                         draggable={false}
-                        style={{ height: 78, transform: 'translateY(-18px)' }}
+                        style={{ height: 84, transform: 'translateY(-6px)' }}
                     />
                 ) : (
                     <GameBoatSVG />
