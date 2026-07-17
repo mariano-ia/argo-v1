@@ -73,6 +73,7 @@ const DeleteChildData   = lazy(() => import('./pages/DeleteChildData'));
 const DeleteLanding     = lazy(() => import('./pages/DeleteLanding').then(m => ({ default: m.DeleteLanding })));
 const ResultRevealPreview = lazy(() => import('./pages/ResultRevealPreview').then(m => ({ default: m.ResultRevealPreview })));
 const OnboardingPreview = lazy(() => import('./pages/tenant/OnboardingPreview').then(m => ({ default: m.OnboardingPreview })));
+const ScenePreview      = lazy(() => import('./pages/ScenePreview').then(m => ({ default: m.ScenePreview })));
 const TestIslas         = lazy(() => import('./pages/TestIslas').then(m => ({ default: m.TestIslas })));
 const TestEsquivar      = lazy(() => import('./pages/TestEsquivar').then(m => ({ default: m.TestEsquivar })));
 const TestTormenta      = lazy(() => import('./pages/TestTormenta').then(m => ({ default: m.TestTormenta })));
@@ -253,6 +254,7 @@ function App() {
             <Route path="/set-password" element={<SetPassword />} />
             <Route path="/preview/result" element={<ResultRevealPreview />} />
             <Route path="/preview/onboarding" element={<OnboardingPreview />} />
+            <Route path="/preview/escenas" element={<ScenePreview />} />
             <Route path="/review/:sessionId" element={<FeedbackForm />} />
             <Route path="/report/:sessionId" element={<ReportPage />} />
             <Route path="/familias"   element={<Familias />} />

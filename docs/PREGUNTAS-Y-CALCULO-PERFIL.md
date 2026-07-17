@@ -174,7 +174,7 @@ El motor mide la **velocidad/impulsividad** con 3 minijuegos durante la odisea:
 
 | Minijuego | Qué mide | Peso |
 |-----------|----------|------|
-| El cofre del Capitán (Islas) | Impulso (latencia al elegir cartas) | 30% |
+| El Cofre de Jasón (Islas) | Impulso (latencia al elegir cartas) | 30% |
 | Mar abierto (esquivar) | Ritmo (tiempo de reacción) | 30% |
 | La Tormenta (adaptar) | Adaptación (rapidez + errores) | 40% |
 

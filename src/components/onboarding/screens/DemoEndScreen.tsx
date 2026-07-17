@@ -85,7 +85,13 @@ export const DemoEndScreen: React.FC<DemoEndScreenProps> = ({
         : null;
 
     // ── Spinner / error state ───────────────────────────────────────────────
-    if (aiPending || error || !mockSession || readyToNavigate) {
+    // The inline ReportPage below is a DEV-ONLY fallback (Vite local, where
+    // /api/session doesn't exist). In prod there is a window right after the game
+    // ends where the pipeline hasn't set aiPending yet (it flips true only after
+    // the session save roundtrip) — falling through there flashed a bare report
+    // for a few seconds before the spinner (owner-reported). Gate it hard.
+    const devInlineFallback = import.meta.env.DEV;
+    if (!devInlineFallback || aiPending || error || !mockSession || readyToNavigate) {
         return (
             <div
                 className="fixed inset-0 z-50 bg-white flex items-center justify-center px-6 py-12"
@@ -130,6 +136,13 @@ export const DemoEndScreen: React.FC<DemoEndScreenProps> = ({
                                     'Esto puede tardar algunos segundos.',
                                     'This may take a few seconds.',
                                     'Isso pode levar alguns segundos.',
+                                )}
+                            </p>
+                            <p style={{ fontSize: '14px', color: '#1D1D1F', fontWeight: 500, lineHeight: 1.55, marginTop: '14px' }}>
+                                {L(
+                                    'Por favor, no cierres el navegador.',
+                                    'Please keep this browser tab open.',
+                                    'Por favor, não feche o navegador.',
                                 )}
                             </p>
                         </>

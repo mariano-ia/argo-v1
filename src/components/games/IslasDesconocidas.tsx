@@ -6,6 +6,7 @@ import { CardEntity, CardState } from './islas/CardEntity';
 import { useHaptics } from './islas/useHaptics';
 import { useSoundTriggers } from './islas/useSoundTriggers';
 import { getMiniGameTexts } from './islas/translations';
+import { videoBackgroundsEnabled } from '../onboarding/scenes/AnimatedScene';
 import {
     ISLAND_COUNT, DISCOVERY_IMAGES,
     DISCOVERY_DISPLAY_MS, SCREEN_FLASH_MS, CAMERA_SHAKE_MS,
@@ -39,7 +40,16 @@ interface CardData {
 
 export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
     const t = getMiniGameTexts(lang);
-    const [phase, setPhase] = useState<'loading' | 'intro' | 'playing' | 'complete'>('loading');
+    // Chest cinematic mode (video backgrounds flag): trembling-chest loop on the intro,
+    // an opening clip on tap, then the open chest held as the playing backdrop.
+    const chestMode = videoBackgroundsEnabled();
+    const [phase, setPhase] = useState<'loading' | 'intro' | 'opening' | 'playing' | 'complete'>('loading');
+    const [openingDone, setOpeningDone] = useState(false);
+    const openingRef = useRef<HTMLVideoElement>(null);
+    // Measured on the clip: the lid visibly opens at ~1.17s (light burst peaks ~1.75s).
+    // The cards launch at this moment — the first card materializes right in the flash —
+    // while the clip keeps playing underneath to its end.
+    const LID_OPENS_AT = 1.15;
     const [cards, setCards] = useState<CardData[]>([]);
     const [activeCardIdx, setActiveCardIdx] = useState(-1);
     const [showCompletion, setShowCompletion] = useState(false);
@@ -65,8 +75,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
 
     // ─── Start game ─────────────────────────────────────────────
 
-    const handleStart = useCallback(() => {
-        if (phase !== 'intro') return;
+    const startGame = useCallback(() => {
         setPhase('playing');
         gameStartRef.current = Date.now();
         trigger('ambient_ocean_start');
@@ -106,7 +115,36 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                 ));
             }, 500);
         }, 600);
-    }, [phase, trigger]);
+    }, [trigger, t.discoveries]);
+
+    const handleStart = useCallback(() => {
+        if (phase !== 'intro') return;
+        if (chestMode) {
+            // Play the chest-opening clip; the game launches the instant the lid opens
+            // (timeupdate >= LID_OPENS_AT) while the clip finishes underneath.
+            setPhase('opening');
+            const v = openingRef.current;
+            if (v) {
+                v.style.opacity = '1';
+                v.ontimeupdate = () => {
+                    if (v.currentTime >= LID_OPENS_AT) {
+                        v.ontimeupdate = null;
+                        startGame();
+                    }
+                };
+                v.play().catch(() => { /* fall through via timeout */ });
+            }
+        } else {
+            startGame();
+        }
+    }, [phase, chestMode, startGame, LID_OPENS_AT]);
+
+    // Safety: if the opening clip stalls or fails, start the game anyway.
+    useEffect(() => {
+        if (phase !== 'opening') return;
+        const tmo = setTimeout(() => { setOpeningDone(true); startGame(); }, 6000);
+        return () => clearTimeout(tmo);
+    }, [phase, startGame]);
 
     // ─── Handle card tap ────────────────────────────────────────
 
@@ -217,8 +255,57 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
             transition={{ duration: CAMERA_SHAKE_MS / 1000 }}
             key={`shake-${cameraShake}`}
         >
-            {/* Ocean scene background */}
-            <OceanScene progress={progress} showShip={!showCompletion} />
+            {/* Background: chest cinematic (video mode) or the classic ocean scene */}
+            {chestMode ? (
+                <div className="absolute inset-0">
+                    {/* Open chest still — the resting backdrop once opened (under everything) */}
+                    <img
+                        src="/scenes/video/posters/cofre-abierto.webp"
+                        alt=""
+                        draggable={false}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    {/* Trembling closed chest loop — visible until the opening finishes */}
+                    {(phase === 'loading' || phase === 'intro') && (
+                        <video
+                            src="/scenes/video/cofre-loop.mp4"
+                            poster="/scenes/video/posters/cofre-cerrado.webp"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            preload="auto"
+                            className="absolute inset-0 w-full h-full object-cover"
+                        />
+                    )}
+                    {/* Opening clip — preloaded hidden, revealed on tap; stays mounted
+                        until it finishes (the game may already be running on top) */}
+                    {!openingDone && (
+                        <video
+                            ref={openingRef}
+                            src="/scenes/video/cofre-apertura.mp4"
+                            poster="/scenes/video/posters/cofre-cerrado.webp"
+                            muted
+                            playsInline
+                            preload="auto"
+                            onEnded={() => setOpeningDone(true)}
+                            onError={() => { setOpeningDone(true); if (phase === 'opening') startGame(); }}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            style={{ opacity: 0 }}
+                        />
+                    )}
+                    {/* Soft veil for card readability — fades in as the game starts */}
+                    <div
+                        className="absolute inset-0 bg-black pointer-events-none"
+                        style={{
+                            opacity: (phase === 'playing' || phase === 'complete') ? 0.25 : 0,
+                            transition: 'opacity 700ms ease-out',
+                        }}
+                    />
+                </div>
+            ) : (
+                <OceanScene progress={progress} showShip={!showCompletion} />
+            )}
 
             {/* Screen flash */}
             <AnimatePresence>
@@ -309,7 +396,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0, transition: { duration: 0.4 } }}
-                        className="absolute inset-0 flex flex-col items-center justify-center px-6"
+                        className={`absolute inset-0 flex flex-col items-center px-6 ${chestMode ? 'justify-start pt-12' : 'justify-center'}`}
                         style={{ zIndex: Z.overlay }}
                         onClick={handleStart}
                         onTouchStart={(e) => { e.preventDefault(); handleStart(); }}
@@ -327,7 +414,8 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                             animate={{ scale: 1, y: 0 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                         >
-                            {/* Treasure chest icon */}
+                            {/* Treasure chest icon (hidden in chest mode — the real chest is on screen) */}
+                            {!chestMode && (
                             <motion.div
                                 animate={{ y: [0, -5, 0], rotate: [0, 2, -2, 0] }}
                                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -345,6 +433,7 @@ export const IslasDesconocidas: React.FC<Props> = ({ onComplete, lang = 'es' }) 
                                     <line x1="6" y1="28" x2="42" y2="28" stroke="rgba(200,168,112,0.3)" strokeWidth="1" />
                                 </svg>
                             </motion.div>
+                            )}
 
                             <h2 className="font-adventure text-2xl text-white leading-tight text-center">
                                 {t.cardTitle}
