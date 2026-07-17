@@ -158,6 +158,16 @@ Seedance (seam 0.68%); velo estático suave (ya no pulsa), ícono estrella en ve
 renombrado: "El mar está en calma otra vez" (es/en/pt) porque "Sobreviviste a la tormenta" contradecía
 la fase. Flag off = ambos minijuegos idénticos a prod.
 
+**Minijuego 3/3 — "¡Mar abierto!" (esquivar) cinemático (2026-07-17, modo video):** fondo = mar
+abierto sin barco (gpt-image-2 ref mar-abierto) → loop Seedance (seam 0.67%); el barco jugable pasó
+de un triángulo SVG a un **mini-Argo chibi** (sprite transparente gpt-image-1, `input_fidelity=high`,
+ref = arte del barco); obstáculos nuevos elegidos por el owner de una lámina de 8 candidatos:
+**ballena, piano de cola, patito gigante (guiño a Hylas) y pulpo con lentes** (sprites transparentes
+recortados y reducidos a 256px, 65-93KB). La línea de acción baja de 60% a 78% en modo video (el agua
+del fondo nuevo empieza a ~68%; a 60% "navegaban por el cielo"). Métricas de ritmo intactas (los tipos
+solo definen visual+velocidad); flag off = SVGs y arte original idénticos. GOTCHA: gpt-image-2 NO
+soporta `background=transparent` — sprites SIEMPRE con gpt-image-1.
+
 **Preview enriquecido (2026-07-16):** `/preview/escenas` muestra el **juego completo**: fondo (video)
 + **UI real de preguntas** (`QuestionScreenV2`, alineada al marco con un `transform` que contiene su
 `fixed`) + **audio real** (tema de fondo `argo_background.mp3` + efectos por fase `effects_01/02/03`,

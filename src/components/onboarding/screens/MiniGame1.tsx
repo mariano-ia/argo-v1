@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMiniGameTexts } from '../../games/islas/translations';
+import { videoBackgroundsEnabled } from '../scenes/AnimatedScene';
 
 /* ──────────────────────────── Metrics ──────────────────────────── */
 
@@ -35,8 +36,10 @@ const SPAWN_INTERVAL_MS = 1900;
 // Window (ms) after obstacle spawn in which a tap counts as "reaction to that obstacle"
 const REACTION_WINDOW_MS = 2000;
 
-type ObstacleType = 'rock' | 'wave' | 'vortex';
+type ObstacleType = 'rock' | 'wave' | 'vortex' | 'ballena' | 'piano' | 'pato' | 'pulpo';
 const OBSTACLE_TYPES: ObstacleType[] = ['rock', 'wave', 'vortex'];
+// Video mode: fun sprite obstacles (whale, grand piano, giant rubber duck, octopus)
+const SPRITE_OBSTACLE_TYPES: ObstacleType[] = ['ballena', 'piano', 'pato', 'pulpo'];
 const OBSTACLE_SPEEDS = [2.4, 2.7, 3.0];
 
 interface ObstacleItem {
@@ -82,10 +85,27 @@ const VortexObs: React.FC = () => (
     </motion.div>
 );
 
+// Sprite obstacles (video mode): transparent PNGs generated from the approved sheet.
+const spriteObs = (src: string, height: number, lift = 0): React.FC => {
+    const C: React.FC = () => (
+        <img
+            src={src}
+            alt=""
+            draggable={false}
+            style={{ height, transform: `translateY(${lift}px)` }}
+        />
+    );
+    return C;
+};
+
 const OBSTACLE_COMPONENTS: Record<ObstacleType, React.FC> = {
     rock: RockObs,
     wave: WaveObs,
     vortex: VortexObs,
+    ballena: spriteObs('/scenes/video/sprites/obst-ballena.png', 78, -26),
+    piano:   spriteObs('/scenes/video/sprites/obst-piano.png',   84, -32),
+    pato:    spriteObs('/scenes/video/sprites/obst-pato.png',    74, -24),
+    pulpo:   spriteObs('/scenes/video/sprites/obst-pulpo.png',   78, -28),
 };
 
 // ─── Animated overlays ─────────────────────────────────────────────
@@ -270,7 +290,8 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             obstacleSpawnTimesRef.current.push(Date.now());
             setObstacles(prev => [...prev, {
                 id:       nextIdRef.current++,
-                type:     OBSTACLE_TYPES[Math.floor(Math.random() * OBSTACLE_TYPES.length)],
+                type:     (videoBackgroundsEnabled() ? SPRITE_OBSTACLE_TYPES : OBSTACLE_TYPES)[
+                              Math.floor(Math.random() * (videoBackgroundsEnabled() ? SPRITE_OBSTACLE_TYPES : OBSTACLE_TYPES).length)],
                 duration: OBSTACLE_SPEEDS[Math.floor(Math.random() * OBSTACLE_SPEEDS.length)],
             }]);
         };
@@ -289,17 +310,30 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             onClick={handleTap}
             onTouchStart={e => { e.preventDefault(); handleTap(); }}
         >
-            {/* Scene background */}
-            <img
-                src="/scenes/ocean-only.png"
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                draggable={false}
-            />
+            {/* Scene background — sea loop video (video mode) or classic PNG */}
+            {videoBackgroundsEnabled() ? (
+                <video
+                    src="/scenes/video/mar-juego.mp4"
+                    poster="/scenes/video/posters/mar-juego.jpg"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+            ) : (
+                <img
+                    src="/scenes/ocean-only.png"
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover"
+                    draggable={false}
+                />
+            )}
 
-            <DriftingClouds />
+            {!videoBackgroundsEnabled() && <DriftingClouds />}
             <FlyingBirds />
-            <WaterWaves />
+            {!videoBackgroundsEnabled() && <WaterWaves />}
 
             {/* Vignette */}
             <div
@@ -310,7 +344,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             {/* Boat */}
             <motion.div
                 className="absolute pointer-events-none"
-                style={{ left: '12%', top: 'calc(60% - 44px)' }}
+                style={{ left: '12%', top: videoBackgroundsEnabled() ? 'calc(78% - 44px)' : 'calc(60% - 44px)' }}
                 animate={{
                     y:      airborne ? -130 : [0, -8, 0, -5, 0],
                     rotate: airborne ? -18  : [0, 3, 0, -3, 0],
@@ -321,7 +355,16 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                         : { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
                 }
             >
-                <GameBoatSVG />
+                {videoBackgroundsEnabled() ? (
+                    <img
+                        src="/scenes/video/sprites/mini-argo.png"
+                        alt=""
+                        draggable={false}
+                        style={{ height: 78, transform: 'translateY(-18px)' }}
+                    />
+                ) : (
+                    <GameBoatSVG />
+                )}
             </motion.div>
 
             {/* Obstacles */}
@@ -331,7 +374,7 @@ export const MiniGame1: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                     <motion.div
                         key={obs.id}
                         className="absolute pointer-events-none"
-                        style={{ top: 'calc(60% - 32px)', left: 0 }}
+                        style={{ top: videoBackgroundsEnabled() ? 'calc(78% - 32px)' : 'calc(60% - 32px)', left: 0 }}
                         initial={{ x: 800 }}
                         animate={{ x: -120 }}
                         transition={{ duration: obs.duration, ease: 'linear' }}
