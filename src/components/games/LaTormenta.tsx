@@ -146,16 +146,17 @@ const RuleIndicator: React.FC<{ target: TargetColor; goldLabel: string; silverLa
         transition={{ type: 'spring', stiffness: 250, damping: 18 }}
     >
         <div
-            className="flex items-center gap-2.5 px-5 py-2 rounded-full"
+            className="flex items-center gap-3 px-7 py-3.5 rounded-full"
             style={{
-                background: 'rgba(15,23,42,0.65)',
+                background: 'rgba(15,23,42,0.7)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
-                border: `1.5px solid ${target === 'gold' ? 'rgba(245,158,11,0.4)' : 'rgba(148,163,184,0.4)'}`,
+                border: `2px solid ${target === 'gold' ? 'rgba(245,158,11,0.55)' : 'rgba(148,163,184,0.55)'}`,
+                boxShadow: '0 4px 18px rgba(0,0,0,0.35)',
             }}
         >
-            <StarItem color={target} size={24} />
-            <span className="font-quest text-white/90 text-sm font-medium">
+            <StarItem color={target} size={34} />
+            <span className="font-quest text-white text-lg font-semibold">
                 {target === 'gold' ? goldLabel : silverLabel}
             </span>
         </div>
