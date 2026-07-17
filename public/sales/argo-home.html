@@ -294,6 +294,14 @@ a { color: inherit; }
 }
 .one-puente-callout__desc { font-size: 0.8rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
 
+.mock-note {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 10px 0 0;
+  font-size: 0.68rem; color: var(--text-light); line-height: 1.4;
+  text-align: center;
+}
+.mock-note i, .mock-note svg { width: 12px; height: 12px; flex-shrink: 0; color: var(--text-light); }
+
 .typing-dots { display: inline-flex; gap: 5px; align-items: center; padding: 4px 0; }
 .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-soft); animation: dot-bounce 1.3s infinite ease-in-out; }
 .typing-dots span:nth-child(2) { animation-delay: 0.18s; }
@@ -1033,6 +1041,7 @@ a { color: inherit; }
             <div class="flipcard__step-sep"></div>
             <button class="flipcard__step" data-step="2"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">El perfil</span></button>
           </div>
+          <p class="mock-note"><i data-lucide="info"></i>Vistas de referencia. El informe real es más detallado.</p>
         </div>
       </div>
       <p style="margin:32px 0 0; padding-top:22px; border-top:1px solid var(--border); font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
@@ -1076,8 +1085,8 @@ a { color: inherit; }
         <div class="card card--accent-1">
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <img src="proflie.webp" alt="Camila" class="avatar-img avatar-img--ring-orange" />
-              <h4 style="font-size:1.05rem; margin:0;">El perfil de Camila</h4>
+              <img src="proflie.webp" alt="Allegra" class="avatar-img avatar-img--ring-orange" />
+              <h4 style="font-size:1.05rem; margin:0;">El perfil de Allegra</h4>
             </div>
             <span class="chip chip--impulsor" style="font-size:0.68rem;"><span class="chip-dot"></span>Impulsor</span>
           </div>
@@ -1107,6 +1116,7 @@ a { color: inherit; }
           <p style="font-size:0.64rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">Checklist del día</p>
           <p style="font-size:0.88rem; margin:0;">Ideas para antes, durante y después de la actividad.</p>
         </div>
+        <p class="mock-note"><i data-lucide="info"></i>Vista de referencia. El informe real es más detallado y personalizado.</p>
       </div>
     </div>
   </div>
@@ -1121,7 +1131,7 @@ a { color: inherit; }
           <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
             <div>
               <p style="font-size:0.6rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin:0 0 2px;">Tu puente con</p>
-              <h4 style="font-size:1.05rem; margin:0;">Camila</h4>
+              <h4 style="font-size:1.05rem; margin:0;">Allegra</h4>
             </div>
             <span class="chip" style="font-size:0.68rem; background:var(--accent-wash); color:var(--accent); border-color:#EFE4F5;"><span class="chip-dot"></span>ArgoPuente®</span>
           </div>
@@ -1129,7 +1139,7 @@ a { color: inherit; }
           <p style="font-size:0.88rem; margin-bottom:16px;">Tu perfil como adulto que acompaña, desde tu propio estilo.</p>
           <div style="border-top:1px solid var(--border); margin-bottom:16px;"></div>
           <p style="font-size:0.64rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); font-weight:700; margin-bottom:6px;">Los 4 puentes</p>
-          <p style="font-size:0.88rem; margin-bottom:14px;">Cuatro momentos para conectar con Camila:</p>
+          <p style="font-size:0.88rem; margin-bottom:14px;">Cuatro momentos para conectar con Allegra:</p>
           <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
             <div style="display:flex; gap:10px;">
               <span style="width:19px; height:19px; border-radius:50%; background:var(--accent-wash); color:var(--accent); font-size:0.65rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;">1</span>
@@ -1164,6 +1174,7 @@ a { color: inherit; }
           <p style="font-size:0.64rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">Para llevar</p>
           <p style="font-size:0.88rem; margin:0;">Una idea final para sostener el vínculo en el tiempo.</p>
         </div>
+        <p class="mock-note"><i data-lucide="info"></i>Vista de referencia. El informe real es más detallado y personalizado.</p>
       </div>
       <div>
         <div class="label anim">Incluido en ArgoOne®</div>
@@ -1227,7 +1238,7 @@ a { color: inherit; }
           <div style="display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--border);">
             <span style="width:8px; height:8px; border-radius:50%; background:#f97316; flex-shrink:0;"></span>
             <div style="min-width:0; flex:1;">
-              <p style="font-size:0.82rem; font-weight:600; color:var(--text-primary); margin:0;">Camila</p>
+              <p style="font-size:0.82rem; font-weight:600; color:var(--text-primary); margin:0;">Allegra</p>
               <p style="font-size:0.68rem; color:var(--text-muted); margin:2px 0 0;">11 años · Fútbol</p>
             </div>
             <span style="font-size:0.64rem; font-weight:500; padding:3px 9px; border-radius:999px; border:1px solid #FED7AA; color:#C2410C; white-space:nowrap;">Impulsor</span>
@@ -1265,6 +1276,7 @@ a { color: inherit; }
             <span style="font-size:0.64rem; font-weight:500; padding:3px 9px; border-radius:999px; border:1px solid #BBF7D0; color:#15803D; white-space:nowrap;">Sostenedor</span>
           </div>
         </div>
+        <p class="mock-note"><i data-lucide="info"></i>Vista de referencia. El dashboard real es más completo.</p>
       </div>
     </div>
   </div>
@@ -1292,6 +1304,7 @@ a { color: inherit; }
             </div>
           </div>
         </div>
+        <p class="mock-note"><i data-lucide="info"></i>Vista de referencia. El dashboard real es más completo.</p>
       </div>
       <div class="anim" style="display:flex; flex-direction:column; gap:14px;">
         <div class="card card--sm">
