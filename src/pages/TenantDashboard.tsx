@@ -101,6 +101,9 @@ export const TenantDashboard: React.FC = () => {
     const linkSnackTimer = useRef<ReturnType<typeof setTimeout>>();
     // Mobile plantel/hat switcher (topbar, right edge).
     const [mobileHatOpen, setMobileHatOpen] = useState(false);
+    // Mobile account menu (topbar, right edge): email + logout — the ONLY logout
+    // entry point on mobile, since the Modo Cancha topbar has no drawer.
+    const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
     const [collapsed, setCollapsed] = useState(false);
     const [switcherOpen, setSwitcherOpen] = useState(false);
     const [hasNewPlayers, setHasNewPlayers] = useState(false);
@@ -641,6 +644,7 @@ export const TenantDashboard: React.FC = () => {
                     <span style={{ fontSize: '15px', letterSpacing: '-0.02em', color: '#1D1D1F' }}>
                         <span style={{ fontWeight: 800 }}>Argo</span><span style={{ fontWeight: 200, color: '#86868B' }}>Method®</span>
                     </span>
+                    <div className="flex items-center gap-2">
                     {tenant && tenant.onboarding_completed && (() => {
                         const hats: Array<{ key: string; label: string; hat: ContextHat }> = [
                             ...(role !== 'coach' ? [{ key: 'admin', label: lang === 'en' ? 'Administration' : lang === 'pt' ? 'Administração' : 'Administración', hat: 'admin' as ContextHat }] : []),
@@ -652,7 +656,7 @@ export const TenantDashboard: React.FC = () => {
                         return (
                             <>
                                 <button
-                                    onClick={() => setMobileHatOpen(v => !v)}
+                                    onClick={() => { setMobileHatOpen(v => !v); setMobileAccountOpen(false); }}
                                     className="flex items-center gap-1.5 max-w-[55%] px-2.5 py-1.5 rounded-full border border-argo-border bg-white text-[12px] font-medium text-argo-secondary active:bg-argo-bg transition-colors"
                                 >
                                     <span className="truncate">{currentLabel}</span>
@@ -678,6 +682,39 @@ export const TenantDashboard: React.FC = () => {
                             </>
                         );
                     })()}
+                    {/* Account menu — the ONLY logout entry point on mobile
+                        (the Modo Cancha topbar has no drawer). Shows the email
+                        and Cerrar sesión; available even during onboarding. */}
+                    <div className="relative">
+                        <button
+                            onClick={() => { setMobileAccountOpen(v => !v); setMobileHatOpen(false); }}
+                            aria-label={lang === 'en' ? 'Account' : lang === 'pt' ? 'Conta' : 'Cuenta'}
+                            className="w-8 h-8 rounded-full bg-argo-violet-100 text-argo-violet-500 flex items-center justify-center text-[11px] font-bold active:bg-argo-violet-200 transition-colors"
+                        >
+                            {userInitials || <User size={15} />}
+                        </button>
+                        {mobileAccountOpen && (
+                            <>
+                                <div className="fixed inset-0 z-40" onClick={() => setMobileAccountOpen(false)} />
+                                <div className="absolute right-0 top-full mt-2 z-50 w-56 bg-white rounded-xl shadow-argo-hover border border-argo-border py-1">
+                                    <div className="px-3.5 py-2.5 border-b border-argo-border">
+                                        <p className="text-[13px] font-semibold text-argo-navy truncate">{userDisplayName}</p>
+                                        {session?.user?.email && (
+                                            <p className="text-[11px] text-argo-grey truncate">{session.user.email}</p>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-left text-[13px] text-argo-secondary active:bg-argo-bg transition-colors"
+                                    >
+                                        <LogOut size={15} className="text-argo-grey flex-shrink-0" />
+                                        {dt.nav.cerrarSesion}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                    </div>
                 </div>
 
                 <main className="flex-1 overflow-y-auto p-6 pb-24 md:px-12 md:py-10">
