@@ -26,8 +26,8 @@ export interface MiniGameTexts {
 
 const texts: Record<MiniGameLang, MiniGameTexts> = {
     es: {
-        cardTitle: 'El cofre del Capitán',
-        cardBody: 'El Capitán escondió objetos secretos antes de zarpar. Solo un verdadero explorador puede encontrarlos. Toca las cartas para revelar cada uno.',
+        cardTitle: 'El Cofre de Jasón',
+        cardBody: 'Jasón escondió objetos secretos antes de zarpar. Solo un verdadero explorador puede encontrarlos. Toca las cartas para revelar cada uno.',
         cardCompletion: 'Todos los objetos encontrados',
         dodgeTitle: '¡Mar abierto!',
         dodgeBody: 'Ya zarpamos. El mar trae olas, rocas y remolinos. Toca la pantalla para saltar los obstáculos.',
@@ -49,8 +49,8 @@ const texts: Record<MiniGameLang, MiniGameTexts> = {
         ],
     },
     en: {
-        cardTitle: "The Captain's Chest",
-        cardBody: 'The Captain hid secret objects before setting sail. Only a true explorer can find them. Tap the cards to reveal each one.',
+        cardTitle: "Jason's Chest",
+        cardBody: 'Jason hid secret objects before setting sail. Only a true explorer can find them. Tap the cards to reveal each one.',
         cardCompletion: 'All objects found',
         dodgeTitle: 'Open sea!',
         dodgeBody: "We've set sail. The sea brings waves, rocks, and whirlpools. Tap the screen to jump over obstacles.",
@@ -72,8 +72,8 @@ const texts: Record<MiniGameLang, MiniGameTexts> = {
         ],
     },
     pt: {
-        cardTitle: 'O baú do Capitão',
-        cardBody: 'O Capitão escondeu objetos secretos antes de zarpar. Só um verdadeiro explorador pode encontrá-los. Toque nas cartas para revelar cada um.',
+        cardTitle: 'O Baú de Jasão',
+        cardBody: 'Jasão escondeu objetos secretos antes de zarpar. Só um verdadeiro explorador pode encontrá-los. Toque nas cartas para revelar cada um.',
         cardCompletion: 'Todos os objetos encontrados',
         dodgeTitle: 'Mar aberto!',
         dodgeBody: 'Já zarpamos. O mar traz ondas, rochas e redemoinhos. Toque na tela para pular os obstáculos.',

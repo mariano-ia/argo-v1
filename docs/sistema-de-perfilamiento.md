@@ -72,7 +72,7 @@ El motor se mide a través de 3 mini-juegos integrados en La Odisea. Cada juego 
 
 **Qué mide:** Cuánto tarda el niño en actuar cuando aparece un estímulo nuevo y desconocido. Un niño "dinámico" toca inmediatamente. Un niño "sereno" observa primero.
 
-**Juego: "El cofre del Capitán"**
+**Juego: "El Cofre de Jasón"** (renombrado 2026-07-17, antes "El cofre del Capitán")
 Aparece una grilla de posiciones vacías. Las cartas aparecen de a una, boca abajo, con un brillo suave. No hay timer visible, no hay instrucción de apurarse. El niño toca la carta cuando quiere para revelarla. Se repite 6 veces.
 
 **Métricas capturadas:**

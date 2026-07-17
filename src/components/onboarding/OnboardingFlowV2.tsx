@@ -81,7 +81,7 @@ const SCREENS: ScreenDef[] = [
     { type: 'story', slideId: 'intro_b' },                         // 7
     { type: 'story', slideId: 'intro_c' },                         // 8
     { type: 'story', slideId: 'intro_0', useContinueLabelFromT: true }, // 9
-    // MiniGame A — "El cofre del Capitán" (measures impulse)
+    // MiniGame A — "El Cofre de Jasón" (measures impulse)
     { type: 'minigame', gameId: 'minigame_a' },                    // 10
     // Phase: Puerto (Q1-Q2)
     { type: 'question', questionIndex: 0 },                        // 11
