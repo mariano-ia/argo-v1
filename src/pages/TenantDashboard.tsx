@@ -744,20 +744,27 @@ export const TenantDashboard: React.FC = () => {
                             <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-argo-border flex items-stretch pb-[env(safe-area-inset-bottom)]">
                                 <TabLink t={tabs[0]} />
                                 <TabLink t={tabs[1]} />
-                                <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
-                                    <button
-                                        onClick={copyPlayLink}
-                                        aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
-                                        className={`-mt-7 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
-                                            rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
-                                        }`}
-                                    >
-                                        <Share2 size={20} />
-                                    </button>
-                                    <span className="text-[10px] font-medium text-argo-grey -mt-0.5 whitespace-nowrap">
-                                        {lang === 'en' ? 'Share link' : lang === 'pt' ? 'Compartilhar' : 'Compartir link'}
-                                    </span>
-                                </div>
+                                {/* The play link belongs to a plantel. With no plantel focused
+                                    (e.g. the Administración hat) there is no per-plantel link to
+                                    share, so — mirroring the desktop, which offers no link — the
+                                    button is omitted instead of leaking the institution-wide
+                                    /play/<slug> link. The tab bar falls back to 4 even tabs. */}
+                                {activeTeam && (
+                                    <div className="flex-1 flex flex-col items-center justify-center gap-1 py-3">
+                                        <button
+                                            onClick={copyPlayLink}
+                                            aria-label={lang === 'en' ? 'Share play link' : lang === 'pt' ? 'Compartilhar link' : 'Compartir link'}
+                                            className={`-mt-7 w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95 ${
+                                                rosterFull ? 'bg-argo-light text-white' : 'bg-argo-violet-500 text-white'
+                                            }`}
+                                        >
+                                            <Share2 size={20} />
+                                        </button>
+                                        <span className="text-[10px] font-medium text-argo-grey -mt-0.5 whitespace-nowrap">
+                                            {lang === 'en' ? 'Share link' : lang === 'pt' ? 'Compartilhar' : 'Compartir link'}
+                                        </span>
+                                    </div>
+                                )}
                                 <TabLink t={tabs[2]} />
                                 <TabLink t={tabs[3]} />
                             </nav>
