@@ -246,6 +246,7 @@ function App() {
         <Routes>
             {/* Public */}
             <Route path="/"       element={<Landing />} />
+            <Route path="/home-legacy" element={<Landing />} />
             <Route path="/app"    element={<UserApp />} />
             <Route path="/play/r/:reprofileToken" element={<TenantReprofilePlay />} />
             <Route path="/play/:slug" element={<TenantPlay />} />
