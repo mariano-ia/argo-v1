@@ -148,6 +148,16 @@ Primer paso de integración, **todo detrás de un flag apagado por defecto** (pr
 - **Pendiente de rollout real:** decidir cómo se enciende para usuarios (flip del default por fase),
   optimización de peso/carga en mobile, y el cierre de loops de las escenas movidas.
 
+**Minijuegos cinemáticos (2026-07-17, modo video):** (1) **El Cofre de Jasón** (renombrado desde
+"El cofre del Capitán" en es/en/pt): intro = loop del cofre temblando (stills del owner, first==last,
+seam 1.1%) + tarjeta arriba; al tap reproduce la apertura (4s) y las cartas se lanzan por `timeupdate`
+en t=1.15s (la tapa abre en t≈1.17s medido frame a frame; la primera carta se materializa en el pico
+de luz t≈1.75s); el clip termina por debajo y entrega el still abierto. (2) **Después de la tormenta**:
+fondo nuevo = mar calmo post-tormenta (gpt-image-2 ref calma01, sin barco, centro despejado) → loop
+Seedance (seam 0.68%); velo estático suave (ya no pulsa), ícono estrella en vez de rayo, y cierre
+renombrado: "El mar está en calma otra vez" (es/en/pt) porque "Sobreviviste a la tormenta" contradecía
+la fase. Flag off = ambos minijuegos idénticos a prod.
+
 **Preview enriquecido (2026-07-16):** `/preview/escenas` muestra el **juego completo**: fondo (video)
 + **UI real de preguntas** (`QuestionScreenV2`, alineada al marco con un `transform` que contiene su
 `fixed`) + **audio real** (tema de fondo `argo_background.mp3` + efectos por fase `effects_01/02/03`,

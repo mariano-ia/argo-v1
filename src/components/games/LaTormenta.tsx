@@ -336,33 +336,54 @@ export const LaTormenta: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
             {/* Solid dark bg behind everything to prevent any gaps */}
             <div className="absolute inset-0" style={{ background: '#1a1530' }} />
 
-            {/* Storm background — swaying inside an overflow-hidden container */}
+            {/* Background — after the storm: calm-sea loop in video mode; classic
+                storm art (with sway) when the flag is off */}
             <div className="absolute inset-0 overflow-hidden">
-                <motion.img
-                    src={videoBackgroundsEnabled() ? '/scenes/video/posters/storm-3.jpg' : '/scenes/storm.png'}
-                    alt=""
-                    className="absolute object-cover"
-                    style={{
-                        top: '-20%', left: '-20%',
-                        width: '140%', height: '140%',
-                        minWidth: '140vw', minHeight: '140vh',
-                    }}
-                    draggable={false}
-                    animate={{
-                        x: [0, 4, -3, 2, 0],
-                        y: [0, -3, 2, -1, 0],
-                    }}
-                    transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-                />
+                {videoBackgroundsEnabled() ? (
+                    <video
+                        src="/scenes/video/calma-juego.mp4"
+                        poster="/scenes/video/posters/calma-juego.jpg"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="auto"
+                        className="absolute inset-0 w-full h-full object-cover"
+                    />
+                ) : (
+                    <motion.img
+                        src="/scenes/storm.png"
+                        alt=""
+                        className="absolute object-cover"
+                        style={{
+                            top: '-20%', left: '-20%',
+                            width: '140%', height: '140%',
+                            minWidth: '140vw', minHeight: '140vh',
+                        }}
+                        draggable={false}
+                        animate={{
+                            x: [0, 4, -3, 2, 0],
+                            y: [0, -3, 2, -1, 0],
+                        }}
+                        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+                    />
+                )}
             </div>
 
-            {/* Dark overlay — pulses darker during storm */}
-            <motion.div
-                className="absolute inset-0 pointer-events-none"
-                animate={{ opacity: [0.25, 0.4, 0.25] }}
-                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                style={{ background: 'rgba(15,23,42,1)' }}
-            />
+            {/* Dark overlay — storm mode pulses; calm-video mode holds a light veil */}
+            {videoBackgroundsEnabled() ? (
+                <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ background: 'rgba(15,23,42,0.22)' }}
+                />
+            ) : (
+                <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    animate={{ opacity: [0.25, 0.4, 0.25] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                    style={{ background: 'rgba(15,23,42,1)' }}
+                />
+            )}
 
             {/* Rolling cloud layer */}
             <motion.div
@@ -523,14 +544,14 @@ export const LaTormenta: React.FC<Props> = ({ onComplete, lang = 'es' }) => {
                             animate={{ scale: 1, y: 0 }}
                             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                         >
-                            {/* Lightning bolt icon */}
+                            {/* Golden star icon — the storm passed; stars are the game */}
                             <motion.div
-                                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.08, 1] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                                animate={{ opacity: [0.6, 1, 0.6], scale: [1, 1.08, 1], rotate: [0, 6, -6, 0] }}
+                                transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
                             >
-                                <svg width="40" height="44" viewBox="0 0 24 24" fill="none"
-                                    stroke="rgba(245,158,11,0.8)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="rgba(245,158,11,0.2)" />
+                                <svg width="42" height="42" viewBox="0 0 24 24" fill="none"
+                                    stroke="rgba(245,158,11,0.85)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="rgba(245,158,11,0.25)" />
                                 </svg>
                             </motion.div>
 
