@@ -71,6 +71,8 @@ const T = {
         accessSending: 'Enviando...',
         accessSentTitle: 'Revisa tu email',
         accessSentDesc: 'Si tienes compras con ese email, te enviamos un link para acceder a tu panel.',
+        academyHint: '¿Tienes cuenta de ArgoAcademy®?',
+        academyHintLink: 'Inicia sesión aquí',
     },
     en: {
         title: 'My reports',
@@ -113,6 +115,8 @@ const T = {
         accessSending: 'Sending...',
         accessSentTitle: 'Check your email',
         accessSentDesc: 'If you have purchases with that email, we sent you a link to access your panel.',
+        academyHint: 'Do you have an ArgoAcademy® account?',
+        academyHintLink: 'Sign in here',
     },
     pt: {
         title: 'Meus relatórios',
@@ -155,6 +159,8 @@ const T = {
         accessSending: 'Enviando...',
         accessSentTitle: 'Verifique seu email',
         accessSentDesc: 'Se você tem compras com esse email, enviamos um link para acessar seu painel.',
+        academyHint: 'Tem uma conta ArgoAcademy®?',
+        academyHintLink: 'Entre aqui',
     },
 };
 
@@ -1128,6 +1134,11 @@ export const OnePanel: React.FC = () => {
                             >
                                 {requesting ? t.accessSending : t.accessSend}
                             </button>
+                            {/* Cross-door: Academy accounts use password login, not this magic link */}
+                            <p className="text-center mt-4 text-xs text-argo-grey">
+                                {t.academyHint}{' '}
+                                <a href="/signup?login=1" className="text-argo-navy font-medium underline">{t.academyHintLink}</a>
+                            </p>
                         </div>
                     )}
                 </div>

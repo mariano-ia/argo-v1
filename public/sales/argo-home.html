@@ -574,6 +574,9 @@ a { color: inherit; }
   background: #955FB5; color: #fff;
   box-shadow: 0 4px 18px rgba(149,95,181,0.25);
 }
+.price-card__return { text-align: center; margin-top: 12px; font-size: 12.5px; }
+.price-card__return a { color: var(--text-muted); text-decoration: underline; transition: color 0.15s ease; }
+.price-card__return a:hover { color: var(--text-primary); }
 .price-card__cta--demo {
   border: 1px solid var(--border); background: #fff; color: var(--text-primary);
 }
@@ -605,6 +608,17 @@ a { color: inherit; }
 }
 .demo-modal__close:hover { color: var(--text-primary); border-color: var(--border-strong); }
 .demo-modal__close i, .demo-modal__close svg { width: 16px; height: 16px; }
+
+/* Login chooser (nav "Entrar"): two doors, One (magic link) vs Academy (password) */
+.login-door {
+  display: block; padding: 16px 18px; margin-top: 12px;
+  border: 1px solid var(--border); border-radius: 14px;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.login-door:hover { border-color: var(--border-strong); background: var(--bg-elevated); }
+.login-door__name { display: block; font-size: 15px; letter-spacing: -0.01em; color: var(--text-primary); }
+.login-door__desc { display: block; font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-top: 3px; }
 
 .demo-field { margin-bottom: 14px; }
 .demo-field__label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
@@ -952,8 +966,8 @@ a { color: inherit; }
     <a class="site-nav__logo" href="#top"><span class="l-argo">Argo</span><span class="l-method">Method®</span></a>
     <div class="site-nav__links">
       <a class="site-nav__link site-nav__link--desktop" href="#como-funciona">Cómo funciona</a>
-      <a class="site-nav__link" href="#precios">Precios</a>
-      <a class="site-nav__link site-nav__link--desktop" href="/signup?login=1">Iniciar sesión</a>
+      <a class="site-nav__link site-nav__link--desktop" href="#precios">Precios</a>
+      <button type="button" class="site-nav__link" data-open-login>Entrar</button>
       <a class="site-nav__cta" href="/demo">Jugar gratis</a>
     </div>
   </div>
@@ -1356,6 +1370,7 @@ a { color: inherit; }
           <p class="price-card__puente-desc">Cómo acompañar desde tu propio estilo: la previa, la frustración, la conversación después del partido y el largo plazo.</p>
         </div>
         <a class="price-card__cta price-card__cta--buy" href="/one">Comprar <span class="w-bold">Argo</span><span style="font-weight:300;">One</span><span style="font-weight:300;">®</span></a>
+        <p class="price-card__return"><a href="/one/panel">¿Ya lo compraste? Entra a tu panel</a></p>
       </div>
 
       <!-- ArgoAcademy® -->
@@ -1429,6 +1444,7 @@ a { color: inherit; }
       </a>
     </div>
     <div class="site-footer__links">
+      <a href="/one/panel">Mi panel ArgoOne®</a>
       <a href="https://www.yacare.io" target="_blank" rel="noopener noreferrer">Yacaré Lab</a>
       <a href="/blog">Blog</a>
       <a href="/privacy">Privacidad</a>
@@ -1935,6 +1951,48 @@ document.addEventListener('DOMContentLoaded', function() { lucide.createIcons();
     </div>
   </div>
 </div>
+
+<!-- ══════════════ LOGIN CHOOSER (nav "Entrar") ══════════════ -->
+<div class="demo-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="demo-modal__panel">
+    <div class="demo-modal__head">
+      <p class="demo-modal__title" id="loginTitle">Entrar</p>
+      <button type="button" class="demo-modal__close" data-close-login aria-label="Cerrar"><i data-lucide="x"></i></button>
+    </div>
+    <p class="demo-modal__sub">Elige tu acceso.</p>
+    <a class="login-door" href="/one/panel">
+      <span class="login-door__name"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">One</span><span style="font-weight:300;font-size:12px;vertical-align:top;">&reg;</span></span>
+      <span class="login-door__desc">Compré un informe. Entro con mi email, sin contraseña.</span>
+    </a>
+    <a class="login-door" href="/signup?login=1">
+      <span class="login-door__name"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">Academy</span><span style="font-weight:300;font-size:12px;vertical-align:top;">&reg;</span></span>
+      <span class="login-door__desc">Tengo cuenta de institución o coach.</span>
+    </a>
+  </div>
+</div>
+
+<script>
+(function() {
+  var modal = document.getElementById('loginModal');
+  if (!modal) return;
+  var lastFocus = null;
+  function open() {
+    lastFocus = document.activeElement;
+    modal.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    lucide.createIcons();
+  }
+  function close() {
+    modal.classList.remove('is-open');
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.querySelectorAll('[data-open-login]').forEach(function(btn) { btn.addEventListener('click', open); });
+  document.querySelectorAll('[data-close-login]').forEach(function(btn) { btn.addEventListener('click', close); });
+  modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+})();
+</script>
 
 <script>
 (function() {

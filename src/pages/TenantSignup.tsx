@@ -40,6 +40,8 @@ const T = {
         noAccount: '¿No tienes cuenta?',
         loginLink: 'Iniciar sesión',
         signupLink: 'Crear una',
+        onePanelHint: '¿Compraste ArgoOne®? Tu panel no usa contraseña.',
+        onePanelHintLink: 'Entra con tu email',
         forgotPassword: '¿Olvidaste tu contraseña?',
         forgotSent: 'Te enviamos un email para restablecer tu contraseña.',
         required: 'obligatorio',
@@ -76,6 +78,8 @@ const T = {
         noAccount: "Don't have an account?",
         loginLink: 'Sign in',
         signupLink: 'Create one',
+        onePanelHint: 'Did you buy ArgoOne®? Your panel does not use a password.',
+        onePanelHintLink: 'Enter with your email',
         forgotPassword: 'Forgot your password?',
         forgotSent: 'We sent you an email to reset your password.',
         required: 'required',
@@ -112,6 +116,8 @@ const T = {
         noAccount: 'Não tem uma conta?',
         loginLink: 'Entrar',
         signupLink: 'Criar uma',
+        onePanelHint: 'Comprou o ArgoOne®? Seu painel não usa senha.',
+        onePanelHintLink: 'Entre com seu email',
         forgotPassword: 'Esqueceu sua senha?',
         forgotSent: 'Enviamos um email para redefinir sua senha.',
         required: 'obrigatório',
@@ -479,6 +485,13 @@ export const TenantSignup: React.FC = () => {
                     <button onClick={switchMode} className="text-[#1D1D1F] font-medium underline">
                         {mode === 'signup' ? t.loginLink : t.signupLink}
                     </button>
+                </p>
+
+                {/* Cross-door: ArgoOne® buyers have no password account; their
+                    panel enters by email magic link at /one/panel. */}
+                <p className="text-center mt-3" style={{ fontSize: '12px', color: '#86868B' }}>
+                    {t.onePanelHint}{' '}
+                    <Link to="/one/panel" className="text-[#1D1D1F] font-medium underline">{t.onePanelHintLink}</Link>
                 </p>
             </motion.div>
         </div>

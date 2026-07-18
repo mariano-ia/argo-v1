@@ -151,3 +151,11 @@ Fix en `handleUnlockPaid` (`api/one-webhook.ts`):
 4. **UI (`ReportPage.tsx`)**: banner post-unlock (solo en el retorno del checkout, `?unlocked=1` + `full_access`) avisando que el mail trae el informe, el link del puente y el acceso al panel. Antes la UI no mencionaba el mail, y ese mail es el ÚNICO portador del link del puente comp: nadie lo completaba.
 
 Idempotente (guard de `full_access` + upsert por email con re-read en carrera). Comment de `unlock-checkout.ts` actualizado. Pendiente conversado con el owner: entrada al panel desde la web (nav de la home).
+
+### Entrada al panel desde la web, 2026-07-18 (segunda tanda)
+Cierra el pendiente de la tanda anterior. Cuatro puertas nuevas hacia `/one/panel` (la pantalla de email + magic link ya existía; solo faltaban los caminos):
+- **Nav de la home estática**: "Iniciar sesión" (que mandaba al login de Academy, trampa para compradores One) reemplazado por **"Entrar"**, que abre un selector modal (mismo shell `demo-modal`) con las dos puertas explicadas: ArgoOne® (email, sin contraseña) y ArgoAcademy® (cuenta). Visible también en mobile ("Precios" pasó a desktop-only para hacer lugar).
+- **Cross-links entre las dos puertas**: el login de Academy (`TenantSignup.tsx`, es/en/pt) ahora dice "¿Compraste ArgoOne®? Tu panel no usa contraseña. Entra con tu email"; la pantalla de email de `/one/panel` (`OnePanel.tsx`, es/en/pt) dice "¿Tienes cuenta de ArgoAcademy®? Inicia sesión aquí". Nadie queda atrapado en la puerta equivocada.
+- **Card de precios ArgoOne®** (home): "¿Ya lo compraste? Entra a tu panel" bajo el CTA de compra.
+- **Footer de la home**: link "Mi panel ArgoOne®".
+No se agregó entrada al panel en `/report/...` (link compartible que circula entre no compradores).
