@@ -286,7 +286,7 @@ export const HELP_ARTICLES_PT: HelpArticle[] = [
         id: 'personalizar-predictor',
         category: 'guide',
         title: 'Como personalizo a orientação para um jogador?',
-        body: 'Dentro de uma situação, você pode escolher um dos seus jogadores. A orientação se adapta ao perfil dele e dá passos concretos para acompanhá-lo naquele caso.',
+        body: 'Dentro de uma situação, você pode escolher um dos seus jogadores. A orientação se adapta ao perfil completo dele: o que pode estar acontecendo, o matiz da sua veta (o segundo eixo), uma frase concreta para dizer e o erro mais comum a evitar. Com "Ver com [nome]" você também pode gerar um exemplo ilustrativo de como essa situação poderia ser com essa criança no esporte dela. É um exemplo possível a partir do perfil, não um fato real.',
         trialNote: 'A personalização por jogador é desbloqueada ao passar para um plano pago.',
     },
 

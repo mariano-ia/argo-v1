@@ -149,6 +149,21 @@ interface DashboardTexts {
         siNoResponde: string;
         volverSituaciones: string;
         cambiarJugador: string;
+        queDecirle: string;
+        queEvitar: string;
+        suVeta: (vetaLabel: string) => string;
+        comoLoVive: (name: string) => string;
+        comoVivenLosPerfiles: string;
+        verLosCuatro: string;
+        verSoloSuPerfil: string;
+        verloCon: (name: string) => string;
+        generarEjemplo: (name: string) => string;
+        generandoEjemplo: (name: string) => string;
+        ejemploEscena: string;
+        ejemploFrase: string;
+        ejemploSenal: string;
+        ejemploDisclaimer: string;
+        ejemploNoDisponible: string;
     };
 
     // Chat
@@ -440,13 +455,28 @@ const es: DashboardTexts = {
         sinJugadores: 'Todavía no tienes jugadores registrados.',
         verContextoGeneral: 'Ver contexto general (sin seleccionar jugador)',
         loQueVes: 'Lo que ves',
-        loQuePasa: 'Lo que está pasando',
+        loQuePasa: 'Lo que podría estar pasándole',
         conEstePerfil: (name) => `Con este perfil (${name})`,
         paraElGrupo: 'Para el grupo',
         comoAcompanar: 'Cómo acompañar',
         siNoResponde: 'Si no responde al primer intento',
         volverSituaciones: 'Volver a situaciones',
         cambiarJugador: 'Cambiar jugador',
+        queDecirle: 'Qué decirle',
+        queEvitar: 'Qué evitar',
+        suVeta: (vetaLabel) => `Su veta ${vetaLabel}`,
+        comoLoVive: (name) => `Cómo lo vive ${name}`,
+        comoVivenLosPerfiles: 'Cómo vive cada perfil esta situación',
+        verLosCuatro: 'Ver los cuatro perfiles',
+        verSoloSuPerfil: 'Ver solo su perfil',
+        verloCon: (name) => `Verlo con ${name}`,
+        generarEjemplo: (name) => `Generar un ejemplo con ${name}`,
+        generandoEjemplo: (name) => `Imaginando la escena con ${name}...`,
+        ejemploEscena: 'Cómo podría verse',
+        ejemploFrase: 'Una frase a su medida',
+        ejemploSenal: 'Una señal para observar',
+        ejemploDisclaimer: 'Ejemplo ilustrativo generado a partir del perfil. No describe un hecho real.',
+        ejemploNoDisponible: 'No pudimos generar un ejemplo confiable esta vez. Las recomendaciones de arriba siguen siendo válidas.',
     },
     chat: {
         titulo: 'Argo Coach',
@@ -731,13 +761,28 @@ const en: DashboardTexts = {
         sinJugadores: 'No registered players yet.',
         verContextoGeneral: 'View general context (without selecting a player)',
         loQueVes: 'What you see',
-        loQuePasa: 'What\'s happening',
+        loQuePasa: 'What might be going on',
         conEstePerfil: (name) => `With this profile (${name})`,
         paraElGrupo: 'For the group',
         comoAcompanar: 'How to accompany',
         siNoResponde: 'If they don\'t respond to the first attempt',
         volverSituaciones: 'Back to situations',
         cambiarJugador: 'Change player',
+        queDecirle: 'What to say',
+        queEvitar: 'What to avoid',
+        suVeta: (vetaLabel) => `Their ${vetaLabel} lean`,
+        comoLoVive: (name) => `How ${name} experiences it`,
+        comoVivenLosPerfiles: 'How each profile experiences this situation',
+        verLosCuatro: 'See all four profiles',
+        verSoloSuPerfil: 'See only their profile',
+        verloCon: (name) => `Picture it with ${name}`,
+        generarEjemplo: (name) => `Generate an example with ${name}`,
+        generandoEjemplo: (name) => `Picturing the scene with ${name}...`,
+        ejemploEscena: 'How it could look',
+        ejemploFrase: 'A phrase made for them',
+        ejemploSenal: 'A signal to watch for',
+        ejemploDisclaimer: 'Illustrative example generated from the profile. It does not describe a real event.',
+        ejemploNoDisponible: 'We could not generate a reliable example this time. The recommendations above still apply.',
     },
     chat: {
         titulo: 'Argo Coach',
@@ -1022,13 +1067,28 @@ const pt: DashboardTexts = {
         sinJugadores: 'Ainda não há jogadores registrados.',
         verContextoGeneral: 'Ver contexto geral (sem selecionar jogador)',
         loQueVes: 'O que você vê',
-        loQuePasa: 'O que está acontecendo',
+        loQuePasa: 'O que pode estar acontecendo',
         conEstePerfil: (name) => `Com este perfil (${name})`,
         paraElGrupo: 'Para o grupo',
         comoAcompanar: 'Como acompanhar',
         siNoResponde: 'Se não responder à primeira tentativa',
         volverSituaciones: 'Voltar às situações',
         cambiarJugador: 'Mudar jogador',
+        queDecirle: 'O que dizer',
+        queEvitar: 'O que evitar',
+        suVeta: (vetaLabel) => `Sua veta ${vetaLabel}`,
+        comoLoVive: (name) => `Como ${name} vivencia isso`,
+        comoVivenLosPerfiles: 'Como cada perfil vivencia esta situação',
+        verLosCuatro: 'Ver os quatro perfis',
+        verSoloSuPerfil: 'Ver só o perfil dele',
+        verloCon: (name) => `Ver com ${name}`,
+        generarEjemplo: (name) => `Gerar um exemplo com ${name}`,
+        generandoEjemplo: (name) => `Imaginando a cena com ${name}...`,
+        ejemploEscena: 'Como poderia ser',
+        ejemploFrase: 'Uma frase sob medida',
+        ejemploSenal: 'Um sinal para observar',
+        ejemploDisclaimer: 'Exemplo ilustrativo gerado a partir do perfil. Não descreve um fato real.',
+        ejemploNoDisponible: 'Não conseguimos gerar um exemplo confiável desta vez. As recomendações acima continuam válidas.',
     },
     chat: {
         titulo: 'Argo Coach',

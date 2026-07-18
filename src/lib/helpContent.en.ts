@@ -286,7 +286,7 @@ export const HELP_ARTICLES_EN: HelpArticle[] = [
         id: 'personalizar-predictor',
         category: 'guide',
         title: 'How do I personalize the guidance for a player?',
-        body: 'Within a situation, you can choose one of your players. The guidance adapts to their profile and gives you concrete steps to support them in that case.',
+        body: 'Within a situation, you can choose one of your players. The guidance adapts to their full profile: what might be going on, the nuance of their lean (their second axis), a concrete phrase to say and the most common mistake to avoid. With "Picture it with [name]" you can also generate an illustrative example of how that situation could look with that child in their sport. It is a possible example built from the profile, not a real event.',
         trialNote: 'Per-player personalization unlocks on a paid plan.',
     },
 

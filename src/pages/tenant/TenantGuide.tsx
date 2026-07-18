@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Compass, Users } from 'lucide-react';
+import { Search, Compass, Users, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import {
     CATEGORY_COLORS, getSituations, getSituationCards,
+    getCardEnrichment, getVetaNuance,
     type Situation, type SituationCard,
 } from '../../lib/situationalGuide';
 import { AXIS_CONFIG } from '../../lib/groupBalanceRules';
@@ -18,7 +19,17 @@ import { AXIS_COLORS } from '../../lib/designTokens';
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
 interface TenantData { id: string; slug: string; display_name: string; plan: string; roster_limit: number; active_players_count: number; }
-interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; motor: string; }
+interface SessionRow { id: string; child_name: string; child_age: number; sport: string | null; archetype_label: string; eje: string; eje_secundario: string | null; motor: string; }
+
+/* Veta axis labels per language, in the Guide's own voice (matches the card prose:
+ * S is "Sostén" here, not the archetype label "Sostenedor"). Used for "Su veta X". */
+const VETA_LABEL: Record<string, Record<string, string>> = {
+    es: { D: 'Impulsor', I: 'Conector', S: 'Sostén', C: 'Estratega' },
+    en: { D: 'Driver', I: 'Connector', S: 'Supporter', C: 'Strategist' },
+    pt: { D: 'Impulsionador', I: 'Conector', S: 'Sustentador', C: 'Estrategista' },
+};
+/** Marker order in profilePerspectives → DISC axis, so we can isolate one profile's paragraph. */
+const EJE_ORDER: Array<'D' | 'I' | 'S' | 'C'> = ['D', 'I', 'S', 'C'];
 
 /* ── Category icons (replace emojis) ───────────────────────────────────────── */
 
@@ -97,6 +108,52 @@ export const TenantGuide: React.FC = () => {
     const [playerEjeFilter, setPlayerEjeFilter] = useState<string | null>(null);
     const [playerGroupFilter, setPlayerGroupFilter] = useState<string | null>(null);
     const [playerShowAll, setPlayerShowAll] = useState(false);
+    // Perspectives panel: when a player is selected we collapse it to their profile.
+    const [perspectivesExpanded, setPerspectivesExpanded] = useState(false);
+
+    // AI example ("Verlo con [nombre]"). Peek checks the cache silently on
+    // selection; generate runs the full pipeline. 'disabled' = kill switch off
+    // server-side (block hidden). Keyed by player+situation+lang to drop stale
+    // responses when the selection changes mid-flight.
+    interface AiExample { escena: string; frase: string; senal: string; }
+    const [exampleState, setExampleState] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'disabled'>('idle');
+    const [example, setExample] = useState<AiExample | null>(null);
+    const exampleKeyRef = useRef('');
+
+    const callExampleApi = useCallback(async (action: 'peek' | 'generate', childId: string, situationId: string) => {
+        const key = `${childId}|${situationId}|${lang}`;
+        exampleKeyRef.current = key;
+        if (action === 'generate') setExampleState('loading');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { if (exampleKeyRef.current === key && action === 'generate') setExampleState('unavailable'); return; }
+            const res = await fetch('/api/predictor-example', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ child_id: childId, situation_id: situationId, lang, action, tenant_id: tenant?.id }),
+            });
+            if (exampleKeyRef.current !== key) return; // selection changed mid-flight
+            if (!res.ok) { if (action === 'generate') setExampleState('unavailable'); return; }
+            const data = await res.json();
+            if (exampleKeyRef.current !== key) return;
+            if (data.disabled) { setExampleState('disabled'); return; }
+            if (data.example) { setExample(data.example); setExampleState('ready'); return; }
+            if (data.unavailable) { setExampleState('unavailable'); return; }
+            if (action === 'generate') setExampleState('unavailable');
+        } catch {
+            if (exampleKeyRef.current === key && action === 'generate') setExampleState('unavailable');
+        }
+    }, [lang, tenant?.id]);
+
+    // On selection change: reset and peek the cache (instant reveal on hit).
+    useEffect(() => {
+        setExample(null);
+        if (exampleState !== 'disabled') setExampleState('idle');
+        if (selectedPlayerId && selectedSituation && selectedSituation.category !== 'Grupal' && tenant?.plan !== 'trial' && exampleState !== 'disabled') {
+            callExampleApi('peek', selectedPlayerId, selectedSituation.id);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedPlayerId, selectedSituation?.id, lang]);
 
     const fetchSessions = useCallback(async () => {
         const { data: { session } } = await supabase.auth.getSession();
@@ -151,6 +208,20 @@ export const TenantGuide: React.FC = () => {
             return cards.find(c => c.situationId === selectedSituation.id && c.eje === selectedPlayer.eje) ?? null;
         }
         return null;
+    }, [selectedSituation, selectedPlayer, lang]);
+
+    // Enriched fields for the active card ("qué decirle" / "qué evitar").
+    const activeEnrichment = useMemo(() => {
+        if (!selectedSituation || !activeCard) return undefined;
+        return getCardEnrichment(selectedSituation.id, activeCard.eje, lang);
+    }, [selectedSituation, activeCard, lang]);
+
+    // Per-veta nuance: what the child's SECONDARY axis adds on top of the primary
+    // card. Undefined when the veta is absent, equal to the primary, or a
+    // diagonal opposite (handled inside getVetaNuance).
+    const activeVeta = useMemo(() => {
+        if (!selectedSituation || !selectedPlayer || selectedSituation.category === 'Grupal') return undefined;
+        return getVetaNuance(selectedSituation.id, selectedPlayer.eje, selectedPlayer.eje_secundario, lang);
     }, [selectedSituation, selectedPlayer, lang]);
 
     if (!tenant) {
@@ -236,7 +307,7 @@ export const TenantGuide: React.FC = () => {
                         return (
                             <button
                                 key={situation.id}
-                                onClick={() => { setSelectedSituation(situation); setSelectedPlayerId(null); }}
+                                onClick={() => { setSelectedSituation(situation); setSelectedPlayerId(null); setPerspectivesExpanded(false); }}
                                 className={`w-full text-left px-5 py-3.5 border-b border-argo-border last:border-b-0 transition-all ${
                                     isActive ? 'bg-argo-violet-50' : 'hover:bg-argo-bg/50'
                                 }`}
@@ -307,74 +378,71 @@ export const TenantGuide: React.FC = () => {
                                     <h2 className="text-lg font-bold text-argo-navy">{selectedSituation.title}</h2>
                                 </div>
 
-                                {/* Profile perspectives by axis */}
-                                {selectedSituation.profilePerspectives && (
-                                    <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
-                                        <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">
-                                            {lang === 'en' ? 'How each profile experiences this situation' : lang === 'pt' ? 'Como cada perfil vivencia esta situação' : 'Cómo vive cada perfil esta situación'}
-                                        </p>
-                                        {selectedSituation.profilePerspectives
-                                            .split(/Si (?:el jugador tiene perfil |es |el perfil es |hay un )|Un /)
-                                            .filter(Boolean)
-                                            .length > 1
-                                            ? /* Split by axis markers and render as separate paragraphs */
-                                              (() => {
-                                                  const text = selectedSituation.profilePerspectives!;
-                                                  const markers = ['{{Impulsor}}', '{{Conector}}', '{{Sosten}}', '{{Estratega}}'];
-                                                  const parts: { marker: string; text: string }[] = [];
-                                                  let remaining = text;
-
-                                                  markers.forEach(marker => {
-                                                      const idx = remaining.indexOf(marker);
-                                                      if (idx !== -1) {
-                                                          // Find the start of this sentence (look back for ". " or start)
-                                                          let sentenceStart = remaining.lastIndexOf('. ', idx);
-                                                          if (sentenceStart === -1) sentenceStart = 0;
-                                                          else sentenceStart += 2;
-
-                                                          // Find the end (next marker or end)
-                                                          let sentenceEnd = remaining.length;
-                                                          markers.forEach(m => {
-                                                              if (m !== marker) {
-                                                                  const mIdx = remaining.indexOf(m, idx + marker.length);
-                                                                  if (mIdx !== -1) {
-                                                                      const prevPeriod = remaining.lastIndexOf('. ', mIdx);
-                                                                      if (prevPeriod > idx && prevPeriod < sentenceEnd) {
-                                                                          sentenceEnd = prevPeriod + 1;
-                                                                      }
-                                                                  }
-                                                              }
-                                                          });
-
-                                                          parts.push({ marker, text: remaining.slice(sentenceStart, sentenceEnd).trim() });
-                                                      }
-                                                  });
-
-                                                  // Fallback: if splitting failed, render as one block
-                                                  if (parts.length === 0) {
-                                                      return (
-                                                          <p className="text-[13px] text-argo-secondary leading-[1.8]">
-                                                              {renderPerspectives(text, lang)}
-                                                          </p>
-                                                      );
-                                                  }
-
-                                                  return (
-                                                      <div className="space-y-3">
-                                                          {parts.map((p, i) => (
-                                                              <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_COLORS[['D','I','S','C'][i]] + '40' }}>
-                                                                  <p className="text-[13px] text-argo-secondary leading-[1.75]">
-                                                                      {renderPerspectives(p.text, lang)}
-                                                                  </p>
-                                                              </div>
-                                                          ))}
-                                                      </div>
-                                                  );
-                                              })()
-                                            : <p className="text-[13px] text-argo-secondary leading-[1.8]">{renderPerspectives(selectedSituation.profilePerspectives, lang)}</p>
+                                {/* Profile perspectives by axis — collapses to the selected player's profile */}
+                                {selectedSituation.profilePerspectives && (() => {
+                                    const text = selectedSituation.profilePerspectives!;
+                                    const markers = ['{{Impulsor}}', '{{Conector}}', '{{Sosten}}', '{{Estratega}}'];
+                                    const parts: { text: string }[] = [];
+                                    let remaining = text;
+                                    markers.forEach(marker => {
+                                        const idx = remaining.indexOf(marker);
+                                        if (idx !== -1) {
+                                            let sentenceStart = remaining.lastIndexOf('. ', idx);
+                                            if (sentenceStart === -1) sentenceStart = 0;
+                                            else sentenceStart += 2;
+                                            let sentenceEnd = remaining.length;
+                                            markers.forEach(m => {
+                                                if (m !== marker) {
+                                                    const mIdx = remaining.indexOf(m, idx + marker.length);
+                                                    if (mIdx !== -1) {
+                                                        const prevPeriod = remaining.lastIndexOf('. ', mIdx);
+                                                        if (prevPeriod > idx && prevPeriod < sentenceEnd) sentenceEnd = prevPeriod + 1;
+                                                    }
+                                                }
+                                            });
+                                            parts.push({ text: remaining.slice(sentenceStart, sentenceEnd).trim() });
                                         }
-                                    </div>
-                                )}
+                                    });
+                                    // When a player is selected and the split gave us all four paragraphs,
+                                    // focus on just their profile (with a toggle to see the other three).
+                                    const canFocus = parts.length === 4 && !!selectedPlayer;
+                                    const focusIdx = canFocus && !perspectivesExpanded
+                                        ? EJE_ORDER.indexOf(selectedPlayer!.eje as 'D' | 'I' | 'S' | 'C')
+                                        : -1;
+                                    const showParts = parts.length > 0
+                                        ? (focusIdx >= 0 ? [{ part: parts[focusIdx], i: focusIdx }] : parts.map((part, i) => ({ part, i })))
+                                        : [];
+                                    return (
+                                        <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 space-y-4">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em]">
+                                                    {focusIdx >= 0 ? dt.guide.comoLoVive(selectedPlayer!.child_name) : dt.guide.comoVivenLosPerfiles}
+                                                </p>
+                                                {canFocus && (
+                                                    <button
+                                                        onClick={() => setPerspectivesExpanded(v => !v)}
+                                                        className="text-[11px] font-medium text-argo-violet-500 hover:opacity-70 transition-opacity flex-shrink-0"
+                                                    >
+                                                        {perspectivesExpanded ? dt.guide.verSoloSuPerfil : dt.guide.verLosCuatro}
+                                                    </button>
+                                                )}
+                                            </div>
+                                            {showParts.length > 0 ? (
+                                                <div className="space-y-3">
+                                                    {showParts.map(({ part, i }) => (
+                                                        <div key={i} className="pl-3 border-l-2" style={{ borderColor: AXIS_COLORS[EJE_ORDER[i]] + (focusIdx >= 0 ? 'AA' : '40') }}>
+                                                            <p className="text-[13px] text-argo-secondary leading-[1.75]">
+                                                                {renderPerspectives(part.text, lang)}
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <p className="text-[13px] text-argo-secondary leading-[1.8]">{renderPerspectives(text, lang)}</p>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
 
                                 {/* Player selector with search, filters, pagination */}
                                 {selectedSituation.category !== 'Grupal' && tenant?.plan === 'trial' && (
@@ -481,7 +549,7 @@ export const TenantGuide: React.FC = () => {
                                                             return (
                                                                 <button
                                                                     key={s.id}
-                                                                    onClick={() => setSelectedPlayerId(isSelected ? null : s.id)}
+                                                                    onClick={() => { setSelectedPlayerId(isSelected ? null : s.id); setPerspectivesExpanded(false); }}
                                                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-medium border transition-all ${
                                                                         isSelected
                                                                             ? 'border-argo-navy bg-argo-navy text-white'
@@ -533,6 +601,16 @@ export const TenantGuide: React.FC = () => {
                                                 </div>
                                             )}
 
+                                            {/* Su veta — what the child's secondary axis adds on top of the primary */}
+                                            {activeVeta && selectedPlayer?.eje_secundario && (
+                                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 border-l-[3px]" style={{ borderLeftColor: AXIS_COLORS[selectedPlayer.eje_secundario] ?? '#6366f1' }}>
+                                                    <p className="text-[10px] font-semibold uppercase tracking-[0.1em] mb-2" style={{ color: AXIS_COLORS[selectedPlayer.eje_secundario] ?? '#6366f1' }}>
+                                                        {dt.guide.suVeta((VETA_LABEL[lang] ?? VETA_LABEL.es)[selectedPlayer.eje_secundario] ?? selectedPlayer.eje_secundario)}
+                                                    </p>
+                                                    <p className="text-[13px] text-argo-secondary leading-relaxed">{activeVeta.text}</p>
+                                                </div>
+                                            )}
+
                                             {/* How to accompany */}
                                             <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
                                                 <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-3">{dt.guide.comoAcompanar}</p>
@@ -547,6 +625,73 @@ export const TenantGuide: React.FC = () => {
                                                     ))}
                                                 </div>
                                             </div>
+
+                                            {/* What to say — a concrete phrase the coach can use */}
+                                            {activeEnrichment?.whatToSay && (
+                                                <div className="bg-argo-violet-50/60 border border-argo-violet-200 rounded-[14px] px-6 py-5">
+                                                    <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em] mb-2">{dt.guide.queDecirle}</p>
+                                                    <p className="text-[14px] text-argo-navy leading-relaxed italic">{activeEnrichment.whatToSay}</p>
+                                                </div>
+                                            )}
+
+                                            {/* What to avoid — the common well-intentioned mistake */}
+                                            {activeEnrichment?.whatToAvoid && (
+                                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5">
+                                                    <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-2">{dt.guide.queEvitar}</p>
+                                                    <p className="text-[13px] text-argo-secondary leading-relaxed">{activeEnrichment.whatToAvoid}</p>
+                                                </div>
+                                            )}
+
+                                            {/* AI example — "Verlo con [nombre]" (hidden when kill switch off) */}
+                                            {selectedPlayer && selectedSituation.category !== 'Grupal' && exampleState !== 'disabled' && (
+                                                <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 border border-argo-violet-200">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <Sparkles size={13} className="text-argo-violet-500" />
+                                                        <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em]">
+                                                            {dt.guide.verloCon(selectedPlayer.child_name)}
+                                                        </p>
+                                                    </div>
+                                                    {exampleState === 'ready' && example ? (
+                                                        <motion.div
+                                                            initial={{ opacity: 0, y: 6 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            transition={{ duration: 0.3 }}
+                                                            className="space-y-4 mt-3"
+                                                        >
+                                                            <div>
+                                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.guide.ejemploEscena}</p>
+                                                                <p className="text-[13px] text-argo-secondary leading-[1.7]">{example.escena}</p>
+                                                            </div>
+                                                            <div className="bg-argo-violet-50/60 rounded-xl px-4 py-3.5">
+                                                                <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em] mb-1.5">{dt.guide.ejemploFrase}</p>
+                                                                <p className="text-[14px] text-argo-navy leading-relaxed italic">{example.frase}</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[10px] font-semibold text-argo-light uppercase tracking-[0.1em] mb-1.5">{dt.guide.ejemploSenal}</p>
+                                                                <p className="text-[13px] text-argo-secondary leading-[1.7]">{example.senal}</p>
+                                                            </div>
+                                                            <p className="text-[11px] text-argo-light leading-relaxed pt-1 border-t border-argo-border">{dt.guide.ejemploDisclaimer}</p>
+                                                        </motion.div>
+                                                    ) : exampleState === 'loading' ? (
+                                                        <div className="mt-3 space-y-2.5">
+                                                            <p className="text-[12px] text-argo-grey">{dt.guide.generandoEjemplo(selectedPlayer.child_name)}</p>
+                                                            <div className="h-3.5 bg-argo-bg rounded animate-pulse" />
+                                                            <div className="h-3.5 bg-argo-bg rounded animate-pulse w-11/12" />
+                                                            <div className="h-3.5 bg-argo-bg rounded animate-pulse w-4/5" />
+                                                        </div>
+                                                    ) : exampleState === 'unavailable' ? (
+                                                        <p className="text-[12px] text-argo-grey mt-2 leading-relaxed">{dt.guide.ejemploNoDisponible}</p>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => callExampleApi('generate', selectedPlayer.id, selectedSituation.id)}
+                                                            className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-argo-violet-500 text-white text-[12.5px] font-semibold tracking-wide active:opacity-80 hover:opacity-90 transition-opacity"
+                                                        >
+                                                            <Sparkles size={13} />
+                                                            {dt.guide.generarEjemplo(selectedPlayer.child_name)}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
 
                                             {/* If not responding */}
                                             {activeCard.ifNotResponding && (

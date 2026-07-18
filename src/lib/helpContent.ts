@@ -370,7 +370,7 @@ export const HELP_ARTICLES: HelpArticle[] = [
         id: 'personalizar-predictor',
         category: 'guide',
         title: '¿Cómo personalizo la guía para un jugador?',
-        body: 'Dentro de una situación, puedes elegir a uno de tus jugadores. La guía se adapta a su perfil y te da pasos concretos para acompañarlo en ese caso.',
+        body: 'Dentro de una situación, puedes elegir a uno de tus jugadores. La guía se adapta a su perfil completo: qué podría estar pasándole, el matiz de su veta (su segundo eje), una frase concreta para decirle y el error más común a evitar. Además, con "Verlo con [nombre]" puedes generar un ejemplo ilustrativo de cómo podría verse esa situación con ese niño en su deporte. Es un ejemplo posible a partir del perfil, no un hecho real.',
         trialNote: 'La personalización por jugador se desbloquea al pasar a un plan pago.',
     },
 
