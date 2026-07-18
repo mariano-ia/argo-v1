@@ -171,6 +171,11 @@ const SectionIcons: Record<string, React.ReactNode> = {
             <circle cx="8" cy="8" r="6.5"/><polyline points="8 4 8 8 11 10"/>
         </svg>
     ),
+    failed: (
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5"/><circle cx="8" cy="11" r="0.4" fill="currentColor" stroke="none"/>
+        </svg>
+    ),
 };
 
 const SectionTitle: React.FC<{ title: string; icon: React.ReactNode }> = ({ title, icon }) => (
@@ -320,10 +325,25 @@ export function PuentesReport({
     const [activeIdx, setActiveIdx] = useState(0);
     const [copied, setCopied] = useState(false);
     const handleCopy = () => {
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        });
+        const url = window.location.href;
+        const flash = () => { setCopied(true); setTimeout(() => setCopied(false), 2000); };
+        // navigator.clipboard rejects (or is undefined) on denied permission,
+        // http, or older in-app webviews — fall back to a hidden textarea so
+        // the tap never dies silently with an unhandled rejection.
+        const legacyCopy = () => {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+                flash();
+            } catch { /* nothing more we can do; leave the URL in the address bar */ }
+        };
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(url).then(flash).catch(legacyCopy);
+        } else {
+            legacyCopy();
+        }
     };
 
     // Filter children that have ai_sections — those that don't are still
@@ -427,17 +447,21 @@ export function PuentesReport({
                             const color = eje && AXIS_COLORS[eje] ? AXIS_COLORS[eje] : '#86868B';
                             const isActive = idx === activeIdx;
                             const isReady = !!entry.ai_sections;
+                            const isFailed = entry.status === 'failed';
+                            // A failed bridge must be reachable so its retry card
+                            // shows; only a still-generating child stays disabled.
+                            const isSelectable = isReady || isFailed;
                             return (
                                 <button
                                     key={entry.puentes_session_id}
                                     type="button"
-                                    onClick={() => isReady && setActiveIdx(idx)}
-                                    disabled={!isReady}
+                                    onClick={() => isSelectable && setActiveIdx(idx)}
+                                    disabled={!isSelectable}
                                     className={[
                                         'px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5',
                                         isActive
                                             ? 'text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                                            : isReady
+                                            : isSelectable
                                                 ? 'text-argo-navy bg-argo-bg hover:bg-argo-neutral border border-argo-border'
                                                 : 'text-argo-grey bg-argo-bg border border-argo-border cursor-not-allowed opacity-60',
                                     ].join(' ')}
@@ -445,12 +469,12 @@ export function PuentesReport({
                                 >
                                     <span
                                         className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: isActive ? '#fff' : color }}
+                                        style={{ backgroundColor: isActive ? '#fff' : isFailed ? '#dc2626' : color }}
                                     />
                                     {entry.child_name || '—'}
                                     {!isReady && (
-                                        <span className="ml-1 w-3 h-3 inline-block text-argo-grey">
-                                            {SectionIcons.pending}
+                                        <span className={`ml-1 w-3 h-3 inline-block ${isFailed ? 'text-red-500' : 'text-argo-grey'}`}>
+                                            {isFailed ? SectionIcons.failed : SectionIcons.pending}
                                         </span>
                                     )}
                                 </button>

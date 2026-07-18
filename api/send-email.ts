@@ -747,8 +747,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     // adult typed a different casing at play, and (b) errored
                     // (PGRST116) as soon as the adult held 2+ paid rows — the
                     // catch then silently disabled this whole branch (upsell
-                    // shown to a payer, sibling session never ensured). Prefer
-                    // THIS child's own purchase; else the newest paid one.
+                    // shown to a payer, sibling session never ensured).
+                    //
+                    // ENTITLEMENT (per-child model): only THIS child's own paid
+                    // purchase attaches its bridge. The sibling fan-out fallback
+                    // is legitimate ONLY for tenant free_puentes grants, where a
+                    // single comp intentionally covers every child of the tenant
+                    // (session.ts maybeGrantTenantFreePuente dedups to one comp
+                    // per adult and relies on send-email to attach siblings).
+                    // For argo_one it is forbidden — a $4.99/$12.99 buyer must
+                    // never get a bridge for a child they did not pay for — and
+                    // every argo_one path now mints the child's own session
+                    // inline, so ownPurchase matches. No own purchase + no tenant
+                    // grant ⇒ show the upsell, never mis-attach.
                     const escTo = toEmail.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
                     const { data: ownPurchase } = await sbForPuentes
                         .from('puentes_purchases')
@@ -761,15 +772,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         .maybeSingle();
                     let paidPurchase = ownPurchase;
                     if (!paidPurchase) {
-                        const { data: newestPurchase } = await sbForPuentes
+                        const { data: tenantComp } = await sbForPuentes
                             .from('puentes_purchases')
                             .select('id, magic_token, lang')
                             .ilike('recipient_email', escTo)
                             .eq('status', 'paid')
+                            .eq('source', 'tenant')
                             .order('created_at', { ascending: false })
                             .limit(1)
                             .maybeSingle();
-                        paidPurchase = newestPurchase;
+                        paidPurchase = tenantComp;
                     }
                     if (paidPurchase) {
                         existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;

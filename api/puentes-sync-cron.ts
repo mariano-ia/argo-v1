@@ -241,7 +241,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 for (const pp of paidPurchases) {
                     const { data: rows } = await sb
                         .from('puentes_sessions')
-                        .select('id, source_session_id, status, ai_sections, source:perfilamientos!source_session_id(child_name)')
+                        .select('id, source_session_id, status, ai_sections, source:perfilamientos!source_session_id(child_name, created_at)')
                         .eq('purchase_id', pp.id);
                     const m = (rows ?? []).find((e: any) => {
                         const name = Array.isArray(e.source) ? e.source[0]?.child_name : e.source?.child_name;
@@ -262,7 +262,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 // paid $4.99 puente must not unlock a bridge for a child the buyer never paid
                 // for. Only REGENERATE an existing bridge whose child re-profiled (played again).
                 const isNewSibling = false;
-                const isReprofile = matching && matching.source_session_id !== session.id;
+                // Only re-point a bridge FORWARD in time: the current
+                // perfilamiento must be strictly newer than the one the bridge
+                // already sits on. Without this, two plays of the same child in
+                // the same lookback window ping-pong the bridge (the pass over
+                // the OLDER perf would repoint it backwards after the newer pass
+                // already advanced it).
+                const matchingSourceCreatedAt = matching
+                    ? (Array.isArray(matching.source) ? matching.source[0]?.created_at : matching.source?.created_at)
+                    : null;
+                const isNewerPlay = !!matchingSourceCreatedAt && !!session.created_at
+                    && Date.parse(session.created_at) > Date.parse(matchingSourceCreatedAt);
+                const isReprofile = matching && matching.source_session_id !== session.id && isNewerPlay;
                 if (!isReprofile) continue;
 
                 if (isNewSibling && (childCount ?? 0) >= MAX_CHILDREN_PER_PURCHASE) {
@@ -299,10 +310,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     targetSessionId = inserted?.id ?? null;
                     if (targetSessionId) newSiblings++;
                 } else if (isReprofile && matching) {
-                    await sb
+                    // A 23505 here means send-email's ensure branch already
+                    // inserted the fresh (purchase, new-perfilamiento) session
+                    // and fired its generation, so there is nothing to re-point
+                    // and no "bridges updated" email to send. Skip silently
+                    // instead of the pre-index behavior (unchecked update →
+                    // false notification over a stale bridge).
+                    const { error: updErr } = await sb
                         .from('puentes_sessions')
                         .update({ source_session_id: session.id, status: 'answered', ai_sections: null })
                         .eq('id', matching.id);
+                    if (updErr) {
+                        if (updErr.code !== '23505') errors.push(`reprofile update ${matching.id}: ${updErr.message}`);
+                        continue;
+                    }
                     targetSessionId = matching.id;
                     reprofiles++;
                 }
