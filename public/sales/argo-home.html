@@ -159,6 +159,8 @@ a { color: inherit; }
   transition: color 0.2s ease;
 }
 .site-nav__link:hover { color: var(--text-primary); }
+/* Mobile-only "Entrar" (opens the login chooser); desktop shows the two explicit links */
+.site-nav__link--mobile { display: none; }
 .site-nav__cta {
   font-weight: 500; font-size: 12px; letter-spacing: -0.01em;
   background: var(--accent-soft); color: #fff;
@@ -917,6 +919,7 @@ a { color: inherit; }
   .site-nav__inner { padding: 0 16px; }
   .site-nav__links { gap: 12px; }
   .site-nav__link--desktop { display: none; }
+  .site-nav__link--mobile { display: inline-block; }
 
   .split { grid-template-columns: 1fr; gap: 26px; }
   .circle-img { width: min(100%, 300px); }
@@ -967,7 +970,9 @@ a { color: inherit; }
     <div class="site-nav__links">
       <a class="site-nav__link site-nav__link--desktop" href="#como-funciona">Cómo funciona</a>
       <a class="site-nav__link site-nav__link--desktop" href="#precios">Precios</a>
-      <button type="button" class="site-nav__link" data-open-login>Entrar</button>
+      <a class="site-nav__link site-nav__link--desktop" href="/one/panel">Ingresar a <span style="font-weight:800;">Argo</span><span style="font-weight:300;">One&reg;</span></a>
+      <a class="site-nav__link site-nav__link--desktop" href="/signup?login=1">Ingresar a <span style="font-weight:800;">Argo</span><span style="font-weight:300;">Academy&reg;</span></a>
+      <button type="button" class="site-nav__link site-nav__link--mobile" data-open-login>Entrar</button>
       <a class="site-nav__cta" href="/demo">Jugar gratis</a>
     </div>
   </div>

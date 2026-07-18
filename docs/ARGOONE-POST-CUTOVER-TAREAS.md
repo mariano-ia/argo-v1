@@ -159,3 +159,4 @@ Cierra el pendiente de la tanda anterior. Cuatro puertas nuevas hacia `/one/pane
 - **Card de precios ArgoOne®** (home): "¿Ya lo compraste? Entra a tu panel" bajo el CTA de compra.
 - **Footer de la home**: link "Mi panel ArgoOne®".
 No se agregó entrada al panel en `/report/...` (link compartible que circula entre no compradores).
+- **Ajuste posterior (mismo día):** nav híbrida. Desktop muestra los dos links explícitos y directos ("Ingresar a ArgoOne®" → `/one/panel`, "Ingresar a ArgoAcademy®" → login), sin modal; mobile conserva el "Entrar" único que abre el selector (clase `.site-nav__link--mobile`, espejo de la convención `--desktop` existente).
