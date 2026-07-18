@@ -111,46 +111,56 @@ export const TenantGuide: React.FC = () => {
     // Perspectives panel: when a player is selected we collapse it to their profile.
     const [perspectivesExpanded, setPerspectivesExpanded] = useState(false);
 
-    // AI example ("Verlo con [nombre]"). Peek checks the cache silently on
-    // selection; generate runs the full pipeline. 'disabled' = kill switch off
-    // server-side (block hidden). Keyed by player+situation+lang to drop stale
-    // responses when the selection changes mid-flight.
+    // AI example ("Verlo con [nombre]"). The first render IS the AI: selecting
+    // a child auto-runs cache-peek then generate (no button). 'disabled' = kill
+    // switch off server-side (block hidden). Keyed by player+situation+lang to
+    // drop stale responses when the selection changes mid-flight.
     interface AiExample { escena: string; frase: string; senal: string; }
     const [exampleState, setExampleState] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'disabled'>('idle');
     const [example, setExample] = useState<AiExample | null>(null);
     const exampleKeyRef = useRef('');
 
-    const callExampleApi = useCallback(async (action: 'peek' | 'generate', childId: string, situationId: string) => {
+    const callExampleApi = useCallback(async (mode: 'auto' | 'retry', childId: string, situationId: string) => {
         const key = `${childId}|${situationId}|${lang}`;
         exampleKeyRef.current = key;
-        if (action === 'generate') setExampleState('loading');
+        setExampleState('loading');
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) { if (exampleKeyRef.current === key && action === 'generate') setExampleState('unavailable'); return; }
-            const res = await fetch('/api/predictor-example', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                body: JSON.stringify({ child_id: childId, situation_id: situationId, lang, action, tenant_id: tenant?.id }),
-            });
-            if (exampleKeyRef.current !== key) return; // selection changed mid-flight
-            if (!res.ok) { if (action === 'generate') setExampleState('unavailable'); return; }
-            const data = await res.json();
+            if (!session) { if (exampleKeyRef.current === key) setExampleState('unavailable'); return; }
+            const post = async (action: 'peek' | 'generate') => {
+                const res = await fetch('/api/predictor-example', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ child_id: childId, situation_id: situationId, lang, action, tenant_id: tenant?.id }),
+                });
+                return res.ok ? res.json() : null;
+            };
+            // Cache first (instant reveal on revisit), then generate on miss.
+            if (mode === 'auto') {
+                const peek = await post('peek');
+                if (exampleKeyRef.current !== key) return; // selection changed mid-flight
+                if (peek?.disabled) { setExampleState('disabled'); return; }
+                if (peek?.example) { setExample(peek.example); setExampleState('ready'); return; }
+            }
+            const data = await post('generate');
             if (exampleKeyRef.current !== key) return;
-            if (data.disabled) { setExampleState('disabled'); return; }
-            if (data.example) { setExample(data.example); setExampleState('ready'); return; }
-            if (data.unavailable) { setExampleState('unavailable'); return; }
-            if (action === 'generate') setExampleState('unavailable');
+            if (data?.disabled) { setExampleState('disabled'); return; }
+            if (data?.example) { setExample(data.example); setExampleState('ready'); return; }
+            setExampleState('unavailable');
         } catch {
-            if (exampleKeyRef.current === key && action === 'generate') setExampleState('unavailable');
+            if (exampleKeyRef.current === key) setExampleState('unavailable');
         }
     }, [lang, tenant?.id]);
 
-    // On selection change: reset and peek the cache (instant reveal on hit).
+    // On selection change: the example starts by itself (skeleton while it
+    // thinks; instant when cached). No user action required.
     useEffect(() => {
         setExample(null);
-        if (exampleState !== 'disabled') setExampleState('idle');
-        if (selectedPlayerId && selectedSituation && selectedSituation.category !== 'Grupal' && tenant?.plan !== 'trial' && exampleState !== 'disabled') {
-            callExampleApi('peek', selectedPlayerId, selectedSituation.id);
+        if (exampleState === 'disabled') return; // kill switch: stay hidden
+        if (selectedPlayerId && selectedSituation && selectedSituation.category !== 'Grupal' && tenant?.plan !== 'trial') {
+            callExampleApi('auto', selectedPlayerId, selectedSituation.id);
+        } else {
+            setExampleState('idle');
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedPlayerId, selectedSituation?.id, lang]);
@@ -642,8 +652,9 @@ export const TenantGuide: React.FC = () => {
                                                 </div>
                                             )}
 
-                                            {/* AI example — "Verlo con [nombre]" (hidden when kill switch off) */}
-                                            {selectedPlayer && selectedSituation.category !== 'Grupal' && exampleState !== 'disabled' && (
+                                            {/* AI example — "Verlo con [nombre]": auto-generates on selection
+                                                (hidden when kill switch off or nothing in flight) */}
+                                            {selectedPlayer && selectedSituation.category !== 'Grupal' && exampleState !== 'disabled' && exampleState !== 'idle' && (
                                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 border border-argo-violet-200">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <Sparkles size={13} className="text-argo-violet-500" />
@@ -679,16 +690,16 @@ export const TenantGuide: React.FC = () => {
                                                             <div className="h-3.5 bg-argo-bg rounded animate-pulse w-11/12" />
                                                             <div className="h-3.5 bg-argo-bg rounded animate-pulse w-4/5" />
                                                         </div>
-                                                    ) : exampleState === 'unavailable' ? (
-                                                        <p className="text-[12px] text-argo-grey mt-2 leading-relaxed">{dt.guide.ejemploNoDisponible}</p>
                                                     ) : (
-                                                        <button
-                                                            onClick={() => callExampleApi('generate', selectedPlayer.id, selectedSituation.id)}
-                                                            className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-argo-violet-500 text-white text-[12.5px] font-semibold tracking-wide active:opacity-80 hover:opacity-90 transition-opacity"
-                                                        >
-                                                            <Sparkles size={13} />
-                                                            {dt.guide.generarEjemplo(selectedPlayer.child_name)}
-                                                        </button>
+                                                        <div className="mt-2">
+                                                            <p className="text-[12px] text-argo-grey leading-relaxed">{dt.guide.ejemploNoDisponible}</p>
+                                                            <button
+                                                                onClick={() => callExampleApi('retry', selectedPlayer.id, selectedSituation.id)}
+                                                                className="mt-2 text-[11px] font-medium text-argo-violet-500 hover:opacity-70 active:opacity-70 transition-opacity"
+                                                            >
+                                                                {dt.guide.ejemploReintentar}
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             )}

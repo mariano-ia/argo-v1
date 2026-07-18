@@ -157,7 +157,7 @@ interface DashboardTexts {
         verLosCuatro: string;
         verSoloSuPerfil: string;
         verloCon: (name: string) => string;
-        generarEjemplo: (name: string) => string;
+        ejemploReintentar: string;
         generandoEjemplo: (name: string) => string;
         ejemploEscena: string;
         ejemploFrase: string;
@@ -470,8 +470,8 @@ const es: DashboardTexts = {
         verLosCuatro: 'Ver los cuatro perfiles',
         verSoloSuPerfil: 'Ver solo su perfil',
         verloCon: (name) => `Verlo con ${name}`,
-        generarEjemplo: (name) => `Generar un ejemplo con ${name}`,
-        generandoEjemplo: (name) => `Imaginando la escena con ${name}...`,
+        ejemploReintentar: 'Reintentar',
+        generandoEjemplo: (name) => `Procesando la escena con ${name}...`,
         ejemploEscena: 'Cómo podría verse',
         ejemploFrase: 'Una frase a su medida',
         ejemploSenal: 'Una señal para observar',
@@ -776,8 +776,8 @@ const en: DashboardTexts = {
         verLosCuatro: 'See all four profiles',
         verSoloSuPerfil: 'See only their profile',
         verloCon: (name) => `Picture it with ${name}`,
-        generarEjemplo: (name) => `Generate an example with ${name}`,
-        generandoEjemplo: (name) => `Picturing the scene with ${name}...`,
+        ejemploReintentar: 'Try again',
+        generandoEjemplo: (name) => `Processing the scene with ${name}...`,
         ejemploEscena: 'How it could look',
         ejemploFrase: 'A phrase made for them',
         ejemploSenal: 'A signal to watch for',
@@ -1082,8 +1082,8 @@ const pt: DashboardTexts = {
         verLosCuatro: 'Ver os quatro perfis',
         verSoloSuPerfil: 'Ver só o perfil dele',
         verloCon: (name) => `Ver com ${name}`,
-        generarEjemplo: (name) => `Gerar um exemplo com ${name}`,
-        generandoEjemplo: (name) => `Imaginando a cena com ${name}...`,
+        ejemploReintentar: 'Tentar de novo',
+        generandoEjemplo: (name) => `Processando a cena com ${name}...`,
         ejemploEscena: 'Como poderia ser',
         ejemploFrase: 'Uma frase sob medida',
         ejemploSenal: 'Um sinal para observar',
