@@ -25,7 +25,7 @@ Los tres archivos comparten **la misma estructura**: un array de `Situation` y u
 **Solución (capa aditiva, sin tocar las 85 tarjetas base):**
 
 1. **`CardEnrichment`** (una por `situation × eje`, 85 en total = 84 DISC + 1 grupal): agrega dos campos con más carne por perfil:
-   - `whatToSay` — una frase concreta para decirle al niño, entre comillas ("Qué decirle").
+   - `whatToSay` — una frase concreta para decirle al niño, entre comillas. **Fuera de la UI desde 2026-07-18** (se pisaba con la "frase a su medida" del bloque ArgoCoach); el dato queda en los archivos de contenido para otras superficies.
    - `whatToAvoid` — el error mejor intencionado más común con ese perfil ("Qué evitar", arranca con "Evita").
 2. **`VetaNuance`** (una por `situation × primario × veta` no opuesta, **168** = 21 × 8): 1-2 oraciones de cómo el **segundo eje** modifica la respuesta del primario **en esa situación**, con un micro-ajuste para el entrenador. Es el diferenciador: dos "Impulsor" con veta distinta (Conector vs Estratega) reciben lecturas distintas. Granularidad = **arquetipo** (la misma unidad con la que personaliza el resto de Argo), no eje.
 3. **Gate de veta = mismo que el nombre del arquetipo:** `getVetaNuance` devuelve `undefined` si la veta falta, es igual al primario, o es el **eje diagonal opuesto** (D↔S, I↔C). En ese caso la tarjeta queda en primario puro. Ver `docs/archetype-naming.md`. Los `eje_secundario` opuestos (~32% de la base) caen acá correctamente.

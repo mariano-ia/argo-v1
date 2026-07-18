@@ -636,13 +636,9 @@ export const TenantGuide: React.FC = () => {
                                                 </div>
                                             </div>
 
-                                            {/* What to say — a concrete phrase the coach can use */}
-                                            {activeEnrichment?.whatToSay && (
-                                                <div className="bg-argo-violet-50/60 border border-argo-violet-200 rounded-[14px] px-6 py-5">
-                                                    <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em] mb-2">{dt.guide.queDecirle}</p>
-                                                    <p className="text-[14px] text-argo-navy leading-relaxed italic">{activeEnrichment.whatToSay}</p>
-                                                </div>
-                                            )}
+                                            {/* NOTE: the deterministic "Qué decirle" block was removed 2026-07-18
+                                                (it overlapped with the ArgoCoach example's "frase a su medida");
+                                                whatToSay stays in the content files for other surfaces. */}
 
                                             {/* What to avoid — the common well-intentioned mistake */}
                                             {activeEnrichment?.whatToAvoid && (
