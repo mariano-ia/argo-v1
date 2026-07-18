@@ -22,6 +22,9 @@ export interface PuentesQuestion {
     block: QuestionBlock;
     prompt: string;
     options: PuentesOption[];
+    // 'compact': short labels rendered in a 2-column grid so many-option
+    // questions (q15 has 6) fit a phone viewport without scrolling.
+    layout?: 'compact';
 }
 
 export const REQUIRED_QUESTION_IDS = [
@@ -117,7 +120,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'No, pero sí recreativamente', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'No', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'Cuando ves jugar a un niño que acompañas, la emoción que más predomina en ti es:', options: [
+        { id: 'q15', block: 'context', layout: 'compact', prompt: 'Cuando ves jugar a un niño que acompañas, la emoción que más predomina en ti es:', options: [
             { id: 'q15a', label: 'Orgullo', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nervios o ansiedad', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Disfrute pleno', contextKey: 'dominant_emotion', contextValue: 'disfrute' },
@@ -207,7 +210,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'No, but I played recreationally', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'No', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'When you watch a child you accompany play, the emotion that predominates in you is:', options: [
+        { id: 'q15', block: 'context', layout: 'compact', prompt: 'When you watch a child you accompany play, the emotion that predominates in you is:', options: [
             { id: 'q15a', label: 'Pride', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nerves or anxiety', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Full enjoyment', contextKey: 'dominant_emotion', contextValue: 'disfrute' },
@@ -297,7 +300,7 @@ export const PUENTES_QUESTIONS: Record<Lang, PuentesQuestion[]> = {
             { id: 'q14c', label: 'Não, mas pratiquei de forma recreativa', contextKey: 'history', contextValue: 'recreational' },
             { id: 'q14d', label: 'Não', contextKey: 'history', contextValue: 'none' },
         ] },
-        { id: 'q15', block: 'context', prompt: 'Quando você vê uma criança que você acompanha jogar, a emoção que mais predomina em você é:', options: [
+        { id: 'q15', block: 'context', layout: 'compact', prompt: 'Quando você vê uma criança que você acompanha jogar, a emoção que mais predomina em você é:', options: [
             { id: 'q15a', label: 'Orgulho', contextKey: 'dominant_emotion', contextValue: 'orgullo' },
             { id: 'q15b', label: 'Nervosismo ou ansiedade', contextKey: 'dominant_emotion', contextValue: 'nervios' },
             { id: 'q15c', label: 'Diversão plena', contextKey: 'dominant_emotion', contextValue: 'disfrute' },
