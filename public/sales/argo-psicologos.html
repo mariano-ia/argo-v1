@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArgoMethod® · Para psicólogos del deporte</title>
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — Argo brand (light)
+   ═══════════════════════════════════════ */
+:root {
+  --bg-page: #F5F5F7;
+  --bg-slide: #FFFFFF;
+  --bg-elevated: #F8F8FA;
+  --text-primary: #1D1D1F;
+  --text-secondary: #424245;
+  --text-muted: #86868B;
+  --text-light: #AEAEB2;
+  --accent: #7A4D96;
+  --accent-soft: #955FB5;
+  --accent-wash: #F9F5FC;
+  --accent-glow: rgba(122, 77, 150, 0.14);
+  --indigo: #0071E3;
+  --indigo-glow: rgba(0, 113, 227, 0.10);
+  --border: #E8E8ED;
+  --axis-impulsor: #f97316;
+  --axis-conector: #f59e0b;
+  --axis-sosten: #22c55e;
+  --axis-estratega: #6366f1;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --shadow-argo: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-hover: 0 2px 12px rgba(0,0,0,0.06);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ═══════════════════════════════════════
+   RESET & BASE
+   ═══════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D2D2D7; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #86868B; }
+
+/* ═══════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════ */
+h1, h2, h3 {
+  font-family: var(--font-body);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--text-primary);
+  font-weight: 300;
+  margin: 0 0 24px 0;
+}
+h4 {
+  font-family: var(--font-body);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin: 0 0 24px 0;
+}
+p, li {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+}
+ul, ol { list-style: none; padding: 0; margin: 0; }
+strong { color: var(--text-primary); font-weight: 600; }
+
+/* ═══════════════════════════════════════
+   LOGO
+   ═══════════════════════════════════════ */
+.deck-logo {
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  display: inline-block;
+}
+.deck-logo .l-argo { font-weight: 800; }
+.deck-logo .l-method { font-weight: 200; }
+
+/* ═══════════════════════════════════════
+   SOFT GLOWS
+   ═══════════════════════════════════════ */
+.glow {
+  position: absolute; border-radius: 50%;
+  filter: blur(110px); pointer-events: none; z-index: 0;
+}
+.glow--violet {
+  background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+  width: 560px; height: 560px;
+}
+.glow--indigo {
+  background: radial-gradient(circle, var(--indigo-glow) 0%, transparent 70%);
+  width: 460px; height: 460px;
+}
+
+/* ═══════════════════════════════════════
+   ANIMATION (IntersectionObserver driven)
+   ═══════════════════════════════════════ */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(34px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim { opacity: 0; transform: translateY(34px); }
+.anim.anim--visible { animation: slide-in 0.7s var(--ease-out) both; }
+.anim.anim--visible:nth-child(1) { animation-delay: 0.04s; }
+.anim.anim--visible:nth-child(2) { animation-delay: 0.10s; }
+.anim.anim--visible:nth-child(3) { animation-delay: 0.16s; }
+.anim.anim--visible:nth-child(4) { animation-delay: 0.22s; }
+.anim.anim--visible:nth-child(5) { animation-delay: 0.28s; }
+.anim.anim--visible:nth-child(6) { animation-delay: 0.34s; }
+
+/* ═══════════════════════════════════════
+   DECK & SLIDES — Desktop (scroll-snap)
+   ═══════════════════════════════════════ */
+.deck {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+.slide {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 80px;
+  position: relative;
+  overflow: hidden;
+}
+.slide--tint { background: var(--bg-slide); }
+
+.slide-content {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ═══════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════ */
+.label {
+  font-family: var(--font-body);
+  font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.14em;
+  color: var(--text-light);
+  margin-bottom: 14px;
+}
+
+.card {
+  background: var(--bg-slide);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 32px;
+  position: relative; overflow: hidden;
+  box-shadow: var(--shadow-argo);
+}
+.card--sm { padding: 24px; border-radius: 14px; }
+.card--wash { background: var(--accent-wash); border-color: #EFE4F5; }
+
+.card--accent-1::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--axis-impulsor); }
+.card--accent-2::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--axis-conector); }
+.card--accent-3::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--axis-sosten); }
+.card--accent-4::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--axis-estratega); }
+.card--accent-violet::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--accent); }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; width: 100%; }
+.grid-2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; width: 100%; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; width: 100%; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; width: 100%; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 11px; border-radius: 999px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.01em;
+  border: 1px solid transparent;
+}
+.chip--impulsor { background: #FFF7ED; color: #C2410C; border-color: #FED7AA; }
+.chip--neutral { background: var(--bg-elevated); color: var(--text-secondary); border-color: var(--border); }
+.chip-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.icon-list { display: flex; flex-direction: column; gap: 18px; }
+.icon-list li {
+  display: flex; align-items: flex-start; gap: 16px;
+  font-size: 1.05rem; color: var(--text-secondary);
+}
+.icon-list li i { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.icon-list--no li i { color: #C73B3B; }
+
+.checklist { display: flex; flex-direction: column; gap: 4px; }
+.checklist li {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 1rem; color: var(--text-secondary);
+  padding: 12px 0; border-bottom: 1px solid var(--border); margin: 0;
+}
+.checklist li i { color: var(--accent); flex-shrink: 0; }
+
+.price-features { display: flex; flex-direction: column; gap: 11px; margin-top: 22px; }
+.price-features li {
+  font-size: 0.9rem; color: var(--text-secondary);
+  display: flex; align-items: center; gap: 10px; margin: 0;
+}
+.price-features li i { color: var(--axis-sosten); width: 16px; height: 16px; flex-shrink: 0; }
+
+.qr-box {
+  width: 220px; height: 220px; border-radius: 24px;
+  border: 2px dashed var(--accent-soft);
+  background: var(--accent-wash);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  margin: 0 auto;
+}
+.qr-box--active {
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 14px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+}
+.qr-box--active img { width: 100%; height: 100%; display: block; }
+
+.section-num {
+  font-family: var(--font-body);
+  font-size: 7.5rem; font-weight: 800;
+  line-height: 0.85; letter-spacing: -0.06em;
+  color: var(--text-primary); opacity: 0.08;
+  position: absolute; right: 50px; top: 80px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.brand-bar {
+  position: absolute; bottom: 28px; left: 80px; right: 80px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.66rem; color: var(--text-light);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  font-weight: 600; z-index: 10;
+}
+
+/* ═══════════════════════════════════════
+   SLIDE VARIANTS
+   ═══════════════════════════════════════ */
+.slide--cover { text-align: center; background: linear-gradient(170deg, #FFFFFF 0%, var(--accent-wash) 100%); }
+.slide--cover h1 { font-size: clamp(2.6rem, 5.4vw, 4.2rem); margin-bottom: 22px; }
+.slide--cover .subtitle {
+  font-size: 1.12rem; color: var(--text-secondary);
+  max-width: 640px; margin: 0 auto 30px; font-weight: 400;
+}
+.slide--cover .meta {
+  font-size: 0.72rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
+}
+.cover-logo { margin-bottom: 38px; font-size: 1.7rem; }
+
+.cover-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
+  display: block;
+}
+.cover-bg-overlay {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse at 75% 55%, rgba(29,29,31,0.18) 0%, rgba(29,29,31,0.0) 55%),
+    linear-gradient(180deg, rgba(29,29,31,0.12) 0%, rgba(29,29,31,0.0) 28%, rgba(29,29,31,0.0) 65%, rgba(29,29,31,0.32) 100%);
+  pointer-events: none;
+}
+.slide--cover-photo { background: #1D1D1F; }
+.slide--cover-photo h1 { color: #fff; text-shadow: 0 1px 16px rgba(0,0,0,0.35); }
+.slide--cover-photo .subtitle { color: rgba(255,255,255,0.92); text-shadow: 0 1px 12px rgba(0,0,0,0.35); }
+.slide--cover-photo .meta { color: rgba(255,255,255,0.7); }
+.slide--cover-photo .deck-logo { color: #fff; }
+.slide--cover-photo .deck-logo .l-method { opacity: 0.75; }
+
+.side-img {
+  width: calc(100% + 90px);
+  margin-left: -90px;
+  aspect-ratio: 5/6;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+  display: block;
+}
+
+.avatar-img {
+  width: 44px; height: 44px; border-radius: 50%;
+  object-fit: cover; display: block; flex-shrink: 0;
+}
+.avatar-img--ring-orange { box-shadow: 0 0 0 2px var(--axis-impulsor), 0 0 0 4px #FFF7ED; }
+
+.slide--thanks { text-align: center; background: linear-gradient(190deg, #FFFFFF 0%, var(--accent-wash) 100%); }
+.contact-row { display: flex; justify-content: center; gap: 36px; margin-top: 30px; flex-wrap: wrap; }
+.contact-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 0.92rem; color: var(--text-secondary); font-weight: 500;
+}
+.contact-item i { color: var(--accent); }
+
+/* Feature chips */
+.feature-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.82rem; color: var(--text-secondary);
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 999px; padding: 7px 14px;
+  font-weight: 500; line-height: 1;
+}
+.step-eyebrow {
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-primary);
+  margin-bottom: 10px;
+}
+
+/* "Cómo funciona" landing-style card */
+.howit-card {
+  background: #fff;
+  border-radius: 28px;
+  padding: 44px 48px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.09), 0 4px 20px rgba(0,0,0,0.05);
+  border: 1px solid var(--border);
+}
+
+/* Axis cards (DISC slide) */
+.axis-card h4 { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 1.05rem; }
+.axis-letter {
+  width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 0.85rem; font-weight: 800;
+}
+.axis-classic { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+.axis-card p { font-size: 0.88rem; margin: 0 0 10px; }
+.axis-vocab { display: flex; flex-wrap: wrap; gap: 6px; }
+.axis-vocab span {
+  font-size: 0.68rem; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border);
+}
+
+/* Banda cards (confidence slide) */
+.banda-card { text-align: left; }
+.banda-card .banda-name { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.banda-card .banda-rule { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; margin-bottom: 10px; }
+.banda-card .banda-quote {
+  font-size: 0.88rem; color: var(--text-secondary); font-style: italic;
+  border-left: 3px solid var(--border); padding-left: 12px; margin: 0 0 10px;
+}
+.banda-card .banda-note { font-size: 0.76rem; color: var(--text-muted); margin: 0; line-height: 1.45; }
+.banda-meter { display: flex; gap: 4px; margin-bottom: 12px; }
+.banda-meter span { height: 4px; flex: 1; border-radius: 2px; background: var(--border); }
+.banda-meter span.on { background: var(--accent); }
+
+.stat-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+  margin-top: 26px;
+}
+.stat-strip .stat { border-top: 1px solid var(--border); padding-top: 14px; }
+.stat-strip .stat-num { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); line-height: 1.1; }
+.stat-strip .stat-desc { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; margin: 4px 0 0; }
+
+/* ═══════════════════════════════════════
+   FLIPCARD — 3D animated (juego → análisis → perfil)
+   ═══════════════════════════════════════ */
+.flipcard { width: 100%; max-width: 380px; margin: 0 auto; }
+.flipcard__inner { position: relative; height: 460px; perspective: 1200px; }
+.flipcard__face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: 20px;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transform: rotateY(90deg);
+  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.25, 0, 0, 1);
+  transform-origin: center;
+  overflow: hidden;
+}
+.flipcard__face.is-active { opacity: 1; transform: rotateY(0deg); pointer-events: auto; z-index: 2; }
+.flipcard__face.is-leaving { opacity: 0; transform: rotateY(-90deg); z-index: 1; }
+
+/* Game face */
+.fc-game {
+  background:
+    linear-gradient(165deg, rgba(5,10,20,0.78) 0%, rgba(5,15,30,0.88) 100%),
+    url('../scenes/storm.png') center/cover;
+  color: #fff;
+  box-shadow: 0 12px 52px rgba(0,0,0,0.22);
+}
+.fc-game__header { padding: 14px 18px 12px; border-bottom: 1px solid rgba(255,255,255,0.07); display: flex; justify-content: space-between; align-items: center; }
+.fc-game__chapter { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 0.14em; text-transform: uppercase; }
+.fc-game__dots { display: flex; gap: 6px; align-items: center; }
+.fc-game__dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.18); }
+.fc-game__dot--done { background: rgba(34,211,238,0.6); }
+.fc-game__dot--current { background: #fff; width: 9px; height: 9px; }
+.fc-game__intro { padding: 16px 18px 4px; font-size: 11px; font-style: italic; color: rgba(255,255,255,0.32); line-height: 1.55; margin: 0; }
+.fc-game__text { padding: 10px 18px 16px; font-size: 16px; font-weight: 500; color: #fff; line-height: 1.4; letter-spacing: -0.01em; margin: 0; }
+.fc-game__options { padding: 0 14px 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.fc-game__option { border: 1px solid rgba(255,255,255,0.1); border-radius: 13px; padding: 11px; background: rgba(255,255,255,0.05); }
+.fc-game__option-num { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 9px; font-size: 11px; font-weight: 800; color: #fff; }
+.fc-game__option-text { font-size: 11px; color: rgba(255,255,255,0.82); line-height: 1.48; margin: 0; }
+
+/* Analysis face */
+.fc-analysis {
+  background: #F8F8FA; border: 1px solid #E8E8ED;
+  padding: 26px 24px; box-shadow: 0 4px 32px rgba(0,0,0,0.06);
+}
+.fc-analysis__header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.fc-analysis__pulse { width: 8px; height: 8px; border-radius: 50%; background: #955FB5; animation: fc-pulse 1.1s ease-in-out infinite; }
+@keyframes fc-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
+.fc-analysis__title { font-size: 11px; font-weight: 700; color: #1D1D1F; letter-spacing: 0.1em; text-transform: uppercase; }
+.fc-analysis__desc { font-size: 12.5px; color: #424245; line-height: 1.6; margin: 0 0 18px; }
+.fc-analysis__bars { display: flex; flex-direction: column; gap: 13px; flex: 1; }
+.fc-analysis__bar-label { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.fc-analysis__bar-name, .fc-analysis__bar-pct { font-size: 10px; font-weight: 600; color: #86868B; }
+.fc-analysis__bar-pct { opacity: 0; transition: opacity 0.4s; }
+.fc-analysis.is-active .fc-analysis__bar-pct { opacity: 1; }
+.fc-analysis__bar { height: 5px; background: #E8E8ED; border-radius: 3px; overflow: hidden; }
+.fc-analysis__bar-fill { height: 100%; border-radius: 3px; width: 3%; transition: width 0.7s cubic-bezier(0.25, 0, 0, 1); }
+.fc-analysis.is-active .fc-analysis__bar-fill { width: var(--target-width, 50%); }
+.fc-analysis__motor { margin-top: 16px; padding-top: 13px; border-top: 1px solid #E8E8ED; opacity: 0; transition: opacity 0.4s; }
+.fc-analysis.is-active .fc-analysis__motor { opacity: 1; transition-delay: 0.7s; }
+.fc-analysis__motor-label { font-size: 9px; font-weight: 700; color: #86868B; letter-spacing: 0.1em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+.fc-analysis__motor-desc { font-size: 10.5px; color: #424245; line-height: 1.5; margin: 0; }
+
+/* Profile face */
+.fc-profile {
+  background: #fff; border: 1px solid #E8E8ED;
+  padding: 26px 24px; box-shadow: 0 4px 32px rgba(0,0,0,0.07);
+}
+.fc-profile__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
+.fc-profile__axis { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-profile__axis-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.fc-profile__axis-name { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.fc-profile__banda-chip { font-size: 10px; font-weight: 600; color: #6B4E85; background: #F9F5FC; border: 1px solid #EFE4F5; border-radius: 20px; padding: 3px 10px; white-space: nowrap; }
+.fc-profile__name { font-weight: 300; font-size: 22px; letter-spacing: -0.025em; color: #1D1D1F; line-height: 1.18; margin: 0 0 12px; }
+.fc-profile__behaviors { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.fc-profile__behavior { font-size: 11px; font-weight: 500; border-radius: 20px; padding: 3px 10px; }
+.fc-profile__desc { font-size: 12px; color: #424245; line-height: 1.6; margin: 0 0 14px; }
+.fc-profile__words { margin-top: auto; padding-top: 12px; border-top: 1px solid #F5F5F7; }
+.fc-profile__word-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.fc-profile__word-label { font-size: 9px; font-weight: 700; color: #86868B; letter-spacing: 0.1em; text-transform: uppercase; padding-top: 3px; flex-shrink: 0; white-space: nowrap; }
+.fc-profile__word-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.fc-profile__word { font-size: 10px; font-weight: 500; border-radius: 20px; padding: 2px 9px; }
+.fc-profile__word--avoid { color: #86868B; background: #F5F5F7; }
+
+/* Step indicator */
+.flipcard__steps { display: flex; align-items: center; justify-content: center; margin-top: 20px; }
+.flipcard__step { background: none; border: none; padding: 4px 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: inherit; }
+.flipcard__step-dot { width: 7px; height: 7px; border-radius: 50%; background: #D2D2D7; transition: background 0.3s; }
+.flipcard__step-label { font-size: 10px; font-weight: 400; color: #AEAEB2; white-space: nowrap; transition: color 0.3s; }
+.flipcard__step.is-active .flipcard__step-dot { background: #955FB5; }
+.flipcard__step.is-active .flipcard__step-label { color: #955FB5; font-weight: 600; }
+.flipcard__step-sep { width: 28px; height: 1px; background: #E8E8ED; margin: 0 8px 20px; }
+
+/* ═══════════════════════════════════════
+   SLIDE COUNTER + SCROLL HINT
+   ═══════════════════════════════════════ */
+.slide-counter {
+  position: fixed; bottom: 28px; right: 32px; z-index: 9998;
+  font-family: var(--font-body); font-size: 0.72rem; font-weight: 600;
+  color: var(--text-light); letter-spacing: 0.08em;
+  pointer-events: none; opacity: 0.8; transition: opacity 0.3s;
+}
+.scroll-hint {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); z-index: 100;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--text-muted); font-family: var(--font-body);
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+  animation: hint-pulse 2s ease-in-out infinite; transition: opacity 0.6s ease; pointer-events: none;
+}
+.scroll-hint i { width: 20px; height: 20px; }
+.scroll-hint.hidden { opacity: 0; animation: none; }
+@keyframes hint-pulse {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) translateY(0); }
+  50% { opacity: 1; transform: translateX(-50%) translateY(6px); }
+}
+
+/* ═══════════════════════════════════════
+   MOBILE — <=768px
+   ═══════════════════════════════════════ */
+@media (max-width: 768px) {
+  body { font-size: 16px; }
+  .deck { height: 100vh; overflow-y: auto; scroll-snap-type: y mandatory; -webkit-overflow-scrolling: touch; }
+  .slide { min-height: 100vh; scroll-snap-align: start; scroll-snap-stop: always; padding: 40px 20px; justify-content: center; overflow-y: auto; }
+  .slide-content { max-width: 100%; width: 100%; }
+  h1 { font-size: 1.9rem; } h2 { font-size: 1.55rem; } h4 { font-size: 1rem; }
+  p, li { font-size: 0.92rem; }
+
+  .slide h2 { font-size: 1.45rem !important; line-height: 1.2 !important; max-width: 100% !important; margin-bottom: 14px !important; }
+  .slide--cover h1 { font-size: 1.85rem !important; line-height: 1.15 !important; }
+  .slide--cover .subtitle { font-size: 0.9rem !important; line-height: 1.5 !important; }
+  .slide--cover .meta { font-size: 0.6rem !important; }
+
+  .howit-card { padding: 22px 18px !important; border-radius: 18px !important; }
+  .howit-card .step-eyebrow { font-size: 0.62rem !important; margin-bottom: 4px !important; }
+  .howit-card .feature-chip { font-size: 0.7rem !important; padding: 5px 10px !important; }
+
+  .flipcard { max-width: 100% !important; }
+  .flipcard__inner { height: 400px !important; perspective: 900px !important; }
+  .fc-game__header { padding: 11px 14px 9px !important; }
+  .fc-game__intro { padding: 10px 14px 4px !important; font-size: 10px !important; }
+  .fc-game__text { padding: 8px 14px 12px !important; font-size: 13px !important; }
+  .fc-game__options { padding: 0 12px 14px !important; gap: 6px !important; }
+  .fc-game__option { padding: 8px !important; }
+  .fc-game__option-num { width: 22px !important; height: 22px !important; font-size: 10px !important; margin-bottom: 6px !important; }
+  .fc-game__option-text { font-size: 10px !important; }
+  .fc-analysis, .fc-profile { padding: 20px 16px !important; }
+  .fc-analysis__bars { gap: 10px !important; }
+  .fc-profile__name { font-size: 17px !important; margin-bottom: 8px !important; }
+  .fc-profile__desc { font-size: 11px !important; line-height: 1.5 !important; }
+  .flipcard__step-label { font-size: 9px !important; }
+  .flipcard__step-sep { width: 18px !important; margin: 0 5px 18px !important; }
+
+  .scroll-hint { bottom: 14px !important; font-size: 0.55rem !important; opacity: 0.35 !important; }
+  .scroll-hint i { width: 14px !important; height: 14px !important; }
+  .split { grid-template-columns: 1fr; gap: 26px; }
+  .grid-2x2 { grid-template-columns: 1fr; gap: 14px; }
+  .grid-3 { grid-template-columns: 1fr; gap: 16px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .side-img { width: 100%; margin-left: 0; aspect-ratio: 4/5; }
+  .stat-strip { grid-template-columns: 1fr; gap: 14px; margin-top: 18px; }
+  .section-num { display: none; }
+  .brand-bar { display: none; }
+  .slide--cover h1 { font-size: 2.1rem; }
+  .cover-logo { font-size: 1.4rem; margin-bottom: 22px; }
+  .slide--cover .subtitle { font-size: 0.98rem; }
+  .contact-row { flex-direction: column; gap: 12px; align-items: center; }
+  .icon-list { gap: 14px; }
+  .icon-list li { font-size: 0.9rem; gap: 12px; }
+  .card { padding: 22px; border-radius: 18px; }
+  .card--sm { padding: 18px; border-radius: 14px; }
+  .glow { width: 240px !important; height: 240px !important; }
+  .slide-counter { display: none; }
+  .qr-box { width: 180px; height: 180px; }
+  .anim { opacity: 1; transform: none; animation: none; }
+}
+
+/* ═══════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════ */
+@media print {
+  .glow, .slide-counter, .scroll-hint { display: none !important; }
+  .deck { height: auto; overflow: visible; scroll-snap-type: none; }
+  .slide { min-height: auto; break-inside: avoid; page-break-inside: avoid; scroll-snap-align: none; border-bottom: 1px solid var(--border); }
+  .anim { opacity: 1 !important; transform: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- Slide counter (desktop only) -->
+<div class="slide-counter" id="slide-counter">1 / 11</div>
+
+<div class="scroll-hint" id="scroll-hint">
+  <span>Desliza</span>
+  <i data-lucide="chevron-down"></i>
+</div>
+
+<div class="deck" id="deck">
+
+<!-- ══════════════ 1. COVER ══════════════ -->
+<section class="slide slide--cover slide--cover-photo" data-slide="1">
+  <img src="hero.jpg" alt="" class="cover-bg-img" />
+  <div class="cover-bg-overlay"></div>
+  <div class="slide-content">
+    <div class="deck-logo cover-logo anim"><span class="l-argo">Argo</span><span class="l-method">Method®</span></div>
+    <h1 class="anim">Una lente conductual, honesta,<br>para el deporte formativo.</h1>
+    <p class="subtitle anim">Qué mide Argo, cómo lo mide y dónde terminan sus afirmaciones. Presentación para <strong style="color:#fff;">profesionales de la psicología del deporte</strong>.</p>
+    <p class="meta anim">Perfil conductual para deportistas de 8 a 16 años</p>
+  </div>
+</section>
+
+<!-- ══════════════ 2. EL CONTEXTO ══════════════ -->
+<section class="slide" data-slide="2">
+  <div class="section-num">01</div>
+  <div class="slide-content">
+    <div class="split">
+      <div>
+        <div class="label anim">El punto de partida</div>
+        <h2 class="anim" style="font-size:2.2rem;">Entre la cancha y la consulta falta una lectura sistemática.</h2>
+        <p class="anim" style="margin-top:22px;">El entrenador observa conductas todos los días pero no tiene un marco para leerlas. La familia tiene el vínculo pero no el lenguaje. Y el profesional, cuando llega, suele llegar <strong>sin información previa de cómo ese niño vive la actividad</strong>.</p>
+        <p class="anim">Argo aporta una <strong>primera lectura conductual, compartida y no clínica</strong>: un punto de partida común para el entrenador, la familia y el profesional.</p>
+      </div>
+      <div class="anim">
+        <div class="card">
+          <h3 style="font-size:1.7rem; margin-bottom:6px;">El 70% de los niños abandona el deporte antes de los 13.</h3>
+          <p style="font-size:0.72rem; color:var(--text-muted); margin-bottom:20px;">American Academy of Pediatrics</p>
+          <p style="margin:0;">La técnica, la táctica y el físico se entrenan de forma sistemática. La forma en que cada niño vive el deporte, casi nunca se observa con el mismo cuidado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 3. QUÉ ES ARGO ══════════════ -->
+<section class="slide slide--tint" data-slide="3">
+  <div class="section-num">02</div>
+  <div class="slide-content">
+    <div class="label anim">Qué es Argo</div>
+    <h2 class="anim" style="font-size:2.3rem; margin-bottom:14px; max-width:860px;">Evaluación embebida en un juego, no un cuestionario con cara de test.</h2>
+    <p class="anim" style="max-width:820px; margin-bottom:40px;">El niño juega una <strong>odisea náutica de unos 10 minutos</strong> desde el celular. Dentro de la historia toma <strong>decisiones sin respuestas correctas ni incorrectas</strong>: nunca siente que lo evalúan. Con esas elecciones, Argo construye un <strong>perfil conductual</strong> que llega al adulto responsable (familia, entrenador o institución).</p>
+    <div class="grid-4 anim">
+      <div>
+        <div style="width:24px; height:2px; background:var(--accent); margin-bottom:12px;"></div>
+        <p style="font-weight:600; font-size:0.95rem; color:var(--text-primary); margin:0 0 6px;">Sin pistas inducidas</p>
+        <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.5; margin:0;">Las opciones no revelan a qué estilo corresponden: los colores son posicionales y el orden no premia ninguna respuesta.</p>
+      </div>
+      <div>
+        <div style="width:24px; height:2px; background:var(--accent); margin-bottom:12px;"></div>
+        <p style="font-weight:600; font-size:0.95rem; color:var(--text-primary); margin:0 0 6px;">Informe al adulto</p>
+        <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.5; margin:0;">El resultado es para quien acompaña, escrito en lenguaje cercano y basado en fortalezas. El niño recibe solo su aventura.</p>
+      </div>
+      <div>
+        <div style="width:24px; height:2px; background:var(--accent); margin-bottom:12px;"></div>
+        <p style="font-weight:600; font-size:0.95rem; color:var(--text-primary); margin:0 0 6px;">Foto del presente</p>
+        <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.5; margin:0;">A estas edades la estabilidad es baja. El perfil se renueva: volver a perfilar está incluido cada 6 meses.</p>
+      </div>
+      <div>
+        <div style="width:24px; height:2px; background:var(--accent); margin-bottom:12px;"></div>
+        <p style="font-weight:600; font-size:0.95rem; color:var(--text-primary); margin:0 0 6px;">Toda la actividad</p>
+        <p style="font-size:0.84rem; color:var(--text-secondary); line-height:1.5; margin:0;">La lectura aplica a partidos, competencias, juego libre y el día a día del deporte, no solo a la práctica formal.</p>
+      </div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 4. BASE TEÓRICA: DISC ══════════════ -->
+<section class="slide" data-slide="4">
+  <div class="section-num">03</div>
+  <div class="slide-content">
+    <div class="label anim">La base teórica</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:10px;">Anclado en DISC. Adaptado al <span style="font-weight:800;">Argo</span><span style="font-weight:200;">Method®</span>.</h2>
+    <p class="anim" style="max-width:820px; margin-bottom:30px;">Argo parte del modelo DISC (Marston, 1928): <strong>cuatro estilos observables de conducta</strong>, sin constructos clínicos ni jerarquía entre polos. Lo elegimos porque es <strong>descriptivo, simétrico y compartible</strong> con entrenadores y familias. Sobre esa base, <span style="font-weight:800; color:var(--text-primary);">Argo</span><span style="font-weight:200; color:var(--text-primary);">Method®</span> es un <strong>método propio para el deporte formativo</strong>: reformula los ejes en lenguaje deportivo, mide jugando y es <strong>más conservador que el DISC comercial</strong>, porque cada afirmación está limitada por la evidencia que la sostiene.</p>
+    <div class="grid-2x2 anim" style="gap:18px;">
+      <div class="card card--sm card--accent-1 axis-card">
+        <h4><span class="axis-letter" style="background:var(--axis-impulsor);">D</span> Impulsor</h4>
+        <p class="axis-classic">Dominance en el DISC clásico</p>
+        <p>Cómo responde ante el reto: iniciativa, resolución, ganas de activar el movimiento.</p>
+        <div class="axis-vocab"><span>iniciativa</span><span>desafío</span><span>autonomía</span></div>
+      </div>
+      <div class="card card--sm card--accent-2 axis-card">
+        <h4><span class="axis-letter" style="background:var(--axis-conector);">I</span> Conector</h4>
+        <p class="axis-classic">Influence en el DISC clásico</p>
+        <p>Cómo influye e involucra a los demás: entusiasmo, cohesión, clima del grupo.</p>
+        <div class="axis-vocab"><span>vínculo</span><span>influencia</span><span>clima</span></div>
+      </div>
+      <div class="card card--sm card--accent-3 axis-card">
+        <h4><span class="axis-letter" style="background:var(--axis-sosten);">S</span> Sostén</h4>
+        <p class="axis-classic">Steadiness en el DISC clásico</p>
+        <p>Cómo sostiene y estabiliza: constancia, pertenencia, apoyo a los compañeros.</p>
+        <div class="axis-vocab"><span>constancia</span><span>pertenencia</span><span>apoyo</span></div>
+      </div>
+      <div class="card card--sm card--accent-4 axis-card">
+        <h4><span class="axis-letter" style="background:var(--axis-estratega);">C</span> Estratega</h4>
+        <p class="axis-classic">Conscientiousness en el DISC clásico</p>
+        <p>Cómo analiza y ajusta: atención al detalle, precisión, búsqueda de calidad.</p>
+        <div class="axis-vocab"><span>análisis</span><span>precisión</span><span>calidad</span></div>
+      </div>
+    </div>
+    <p class="anim" style="margin:24px 0 0; font-size:0.8rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+      <i data-lucide="scale" style="width:14px;height:14px;color:var(--accent); flex-shrink:0;"></i>
+      Simetría de estilos: en los ejes, ningún polo es mejor que otro. El perfil describe preferencias, no capacidades.
+    </p>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 5. QUÉ MEDIMOS Y CÓMO ══════════════ -->
+<section class="slide slide--tint" data-slide="5">
+  <div class="section-num">04</div>
+  <div class="slide-content">
+    <div class="howit-card anim">
+      <div class="split" style="gap:56px; align-items:center;">
+        <div>
+          <div class="label" style="margin-bottom:10px;">Qué medimos · Dos fuentes desacopladas</div>
+          <h2 style="font-size:clamp(1.8rem, 2.6vw, 2.4rem); line-height:1.1; margin-bottom:26px;">Las elecciones definen el perfil.</h2>
+          <div style="margin-bottom:20px;">
+            <p class="step-eyebrow" style="margin-bottom:6px;">01 · Las elecciones (el perfil)</p>
+            <p style="font-size:0.95rem; color:var(--text-secondary); line-height:1.6; max-width:440px; margin:0;"><strong>12 escenas de elección forzada</strong> dentro de la narrativa; cada opción vota por un eje. Es una <strong>medida ipsativa</strong>: describe cómo se ordenan las preferencias del niño consigo mismo, no contra otros niños. Se conserva el vector completo D/I/S/C, no solo el ganador.</p>
+          </div>
+          <div style="margin-bottom:22px;">
+            <p class="step-eyebrow" style="margin-bottom:6px;">02 · Los mini juegos (su motor)</p>
+            <p style="font-size:0.95rem; color:var(--text-secondary); line-height:1.6; max-width:440px; margin:0;">Medidas <strong>cronométricas</strong> (tempo de decisión y de reacción) leídas <strong>en relación a su edad</strong>, con anclas del desarrollo interpoladas por meses y <strong>siempre con intervalo amplio</strong>. Alimentan una sección propia del informe, jamás el nombre del perfil.</p>
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            <span class="feature-chip">Medida ipsativa</span>
+            <span class="feature-chip">Elección forzada</span>
+            <span class="feature-chip">Tempo relativo a la edad</span>
+            <span class="feature-chip">El eje no se deduce de la velocidad</span>
+          </div>
+        </div>
+        <div class="flipcard">
+          <div class="flipcard__inner">
+            <div class="flipcard__face fc-game is-active" data-face="game">
+              <div class="fc-game__header">
+                <span class="fc-game__chapter">La Tormenta</span>
+                <div class="fc-game__dots">
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--done"></div>
+                  <div class="fc-game__dot fc-game__dot--current"></div>
+                  <div class="fc-game__dot"></div>
+                  <div class="fc-game__dot"></div>
+                </div>
+              </div>
+              <p class="fc-game__intro" id="fc-intro"></p>
+              <p class="fc-game__text" id="fc-text"></p>
+              <div class="fc-game__options" id="fc-options"></div>
+            </div>
+            <div class="flipcard__face fc-analysis" data-face="analysis">
+              <div class="fc-analysis__header">
+                <div class="fc-analysis__pulse"></div>
+                <span class="fc-analysis__title">Argo agrega los votos</span>
+              </div>
+              <p class="fc-analysis__desc">Cada elección es un voto débil. Argo agrega los 12 votos y mide la brecha entre ejes para decidir <strong>cuánto puede afirmar</strong>.</p>
+              <div class="fc-analysis__bars" id="fc-bars"></div>
+              <div class="fc-analysis__motor">
+                <span class="fc-analysis__motor-label">Su motor (aparte del perfil)</span>
+                <p class="fc-analysis__motor-desc" id="fc-motor-desc"></p>
+              </div>
+            </div>
+            <div class="flipcard__face fc-profile" data-face="profile">
+              <div class="fc-profile__top">
+                <div class="fc-profile__axis">
+                  <div class="fc-profile__axis-dot" id="fc-axis-dot"></div>
+                  <span class="fc-profile__axis-name" id="fc-axis-name"></span>
+                </div>
+                <span class="fc-profile__banda-chip" id="fc-banda-chip"></span>
+              </div>
+              <p class="fc-profile__name" id="fc-arch-name"></p>
+              <div class="fc-profile__behaviors" id="fc-behaviors"></div>
+              <p class="fc-profile__desc" id="fc-desc"></p>
+              <div class="fc-profile__words">
+                <div class="fc-profile__word-row">
+                  <span class="fc-profile__word-label">Palabras puente</span>
+                  <div class="fc-profile__word-chips" id="fc-bridge"></div>
+                </div>
+                <div class="fc-profile__word-row">
+                  <span class="fc-profile__word-label">Hacen ruido</span>
+                  <div class="fc-profile__word-chips" id="fc-avoid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="flipcard__steps">
+            <button class="flipcard__step is-active" data-step="0"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">El niño juega</span></button>
+            <div class="flipcard__step-sep"></div>
+            <button class="flipcard__step" data-step="1"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">Argo agrega</span></button>
+            <div class="flipcard__step-sep"></div>
+            <button class="flipcard__step" data-step="2"><span class="flipcard__step-dot"></span><span class="flipcard__step-label">El perfil</span></button>
+          </div>
+        </div>
+      </div>
+      <p style="margin:28px 0 0; padding-top:20px; border-top:1px solid var(--border); font-size:0.78rem; color:var(--text-muted); display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:14px;height:14px;color:var(--accent); flex-shrink:0;"></i>
+        Las elecciones son preferencias ante escenas de ficción, no conducta observada en cancha. El informe lo declara y no predice el futuro deportivo de ningún niño.
+      </p>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 6. ARQUITECTURA DE CONFIANZA ══════════════ -->
+<section class="slide" data-slide="6">
+  <div class="section-num">05</div>
+  <div class="slide-content">
+    <div class="label anim">Cuándo afirma y cuándo calla</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:10px;">Si la evidencia no alcanza, Argo no nombra.</h2>
+    <p class="anim" style="max-width:840px; margin-bottom:28px;">El eje más votado es el candidato a dominante, pero <strong>el nombre solo se otorga si la brecha de votos lo sostiene</strong>. Un segundo eje (la veta) se agrega únicamente con separación propia suficiente, y los pares opuestos del círculo DISC (D↔S, I↔C) <strong>nunca forman un nombre compuesto</strong>. Todo perfil llega con su banda de confianza visible.</p>
+    <div class="grid-3 anim" style="gap:18px;">
+      <div class="card card--sm banda-card">
+        <div class="banda-meter"><span class="on"></span><span></span><span></span></div>
+        <p class="banda-name">Mezcla</p>
+        <p class="banda-rule">Sin dominante claro</p>
+        <p class="banda-quote">"Dos formas de jugar aparecen casi con el mismo peso."</p>
+        <p class="banda-note">No se otorga sustantivo: el informe describe un par o una tendencia, sin arquetipo.</p>
+      </div>
+      <div class="card card--sm banda-card">
+        <div class="banda-meter"><span class="on"></span><span class="on"></span><span></span></div>
+        <p class="banda-name">Con matices</p>
+        <p class="banda-rule">Brecha moderada</p>
+        <p class="banda-quote">"Se inclina hacia un estilo, con margen visible."</p>
+        <p class="banda-note">Lenguaje tentativo obligatorio. El nombre solo aparece si además el eje concentra votos suficientes.</p>
+      </div>
+      <div class="card card--sm banda-card card--accent-violet">
+        <div class="banda-meter"><span class="on"></span><span class="on"></span><span class="on"></span></div>
+        <p class="banda-name">Definida</p>
+        <p class="banda-rule">Brecha amplia</p>
+        <p class="banda-quote">"Esta vez, se inclina con claridad hacia un estilo."</p>
+        <p class="banda-note">Es el registro máximo del informe. No existe un registro "fuerte": la confianza del instrumento pone el techo.</p>
+      </div>
+    </div>
+    <div class="stat-strip anim">
+      <div class="stat">
+        <p class="stat-num">455</p>
+        <p class="stat-desc">composiciones posibles de 12 votos en 4 ejes, enumeradas de forma exacta para calibrar cada umbral contra el azar.</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">7.68%</p>
+        <p class="stat-desc">de los patrones pasaría el umbral del nombre bajo puro azar. Cada corte se publica con su probabilidad, auditable.</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">&lt;0.1%</p>
+        <p class="stat-desc">de probabilidad de que un nombre compuesto completo (dominante + veta) aparezca por azar. Por eso es poco frecuente.</p>
+      </div>
+    </div>
+    <p class="anim" style="margin:26px 0 0; font-size:0.8rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:8px;">
+      <i data-lucide="file-check" style="width:14px;height:14px;color:var(--accent); flex-shrink:0; margin-top:3px;"></i>
+      <span>La banda no gatea solo el título: <strong style="color:var(--text-secondary);">se traslada al informe completo</strong>. Cada sección hereda el registro de lenguaje que su evidencia permite ("se inclina con claridad" solo aparece con brecha amplia), y la claridad de la inclinación es una sección propia del informe, visible para el adulto.</span>
+    </p>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 7. EL INFORME Y EL LENGUAJE ══════════════ -->
+<section class="slide slide--tint" data-slide="7">
+  <div class="section-num">06</div>
+  <div class="slide-content">
+    <div class="label anim">El informe</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:8px;">La IA redacta. No decide, no interpreta, no inventa.</h2>
+    <p class="anim" style="max-width:820px; margin-bottom:30px;">El informe se construye en <strong>dos capas separadas</strong>: una capa determinista computa la evidencia y arma el esqueleto de cada sección; la IA solo reescribe ese esqueleto en prosa cálida, <strong>sin poder introducir rasgos, magnitudes ni escenas</strong> que no estén en la evidencia.</p>
+    <div class="split" style="align-items:stretch; gap:40px;">
+      <div class="anim">
+        <ul class="icon-list">
+          <li><i data-lucide="filter"></i><span><strong>Barandas de lenguaje deterministas.</strong> Vocabulario clínico y de déficit bloqueado, lecturas de emoción bloqueadas (una pausa no se narra como ansiedad) y lenguaje absoluto bloqueado: siempre "tiende a, suele, parece", nunca "es".</span></li>
+          <li><i data-lucide="gauge"></i><span><strong>Intensidad limitada por la confianza.</strong> Un filtro por banda impide que una sección hable con más seguridad que la que los datos permiten.</span></li>
+          <li><i data-lucide="shield"></i><span><strong>Fail-closed.</strong> Si una sección no pasa todos los filtros, se degrada a un texto pre-aprobado. Nunca se entrega prosa sin verificar.</span></li>
+          <li><i data-lucide="eye"></i><span><strong>Marco de lectura impreso.</strong> Ningún límite queda en un anexo: el informe declara en el mismo documento qué es y qué no es (foto del presente, sin comparación entre niños) y le pide al adulto algo concreto: que el resultado no vuelva al niño como una identidad.</span></li>
+        </ul>
+      </div>
+      <div class="anim">
+        <div class="card card--sm card--wash" style="height:100%;">
+          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:18px;">Cada informe incluye</h4>
+          <ul class="price-features" style="margin:0; gap:13px;">
+            <li><i data-lucide="check"></i> Su perfil y qué tan clara es la inclinación (banda visible)</li>
+            <li><i data-lucide="check"></i> Su motor: tempo de decisión y reacción, relativo a su edad</li>
+            <li><i data-lucide="check"></i> Qué lo enciende y palabras puente / palabras que hacen ruido</li>
+            <li><i data-lucide="check"></i> Ante la tormenta y ante lo inesperado (preferencias en escenas del juego)</li>
+            <li><i data-lucide="check"></i> Guía rápida y checklist para acompañar el día a día</li>
+            <li><i data-lucide="check"></i> Marco de lectura y límites del método, visibles</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 8. LO QUE ARGO NO ES ══════════════ -->
+<section class="slide" data-slide="8">
+  <div class="section-num">07</div>
+  <div class="slide-content">
+    <div class="label anim">Los límites, primero</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:8px;">Lo que Argo no es.</h2>
+    <p class="anim" style="max-width:800px; margin-bottom:30px;">Preferimos declarar los límites antes de que los preguntes. Están escritos en la especificación del método y también <strong>impresos en cada informe</strong>.</p>
+    <div class="split" style="gap:40px; align-items:stretch;">
+      <div class="anim">
+        <ul class="icon-list icon-list--no">
+          <li><i data-lucide="x"></i><span><strong>No es un test validado ni un instrumento clínico.</strong> No diagnostica, no evalúa condiciones psicológicas y no reemplaza a un profesional.</span></li>
+          <li><i data-lucide="x"></i><span><strong>No compara niños entre sí.</strong> El perfil es ipsativo: ordena las preferencias de cada niño consigo mismo. No hay ranking posible.</span></li>
+          <li><i data-lucide="x"></i><span><strong>No se usa para seleccionar ni descartar.</strong> Ni el perfil ni el tempo habilitan decisiones de plantel sobre un niño.</span></li>
+          <li><i data-lucide="x"></i><span><strong>No lee emociones ni predice rendimiento.</strong> Las señales captan comportamiento y tiempos, no afecto; nada en el informe anticipa el futuro deportivo.</span></li>
+          <li><i data-lucide="x"></i><span><strong>No es un rasgo fijo.</strong> Es una fotografía del presente con estabilidad limitada a estas edades; por eso el re-perfilado cada 6 meses está incluido.</span></li>
+        </ul>
+      </div>
+      <div class="anim">
+        <div class="card card--sm" style="height:100%;">
+          <h4 style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--accent); margin-bottom:16px;">Agenda empírica abierta</h4>
+          <p style="font-size:0.9rem; margin-bottom:14px;">Cada límite tiene identificado el dato que lo cerraría. En curso o en agenda:</p>
+          <ul class="price-features" style="margin:0; gap:12px;">
+            <li><i data-lucide="repeat"></i> Test-retest para estimar la estabilidad real del perfil</li>
+            <li><i data-lucide="list-checks"></i> Análisis a nivel ítem (homogeneidad ítem-eje) con monitoreo continuo de calidad del banco</li>
+            <li><i data-lucide="flask-conical"></i> Control del efecto Barnum (informe real vs. informe genérico)</li>
+            <li><i data-lucide="baseline"></i> Recalibración de umbrales con datos propios por edad</li>
+          </ul>
+          <p style="font-size:0.78rem; color:var(--text-muted); margin:16px 0 0;">Trazabilidad y reproducibilidad no son validez, y no las presentamos como si lo fueran. El claim honesto: anclado en teoría, fotografía del presente, no clínico.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 9. ROADMAP CIENTÍFICO (SDT) ══════════════ -->
+<section class="slide slide--tint" data-slide="9">
+  <div class="section-num">08</div>
+  <div class="slide-content">
+    <div class="label anim">Roadmap científico</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:10px;">DISC es la puerta de entrada, no el techo.</h2>
+    <p class="anim" style="max-width:840px; margin-bottom:28px;">Los próximos módulos toman <strong>constructos de la Teoría de la Autodeterminación (SDT)</strong> y <strong>gamifican su medición</strong>, con el mismo principio que el DISC: anclados en teoría pública, medidos jugando (nunca un cuestionario) y priorizando <strong>señales de elección</strong> por sobre las de desempeño. La arquitectura es de <strong>tres alturas</strong>: tres experiencias cortas separadas, cada una con su propio constructo y su propia cadencia.</p>
+    <div class="grid-3 anim" style="gap:18px;">
+      <div class="card card--sm">
+        <p class="step-eyebrow" style="margin-bottom:8px; color:var(--accent);">Hoy · Rasgo</p>
+        <h4 style="font-size:1.02rem; margin-bottom:6px;">DISC: la Odisea</h4>
+        <p style="font-size:0.88rem; margin:0;">El estilo conductual (cómo actúa). Es lo más estable de las tres alturas: la odisea de 10 minutos, renovada <strong>cada 6 meses</strong>.</p>
+      </div>
+      <div class="card card--sm">
+        <p class="step-eyebrow" style="margin-bottom:8px; color:var(--accent);">En diseño · Estado</p>
+        <h4 style="font-size:1.02rem; margin-bottom:6px;">Necesidades (SDT)</h4>
+        <p style="font-size:0.88rem; margin:0;">Autonomía, competencia y pertenencia: <strong>qué lo enciende hoy</strong>. Anclado en la Teoría de la Autodeterminación (Deci y Ryan), con la escala BNSSS como referencia pública. Un juego de 3 a 5 minutos, por temporada o por evento.</p>
+      </div>
+      <div class="card card--sm">
+        <p class="step-eyebrow" style="margin-bottom:8px; color:var(--accent);">En diseño · Estado</p>
+        <h4 style="font-size:1.02rem; margin-bottom:6px;">Motivación (SDT)</h4>
+        <p style="font-size:0.88rem; margin:0;">El continuo entre disfrutar y sentirlo una obligación: <strong>por qué viene</strong>. Referencia pública SMS-II. Se mide cuando el entorno cambia (equipo nuevo, un bajón visible, la vuelta de una lesión).</p>
+      </div>
+    </div>
+    <p class="anim" style="margin:24px 0 0; font-size:0.8rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:8px;">
+      <i data-lucide="route" style="width:14px;height:14px;color:var(--accent); flex-shrink:0; margin-top:3px;"></i>
+      <span>DISC lee el estilo (estable); las dimensiones SDT leen <strong style="color:var(--text-secondary);">qué le está dando el entorno</strong> (dinámicas y accionables). Rasgo y estado, con instrumentos y cadencias separados por diseño. Para el niño, nunca es un test: son nuevas aventuras.</span>
+    </p>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 10. EL LUGAR DEL PROFESIONAL ══════════════ -->
+<section class="slide" data-slide="10">
+  <div class="section-num">09</div>
+  <div class="slide-content">
+    <div class="label anim">El lugar del profesional</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:8px;">Argo no reemplaza tu juicio profesional. Lo alimenta.</h2>
+    <p class="anim" style="max-width:820px; margin-bottom:30px;">Para el psicólogo deportivo, Argo funciona como <strong>generador de hipótesis y lenguaje común</strong>: una primera capa de información conductual que llega antes que tú, y que entrenadores y familias ya comparten.</p>
+    <div class="grid-2x2 anim" style="gap:18px;">
+      <div class="card card--sm">
+        <h4 style="font-size:1.02rem; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><i data-lucide="lightbulb" style="width:17px;height:17px;color:var(--accent); flex-shrink:0;"></i>Hipótesis para tu trabajo</h4>
+        <p style="font-size:0.9rem; margin:0;">El perfil sugiere <strong>por dónde empezar a observar y preguntar</strong> en la entrevista con el niño, la familia o el entrenador. Es un punto de partida, nunca una conclusión.</p>
+      </div>
+      <div class="card card--sm">
+        <h4 style="font-size:1.02rem; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><i data-lucide="messages-square" style="width:17px;height:17px;color:var(--accent); flex-shrink:0;"></i>Lenguaje común</h4>
+        <p style="font-size:0.9rem; margin:0;">Entrenador, familia y profesional leen <strong>el mismo informe con el mismo vocabulario</strong>, positivo y no clínico. Menos traducción, más conversación.</p>
+      </div>
+      <div class="card card--sm">
+        <h4 style="font-size:1.02rem; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><i data-lucide="link-2" style="width:17px;height:17px;color:var(--accent); flex-shrink:0;"></i><span><span style="font-weight:800;">Argo</span><span style="font-weight:200;">Puente®</span>: el vínculo</span></h4>
+        <p style="font-size:0.9rem; margin:0;">El adulto también se perfila, y su estilo se cruza con el del niño en <strong>cuatro momentos del acompañamiento</strong> (la previa, la frustración, la conversación posterior, el largo plazo). Material directo para trabajar el vínculo.</p>
+      </div>
+      <div class="card card--sm">
+        <h4 style="font-size:1.02rem; margin-bottom:6px; display:flex; align-items:center; gap:8px;"><i data-lucide="line-chart" style="width:17px;height:17px;color:var(--accent); flex-shrink:0;"></i>Seguimiento en el tiempo</h4>
+        <p style="font-size:0.9rem; margin:0;">Re-perfilado cada 6 meses con <strong>evolución descriptiva</strong> (qué eligió esta vez, qué eligió la anterior), sin afirmar trayectorias que dos tomas no pueden sostener.</p>
+      </div>
+    </div>
+    <p class="anim" style="margin:24px 0 0; font-size:0.8rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:8px;">
+      <i data-lucide="building-2" style="width:14px;height:14px;color:var(--accent); flex-shrink:0; margin-top:3px;"></i>
+      <span>En instituciones (<span style="white-space:nowrap; color:var(--text-secondary);"><span style="font-weight:800;">Argo</span><span style="font-weight:200;">Academy®</span></span>), el profesional puede ser la voz que contextualiza los perfiles del equipo ante entrenadores y familias, con apoyos de IA acotados y guías por situación (orientativas, revisadas, sin pretensión clínica).</span>
+    </p>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 11. VÍVELO (QR DEMO) ══════════════ -->
+<section class="slide slide--thanks" data-slide="11">
+  <div class="glow glow--violet" style="top:-140px; left:-120px;"></div>
+  <div class="glow glow--indigo" style="bottom:-150px; right:-100px;"></div>
+  <div class="slide-content" style="text-align:center;">
+    <div class="label anim" style="justify-content:center;">Vívelo</div>
+    <h2 class="anim" style="font-size:2.6rem; margin-bottom:14px;">El mejor juicio es el tuyo. Pruébalo.</h2>
+    <p class="anim" style="max-width:560px; margin:0 auto 32px;">Escanea el código y <strong>juega la odisea ahora mismo</strong>. En 10 minutos vas a tener tu propio informe en la mano, con su banda de confianza y sus límites impresos.</p>
+    <div class="anim qr-box qr-box--active">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fargomethod.com%2Fdemo&size=320x320&color=1D1D1F&bgcolor=ffffff&qzone=2&format=png&margin=0" alt="QR a argomethod.com/demo" />
+    </div>
+    <a class="anim" href="https://argomethod.com/demo" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:14px; font-size:0.78rem; font-weight:600; color:var(--accent); text-decoration:none; letter-spacing:0.02em;">argomethod.com/demo</a>
+    <div class="contact-row anim">
+      <div class="contact-item"><i data-lucide="globe" style="width:16px;height:16px;"></i> argomethod.com</div>
+      <div class="contact-item"><i data-lucide="message-circle" style="width:16px;height:16px;"></i> Coordina una conversación con quien te compartió esta presentación</div>
+    </div>
+    <p class="anim" style="max-width:560px; margin:24px auto 0; font-size:0.72rem; color:var(--text-light); line-height:1.5;">Argo describe tendencias del presente, no diagnostica. Una herramienta de comunicación, no clínica.</p>
+  </div>
+</section>
+
+</div><!-- end .deck -->
+
+<script>
+// ═══════════════════════════════════════ STATE
+const deck = document.getElementById('deck');
+const slides = Array.from(deck.querySelectorAll('.slide'));
+const totalSlides = slides.length;
+const counterEl = document.getElementById('slide-counter');
+const isMobile = window.innerWidth <= 768;
+
+document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+
+// ═══════════════════════════════════════ SCROLL HINT
+const hint = document.getElementById('scroll-hint');
+let hintHidden = false;
+deck.addEventListener('scroll', () => {
+  const onLast = deck.scrollTop >= (totalSlides - 1) * deck.clientHeight - 80;
+  if (!hintHidden && (deck.scrollTop > 50 || onLast)) { hintHidden = true; hint.classList.add('hidden'); }
+}, { passive: true });
+
+const lastSlideEl = slides[slides.length - 1];
+if (lastSlideEl && hint) {
+  new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { hintHidden = true; hint.classList.add('hidden'); }
+    });
+  }, { threshold: 0.5 }).observe(lastSlideEl);
+}
+
+// ═══════════════════════════════════════ SLIDE COUNTER
+function updateCounter() {
+  if (isMobile) return;
+  const currentIndex = Math.round(deck.scrollTop / deck.clientHeight) + 1;
+  counterEl.textContent = Math.min(currentIndex, totalSlides) + ' / ' + totalSlides;
+}
+if (!isMobile) { deck.addEventListener('scroll', updateCounter, { passive: true }); updateCounter(); }
+
+// ═══════════════════════════════════════ KEYBOARD NAV
+if (!isMobile) {
+  document.addEventListener('keydown', function(e) {
+    const vh = deck.clientHeight;
+    const currentIndex = Math.round(deck.scrollTop / vh);
+    switch (e.key) {
+      case 'ArrowDown': case 'ArrowRight': case ' ': case 'PageDown':
+        e.preventDefault();
+        if (currentIndex < totalSlides - 1) deck.scrollTo({ top: (currentIndex + 1) * vh, behavior: 'smooth' });
+        break;
+      case 'ArrowUp': case 'ArrowLeft': case 'PageUp':
+        e.preventDefault();
+        if (currentIndex > 0) deck.scrollTo({ top: (currentIndex - 1) * vh, behavior: 'smooth' });
+        break;
+      case 'Home': e.preventDefault(); deck.scrollTo({ top: 0, behavior: 'smooth' }); break;
+      case 'End': e.preventDefault(); deck.scrollTo({ top: (totalSlides - 1) * vh, behavior: 'smooth' }); break;
+    }
+  });
+}
+
+// ═══════════════════════════════════════ INTERSECTION OBSERVER
+if (!isMobile) {
+  const animObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      const anims = entry.target.querySelectorAll('.anim');
+      anims.forEach(function(el) { el.classList.toggle('anim--visible', entry.isIntersecting); });
+    });
+  }, { threshold: 0.3 });
+  slides.forEach(function(slide) { animObserver.observe(slide); });
+}
+
+// ═══════════════════════════════════════ FLIPCARD — juego → agregado → perfil
+// Perfiles de demo consistentes con el método v4: los votos suman 12,
+// la brecha 1º-2º (B) gatea el nombre, la brecha 2º-3º (B2) gatea la veta,
+// y un caso Mezcla muestra que sin evidencia no hay sustantivo.
+(function() {
+  const flip = document.querySelector('.flipcard');
+  if (!flip) return;
+
+  const PROFILES = [
+    {
+      // D8 C4 I0 S0 → B=4 (Definida, nombra) · B2=4 (veta afirmada, no opuesta)
+      eje: 'D', ejeLabel: 'Impulsor', color: '#f97316',
+      votes: { D: 8, I: 0, S: 0, C: 4 },
+      banda: 'Inclinación definida',
+      archetype: 'Impulsor con veta Estratega',
+      behaviors: ['Propone', 'Decide', 'Ajusta'],
+      desc: 'Esta vez se inclina con claridad hacia el impulso: en las escenas tendió a activar el movimiento, con una veta de análisis que suele aparecer antes de decidir. El desafío a su medida y la autonomía parecen ser su combustible.',
+      bridge: ['Reto', 'Directo', 'Logra'],
+      avoid: ['Espera', 'Sin razón'],
+      motorDesc: 'En los mini juegos, esta vez respondió rápido comparado con niños de su edad (lectura con intervalo amplio; nunca define su perfil).',
+    },
+    {
+      // S7 I3 D1 C1 → B=4 (Definida, nombra) · B2=2 (veta tentativa: no entra al nombre)
+      eje: 'S', ejeLabel: 'Sostenedor', color: '#22c55e',
+      votes: { D: 1, I: 3, S: 7, C: 1 },
+      banda: 'Inclinación definida',
+      archetype: 'Sostenedor',
+      behaviors: ['Sostiene', 'Acompaña', 'Persiste'],
+      desc: 'Sus elecciones se ordenaron con claridad hacia el sostén: tendió a cuidar la estabilidad del grupo. Asoma una segunda inclinación hacia el vínculo, sin margen suficiente para afirmarla: por eso el nombre queda en el eje dominante.',
+      bridge: ['Seguro', 'Paso a paso', 'Juntos'],
+      avoid: ['De repente', 'Sin avisar'],
+      motorDesc: 'En los mini juegos, esta vez respondió tomándose más tiempo que otros niños de su edad (a estas edades puede ser maduración, no disposición).',
+    },
+    {
+      // I4 S4 D2 C2 → B=0 (Mezcla): co-líderes, sin sustantivo
+      eje: null, ejeLabel: 'Sin dominante único', color: '#86868B',
+      votes: { D: 2, I: 4, S: 4, C: 2 },
+      banda: 'Mezcla',
+      archetype: 'Una mezcla entre Conector y Sostenedor',
+      behaviors: ['Conecta', 'Sostiene'],
+      desc: 'Las elecciones no separaron un eje dominante con margen suficiente. Argo no fuerza un arquetipo: el informe describe las dos formas que aparecieron casi con el mismo peso, y qué observar en los próximos meses.',
+      bridge: ['Juntos', 'Paso a paso'],
+      avoid: ['Solo', 'De repente'],
+      motorDesc: 'En los mini juegos, su tempo quedó en la zona intermedia para su edad: el informe no cierra un rótulo y lo dice.',
+    },
+    {
+      // C7 S5 D0 I0 → B=2 + top 7 (nombra, Con matices) · B2=5 (veta afirmada, no opuesta)
+      eje: 'C', ejeLabel: 'Estratega', color: '#6366f1',
+      votes: { D: 0, I: 0, S: 5, C: 7 },
+      banda: 'Con matices',
+      archetype: 'Estratega con veta Sostenedor',
+      behaviors: ['Analiza', 'Planifica', 'Cuida'],
+      desc: 'Se inclina hacia el análisis, con margen visible: en las escenas tendió a buscar el porqué antes de actuar, y su veta de sostén sugiere que suele cuidar que el plan incluya a todos. El lenguaje del informe conserva ese margen.',
+      bridge: ['¿Por qué?', 'Exacto', 'Con calma'],
+      avoid: ['Apúrate', 'Improvisa'],
+      motorDesc: 'En los mini juegos, esta vez respondió rápido para su edad. La velocidad no define su eje: son fuentes separadas por diseño.',
+    },
+  ];
+
+  const QUESTIONS = [
+    {
+      intro: 'Una tormenta inesperada sacude el Argo. El equipo te necesita.',
+      text: 'En medio del lío de la tormenta...',
+      options: [
+        'Me agarro y sigo haciendo mi tarea',
+        'Me muevo rápido a donde me necesiten',
+        'Pausa breve: busco el orden en el caos',
+        'Busco la mirada de mis compañeros',
+      ],
+    },
+    {
+      intro: 'El barco se inclina de golpe. Todo se sacude a tu alrededor.',
+      text: '¿Qué te sale hacer en ese segundo?',
+      options: [
+        '¡Vamos equipo! para que el ánimo no caiga',
+        'Agarro lo primero para enderezar el barco',
+        'Busco qué cambió para saber cómo arreglarlo',
+        'Me quedo firme para dar equilibrio al grupo',
+      ],
+    },
+  ];
+
+  const OPT_COLORS = ['#3B82F6', '#F59E0B', '#8B5CF6', '#10B981'];
+  const AXIS_LABELS_FULL = { D: 'Respuesta ante el reto', I: 'Vínculo con el equipo', S: 'Constancia y sostén', C: 'Análisis y precisión' };
+  const AXIS_COLORS_MAP = { D: '#f97316', I: '#f59e0b', S: '#22c55e', C: '#6366f1' };
+
+  const FACE_ORDER = ['game', 'analysis', 'profile'];
+  const DURATIONS = { game: 5500, analysis: 5000, profile: 7000 };
+
+  let currentIdx = 0;
+  let qIdx = 0;
+  let fpIdx = 0;
+  let paused = false;
+  let timer;
+
+  const faces = flip.querySelectorAll('.flipcard__face');
+  const steps = flip.querySelectorAll('.flipcard__step');
+
+  function renderGame(q) {
+    document.getElementById('fc-intro').textContent = q.intro;
+    document.getElementById('fc-text').textContent = q.text;
+    const opts = document.getElementById('fc-options');
+    opts.innerHTML = q.options.map(function(opt, i) {
+      return '<div class="fc-game__option"><div class="fc-game__option-num" style="background:' + OPT_COLORS[i] + ';">' + String.fromCharCode(65+i) + '</div><p class="fc-game__option-text">' + opt + '</p></div>';
+    }).join('');
+  }
+
+  function renderAnalysis(p) {
+    const bars = document.getElementById('fc-bars');
+    bars.innerHTML = ['D','I','S','C'].map(function(ax) {
+      const v = p.votes[ax];
+      return '<div><div class="fc-analysis__bar-label"><span class="fc-analysis__bar-name">' + AXIS_LABELS_FULL[ax] + '</span><span class="fc-analysis__bar-pct">' + v + '/12 votos</span></div><div class="fc-analysis__bar"><div class="fc-analysis__bar-fill" style="--target-width:' + Math.round(v / 12 * 100) + '%; background:' + AXIS_COLORS_MAP[ax] + ';"></div></div></div>';
+    }).join('');
+    document.getElementById('fc-motor-desc').textContent = p.motorDesc;
+  }
+
+  function renderProfile(p) {
+    document.getElementById('fc-axis-dot').style.background = p.color;
+    const axisName = document.getElementById('fc-axis-name');
+    axisName.textContent = p.ejeLabel;
+    axisName.style.color = p.color;
+    document.getElementById('fc-banda-chip').textContent = p.banda;
+    document.getElementById('fc-arch-name').textContent = p.archetype;
+    const behaviors = document.getElementById('fc-behaviors');
+    behaviors.innerHTML = p.behaviors.map(function(b) { return '<span class="fc-profile__behavior" style="color:' + p.color + '; background:' + p.color + '14;">' + b + '</span>'; }).join('');
+    document.getElementById('fc-desc').textContent = p.desc;
+    const bridge = document.getElementById('fc-bridge');
+    bridge.innerHTML = p.bridge.map(function(w) { return '<span class="fc-profile__word" style="color:' + p.color + '; background:' + p.color + '12;">' + w + '</span>'; }).join('');
+    const avoid = document.getElementById('fc-avoid');
+    avoid.innerHTML = p.avoid.map(function(w) { return '<span class="fc-profile__word fc-profile__word--avoid">' + w + '</span>'; }).join('');
+  }
+
+  function setFace(idx) {
+    const newName = FACE_ORDER[idx];
+    if (newName === 'game') renderGame(QUESTIONS[qIdx]);
+    if (newName === 'analysis') renderAnalysis(PROFILES[fpIdx]);
+    if (newName === 'profile') renderProfile(PROFILES[fpIdx]);
+
+    faces.forEach(function(f) {
+      const fn = f.dataset.face;
+      f.classList.remove('is-active', 'is-leaving');
+      if (fn === newName) f.classList.add('is-active');
+      else if (fn === FACE_ORDER[currentIdx]) f.classList.add('is-leaving');
+    });
+    steps.forEach(function(s, i) { s.classList.toggle('is-active', i === idx); });
+    currentIdx = idx;
+  }
+
+  function tick() {
+    clearTimeout(timer);
+    if (paused) { timer = setTimeout(tick, 300); return; }
+    const next = (currentIdx + 1) % 3;
+    if (next === 0) {
+      qIdx = (qIdx + 1) % QUESTIONS.length;
+      fpIdx = (fpIdx + 1) % PROFILES.length;
+    }
+    setFace(next);
+    timer = setTimeout(tick, DURATIONS[FACE_ORDER[next]]);
+  }
+
+  flip.addEventListener('mouseenter', function() { paused = true; });
+  flip.addEventListener('mouseleave', function() { paused = false; });
+  steps.forEach(function(s, i) {
+    s.addEventListener('click', function() { clearTimeout(timer); setFace(i); timer = setTimeout(tick, DURATIONS[FACE_ORDER[i]]); });
+  });
+
+  setFace(0);
+  timer = setTimeout(tick, DURATIONS.game);
+})();
+</script>
+</body>
+</html>
