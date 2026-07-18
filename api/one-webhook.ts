@@ -514,8 +514,9 @@ async function handlePuentesPaid(args: {
     sb: ReturnType<typeof createClient<any, any>>;
     purchaseId: string;
     providerPaymentId: string;
+    amountTotalCents?: number | null;
 }): Promise<void> {
-    const { sb, purchaseId, providerPaymentId } = args;
+    const { sb, purchaseId, providerPaymentId, amountTotalCents } = args;
     const { data: purchase, error } = await sb
         .from('puentes_purchases')
         .select('*')
@@ -534,6 +535,9 @@ async function handlePuentesPaid(args: {
         status: 'paid',
         paid_at: new Date().toISOString(),
         provider_payment_id: providerPaymentId,
+        // Reconcile the ACTUAL charged amount (a coupon may have discounted it
+        // below the $4.99 recorded at checkout). Only when Stripe reported one.
+        ...(typeof amountTotalCents === 'number' ? { amount_cents: amountTotalCents } : {}),
     }).eq('id', purchaseId);
 
     // Per-child model: one ArgoPuente® purchase creates exactly ONE bridge
@@ -722,9 +726,12 @@ function reproShellTwo(headerWord: string, heading: string, body: string, cta1: 
 // The re-profile purchase is paid. Decide, from the single source of truth
 // (check_reprofile_cooldown), whether the child re-plays or the payer receives
 // the current fresh photo — never both. Idempotent via one_purchases.reprofile_status.
-async function handleReprofilePaid(args: { sb: any; purchaseId: string; providerPaymentId: string }): Promise<{ branch: string }> {
-    const { sb, purchaseId, providerPaymentId } = args;
+async function handleReprofilePaid(args: { sb: any; purchaseId: string; providerPaymentId: string; amountTotalCents?: number | null }): Promise<{ branch: string }> {
+    const { sb, purchaseId, providerPaymentId, amountTotalCents } = args;
     const origin = process.env.SITE_URL || 'https://argomethod.com';
+    // Reconcile the ACTUAL charged amount (a coupon may have discounted the
+    // reprofile below its recorded price). Spread into each terminal update.
+    const amountPatch = typeof amountTotalCents === 'number' ? { amount_cents: amountTotalCents } : {};
 
     const { data: purchase } = await sb
         .from('one_purchases')
@@ -792,7 +799,7 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
             : { s: `El perfil de ${childFirst} sigue vigente`, h: `El perfil de ${childFirst} sigue vigente`, b: `Otro adulto actualizó el perfil de ${childFirst} hace poco, así que no hace falta volver a jugar por ahora. Aquí tienes el informe actual${bridgeUrl ? ', y tu propio puente ya se puede crear' : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: 'El perfil se actualiza cada 6 meses.' };
         if (payer) await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, (T as { c2?: string }).c2 || '', T.n));
 
-        await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'fresh_delivered' }).eq('id', purchaseId);
+        await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'fresh_delivered', ...amountPatch }).eq('id', purchaseId);
         return { branch: 'fresh_delivered' };
     }
 
@@ -814,7 +821,7 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
         } else {
             // Truly no email anywhere (should be unreachable — checkout requires a
             // payer email). Hold the purchase and alert; no automatic refund.
-            await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'no_authorizer' }).eq('id', purchaseId);
+            await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'no_authorizer', ...amountPatch }).eq('id', purchaseId);
             await alertOwner('[Argo] Re-perfilado sin adulto autorizante', `La compra ${purchaseId} (niño ${purchase.child_id}) no tiene responsible_adult_email ni email del pagador. Queda en espera; sin reembolso automático.`);
             return { branch: 'no_authorizer' };
         }
@@ -835,7 +842,7 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
             if (s.purchase_id === purchaseId) continue;
             const { data: sp } = await sb.from('one_purchases').select('kind, payment_status').eq('id', s.purchase_id).maybeSingle();
             if (sp?.kind === 'reprofile' && sp?.payment_status === 'paid') {
-                await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth' }).eq('id', purchaseId);
+                await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth', ...amountPatch }).eq('id', purchaseId);
                 return { branch: 'awaiting_auth_shared' };
             }
         }
@@ -870,7 +877,7 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
         : { s: `Autoriza el nuevo perfil de ${childFirst}`, h: `Es momento de actualizar el perfil de ${childFirst}`, b: `Alguien solicitó un nuevo perfil para ${childFirst}. Como adulto responsable, hace falta tu autorización. Quien lo pagó recibirá el informe individual de ${childFirst} y generará su informe puente basado en ese perfil. Toca para autorizar y pásale el dispositivo a ${childFirst} para que juegue.`, c: 'Autorizar y jugar', n: 'Este enlace es válido por 14 días.' };
     await sendResendEmail(responsible, A.s, reproShell('One', A.h, A.b, A.c, authUrl, A.n));
 
-    await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth' }).eq('id', purchaseId);
+    await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth', ...amountPatch }).eq('id', purchaseId);
     return { branch: 'awaiting_auth' };
 }
 
@@ -988,7 +995,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     if (source === 'argo_puentes') {
         const puentesPurchaseId = session.metadata?.purchase_id;
         if (!puentesPurchaseId) return res.status(200).json({ received: true, ignored: true, reason: 'missing puentes purchase_id' });
-        await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: session.id });
+        await handlePuentesPaid({ sb, purchaseId: puentesPurchaseId, providerPaymentId: session.id, amountTotalCents: typeof session.amount_total === 'number' ? session.amount_total : null });
         return res.status(200).json({ received: true, kind: 'puentes', purchase_id: puentesPurchaseId });
     }
 
@@ -1021,7 +1028,7 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
     //    checkout), NOT the runtime flag — so a flag flip between checkout and this
     //    webhook can't misroute a paid re-profile into the first-play handler. ──
     if (existing.kind === 'reprofile') {
-        const r = await handleReprofilePaid({ sb, purchaseId, providerPaymentId: session.id });
+        const r = await handleReprofilePaid({ sb, purchaseId, providerPaymentId: session.id, amountTotalCents: typeof session.amount_total === 'number' ? session.amount_total : null });
         await logActivity(sb, { area: 'ventas', action: 'reprofile_paid', sourceType: 'webhook', severity: 'sano', resourceType: 'one_purchase', resourceId: String(purchaseId), reason: { provider: 'stripe', branch: r.branch, payment_id: session.id } });
         console.info(`[one-webhook] Stripe: reprofile purchase ${purchaseId} → ${r.branch}`);
         return res.status(200).json({ received: true, purchase_id: purchaseId, reprofile: r.branch });
@@ -1031,6 +1038,9 @@ async function handleStripe(req: VercelRequest, res: VercelResponse, sb: ReturnT
         payment_status: 'paid',
         payment_id: session.id,
         paid_at: new Date().toISOString(),
+        // Reconcile the ACTUAL charged amount (a coupon may have discounted it
+        // below the amount recorded at checkout). Only when Stripe reported one.
+        ...(typeof session.amount_total === 'number' ? { amount_cents: session.amount_total } : {}),
     }).eq('id', purchaseId);
 
     // Principia ingestion (area=ventas). event.id is NOT in scope inside this

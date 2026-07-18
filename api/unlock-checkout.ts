@@ -60,6 +60,23 @@ const LABELS: Record<string, string> = {
     pt: 'ArgoOne® · Relatório completo',
 };
 
+// Resolve a customer-entered promotion code to its Stripe id, re-validated
+// server-side. Returns null when unknown/inactive/expired/exhausted. Inlined per
+// endpoint — Vercel functions can't import shared helpers between api/ files.
+async function resolvePromotionCodeId(stripeKey: string, code: string): Promise<string | null> {
+    const norm = code.trim().toUpperCase();
+    if (!norm) return null;
+    const r = await fetch(`https://api.stripe.com/v1/promotion_codes?code=${encodeURIComponent(norm)}&active=true&limit=1`, {
+        headers: { Authorization: `Bearer ${stripeKey}` },
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+    const pc = Array.isArray(data?.data) ? data.data[0] : null;
+    if (!pc || pc.active === false) return null;
+    if (!pc.coupon || pc.coupon.valid === false) return null;
+    return typeof pc.id === 'string' ? pc.id : null;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -70,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { session_id, country: bodyCountry, lang: bodyLang } = req.body as { session_id?: string; country?: string; lang?: string };
+        const { session_id, country: bodyCountry, lang: bodyLang, coupon_code: bodyCoupon } = req.body as { session_id?: string; country?: string; lang?: string; coupon_code?: string };
         if (!session_id) return res.status(400).json({ error: 'Missing session_id' });
 
         const { data: session } = await sb
@@ -121,6 +138,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 'cancel_url': reportUrl,
             };
             if (session.adult_email) params['customer_email'] = session.adult_email;
+            // Optional discount coupon (re-validated server-side; the webhook is the
+            // source of truth for the actually charged amount).
+            if (typeof bodyCoupon === 'string' && bodyCoupon.trim()) {
+                const promotionCodeId = await resolvePromotionCodeId(stripeKey, bodyCoupon);
+                if (!promotionCodeId) return res.status(400).json({ error: 'invalid_coupon' });
+                params['discounts[0][promotion_code]'] = promotionCodeId;
+            }
             const r = await fetch('https://api.stripe.com/v1/checkout/sessions', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${stripeKey}`, 'Content-Type': 'application/x-www-form-urlencoded' },

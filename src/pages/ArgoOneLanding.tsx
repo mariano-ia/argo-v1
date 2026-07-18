@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Clock, Mail, ChevronDown, Check } from 'lucide-react';
 import { useLang } from '../context/LangContext';
+import { CouponField, type AppliedCoupon } from '../components/CouponField';
+
+const BASE_CENTS = 1299; // ArgoOne® $12.99
+const fmtUsd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
 /**
  * Dedicated ArgoOne® landing page — optimized for ad conversion.
@@ -62,6 +66,8 @@ const ArgoOneLanding: React.FC = () => {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+    const totalCents = coupon ? coupon.discountedCents : BASE_CENTS;
 
     // Navigating here from the home pricing card carries the previous scroll
     // position; reset so the buyer lands on the hero (price + email + CTA).
@@ -75,11 +81,14 @@ const ArgoOneLanding: React.FC = () => {
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, kind: 'one_puente', lang }),
+                body: JSON.stringify({ email, kind: 'one_puente', lang, coupon_code: coupon?.code }),
             });
             const data = await res.json();
             if (data.checkout_url) {
                 window.location.href = data.checkout_url;
+            } else if (data.error === 'invalid_coupon') {
+                setError('El cupón dejó de ser válido. Quítalo e intenta de nuevo.');
+                setLoading(false);
             } else {
                 setError('Error al crear el checkout. Intenta de nuevo.');
                 setLoading(false);
@@ -130,7 +139,12 @@ const ArgoOneLanding: React.FC = () => {
                                     <p style={{ fontSize: '17px', color: '#1D1D1F', marginBottom: '2px' }}><BrandName /></p>
                                     <p style={{ fontSize: '12px', color: '#86868B', lineHeight: 1.5 }}>El informe del niño, con tu Puente incluido.</p>
                                 </div>
-                                <p style={{ fontSize: '26px', fontWeight: 700, letterSpacing: '-0.02em', color: '#955FB5', flexShrink: 0 }}>$12.99</p>
+                                <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                                    {coupon && (
+                                        <p style={{ fontSize: '14px', color: '#AEAEB2', textDecoration: 'line-through', margin: '0 0 1px' }}>{fmtUsd(BASE_CENTS)}</p>
+                                    )}
+                                    <p style={{ fontSize: '26px', fontWeight: 700, letterSpacing: '-0.02em', color: '#955FB5', margin: 0 }}>{fmtUsd(totalCents)}</p>
+                                </div>
                             </div>
 
                             {/* What's included */}
@@ -142,6 +156,15 @@ const ArgoOneLanding: React.FC = () => {
                                     </li>
                                 ))}
                             </ul>
+
+                            {/* Discount coupon */}
+                            <CouponField
+                                product="one"
+                                baseCents={BASE_CENTS}
+                                lang={lang as 'es' | 'en' | 'pt'}
+                                onChange={setCoupon}
+                                className="mb-4"
+                            />
 
                             {/* Email + buy CTA */}
                             <div className="flex flex-col gap-2.5">
@@ -169,7 +192,7 @@ const ArgoOneLanding: React.FC = () => {
                                         boxShadow: email ? '0 4px 18px rgba(149,95,181,0.25)' : 'none',
                                     }}
                                 >
-                                    {loading ? 'Procesando...' : <>Comprar <BrandName /> · $12.99</>}
+                                    {loading ? 'Procesando...' : <>Comprar <BrandName /> · {fmtUsd(totalCents)}</>}
                                 </button>
                                 {error && <p style={{ fontSize: '12px', color: '#DC2626', textAlign: 'center' }}>{error}</p>}
                             </div>

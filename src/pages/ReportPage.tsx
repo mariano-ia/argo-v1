@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Link2, Printer, CheckCircle, Lock } from 'lucide-react';
+import { CouponField, type AppliedCoupon } from '../components/CouponField';
+
+const UNLOCK_BASE_CENTS = 1299; // ArgoOne® full report + Puente
+const fmtUsdUnlock = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 import { getReportData, getLocalizedTendenciaContent, getLocalizedTendenciaLabel } from '../lib/argosEngine';
 import type { AISections } from '../lib/openaiService';
 import { ReportV4View } from '../components/report/ReportV4View';
@@ -295,6 +299,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     const [notFound, setNotFound] = useState(false);
     const [copied, setCopied] = useState(false);
     const [unlocking, setUnlocking] = useState(false);
+    const [unlockCoupon, setUnlockCoupon] = useState<AppliedCoupon | null>(null);
+    const [unlockError, setUnlockError] = useState('');
     // Pick a fallback language for the loading/error states (before `session`
     // is populated). Uses the browser language, falling back to Spanish.
     const browserLang: 'es' | 'en' | 'pt' = (() => {
@@ -712,22 +718,43 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                         </div>
                         <div className="pt-2 border-t border-argo-border">
                             {session.is_demo ? (
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            const r = await fetch('/api/unlock-checkout', {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({ session_id: session.id, lang }),
-                                            });
-                                            const d = await r.json();
-                                            if (d.checkout_url) window.location.href = d.checkout_url;
-                                        } catch { /* no-op */ }
-                                    }}
-                                    className="inline-block px-6 py-3 rounded-xl text-sm font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
-                                >
-                                    {t.getFullReport}
-                                </button>
+                                <div className="max-w-xs mx-auto space-y-3">
+                                    {/* Price (struck base when a coupon is applied) */}
+                                    <div className="flex items-baseline justify-center gap-2">
+                                        {unlockCoupon && <span className="text-sm text-argo-light line-through tabular-nums">{fmtUsdUnlock(UNLOCK_BASE_CENTS)}</span>}
+                                        <span className="text-2xl font-bold text-argo-violet-500 tracking-tight tabular-nums">{fmtUsdUnlock(unlockCoupon ? unlockCoupon.discountedCents : UNLOCK_BASE_CENTS)}</span>
+                                    </div>
+                                    <CouponField
+                                        product="one"
+                                        baseCents={UNLOCK_BASE_CENTS}
+                                        lang={lang as 'es' | 'en' | 'pt'}
+                                        onChange={setUnlockCoupon}
+                                        className="text-left"
+                                    />
+                                    <button
+                                        onClick={async () => {
+                                            setUnlockError('');
+                                            try {
+                                                const r = await fetch('/api/unlock-checkout', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ session_id: session.id, lang, coupon_code: unlockCoupon?.code }),
+                                                });
+                                                const d = await r.json();
+                                                if (d.checkout_url) { window.location.href = d.checkout_url; return; }
+                                                setUnlockError(d.error === 'invalid_coupon'
+                                                    ? (lang === 'en' ? 'The coupon is no longer valid. Remove it and try again.' : lang === 'pt' ? 'O cupom não é mais válido. Remova-o e tente de novo.' : 'El cupón dejó de ser válido. Quítalo e intenta de nuevo.')
+                                                    : (lang === 'en' ? 'Something went wrong. Try again.' : lang === 'pt' ? 'Algo deu errado. Tente de novo.' : 'Algo salió mal. Intenta de nuevo.'));
+                                            } catch {
+                                                setUnlockError(lang === 'en' ? 'Connection error. Try again.' : lang === 'pt' ? 'Erro de conexão. Tente de novo.' : 'Error de conexión. Intenta de nuevo.');
+                                            }
+                                        }}
+                                        className="w-full px-6 py-3 rounded-xl text-sm font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors"
+                                    >
+                                        {t.getFullReport} · {fmtUsdUnlock(unlockCoupon ? unlockCoupon.discountedCents : UNLOCK_BASE_CENTS)}
+                                    </button>
+                                    {unlockError && <p className="text-xs text-red-600">{unlockError}</p>}
+                                </div>
                             ) : (
                                 <p className="text-xs text-argo-light leading-relaxed max-w-xs mx-auto">{t.lockedCta}</p>
                             )}

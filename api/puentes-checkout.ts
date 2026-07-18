@@ -103,11 +103,29 @@ async function sendExistingBridgeEmail(email: string, magicToken: string, childF
 
 /* ── Stripe checkout ─────────────────────────────────────────────────────── */
 
+// Resolve a customer-entered promotion code to its Stripe id, re-validated
+// server-side. Returns null when unknown/inactive/expired/exhausted. Inlined per
+// endpoint — Vercel functions can't import shared helpers between api/ files.
+async function resolvePromotionCodeId(stripeKey: string, code: string): Promise<string | null> {
+    const norm = code.trim().toUpperCase();
+    if (!norm) return null;
+    const r = await fetch(`https://api.stripe.com/v1/promotion_codes?code=${encodeURIComponent(norm)}&active=true&limit=1`, {
+        headers: { Authorization: `Bearer ${stripeKey}` },
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+    const pc = Array.isArray(data?.data) ? data.data[0] : null;
+    if (!pc || pc.active === false) return null;
+    if (!pc.coupon || pc.coupon.valid === false) return null;
+    return typeof pc.id === 'string' ? pc.id : null;
+}
+
 async function createStripeCheckout(args: {
     email: string;
     childName: string;
     purchaseId: string;
     lang: string;
+    promotionCodeId: string | null;
 }): Promise<string> {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
@@ -124,26 +142,29 @@ async function createStripeCheckout(args: {
             ? `ArgoPuente®: vínculo com ${args.childName}`
             : `ArgoPuente®: vínculo con ${args.childName}`;
 
+    const params: Record<string, string> = {
+        mode: 'payment',
+        customer_email: args.email,
+        // Disable Stripe Link (the email-code auto-fill flow) — only card.
+        'payment_method_types[0]': 'card',
+        'line_items[0][price_data][currency]': 'usd',
+        'line_items[0][price_data][unit_amount]': String(PRICE_USD_CENTS),
+        'line_items[0][price_data][product_data][name]': productLabel,
+        'line_items[0][quantity]': '1',
+        'metadata[purchase_id]': args.purchaseId,
+        'metadata[source]': 'argo_puentes',
+        success_url: `${origin}/puentes/checkout/success?purchase_id=${args.purchaseId}`,
+        cancel_url: `${origin}/puentes/checkout/cancel`,
+    };
+    if (args.promotionCodeId) params['discounts[0][promotion_code]'] = args.promotionCodeId;
+
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
         headers: {
             Authorization: `Bearer ${stripeKey}`,
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-            mode: 'payment',
-            customer_email: args.email,
-            // Disable Stripe Link (the email-code auto-fill flow) — only card.
-            'payment_method_types[0]': 'card',
-            'line_items[0][price_data][currency]': 'usd',
-            'line_items[0][price_data][unit_amount]': String(PRICE_USD_CENTS),
-            'line_items[0][price_data][product_data][name]': productLabel,
-            'line_items[0][quantity]': '1',
-            'metadata[purchase_id]': args.purchaseId,
-            'metadata[source]': 'argo_puentes',
-            success_url: `${origin}/puentes/checkout/success?purchase_id=${args.purchaseId}`,
-            cancel_url: `${origin}/puentes/checkout/cancel`,
-        }).toString(),
+        body: new URLSearchParams(params).toString(),
     });
 
     if (!res.ok) {
@@ -182,12 +203,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             consent_given,
             invite_token,
             bridge_link_token,
+            coupon_code: bodyCoupon,
         } = req.body as {
             source_session_id?: string;
             recipient_email?: string;
             recipient_name?: string;
             lang?: string;
             consent_given?: boolean;
+            coupon_code?: string;
             // ArgoOne® fusion (B13, legado): an accepted bridge-invite authorizes an
             // adult OTHER than the responsible one to buy the $4.99 add-on.
             invite_token?: string;
@@ -325,6 +348,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const magicToken = genMagicToken();
         const finalLang = (lang || srcSession.lang || 'es') as string;
 
+        // Resolve an optional discount coupon BEFORE the insert, so an invalid code
+        // fails fast (400) without leaving an orphan pending purchase row. The
+        // charged amount is reconciled from Stripe's amount_total in the webhook.
+        let promotionCodeId: string | null = null;
+        if (typeof bodyCoupon === 'string' && bodyCoupon.trim()) {
+            const stripeKey = process.env.STRIPE_SECRET_KEY;
+            if (!stripeKey) return res.status(500).json({ error: 'Server configuration error' });
+            promotionCodeId = await resolvePromotionCodeId(stripeKey, bodyCoupon);
+            if (!promotionCodeId) return res.status(400).json({ error: 'invalid_coupon' });
+        }
+
         // Create pending purchase (Stripe USD only — Fase 0 STRIPE_ONLY, no
         // MercadoPago/ARS path).
         const { data: purchase, error: insErr } = await sb
@@ -363,6 +397,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             childName,
             purchaseId: purchase.id,
             lang: finalLang,
+            promotionCodeId,
         });
 
         return res.status(200).json({

@@ -23,11 +23,45 @@ function normEmail(s?: string | null): string {
     return (s || '').trim().toLowerCase();
 }
 
-async function createStripeCheckout(price: { usd_cents: number; label: string }, email: string, purchaseId: string, accessToken: string): Promise<string> {
+// Resolve a customer-entered promotion code to its Stripe id, re-validated
+// server-side (never trust the client). Returns null when unknown/inactive/
+// expired/exhausted (Stripe drops those from the active=true list). Inlined per
+// endpoint — Vercel functions can't import shared helpers between api/ files.
+async function resolvePromotionCodeId(stripeKey: string, code: string): Promise<string | null> {
+    const norm = code.trim().toUpperCase();
+    if (!norm) return null;
+    const r = await fetch(`https://api.stripe.com/v1/promotion_codes?code=${encodeURIComponent(norm)}&active=true&limit=1`, {
+        headers: { Authorization: `Bearer ${stripeKey}` },
+    });
+    if (!r.ok) return null;
+    const data = await r.json();
+    const pc = Array.isArray(data?.data) ? data.data[0] : null;
+    if (!pc || pc.active === false) return null;
+    if (!pc.coupon || pc.coupon.valid === false) return null;
+    return typeof pc.id === 'string' ? pc.id : null;
+}
+
+async function createStripeCheckout(price: { usd_cents: number; label: string }, email: string, purchaseId: string, accessToken: string, promotionCodeId: string | null): Promise<string> {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeKey) throw new Error('Missing STRIPE_SECRET_KEY');
 
     const origin = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://argomethod.com';
+
+    const params: Record<string, string> = {
+        'mode': 'payment',
+        'customer_email': email,
+        'line_items[0][price_data][currency]': 'usd',
+        'line_items[0][price_data][unit_amount]': String(price.usd_cents),
+        'line_items[0][price_data][product_data][name]': price.label,
+        'line_items[0][quantity]': '1',
+        'metadata[purchase_id]': purchaseId,
+        'metadata[source]': 'argo_one',
+        'success_url': `${origin}/one/panel?token=${accessToken}&success=1`,
+        'cancel_url': `${origin}/one`,
+    };
+    // A resolved coupon is applied via discounts[]; note discounts and
+    // allow_promotion_codes are mutually exclusive in Stripe (we use only the former).
+    if (promotionCodeId) params['discounts[0][promotion_code]'] = promotionCodeId;
 
     const res = await fetch('https://api.stripe.com/v1/checkout/sessions', {
         method: 'POST',
@@ -35,18 +69,7 @@ async function createStripeCheckout(price: { usd_cents: number; label: string },
             'Authorization': `Bearer ${stripeKey}`,
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: new URLSearchParams({
-            'mode': 'payment',
-            'customer_email': email,
-            'line_items[0][price_data][currency]': 'usd',
-            'line_items[0][price_data][unit_amount]': String(price.usd_cents),
-            'line_items[0][price_data][product_data][name]': price.label,
-            'line_items[0][quantity]': '1',
-            'metadata[purchase_id]': purchaseId,
-            'metadata[source]': 'argo_one',
-            'success_url': `${origin}/one/panel?token=${accessToken}&success=1`,
-            'cancel_url': `${origin}/one`,
-        }).toString(),
+        body: new URLSearchParams(params).toString(),
     });
 
     if (!res.ok) {
@@ -69,7 +92,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sb = createClient(supabaseUrl, serviceKey);
 
     try {
-        const { email: rawEmail, kind: bodyKind, lang: bodyLang, child_id: bodyChildId } = req.body as { email?: string; kind?: string; lang?: string; child_id?: string };
+        const { email: rawEmail, kind: bodyKind, lang: bodyLang, child_id: bodyChildId, coupon_code: bodyCoupon } = req.body as { email?: string; kind?: string; lang?: string; child_id?: string; coupon_code?: string };
         const email = String(rawEmail || '').trim().toLowerCase();
         // Prefer the language the client sent; otherwise fall back to the browser's
         // Accept-Language header so an English (or Portuguese) visitor gets emails in
@@ -174,6 +197,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             reprofileChildId = bodyChildId;
         }
 
+        // Resolve an optional discount coupon BEFORE any write, so an invalid code
+        // fails fast (400) without leaving an orphan purchase row / play-link slot.
+        // The charged amount is reconciled from Stripe's amount_total in the webhook.
+        let promotionCodeId: string | null = null;
+        if (typeof bodyCoupon === 'string' && bodyCoupon.trim()) {
+            const stripeKey = process.env.STRIPE_SECRET_KEY;
+            if (!stripeKey) return res.status(500).json({ error: 'Server configuration error' });
+            promotionCodeId = await resolvePromotionCodeId(stripeKey, bodyCoupon);
+            if (!promotionCodeId) return res.status(400).json({ error: 'invalid_coupon' });
+        }
+
         // Create purchase record (pending). pack_size is always 1 (no packs for now).
         const { data: purchase, error: insertErr } = await sb
             .from('one_purchases')
@@ -202,7 +236,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             await sb.from('one_links').insert([{ purchase_id: purchase.id, status: 'available' }]);
         }
 
-        const checkoutUrl = await createStripeCheckout(price, email, purchase.id, purchase.access_token);
+        const checkoutUrl = await createStripeCheckout(price, email, purchase.id, purchase.access_token, promotionCodeId);
 
         return res.status(200).json({
             checkout_url: checkoutUrl,

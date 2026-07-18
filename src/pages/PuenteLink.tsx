@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button, Card } from '../components/ui';
+import { CouponField, type AppliedCoupon } from '../components/CouponField';
 import { useLang } from '../context/LangContext';
 import type { Lang } from '../types/puentes';
+
+const BASE_CENTS = 499; // ArgoPuente® $4.99
+const fmtUsd = (cents: number) => `USD ${(cents / 100).toFixed(2)}`;
 
 /**
  * Fase 1 — /puente/:token (frozen model, docs/ARGOONE-DECISIONES.md §4)
@@ -105,6 +109,8 @@ export default function PuenteLink() {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [attempt, setAttempt] = useState(0);
+    const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+    const totalCents = coupon ? coupon.discountedCents : BASE_CENTS;
 
     useEffect(() => {
         if (!token) { setStatus('invalid'); return; }
@@ -153,9 +159,11 @@ export default function PuenteLink() {
                     recipient_name: name.trim(),
                     consent_given: consent,
                     lang,
+                    coupon_code: coupon?.code,
                 }),
             });
             const j = await res.json().catch(() => ({}));
+            if (j.error === 'invalid_coupon') { setError(lang === 'en' ? 'The coupon is no longer valid. Remove it and try again.' : lang === 'pt' ? 'O cupom não é mais válido. Remova-o e tente de novo.' : 'El cupón dejó de ser válido. Quítalo e intenta de nuevo.'); setSubmitting(false); return; }
             // Already has their bridge with this child (1 per email × niño). The
             // server re-sent the permanent link to that inbox (never echoes the
             // token on the shareable-link path) — tell them to check their email.
@@ -213,6 +221,14 @@ export default function PuenteLink() {
                         <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.emailPlaceholder} className="w-full px-4 py-3 rounded-xl border border-argo-border text-sm text-argo-navy placeholder:text-argo-light focus:outline-none focus:ring-2 focus:ring-argo-violet-300" />
                     </div>
 
+                    <CouponField
+                        product="puente"
+                        baseCents={BASE_CENTS}
+                        lang={(lang as 'es' | 'en' | 'pt')}
+                        onChange={setCoupon}
+                        className="mt-4"
+                    />
+
                     <label className="mt-5 flex items-start gap-2.5 cursor-pointer">
                         <input type="checkbox" checked={consent} onChange={e => setConsent(e.target.checked)} className="mt-0.5 accent-argo-violet-500" />
                         <span className="text-sm text-argo-secondary leading-relaxed">{t.consentPre}<Link to="/terms" target="_blank" className="text-argo-violet-500 underline">{t.consentLink}</Link>{t.consentPost}</span>
@@ -222,7 +238,7 @@ export default function PuenteLink() {
 
                     <div className="mt-6">
                         <Button variant="violet" size="lg" onClick={submit} disabled={!consent || !nameOk || !emailOk || submitting}>
-                            {t.cta} <span className="ml-1.5 text-sm font-bold opacity-90">{t.price}</span>
+                            {t.cta} <span className="ml-1.5 text-sm font-bold opacity-90">{fmtUsd(totalCents)}</span>
                         </Button>
                     </div>
                 </Card>

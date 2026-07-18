@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Copy, Check, ExternalLink, X } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { InfoTip, ToastProvider, useToast } from '../components/ui';
+import { CouponPurchaseModal } from '../components/CouponPurchaseModal';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
 
@@ -294,6 +295,7 @@ const TH = {
         comingSoon: 'Muy pronto disponible.',
         genericError: 'Algo salió mal. Intenta de nuevo.',
         alreadyBridge: 'Ya tienes un puente activo hacia este niño.',
+        couponInvalid: 'El cupón dejó de ser válido. Quítalo e intenta de nuevo.',
     },
     en: {
         greeting: {
@@ -373,6 +375,7 @@ const TH = {
         comingSoon: 'Available very soon.',
         genericError: 'Something went wrong. Try again.',
         alreadyBridge: 'You already have an active bridge with this child.',
+        couponInvalid: 'The coupon is no longer valid. Remove it and try again.',
     },
     pt: {
         greeting: {
@@ -452,6 +455,7 @@ const TH = {
         comingSoon: 'Disponível em breve.',
         genericError: 'Algo deu errado. Tente de novo.',
         alreadyBridge: 'Você já tem uma ponte ativa com esta criança.',
+        couponInvalid: 'O cupom não é mais válido. Remova-o e tente de novo.',
     },
 };
 
@@ -605,24 +609,42 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
         } catch { toast('error', th.genericError); return null; }
     }, [demo, token, th, toast]);
 
-    const startReplay = async (childId: string | null) => {
-        if (demo) { toast('info', th.comingSoon); return; }
+    // One-click buys route through a small confirmation modal so the discount
+    // coupon lives in our own UI (these buttons otherwise redirect straight to
+    // Stripe). The modal hands back the entered code; the do* fns run checkout.
+    const [couponModal, setCouponModal] = useState<{
+        product: 'one' | 'puente';
+        baseCents: number;
+        title: string;
+        run: (couponCode: string | null) => Promise<void>;
+    } | null>(null);
+
+    const doReplay = async (childId: string | null, couponCode: string | null) => {
         setBusy(true);
         try {
             const res = await fetch('/api/one-checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: data.email, kind: 'one_puente', lang, child_id: childId }),
+                body: JSON.stringify({ email: data.email, kind: 'one_puente', lang, child_id: childId, coupon_code: couponCode ?? undefined }),
             });
             const j = await res.json();
-            if (j.checkout_url) window.location.href = j.checkout_url;
-            else toast('error', th.genericError);
+            if (j.checkout_url) { window.location.href = j.checkout_url; return; }
+            toast('error', j.error === 'invalid_coupon' ? th.couponInvalid : th.genericError);
         } catch { toast('error', th.genericError); }
         setBusy(false);
     };
 
-    const refreshBridge = async (child: HubChildF) => {
+    const startReplay = (childId: string | null) => {
         if (demo) { toast('info', th.comingSoon); return; }
+        setCouponModal({
+            product: 'one',
+            baseCents: 1299,
+            title: childId ? th.updateReport : th.otherCta,
+            run: (code) => doReplay(childId, code),
+        });
+    };
+
+    const doBridge = async (child: HubChildF, couponCode: string | null) => {
         if (!child.perfilamiento_id) { toast('error', th.genericError); return; }
         setBusy(true);
         try {
@@ -632,7 +654,7 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                 // recipient_email MUST be the child's responsible-adult email (== the
                 // viewer's own email here, since this button only shows to the
                 // responsible adult) or the gate 403s. Debt #4: the email is locked.
-                body: JSON.stringify({ source_session_id: child.perfilamiento_id, recipient_email: data.email, consent_given: true, lang }),
+                body: JSON.stringify({ source_session_id: child.perfilamiento_id, recipient_email: data.email, consent_given: true, lang, coupon_code: couponCode ?? undefined }),
             });
             if (res.status === 409) {
                 const j = await res.json();
@@ -640,11 +662,21 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                 toast('info', th.alreadyBridge);
             } else {
                 const j = await res.json();
-                if (j.checkout_url) window.location.href = j.checkout_url;
-                else toast('error', th.genericError);
+                if (j.checkout_url) { window.location.href = j.checkout_url; return; }
+                toast('error', j.error === 'invalid_coupon' ? th.couponInvalid : th.genericError);
             }
         } catch { toast('error', th.genericError); }
         setBusy(false);
+    };
+
+    const refreshBridge = (child: HubChildF) => {
+        if (demo) { toast('info', th.comingSoon); return; }
+        setCouponModal({
+            product: 'puente',
+            baseCents: 499,
+            title: th.createMyBridge,
+            run: (code) => doBridge(child, code),
+        });
     };
 
     // Frozen model §4: copy the child's ONE shareable bridges-link. The token is
@@ -839,6 +871,19 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {couponModal && (
+                <CouponPurchaseModal
+                    open
+                    product={couponModal.product}
+                    baseCents={couponModal.baseCents}
+                    title={couponModal.title}
+                    lang={lang as 'es' | 'en' | 'pt'}
+                    loading={busy}
+                    onConfirm={(code) => { couponModal.run(code); }}
+                    onClose={() => setCouponModal(null)}
+                />
+            )}
         </div>
     );
 };

@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Button, Card, Input } from '../components/ui';
+import { CouponField, type AppliedCoupon } from '../components/CouponField';
 import { getPuentesCopy } from '../lib/puentesTranslations';
 import type { Lang } from '../types/puentes';
 
 const SUPPORTED: Lang[] = ['es', 'en', 'pt'];
+const BASE_CENTS = 499; // ArgoPuente® $4.99
+const fmtUsd = (cents: number) => `USD ${(cents / 100).toFixed(2)}`;
 
 export default function PuentesCheckout() {
     const [params] = useSearchParams();
@@ -19,6 +22,8 @@ export default function PuentesCheckout() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [country, setCountry] = useState<string>('');
+    const [coupon, setCoupon] = useState<AppliedCoupon | null>(null);
+    const totalCents = coupon ? coupon.discountedCents : BASE_CENTS;
 
     // Pull the source session's child name and inherit lang for display
     useEffect(() => {
@@ -56,6 +61,7 @@ export default function PuentesCheckout() {
                     country: country || undefined,
                     lang,
                     consent_given: consent,
+                    coupon_code: coupon?.code,
                 }),
             });
             const data = await res.json();
@@ -64,6 +70,11 @@ export default function PuentesCheckout() {
             // existing report instead of charging them again.
             if (res.status === 409 && data.existing_magic_link) {
                 window.location.href = data.existing_magic_link;
+                return;
+            }
+            if (data.error === 'invalid_coupon') {
+                setError(lang === 'en' ? 'The coupon is no longer valid. Remove it and try again.' : lang === 'pt' ? 'O cupom não é mais válido. Remova-o e tente de novo.' : 'El cupón dejó de ser válido. Quítalo e intenta de nuevo.');
+                setLoading(false);
                 return;
             }
             if (!res.ok || !data.checkout_url) {
@@ -124,10 +135,19 @@ export default function PuentesCheckout() {
                         <span className="text-xs uppercase tracking-widest text-argo-grey font-semibold">
                             {lang === 'en' ? 'Price' : lang === 'pt' ? 'Preço' : 'Precio'}
                         </span>
-                        <span className="text-2xl font-bold text-argo-navy tracking-tight">
-                            {c.checkout.priceUsd}
+                        <span className="flex items-baseline gap-2">
+                            {coupon && <span className="text-sm text-argo-light line-through tabular-nums">{fmtUsd(BASE_CENTS)}</span>}
+                            <span className="text-2xl font-bold text-argo-navy tracking-tight tabular-nums">{fmtUsd(totalCents)}</span>
                         </span>
                     </div>
+
+                    <CouponField
+                        product="puente"
+                        baseCents={BASE_CENTS}
+                        lang={lang}
+                        onChange={setCoupon}
+                        className="mt-4"
+                    />
 
                     <div className="mt-6 space-y-4">
                         <Input
