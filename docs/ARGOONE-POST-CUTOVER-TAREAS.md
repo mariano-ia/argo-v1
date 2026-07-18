@@ -140,3 +140,14 @@ El panel v2 (`src/pages/OnePanel.tsx`, `HubV2`) se había desviado del diseño a
 ### Notas / seguimiento
 - **`credits_remaining`** (columna) sigue en la DB por decisión del owner (inerte, inofensiva). Si algún día se quiere borrar: `ALTER TABLE public.tenants DROP COLUMN credits_remaining;` (el auto-mode classifier bloquea los DROP de columnas por seguridad; correr con OK explícito).
 - **Verificación humana (owner):** cobro real de Stripe punta a punta, render mobile/pixel-match, deliverability de emails, y el eyeball de informes v4 reales en prod (`report_qc.pass` como tasa de gate).
+
+### Panel desde la compra + avisos del mail (unlock demo), 2026-07-18
+Decisión del owner: **toda compra de ArgoOne® habilita el panel en el momento del pago**, sin importar si el niño jugó. El flujo demo → unlock era el único que dejaba al comprador sin puerta: el unlock no crea `one_purchases` (deliberado), el niño demo se crea solo con `adult_email` (`responsible_adult_email` NULL), y sin `adult_profiles` el request-access del panel no encuentra ninguna de sus tres puertas (verificado en prod: el unlock de test del 18-jul quedó lockeado; los dos de junio entraban solo gracias al backfill del split de identidad).
+
+Fix en `handleUnlockPaid` (`api/one-webhook.ts`):
+1. **Claim del niño**: `children.responsible_adult_email = payer` cuando está NULL (mismo patrón que el re-perfilado y el recovery cron).
+2. **Mint de identidad adulta**: crea (o reusa) la fila `adult_profiles` del pagador y usa su `access_token` para armar el link tokenizado al panel.
+3. **Email de unlock**: la nota ahora incluye "Tu panel ya está listo" con el link tokenizado + el fallback de entrar a `argomethod.com/one/panel` con su email (es/en/pt).
+4. **UI (`ReportPage.tsx`)**: banner post-unlock (solo en el retorno del checkout, `?unlocked=1` + `full_access`) avisando que el mail trae el informe, el link del puente y el acceso al panel. Antes la UI no mencionaba el mail, y ese mail es el ÚNICO portador del link del puente comp: nadie lo completaba.
+
+Idempotente (guard de `full_access` + upsert por email con re-read en carrera). Comment de `unlock-checkout.ts` actualizado. Pendiente conversado con el owner: entrada al panel desde la web (nav de la home).

@@ -9,9 +9,11 @@ import { createClient } from '@supabase/supabase-js';
  * One-time $12.99 ArgoOne® checkout that unlocks the FULL report for an existing
  * (demo) perfilamiento AND delivers the buyer's included Puente. On payment,
  * one-webhook (source='unlock') sets full_access=true, mints the comp Puente
- * toward that perfilamiento for the payer, and emails both links. Provider
- * routing (Stripe USD / MercadoPago ARS) mirrors one-checkout.ts. No
- * one_purchases row: the unlocked session itself is the deliverable.
+ * toward that perfilamiento for the payer, claims the child (responsible_adult_email)
+ * and mints the payer's adult_profiles row, then emails report + bridge + panel
+ * links. Provider routing (Stripe USD / MercadoPago ARS) mirrors one-checkout.ts.
+ * No one_purchases row: the panel entry is the adult identity (adult_profiles),
+ * per the owner decision 2026-07-18 that every ArgoOne® purchase enables the panel.
  */
 
 const PRICE_USD_CENTS = 1299; // $12.99 — unified ArgoOne® (report + Puente incluido)

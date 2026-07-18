@@ -582,7 +582,7 @@ async function handleUnlockPaid(args: {
     const origin = process.env.SITE_URL || 'https://argomethod.com';
     const { data: session } = await sb
         .from('perfilamientos')
-        .select('id, full_access, adult_email, child_name, share_token, lang')
+        .select('id, full_access, adult_email, child_name, share_token, lang, child_id')
         .eq('id', sessionId)
         .maybeSingle();
     if (!session) {
@@ -614,6 +614,40 @@ async function handleUnlockPaid(args: {
         ? `${origin}/report/${sessionId}?token=${encodeURIComponent(session.share_token)}`
         : `${origin}/report/${sessionId}`;
     if (payer && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer)) {
+        // Panel from the purchase (owner decision 2026-07-18): buying ArgoOne®
+        // enables the panel immediately. The demo child was created with
+        // adult_email only, so (a) claim the child for the payer and (b) mint
+        // the adult identity whose access_token IS the panel entry. Without
+        // these, /one/panel request-access finds none of its three doors
+        // (one_purchases / adult_profiles / children.responsible_adult_email)
+        // and silently mails nothing.
+        if (session.child_id) {
+            await sb.from('children')
+                .update({ responsible_adult_email: payer })
+                .eq('id', session.child_id)
+                .is('responsible_adult_email', null);
+        }
+        let panelUrl = `${origin}/one/panel`;
+        try {
+            const esc = payer.replace(/([\\%_])/g, '\\$1');
+            const { data: ap } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+            let apToken = ap?.access_token as string | undefined;
+            if (!apToken) {
+                const { data: ins } = await sb.from('adult_profiles')
+                    .insert({ email: payer, lang })
+                    .select('access_token')
+                    .maybeSingle();
+                apToken = ins?.access_token as string | undefined;
+                if (!apToken) {
+                    // Lost the unique-email race → re-read the winner.
+                    const { data: again } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+                    apToken = again?.access_token as string | undefined;
+                }
+            }
+            if (apToken) panelUrl = `${origin}/one/panel?token=${apToken}`;
+        } catch (e) {
+            console.warn(`[one-webhook] unlock: adult profile mint failed for ${sessionId}:`, e instanceof Error ? e.message : e);
+        }
         let bridgeUrl: string | null = null;
         const { data: existing } = await sb.from('puentes_purchases')
             .select('id, magic_token')
@@ -634,11 +668,12 @@ async function handleUnlockPaid(args: {
             if (!pErr) bridgeUrl = `${origin}/puentes/${mt}`;
         }
         const childFirst = (session.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+        const panelLink = (label: string) => `<a href="${panelUrl}" style="color:#955FB5;text-decoration:none;">${label}</a>`;
         const T = lang === 'en'
-            ? { s: `${childFirst}'s full report is ready`, h: `${childFirst}'s ArgoOne® report is ready`, b: `Here is the full report${bridgeUrl ? `, and your own bridge with ${childFirst} is ready to build` : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: 'One-time purchase. No subscription.' }
+            ? { s: `${childFirst}'s full report is ready`, h: `${childFirst}'s ArgoOne® report is ready`, b: `Here is the full report${bridgeUrl ? `, and your own bridge with ${childFirst} is ready to build` : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: `One-time purchase. No subscription. Your panel is ready: ${panelLink('open your panel')} or go to argomethod.com/one/panel with your email to find your reports and your bridge anytime.` }
             : lang === 'pt'
-            ? { s: `O relatório completo de ${childFirst} está pronto`, h: `O relatório ArgoOne® de ${childFirst} está pronto`, b: `Aqui está o relatório completo${bridgeUrl ? `, e a sua própria ponte com ${childFirst} já pode ser criada` : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: 'Compra única. Sem assinatura.' }
-            : { s: `El informe completo de ${childFirst} está listo`, h: `El informe ArgoOne® de ${childFirst} está listo`, b: `Aquí tienes el informe completo${bridgeUrl ? `, y tu propio puente con ${childFirst} ya se puede crear` : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: 'Compra única. Sin suscripción.' };
+            ? { s: `O relatório completo de ${childFirst} está pronto`, h: `O relatório ArgoOne® de ${childFirst} está pronto`, b: `Aqui está o relatório completo${bridgeUrl ? `, e a sua própria ponte com ${childFirst} já pode ser criada` : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: `Compra única. Sem assinatura. Seu painel já está pronto: ${panelLink('abra seu painel')} ou acesse argomethod.com/one/panel com seu email para ver seus relatórios e sua ponte quando quiser.` }
+            : { s: `El informe completo de ${childFirst} está listo`, h: `El informe ArgoOne® de ${childFirst} está listo`, b: `Aquí tienes el informe completo${bridgeUrl ? `, y tu propio puente con ${childFirst} ya se puede crear` : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: `Compra única. Sin suscripción. Tu panel ya está listo: ${panelLink('abre tu panel')} o entra a argomethod.com/one/panel con tu email para ver tus informes y tu puente cuando quieras.` };
         try {
             await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, T.c2, T.n));
         } catch (e) {

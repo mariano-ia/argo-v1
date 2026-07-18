@@ -80,6 +80,8 @@ const T = {
         getFullReport: 'Obtener informe completo',
         unlockingTitle: 'Recibimos tu pago',
         unlockingBody: 'Estamos desbloqueando tu informe completo. Esto puede tardar unos segundos...',
+        unlockedNoticeTitle: 'Informe desbloqueado',
+        unlockedNoticeBody: 'Te enviamos un email con este informe, el link para crear tu puente y el acceso a tu panel. Si no lo ves, revisa la carpeta de spam.',
     },
     en: {
         reportTitle: 'Profile report',
@@ -119,6 +121,8 @@ const T = {
         getFullReport: 'Get the full report',
         unlockingTitle: 'Payment received',
         unlockingBody: 'We are unlocking your full report. This can take a few seconds...',
+        unlockedNoticeTitle: 'Report unlocked',
+        unlockedNoticeBody: 'We sent you an email with this report, the link to create your bridge, and access to your panel. If you do not see it, check your spam folder.',
     },
     pt: {
         reportTitle: 'Relatório de perfil',
@@ -158,6 +162,8 @@ const T = {
         getFullReport: 'Obter o relatório completo',
         unlockingTitle: 'Pagamento recebido',
         unlockingBody: 'Estamos desbloqueando seu relatório completo. Isso pode levar alguns segundos...',
+        unlockedNoticeTitle: 'Relatório desbloqueado',
+        unlockedNoticeBody: 'Enviamos um email com este relatório, o link para criar sua ponte e o acesso ao seu painel. Se não o encontrar, verifique a pasta de spam.',
     },
 };
 
@@ -299,6 +305,9 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
     const [notFound, setNotFound] = useState(false);
     const [copied, setCopied] = useState(false);
     const [unlocking, setUnlocking] = useState(false);
+    // True only on the return from the unlock checkout: shows the one-time
+    // "we emailed you the report + bridge + panel" notice above the report.
+    const [justUnlocked, setJustUnlocked] = useState(false);
     const [unlockCoupon, setUnlockCoupon] = useState<AppliedCoupon | null>(null);
     const [unlockError, setUnlockError] = useState('');
     // Pick a fallback language for the loading/error states (before `session`
@@ -378,6 +387,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                 if (cancelled) return;
                 if (data) setSession(data);
                 setLoading(false);
+                if (unlockedReturn && data?.full_access) setJustUnlocked(true);
                 // Webhook-lag: after paying to unlock, the ?unlocked=1 return can
                 // briefly show the report still locked until the webhook flips
                 // full_access. Poll until it does (up to ~30s) instead of showing
@@ -393,7 +403,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                             if (rr.ok) {
                                 const fresh = await rr.json();
                                 if (!cancelled && fresh?.full_access) {
-                                    setSession(fresh); setUnlocking(false);
+                                    setSession(fresh); setUnlocking(false); setJustUnlocked(true);
                                     if (pollTimer) clearInterval(pollTimer);
                                     return;
                                 }
@@ -658,6 +668,18 @@ export const ReportPage: React.FC<ReportPageProps> = ({ mockSession }) => {
                     </p>
                     <p className="text-xs text-argo-light mt-0.5">{t.guardian}: {session.adult_name}</p>
                 </div>
+
+                {/* Post-unlock notice: the email is the only carrier of the bridge
+                    link and the panel access, so tell the buyer it exists. */}
+                {justUnlocked && session.full_access && (
+                    <div className="bg-green-50 border border-green-200 rounded-[14px] p-4 mb-4 flex items-start gap-3">
+                        <CheckCircle size={18} className="text-green-600 flex-shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-sm font-semibold text-argo-navy">{t.unlockedNoticeTitle}</p>
+                            <p className="text-xs text-argo-secondary leading-relaxed mt-0.5">{t.unlockedNoticeBody}</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* 1. Archetype hero */}
                 <Card>
