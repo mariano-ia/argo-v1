@@ -68,7 +68,18 @@ async function resolvePromotionCode(stripeKey: string, code: string): Promise<Re
     const data = await r.json();
     const pc = Array.isArray(data?.data) ? data.data[0] : null;
     if (!pc || pc.active === false) return null;
-    const coupon = pc.coupon;
+    // The coupon lives under `promotion.coupon` (newer Stripe API, an id) or
+    // `coupon` (older API, a nested object or id). Fetch it when we only have an id.
+    let coupon = pc.coupon && typeof pc.coupon === 'object' ? pc.coupon : null;
+    if (!coupon) {
+        const couponId = (pc.promotion && pc.promotion.coupon) || (typeof pc.coupon === 'string' ? pc.coupon : null);
+        if (!couponId) return null;
+        const cr = await fetch(`https://api.stripe.com/v1/coupons/${encodeURIComponent(couponId)}`, {
+            headers: { Authorization: `Bearer ${stripeKey}` },
+        });
+        if (!cr.ok) return null;
+        coupon = await cr.json();
+    }
     if (!coupon || coupon.valid === false) return null;
     return {
         percent_off: typeof coupon.percent_off === 'number' ? coupon.percent_off : null,

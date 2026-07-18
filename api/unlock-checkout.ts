@@ -72,9 +72,20 @@ async function resolvePromotionCodeId(stripeKey: string, code: string): Promise<
     if (!r.ok) return null;
     const data = await r.json();
     const pc = Array.isArray(data?.data) ? data.data[0] : null;
-    if (!pc || pc.active === false) return null;
-    if (!pc.coupon || pc.coupon.valid === false) return null;
-    return typeof pc.id === 'string' ? pc.id : null;
+    if (!pc || pc.active === false || typeof pc.id !== 'string') return null;
+    // The coupon lives under `promotion.coupon` (newer Stripe API, an id) or
+    // `coupon` (older API, a nested object or id). Verify it is still valid.
+    const inlineCoupon = pc.coupon && typeof pc.coupon === 'object' ? pc.coupon : null;
+    if (inlineCoupon) return inlineCoupon.valid === false ? null : pc.id;
+    const couponId = (pc.promotion && pc.promotion.coupon) || (typeof pc.coupon === 'string' ? pc.coupon : null);
+    if (!couponId) return null;
+    const cr = await fetch(`https://api.stripe.com/v1/coupons/${encodeURIComponent(couponId)}`, {
+        headers: { Authorization: `Bearer ${stripeKey}` },
+    });
+    if (!cr.ok) return null;
+    const coupon = await cr.json();
+    if (!coupon || coupon.valid === false) return null;
+    return pc.id;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
