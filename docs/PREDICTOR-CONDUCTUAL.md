@@ -39,14 +39,14 @@ Etiquetas del render en `dashboardTranslations.ts` (`guide`): `queDecirle`, `que
 
 ## Capa de IA: "Verlo con [nombre]" (2026-07-18)
 
-Sobre el piso determinista anterior, un bloque de ejemplo **por niño individual** generado con Gemini 2.5 Flash: `escena` (cómo podría verse esta situación con ESTE niño, en su deporte y edad, primario + veta tejidos), `frase` (una frase a su medida) y `senal` (una señal observable + micro-ajuste). Rompe el empate entre dos niños del mismo arquetipo.
+Sobre el piso determinista anterior, un bloque de ejemplo **por niño individual** generado con Gemini 2.5 Flash: `escena` (cómo podría verse esta situación con ESTE niño en una situación general de juego o de la actividad, primario + veta tejidos), `frase` (una frase a su medida) y `senal` (una señal observable + micro-ajuste). Rompe el empate entre dos niños del mismo arquetipo. **Ajeno al deporte (2026-07-18)**: el deporte del niño NO llega al prompt y el validador rechaza deportes nombrados y tecnicismos deportivos; el modelo roleplayaba pericia deportiva que no tiene (un scrum en una edad que no lo practica). Lo que hace único al ejemplo es el perfil, no el deporte.
 
 **Arquitectura** (`api/predictor-example.ts`, endpoint POST único):
 - `action: 'peek'` = solo caché (el front lo dispara al seleccionar niño+situación; hit = reveal instantáneo). `action: 'generate'` = pipeline completo (~10-15s).
 - **Caché** en `predictor_examples` (child × situation × lang), válida solo para el `perfilamiento_id` actual: re-perfilar invalida solo (miss natural). Migración `20260718_predictor_examples.sql` (aplicada a prod 2026-07-18, RLS deny-all, solo service role).
 - **Privacidad**: el nombre del niño **jamás llega a Gemini ni a la caché**; prompt y contenido cacheado usan el placeholder `{{P}}` (patrón tenant-chat) y el server lo sustituye al servir al coach autenticado.
 - **Digest inline**: las situaciones + tarjetas por eje + vetas viven en una región `>>> GENERATED:PREDICTOR_DIGEST` dentro del endpoint (Vercel no puede importar de `src/`). NUNCA editarla a mano: `npm run gen:predictor` la regenera desde `situationalGuide*.ts`; `npm run check:predictor-gen` (en `qa:unit`) falla si driftea.
-- **Datos inyectados**: eje, veta (mismo gate que el nombre: opuesta/igual ⇒ primario puro), edad, deporte, y si existen `ai_sections` (resumenPerfil/combustible/corazon truncados). El **motor queda fuera** a propósito (riesgo de léxico disposicional prohibido).
+- **Datos inyectados**: eje, veta (mismo gate que el nombre: opuesta/igual ⇒ primario puro), edad, y si existen `ai_sections` (resumenPerfil/combustible/corazon truncados). El **motor queda fuera** a propósito (riesgo de léxico disposicional prohibido) y el **deporte también** (ver arriba: escenas sport-agnostic).
 
 **Seguridad anti-alucinación (en orden):**
 1. Prompt: marco HIPOTÉTICO obligatorio, solo datos provistos, prohibido inventar terceros con nombre/eventos/cifras, `{{P}}` literal.

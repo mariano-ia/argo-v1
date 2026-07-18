@@ -4,7 +4,8 @@ import { createClient } from '@supabase/supabase-js';
 /**
  * Predictor Conductual: per-child AI example ("Verlo con [nombre]").
  * Generates a HYPOTHETICAL, illustrative example of how a situation could look
- * with a specific child (their sport, age, primary axis + veta), plus a
+ * with a specific child (their age + primary axis + veta; sport deliberately
+ * excluded, see buildUserPrompt), plus a
  * tailored phrase and an observable early signal. Deterministic guide cards
  * stay the floor; this layer only adds on top and can be killed via env.
  *
@@ -18,7 +19,7 @@ import { createClient } from '@supabase/supabase-js';
  *    prompt and stored content use the {{P}} placeholder (tenant-chat pattern),
  *    substituted server-side when serving to the authenticated coach.
  *  - Grounding: the prompt ONLY receives provided data (situation digest, axis
- *    card, veta nuance, age, sport, optional ai_sections excerpts). Inventing
+ *    card, veta nuance, age, optional ai_sections excerpts). Inventing
  *    named third parties, past events or numbers is forbidden at prompt level
  *    AND checked by the validator pass.
  *  - Post-generation checks: prohibited words, deterministic patterns, wrong
@@ -194,23 +195,26 @@ function buildSystemPrompt(lang: string): string {
         '',
         'REGLAS INQUEBRANTABLES:',
         '1. HIPOTÉTICO SIEMPRE: describes cómo PODRÍA verse, nunca cómo "fue" ni qué "pasó". Lenguaje probabilístico: "podría", "es probable que", "suele", "tiende a". Jamás presentes el ejemplo como un hecho ocurrido.',
-        '2. SOLO DATOS PROVISTOS: usa únicamente el perfil, la edad, el deporte y el contexto que te doy. PROHIBIDO inventar: nombres de otras personas (compañeros, rivales, adultos), eventos pasados, marcadores, fechas, lesiones o cifras. Los compañeros se mencionan sin nombre ("un compañero").',
+        '2. SOLO DATOS PROVISTOS: usa únicamente el perfil, la edad y el contexto que te doy. PROHIBIDO inventar: nombres de otras personas (compañeros, rivales, adultos), eventos pasados, marcadores, fechas, lesiones o cifras. Los compañeros se mencionan sin nombre ("un compañero").',
         '3. El niño se llama {{P}} en tu texto (es un placeholder, úsalo literal; nunca inventes un nombre).',
         '4. Sin lenguaje clínico ni diagnóstico. Sin etiquetas deterministas ("es un líder", "siempre", "nunca"). El niño está en proceso, nunca es "un problema".',
         '5. Sin guiones largos ni medios (— –): usa punto, coma o paréntesis.',
         '6. Centrado en el niño, cálido, respetuoso. Valida la emoción. Nunca presiones a rendir ni a quedarse.',
         '7. Coherencia DISC estricta con el perfil provisto (eje primario y veta). No atribuyas rasgos de otros ejes.',
-        '8. El deporte del niño manda: la escena transcurre en SU deporte con situaciones típicas de ese deporte, apropiadas a su edad.',
+        '8. AJENO AL DEPORTE: no eres especialista en ningún deporte y NO conoces cuál practica el niño. La escena transcurre en una situación GENERAL de juego, partido o actividad ("un ejercicio", "una jugada", "la práctica", "el partido"). PROHIBIDO nombrar deportes o tecnicismos deportivos (scrum, córner, saque, dribbling, bloqueo, etc.) o describir mecánicas técnicas de un deporte puntual. Lo que hace único al ejemplo es el PERFIL del niño, no el deporte.',
         '',
         'Devuelve SOLO un JSON válido: {"escena": "...", "frase": "...", "senal": "..."}',
-        '- escena: 3 o 4 oraciones. Cómo podría verse esta situación con {{P}} en su deporte, con su perfil (primario y veta tejidos de forma natural).',
-        '- frase: UNA frase concreta que el entrenador podría decirle a {{P}} en ese momento, entre comillas, adaptada a su perfil, edad y deporte. Máximo 25 palabras.',
-        '- senal: 1 o 2 oraciones. Una señal temprana observable (específica de su perfil y deporte) + un micro-ajuste concreto para el entrenador.',
+        '- escena: 3 o 4 oraciones. Cómo podría verse esta situación con {{P}} en una situación de juego o de la actividad, con su perfil (primario y veta tejidos de forma natural).',
+        '- frase: UNA frase concreta que el entrenador podría decirle a {{P}} en ese momento, entre comillas, adaptada a su perfil y edad. Máximo 25 palabras.',
+        '- senal: 1 o 2 oraciones. Una señal temprana observable (específica de su perfil) + un micro-ajuste concreto para el entrenador.',
     ].join('\n');
 }
 
+// NOTE: the child's sport is deliberately NOT passed. Early live examples show
+// the model roleplaying sport expertise it doesn't have (a scrum drill for an
+// age group that doesn't practice scrums), so scenes stay sport-agnostic.
 function buildUserPrompt(lang: string, sitId: string, child: {
-    age: number | null; sport: string | null; eje: string; veta: string | null;
+    age: number | null; eje: string; veta: string | null;
     resumen?: string | null; combustible?: string | null; corazon?: string | null;
 }): string {
     const d = PREDICTOR_DIGEST[lang] ?? PREDICTOR_DIGEST.es;
@@ -229,7 +233,6 @@ function buildUserPrompt(lang: string, sitId: string, child: {
         `- Eje primario: ${L[child.eje]}`,
         child.veta ? `- Veta secundaria: ${L[child.veta]}` : '- Sin veta secundaria afirmada (perfil primario puro)',
         child.age ? `- Edad: ${child.age} años` : '',
-        child.sport ? `- Deporte: ${child.sport}` : '',
         child.resumen ? `- Resumen del perfil: ${child.resumen.slice(0, 400)}` : '',
         child.combustible ? `- Su combustible (qué lo enciende): ${child.combustible.slice(0, 300)}` : '',
         child.corazon ? `- Lenguaje que le llega: ${child.corazon.slice(0, 300)}` : '',
@@ -247,7 +250,8 @@ function buildValidatorPrompt(content: ExampleContent): string {
         '2. Inventa specifics no derivables del perfil: nombres propios de terceros, CUALQUIER nombre propio usado para el niño (el niño solo puede llamarse {{P}}, en escena, frase y senal), marcadores, fechas, lesiones, cifras, eventos concretos presentados como reales.',
         '3. Lenguaje clínico, diagnóstico o etiquetas deterministas sobre el niño.',
         '4. Tono que presiona al niño a rendir, lo culpa o lo ridiculiza.',
-        'El marco hipotético correcto usa "podría", "suele", "es probable". Mencionar "un compañero" SIN nombre es correcto.',
+        '5. Escena técnica de un deporte concreto: nombra un deporte o usa tecnicismos deportivos (scrum, córner, saque, dribbling, bloqueo, mate, try, etc.) o describe mecánicas específicas de un deporte. La escena debe ser general de juego o de la actividad.',
+        'El marco hipotético correcto usa "podría", "suele", "es probable". Mencionar "un compañero" SIN nombre es correcto. Palabras genéricas como "la pelota", "la jugada", "el ejercicio", "el partido" son correctas.',
         '',
         'CONTENIDO A AUDITAR:',
         JSON.stringify(content),
@@ -336,7 +340,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Child must belong to the tenant; take the CURRENT resolved profile.
         const { data: child } = await sb.from('current_perfilamiento')
-            .select('id, perfilamiento_id, child_name, child_age, sport, eje, eje_secundario, ai_sections')
+            .select('id, perfilamiento_id, child_name, child_age, eje, eje_secundario, ai_sections')
             .eq('id', childId)
             .eq('tenant_id', ctx.tenantId)
             .is('deleted_at', null)
@@ -356,7 +360,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const c = child as {
             id: string; perfilamiento_id: string; child_name: string; child_age: number | null;
-            sport: string | null; eje: string; eje_secundario: string | null;
+            eje: string; eje_secundario: string | null;
             ai_sections: Record<string, unknown> | null;
         };
         if (!['D', 'I', 'S', 'C'].includes(c.eje)) return res.status(422).json({ unavailable: true });
@@ -415,7 +419,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const system = buildSystemPrompt(lang);
         const userPrompt = buildUserPrompt(lang, situationId, {
             age: c.child_age,
-            sport: c.sport ? c.sport.replace(/[\r\n]+/g, ' ').slice(0, 60) : null,
             eje: c.eje, veta,
             resumen: typeof c.ai_sections?.resumenPerfil === 'string' ? scrubName(c.ai_sections.resumenPerfil, c.child_name) : null,
             combustible: typeof c.ai_sections?.combustible === 'string' ? scrubName(c.ai_sections.combustible, c.child_name) : null,
