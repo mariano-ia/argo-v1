@@ -658,8 +658,10 @@ export const TenantGuide: React.FC = () => {
                                                 <div className="bg-white rounded-[14px] shadow-argo px-6 py-5 border border-argo-violet-200">
                                                     <div className="flex items-center gap-2 mb-1">
                                                         <Sparkles size={13} className="text-argo-violet-500" />
-                                                        <p className="text-[10px] font-semibold text-argo-violet-500 uppercase tracking-[0.1em]">
-                                                            {dt.guide.verloCon(selectedPlayer.child_name)}
+                                                        {/* ArgoCoach wordmark: Argo heavy + Coach light (brand weight pattern) */}
+                                                        <p className="text-[12px] text-argo-violet-500 font-medium">
+                                                            {dt.guide.recomendacionDe}{' '}
+                                                            <span className="whitespace-nowrap"><span className="font-extrabold">Argo</span><span className="font-light">Coach</span></span>
                                                         </p>
                                                     </div>
                                                     {exampleState === 'ready' && example ? (

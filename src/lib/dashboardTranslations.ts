@@ -156,7 +156,7 @@ interface DashboardTexts {
         comoVivenLosPerfiles: string;
         verLosCuatro: string;
         verSoloSuPerfil: string;
-        verloCon: (name: string) => string;
+        recomendacionDe: string; // prefix; the ArgoCoach wordmark is rendered as spans in the component
         ejemploReintentar: string;
         generandoEjemplo: (name: string) => string;
         ejemploEscena: string;
@@ -469,7 +469,7 @@ const es: DashboardTexts = {
         comoVivenLosPerfiles: 'Cómo vive cada perfil esta situación',
         verLosCuatro: 'Ver los cuatro perfiles',
         verSoloSuPerfil: 'Ver solo su perfil',
-        verloCon: (name) => `Verlo con ${name}`,
+        recomendacionDe: 'Recomendación de',
         ejemploReintentar: 'Reintentar',
         generandoEjemplo: (name) => `Procesando la escena con ${name}...`,
         ejemploEscena: 'Cómo podría verse',
@@ -775,7 +775,7 @@ const en: DashboardTexts = {
         comoVivenLosPerfiles: 'How each profile experiences this situation',
         verLosCuatro: 'See all four profiles',
         verSoloSuPerfil: 'See only their profile',
-        verloCon: (name) => `Picture it with ${name}`,
+        recomendacionDe: 'Recommendation from',
         ejemploReintentar: 'Try again',
         generandoEjemplo: (name) => `Processing the scene with ${name}...`,
         ejemploEscena: 'How it could look',
@@ -1081,7 +1081,7 @@ const pt: DashboardTexts = {
         comoVivenLosPerfiles: 'Como cada perfil vivencia esta situação',
         verLosCuatro: 'Ver os quatro perfis',
         verSoloSuPerfil: 'Ver só o perfil dele',
-        verloCon: (name) => `Ver com ${name}`,
+        recomendacionDe: 'Recomendação do',
         ejemploReintentar: 'Tentar de novo',
         generandoEjemplo: (name) => `Processando a cena com ${name}...`,
         ejemploEscena: 'Como poderia ser',
