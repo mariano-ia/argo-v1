@@ -989,7 +989,10 @@ export const OnePanel: React.FC = () => {
             setStatus('ok');
             return;
         }
-        if (!token) { setStatus('need_email'); return; }
+        // access_sent is a terminal client-side state: this callback re-runs on
+        // every status change (it depends on status), and without the guard it
+        // clobbered the "check your email" confirmation right back to the form.
+        if (!token) { setStatus(s => (s === 'access_sent' ? s : 'need_email')); return; }
         try {
             const res = await fetch(`/api/one-panel?token=${token}`);
             if (res.ok) {
