@@ -659,13 +659,23 @@ async function handleUnlockPaid(args: {
             bridgeUrl = `${origin}/puentes/${existing.magic_token}`;
         } else if (!existing) {
             const mt = randomBytes(24).toString('base64url');
-            const { error: pErr } = await sb.from('puentes_purchases').insert({
+            const { data: minted, error: pErr } = await sb.from('puentes_purchases').insert({
                 source_session_id: sessionId, recipient_email: payer, recipient_name: null,
                 child_name: session.child_name, amount_cents: 0, currency: 'USD',
                 provider: 'comp', provider_payment_id: `unlock_${sessionId}`, status: 'paid',
                 paid_at: new Date().toISOString(), magic_token: mt, lang, source: 'argo_one', tenant_id: null,
-            });
-            if (!pErr) bridgeUrl = `${origin}/puentes/${mt}`;
+            }).select('id').maybeSingle();
+            if (!pErr && minted) {
+                // The bridge session the questionnaire submits against. Without it
+                // puentes-start returns children:[] and the flow dead-ends on the
+                // last question — this path emails its own link and never passes
+                // through send-email's ensure-session branch (bug found 2026-07-18).
+                await sb.from('puentes_sessions').insert({
+                    purchase_id: minted.id, source_session_id: sessionId,
+                    lang, status: 'created' as const,
+                });
+                bridgeUrl = `${origin}/puentes/${mt}`;
+            }
         }
         const childFirst = (session.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
         const panelLink = (label: string) => `<a href="${panelUrl}" style="color:#955FB5;text-decoration:none;">${label}</a>`;
@@ -819,13 +829,21 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
                 bridgeUrl = `${origin}/puentes/${exists.magic_token}`;
             } else if (!exists) {
                 const mt = randomBytes(24).toString('base64url');
-                await sb.from('puentes_purchases').insert({
+                const { data: minted, error: mintErr } = await sb.from('puentes_purchases').insert({
                     source_session_id: perf.id, recipient_email: payer, recipient_name: null, child_name: child.child_name,
                     amount_cents: 0, currency: 'USD', provider: 'comp', provider_payment_id: `reprofile_${purchaseId}`,
                     status: 'paid', paid_at: new Date().toISOString(), magic_token: mt,
                     lang, source: 'argo_one', tenant_id: null,
-                });
-                bridgeUrl = `${origin}/puentes/${mt}`;
+                }).select('id').maybeSingle();
+                if (!mintErr && minted) {
+                    // Same dead-end guard as the unlock path: this comp purchase
+                    // emails its own bridge link, so its session must be minted here.
+                    await sb.from('puentes_sessions').insert({
+                        purchase_id: minted.id, source_session_id: perf.id,
+                        lang, status: 'created' as const,
+                    });
+                    bridgeUrl = `${origin}/puentes/${mt}`;
+                }
             }
         }
 

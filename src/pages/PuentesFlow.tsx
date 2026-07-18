@@ -244,7 +244,14 @@ export default function PuentesFlow() {
     };
 
     const submitAnswers = async (finalAnswers: PuentesAnswer[]) => {
-        if (!anchorChild) return;
+        // A paid purchase without its puentes_session (children: []) used to
+        // dead-end here silently: the last question's taps did nothing. Surface
+        // the error instead so the user is never stuck on a mute screen.
+        if (!anchorChild) {
+            setStage('error');
+            setErrorMsg(getPuentesCopy(lang).errors.generic);
+            return;
+        }
         setStage('generating');
         // DEV questionnaire mock: no API — simulate generation, show the report.
         if (import.meta.env.DEV && token === 'demo-cuestionario') {
@@ -279,7 +286,11 @@ export default function PuentesFlow() {
     // questionnaire. A 409 means the profile is no longer usable (expired in the
     // meantime / incomplete) — fall back to the normal questionnaire.
     const submitFastPath = async () => {
-        if (!anchorChild) return;
+        if (!anchorChild) {
+            setStage('error');
+            setErrorMsg(getPuentesCopy(lang).errors.generic);
+            return;
+        }
         setStage('generating');
         try {
             const res = await fetch('/api/puentes-complete', {
