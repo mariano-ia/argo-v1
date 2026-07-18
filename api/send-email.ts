@@ -742,12 +742,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 const sUrl = process.env.VITE_SUPABASE_URL;
                 if (sKey && sUrl) {
                     const sbForPuentes = createClient(sUrl, sKey);
-                    const { data: paidPurchase } = await sbForPuentes
+                    // Case-insensitive + multi-row safe. The old exact-match
+                    // .maybeSingle() (a) missed comps stored lowercased when the
+                    // adult typed a different casing at play, and (b) errored
+                    // (PGRST116) as soon as the adult held 2+ paid rows — the
+                    // catch then silently disabled this whole branch (upsell
+                    // shown to a payer, sibling session never ensured). Prefer
+                    // THIS child's own purchase; else the newest paid one.
+                    const escTo = toEmail.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+                    const { data: ownPurchase } = await sbForPuentes
                         .from('puentes_purchases')
                         .select('id, magic_token, lang')
-                        .eq('recipient_email', toEmail)
+                        .ilike('recipient_email', escTo)
                         .eq('status', 'paid')
+                        .eq('source_session_id', sessionId)
+                        .order('created_at', { ascending: false })
+                        .limit(1)
                         .maybeSingle();
+                    let paidPurchase = ownPurchase;
+                    if (!paidPurchase) {
+                        const { data: newestPurchase } = await sbForPuentes
+                            .from('puentes_purchases')
+                            .select('id, magic_token, lang')
+                            .ilike('recipient_email', escTo)
+                            .eq('status', 'paid')
+                            .order('created_at', { ascending: false })
+                            .limit(1)
+                            .maybeSingle();
+                        paidPurchase = newestPurchase;
+                    }
                     if (paidPurchase) {
                         existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;
 

@@ -189,14 +189,18 @@ async function maybeGrantTenantFreePuente(sb: SB, perf: {
             .select('free_puentes').eq('id', perf.tenantId).maybeSingle();
         if (!tenant?.free_puentes) return;
 
-        const { data: existing } = await sb.from('puentes_purchases')
+        // Case-insensitive, multi-row-safe dedup: .maybeSingle() errors (PGRST116)
+        // as soon as the adult holds 2+ paid rows, which silently re-granted a new
+        // comp on EVERY resolved perfilamiento of that adult.
+        const escEmail = perf.adultEmail.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+        const { data: existingRows } = await sb.from('puentes_purchases')
             .select('id')
-            .eq('recipient_email', perf.adultEmail)
+            .ilike('recipient_email', escEmail)
             .eq('status', 'paid')
-            .maybeSingle();
-        if (existing) return;
+            .limit(1);
+        if (existingRows?.length) return;
 
-        const { error } = await sb.from('puentes_purchases').insert({
+        const { data: minted, error } = await sb.from('puentes_purchases').insert({
             source_session_id: perf.id,
             recipient_email: perf.adultEmail,
             recipient_name: perf.adultName ?? null,
@@ -211,10 +215,19 @@ async function maybeGrantTenantFreePuente(sb: SB, perf: {
             lang: perf.lang ?? 'es',
             source: 'tenant',
             tenant_id: perf.tenantId,
-        });
-        if (error) {
-            console.warn('[session] tenant free Puente insert failed (non-blocking):', error.message);
+        }).select('id').maybeSingle();
+        if (error || !minted) {
+            console.warn('[session] tenant free Puente insert failed (non-blocking):', error?.message);
         } else {
+            // The grant's bridge session, minted inline so the magic link never
+            // opens on an empty questionnaire (puentes-start also self-heals).
+            const { error: sessErr } = await sb.from('puentes_sessions').insert({
+                purchase_id: minted.id,
+                source_session_id: perf.id,
+                lang: perf.lang ?? 'es',
+                status: 'created',
+            });
+            if (sessErr) console.warn('[session] tenant free Puente session insert failed (self-heal covers):', sessErr.message);
             console.info('[session] tenant free Puente granted for perfilamiento', perf.id);
         }
     } catch (err) {

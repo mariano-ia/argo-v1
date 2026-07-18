@@ -544,13 +544,17 @@ async function handlePuentesPaid(args: {
     // session, toward the single child it was bought for. The old fan-out that
     // covered every child of this adult email is gone — a $4.99 must not unlock
     // bridges to siblings the buyer never paid for.
-    await sb.from('puentes_sessions').insert({
+    const { error: sessInsertErr } = await sb.from('puentes_sessions').insert({
         purchase_id: purchase.id,
         source_session_id: purchase.source_session_id,
         lang: purchase.lang,
         status: 'created' as const,
     });
-    console.info(`[one-webhook] puentes purchase ${purchase.id} created 1 session (single-child)`);
+    // A failed insert is no longer fatal for the buyer: puentes-start
+    // self-heals a paid purchase with no session at link-open time. Log
+    // loudly so qa-monitor surfaces the underlying DB problem anyway.
+    if (sessInsertErr) console.error(`[one-webhook] puentes session insert FAILED for purchase ${purchase.id} (self-heal covers):`, sessInsertErr.message);
+    else console.info(`[one-webhook] puentes purchase ${purchase.id} created 1 session (single-child)`);
 
     // Send the magic-link email. Use the preview's own URL when running on
     // a Vercel preview deployment so the magic link lands on the preview
@@ -622,10 +626,17 @@ async function handleUnlockPaid(args: {
         // (one_purchases / adult_profiles / children.responsible_adult_email)
         // and silently mails nothing.
         if (session.child_id) {
-            await sb.from('children')
-                .update({ responsible_adult_email: payer })
-                .eq('id', session.child_id)
-                .is('responsible_adult_email', null);
+            // Best-effort: a failure here must never abort the rest of the
+            // delivery (comp puente + emails) — full_access is already stamped,
+            // so an abort would leave a paid buyer with nothing, permanently.
+            try {
+                await sb.from('children')
+                    .update({ responsible_adult_email: payer })
+                    .eq('id', session.child_id)
+                    .is('responsible_adult_email', null);
+            } catch (e) {
+                console.warn(`[one-webhook] unlock: child claim failed for ${sessionId} (non-blocking):`, e instanceof Error ? e.message : e);
+            }
         }
         let panelUrl = `${origin}/one/panel`;
         try {
@@ -670,10 +681,12 @@ async function handleUnlockPaid(args: {
                 // puentes-start returns children:[] and the flow dead-ends on the
                 // last question — this path emails its own link and never passes
                 // through send-email's ensure-session branch (bug found 2026-07-18).
-                await sb.from('puentes_sessions').insert({
+                // Insert failure is non-fatal: puentes-start self-heals at open.
+                const { error: unlockSessErr } = await sb.from('puentes_sessions').insert({
                     purchase_id: minted.id, source_session_id: sessionId,
                     lang, status: 'created' as const,
                 });
+                if (unlockSessErr) console.error(`[one-webhook] unlock comp session insert FAILED for ${minted.id} (self-heal covers):`, unlockSessErr.message);
                 bridgeUrl = `${origin}/puentes/${mt}`;
             }
         }
@@ -837,11 +850,13 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
                 }).select('id').maybeSingle();
                 if (!mintErr && minted) {
                     // Same dead-end guard as the unlock path: this comp purchase
-                    // emails its own bridge link, so its session must be minted here.
-                    await sb.from('puentes_sessions').insert({
+                    // emails its own bridge link, so its session must be minted
+                    // here. Insert failure is non-fatal: puentes-start self-heals.
+                    const { error: reproSessErr } = await sb.from('puentes_sessions').insert({
                         purchase_id: minted.id, source_session_id: perf.id,
                         lang, status: 'created' as const,
                     });
+                    if (reproSessErr) console.error(`[one-webhook] reprofile comp session insert FAILED for ${minted.id} (self-heal covers):`, reproSessErr.message);
                     bridgeUrl = `${origin}/puentes/${mt}`;
                 }
             }

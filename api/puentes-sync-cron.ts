@@ -221,27 +221,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         for (const session of recentSessions ?? []) {
             try {
-                const { data: paidPurchase } = await sb
+                // Multi-row + case-insensitive: under the per-child model one
+                // adult holds one paid row PER CHILD, so the old .maybeSingle()
+                // errored (PGRST116) at 2+ rows and silently skipped these
+                // adults' re-profiles. Scan every paid purchase of the email
+                // and pick the one whose bridge matches this child by name.
+                const escAdult = String(session.adult_email).trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+                const { data: paidPurchases } = await sb
                     .from('puentes_purchases')
                     .select('id, magic_token, lang')
-                    .eq('recipient_email', session.adult_email)
+                    .ilike('recipient_email', escAdult)
                     .eq('status', 'paid')
-                    .maybeSingle();
+                    .order('created_at', { ascending: false });
+                if (!paidPurchases?.length) continue;
+
+                let paidPurchase: { id: string; magic_token: string; lang: string } | null = null;
+                let matching: any = null;
+                let existingByName: any[] = [];
+                for (const pp of paidPurchases) {
+                    const { data: rows } = await sb
+                        .from('puentes_sessions')
+                        .select('id, source_session_id, status, ai_sections, source:perfilamientos!source_session_id(child_name)')
+                        .eq('purchase_id', pp.id);
+                    const m = (rows ?? []).find((e: any) => {
+                        const name = Array.isArray(e.source) ? e.source[0]?.child_name : e.source?.child_name;
+                        return (name ?? '').toLowerCase().trim() === (session.child_name ?? '').toLowerCase().trim();
+                    });
+                    if (m) {
+                        paidPurchase = pp as { id: string; magic_token: string; lang: string };
+                        matching = m;
+                        existingByName = rows ?? [];
+                        break;
+                    }
+                }
                 if (!paidPurchase) continue;
-
-                const { count: childCount } = await sb
-                    .from('puentes_sessions')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('purchase_id', paidPurchase.id);
-
-                const { data: existingByName } = await sb
-                    .from('puentes_sessions')
-                    .select('id, source_session_id, status, ai_sections, source:perfilamientos!source_session_id(child_name)')
-                    .eq('purchase_id', paidPurchase.id);
-                const matching = (existingByName ?? []).find((e: any) => {
-                    const name = Array.isArray(e.source) ? e.source[0]?.child_name : e.source?.child_name;
-                    return (name ?? '').toLowerCase().trim() === (session.child_name ?? '').toLowerCase().trim();
-                });
+                const childCount = existingByName.length;
 
                 // Per-child model (ArgoOne® fusion): NEVER auto-create a bridge for a new
                 // sibling sharing this adult_email — that was the multi-child fan-out, and a
@@ -403,13 +417,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // to avoid racing the live completion flow.
         let emailsRecovered = 0;
         const unsentBefore = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        // Fixed forward-from floor instead of the rolling 48h window: comp
+        // sessions are minted at WEBHOOK time, so an adult who answers later
+        // than a rolling lookback would permanently miss the report email.
+        // The floor at the fusion cutover keeps the pre-fusion legacy rows
+        // (6 generated+unsent from May 2026) from being resurrected out of
+        // nowhere. Same idiom as report-recovery-cron's FORWARD_FROM.
+        const UNSENT_FORWARD_FROM = '2026-07-11T00:00:00Z';
         const { data: unsentRows } = await sb
             .from('puentes_sessions')
             .select('id, purchase_id, created_at')
             .eq('status', 'generated')
             .is('sent_at', null)
             .not('ai_sections', 'is', null)
-            .gte('created_at', sinceIso)
+            .gte('created_at', UNSENT_FORWARD_FROM)
             .lt('created_at', unsentBefore)
             .order('created_at', { ascending: false })
             .limit(BATCH_LIMIT);

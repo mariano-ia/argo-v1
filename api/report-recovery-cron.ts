@@ -191,7 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         .eq('status', 'paid')
                         .maybeSingle();
                     if (!existingComp) {
-                        await sb.from('puentes_purchases').insert({
+                        const { data: mintedComp } = await sb.from('puentes_purchases').insert({
                             source_session_id: perf.id,
                             recipient_email: op.email,
                             recipient_name: null,
@@ -206,7 +206,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                             lang: perf.lang || 'es',
                             source: 'argo_one',
                             tenant_id: null,
-                        });
+                        }).select('id').maybeSingle();
+                        if (mintedComp) {
+                            // The comp's bridge session must exist at mint time
+                            // (same gap as b4c56fc; puentes-start also self-heals).
+                            const { error: sessErr } = await sb.from('puentes_sessions').insert({
+                                purchase_id: mintedComp.id,
+                                source_session_id: perf.id,
+                                lang: perf.lang || 'es',
+                                status: 'created',
+                            });
+                            if (sessErr) console.warn('[report-recovery] comp session insert failed (self-heal covers):', sessErr.message);
+                        }
                     }
                 }
                 console.info('[report-recovery] argoone completion swept for link', l.id);

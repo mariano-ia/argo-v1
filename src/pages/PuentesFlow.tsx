@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useParams } from 'react-router-dom';
+import { Button } from '../components/ui';
 import { PuentesIntro } from '../components/puentes/PuentesIntro';
 import { PuentesQuestion } from '../components/puentes/PuentesQuestion';
 import { PuentesProgress } from '../components/puentes/PuentesProgress';
@@ -112,6 +113,17 @@ export default function PuentesFlow() {
     const [recipientEmail, setRecipientEmail] = useState<string | null>(null);
     const [recipientName, setRecipientName] = useState<string | null>(null);
     const [errorMsg, setErrorMsg] = useState('');
+    // When an error is retryable (e.g. the final submit failed on a flaky
+    // mobile connection), the error screen offers a button instead of
+    // discarding the 15 answers into a dead end.
+    const [retryFn, setRetryFn] = useState<(() => void) | null>(null);
+
+    // Best-guess UI language before the API told us the purchase's lang
+    // (error screens used to be Spanish-only for en/pt users).
+    const browserLang: Lang = (() => {
+        const nav = (typeof navigator !== 'undefined' ? navigator.language : 'es').slice(0, 2);
+        return nav === 'en' ? 'en' : nav === 'pt' ? 'pt' : 'es';
+    })();
 
     useEffect(() => {
         if (!token) {
@@ -153,8 +165,14 @@ export default function PuentesFlow() {
                     return;
                 }
                 if (!res.ok) {
+                    // 404 = the token really is invalid/expired; anything else
+                    // (5xx, transient) gets the generic copy, in the browser's
+                    // language since the purchase lang never arrived.
+                    setLang(browserLang);
                     setStage('error');
-                    setErrorMsg(getPuentesCopy(lang).errors.invalidToken);
+                    setErrorMsg(res.status === 404
+                        ? getPuentesCopy(browserLang).errors.invalidToken
+                        : getPuentesCopy(browserLang).errors.generic);
                     return;
                 }
                 const data = await res.json();
@@ -168,25 +186,40 @@ export default function PuentesFlow() {
                 const list: ChildEntry[] = data.children ?? [];
                 setChildren(list);
 
+                // A paid purchase self-heals its missing session server-side, so
+                // an empty roster means that heal failed: block HERE, not after
+                // the adult answered 15 questions.
+                if (list.length === 0) {
+                    setStage('error');
+                    setErrorMsg(getPuentesCopy(data.lang || 'es').errors.generic);
+                    return;
+                }
+
                 // If all children already have ai_sections, skip the questionnaire
                 if (data.all_generated && list.every((c: ChildEntry) => c.ai_sections)) {
                     setStage('report');
                 } else if (data.already_answered && data.adult_profile) {
                     // Cuestionario already done but at least one child is still
-                    // generating. Show the loader; when ai_sections lands the
-                    // poller below will move us to the report.
+                    // generating (or failed). Show the loader; the poller moves
+                    // us to the report as soon as every child is terminal.
                     setStage('generating');
                     pollUntilReady();
                 } else {
                     setStage('intro');
                 }
             } catch {
+                setLang(browserLang);
                 setStage('error');
-                setErrorMsg(getPuentesCopy(lang).errors.generic);
+                setErrorMsg(getPuentesCopy(browserLang).errors.generic);
             }
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
+
+    // A child is terminal when its bridge exists OR its generation failed
+    // (the report surfaces 'failed' with a retry; waiting on it forever was
+    // the eternal-spinner bug).
+    const isTerminal = (c: ChildEntry) => !!c.ai_sections || c.status === 'failed';
 
     const pollUntilReady = async () => {
         // Light poller — checks every 3s up to 20 attempts (60s total).
@@ -200,15 +233,33 @@ export default function PuentesFlow() {
                 });
                 if (!res.ok) continue;
                 const data = await res.json();
-                if (data.all_generated) {
-                    setChildren(data.children ?? []);
+                // Always adopt the freshest snapshot: keeping the stale
+                // pre-questionnaire children hid bridges that DID generate
+                // (and the adult profile) on partial results.
+                const list: ChildEntry[] = data.children ?? [];
+                if (list.length > 0) setChildren(list);
+                if (data.adult_profile) setAdultProfile(data.adult_profile);
+                if (list.length > 0 && list.every(isTerminal)) {
                     setStage('report');
                     return;
                 }
             } catch { /* keep polling */ }
         }
-        // Soft-fail: show whatever we have
+        // Soft-fail: show the freshest data we saw (pending cards included)
         setStage('report');
+    };
+
+    // Retry a bridge whose AI generation failed (report card CTA).
+    const retryChildGeneration = async (puentesSessionId: string) => {
+        setStage('generating');
+        try {
+            await fetch('/api/generate-puentes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ puentes_session_id: puentesSessionId }),
+            });
+        } catch { /* the poller reflects the outcome either way */ }
+        await pollUntilReady();
     };
 
     // Each question mounts taller than a phone viewport can show; without a
@@ -248,10 +299,12 @@ export default function PuentesFlow() {
         // dead-end here silently: the last question's taps did nothing. Surface
         // the error instead so the user is never stuck on a mute screen.
         if (!anchorChild) {
+            setRetryFn(null);
             setStage('error');
             setErrorMsg(getPuentesCopy(lang).errors.generic);
             return;
         }
+        setRetryFn(null);
         setStage('generating');
         // DEV questionnaire mock: no API — simulate generation, show the report.
         if (import.meta.env.DEV && token === 'demo-cuestionario') {
@@ -277,6 +330,9 @@ export default function PuentesFlow() {
             // others are picked up too.
             await pollUntilReady();
         } catch {
+            // The 15 answers live in `finalAnswers`: offer a retry instead of
+            // discarding them (mobile connections drop mid-submit).
+            setRetryFn(() => () => submitAnswers(finalAnswers));
             setStage('error');
             setErrorMsg(getPuentesCopy(lang).errors.generic);
         }
@@ -287,10 +343,12 @@ export default function PuentesFlow() {
     // meantime / incomplete) — fall back to the normal questionnaire.
     const submitFastPath = async () => {
         if (!anchorChild) {
+            setRetryFn(null);
             setStage('error');
             setErrorMsg(getPuentesCopy(lang).errors.generic);
             return;
         }
+        setRetryFn(null);
         setStage('generating');
         try {
             const res = await fetch('/api/puentes-complete', {
@@ -305,6 +363,7 @@ export default function PuentesFlow() {
             if (!res.ok) throw new Error('complete failed');
             await pollUntilReady();
         } catch {
+            setRetryFn(() => () => submitFastPath());
             setStage('error');
             setErrorMsg(getPuentesCopy(lang).errors.generic);
         }
@@ -314,7 +373,20 @@ export default function PuentesFlow() {
         return <CenterScreen><PuentesGenerating lang={lang} /></CenterScreen>;
     }
     if (stage === 'error') {
-        return <CenterScreen><p className="text-argo-secondary">{errorMsg}</p></CenterScreen>;
+        return (
+            <CenterScreen>
+                <div>
+                    <p className="text-argo-secondary">{errorMsg}</p>
+                    {retryFn && (
+                        <div className="mt-5">
+                            <Button variant="violet" onClick={retryFn}>
+                                {getPuentesCopy(lang).errors.retry}
+                            </Button>
+                        </div>
+                    )}
+                </div>
+            </CenterScreen>
+        );
     }
     if (stage === 'pending_payment') {
         return <CenterScreen><p className="text-argo-secondary">{lang === 'en' ? 'Your purchase is still being processed. Please try again in a few minutes.' : lang === 'pt' ? 'Sua compra ainda está sendo processada. Tente novamente em alguns minutos.' : 'Tu compra todavía se está procesando. Intenta de nuevo en unos minutos.'}</p></CenterScreen>;
@@ -328,6 +400,7 @@ export default function PuentesFlow() {
                 recipientEmail={recipientEmail}
                 recipientName={recipientName}
                 children={children}
+                onRetryChild={retryChildGeneration}
             />
         );
     }

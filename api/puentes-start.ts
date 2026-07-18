@@ -62,7 +62,40 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .eq('purchase_id', purchase.id)
             .order('created_at', { ascending: true });
 
-        const sessions = pSessions ?? [];
+        let sessions = pSessions ?? [];
+
+        // Self-heal (2026-07-18): a PAID purchase must always have its bridge
+        // session. Several mint paths historically created the purchase without
+        // its puentes_sessions row (unlock/reprofile comps before b4c56fc, the
+        // one-complete combo, recovery sweeps), which made the questionnaire
+        // dead-end after the 15th answer. Materialize the missing session at
+        // link-open time so every past and future gap heals on first click.
+        if (sessions.length === 0 && purchase.source_session_id) {
+            const { data: healed, error: healErr } = await sb
+                .from('puentes_sessions')
+                .insert({
+                    purchase_id: purchase.id,
+                    source_session_id: purchase.source_session_id,
+                    lang: purchase.lang ?? 'es',
+                    status: 'created',
+                })
+                .select('id, status, ai_sections, adult_profile, source_session_id, created_at')
+                .maybeSingle();
+            if (healed) {
+                sessions = [healed];
+                console.info(`[puentes-start] self-healed missing session for paid purchase ${purchase.id}`);
+            } else {
+                // Unique-race with a concurrent open (or transient failure):
+                // re-read whatever exists now.
+                const { data: again } = await sb
+                    .from('puentes_sessions')
+                    .select('id, status, ai_sections, adult_profile, source_session_id, created_at')
+                    .eq('purchase_id', purchase.id)
+                    .order('created_at', { ascending: true });
+                if (again?.length) sessions = again;
+                else if (healErr) console.error('[puentes-start] self-heal insert failed:', healErr.message);
+            }
+        }
 
         // Fetch all referenced source sessions in one query
         const sourceIds = sessions.map(s => s.source_session_id).filter(Boolean) as string[];

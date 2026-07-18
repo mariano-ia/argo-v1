@@ -34,6 +34,10 @@ interface Props {
     recipientEmail?: string | null;
     recipientName?: string | null;
     children: ChildEntry[];
+    // Re-launch generation for a bridge whose AI generation FAILED (status
+    // 'failed'). Provided by PuentesFlow; without it failed bridges show the
+    // failure copy with no button.
+    onRetryChild?: (puentesSessionId: string) => void;
 }
 
 const EJE_ORDER: AdultAxis[] = ['D', 'I', 'S', 'C'];
@@ -310,6 +314,7 @@ export function PuentesReport({
     recipientEmail,
     recipientName,
     children,
+    onRetryChild,
 }: Props) {
     const c = getPuentesCopy(lang);
     const [activeIdx, setActiveIdx] = useState(0);
@@ -526,8 +531,26 @@ export function PuentesReport({
                 </Card>
             )}
 
+            {/* If the active child's generation FAILED: say so and offer a retry
+                (an eternal spinner used to hide this state until the daily cron). */}
+            {!ai && activeChild && activeChild.status === 'failed' && (
+                <Card>
+                    <div className="text-center py-8">
+                        <p className="text-sm text-argo-secondary">{c.errors.failedBridge}</p>
+                        {onRetryChild && (
+                            <button
+                                onClick={() => onRetryChild(activeChild.puentes_session_id)}
+                                className="mt-4 inline-block text-sm font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 px-5 py-2.5 rounded-lg transition-colors"
+                            >
+                                {c.errors.retry}
+                            </button>
+                        )}
+                    </div>
+                </Card>
+            )}
+
             {/* If the active child is still generating */}
-            {!ai && activeChild && (
+            {!ai && activeChild && activeChild.status !== 'failed' && (
                 <Card>
                     <div className="text-center py-8">
                         <div className="inline-block w-10 h-10 rounded-full border-4 border-argo-violet-100 border-t-argo-violet-500 animate-spin mb-4" />

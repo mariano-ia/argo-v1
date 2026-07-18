@@ -229,7 +229,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     .maybeSingle();
 
                 if (!existing) {
-                    await sb.from('puentes_purchases').insert({
+                    const { data: mintedComp, error: compErr } = await sb.from('puentes_purchases').insert({
                         source_session_id: perfilamiento.id,
                         recipient_email: compEmail,
                         recipient_name: (V2 ? null : session_data.adult_name) ?? null,
@@ -244,7 +244,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         lang,
                         source: 'argo_one',
                         tenant_id: null,
-                    });
+                    }).select('id').maybeSingle();
+                    if (mintedComp) {
+                        // Mirror of the one-webhook fix (b4c56fc): the comp's bridge
+                        // session must exist at mint time — under V2 the BUYER is
+                        // routed straight to /puentes/:token via the hub, and
+                        // send-email's ensure branch only covers the report
+                        // recipient's email, so nothing else materializes it.
+                        const { error: sessErr } = await sb.from('puentes_sessions').insert({
+                            purchase_id: mintedComp.id,
+                            source_session_id: perfilamiento.id,
+                            lang,
+                            status: 'created',
+                        });
+                        if (sessErr) console.warn('[one-complete] combo puente session insert failed (puentes-start self-heals):', sessErr.message);
+                    } else if (compErr) {
+                        console.warn('[one-complete] combo puente purchase insert failed:', compErr.message);
+                    }
                 }
             }
         } catch (puentesErr) {

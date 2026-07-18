@@ -46,6 +46,8 @@ export interface PuentesCopy {
     errors: {
         invalidToken: string;
         generic: string;
+        retry: string;
+        failedBridge: string;
     };
 }
 
@@ -93,6 +95,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         errors: {
             invalidToken: 'Este enlace no es válido o ya expiró.',
             generic: 'Algo no anduvo. Intenta nuevamente en unos minutos.',
+            retry: 'Reintentar',
+            failedBridge: 'No pudimos generar este puente. Puedes reintentarlo ahora.',
         },
     },
     en: {
@@ -138,6 +142,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         errors: {
             invalidToken: 'This link is no longer valid.',
             generic: 'Something did not work. Please try again in a few minutes.',
+            retry: 'Try again',
+            failedBridge: 'We could not generate this bridge. You can retry now.',
         },
     },
     pt: {
@@ -183,6 +189,8 @@ export const PUENTES_COPY: Record<Lang, PuentesCopy> = {
         errors: {
             invalidToken: 'Este link não é mais válido.',
             generic: 'Algo não funcionou. Tente novamente em alguns minutos.',
+            retry: 'Tentar novamente',
+            failedBridge: 'Não conseguimos gerar esta ponte. Você pode tentar novamente agora.',
         },
     },
 };
