@@ -14,6 +14,8 @@ El campo de cupón nativo de Stripe (`allow_promotion_codes`) nunca estuvo habil
 
 Nota Stripe: `discounts` y `allow_promotion_codes` son mutuamente excluyentes; usamos solo `discounts`.
 
+**GOTCHA (arreglado en `e72feae`):** esta cuenta de Stripe devuelve el coupon bajo `promotion_code.promotion.coupon` (un **id string**), NO bajo `promotion_code.coupon` (objeto anidado). La primera versión leía `pc.coupon` → `null` → rechazaba TODOS los códigos como inválidos (FEDE50/FEDE100 rotos en prod). Fix: leer el id de `pc.promotion.coupon` (con fallback al legacy `pc.coupon`) y hacer `GET /v1/coupons/{id}` para verificar `valid` y obtener el % / monto off.
+
 ## Superficies cubiertas (todas las de pago único; suscripciones excluidas)
 | Producto | Pantalla | Ruta | Endpoint |
 |---|---|---|---|
