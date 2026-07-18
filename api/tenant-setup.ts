@@ -60,7 +60,8 @@ interface SetupBody {
     // Institution (step 1)
     display_name?: string;
     institution_type?: string;
-    sport?: string;
+    // Sport left the institution on 2026-07-14: it is now set per plantel
+    // (groups.sport). tenants.sport is no longer written from here.
     country?: string;
     city?: string;
     // Owner profile (step 2)
@@ -115,7 +116,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             }
             if (body.institution_type    !== undefined) tenantUpdate.institution_type    = body.institution_type;
-            if (body.sport               !== undefined) tenantUpdate.sport               = body.sport;
             if (body.country             !== undefined) tenantUpdate.country             = body.country;
             if (body.city                !== undefined) tenantUpdate.city                = body.city?.trim() ?? null;
             if (body.onboarding_completed !== undefined) tenantUpdate.onboarding_completed = body.onboarding_completed;
