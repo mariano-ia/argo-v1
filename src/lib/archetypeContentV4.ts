@@ -267,7 +267,7 @@ export const EJE_BASE_DRAFT_ES: Partial<Record<Axis, EjeBaseContent>> = {
       antes: `Dale información y un momento para pensar. Saber que va a poder **entender antes de actuar** enfoca y tranquiliza a {nombre}.`,
       durante: `Si se traba analizando, en lugar de meterle presión, **acompaña la decisión**: ayúdale a elegir con la info que ya tiene y a soltar la búsqueda del plan perfecto.`,
       despues: `Reconoce **cuando piensa y cuida los detalles**, no solo el resultado. A un perfil estratega suele llegarle más un "se nota que lo tenías bien pensado" que un elogio general.`,
-      ejemplo: `Si el sábado hay una actividad nueva, contarle con tiempo "así va a ser, estos son los pasos" transforma los nervios en confianza.`,
+      ejemplo: `Si el sábado hay una actividad nueva, contarle con tiempo "esto es lo que vamos a hacer, estos son los pasos" transforma los nervios en confianza.`,
     },
     reset: {
       cuerpo: `Cuando se frustra, a {nombre} suele costarle la sensación de no entender o de tener que improvisar. Lo que **más suele ayudar es darle claridad**: explicarle qué está pasando, ordenar la información y darle un momento para pensar. Con el panorama claro, suele reacomodarse.`,

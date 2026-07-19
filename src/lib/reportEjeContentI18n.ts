@@ -208,7 +208,7 @@ export const EJE_BASE_PT: Record<Axis, EjeBaseContent> = {
       "antes": "Dê informação e um momento para pensar. Saber que vai poder **entender antes de agir** foca e tranquiliza {nombre}.",
       "durante": "Se travar analisando, em vez de colocar pressão, **acompanhe a decisão**: ajude a escolher com a informação que já tem e a abrir mão da busca pelo plano perfeito.",
       "despues": "Reconheça **quando pensa e cuida dos detalhes**, não só o resultado. A um perfil estrategista costuma chegar mais um \"dá para ver que você tinha pensado bem nisso\" do que um elogio genérico.",
-      "ejemplo": "Se no sábado tem uma atividade nova, contar com antecedência \"vai ser assim, estes são os passos\" transforma o nervosismo em confiança."
+      "ejemplo": "Se no sábado tem uma atividade nova, contar com antecedência \"é isto que vamos fazer, estes são os passos\" transforma o nervosismo em confiança."
     },
     "reset": {
       "cuerpo": "Quando se frustra, a {nombre} costuma pesar a sensação de não entender ou de ter que improvisar. O que **mais costuma ajudar é dar clareza**: explicar o que está acontecendo, organizar a informação e dar um momento para pensar. Com o panorama claro, costuma se reacomodar.",
