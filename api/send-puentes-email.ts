@@ -5,11 +5,15 @@ import { createClient } from '@supabase/supabase-js';
  * POST /api/send-puentes-email
  * Body: { puentes_session_id }
  *
- * Sends the final ArgoPuente® report to the recipient_email via Resend.
- * Visual language mirrors the child report email (brújula card with eje
- * pills + axis bars, content cards with section titles, sub-blocks with
- * coloured stripes for child/adult/bridge, reflection callout, plus an
- * "also sent to your email" footer note).
+ * Sends the ArgoPuente® "your bridge is ready" NOTICE to the recipient_email
+ * via Resend. Since 2026-07-19 the email is a short notice (brújula preview of
+ * the adult profile + greeting + one CTA), NOT the full report inline: the full
+ * bridge lives at its destination. Styled to match the ArgoOne report email
+ * (send-email.ts buildHtmlV4) — same shell, violet accent as ArgoPuente identity.
+ * The CTA depends on the recipient's role:
+ *   - has a panel (buyer / responsible adult) → "Ir a mi panel" (tokenized).
+ *   - no panel (the invited "abuela", reached via a shared bridge_link) →
+ *     "Verlo en línea" → the bridge magic link.
  */
 
 interface PuenteBlock {
@@ -64,61 +68,40 @@ function getCopy(lang: string) {
     if (lang === 'en') return {
         eyebrow: 'ArgoPuente® · Your bond',
         subjectPrefix: 'Your ArgoPuente®: bond with',
-        bondTitle: 'Your bond',
-        welcome: 'Welcome',
         yourStyle: 'Your natural style',
-        bridge: (n: number) => `Bridge ${n}`,
-        childState: 'How they tend to feel',
-        adultStrength: 'What you bring',
-        theBridge: 'The bridge',
-        reflection: 'A question to take with you',
-        closing: 'To carry with you',
         pressure: 'Style under pressure',
-        viewOnline: 'View report online',
-        emailNote: (email: string) => `This report has also been sent to ${email}. You can revisit it at the link above whenever you want.`,
-        siblingsLabel: 'This ArgoPuente® also includes',
+        bondReady: (n: string) => `Your bridge with ${n} is ready`,
+        panelCta: 'Go to my panel',
+        onlineCta: 'View it online',
+        panelNote: 'You can always find it in your panel. Sign in with your email anytime.',
+        onlineNote: 'You can open it online from the button above whenever you want.',
         foreverNote: 'We keep your profile so we can reuse it for new bridges without repeating the questionnaire. If you want us to delete it, write to hola@argomethod.com.',
-        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'This report is not a clinical or therapeutic service. It is an invitation to reflect.',
     };
     if (lang === 'pt') return {
         eyebrow: 'ArgoPuente® · Seu vínculo',
         subjectPrefix: 'Seu ArgoPuente®: vínculo com',
-        bondTitle: 'Seu vínculo',
-        welcome: 'Boas-vindas',
         yourStyle: 'Seu estilo natural',
-        bridge: (n: number) => `Ponte ${n}`,
-        childState: 'Como tende a estar',
-        adultStrength: 'O que você traz',
-        theBridge: 'A ponte',
-        reflection: 'Uma pergunta para levar',
-        closing: 'Para levar',
         pressure: 'Estilo sob pressão',
-        viewOnline: 'Ver relatório online',
-        emailNote: (email: string) => `Este relatório também foi enviado para ${email}. Você pode revisitá-lo no link acima quando quiser.`,
-        siblingsLabel: 'Este ArgoPuente® também inclui',
+        bondReady: (n: string) => `Sua ponte com ${n} está pronta`,
+        panelCta: 'Ir para o meu painel',
+        onlineCta: 'Ver online',
+        panelNote: 'Você sempre encontra no seu painel. Entre com seu email quando quiser.',
+        onlineNote: 'Você pode abri-lo online pelo botão acima quando quiser.',
         foreverNote: 'Guardamos seu perfil para reutilizá-lo em novas pontes sem repetir o questionário. Se quiser que apaguemos, escreva para hola@argomethod.com.',
-        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este relatório não é um serviço clínico nem terapêutico. É um convite à reflexão.',
     };
     return {
         eyebrow: 'ArgoPuente® · Tu vínculo',
         subjectPrefix: 'Tu ArgoPuente®: vínculo con',
-        bondTitle: 'Tu vínculo',
-        welcome: 'Te damos la bienvenida',
         yourStyle: 'Tu estilo natural',
-        bridge: (n: number) => `Puente ${n}`,
-        childState: 'Cómo tiende a estar',
-        adultStrength: 'Lo que tú traes',
-        theBridge: 'El puente',
-        reflection: 'Una pregunta para llevarte',
-        closing: 'Para llevar',
         pressure: 'Estilo bajo presión',
-        viewOnline: 'Ver informe en línea',
-        emailNote: (email: string) => `Este informe también te fue enviado a ${email}. Puedes volver al enlace de arriba cuando quieras.`,
-        siblingsLabel: 'Este ArgoPuente® también incluye a',
+        bondReady: (n: string) => `Tu puente con ${n} está listo`,
+        panelCta: 'Ir a mi panel',
+        onlineCta: 'Verlo en línea',
+        panelNote: 'Lo encuentras siempre en tu panel. Entra con tu email cuando quieras.',
+        onlineNote: 'Puedes abrirlo en línea desde el botón de arriba cuando quieras.',
         foreverNote: 'Guardamos tu perfil para reutilizarlo en nuevos puentes sin repetir el cuestionario. Si quieres que lo eliminemos, escríbenos a hola@argomethod.com.',
-        footer: 'ArgoMethod® · ArgoPuente®',
         disclaimer: 'Este informe no es un servicio clínico ni terapéutico. Es una invitación a la reflexión.',
     };
 }
@@ -172,66 +155,19 @@ function renderPressureIndicator(active: 'regulado' | 'reactivo' | 'evitativo', 
         </table>`;
 }
 
-function brujulaIcon(): string {
-    return `<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="#6366f1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="8" cy="8" r="6.5"/><path d="M8 3v2M8 11v2M3 8h2M11 8h2"/><circle cx="8" cy="8" r="1.5" fill="#6366f1" stroke="none"/>
-    </svg>`;
-}
-
-function sectionTitle(label: string, icon?: string): string {
-    return `
-        <table cellpadding="0" cellspacing="0" style="margin-bottom:18px;">
-            <tr>
-                ${icon ? `<td valign="middle" style="padding-right:8px;color:#86868B;">${icon}</td>` : ''}
-                <td valign="middle" style="font-size:11px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:#86868B;">${label}</td>
-            </tr>
-        </table>`;
-}
-
-function subBlock(label: string, text: string, color: string): string {
-    return `
-        <table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #D2D2D7;border-radius:12px;overflow:hidden;margin-bottom:10px;">
-            <tr>
-                <td width="4" style="background:${color};"></td>
-                <td style="padding:14px 16px;">
-                    <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${color};">${label}</p>
-                    <p style="margin:0;font-size:13px;color:#424245;line-height:1.65;">${text}</p>
-                </td>
-            </tr>
-        </table>`;
-}
-
-function reflectionBlock(label: string, text: string): string {
-    const violet = '#955FB5';
-    return `
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;border-radius:12px;margin-top:16px;">
-            <tr><td style="padding:16px;">
-                <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                        <td width="18" valign="top" style="padding-top:2px;">
-                            <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="${violet}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M8 14c3.3 0 6-2.7 6-6S11.3 2 8 2 2 4.7 2 8c0 1.2.4 2.3 1 3.2L2 14l3-1"/>
-                            </svg>
-                        </td>
-                        <td style="padding-left:10px;">
-                            <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${violet};">${label}</p>
-                            <p style="margin:0;font-size:13px;color:#1D1D1F;font-weight:500;line-height:1.6;">${text}</p>
-                        </td>
-                    </tr>
-                </table>
-            </td></tr>
-        </table>`;
-}
-
-function buildHtml(args: {
-    aiSections: AiSections;
+// Short "your bridge is ready" notice, styled to match the ArgoOne report email
+// (send-email.ts buildHtmlV4): same shell — system font, single white container
+// (radius 16), dark masthead, eyebrow + title, inner card (radius 14), CTA,
+// divider, footer — with violet as the ArgoPuente accent. Preview = the adult's
+// brújula; the full 4-bridge report lives at ctaUrl.
+export function buildHtml(args: {
+    saludo: string;
     childName: string;
-    childAxis?: string;
     adultProfile?: AdultProfile | null;
-    magicLink: string;
-    recipientEmail: string;
+    ctaUrl: string;
+    ctaLabel: string;
+    ctaNote: string;
     lang: string;
-    siblings?: Array<{ child_name: string; child_axis?: string }>;
 }): string {
     const t = getCopy(args.lang);
     const violet = '#955FB5';
@@ -239,11 +175,9 @@ function buildHtml(args: {
 
     const adultAxis = args.adultProfile?.eje_primary;
     const adultAxisColor = adultAxis ? AXIS_COLOR[adultAxis] : violet;
-    const childAxisColor = args.childAxis && AXIS_COLOR[args.childAxis] ? AXIS_COLOR[args.childAxis] : '#86868B';
     const axisLabels = AXIS_LABEL[args.lang] ?? AXIS_LABEL.es;
     const motorLabels = MOTOR_LABEL[args.lang] ?? MOTOR_LABEL.es;
 
-    // Pills row: adult eje + motor + optional secondary
     const pillsHtml = args.adultProfile ? `
         <table cellpadding="0" cellspacing="0" style="margin-top:14px;">
             <tr>
@@ -260,132 +194,95 @@ function buildHtml(args: {
         </table>` : '';
 
     const axisBarsHtml = args.adultProfile?.axis_counts
-        ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:22px;margin-bottom:4px;">${renderAxisBars(args.adultProfile.axis_counts, args.adultProfile.eje_primary, args.lang)}</table>`
+        ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;margin-bottom:2px;">${renderAxisBars(args.adultProfile.axis_counts, args.adultProfile.eje_primary, args.lang)}</table>`
         : '';
 
     const pressureHtml = args.adultProfile
         ? renderPressureIndicator(args.adultProfile.pressure_style, args.lang)
         : '';
 
-    const puentesBlocks = args.aiSections.puentes.map((p, i) => `
-        <tr><td style="padding-bottom:12px;">
-            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #D2D2D7;border-radius:12px;">
-                <tr><td style="padding:24px 26px;">
-                    ${sectionTitle(`${t.bridge(i + 1)}`)}
-                    <h2 style="margin:0 0 18px;font-size:22px;font-weight:300;letter-spacing:-0.015em;color:#1D1D1F;line-height:1.2;">${p.titulo}</h2>
-                    ${subBlock(t.childState, p.como_esta_el, childAxisColor)}
-                    ${subBlock(t.adultStrength, p.lo_que_traes, adultAxisColor)}
-                    ${subBlock(t.theBridge, p.el_puente, violet)}
-                    ${reflectionBlock(t.reflection, p.pregunta_reflexion)}
-                </td></tr>
-            </table>
-        </td></tr>
-    `).join('');
+    const brujula = args.adultProfile ? `
+    <div style="padding:22px 32px 0;">
+      <div style="background:#F9F5FC;border:1px solid #E8D9F2;border-radius:14px;padding:20px 22px;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:${violet};">${t.yourStyle}</div>
+        ${pillsHtml}
+        ${axisBarsHtml}
+        ${pressureHtml}
+      </div>
+    </div>` : '';
 
-    return `<!DOCTYPE html>
-<html lang="${args.lang}">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${subject}</title></head>
-<body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;">
-<tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-
-    <!-- MASTHEAD -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#1D1D1F;border-radius:12px;">
-            <tr><td style="padding:22px 28px;">
-                <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">Puente</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
-                <p style="margin:14px 0 0;font-size:11px;letter-spacing:0.13em;text-transform:uppercase;color:#86868B;">${t.eyebrow}</p>
-                <p style="margin:6px 0 0;font-size:24px;font-weight:300;color:#fff;letter-spacing:-0.02em;line-height:1.25;">${subject}</p>
-            </td></tr>
-        </table>
-    </td></tr>
-
-    <!-- BRÚJULA: adult profile header -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#E3E3FF;border:1px solid #C8C8F0;border-radius:12px;">
-            <tr><td style="padding:24px 26px;">
-                ${sectionTitle(t.eyebrow, brujulaIcon())}
-                <h1 style="margin:0;font-size:26px;font-weight:300;letter-spacing:-0.02em;color:#1D1D1F;line-height:1.2;">${t.bondTitle}</h1>
-                <p style="margin:4px 0 0;font-size:13px;color:${violet};font-style:italic;">ArgoPuente®</p>
-                ${pillsHtml}
-                ${axisBarsHtml}
-                ${pressureHtml}
-            </td></tr>
-        </table>
-    </td></tr>
-
-    <!-- SALUDO -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #D2D2D7;border-radius:12px;">
-            <tr><td style="padding:24px 26px;">
-                ${sectionTitle(t.welcome)}
-                <p style="margin:0;font-size:14px;color:#424245;line-height:1.7;">${args.aiSections.saludo}</p>
-                <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;border-radius:12px;margin-top:18px;">
-                    <tr><td style="padding:14px;">
-                        <p style="margin:0;font-size:11px;color:#86868B;line-height:1.6;">${t.disclaimer}</p>
-                    </td></tr>
-                </table>
-            </td></tr>
-        </table>
-    </td></tr>
-
-    <!-- TU ESTILO NATURAL -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #D2D2D7;border-radius:12px;">
-            <tr><td style="padding:24px 26px;">
-                ${sectionTitle(t.yourStyle)}
-                <p style="margin:0;font-size:14px;color:#424245;line-height:1.7;">${args.aiSections.perfil_adulto_breve}</p>
-            </td></tr>
-        </table>
-    </td></tr>
-
-    <!-- 4 PUENTES -->
-    ${puentesBlocks}
-
-    <!-- CIERRE -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fff;border:1px solid #D2D2D7;border-radius:12px;">
-            <tr><td style="padding:24px 26px;">
-                ${sectionTitle(t.closing)}
-                <p style="margin:0;font-size:14px;color:#424245;line-height:1.7;">${args.aiSections.cierre}</p>
-            </td></tr>
-        </table>
-    </td></tr>
-
-    ${args.siblings && args.siblings.length > 0 ? `
-    <!-- SIBLINGS LIST (other children also covered) -->
-    <tr><td style="padding-bottom:12px;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9F5FC;border:1px solid #E8D9F2;border-radius:12px;">
-            <tr><td style="padding:18px 24px;">
-                <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:${violet};">${t.siblingsLabel}</p>
-                <div>${args.siblings.map(s => {
-                    const color = s.child_axis && AXIS_COLOR[s.child_axis] ? AXIS_COLOR[s.child_axis] : '#86868B';
-                    return `<span style="display:inline-block;margin:0 8px 6px 0;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:600;background:#fff;border:1px solid ${color}40;color:#1D1D1F;">
-                        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${color};vertical-align:middle;margin-right:6px;"></span>
-                        ${s.child_name}
-                    </span>`;
-                }).join('')}</div>
-            </td></tr>
-        </table>
-    </td></tr>` : ''}
-
-    <!-- CTA + EMAIL NOTE -->
-    <tr><td style="padding-bottom:12px;text-align:center;">
-        <a href="${args.magicLink}" style="display:inline-block;background:${violet};color:#fff;font-size:14px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:12px;box-shadow:0 4px 18px rgba(149,95,181,0.28);">${t.viewOnline}</a>
-        <p style="margin:14px auto 0;max-width:420px;font-size:11px;color:#86868B;line-height:1.6;">${t.emailNote(args.recipientEmail)}</p>
-        <p style="margin:8px auto 0;max-width:440px;font-size:10px;color:#AEAEB2;line-height:1.6;">${t.foreverNote}</p>
-    </td></tr>
-
-    <!-- FOOTER -->
-    <tr><td style="background:#F5F5F7;border:1px solid #E8E8ED;border-radius:12px;padding:18px 28px;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#AEAEB2;letter-spacing:0.07em;text-transform:uppercase;">${t.footer}</p>
-    </td></tr>
-
-</table>
-</td></tr>
-</table>
+    return `<!doctype html>
+<html lang="${args.lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${subject}</title></head>
+<body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="padding:28px 12px 40px;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
+    <div style="background:#1D1D1F;padding:22px 32px;"><span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em;">Argo</span><span style="font-size:18px;font-weight:300;color:#fff;">Puente</span><span style="font-size:10px;font-weight:300;color:#fff;vertical-align:super;">&reg;</span></div>
+    <div style="padding:26px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">${t.eyebrow}</div>
+      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">${t.bondReady(args.childName)}</div>
+    </div>
+    ${brujula}
+    <div style="padding:22px 32px 0;">
+      <div style="font-size:13.5px;color:#424245;line-height:1.6;">${args.saludo}</div>
+    </div>
+    <div style="padding:22px 32px 0;text-align:center;">
+      <a href="${args.ctaUrl}" style="display:inline-block;background:${violet};color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">${args.ctaLabel}</a>
+      <div style="font-size:12px;color:#AEAEB2;margin-top:10px;">${args.ctaNote}</div>
+    </div>
+    <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
+    <div style="padding:22px 32px 26px;">
+      <div style="font-size:11.5px;color:#86868B;line-height:1.6;">${t.disclaimer}</div>
+      <div style="font-size:10.5px;color:#C4C4CC;line-height:1.6;margin-top:12px;">${t.foreverNote}</div>
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;margin-top:16px;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span> · ArgoPuente®</div>
+    </div>
+  </div>
+</div>
 </body></html>`;
+}
+
+// Decide the recipient's destination: an adult with a panel (buyer of ArgoOne,
+// or responsible/authorizing adult of some child) goes to their tokenized panel;
+// the invited "abuela" (only holds a bridge, reached via a shared link) goes to
+// the bridge's own online page. Inlined (no cross-file imports on Vercel).
+async function resolvePanelDestination(
+    sb: ReturnType<typeof createClient>,
+    email: string,
+    lang: string,
+    origin: string,
+    bridgeMagicLink: string,
+): Promise<{ ctaUrl: string; hasPanel: boolean }> {
+    const esc = email.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+    let hasPanel = false;
+    try {
+        const [{ count: respCount }, { count: adultCount }, { count: buyerCount }] = await Promise.all([
+            sb.from('children').select('id', { count: 'exact', head: true }).ilike('responsible_adult_email', esc).is('deleted_at', null),
+            sb.from('children').select('id', { count: 'exact', head: true }).ilike('adult_email', esc).is('deleted_at', null),
+            sb.from('one_purchases').select('id', { count: 'exact', head: true }).ilike('email', esc),
+        ]);
+        hasPanel = (respCount ?? 0) > 0 || (adultCount ?? 0) > 0 || (buyerCount ?? 0) > 0;
+    } catch (e) {
+        console.warn('[send-puentes-email] panel role lookup failed, treating as online:', e instanceof Error ? e.message : e);
+    }
+    if (!hasPanel) return { ctaUrl: bridgeMagicLink, hasPanel: false };
+
+    // Resolve (or mint) the adult_profile access_token for a direct panel link.
+    let panelUrl = `${origin}/one/panel`;
+    try {
+        const { data: ap } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+        let apToken = (ap as { access_token?: string } | null)?.access_token;
+        if (!apToken) {
+            const { data: ins } = await sb.from('adult_profiles').insert({ email, lang }).select('access_token').maybeSingle();
+            apToken = (ins as { access_token?: string } | null)?.access_token;
+            if (!apToken) {
+                const { data: again } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+                apToken = (again as { access_token?: string } | null)?.access_token;
+            }
+        }
+        if (apToken) panelUrl = `${origin}/one/panel?token=${apToken}`;
+    } catch (e) {
+        console.warn('[send-puentes-email] panel token mint failed, tokenless fallback:', e instanceof Error ? e.message : e);
+    }
+    return { ctaUrl: panelUrl, hasPanel: true };
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -410,9 +307,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .maybeSingle();
         if (error || !anchor) return res.status(404).json({ error: 'Puentes session not found' });
 
-        // Multi-child: send a single email covering ALL children of the
-        // same purchase. We use the "anchor" puentes_session as the email
-        // trigger, but the report covers everyone.
+        // Multi-child: send a single email covering ALL children of the same
+        // purchase. We use the "anchor" puentes_session as the trigger.
         const { data: purchase } = await sb
             .from('puentes_purchases')
             .select('id, magic_token, recipient_email, child_name, lang')
@@ -430,16 +326,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const adultProfile: AdultProfile | null = (sessions[0].adult_profile as AdultProfile | null) ?? null;
 
-        // Lookup child eje + name for each session
+        // Lookup child name for the anchor session
         const sourceIds = sessions.map(s => s.source_session_id).filter(Boolean) as string[];
-        let childMap: Record<string, { eje?: string; child_name?: string }> = {};
+        const childMap: Record<string, { child_name?: string }> = {};
         if (sourceIds.length > 0) {
             const { data: childRows } = await sb
                 .from('perfilamientos')
-                .select('id, eje, child_name')
+                .select('id, child_name')
                 .in('id', sourceIds);
             for (const c of childRows ?? []) {
-                childMap[c.id] = { eje: c.eje, child_name: c.child_name };
+                childMap[c.id] = { child_name: c.child_name };
             }
         }
 
@@ -448,35 +344,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const origin = process.env.VERCEL_ENV === 'preview' && process.env.VERCEL_URL
             ? `https://${process.env.VERCEL_URL}`
             : (process.env.SITE_URL || 'https://argomethod.com');
-        const magicLink = `${origin}/puentes/${purchase.magic_token}`;
+        const bridgeMagicLink = `${origin}/puentes/${purchase.magic_token}`;
 
-        // Choose which child's content goes in the email body. For
-        // multi-child, pick the anchor (the one that triggered this email
-        // send), or fall back to the most recent. The full report on the
-        // web has the switcher; the email is a digest of the anchor child.
         const anchorSession = sessions.find(s => s.id === puentes_session_id) ?? sessions[sessions.length - 1];
         const anchorChildName = anchorSession.source_session_id
             ? childMap[anchorSession.source_session_id]?.child_name ?? purchase.child_name ?? ''
             : purchase.child_name ?? '';
-        const anchorChildAxis = anchorSession.source_session_id
-            ? childMap[anchorSession.source_session_id]?.eje
-            : undefined;
+
+        const recipientEmail = purchase.recipient_email || '';
+        // Role-aware destination: panel (buyer/responsible) vs online (abuela).
+        const { ctaUrl, hasPanel } = await resolvePanelDestination(sb, recipientEmail, lang, origin, bridgeMagicLink);
 
         const html = buildHtml({
-            aiSections: anchorSession.ai_sections as AiSections,
+            saludo: (anchorSession.ai_sections as AiSections).saludo,
             childName: anchorChildName,
-            childAxis: anchorChildAxis,
             adultProfile,
-            magicLink,
-            recipientEmail: purchase.recipient_email || '',
+            ctaUrl,
+            ctaLabel: hasPanel ? t.panelCta : t.onlineCta,
+            ctaNote: hasPanel ? t.panelNote : t.onlineNote,
             lang,
-            siblings: sessions
-                .filter(s => s.id !== anchorSession.id)
-                .map(s => ({
-                    child_name: s.source_session_id ? childMap[s.source_session_id]?.child_name ?? '' : '',
-                    child_axis: s.source_session_id ? childMap[s.source_session_id]?.eje : undefined,
-                }))
-                .filter(s => s.child_name),
         });
 
         const subject = `${t.subjectPrefix} ${anchorChildName}`;
@@ -489,7 +375,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             },
             body: JSON.stringify({
                 from: 'Argo Method <hola@argomethod.com>',
-                to: [purchase.recipient_email],
+                to: [recipientEmail],
                 subject,
                 html,
             }),
@@ -501,14 +387,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             return res.status(502).json({ error: 'Resend failed', detail: err });
         }
 
-        // Mark all generated children as 'sent' (since the email aggregates them)
+        // Mark all generated children as 'sent' (the email aggregates them)
         const idsToMark = sessions.map(s => s.id);
         await sb.from('puentes_sessions').update({
             status: 'sent',
             sent_at: new Date().toISOString(),
         }).in('id', idsToMark);
 
-        return res.status(200).json({ ok: true, children_sent: idsToMark.length });
+        return res.status(200).json({ ok: true, children_sent: idsToMark.length, has_panel: hasPanel });
     } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error('[send-puentes-email] Error:', msg);
