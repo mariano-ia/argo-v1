@@ -424,8 +424,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
             };
 
-            // ── Resolve the child: re-profile an existing one, or create a new one ──
+            // ── Resolve the child: re-profile, reuse a link's child, or create new ──
             let childId: string;
+            let childWasFreshlyCreated = false;
             if (reproChildId) {
                 // Re-profile: append to an existing child. Verify it belongs to this
                 // tenant and is active (the cid is signed, but re-validate state).
@@ -438,23 +439,70 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
                 childId = reproChildId;
             } else {
-                // New child (general link always creates a new child — same name ≠ same child).
-                const { data: childRow, error: childErr } = await sb.from('children').insert({
-                    tenant_id:   effectiveTenantId,
-                    adult_name,
-                    adult_email,
-                    child_name,
-                    child_age:   typeof child_age === 'number' ? child_age : null,
-                    sport:       effectiveSport,
-                    lang:        lang ?? 'es',
-                    is_demo:     is_demo === true,
-                }).select('id').single();
-                if (childErr || !childRow) {
-                    console.error('[session:start] child insert error:', childErr?.message);
-                    await rollbackConsent();
-                    return res.status(500).json({ error: childErr?.message ?? 'child_create_failed' });
+                // ArgoOne®: a link is 1:1 with a child. If this link already has a
+                // non-completed child bound from a prior (abandoned) start, REUSE it
+                // instead of minting a duplicate. Kills the two-children-on-one-link bug
+                // and the in_flight pileup when a play is restarted. Only fires for One
+                // (a one_link_id is present); tenant/demo plays are untouched.
+                let reusedChildId: string | null = null;
+                if (typeof one_link_id === 'string' && one_link_id) {
+                    const { data: link } = await sb.from('one_links')
+                        .select('id, status, child_id, session_id')
+                        .eq('id', one_link_id).maybeSingle();
+                    if (link && link.status !== 'completed') {
+                        let candidate: string | null = (link.child_id as string | null) ?? null;
+                        if (!candidate && link.session_id) {
+                            const { data: priorPerf } = await sb.from('perfilamientos')
+                                .select('child_id, status').eq('id', link.session_id).maybeSingle();
+                            // Only reuse a prior attempt that never resolved.
+                            if (priorPerf && priorPerf.status !== 'resolved') candidate = (priorPerf.child_id as string | null) ?? null;
+                        }
+                        if (candidate) {
+                            const { data: cRow } = await sb.from('children')
+                                .select('id, deleted_at, merged_into').eq('id', candidate).maybeSingle();
+                            if (cRow && !cRow.deleted_at && !cRow.merged_into) reusedChildId = cRow.id as string;
+                        }
+                    }
                 }
-                childId = childRow.id;
+
+                if (reusedChildId) {
+                    // Reuse the link's child; refresh identity to the latest registration
+                    // (the link is for ONE child, so the newest input wins — collapses
+                    // "typed the wrong name, restarted" into a single child, no orphan).
+                    childId = reusedChildId;
+                    await sb.from('children').update({
+                        adult_name,
+                        adult_email,
+                        child_name,
+                        child_age: typeof child_age === 'number' ? child_age : null,
+                        sport:     effectiveSport,
+                        lang:      lang ?? 'es',
+                    }).eq('id', childId);
+                    // Supersede any leftover in_flight attempt so there is exactly one
+                    // active assessment for this child (no accumulation across restarts).
+                    await sb.from('perfilamientos')
+                        .update({ deleted_at: new Date().toISOString() })
+                        .eq('child_id', childId).eq('status', 'in_flight').is('deleted_at', null);
+                } else {
+                    // New child (general link always creates a new child — same name ≠ same child).
+                    const { data: childRow, error: childErr } = await sb.from('children').insert({
+                        tenant_id:   effectiveTenantId,
+                        adult_name,
+                        adult_email,
+                        child_name,
+                        child_age:   typeof child_age === 'number' ? child_age : null,
+                        sport:       effectiveSport,
+                        lang:        lang ?? 'es',
+                        is_demo:     is_demo === true,
+                    }).select('id').single();
+                    if (childErr || !childRow) {
+                        console.error('[session:start] child insert error:', childErr?.message);
+                        await rollbackConsent();
+                        return res.status(500).json({ error: childErr?.message ?? 'child_create_failed' });
+                    }
+                    childId = childRow.id;
+                    childWasFreshlyCreated = true;
+                }
             }
 
             // ── Create the started perfilamiento (in_flight) ──────────────────
@@ -480,8 +528,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (error || !perf) {
                 console.error('[session:start] perfilamiento insert error:', error?.message, error?.details);
                 await rollbackConsent();
-                // If we just created a fresh childless child, remove it.
-                if (!reproChildId) await sb.from('children').delete().eq('id', childId);
+                // If we just created a fresh childless child, remove it. Never delete a
+                // reused (pre-existing) child on a failed restart.
+                if (childWasFreshlyCreated) await sb.from('children').delete().eq('id', childId);
                 return res.status(500).json({ error: error?.message ?? 'perfilamiento_create_failed' });
             }
 
@@ -498,11 +547,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // link may bind, and a failure never blocks the play.
             if ((process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on') && typeof one_link_id === 'string' && one_link_id) {
                 try {
+                    // Bind (or REBIND on a restart) the link to the newest attempt, so the
+                    // report-recovery-cron always finishes the latest one — never the
+                    // superseded, abandoned perfilamiento. Only a not-completed link binds.
                     await sb.from('one_links')
                         .update({ session_id: perf.id })
                         .eq('id', one_link_id)
-                        .neq('status', 'completed')
-                        .is('session_id', null);
+                        .neq('status', 'completed');
                 } catch (e) {
                     console.warn('[session:start] one_link bind failed (non-blocking):', e);
                 }
@@ -523,7 +574,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(403).json({ error: 'missing_session_token' });
             }
             const { data: ownRow, error: ownErr } = await sb
-                .from('perfilamientos').select('id, share_token, child_id, tenant_id, adult_email, adult_name, child_name, lang, is_demo').eq('id', id).maybeSingle();
+                .from('perfilamientos').select('id, share_token, child_id, tenant_id, adult_email, adult_name, child_name, lang, is_demo, deleted_at').eq('id', id).maybeSingle();
             if (ownErr) {
                 console.error('[session:update] ownership lookup error:', ownErr.message);
                 return res.status(500).json({ error: 'update_lookup_failed' });
@@ -531,6 +582,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (!ownRow || ownRow.share_token !== share_token) {
                 console.warn('[session:update] Rejected update — share_token mismatch for perfilamiento', id);
                 return res.status(403).json({ error: 'invalid_session_token' });
+            }
+            // Superseded guard: the buyer reassigned the link (or the attempt was
+            // otherwise retired), soft-deleting this perfilamiento. A returning child
+            // must NOT complete a retired attempt — reject so the client shows
+            // "link ya utilizado" instead of resurrecting a dead session.
+            if (ownRow.deleted_at) {
+                console.warn('[session:update] Rejected update — perfilamiento retired (superseded)', id);
+                return res.status(409).json({ error: 'session_superseded' });
             }
 
             const allowed: Record<string, unknown> = {};

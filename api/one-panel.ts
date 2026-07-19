@@ -178,7 +178,9 @@ interface HubChild {
     is_invited: boolean;
     archived: boolean;
     my_bridge: HubBridge | null;
-    play_link: { slug: string; status: string } | null;
+    // link_id + started_at (the bound in-flight play's created_at, for a `pending`
+    // link) power the "reassign to another child" action + its 7-day stale alert.
+    play_link: { slug: string; status: string; link_id: string; started_at: string | null } | null;
     deletion_id: string | null;
     // The included $12.99 comp: when the viewer holds a paid comp puente toward
     // this child's perfilamiento, they create their bridge FREE (not $4.99).
@@ -262,6 +264,15 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
             .in('purchase_id', purchaseIds)
             .order('created_at', { ascending: true });
         links = data ?? [];
+    }
+
+    // For `pending` links (a play started but never finished), fetch when that
+    // attempt started, so the panel can light the 7-day "reassign" alert.
+    const startedAtBySession = new Map<string, string>();
+    const pendingSessionIds = links.filter((l) => l.status === 'pending' && l.session_id).map((l) => l.session_id);
+    if (pendingSessionIds.length) {
+        const { data: pend } = await sb.from('perfilamientos').select('id, created_at').in('id', pendingSessionIds);
+        for (const p of pend ?? []) startedAtBySession.set(p.id, p.created_at);
     }
 
     // ── owned children (responsible OR legacy adult email), not deleted ──
@@ -352,7 +363,12 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
         } else if (l.status === 'available' || l.status === 'sent' || l.status === 'pending') {
             const hc = blank(`link:${l.id}`);
             hc.is_buyer = true;
-            hc.play_link = { slug: l.slug, status: l.status };
+            hc.play_link = {
+                slug: l.slug,
+                status: l.status,
+                link_id: l.id,
+                started_at: (l.session_id && startedAtBySession.get(l.session_id)) || null,
+            };
             hc.name = hc.name ?? l.child_name ?? null;
             hc.sport = hc.sport ?? l.sport ?? null;
         }
@@ -870,6 +886,53 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // Only a slot that was already assigned (sent/pending) can be resent.
             if (link.status !== 'sent' && link.status !== 'pending') return res.status(400).json({ error: 'not_resendable' });
             await sendPlayLinkEmail(link.recipient_email, link.slug, link.child_name || null, vLang, origin);
+            return res.status(200).json({ ok: true });
+        }
+
+        // ── reassign-link: a play started on this link but was never finished, and
+        //    the buyer wants to reuse the link for another child. Retire the
+        //    abandoned attempt (soft-delete, reversible) and free the link.  The
+        //    same URL is then a clean slate; the returning original child hits the
+        //    superseded-session guard ("link ya utilizado"). Only the link's buyer
+        //    may do it, and never on a completed link. ──
+        if (action === 'reassign-link') {
+            const linkId = String(req.body.link_id || '');
+            if (!linkId) return res.status(400).json({ error: 'Missing link_id' });
+            const { data: purchases } = await sb
+                .from('one_purchases')
+                .select('id')
+                .ilike('email', likeEscape(email))
+                .eq('payment_status', 'paid');
+            const pIds = (purchases ?? []).map((p: { id: string }) => p.id);
+            const { data: link } = await sb
+                .from('one_links')
+                .select('id, status, session_id, child_id, purchase_id')
+                .eq('id', linkId)
+                .maybeSingle();
+            if (!link || !pIds.includes(link.purchase_id)) return res.status(404).json({ error: 'Link not found' });
+            if (link.status === 'completed') return res.status(400).json({ error: 'link_already_used' });
+
+            // Resolve the abandoned child bound to this link.
+            let boundChildId = (link.child_id as string | null) ?? null;
+            if (!boundChildId && link.session_id) {
+                const { data: p } = await sb.from('perfilamientos').select('child_id, status').eq('id', link.session_id).maybeSingle();
+                if (p && p.status !== 'resolved') boundChildId = (p.child_id as string | null) ?? null;
+            }
+            const nowIso = new Date().toISOString();
+            if (boundChildId) {
+                // Safety: never retire a child that already has a delivered (resolved) report.
+                const { data: resolved } = await sb.from('perfilamientos')
+                    .select('id').eq('child_id', boundChildId).eq('status', 'resolved').is('deleted_at', null).limit(1);
+                if (!resolved || resolved.length === 0) {
+                    await sb.from('perfilamientos').update({ deleted_at: nowIso }).eq('child_id', boundChildId).eq('status', 'in_flight').is('deleted_at', null);
+                    await sb.from('children').update({ deleted_at: nowIso }).eq('id', boundChildId).is('deleted_at', null);
+                }
+            }
+            // Free the link for a fresh child (reminder clock resets too).
+            await sb.from('one_links')
+                .update({ session_id: null, child_id: null, status: 'available', reminder_sent_at: null })
+                .eq('id', linkId)
+                .neq('status', 'completed');
             return res.status(200).json({ ok: true });
         }
 

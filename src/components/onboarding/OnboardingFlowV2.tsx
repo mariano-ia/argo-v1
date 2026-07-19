@@ -1000,23 +1000,31 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 const v4ctx = { nombre: adultData.nombreNino, frame: sportFrame(adultData.deporte) };
                 const v4lang = (lang === 'en' || lang === 'pt' ? lang : 'es') as 'es' | 'en' | 'pt';
 
-                // ── Capa 2 (variación por IA): best-effort. El endpoint /api/report-variant está gateado por
-                //    V4_CAPA2 (off => variant null). makeCapa2 aplica los recaudos (distinción + hechos) y el
-                //    pipeline corre el gate completo; si algo no da, cae a Capa 1. NUNCA bloquea (todo try/catch).
-                let capa2Hook: ReturnType<typeof makeCapa2> | undefined;
-                try {
-                    const base = buildReportV4(ficha, { ...v4ctx, lang: v4lang });
-                    const vr = await fetch('/api/report-variant', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ report_v4: base, lang: v4lang, nombre: adultData.nombreNino }),
-                    });
-                    if (vr.ok) {
-                        const { variant } = await vr.json();
-                        if (variant) capa2Hook = makeCapa2(variant, {}, (reason, detail) => console.info('[v4:capa2] reject:', reason, detail ?? ''));
-                    }
-                } catch (e) { console.warn('[v4:capa2] variant fetch failed (non-blocking):', e); }
-
-                const pipe = runReportPipeline(ficha, v4ctx, { lang: v4lang, capa2: capa2Hook });
+                // ── Capa 2 (variación por IA): best-effort, con hasta 3 reintentos. Cada intento pide una
+                //    variante FRESCA a /api/report-variant (gateado por V4_CAPA2: off => variant null) y corre
+                //    el pipeline con el gate completo. Nos quedamos con la PRIMERA variante que pasa el gate;
+                //    si ninguna de las 3 pasa (o Capa 2 está apagada), sale el piso Capa 1, garantizado limpio
+                //    por el test exhaustivo reportFloorGuard. NUNCA bloquea (todo best-effort / try-catch).
+                const MAX_CAPA2_ATTEMPTS = 3;
+                const base = buildReportV4(ficha, { ...v4ctx, lang: v4lang });
+                let pipe = runReportPipeline(ficha, v4ctx, { lang: v4lang }); // piso limpio garantizado por defecto
+                for (let attempt = 1; attempt <= MAX_CAPA2_ATTEMPTS; attempt++) {
+                    let capa2Hook: ReturnType<typeof makeCapa2> | undefined;
+                    try {
+                        const vr = await fetch('/api/report-variant', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ report_v4: base, lang: v4lang, nombre: adultData.nombreNino }),
+                        });
+                        if (vr.ok) {
+                            const { variant } = await vr.json();
+                            if (variant) capa2Hook = makeCapa2(variant, {}, (reason, detail) => console.info('[v4:capa2] reject:', reason, detail ?? ''));
+                        }
+                    } catch (e) { console.warn(`[v4:capa2] variant fetch failed (intento ${attempt}/${MAX_CAPA2_ATTEMPTS}, non-blocking):`, e); }
+                    if (!capa2Hook) break; // Capa 2 apagada / no disponible: el piso queda; reintentar no cambiaría nada
+                    const tryPipe = runReportPipeline(ficha, v4ctx, { lang: v4lang, capa2: capa2Hook });
+                    if (tryPipe.origen === 'capa2') { pipe = tryPipe; break; } // pasó el gate => nos la quedamos
+                    console.info(`[v4:capa2] intento ${attempt}/${MAX_CAPA2_ATTEMPTS} no pasó el gate; ${attempt < MAX_CAPA2_ATTEMPTS ? 'reintentando' : 'cae a Capa 1 (piso limpio)'}`);
+                }
                 v4Shadow = { evidence_ficha: ficha, report_v4: pipe.report, report_qc: pipe.qc };
                 console.info('[v4:shadow] gate:', pipe.status, '·', pipe.qc.reasons.map((r) => r.code).join(',') || 'clean', '· origen:', pipe.origen);
             } catch (e) {
@@ -1039,6 +1047,16 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 // Update the "started" session with real profile data
                 const earlyResult = await updateSession(sessionIdRef.current, profileFields, shareTokenRef.current ?? undefined);
                 if (!earlyResult.ok) {
+                    // The buyer reassigned this link: our attempt was retired server-side.
+                    // Stop and show the terminal "link ya utilizado" screen instead of
+                    // resurrecting a dead session or looping on retry.
+                    if (earlyResult.error === 'session_superseded') {
+                        beamCompletionStuck('superseded');
+                        clearRecoveryData();
+                        setSaveError('superseded');
+                        setAiLoading(false);
+                        return;
+                    }
                     console.warn('[session] Early update failed:', earlyResult.error);
                 }
             } else {
@@ -1540,9 +1558,30 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                     eternal loader — offer a way out (retry, or continue if answers are
                     still missing). */}
                 {screen.type === 'child-result' && !demoMode && !revealReady && (saveError || resolveTimedOut) && (() => {
-                    const answersIncomplete = answers.length < questions.length;
                     const L = (es: string, en: string, pt: string) =>
                         lang === 'es' ? es : lang === 'pt' ? pt : en;
+                    // Terminal: the buyer reassigned this link, so this attempt is retired.
+                    // No retry — the link belongs to another child now.
+                    if (saveError === 'superseded') {
+                        return (
+                            <motion.div
+                                key="child-result-superseded"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[#0b1a2a] px-8 text-center"
+                                style={{ zIndex: 10 }}
+                            >
+                                <p className="font-quest text-white/90 text-xl font-medium leading-snug">
+                                    {L('Este link ya fue utilizado.', 'This link has already been used.', 'Este link já foi utilizado.')}
+                                </p>
+                                <p className="text-white/60 text-sm max-w-xs leading-relaxed">
+                                    {L('Quien te lo compartió lo reasignó a otro niño. Pídele un nuevo link si quieres jugar.', 'Whoever shared it reassigned it to another child. Ask them for a new link if you want to play.', 'Quem compartilhou o reatribuiu a outra criança. Peça um novo link se quiser jogar.')}
+                                </p>
+                            </motion.div>
+                        );
+                    }
+                    const answersIncomplete = answers.length < questions.length;
                     return (
                         <motion.div
                             key="child-result-error"

@@ -20,6 +20,10 @@ import { createClient } from '@supabase/supabase-js';
  *  - Previously soft-deleted children (deleted_at IS NOT NULL) are purged
  *    as part of the migration to hard deletes — any remaining rows older
  *    than 30 days get hard-deleted.
+ *  - Demo hygiene (is_demo=true ONLY): abandoned demo children (no resolved
+ *    perfilamiento, older than 24h) and duplicate resolved demos (same
+ *    email+name — keep the newest) are soft-deleted, then purged by the rule
+ *    above. Real (non-demo) children are never touched here.
  *
  * Authorization: Vercel Cron sends a special Authorization header with
  * a signed bearer token. For development we also accept CRON_SECRET.
@@ -69,6 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 3600 * 1000).toISOString();
     const twoYearsAgo = new Date(now.getTime() - 2 * 365 * 24 * 3600 * 1000).toISOString();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 3600 * 1000).toISOString();
+    const oneDayAgo = new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
 
     const results: Record<string, number | string> = {};
 
@@ -195,6 +200,69 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             } else {
                 results.soft_deleted_purged = 0;
             }
+        }
+
+        // ── 6. Demo hygiene: sweep abandoned demo plays + duplicate resolved demos ──
+        // Demo (is_demo=true) plays are on-screen-only and never delivered, and each
+        // fresh start mints a new child (no dedup by design), so they pile up (abandoned
+        // starts) and duplicate (same kid replayed to completion). Soft-delete them
+        // (reversible; rule 5 hard-deletes 30 days later). NEVER touches real (non-demo)
+        // children — a paid ArgoOne® link's abandoned child is intentionally left alone.
+        try {
+            const { data: demoKids, error: demoFetchErr } = await sb
+                .from('children')
+                .select('id, adult_email, child_name, created_at')
+                .eq('is_demo', true)
+                .is('deleted_at', null);
+            if (demoFetchErr) throw new Error(demoFetchErr.message);
+
+            const kids = demoKids ?? [];
+            let toSweep: string[] = [];
+            if (kids.length > 0) {
+                const { data: resolvedRows } = await sb
+                    .from('perfilamientos')
+                    .select('child_id')
+                    .in('child_id', kids.map(k => k.id))
+                    .eq('status', 'resolved')
+                    .is('deleted_at', null);
+                const resolvedSet = new Set((resolvedRows ?? []).map(r => r.child_id));
+
+                // 6a. Abandoned: no resolved perfilamiento AND older than 24h.
+                const abandoned = kids
+                    .filter(k => !resolvedSet.has(k.id) && k.created_at < oneDayAgo)
+                    .map(k => k.id);
+
+                // 6b. Duplicate resolved demos: keep the newest per (email, name), sweep the rest.
+                const groups = new Map<string, { id: string; created_at: string }[]>();
+                for (const k of kids) {
+                    if (!resolvedSet.has(k.id)) continue;
+                    const key = `${(k.adult_email ?? '').trim().toLowerCase()}|${(k.child_name ?? '').trim().toLowerCase()}`;
+                    const arr = groups.get(key) ?? [];
+                    arr.push({ id: k.id, created_at: k.created_at });
+                    groups.set(key, arr);
+                }
+                const dupOlder: string[] = [];
+                for (const arr of groups.values()) {
+                    if (arr.length < 2) continue;
+                    arr.sort((a, b) => (a.created_at < b.created_at ? 1 : -1)); // newest first
+                    dupOlder.push(...arr.slice(1).map(x => x.id));               // all but the newest
+                }
+
+                toSweep = Array.from(new Set([...abandoned, ...dupOlder]));
+            }
+
+            if (toSweep.length > 0) {
+                const nowIso = now.toISOString();
+                await sb.from('perfilamientos').update({ deleted_at: nowIso }).in('child_id', toSweep).is('deleted_at', null);
+                const { error: demoErr } = await sb.from('children').update({ deleted_at: nowIso }).in('id', toSweep);
+                if (demoErr) results.demo_sweep_error = demoErr.message;
+                else results.demo_children_swept = toSweep.length;
+            } else {
+                results.demo_children_swept = 0;
+            }
+        } catch (e) {
+            console.error('[retention-cron] demo sweep error:', e);
+            results.demo_sweep_error = e instanceof Error ? e.message : 'unknown';
         }
 
         console.info('[retention-cron] completed', results);

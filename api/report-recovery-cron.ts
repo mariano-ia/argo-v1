@@ -17,6 +17,62 @@ async function logActivity(sb: { from: (table: string) => { insert: (values: unk
     } catch (err) { console.warn('[principia:logActivity] non-blocking write failed:', err); }
 }
 
+// Abandoned-play reminder (#3): a play started on a One link but never finished.
+// Nudge the BUYER once, buyer-neutral ("el niño", never "tu hijo"), deep-linking to
+// their panel where they can retomar OR reasignar. Inlined (no cross-dir imports).
+async function sendAbandonReminderEmail(email: string, accessToken: string, childName: string | null, lang: string, origin: string): Promise<boolean> {
+    const resendKey = process.env.RESEND_API_KEY;
+    if (!resendKey) return false;
+    const panelUrl = `${origin}/one/panel?token=${accessToken}`;
+    const nombre = childName && childName.trim() ? childName.trim() : (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
+    const PL = lang === 'en' ? {
+        subject: `${nombre}'s profile is halfway there`,
+        heading: 'A profile stayed halfway through',
+        body: `${nombre} started the odyssey but did not finish it. From your panel you can resume it, or reassign the link to another child.`,
+        cta: 'Open my panel',
+        note: 'If it is already done, you can ignore this email.',
+    } : lang === 'pt' ? {
+        subject: `O perfil de ${nombre} ficou pela metade`,
+        heading: 'Um perfil ficou pela metade',
+        body: `${nombre} começou a odisseia mas não terminou. No seu painel você pode retomá-la, ou reatribuir o link a outra criança.`,
+        cta: 'Abrir meu painel',
+        note: 'Se já estiver pronto, pode ignorar este email.',
+    } : {
+        subject: `El perfil de ${nombre} quedó a mitad de camino`,
+        heading: 'Un perfil quedó a mitad de camino',
+        body: `${nombre} empezó la odisea pero no la terminó. Desde tu panel puedes retomarla, o reasignar el link a otro niño.`,
+        cta: 'Abrir mi panel',
+        note: 'Si ya está listo, puedes ignorar este email.',
+    };
+    try {
+        const r = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                from: 'Argo Method <hola@argomethod.com>',
+                to: [email],
+                subject: PL.subject,
+                html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
+<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td style="background:#1D1D1F;padding:24px 28px;">
+    <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One®</span>
+</td></tr>
+<tr><td style="padding:28px;">
+    <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 8px;">${PL.heading}</h2>
+    <p style="font-size:14px;color:#86868B;margin:0 0 24px;line-height:1.6;">${PL.body}</p>
+    <div style="text-align:center;">
+    <a href="${panelUrl}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${PL.cta}</a>
+    </div>
+    <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;text-align:center;">${PL.note}</p>
+</td></tr>
+</table></td></tr></table></body></html>`,
+            }),
+        });
+        return r.ok;
+    } catch { return false; }
+}
+
 // Defense-in-depth (post-split): re-derive ONLY the primary eje from the stored
 // answers tally and compare to the stored eje. If they clearly disagree we SKIP the
 // row and flag it, never authoring a contested report and NEVER recalculating motor
@@ -223,6 +279,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.info('[report-recovery] argoone completion swept for link', l.id);
             }
         } catch (e) { console.warn('[report-recovery] argoone sweep failed (non-blocking):', e); }
+    }
+
+    // ── ArgoOne® abandoned-play REMINDER (#3, best-effort) ───────────────────
+    // A play started on a link but never finished. After 3 days, nudge the BUYER
+    // once ("retomá o reasigná desde tu panel"). Stamped via reminder_sent_at so it
+    // fires at most once per link. Reset on reassign, so a re-abandon re-reminds.
+    if (process.env.ONE_V2_COMPLETE === 'on' || process.env.ONE_UNIFIED_SKU === 'on') {
+        try {
+            const reminderCutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+            const { data: pendingLinks } = await sb
+                .from('one_links')
+                .select('id, session_id, purchase_id')
+                .eq('status', 'pending')
+                .not('session_id', 'is', null)
+                .is('reminder_sent_at', null)
+                .limit(20);
+            for (const l of pendingLinks ?? []) {
+                const { data: perf } = await sb
+                    .from('perfilamientos')
+                    .select('status, child_name, created_at')
+                    .eq('id', l.session_id)
+                    .maybeSingle();
+                if (!perf || perf.status !== 'in_flight') continue;   // resolved → completion sweep; missing → skip
+                if (perf.created_at > reminderCutoff) continue;       // too fresh (< 3 days)
+
+                const { data: op } = await sb.from('one_purchases')
+                    .select('email, lang, access_token').eq('id', l.purchase_id).maybeSingle();
+                if (!op?.email || !op.access_token) continue;
+
+                const sent = await sendAbandonReminderEmail(op.email, op.access_token as string, perf.child_name || null, (op.lang as string) || 'es', origin);
+                // Stamp regardless of outcome so a hard-failing address can't loop daily.
+                await sb.from('one_links').update({ reminder_sent_at: new Date().toISOString() }).eq('id', l.id);
+                if (sent) console.info('[report-recovery] abandon reminder sent for link', l.id);
+            }
+        } catch (e) { console.warn('[report-recovery] abandon reminder failed (non-blocking):', e); }
     }
 
     // Hard floor: never recover any session created before this fix shipped.

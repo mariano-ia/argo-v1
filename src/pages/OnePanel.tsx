@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, ExternalLink, X, Archive, ArchiveRestore } from 'lucide-react';
+import { Copy, Check, ExternalLink, X, Archive, ArchiveRestore, AlertTriangle } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { InfoTip, ToastProvider, useToast } from '../components/ui';
 import { DemoRequestModal } from '../components/DemoRequestModal';
@@ -203,7 +203,7 @@ interface HubChildF {
     is_invited: boolean;
     archived?: boolean;
     my_bridge: HubBridgeF | null;
-    play_link: { slug: string; status: string } | null;
+    play_link: { slug: string; status: string; link_id?: string; started_at?: string | null } | null;
     deletion_id: string | null;
     comp_token: string | null;
     bridge_token: string | null;
@@ -297,6 +297,16 @@ const TH = {
         subAdulto: 'El niño que autorizaste, su informe y los puentes.',
         subPadre: 'Tu niño, tu puente y los adultos vinculados.',
         linkResent: 'Link reenviado.',
+        linkPending: 'Perfil a medias',
+        linkPendingSub: 'un niño empezó pero no terminó',
+        reassignCta: 'Reasignar',
+        reassignAlert: 'Quedó a medias hace más de una semana. Puedes reasignar este link a otro niño.',
+        reassignConfirmTitle: 'Reasignar este link',
+        reassignConfirmBody: 'El progreso a medias se descarta y el link queda libre para otro niño. La misma dirección sigue funcionando.',
+        reassignConfirmCta: 'Sí, reasignar',
+        reassignCancel: 'Cancelar',
+        reassignDone: 'Link liberado. Ya puedes compartirlo con otro niño.',
+        reassignError: 'No se pudo reasignar. Intenta de nuevo.',
         footerRefresh: 'Cada perfil (del niño y del adulto) se actualiza cada 6 meses.',
         footerPrices: 'Precios en dólares. Al comprar desde Argentina se cobra al valor del dólar del día.',
         manageData: 'Administrar o eliminar datos',
@@ -379,6 +389,16 @@ const TH = {
         subAdulto: 'The child you authorized, their report and the bridges.',
         subPadre: 'Your child, your bridge and the linked adults.',
         linkResent: 'Link resent.',
+        linkPending: 'Profile half-done',
+        linkPendingSub: 'a child started but did not finish',
+        reassignCta: 'Reassign',
+        reassignAlert: 'It stayed half-done for over a week. You can reassign this link to another child.',
+        reassignConfirmTitle: 'Reassign this link',
+        reassignConfirmBody: 'The half-done progress is discarded and the link is freed for another child. The same address keeps working.',
+        reassignConfirmCta: 'Yes, reassign',
+        reassignCancel: 'Cancel',
+        reassignDone: 'Link freed. You can share it with another child now.',
+        reassignError: 'Could not reassign. Try again.',
         footerRefresh: 'Each profile (the child\'s and the adult\'s) refreshes every 6 months.',
         footerPrices: 'Prices in US dollars. When buying from Argentina you are charged at the day\'s dollar value.',
         manageData: 'Manage or delete data',
@@ -461,6 +481,16 @@ const TH = {
         subAdulto: 'A criança que você autorizou, seu relatório e as pontes.',
         subPadre: 'Sua criança, sua ponte e os adultos vinculados.',
         linkResent: 'Link reenviado.',
+        linkPending: 'Perfil pela metade',
+        linkPendingSub: 'uma criança começou mas não terminou',
+        reassignCta: 'Reatribuir',
+        reassignAlert: 'Ficou pela metade há mais de uma semana. Você pode reatribuir este link a outra criança.',
+        reassignConfirmTitle: 'Reatribuir este link',
+        reassignConfirmBody: 'O progresso pela metade é descartado e o link fica livre para outra criança. O mesmo endereço continua funcionando.',
+        reassignConfirmCta: 'Sim, reatribuir',
+        reassignCancel: 'Cancelar',
+        reassignDone: 'Link liberado. Já pode compartilhá-lo com outra criança.',
+        reassignError: 'Não foi possível reatribuir. Tente de novo.',
         footerRefresh: 'Cada perfil (da criança e do adulto) se atualiza a cada 6 meses.',
         footerPrices: 'Preços em dólares. Ao comprar da Argentina cobra-se pelo valor do dólar do dia.',
         manageData: 'Administrar ou excluir dados',
@@ -774,6 +804,19 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
         if (res && res.ok) toast('success', th.linkResent);
     };
 
+    // Reassign: retire an abandoned play and free the link for another child.
+    const [reassignConfirm, setReassignConfirm] = useState<string | null>(null);
+    const [busyReassign, setBusyReassign] = useState(false);
+    const reassignLink = async (linkId: string) => {
+        setBusyReassign(true);
+        const res = await postAction({ action: 'reassign-link', link_id: linkId });
+        setBusyReassign(false);
+        setReassignConfirm(null);
+        if (res && res.ok) { toast('success', th.reassignDone); onRefresh?.(); }
+        else { toast('error', th.reassignError); }
+    };
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
     return (
         <div className="min-h-screen bg-argo-neutral">
             <div className="max-w-[760px] mx-auto px-5 py-10 pb-24">
@@ -841,21 +884,38 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                     <>
                         <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-7 mb-2.5">{th.playLinksLabel}</div>
                         <div className="bg-white rounded-[14px] shadow-argo border border-argo-border divide-y divide-argo-border overflow-hidden">
-                            {availableLinks.map(link => (
+                            {availableLinks.map(link => {
+                                const pl = link.play_link!;
+                                const isPending = pl.status === 'pending';
+                                const startedMs = pl.started_at ? Date.parse(pl.started_at) : NaN;
+                                const isStale = isPending && Number.isFinite(startedMs) && (Date.now() - startedMs) > SEVEN_DAYS_MS;
+                                const linkId = pl.link_id ?? link.key.replace(/^link:/, '');
+                                return (
                                 <div key={link.key} className="flex items-center gap-3 px-5 py-4 flex-wrap">
-                                    <span className="w-2 h-2 rounded-full bg-argo-light flex-shrink-0" />
+                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isPending ? 'bg-amber-400' : 'bg-argo-light'}`} />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[13px] font-medium text-argo-navy">{th.linkAvailable}</p>
-                                        <p className="text-[11.5px] text-argo-grey">{th.linkAvailableSub}</p>
+                                        <p className="text-[13px] font-medium text-argo-navy inline-flex items-center gap-1.5">
+                                            {isPending ? th.linkPending : th.linkAvailable}
+                                            {isStale && (
+                                                <span title={th.reassignAlert} className="inline-flex text-amber-500 cursor-help align-middle">
+                                                    <AlertTriangle size={13} />
+                                                </span>
+                                            )}
+                                        </p>
+                                        <p className="text-[11.5px] text-argo-grey">{isPending ? th.linkPendingSub : th.linkAvailableSub}</p>
                                     </div>
-                                    <button onClick={() => copyPlayLink(link.play_link!.slug)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
-                                        {copiedSlug === link.play_link!.slug ? <><Check size={13} /> {th.copied}</> : <><Copy size={13} /> {th.copyPlayLinkCta}</>}
+                                    <button onClick={() => copyPlayLink(pl.slug)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
+                                        {copiedSlug === pl.slug ? <><Check size={13} /> {th.copied}</> : <><Copy size={13} /> {th.copyPlayLinkCta}</>}
                                     </button>
-                                    {link.play_link!.status === 'sent' && (
-                                        <button onClick={() => resendPlayLink(link.key.replace(/^link:/, ''))} className="px-3 py-2 rounded-[10px] text-[12.5px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">{th.resend}</button>
+                                    {pl.status === 'sent' && (
+                                        <button onClick={() => resendPlayLink(linkId)} className="px-3 py-2 rounded-[10px] text-[12.5px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors">{th.resend}</button>
+                                    )}
+                                    {isPending && (
+                                        <button onClick={() => setReassignConfirm(linkId)} className={`px-3 py-2 rounded-[10px] text-[12.5px] font-semibold border transition-colors ${isStale ? 'bg-amber-50 border-amber-300 text-amber-700 hover:bg-amber-100' : 'bg-white border-argo-border text-argo-navy hover:bg-argo-neutral'}`}>{th.reassignCta}</button>
                                     )}
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <p className="text-[12px] text-argo-light mt-2.5 px-0.5">{th.playLinksNote}</p>
                     </>
@@ -927,6 +987,19 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                             <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-argo-border">
                                 <button onClick={() => copyBridgeLinkFromModal(linked.child)} className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold text-argo-violet-500 hover:text-argo-violet-600 transition-colors"><Copy size={13} /> {th.shareBridgeLink}</button>
                                 <button onClick={() => revokeBridgeLink(linked.child)} className="text-[12px] font-semibold text-red-600 hover:text-red-700 transition-colors">{th.revokeLink}</button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+
+                {reassignConfirm && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4" onClick={() => !busyReassign && setReassignConfirm(null)}>
+                        <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }} onClick={e => e.stopPropagation()} className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl">
+                            <h3 className="text-base font-bold text-argo-navy tracking-tight mb-1.5">{th.reassignConfirmTitle}</h3>
+                            <p className="text-[13px] text-argo-secondary leading-relaxed">{th.reassignConfirmBody}</p>
+                            <div className="flex items-center justify-end gap-2 mt-5">
+                                <button disabled={busyReassign} onClick={() => setReassignConfirm(null)} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-white border border-argo-border text-argo-navy hover:bg-argo-neutral transition-colors disabled:opacity-50">{th.reassignCancel}</button>
+                                <button disabled={busyReassign} onClick={() => reassignLink(reassignConfirm)} className="px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-50">{th.reassignConfirmCta}</button>
                             </div>
                         </motion.div>
                     </motion.div>
