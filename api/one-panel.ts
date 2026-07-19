@@ -230,7 +230,10 @@ function buildBridge(b: any, nowMs: number): HubBridge {
     const s = b.status ?? null;
     return {
         status: s,
-        ready: s === 'ready' || s === 'sent' || s === 'completed',
+        // 'generated' = the bridge report exists (mirrors the puentes_sessions
+        // ready test below). Its omission left a fully generated bridge showing
+        // "Continuar mi puente" instead of "Ver mi puente".
+        ready: s === 'ready' || s === 'sent' || s === 'completed' || s === 'generated',
         expires_at: b.expires_at ?? null,
         is_stale: isStaleAt(b.expires_at, nowMs),
     };
@@ -444,8 +447,13 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
         if (!hc.perfilamiento_id) continue;
         hc.comp_token = compByPerf.get(hc.perfilamiento_id) ?? null;
         hc.bridge_token = tokenByPerf.get(hc.perfilamiento_id) ?? null;
-        // Prefer the new bridges row; else legacy ready; else legacy in-progress.
-        if (!hc.my_bridge) hc.my_bridge = readyByPerf.get(hc.perfilamiento_id) ?? pendingByPerf.get(hc.perfilamiento_id) ?? null;
+        // puentes_sessions is the source of truth for generation state. The
+        // bridges table (M8 dual-write) can lag at 'answered' after the bridge
+        // actually generated, so a READY session must win over a not-ready
+        // bridges row — otherwise a finished bridge shows "Continuar mi puente".
+        const fromSessions = readyByPerf.get(hc.perfilamiento_id) ?? pendingByPerf.get(hc.perfilamiento_id) ?? null;
+        if (!hc.my_bridge) hc.my_bridge = fromSessions;
+        else if (!hc.my_bridge.ready && fromSessions?.ready) hc.my_bridge = fromSessions;
     }
 
     // Linked adults per owned child (frozen model §4: the "Adultos vinculados"
