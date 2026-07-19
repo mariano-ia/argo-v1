@@ -1,6 +1,8 @@
 # Fallback del informe Argo — arquitectura de diseño
 
 > Diseño cerrado (4 frentes de falla estresados + síntesis). Regla del owner (2026-07-07): el esqueleto determinista solo NO puede salir; ante un problema real, se RETIENE, no se manda basura. Descubrimiento urgente: el sistema HOY es fail-open y ya deja salir informes rotos / abandona chicos en silencio. La Fase A tapa eso, con o sin v4.
+>
+> **AS-BUILT 2026-07-19 (LIVE en main):** ver §8. Se probó el piso limpio por construcción (test exhaustivo, cierra §6 Fase B.12), se clasificaron los holds (data vs content) y la Capa 2 reintenta ×3. Motivado por un incidente real: un template del Estratega rozaba un guard y retenía todo Estratega es/pt.
 
 # Arquitectura de fallback del informe Argo — diseño CERRADO
 
@@ -154,3 +156,24 @@ El QC valida **forma y procedencia**, no **verdad**. Quedan tres huecos residual
 3. **Latigazo tonal residual dentro del techo de E2.** El check de procedencia (§3.10) impide el fallback-dominante y protege el corazón, pero un informe con 1 sección en voz fría de plantilla entre 5 cálidas **igual se lee con una costura**. Es un E2 legítimo por diseño; el owner debe saber que E2 nunca es tan homogéneo como E1. El único cierre total sería prohibir toda degradación (todo defecto → HOLD), a costa de disparar `hold_rate` por encima del 1%.
 
 **Dependencia dura para que nada de esto sea peor:** el envío durable vive en `api/report-recovery-cron.ts`, que **no puede importar `src/lib`**. Si el QC y los estáticos curados no se **persisten** (`evidence_ficha jsonb` + skeleton renderizado) y el veredicto no se **sella en DB** (`report_status`), el cron seguiría enviando informes no-vetados o abandonándolos en silencio. Las columnas persistidas de la Fase A son el prerrequisito no negociable: sin ellas, "caída ≤1%" y "nunca un chico sin informe" **no son verificables** en el único camino que más lo necesita.
+
+---
+
+## 8. As-built — la garantía del piso (LIVE en main 2026-07-19)
+
+> Pieces 1-2 en el commit `87728a1`; piece 3 llegó en `0a18b81`. Todo live en `origin/main`.
+
+### El incidente que lo motivó
+Un informe de un tenant real (ArgoAcademy) aparecía en el dashboard pero **el email nunca salía**: el gate fail-closed de v4 lo había RETENIDO con `held_reason=guard_determinista`. La frase culpable no la generó la IA: era un **string fijo del template** del Estratega en la sección "Antes, durante y después" ("así va a ser, estos son los pasos" es / "vai ser assim…" pt), que rozaba el patrón `\bva a ser\b`. Como la **Capa 1 es determinista**, ese texto salía idéntico siempre ⇒ **todo Estratega es/pt quedaba retenido para siempre** y su mail nunca se auto-enviaba. La fila trabada se liberó a mano (flip `held→ready` + `send-email`, equivalente al "Force" del admin; un `release` normal re-gatea y seguiría reteniendo).
+
+### El principio (refinamiento de la regla de oro para un piso determinista)
+Para un piso **determinista**, "regenerar hasta que pase" no aplica (da el mismo texto siempre). La garantía correcta y más fuerte es: **probar que el piso pasa TODOS los guards por construcción** ⇒ pasa al primer intento, siempre. Con eso, un HOLD **solo** puede venir de un defecto REAL de **dato** (ficha rota / idioma no soportado), que es genuinamente innarrable y correctamente no sale automático. El requisito del owner ("nunca sale mal, pero tampoco puede dejar de salir") queda cumplido: todo juego válido produce un informe entregable de una.
+
+### Lo construido
+1. **Fix de los 2 templates** (es + pt Estratega) sin cambiar el sentido, evitando `va a ser`/`vai ser`; snapshots `reportV4.{es,pt}.json` regenerados (solo cambió la línea del ejemplo).
+2. **`src/lib/reportFloorGuard.test.ts` — la prueba del piso** (cierra el ítem §6 Fase B.12). Cartesiano EXHAUSTIVO: todo arquetipo × registro × es/en/pt × marco (+ barrido de edad para motor age-fair) armado con `buildReportV4` y pasado por **los DOS gates**: el sello de entrega `gateReportV4` (`api/session.ts`) y el canónico `qualityGate` (`reportQuality.ts`). Un template que roza un guard **rompe CI**. Cableado en `qa:unit`. Verificado con dientes: reintroducir la frase hace fallar todas las combinaciones Estratega es.
+3. **Clasificación de holds** en `reportQuality.ts` (`holdClass()` / `DATA_HOLD_REASONS`): **DATA** = defecto de entrada (necesita humano, regenerar no lo arregla) vs **CONTENT** = defecto de forma/guard (con el piso probado limpio NO debería ocurrir; es una regresión auto-recuperable). Consumidor: `api/admin-held-reports.ts` devuelve `hold_class` por fila + `byClass` en el summary, para que el humano triage "me necesita" vs "esto es un bug".
+4. **Capa 2 (IA) con retry ×3** en `OnboardingFlowV2.tsx`: cada intento pide una variante FRESCA a `/api/report-variant` y corre el pipeline con el gate completo; se queda con la primera que pasa; si ninguna de las 3 pasa (o Capa 2 está apagada), sale el piso Capa 1 garantizado limpio. Nunca bloquea la entrega.
+
+### Deferido (no hace falta para la garantía go-forward)
+Auto-sanado server-side de filas ya retenidas **antes** de un fix: el cron no puede reconstruir Capa 1 (no importa `src/lib`); requeriría bundlear el motor a un `.mjs` self-contained. No es necesario para lo nuevo (el piso probado limpio cubre el 100% de los juegos nuevos), solo para re-sanar filas históricas.
