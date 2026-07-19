@@ -750,16 +750,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     // shown to a payer, sibling session never ensured).
                     //
                     // ENTITLEMENT (per-child model): only THIS child's own paid
-                    // purchase attaches its bridge. The sibling fan-out fallback
-                    // is legitimate ONLY for tenant free_puentes grants, where a
-                    // single comp intentionally covers every child of the tenant
-                    // (session.ts maybeGrantTenantFreePuente dedups to one comp
-                    // per adult and relies on send-email to attach siblings).
-                    // For argo_one it is forbidden — a $4.99/$12.99 buyer must
-                    // never get a bridge for a child they did not pay for — and
-                    // every argo_one path now mints the child's own session
-                    // inline, so ownPurchase matches. No own purchase + no tenant
-                    // grant ⇒ show the upsell, never mis-attach.
+                    // purchase attaches its bridge. In the ArgoOne flow the buyer
+                    // gets a bridge only toward the child they paid for; the
+                    // authorizing adult (and any adult who bought a bridge for a
+                    // DIFFERENT child) must pay $4.99 for this child — even if they
+                    // already answered the questionnaire for another child (the
+                    // profile is reused, the bridge per child is not).
+                    //
+                    // The sibling fan-out is legitimate ONLY inside a tenant that
+                    // has free_puentes on, and ONLY for a child of THAT tenant
+                    // (session.ts grants one comp per adult and relies on send-email
+                    // to attach that tenant's siblings). So the fallback is gated on
+                    // the CURRENT child's tenant — not on whether the email happens
+                    // to hold any tenant comp (which could be for an unrelated club;
+                    // that over-broad check leaked "included" onto argo_one children).
                     const escTo = toEmail.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
                     const { data: ownPurchase } = await sbForPuentes
                         .from('puentes_purchases')
@@ -772,16 +776,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         .maybeSingle();
                     let paidPurchase = ownPurchase;
                     if (!paidPurchase) {
-                        const { data: tenantComp } = await sbForPuentes
-                            .from('puentes_purchases')
-                            .select('id, magic_token, lang')
-                            .ilike('recipient_email', escTo)
-                            .eq('status', 'paid')
-                            .eq('source', 'tenant')
-                            .order('created_at', { ascending: false })
-                            .limit(1)
+                        // Only fan out within the current child's own free_puentes tenant.
+                        const { data: perfRow } = await sbForPuentes
+                            .from('perfilamientos')
+                            .select('tenant_id')
+                            .eq('id', sessionId)
                             .maybeSingle();
-                        paidPurchase = tenantComp;
+                        if (perfRow?.tenant_id) {
+                            const { data: tenantRow } = await sbForPuentes
+                                .from('tenants')
+                                .select('free_puentes')
+                                .eq('id', perfRow.tenant_id)
+                                .maybeSingle();
+                            if (tenantRow?.free_puentes) {
+                                const { data: tenantComp } = await sbForPuentes
+                                    .from('puentes_purchases')
+                                    .select('id, magic_token, lang')
+                                    .ilike('recipient_email', escTo)
+                                    .eq('status', 'paid')
+                                    .eq('source', 'tenant')
+                                    .eq('tenant_id', perfRow.tenant_id)
+                                    .order('created_at', { ascending: false })
+                                    .limit(1)
+                                    .maybeSingle();
+                                paidPurchase = tenantComp;
+                            }
+                        }
                     }
                     if (paidPurchase) {
                         existingPuentesMagicLink = `${siteUrl}/puentes/${paidPurchase.magic_token}`;
