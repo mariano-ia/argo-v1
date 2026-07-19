@@ -125,6 +125,16 @@ const LANG_LABELS: Record<string, string> = {
 // Short and unique so it doesn't inflate the token count or confuse JSON.
 const NAME_PLACEHOLDER = '__NAME__';
 
+// Safety net for rehydration: the model is explicitly told to keep the
+// placeholder (and does, ~0 leaks today), but __NAME__ reads as Markdown bold,
+// so a model could strip the underscores and emit a bare "NAME" that an exact
+// split/join would miss — leaking the literal token into the child's report and
+// its email (as it did in the Puente flow, 2026-07-19). This matches the token
+// with or without any delimiter form. Case-SENSITIVE, and bounded by
+// (?<![A-Za-z0-9])/(?![A-Za-z0-9]) rather than \b so an adjacent underscore
+// still counts as a boundary while "NAMED"/lowercase "name" never matches.
+const NAME_TOKEN_RE = /(?:\[\[|\[|\{\{|\{|__|\*\*|_|\*|<)?(?<![A-Za-z0-9])NAME(?![A-Za-z0-9])(?:\]\]|\]|\}\}|\}|__|\*\*|_|\*|>)?/g;
+
 function buildPrompt(base: ReportData, ctx: ReportContext): string {
     const destinatarioLabel = ctx.destinatario === 'padre'
         ? 'el padre/madre del deportista (tono cálido, doméstico, empático)'
@@ -205,8 +215,9 @@ ${jsonSchema}`;
 // or returning to the client.
 function rehydrateName<T>(value: T, realName: string): T {
     if (typeof value === 'string') {
-        // split/join avoids the ES2021 String.prototype.replaceAll requirement.
-        return value.split(NAME_PLACEHOLDER).join(realName) as unknown as T;
+        // Robust to any delimiter form the model produced (the exact
+        // __NAME__ it was told to use, or a stripped bare NAME).
+        return value.replace(NAME_TOKEN_RE, realName) as unknown as T;
     }
     if (Array.isArray(value)) {
         return value.map(v => rehydrateName(v, realName)) as unknown as T;

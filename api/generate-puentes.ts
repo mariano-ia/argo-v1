@@ -6,7 +6,20 @@ import { createClient } from '@supabase/supabase-js';
 // rehydrate the real name into the output server-side. Mirrors generate-ai.ts /
 // tenant-chat.ts / child-memory-cron.ts and honors the Privacy Policy's
 // anonymization promise. (Security audit 2026-07-06.)
-const NAME_PLACEHOLDER = '__NAME__';
+// The token the AI writes in place of the child's real name (rehydrated after
+// generation). MUST NOT be Markdown: the old '__NAME__' reads as bold markup,
+// so Gemini stripped the underscores and emitted a bare "NAME" that the
+// exact-string replace never matched — the literal word leaked into the report
+// AND the email (bug 2026-07-19). Brackets survive far better; the robust
+// rehydrator below catches every variant regardless.
+const NAME_PLACEHOLDER = '[NAME]';
+
+// Matches the NAME token whether the model kept the brackets, converted them to
+// other markers, or dropped them entirely (bare NAME). Case-SENSITIVE, and
+// bounded by (?<![A-Za-z0-9])/(?![A-Za-z0-9]) instead of \b so an adjacent
+// underscore (which \b treats as a word char, missing "__NAME__") still counts
+// as a boundary — while a real word like "NAMED" or lowercase "name" never matches.
+const NAME_TOKEN_RE = /(?:\[\[|\[|\{\{|\{|__|\*\*|_|\*|<)?(?<![A-Za-z0-9])NAME(?![A-Za-z0-9])(?:\]\]|\]|\}\}|\}|__|\*\*|_|\*|>)?/g;
 
 function deepReplaceStrings<T>(value: T, from: string, to: string): T {
     if (!from || from === to) return value;
@@ -16,6 +29,20 @@ function deepReplaceStrings<T>(value: T, from: string, to: string): T {
         const out: Record<string, unknown> = {};
         for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
             out[k] = deepReplaceStrings(v, from, to);
+        }
+        return out as unknown as T;
+    }
+    return value;
+}
+
+// Rehydrate the real child name over any placeholder variant the model produced.
+function rehydrateName<T>(value: T, realName: string): T {
+    if (typeof value === 'string') return value.replace(NAME_TOKEN_RE, realName) as unknown as T;
+    if (Array.isArray(value)) return value.map((v) => rehydrateName(v, realName)) as unknown as T;
+    if (value && typeof value === 'object') {
+        const out: Record<string, unknown> = {};
+        for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+            out[k] = rehydrateName(v, realName);
         }
         return out as unknown as T;
     }
@@ -106,7 +133,12 @@ function findProhibitedWords(sections: Record<string, unknown>): string[] {
 const escapeRe = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 function buildDeterministicPatterns(childName: string): RegExp[] {
     const first = (childName || '').trim().split(/\s+/)[0];
-    const namePart = first ? `${escapeRe(first)}|` : '';
+    // Tolerate the placeholder with OR without its delimiters: the model often
+    // drops the brackets and emits a bare NAME, so anchor on both forms.
+    const bare = first.replace(/[[\]{}<>_*]/g, '');
+    const namePart = first
+        ? (bare && bare !== first ? `${escapeRe(first)}|${escapeRe(bare)}|` : `${escapeRe(first)}|`)
+        : '';
     return [
         // Child (name / pronoun) + "es/será un(a)" + word ⇒ "X es un líder".
         new RegExp(`(?:${namePart}él|ella|el niño|la niña|el deportista)\\s+(?:es|será)\\s+un[ao]?\\s+\\p{L}`, 'iu'),
@@ -444,8 +476,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             }
         }
 
-        // Rehydrate the real child name into the output; it was never sent to Gemini.
-        if (hasRealName) aiSections = deepReplaceStrings(aiSections, NAME_PLACEHOLDER, realChildName);
+        // Rehydrate the real child name into the output; it was never sent to
+        // Gemini. Robust to any delimiter form the model produced (bare NAME,
+        // [NAME], __NAME__, etc.) so the placeholder never leaks to the report.
+        if (hasRealName) aiSections = rehydrateName(aiSections, realChildName);
 
         const costUsd = resp.inputTokens * (0.15 / 1_000_000) + resp.outputTokens * (0.60 / 1_000_000);
 

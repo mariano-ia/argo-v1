@@ -95,6 +95,41 @@ arriba. Corregidos (commit siguiente):
   pre-amend; HEAD ya tenía `UNSENT_FORWARD_FROM = 2026-07-11`. Verificado
   contra prod: excluye las 6 filas legacy, 0 filas espurias después del floor.
 
+## Bug del placeholder "NAME" (2026-07-19)
+El informe del puente mostraba la palabra literal "NAME" donde iba el nombre del
+niño ("Antes de un partido, NAME tiende a..."), y se arrastraba al email.
+
+**Causa raíz:** el nombre real del niño nunca se envía a Gemini; se usa un
+placeholder que se rehidrata después. El placeholder era `__NAME__`, que en
+Markdown es **negrita**. Gemini lo interpreta como formato, le saca los guiones
+bajos y emite `NAME` a secas. La rehidratación hacía un reemplazo EXACTO de
+`__NAME__` (split/join), no matcheaba `NAME` desnudo, y el token quedaba en el
+`ai_sections` guardado, visible en informe web + email.
+
+**Alcance en prod:** 1 sola sesión de puente (la de prueba del owner), email ya
+enviado. El informe del NIÑO (`generate-ai.ts`) tenía 0 leaks en 167 informes
+porque su prompt SÍ instruye explícitamente preservar el placeholder, pero
+comparte el mismo patrón frágil.
+
+**Fix (doble capa):**
+- `generate-puentes.ts`: placeholder cambiado a `[NAME]` (no-Markdown) +
+  rehidratación robusta por regex (`NAME_TOKEN_RE`) que captura cualquier forma
+  (`NAME`, `[NAME]`, `__NAME__`, `**NAME**`, `{NAME}`, `<NAME>`, `_NAME_`).
+  Case-sensitive y con lookarounds `(?<![A-Za-z0-9])`/`(?![A-Za-z0-9])` (en vez
+  de `\b`, que trata `_` como word-char y perdía `__NAME__`), así "NAMED",
+  "username" y "name" en minúscula nunca matchean. Check determinista reforzado
+  para anclar también al token desnudo.
+- `generate-ai.ts` (informe del niño): misma red de seguridad de rehidratación,
+  sin tocar el placeholder ni la instrucción probada (0 leaks) → cero riesgo de
+  calidad en el producto principal.
+- Datos: la fila filtrada reparada en prod (nombre real rehidratado); 0
+  placeholders NAME en toda la base tras la reparación.
+- Verificado: 13/13 casos del regex (captura variantes, respeta palabras
+  legítimas), tsc + gates verdes.
+
+**Deuda menor:** `tenant-chat.ts` usa placeholders `{{Pn}}` en otro flujo (chat);
+no auditado en esta pasada, pero el LLM podría normalizarlos igual. Revisar.
+
 ## Deuda consciente (no bloqueante, decidido 2026-07-18)
 - `full_access` se estampa antes de la entrega (idempotencia de webhook); el
   riesgo de crash a mitad quedó mitigado con try/catch por paso, no eliminado.
