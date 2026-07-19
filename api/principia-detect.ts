@@ -103,18 +103,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
     }
 
-    // SIGNAL 3: sessions with ai_sections null > 4h (delivery loop).
+    // SIGNAL 3: sessions with NO report content > 4h (delivery loop).
     {
         const cutoff = new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString();
         // Only flag RECENT stalls (last 72h). A months-old session without a report is
         // legacy backlog, not an actionable delivery stall — baseline it out so the
         // monitor analyses from now on instead of re-alerting on an old, settled pile.
         const floor = new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString();
-        // ai_sections is stamped per perfilamiento (the play); the recovery action
+        // Report content is stamped per perfilamiento (the play); the recovery action
         // below acts by perfilamiento id. The signalKey/sourceRef labels stay
         // 'sessions' to keep health-check identity in sync with the Producto registry.
         const { data } = await sb.from('perfilamientos')
-            .select('id, created_at').is('ai_sections', null).neq('eje', '_pending')
+            // V4-AWARE (2026-07-19): a sealed V4 report stores its content in `report_v4`
+            // and legitimately leaves `ai_sections` NULL. Keying "no report" on ai_sections
+            // alone flagged EVERY delivered V4 report as a stall (mismo fix que qa-monitor
+            // CHECK 5). A genuine stall has NEITHER column populated. Also exclude demos:
+            // the "Jugar gratis" funnel shows an on-screen report and never generates either.
+            .select('id, created_at').is('ai_sections', null).is('report_v4', null).neq('eje', '_pending')
+            .not('is_demo', 'is', true)
             // V4 candado (2026-07-08): a HELD/PENDING report is withheld ON PURPOSE by the
             // fail-closed gate, not a delivery stall. Exclude them so this signal only sees
             // genuine stalls (legacy=null, or v4 ready/sent). Otherwise a held report with a
@@ -127,7 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             classKey: 'session_delivery_stall', loopId: 'entrega', signalKey: 'sessions_without_report', sourceRef: 'sessions',
             measured: stalled.length, setpoint: 1, comparator: '>', severity: stalled.length >= 3 ? 'alto' : 'medio',
             title: 'Sesiones sin reporte', summary: `${stalled.length} sesiones sin reporte hace mas de 4 h.`,
-            diagnosis: { likely: 'ai_sections null tras generacion', session_ids: stalled.map(s => s.id) },
+            diagnosis: { likely: 'sin contenido de reporte (ai_sections y report_v4 null) tras generacion', session_ids: stalled.map(s => s.id) },
             proposed: { type: 'trigger_report_recovery', executable: true, confidence: 0.91, blast_radius: `${stalled.length} sesiones` },
             actionKey: buildActionKey('session_delivery_stall', stalled.map(s => s.id)),
             entityRefs: stalled.map(s => s.id),
@@ -147,7 +153,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         //     just 400 at /api/send-email), so flagging it produces an un-actionable
         //     incident (and more send-email noise). Require a real address.
         const { data } = await sb.from('perfilamientos')
-            .select('id').not('ai_sections', 'is', null).is('email_sent_at', null)
+            // V4-AWARE (2026-07-19): "content generated" is ai_sections (legacy) OR report_v4
+            // (sealed V4). Keying only on ai_sections would MISS a V4 report that generated but
+            // never emailed (false negative), and the 'sent' V4 reports are excluded here anyway
+            // by email_sent_at being non-null.
+            .select('id').is('email_sent_at', null)
+            .or('ai_sections.not.is.null,report_v4.not.is.null')
             .not('is_demo', 'is', true)
             .not('adult_email', 'is', null).neq('adult_email', '')
             // V4 candado (2026-07-08): a HELD/PENDING report is NOT sent BY DESIGN (the
@@ -163,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             classKey: 'report_email_unsent', loopId: 'entrega', signalKey: 'report_email_unsent', sourceRef: 'sessions',
             measured: unsent.length, setpoint: 1, comparator: '>', severity: 'medio',
             title: 'Email de reporte no enviado', summary: `${unsent.length} reportes generados sin email enviado.`,
-            diagnosis: { likely: 'email_sent_at null con ai_sections presente', session_ids: unsent.map(s => s.id) },
+            diagnosis: { likely: 'email_sent_at null con contenido presente (ai_sections o report_v4)', session_ids: unsent.map(s => s.id) },
             proposed: { type: 'resend_email', executable: true, confidence: 0.9, blast_radius: `${unsent.length} sesiones` },
             actionKey: buildActionKey('report_email_unsent', unsent.map(s => s.id)),
             entityRefs: unsent.map(s => s.id),
