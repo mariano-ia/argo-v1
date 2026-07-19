@@ -446,7 +446,7 @@ type HeroV4 = {
 export function buildHtmlV4(hero: HeroV4, params: {
     nombreNino: string; nombreAdulto?: string; edad?: number; deporte?: string;
     sessionId?: string; shareToken?: string; siteUrl?: string; lang?: string;
-    suppressPuentes?: boolean; existingPuentesMagicLink?: string;
+    suppressPuentes?: boolean; existingPuentesMagicLink?: string; panelUrl?: string;
 }): string {
     const lg = (params.lang === 'en' || params.lang === 'pt') ? params.lang : 'es';
     const n = params.nombreNino;
@@ -527,7 +527,9 @@ export function buildHtmlV4(hero: HeroV4, params: {
     // Panel reminder (shown to every recipient): buying ArgoOne enables the
     // panel, and the authorizing adult can always sign in with their email to
     // find this report again — so the email is never the only way back to it.
-    const panelUrl = `${baseUrl}/one/panel`;
+    // Prefer the tokenized magic link resolved in the handler (direct access,
+    // no re-typing the email); fall back to the tokenless entry.
+    const panelUrl = params.panelUrl || `${baseUrl}/one/panel`;
     const panel = `<div style="padding:24px 32px 0;">
       <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868B;">${T.panelBtn}</div>
       <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">${T.panelNote}</div>
@@ -909,11 +911,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // languages; the veta connector comes from hero.veta pieces (banda-aware), never hardcoded.
         const rv4 = sessionRow?.report_v4;
         const useV4 = !!rv4?.hero && (sessionRow?.report_status === 'ready' || sessionRow?.report_status === 'sent');
+
+        // Tokenized panel link so "Ir a mi panel" opens the recipient's panel
+        // directly, without re-typing their email. Mirrors one-webhook's panel
+        // mint: find the recipient's adult_profile (or create one) and use its
+        // access_token. Best-effort — any failure falls back to the tokenless
+        // /one/panel entry inside buildHtmlV4.
+        let panelUrl: string | undefined;
+        if (useV4 && toEmail) {
+            try {
+                const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+                const sUrl = process.env.VITE_SUPABASE_URL;
+                if (sKey && sUrl) {
+                    const sbPanel = createClient(sUrl, sKey);
+                    const escP = toEmail.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+                    const { data: ap } = await sbPanel.from('adult_profiles').select('access_token').ilike('email', escP).maybeSingle();
+                    let apToken = ap?.access_token as string | undefined;
+                    if (!apToken) {
+                        const { data: ins } = await sbPanel.from('adult_profiles').insert({ email: toEmail, lang }).select('access_token').maybeSingle();
+                        apToken = ins?.access_token as string | undefined;
+                        if (!apToken) {
+                            const { data: again } = await sbPanel.from('adult_profiles').select('access_token').ilike('email', escP).maybeSingle();
+                            apToken = again?.access_token as string | undefined;
+                        }
+                    }
+                    if (apToken) panelUrl = `${siteUrl}/one/panel?token=${apToken}`;
+                }
+            } catch (e) {
+                console.warn('[send-email] panel token resolve failed (tokenless fallback):', e instanceof Error ? e.message : e);
+            }
+        }
+
         const html = useV4
             ? buildHtmlV4(rv4!.hero!, {
                 nombreNino, nombreAdulto, edad, deporte,
                 sessionId, shareToken: finalShareToken, siteUrl, lang,
-                suppressPuentes: isLockedDemo, existingPuentesMagicLink,
+                suppressPuentes: isLockedDemo, existingPuentesMagicLink, panelUrl,
             })
             : buildHtml({
                 nombreAdulto, nombreNino, deporte, edad, eje, motor, arquetipo,
