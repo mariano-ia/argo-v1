@@ -226,6 +226,11 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // never re-renders; this state is what surfaces the reveal.
     const [revealReady, setRevealReady] = useState(false);
     const [saveError, setSaveError]     = useState<string | null>(null);
+    // Safety net for the result screen: if the profile never resolves (a stall with
+    // no throw), a timeout flips this so the child gets an error + retry instead of an
+    // eternal "Trazando tu rumbo…". `retryNonce` re-runs the completion effect.
+    const [resolveTimedOut, setResolveTimedOut] = useState(false);
+    const [retryNonce, setRetryNonce]           = useState(0);
     const reportRef        = useRef<ReturnType<typeof getReportData> | null>(null);
     const profileRef       = useRef<{ eje: string; motor: string; ejeSecundario?: string; tendenciaLabel?: string } | null>(null);
     const playCountedRef   = useRef(false);
@@ -270,19 +275,48 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     // Option 2: Resume from recovery
     const handleResume = useCallback((data: RecoverableSession) => {
         // Validate screenIndex is within bounds
-        const safeScreenIndex = Math.min(Math.max(0, data.screenIndex), SCREENS.length - 1);
+        let safeScreenIndex = Math.min(Math.max(0, data.screenIndex), SCREENS.length - 1);
+        const answered = Array.isArray(data.answers) ? data.answers.length : 0;
+        // Guard against an INCONSISTENT snapshot (e.g. saved under a different SCREENS
+        // layout after a deploy, so its raw index no longer aligns with the answers it
+        // carries): never resume directly onto the result screen with unanswered
+        // questions, or the completion gate (answers.length < questions.length) would
+        // strand the child on the "Trazando tu rumbo…" loader forever. Re-anchor to the
+        // next unanswered question instead.
+        if (SCREENS[safeScreenIndex]?.type === 'child-result' && answered < questions.length) {
+            const nextQ = SCREENS.findIndex(s => s.type === 'question' && s.questionIndex === answered);
+            if (nextQ >= 0) safeScreenIndex = nextQ;
+        }
         setAdultData(data.adultData);
         setAnswers(data.answers);
         setScreenIndex(safeScreenIndex);
         if (data.sessionId) sessionIdRef.current = data.sessionId;
         if (data.shareToken) shareTokenRef.current = data.shareToken;
         setRecoveryData(null);
-    }, []);
+    }, [questions.length]);
 
     // Option 2: Dismiss recovery
     const handleDismissRecovery = useCallback(() => {
         clearRecoveryData();
         setRecoveryData(null);
+    }, []);
+
+    // Safety net (result screen): re-run the completion effect after a failed/stalled
+    // resolve. Used when all answers ARE present but the resolve threw or timed out.
+    const handleRetryReveal = useCallback(() => {
+        setSaveError(null);
+        setResolveTimedOut(false);
+        setRetryNonce(n => n + 1);
+    }, []);
+
+    // Safety net (result screen): when the child landed here with unanswered questions
+    // (an inconsistent state), send them back to the next unanswered question rather
+    // than leaving them stuck.
+    const handleResumeOdyssey = useCallback((answeredCount: number) => {
+        const nextQ = SCREENS.findIndex(s => s.type === 'question' && s.questionIndex === answeredCount);
+        setSaveError(null);
+        setResolveTimedOut(false);
+        if (nextQ >= 0) setScreenIndex(nextQ);
     }, []);
 
     // Option 3: Create "started" session when odyssey begins
@@ -404,6 +438,39 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             }
             if (!sent && typeof fetch !== 'undefined') {
                 fetch('/api/audio-telemetry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body,
+                    keepalive: true,
+                }).catch(() => {});
+            }
+        } catch { /* never block on telemetry */ }
+    };
+
+    /** Fire-and-forget beam when the child's result screen fails to resolve, so a
+     *  stuck "Trazando tu rumbo…" loader is VISIBLE in monitoring instead of only
+     *  surfacing when someone reports it. Lands in /api/client-errors (kind
+     *  'completion_stuck') — the same signal Vigia already watches. Deduped per
+     *  reason so a retry loop can't spam. */
+    const completionBeaconSentRef = useRef<Set<string>>(new Set());
+    const beamCompletionStuck = (reason: string, detail?: string) => {
+        try {
+            if (completionBeaconSentRef.current.has(reason)) return;
+            completionBeaconSentRef.current.add(reason);
+            const body = JSON.stringify({
+                kind: 'completion_stuck',
+                message: `[completion-stuck] ${reason}${detail ? `: ${detail}` : ''}`,
+                source: 'child-result',
+                url: typeof window !== 'undefined' ? window.location.pathname : null,
+                ua: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+            });
+            let sent = false;
+            if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+                const blob = new Blob([body], { type: 'application/json' });
+                sent = navigator.sendBeacon('/api/client-errors', blob);
+            }
+            if (!sent && typeof fetch !== 'undefined') {
+                fetch('/api/client-errors', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body,
@@ -844,7 +911,17 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
     useEffect(() => {
         const screen = SCREENS[screenIndex];
         if (screen.type !== 'child-result') return;
-        if (!adultData || answers.length < questions.length) return;
+        if (!adultData) return;
+        if (answers.length < questions.length) {
+            // Reached the result screen with unanswered questions — an inconsistent
+            // state (normally impossible; a stale recovery snapshot can cause it). Do
+            // NOT silently return: that would strand the child on the loader forever.
+            // Surface the safety-net error (which offers "Continuar") and log it.
+            console.warn('[completion] child-result reached with incomplete answers:', answers.length, '/', questions.length);
+            beamCompletionStuck('incomplete_answers', `${answers.length}/${questions.length}`);
+            setSaveError('incomplete');
+            return;
+        }
 
         const run = async () => {
             // Group tiebreaker context REMOVED (2026-07-08, expert-panel audit): the
@@ -871,6 +948,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                 }
             } catch (err) {
                 console.error('[Argo] Profile resolution failed:', err);
+                beamCompletionStuck('resolve_threw', err instanceof Error ? err.message : 'unknown');
                 setSaveError(`Profile error: ${err instanceof Error ? err.message : 'unknown'}`);
                 setAiLoading(false);
                 return;
@@ -1169,7 +1247,21 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
             setAiLoading(false);
         });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [screenIndex]);
+    }, [screenIndex, retryNonce]);
+
+    // Safety net: if the result screen never resolves within 20s (a stall with no
+    // throw — the resolve is otherwise sub-second), surface the error + retry instead
+    // of an eternal loader. The timer is cleared the instant the reveal is ready or an
+    // error already showed, so it never fires on the happy path.
+    useEffect(() => {
+        if (SCREENS[screenIndex]?.type !== 'child-result' || demoMode || revealReady || saveError) return;
+        const t = setTimeout(() => {
+            beamCompletionStuck('resolve_timeout');
+            setResolveTimedOut(true);
+        }, 20000);
+        return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [screenIndex, demoMode, revealReady, saveError, retryNonce]);
 
     const screen  = SCREENS[screenIndex];
     const nombre  = adultData?.nombreNino  ?? '';
@@ -1422,7 +1514,7 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
 
                 {/* Bridge the (near-instant) gap between the last answer and the
                     resolved profile so the child never faces a blank scene. */}
-                {screen.type === 'child-result' && !demoMode && !revealReady && (
+                {screen.type === 'child-result' && !demoMode && !revealReady && !saveError && !resolveTimedOut && (
                     <motion.div
                         key="child-result-loading"
                         initial={{ opacity: 0 }}
@@ -1443,6 +1535,42 @@ export const OnboardingFlowV2: React.FC<OnboardingV2Props> = ({ userEmail = '', 
                         </p>
                     </motion.div>
                 )}
+
+                {/* Safety net: the resolve stalled/failed. Never leave the child on an
+                    eternal loader — offer a way out (retry, or continue if answers are
+                    still missing). */}
+                {screen.type === 'child-result' && !demoMode && !revealReady && (saveError || resolveTimedOut) && (() => {
+                    const answersIncomplete = answers.length < questions.length;
+                    const L = (es: string, en: string, pt: string) =>
+                        lang === 'es' ? es : lang === 'pt' ? pt : en;
+                    return (
+                        <motion.div
+                            key="child-result-error"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 flex flex-col items-center justify-center gap-4 bg-[#0b1a2a] px-8 text-center"
+                            style={{ zIndex: 10 }}
+                        >
+                            <p className="font-quest text-white/90 text-xl font-medium leading-snug">
+                                {L('Se nos trabó el timón un momento.', 'Our helm jammed for a moment.', 'O leme travou por um momento.')}
+                            </p>
+                            <p className="text-white/60 text-sm max-w-xs leading-relaxed">
+                                {answersIncomplete
+                                    ? L('Faltan un par de respuestas para trazar tu rumbo.', 'A couple of answers are still missing to chart your course.', 'Faltam algumas respostas para traçar tua rota.')
+                                    : L('No pudimos terminar de trazar tu rumbo. Probemos otra vez.', "We could not finish charting your course. Let's try again.", 'Não conseguimos terminar de traçar tua rota. Vamos tentar de novo.')}
+                            </p>
+                            <button
+                                onClick={() => answersIncomplete ? handleResumeOdyssey(answers.length) : handleRetryReveal()}
+                                className="mt-2 px-6 py-2.5 bg-white text-[#0b1a2a] rounded-xl text-sm font-semibold active:bg-white/80 transition-colors"
+                            >
+                                {answersIncomplete
+                                    ? L('Continuar', 'Resume', 'Continuar')
+                                    : L('Reintentar', 'Try again', 'Tentar de novo')}
+                            </button>
+                        </motion.div>
+                    );
+                })()}
 
                 {screen.type === 'child-result' && !demoMode && revealReady && reportRef.current && adultData && (
                     <ChildResultReveal

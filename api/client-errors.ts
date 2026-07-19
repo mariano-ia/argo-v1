@@ -10,7 +10,12 @@ import { createClient } from '@supabase/supabase-js';
  * all free-text fields, drops anything outside the known shape.
  */
 
-const KNOWN_KINDS = new Set(['error', 'unhandledrejection']);
+// 'completion_stuck' (2026-07-19): the odyssey reached the child's result screen
+// but the profile never resolved (incomplete answers from a stale recovery snapshot,
+// a resolver throw, or a >20s stall), so the child would otherwise sit on the
+// "Trazando tu rumbo…" loader forever. Beamed from OnboardingFlowV2 so a surge is
+// visible in the same client-error signal Vigia already watches.
+const KNOWN_KINDS = new Set(['error', 'unhandledrejection', 'completion_stuck']);
 
 // Server-side defense-in-depth. The client (src/main.tsx) already skips these,
 // but an outdated/other client could still POST them. Drop non-actionable noise
