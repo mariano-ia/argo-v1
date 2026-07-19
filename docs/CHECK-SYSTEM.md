@@ -58,7 +58,7 @@ Cron horario (`0 * * * *`). Corre ~33 checks contra producción y, si el conjunt
 | 2 | `generate-ai 200 + sections` | Generación de reporte de IA produce secciones válidas | no devuelve `sections.resumenPerfil`. Reintenta 1 vez ante un 5xx/error transitorio (la llamada IA tarda 15-27s y un sample lento puede 5xx): sólo un fallo **sostenido** (ambos intentos) alerta |
 | 3 | `no stuck _pending QA sessions` | No hay sesiones del tenant QA atascadas en `_pending` | ≥ 5 sesiones pending |
 | 4 | `blog-cron protected` | Los crons siguen protegidos por secret | `/api/blog-cron` no devuelve 401/403 |
-| 5 | `no AI-failed reports (24h)` | No hay sesiones con perfil pero sin reporte entregado | ≥ 1 sesión con `eje` real + `ai_sections` null en 24h |
+| 5 | `no AI-failed reports (24h)` | No hay sesiones con perfil pero sin reporte **entregado** | ≥ 1 sesión con `eje` real + `email_sent_at` null en 24h (fuera de la ventana de asentamiento de 15 min, no demo, no held). **V4-aware (2026-07-19):** la señal de entrega es `email_sent_at`, NO `ai_sections` (un reporte V4 sellado entrega vía `report_v4` y deja `ai_sections` null legítimamente). |
 | 6 | **Telemetría del Coach** | Salud agregada del Coach (lee `ai_events`, 24h) | ver thresholds abajo |
 | 7 | **Canary del Coach** | Prueba end-to-end del Coach (login + pregunta canónica) | ver abajo |
 
@@ -217,3 +217,26 @@ Con la jerarquía Club→Plantel→Entrenador→Jugador en prod ([CLUB-TEAMS-HIE
 - **Telemetría por plantel** (`ai_events.group_ids`): habilita drill-down de calidad del Coach por plantel (la agregación de CHECK 6 sigue tenant-wide; la columna queda poblada para un futuro corte por plantel).
 
 > Nota: estos refuerzos corren contra `main` (producción). Son plenamente efectivos desde que la jerarquía se mergeó a `main` el 2026-06-10.
+
+---
+
+## 13) Actualización 2026-07-19 (señales de entrega V4-aware en Vigía)
+
+El detector de Vigía (`api/principia-detect.ts`, cron `*/10`) tiene dos señales de entrega en el loop `entrega`:
+
+| Señal | Qué detecta | Acción propuesta |
+|-------|-------------|------------------|
+| **SIGNAL 3** `sessions_without_report` ("Sesiones sin reporte") | Play real **sin contenido de reporte** hace >4h | `trigger_report_recovery` (regenerar) |
+| **SIGNAL 4** `report_email_unsent` ("Email de reporte no enviado") | Reporte **generado** pero email no enviado, con destinatario real | `resend_email` (reenviar) |
+
+Ambas se limitan a la ventana 4h..72h (los stalls más viejos son backlog legacy, se baselinean) y excluyen reportes `held`/`pending` (retenidos a propósito por el gate fail-closed de V4).
+
+**Bug corregido (falso positivo "Sesiones sin reporte").** Tras el cutover a V4 ([METODO-V4-ESTADO-Y-RUNBOOK.md](METODO-V4-ESTADO-Y-RUNBOOK.md)), un reporte V4 sellado guarda su contenido en `report_v4` y deja la columna **legacy** `ai_sections` en null. SIGNAL 3 decidía "no hay reporte" mirando solo `ai_sections`, así que marcaba como stall a **todo reporte V4 entregado** (email enviado, `report_status='sent'`) y a **todo demo** (muestra el informe en pantalla vía `report_v4`, nunca manda email por diseño). Resultado: 4 incidentes abiertos, `signal_count` hasta 285 desde 2026-07-16, sin ningún stall real. Es el mismo bug que el fix de qa-monitor CHECK 5 (`email_sent_at` como señal de entrega) ya había parchado — Vigía quedó atrás.
+
+**Fix (`088ac5b`):**
+- **SIGNAL 3:** un stall genuino requiere **ambas** columnas null (`ai_sections IS NULL AND report_v4 IS NULL`) y ahora **excluye demos** (`is_demo`).
+- **SIGNAL 4:** "contenido generado" = `ai_sections` **OR** `report_v4` (si no, un reporte V4 generado-pero-no-enviado era un falso negativo).
+
+**Regla general (aprendida):** al tocar cualquier query de salud de entrega/reportes, "no hay reporte" = `ai_sections IS NULL AND report_v4 IS NULL`; "entregado" = `email_sent_at IS NOT NULL` (equiv. `report_status='sent'`). El motor V4 cambió la columna de almacenamiento pero los monitores no se migraron todos en lockstep — revisar cada query que aún key-ee por `ai_sections`.
+
+Verificado contra prod: 0 stalls reales, ambas señales nuevas devuelven 0. Se resolvieron los 4 incidentes falsos (ids 19, 20, 22, 23).
