@@ -176,6 +176,7 @@ interface HubChild {
     is_buyer: boolean;
     is_responsible: boolean;
     is_invited: boolean;
+    archived: boolean;
     my_bridge: HubBridge | null;
     play_link: { slug: string; status: string } | null;
     deletion_id: string | null;
@@ -316,7 +317,7 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const blank = (key: string): HubChild => {
         let hc = map.get(key);
         if (!hc) {
-            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, invites: [], bridge_link: null, linked_adults: 0 };
+            hc = { key, child_id: null, perfilamiento_id: null, name: null, age: null, sport: null, report: null, is_buyer: false, is_responsible: false, is_invited: false, archived: false, my_bridge: null, play_link: null, deletion_id: null, comp_token: null, bridge_token: null, invites: [], bridge_link: null, linked_adults: 0 };
             map.set(key, hc);
         }
         return hc;
@@ -527,6 +528,17 @@ async function buildHubPayload(sb: any, email: string, lang: string, nowMs: numb
     const distinctOwned = new Set(children.filter((c) => c.is_responsible || c.is_buyer).map((c) => c.child_id ?? c.key)).size;
     const canUpgradeAcademy = distinctOwned >= 3;
 
+    // Per-adult archive flag: mark children this email hid so the front can move
+    // them to the "Archivados" tab. Per-email and isolated (never affects others).
+    try {
+        const childIds = children.map((c) => c.child_id).filter(Boolean) as string[];
+        if (childIds.length) {
+            const { data: arch } = await sb.from('panel_archived').select('child_id').ilike('adult_email', esc).in('child_id', childIds);
+            const archivedSet = new Set((arch ?? []).map((r: any) => r.child_id));
+            for (const c of children) if (c.child_id && archivedSet.has(c.child_id)) c.archived = true;
+        }
+    } catch { /* non-blocking: archive is a convenience layer */ }
+
     return { version: 2, email, lang, role, children, available_slots: availableSlots, can_upgrade_academy: canUpgradeAcademy };
 }
 
@@ -731,6 +743,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         //    superseded by the child's ONE shareable bridges-link. ──
         if (action === 'invite-adult') {
             return res.status(410).json({ error: 'superseded_by_bridge_link' });
+        }
+
+        // ── archive / unarchive: per-adult hide of a child from the main list
+        //    (a coach with many bridges keeps a clean panel). Isolated per email:
+        //    never affects another adult's view of the same child.
+        if (action === 'archive' || action === 'unarchive') {
+            const childId = String(req.body.child_id || '');
+            if (!childId) return res.status(400).json({ error: 'Missing child_id' });
+            const em = normEmail(email);
+            if (action === 'archive') {
+                const { error } = await sb.from('panel_archived').upsert({ adult_email: em, child_id: childId }, { onConflict: 'adult_email,child_id' });
+                if (error) return res.status(500).json({ error: 'archive_failed' });
+            } else {
+                const { error } = await sb.from('panel_archived').delete().eq('adult_email', em).eq('child_id', childId);
+                if (error) return res.status(500).json({ error: 'unarchive_failed' });
+            }
+            return res.status(200).json({ ok: true });
         }
 
         // ── share-bridge-link: mint (lazily) and return the child's ONE shareable

@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Copy, Check, ExternalLink, X } from 'lucide-react';
+import { Copy, Check, ExternalLink, X, Archive, ArchiveRestore } from 'lucide-react';
 import { useLang } from '../context/LangContext';
 import { InfoTip, ToastProvider, useToast } from '../components/ui';
+import { DemoRequestModal } from '../components/DemoRequestModal';
 import { CouponPurchaseModal } from '../components/CouponPurchaseModal';
 
 /* ── Types ─────────────────────────────────────────────────────────────────── */
@@ -200,6 +201,7 @@ interface HubChildF {
     is_buyer: boolean;
     is_responsible: boolean;
     is_invited: boolean;
+    archived?: boolean;
     my_bridge: HubBridgeF | null;
     play_link: { slug: string; status: string } | null;
     deletion_id: string | null;
@@ -286,6 +288,8 @@ const TH = {
         copyPlayLinkCta: 'Copiar el link',
         playLinksNote: 'Un link no dice nada de nadie hasta que un niño juega. Cuando juega, aparece arriba con su nombre y su informe.',
         adultoNote: (n: string) => `Autorizaste el juego de ${n}, por eso su informe individual siempre llega a ti, en cada actualización.`,
+        archive: 'Archivar', unarchive: 'Restaurar', archiveError: 'No se pudo archivar. Intenta de nuevo.',
+        activeTab: (n: number) => `Activos (${n})`, archivedTab: (n: number) => `Archivados (${n})`, emptyArchived: 'No tienes niños archivados.',
         answerBridge: 'Responder cuestionario puente',
         viewReportOf: (n: string) => `Ver informe de ${n}`,
         autorizasteTag: 'lo autorizaste tú',
@@ -366,6 +370,8 @@ const TH = {
         copyPlayLinkCta: 'Copy the link',
         playLinksNote: 'A link says nothing about anyone until a child plays. When they play, they appear above with their name and report.',
         adultoNote: (n: string) => `You authorized ${n}'s play, so their individual report always reaches you, on every update.`,
+        archive: 'Archive', unarchive: 'Restore', archiveError: 'Could not archive. Please try again.',
+        activeTab: (n: number) => `Active (${n})`, archivedTab: (n: number) => `Archived (${n})`, emptyArchived: 'You have no archived children.',
         answerBridge: 'Answer bridge questionnaire',
         viewReportOf: (n: string) => `View ${n}'s report`,
         autorizasteTag: 'you authorized them',
@@ -446,6 +452,8 @@ const TH = {
         copyPlayLinkCta: 'Copiar o link',
         playLinksNote: 'Um link não diz nada de ninguém até uma criança jogar. Quando joga, aparece acima com seu nome e seu relatório.',
         adultoNote: (n: string) => `Você autorizou o jogo de ${n}, por isso o relatório individual dele sempre chega até você, a cada atualização.`,
+        archive: 'Arquivar', unarchive: 'Restaurar', archiveError: 'Não foi possível arquivar. Tente de novo.',
+        activeTab: (n: number) => `Ativos (${n})`, archivedTab: (n: number) => `Arquivados (${n})`, emptyArchived: 'Você não tem crianças arquivadas.',
         answerBridge: 'Responder questionário ponte',
         viewReportOf: (n: string) => `Ver relatório de ${n}`,
         autorizasteTag: 'você autorizou',
@@ -479,7 +487,8 @@ const HubChildCard: React.FC<{
     onUpdate: (childId: string | null) => void;
     onAddBridge: (child: HubChildF) => void;
     onViewBridge: () => void;
-}> = ({ child, th, onShareLink, onLinkedAdults, onUpdate, onAddBridge, onViewBridge }) => {
+    onArchive?: (childId: string | null, archive: boolean) => void;
+}> = ({ child, th, onShareLink, onLinkedAdults, onUpdate, onAddBridge, onViewBridge, onArchive }) => {
     const name = child.name || th.kidsOne;
     const meta = [child.age ? `${child.age} ${th.ageUnit}` : null, child.sport].filter(Boolean).join(' · ');
     const reportReady = !!(child.report && child.report.ready && child.report.perfilamiento_id);
@@ -500,20 +509,20 @@ const HubChildCard: React.FC<{
     const bridgeBtn = (() => {
         if (child.my_bridge && child.my_bridge.ready && !child.my_bridge.is_stale) {
             return child.bridge_token
-                ? <Link to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>
+                ? <Link target="_blank" rel="noopener noreferrer" to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>
                 : <button onClick={onViewBridge} className={btnSecondary}>{th.viewMyBridge}</button>;
         }
         if (child.my_bridge && !child.my_bridge.ready && child.bridge_token) {
-            return <Link to={`/puentes/${child.bridge_token}`} className={btnPrimary}>{th.continueMyBridge}</Link>;
+            return <Link target="_blank" rel="noopener noreferrer" to={`/puentes/${child.bridge_token}`} className={btnPrimary}>{th.continueMyBridge}</Link>;
         }
         if (child.my_bridge && child.my_bridge.is_stale && child.bridge_token) {
-            return <Link to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>;
+            return <Link target="_blank" rel="noopener noreferrer" to={`/puentes/${child.bridge_token}`} className={btnSecondary}>{th.viewMyBridge}</Link>;
         }
         // Included puente (buyer's comp): respond the short questionnaire.
         if (!child.my_bridge && reportReady && child.comp_token) {
             return (
                 <span className="inline-flex items-center gap-1">
-                    <Link to={`/puentes/${child.comp_token}`} className={btnSecondary}>{th.answerBridge}</Link>
+                    <Link target="_blank" rel="noopener noreferrer" to={`/puentes/${child.comp_token}`} className={btnSecondary}>{th.answerBridge}</Link>
                     <InfoTip text={th.compBridgePrompt} position="top" />
                 </span>
             );
@@ -542,9 +551,18 @@ const HubChildCard: React.FC<{
                         <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-semibold border border-amber-200 bg-amber-50 text-amber-700">{th.preparing}</span>
                     )}
                     {reportReady && reportLink && (
-                        <Link to={reportLink} className={btnSecondary}><ExternalLink size={13} /> {th.viewReportOf(name)}</Link>
+                        <Link to={reportLink} target="_blank" rel="noopener noreferrer" className={btnSecondary}><ExternalLink size={13} /> {th.viewReportOf(name)}</Link>
                     )}
                     {bridgeBtn}
+                    {onArchive && child.child_id && (
+                        <button
+                            onClick={() => onArchive(child.child_id, !child.archived)}
+                            title={child.archived ? th.unarchive : th.archive}
+                            className="inline-flex items-center gap-1 px-2.5 py-2 rounded-[10px] text-[12px] font-semibold text-argo-grey hover:bg-argo-bg transition-colors"
+                        >
+                            {child.archived ? <ArchiveRestore size={13} /> : <Archive size={13} />} {child.archived ? th.unarchive : th.archive}
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -580,6 +598,23 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
     const { toast } = useToast();
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://argomethod.com';
     const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+    const [showDemo, setShowDemo] = useState(false);
+    const [showArchived, setShowArchived] = useState(false);
+    const demoLang: 'es' | 'en' | 'pt' = lang === 'en' ? 'en' : lang === 'pt' ? 'pt' : 'es';
+
+    const setArchived = async (childId: string | null, archive: boolean) => {
+        if (!childId) return;
+        try {
+            await fetch(`/api/one-panel?token=${token}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: archive ? 'archive' : 'unarchive', child_id: childId }),
+            });
+            onRefresh?.();
+        } catch {
+            toast('error', th.archiveError);
+        }
+    };
     const [busy, setBusy] = useState(false);
     type LinkedAdult = { email: string; name: string | null; created_at: string };
     const [linked, setLinked] = useState<{ child: HubChildF; adults: LinkedAdult[] | null } | null>(null);
@@ -761,27 +796,45 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                     </div>
                 )}
 
-                {/* Niños (N) — played children in one container with dividers */}
-                {playedKids.length > 0 && (
+                {/* Niños — activos / archivados (tabs only when there are archived) */}
+                {playedKids.length > 0 && (() => {
+                    const activeKids = playedKids.filter(c => !c.archived);
+                    const archivedKids = playedKids.filter(c => c.archived);
+                    const shown = showArchived ? archivedKids : activeKids;
+                    return (
                     <>
-                        <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold mt-6 mb-2.5">{th.kidsCount(playedKids.length)}</div>
-                        <div className="bg-white rounded-[14px] shadow-argo border border-argo-border divide-y divide-argo-border overflow-hidden">
-                            {playedKids.map(child => (
-                                <HubChildCard
-                                    key={child.key}
-                                    child={child}
-                                    th={th}
-                                    onShareLink={shareBridgeLink}
-                                    onLinkedAdults={openLinkedAdults}
-                                    onUpdate={startReplay}
-                                    onAddBridge={refreshBridge}
-                                    onViewBridge={() => toast('info', th.comingSoon)}
-                                />
-                            ))}
+                        <div className="flex items-center justify-between gap-2 mt-6 mb-2.5">
+                            <div className="text-[10.5px] tracking-[0.12em] uppercase text-argo-light font-bold">{th.kidsCount(activeKids.length)}</div>
+                            {archivedKids.length > 0 && (
+                                <div className="inline-flex items-center gap-1 text-[11px] font-semibold">
+                                    <button onClick={() => setShowArchived(false)} className={`px-2.5 py-1 rounded-full transition-colors ${!showArchived ? 'bg-argo-navy text-white' : 'text-argo-grey hover:bg-argo-bg'}`}>{th.activeTab(activeKids.length)}</button>
+                                    <button onClick={() => setShowArchived(true)} className={`px-2.5 py-1 rounded-full transition-colors ${showArchived ? 'bg-argo-navy text-white' : 'text-argo-grey hover:bg-argo-bg'}`}>{th.archivedTab(archivedKids.length)}</button>
+                                </div>
+                            )}
                         </div>
-                        {isPureAdulto && <p className="text-[12px] text-argo-light mt-2.5 px-0.5">{th.adultoNote(firstResponsibleName)}</p>}
+                        {shown.length > 0 ? (
+                            <div className="bg-white rounded-[14px] shadow-argo border border-argo-border divide-y divide-argo-border overflow-hidden">
+                                {shown.map(child => (
+                                    <HubChildCard
+                                        key={child.key}
+                                        child={child}
+                                        th={th}
+                                        onShareLink={shareBridgeLink}
+                                        onLinkedAdults={openLinkedAdults}
+                                        onUpdate={startReplay}
+                                        onAddBridge={refreshBridge}
+                                        onViewBridge={() => toast('info', th.comingSoon)}
+                                        onArchive={setArchived}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-[13px] text-argo-grey px-1 py-4">{th.emptyArchived}</p>
+                        )}
+                        {!showArchived && isPureAdulto && <p className="text-[12px] text-argo-light mt-2.5 px-0.5">{th.adultoNote(firstResponsibleName)}</p>}
                     </>
-                )}
+                    );
+                })()}
 
                 {/* Links de juego (buyer only) */}
                 {isBuyer && availableLinks.length > 0 && (
@@ -818,13 +871,15 @@ const HubV2Inner: React.FC<{ data: HubData; token: string; lang: HubLang; demo: 
                                     <p className="text-[15px] font-bold text-argo-navy">{th.academyLead} <Wordmark rest="Academy®" /></p>
                                     <p className="text-[13px] text-argo-secondary mt-1 leading-relaxed">{th.academyDesc}</p>
                                 </div>
-                                <a href="mailto:hola@argomethod.com?subject=ArgoAcademy" className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
+                                <button onClick={() => setShowDemo(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold bg-argo-violet-500 text-white hover:bg-argo-violet-600 transition-colors">
                                     {th.academyCta} <Wordmark rest="Academy®" />
-                                </a>
+                                </button>
                             </div>
                         </div>
                     </>
                 )}
+
+                {showDemo && <DemoRequestModal lang={demoLang} onClose={() => setShowDemo(false)} />}
 
                 {/* Footer (mockup: minimal — manage data · terms) */}
                 <p className="text-center text-[11.5px] text-argo-light mt-9 leading-relaxed">
@@ -1251,6 +1306,7 @@ export const OnePanel: React.FC = () => {
                                 {link.status === 'completed' && link.session_id && link.report_status !== 'held' && link.report_status !== 'pending' && (
                                     <Link
                                         to={`/report/${link.session_id}?token=${link.report_token ?? ''}`}
+                                        target="_blank" rel="noopener noreferrer"
                                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 transition-colors"
                                     >
                                         <ExternalLink size={12} /> {t.viewReport}
