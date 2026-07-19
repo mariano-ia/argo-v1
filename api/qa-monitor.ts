@@ -204,22 +204,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     add('blog-cron protected', status === 401 || status === 403, `status=${status}`);
   } catch (e) { add('blog-cron reachable', false, String(e)); }
 
-  // CHECK 5: AI-failed reports — sessions that finished profiling (real eje)
-  // but have no ai_sections in the last 24h. With the "never email a report
-  // without AI" change, these are real plays whose report was NOT delivered
-  // and must be regenerated. Any such session should page ops.
+  // CHECK 5: AI-failed reports — real plays whose report was NOT delivered in the
+  // last 24h. These must be regenerated/redelivered and should page ops.
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    // AI sections are stamped per perfilamiento (the play); a finished play
-    // (real eje) with null ai_sections is an undelivered report.
+    // Give the live path + at least one recovery-cron pass time to deliver before
+    // paging, so a report mid-delivery is never a false positive.
+    const settleFloor = new Date(Date.now() - 15 * 60 * 1000).toISOString();
     const { count } = await sb.from('perfilamientos').select('*', { count: 'exact', head: true })
       .neq('eje', '_pending')
       .is('ai_sections', null)
+      // V4-AWARE (2026-07-19): `email_sent_at` is the delivery signal, not `ai_sections`.
+      // A sealed V4 report delivers via report_v4 and legitimately has NULL ai_sections,
+      // so a DELIVERED V4 report (email stamped, report_status ready/sent) was counting
+      // as "undelivered". Excluding already-emailed rows removes that false positive
+      // while still catching a play whose report never went out.
+      .is('email_sent_at', null)
       .not('is_demo', 'is', true) // exclude demo/canary sessions — not real undelivered reports
       // V4 candado (2026-07-08): a held/pending report is withheld on purpose by the gate,
       // not an AI failure. Exclude them so this check only pages on genuine undelivered reports.
       .or('report_status.is.null,report_status.in.(ready,sent)')
-      .gte('created_at', cutoff);
+      .gte('created_at', cutoff)
+      .lt('created_at', settleFloor);
     add('no AI-failed reports (24h)', (count ?? 0) === 0, `undelivered=${count}`);
   } catch (e) { add('AI-failure check reachable', false, String(e)); }
 
