@@ -691,14 +691,13 @@ async function handleUnlockPaid(args: {
             }
         }
         const childFirst = (session.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
-        const panelLink = (label: string) => `<a href="${panelUrl}" style="color:#955FB5;text-decoration:none;">${label}</a>`;
         const T = lang === 'en'
-            ? { s: `${childFirst}'s full report is ready`, h: `${childFirst}'s ArgoOne® report is ready`, b: `Here is the full report${bridgeUrl ? `, and your own bridge with ${childFirst} is ready to build` : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: `One-time purchase. No subscription. Your panel is ready: ${panelLink('open your panel')} or go to argomethod.com/one/panel with your email to find your reports and your bridge anytime.` }
+            ? { s: `${childFirst}'s full report is ready`, h: `${childFirst}'s ArgoOne® report is ready`, b: `Your full report${bridgeUrl ? `, and your own bridge with ${childFirst},` : ''} ${bridgeUrl ? 'are' : 'is'} ready. You'll find everything in your panel.`, n: 'One-time purchase. No subscription. Everything stays in your panel.' }
             : lang === 'pt'
-            ? { s: `O relatório completo de ${childFirst} está pronto`, h: `O relatório ArgoOne® de ${childFirst} está pronto`, b: `Aqui está o relatório completo${bridgeUrl ? `, e a sua própria ponte com ${childFirst} já pode ser criada` : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: `Compra única. Sem assinatura. Seu painel já está pronto: ${panelLink('abra seu painel')} ou acesse argomethod.com/one/panel com seu email para ver seus relatórios e sua ponte quando quiser.` }
-            : { s: `El informe completo de ${childFirst} está listo`, h: `El informe ArgoOne® de ${childFirst} está listo`, b: `Aquí tienes el informe completo${bridgeUrl ? `, y tu propio puente con ${childFirst} ya se puede crear` : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: `Compra única. Sin suscripción. Tu panel ya está listo: ${panelLink('abre tu panel')} o entra a argomethod.com/one/panel con tu email para ver tus informes y tu puente cuando quieras.` };
+            ? { s: `O relatório completo de ${childFirst} está pronto`, h: `O relatório ArgoOne® de ${childFirst} está pronto`, b: `Seu relatório completo${bridgeUrl ? `, e a sua própria ponte com ${childFirst},` : ''} ${bridgeUrl ? 'já estão prontos' : 'já está pronto'}. Você encontra tudo no seu painel.`, n: 'Compra única. Sem assinatura. Tudo fica no seu painel.' }
+            : { s: `El informe completo de ${childFirst} está listo`, h: `El informe ArgoOne® de ${childFirst} está listo`, b: `Tu informe completo${bridgeUrl ? `, y tu propio puente con ${childFirst},` : ''} ${bridgeUrl ? 'ya están listos' : 'ya está listo'}. Lo encuentras todo en tu panel.`, n: 'Compra única. Sin suscripción. Todo queda en tu panel.' };
         try {
-            await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, T.c2, T.n));
+            await sendResendEmail(payer, T.s, argoShell({ headerWord: 'One', eyebrow: reportEyebrow(lang), title: T.h, body: T.b, ctaUrl: panelUrl, ctaLabel: panelCtaLabel(lang), note: T.n }));
         } catch (e) {
             console.warn(`[one-webhook] unlock: email to payer failed for ${sessionId}:`, e instanceof Error ? e.message : e);
         }
@@ -749,36 +748,66 @@ async function sendResendEmail(to: string, subject: string, html: string): Promi
     } catch (e) { console.warn('[one-webhook] resend send failed (non-blocking):', e); }
 }
 
-function reproShell(headerWord: string, heading: string, body: string, cta: string, url: string, note: string): string {
-    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;">
-  <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">${headerWord}</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
-</td></tr>
-<tr><td style="padding:28px;">
-  <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 10px;">${heading}</h2>
-  <p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${body}</p>
-  <div style="text-align:center;"><a href="${url}" style="display:inline-block;background:#955FB5;color:#fff;font-size:15px;font-weight:600;text-decoration:none;padding:14px 32px;border-radius:10px;">${cta}</a></div>
-  <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;line-height:1.6;">${note}</p>
-</td></tr></table></td></tr></table></body></html>`;
+// Unified ArgoOne notice shell — matches send-email's buildHtmlV4 (system font,
+// single white 16px container, dark masthead, eyebrow+title, one CTA, divider,
+// footer with the ArgoMethod wordmark). Blue accent = ArgoOne identity. One
+// button: the whole product (report + bridge) lives in the recipient's panel.
+export function argoShell(a: { headerWord: string; eyebrow: string; title: string; body: string; ctaUrl: string; ctaLabel: string; note: string; accent?: string }): string {
+    const accent = a.accent || '#0071E3';
+    return `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="padding:28px 12px 40px;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
+    <div style="background:#1D1D1F;padding:22px 32px;"><span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em;">Argo</span><span style="font-size:18px;font-weight:300;color:#fff;">${a.headerWord}</span><span style="font-size:10px;font-weight:300;color:#fff;vertical-align:super;">&reg;</span></div>
+    <div style="padding:26px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">${a.eyebrow}</div>
+      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">${a.title}</div>
+    </div>
+    <div style="padding:18px 32px 0;">
+      <div style="font-size:13.5px;color:#424245;line-height:1.6;">${a.body}</div>
+    </div>
+    <div style="padding:22px 32px 0;text-align:center;">
+      <a href="${a.ctaUrl}" style="display:inline-block;background:${accent};color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">${a.ctaLabel}</a>
+    </div>
+    <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
+    <div style="padding:18px 32px 26px;">
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;">${a.note}</div>
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;margin-top:14px;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span></div>
+    </div>
+  </div>
+</div>
+</body></html>`;
 }
 
-// Same shell, two side-by-side buttons (primary + optional secondary).
-function reproShellTwo(headerWord: string, heading: string, body: string, cta1: string, url1: string, url2: string | null, cta2: string, note: string): string {
-    const btn = (url: string, label: string, primary: boolean) => `<a href="${url}" style="display:inline-block;background:${primary ? '#955FB5' : '#fff'};color:${primary ? '#fff' : '#1D1D1F'};border:1px solid ${primary ? '#955FB5' : '#E8E8ED'};font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin:4px 6px 4px 0;">${label}</a>`;
-    return `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;">
-  <span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">${headerWord}</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span>
-</td></tr>
-<tr><td style="padding:28px;">
-  <h2 style="font-size:20px;font-weight:300;color:#1D1D1F;margin:0 0 10px;">${heading}</h2>
-  <p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${body}</p>
-  <div>${btn(url1, cta1, true)}${url2 ? btn(url2, cta2, false) : ''}</div>
-  <p style="font-size:11px;color:#AEAEB2;margin:20px 0 0;line-height:1.6;">${note}</p>
-</td></tr></table></td></tr></table></body></html>`;
+// Resolve (or mint) the recipient's tokenized panel link for a direct entry.
+async function resolvePayerPanelUrl(sb: any, email: string, lang: string, origin: string): Promise<string> {
+    let panelUrl = `${origin}/one/panel`;
+    try {
+        const esc = email.trim().toLowerCase().replace(/([\\%_])/g, '\\$1');
+        const { data: ap } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+        let apToken = ap?.access_token as string | undefined;
+        if (!apToken) {
+            const { data: ins } = await sb.from('adult_profiles').insert({ email, lang }).select('access_token').maybeSingle();
+            apToken = ins?.access_token as string | undefined;
+            if (!apToken) {
+                const { data: again } = await sb.from('adult_profiles').select('access_token').ilike('email', esc).maybeSingle();
+                apToken = again?.access_token as string | undefined;
+            }
+        }
+        if (apToken) panelUrl = `${origin}/one/panel?token=${apToken}`;
+    } catch { /* tokenless fallback */ }
+    return panelUrl;
+}
+
+// Localized "Go to my panel" CTA label.
+function panelCtaLabel(lang: string): string {
+    return lang === 'en' ? 'Go to my panel' : lang === 'pt' ? 'Ir para o meu painel' : 'Ir a mi panel';
+}
+
+// Localized eyebrow for the ArgoOne report notice.
+function reportEyebrow(lang: string): string {
+    return lang === 'en' ? 'ArgoOne® · Your report' : lang === 'pt' ? 'ArgoOne® · Seu relatório' : 'ArgoOne® · Tu informe';
 }
 
 // The re-profile purchase is paid. Decide, from the single source of truth
@@ -862,10 +891,13 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
             }
         }
 
-        const T = lang === 'en' ? { s: `${childFirst}'s profile is still current`, h: `${childFirst}'s profile is still current`, b: `Another adult refreshed ${childFirst}'s profile recently, so there's no need to play again yet. Here is the current report${bridgeUrl ? ', and your own bridge is ready to build' : ''}.`, c: 'Open the report', c2: 'Create my bridge', n: 'The profile refreshes every 6 months.' }
-            : lang === 'pt' ? { s: `O perfil de ${childFirst} ainda está atual`, h: `O perfil de ${childFirst} ainda está atual`, b: `Outro adulto atualizou o perfil de ${childFirst} recentemente, então não é preciso jogar de novo por enquanto. Aqui está o relatório atual${bridgeUrl ? ', e a sua própria ponte já pode ser criada' : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte', n: 'O perfil se atualiza a cada 6 meses.' }
-            : { s: `El perfil de ${childFirst} sigue vigente`, h: `El perfil de ${childFirst} sigue vigente`, b: `Otro adulto actualizó el perfil de ${childFirst} hace poco, así que no hace falta volver a jugar por ahora. Aquí tienes el informe actual${bridgeUrl ? ', y tu propio puente ya se puede crear' : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente', n: 'El perfil se actualiza cada 6 meses.' };
-        if (payer) await sendResendEmail(payer, T.s, reproShellTwo('One', T.h, T.b, T.c, reportUrl, bridgeUrl, (T as { c2?: string }).c2 || '', T.n));
+        const T = lang === 'en' ? { s: `${childFirst}'s profile is still current`, h: `${childFirst}'s profile is still current`, b: `Another adult refreshed ${childFirst}'s profile recently, so there's no need to play again yet. The current report${bridgeUrl ? ' and your own bridge are' : ' is'} in your panel.`, n: 'The profile refreshes every 6 months.' }
+            : lang === 'pt' ? { s: `O perfil de ${childFirst} ainda está atual`, h: `O perfil de ${childFirst} ainda está atual`, b: `Outro adulto atualizou o perfil de ${childFirst} recentemente, então não é preciso jogar de novo por enquanto. O relatório atual${bridgeUrl ? ' e a sua própria ponte estão' : ' está'} no seu painel.`, n: 'O perfil se atualiza a cada 6 meses.' }
+            : { s: `El perfil de ${childFirst} sigue vigente`, h: `El perfil de ${childFirst} sigue vigente`, b: `Otro adulto actualizó el perfil de ${childFirst} hace poco, así que no hace falta volver a jugar por ahora. El informe actual${bridgeUrl ? ' y tu propio puente están' : ' está'} en tu panel.`, n: 'El perfil se actualiza cada 6 meses.' };
+        if (payer) {
+            const panelUrl = await resolvePayerPanelUrl(sb, payer, lang, origin);
+            await sendResendEmail(payer, T.s, argoShell({ headerWord: 'One', eyebrow: reportEyebrow(lang), title: T.h, body: T.b, ctaUrl: panelUrl, ctaLabel: panelCtaLabel(lang), note: T.n }));
+        }
 
         await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'fresh_delivered', ...amountPatch }).eq('id', purchaseId);
         return { branch: 'fresh_delivered' };
@@ -943,7 +975,11 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
     const A = lang === 'en' ? { s: `Authorize ${childFirst}'s new profile`, h: `Time to refresh ${childFirst}'s profile`, b: `Someone requested a new profile for ${childFirst}. As the responsible adult, your authorization is needed. Whoever paid for this will receive ${childFirst}'s individual report and will build their bridge report from that profile. Tap to authorize, then hand the device to ${childFirst} to play.`, c: `Authorize and play`, n: 'This link is valid for 14 days.' }
         : lang === 'pt' ? { s: `Autorize o novo perfil de ${childFirst}`, h: `Hora de atualizar o perfil de ${childFirst}`, b: `Alguém solicitou um novo perfil para ${childFirst}. Como adulto responsável, é necessária a sua autorização. Quem pagou receberá o relatório individual de ${childFirst} e criará o seu relatório de ponte a partir desse perfil. Toque para autorizar e passe o dispositivo para ${childFirst} jogar.`, c: 'Autorizar e jogar', n: 'Este link é válido por 14 dias.' }
         : { s: `Autoriza el nuevo perfil de ${childFirst}`, h: `Es momento de actualizar el perfil de ${childFirst}`, b: `Alguien solicitó un nuevo perfil para ${childFirst}. Como adulto responsable, hace falta tu autorización. Quien lo pagó recibirá el informe individual de ${childFirst} y generará su informe puente basado en ese perfil. Toca para autorizar y pásale el dispositivo a ${childFirst} para que juegue.`, c: 'Autorizar y jugar', n: 'Este enlace es válido por 14 días.' };
-    await sendResendEmail(responsible, A.s, reproShell('One', A.h, A.b, A.c, authUrl, A.n));
+    await sendResendEmail(responsible, A.s, argoShell({
+        headerWord: 'One',
+        eyebrow: lang === 'en' ? 'ArgoOne® · Authorization' : lang === 'pt' ? 'ArgoOne® · Autorização' : 'ArgoOne® · Autorización',
+        title: A.h, body: A.b, ctaUrl: authUrl, ctaLabel: A.c, note: A.n,
+    }));
 
     await sb.from('one_purchases').update({ payment_status: 'paid', payment_id: providerPaymentId, paid_at: new Date().toISOString(), reprofile_status: 'awaiting_auth', ...amountPatch }).eq('id', purchaseId);
     return { branch: 'awaiting_auth' };

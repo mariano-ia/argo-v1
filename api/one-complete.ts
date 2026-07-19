@@ -296,33 +296,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const adult = (session_data.adult_email || '').trim().toLowerCase();
             if (op?.kind === 'reprofile' && payer && payer !== adult) {
                 const origin = process.env.SITE_URL || 'https://argomethod.com';
-                const { data: perfRow } = await sb.from('perfilamientos').select('share_token').eq('id', perfilamiento.id).maybeSingle();
-                const reportUrl = perfRow?.share_token ? `${origin}/report/${perfilamiento.id}?token=${perfRow.share_token}` : `${origin}/one/panel`;
-                const { data: pp } = await sb.from('puentes_purchases').select('magic_token').ilike('recipient_email', payer.replace(/([\\%_])/g, '\\$1')).eq('source_session_id', perfilamiento.id).eq('status', 'paid').maybeSingle();
-                const bridgeUrl = pp?.magic_token ? `${origin}/puentes/${pp.magic_token}` : null;
+                const escPayer = payer.replace(/([\\%_])/g, '\\$1');
+                const { data: pp } = await sb.from('puentes_purchases').select('magic_token').ilike('recipient_email', escPayer).eq('source_session_id', perfilamiento.id).eq('status', 'paid').maybeSingle();
+                const hasBridge = !!pp?.magic_token;
+                // Tokenized panel link for the payer (mint the adult_profile if needed);
+                // the report + bridge both live there — one destination, one button.
+                let panelUrl = `${origin}/one/panel`;
+                try {
+                    const { data: ap } = await sb.from('adult_profiles').select('access_token').ilike('email', escPayer).maybeSingle();
+                    let apToken = ap?.access_token as string | undefined;
+                    if (!apToken) {
+                        const { data: ins } = await sb.from('adult_profiles').insert({ email: payer, lang }).select('access_token').maybeSingle();
+                        apToken = ins?.access_token as string | undefined;
+                        if (!apToken) {
+                            const { data: again } = await sb.from('adult_profiles').select('access_token').ilike('email', escPayer).maybeSingle();
+                            apToken = again?.access_token as string | undefined;
+                        }
+                    }
+                    if (apToken) panelUrl = `${origin}/one/panel?token=${apToken}`;
+                } catch { /* tokenless fallback */ }
                 const childFirst = (session_data.child_name || '').trim().split(/\s+/)[0] || (lang === 'en' ? 'the child' : lang === 'pt' ? 'a criança' : 'el niño');
                 const resendKey = process.env.RESEND_API_KEY;
                 if (resendKey) {
                     const P = lang === 'en'
-                        ? { s: `${childFirst}'s new report is ready`, b: `The new profile for ${childFirst} is ready. Here is the report${bridgeUrl ? ', and your own bridge is ready to build' : ''}.`, c: 'Open the report', c2: 'Create my bridge' }
+                        ? { s: `${childFirst}'s new report is ready`, e: 'ArgoOne® · Your report', b: `The new profile for ${childFirst} is ready. The report${hasBridge ? ' and your own bridge are' : ' is'} in your panel.`, c: 'Go to my panel', n: 'One-time purchase. No subscription. Everything stays in your panel.' }
                         : lang === 'pt'
-                        ? { s: `O novo relatório de ${childFirst} está pronto`, b: `O novo perfil de ${childFirst} está pronto. Aqui está o relatório${bridgeUrl ? ', e a sua própria ponte já pode ser criada' : ''}.`, c: 'Abrir o relatório', c2: 'Criar minha ponte' }
-                        : { s: `El nuevo informe de ${childFirst} está listo`, b: `El nuevo perfil de ${childFirst} está listo. Aquí tienes el informe${bridgeUrl ? ', y tu propio puente ya se puede crear' : ''}.`, c: 'Abrir el informe', c2: 'Crear mi puente' };
-                    const btn = (url: string, label: string, primary: boolean) => `<a href="${url}" style="display:inline-block;background:${primary ? '#955FB5' : '#fff'};color:${primary ? '#fff' : '#1D1D1F'};border:1px solid ${primary ? '#955FB5' : '#E8E8ED'};font-size:14px;font-weight:600;text-decoration:none;padding:12px 24px;border-radius:10px;margin:4px 6px 4px 0;">${label}</a>`;
+                        ? { s: `O novo relatório de ${childFirst} está pronto`, e: 'ArgoOne® · Seu relatório', b: `O novo perfil de ${childFirst} está pronto. O relatório${hasBridge ? ' e a sua própria ponte estão' : ' está'} no seu painel.`, c: 'Ir para o meu painel', n: 'Compra única. Sem assinatura. Tudo fica no seu painel.' }
+                        : { s: `El nuevo informe de ${childFirst} está listo`, e: 'ArgoOne® · Tu informe', b: `El nuevo perfil de ${childFirst} está listo. El informe${hasBridge ? ' y tu propio puente están' : ' está'} en tu panel.`, c: 'Ir a mi panel', n: 'Compra única. Sin suscripción. Todo queda en tu panel.' };
+                    // Unified ArgoOne shell (matches send-email buildHtmlV4; blue accent).
+                    const html = `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+<div style="padding:28px 12px 40px;">
+  <div style="max-width:600px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E8ED;border-radius:16px;overflow:hidden;">
+    <div style="background:#1D1D1F;padding:22px 32px;"><span style="font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.01em;">Argo</span><span style="font-size:18px;font-weight:300;color:#fff;">One</span><span style="font-size:10px;font-weight:300;color:#fff;vertical-align:super;">&reg;</span></div>
+    <div style="padding:26px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#AEAEB2;">${P.e}</div>
+      <div style="font-size:22px;font-weight:600;color:#1D1D1F;letter-spacing:-0.02em;margin-top:6px;">${P.s}</div>
+    </div>
+    <div style="padding:18px 32px 0;"><div style="font-size:13.5px;color:#424245;line-height:1.6;">${P.b}</div></div>
+    <div style="padding:22px 32px 0;text-align:center;">
+      <a href="${panelUrl}" style="display:inline-block;background:#0071E3;color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">${P.c}</a>
+    </div>
+    <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
+    <div style="padding:18px 32px 26px;">
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;">${P.n}</div>
+      <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;margin-top:14px;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span></div>
+    </div>
+  </div>
+</div>
+</body></html>`;
                     await fetch('https://api.resend.com/emails', {
                         method: 'POST',
                         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            from: 'Argo Method <hola@argomethod.com>',
-                            to: [payer],
-                            subject: P.s,
-                            html: `<!DOCTYPE html><html><body style="margin:0;padding:0;background:#F5F5F7;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F7;padding:32px 16px;"><tr><td align="center">
-<table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
-<tr><td style="background:#1D1D1F;padding:24px 28px;"><span style="font-size:18px;color:#fff;font-weight:800;">Argo</span><span style="font-size:18px;color:#fff;font-weight:300;">One</span><span style="font-size:10px;color:#fff;font-weight:300;vertical-align:super;">&reg;</span></td></tr>
-<tr><td style="padding:28px;"><p style="font-size:14px;color:#424245;margin:0 0 22px;line-height:1.6;">${P.b}</p><div>${btn(reportUrl, P.c, true)}${bridgeUrl ? btn(bridgeUrl, P.c2, false) : ''}</div></td></tr>
-</table></td></tr></table></body></html>`,
-                        }),
+                        body: JSON.stringify({ from: 'Argo Method <hola@argomethod.com>', to: [payer], subject: P.s, html }),
                     });
                 }
             }
