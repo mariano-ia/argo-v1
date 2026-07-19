@@ -193,27 +193,27 @@ function buildHtml(params: {
     };
     const includedCopy = {
         es: {
-            eyebrow: 'Tu ArgoPuente® ahora incluye más',
-            title: `Sumamos a ${params.nombreNino} a tu informe`,
-            body: `Como ya tienes ArgoPuente® activo, generamos automáticamente los puentes con ${params.nombreNino}. Tu informe ahora lo incluye, sin volver a cobrarte.`,
+            eyebrow: 'Tu ArgoPuente®',
+            title: `Tu puente con ${params.nombreNino} ya está listo`,
+            body: `Tu informe incluye tu ArgoPuente® con ${params.nombreNino}: cuatro puentes para acompañarlo mejor en su deporte.`,
             highlight: '',
-            cta: 'Ver mi informe actualizado',
+            cta: 'Ver mi informe',
             price: '',
         },
         en: {
-            eyebrow: 'Your ArgoPuente® now includes more',
-            title: `${params.nombreNino} has been added to your report`,
-            body: `Since you already have ArgoPuente® active, we automatically generated the bridges with ${params.nombreNino}. Your report now includes them, with no extra charge.`,
+            eyebrow: 'Your ArgoPuente®',
+            title: `Your bridge with ${params.nombreNino} is ready`,
+            body: `Your report includes your ArgoPuente® with ${params.nombreNino}: four bridges to support them better in their sport.`,
             highlight: '',
-            cta: 'View my updated report',
+            cta: 'View my report',
             price: '',
         },
         pt: {
-            eyebrow: 'Seu ArgoPuente® agora inclui mais',
-            title: `${params.nombreNino} foi adicionado(a) ao seu relatório`,
-            body: `Como você já tem ArgoPuente® ativo, geramos automaticamente as pontes com ${params.nombreNino}. Seu relatório agora o inclui, sem cobrança adicional.`,
+            eyebrow: 'Seu ArgoPuente®',
+            title: `Sua ponte com ${params.nombreNino} já está pronta`,
+            body: `Seu relatório inclui seu ArgoPuente® com ${params.nombreNino}: quatro pontes para acompanhá-lo melhor no esporte.`,
             highlight: '',
-            cta: 'Ver meu relatório atualizado',
+            cta: 'Ver meu relatório',
             price: '',
         },
     };
@@ -466,7 +466,8 @@ export function buildHtmlV4(hero: HeroV4, params: {
             puenteEyebrow: 'ArgoPuente® · Tu complemento', puenteTitle: `Ahora que conoces a ${n}, conócete a ti.`,
             puenteBody: `Cinco minutos de cuestionario. Un informe propio que revela tu estilo y cuatro puentes específicos para acompañar a ${n} mejor en su deporte.`,
             puenteBtn: 'Empezar mi ArgoPuente®',
-            existingPuente: `Tu ArgoPuente® ya incluye a ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver el informe del vínculo</a>.`,
+            existingPuente: `Tu ArgoPuente® con ${n} ya está listo. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver el informe del vínculo</a>.`,
+            panelNote: 'Este informe queda guardado en tu panel. Entra con tu email cuando quieras para verlo de nuevo.', panelBtn: 'Ir a mi panel',
             footerTail: 'Perfil conductual para el deporte formativo.', footerNote: 'Este informe es una foto del presente, no una etiqueta permanente.',
         },
         en: {
@@ -475,7 +476,8 @@ export function buildHtmlV4(hero: HeroV4, params: {
             puenteEyebrow: 'ArgoPuente® · Your complement', puenteTitle: `Now that you know ${n}, get to know yourself.`,
             puenteBody: `Five minutes of questions. Your own report revealing your style and four specific bridges to support ${n} better in their sport.`,
             puenteBtn: 'Start my ArgoPuente®',
-            existingPuente: `Your ArgoPuente® already includes ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">See the bond report</a>.`,
+            existingPuente: `Your ArgoPuente® with ${n} is ready. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">See the bond report</a>.`,
+            panelNote: 'This report is saved in your panel. Sign in with your email anytime to see it again.', panelBtn: 'Go to my panel',
             footerTail: 'Behavioral profile for youth sport.', footerNote: 'This report is a snapshot of the present, not a permanent label.',
         },
         pt: {
@@ -484,7 +486,8 @@ export function buildHtmlV4(hero: HeroV4, params: {
             puenteEyebrow: 'ArgoPuente® · Seu complemento', puenteTitle: `Agora que você conhece ${n}, conheça você mesmo.`,
             puenteBody: `Cinco minutos de perguntas. Um relatório próprio que revela seu estilo e quatro pontes específicas para acompanhar ${n} melhor no esporte.`,
             puenteBtn: 'Começar meu ArgoPuente®',
-            existingPuente: `Seu ArgoPuente® já inclui ${n}. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver o relatório do vínculo</a>.`,
+            existingPuente: `Seu ArgoPuente® com ${n} já está pronto. <a href="__LINK__" style="color:#7A4D96;font-weight:600;text-decoration:none;">Ver o relatório do vínculo</a>.`,
+            panelNote: 'Este relatório fica salvo no seu painel. Entre com seu email quando quiser para vê-lo de novo.', panelBtn: 'Ir para o meu painel',
             footerTail: 'Perfil comportamental para o esporte formativo.', footerNote: 'Este relatório é uma foto do presente, não um rótulo permanente.',
         },
     }[lg];
@@ -521,6 +524,18 @@ export function buildHtmlV4(hero: HeroV4, params: {
     </div>`;
     }
 
+    // Panel reminder (shown to every recipient): buying ArgoOne enables the
+    // panel, and the authorizing adult can always sign in with their email to
+    // find this report again — so the email is never the only way back to it.
+    const panelUrl = `${baseUrl}/one/panel`;
+    const panel = `<div style="padding:24px 32px 0;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#86868B;">${T.panelBtn}</div>
+      <div style="font-size:13.5px;color:#424245;margin-top:8px;line-height:1.55;">${T.panelNote}</div>
+      <div style="margin-top:14px;">
+        <a href="${panelUrl}" style="display:inline-block;background:#FFFFFF;color:#1D1D1F;border:1px solid #E8E8ED;font-size:14px;font-weight:600;padding:10px 22px;border-radius:11px;text-decoration:none;">${T.panelBtn}</a>
+      </div>
+    </div>`;
+
     return `<!doctype html>
 <html lang="${lg}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${(hero.primarioLabel ?? 'Informe')} · ArgoMethod®</title></head>
 <body style="margin:0;background:#F5F5F7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
@@ -544,6 +559,7 @@ export function buildHtmlV4(hero: HeroV4, params: {
     </div>
     <div style="padding:26px 32px 0;"><div style="height:1px;background:#E8E8ED;"></div></div>
     ${puente}
+    ${panel}
     <div style="padding:28px 32px 26px;">
       <div style="height:1px;background:#E8E8ED;margin-bottom:16px;"></div>
       <div style="font-size:11.5px;color:#AEAEB2;line-height:1.6;"><span style="font-weight:800;color:#86868B;">Argo</span><span style="font-weight:300;color:#AEAEB2;">Method®</span> · ${T.footerTail}<br>${T.footerNote}</div>

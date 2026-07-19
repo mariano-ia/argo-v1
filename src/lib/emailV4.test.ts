@@ -46,9 +46,9 @@ test('email v4: demo bloqueado => sin bloque Puente', () => {
   assert.ok(!/Empezar mi ArgoPuente/.test(html));
 });
 
-test('email v4: ya tiene Puente => mensaje "incluye" con su magic link', () => {
+test('email v4: ya tiene Puente => mensaje "listo" con su magic link', () => {
   const html = buildHtmlV4(hero, { ...params, existingPuentesMagicLink: 'https://x/puentes/mtok' });
-  assert.match(html, /ya incluye a Mateo/);
+  assert.match(html, /con Mateo ya está listo/);
   assert.match(html, /puentes\/mtok/);
   assert.ok(!/Empezar mi ArgoPuente/.test(html));
 });
