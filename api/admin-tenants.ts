@@ -189,10 +189,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             if (tenantIds.length > 0) {
                 // Active players per tenant
                 for (const t of tenants ?? []) {
-                    // Active players = active roster slots = active children
-                    // (the roster entity now lives in children, not perfilamientos).
+                    // Active players = active roster slots = active children that
+                    // actually have a profile. A child is created (and attached to a
+                    // plantel) the instant a play STARTS, before answering anything;
+                    // such in_flight-only children never resolved and must NOT count
+                    // (mirrors the canonical slot rule + check_roster_capacity). We
+                    // count current_perfilamiento (latest RESOLVED per child), which
+                    // exposes archived/deleted/merged for us to filter here.
                     const { count: activeCount } = await sb
-                        .from('children')
+                        .from('current_perfilamiento')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', t.id)
                         .is('archived_at', null)

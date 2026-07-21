@@ -133,26 +133,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     const { data: profiles } = await sb
                         .from('current_perfilamiento')
                         .select('id, child_name, child_age, sport, archetype_label, eje, motor, eje_secundario')
-                        .in('id', memberChildIds);
+                        .in('id', memberChildIds)
+                        .is('deleted_at', null)
+                        .is('archived_at', null);
                     for (const p of (profiles ?? []) as Record<string, unknown>[]) {
                         profileByChild[p.id as string] = p;
                     }
                 }
-                const flat = (members ?? []).map((m: Record<string, unknown>) => {
-                    const s = profileByChild[m.child_id as string] ?? null;
-                    return {
-                        // Keep response key `session_id`; value is now the child id.
-                        id: m.id, session_id: m.child_id, added_at: m.added_at,
-                        child_name: s?.child_name ?? '', child_age: s?.child_age ?? null, sport: s?.sport ?? '',
-                        archetype_label: s?.archetype_label ?? '', eje: s?.eje ?? '', motor: s?.motor ?? '', eje_secundario: s?.eje_secundario ?? '',
-                    };
-                });
+                // Only surface members with a resolved profile (see tenant-groups).
+                const flat = (members ?? [])
+                    .filter((m: Record<string, unknown>) => profileByChild[m.child_id as string])
+                    .map((m: Record<string, unknown>) => {
+                        const s = profileByChild[m.child_id as string];
+                        return {
+                            // Keep response key `session_id`; value is now the child id.
+                            id: m.id, session_id: m.child_id, added_at: m.added_at,
+                            child_name: s?.child_name ?? '', child_age: s?.child_age ?? null, sport: s?.sport ?? '',
+                            archetype_label: s?.archetype_label ?? '', eje: s?.eje ?? '', motor: s?.motor ?? '', eje_secundario: s?.eje_secundario ?? '',
+                        };
+                    });
                 return res.status(200).json({ group, members: flat });
             }
 
             let listQuery = sb
                 .from('chem_groups')
-                .select('id, name, created_at, chem_group_members(count)')
+                .select('id, name, created_at')
                 .eq('tenant_id', tenantId)
                 .eq('owner_member_id', memberId)
                 .is('deleted_at', null);
@@ -163,10 +168,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 console.error('[tenant-chem-groups] list error:', grpErr.message);
                 return res.status(500).json({ error: 'Failed to fetch groups' });
             }
+            // member_count = members WITH a resolved profile only (see tenant-groups).
+            const groupIds = (groups ?? []).map((g: Record<string, unknown>) => g.id as string);
+            const countByGroup: Record<string, number> = {};
+            if (groupIds.length > 0) {
+                const { data: memRows } = await sb
+                    .from('chem_group_members')
+                    .select('group_id, child_id')
+                    .in('group_id', groupIds);
+                const childIds = Array.from(new Set((memRows ?? []).map((m: { child_id: string }) => m.child_id)));
+                const profiledSet = new Set<string>();
+                if (childIds.length > 0) {
+                    const { data: profiled } = await sb
+                        .from('current_perfilamiento')
+                        .select('id')
+                        .in('id', childIds)
+                        .is('deleted_at', null)
+                        .is('archived_at', null);
+                    for (const p of (profiled ?? []) as { id: string }[]) profiledSet.add(p.id);
+                }
+                for (const m of (memRows ?? []) as { group_id: string; child_id: string }[]) {
+                    if (profiledSet.has(m.child_id)) countByGroup[m.group_id] = (countByGroup[m.group_id] ?? 0) + 1;
+                }
+            }
             const mapped = (groups ?? []).map((g: Record<string, unknown>) => ({
                 id: g.id, name: g.name, created_at: g.created_at,
-                member_count: Array.isArray(g.chem_group_members) && g.chem_group_members[0]
-                    ? (g.chem_group_members[0] as { count: number }).count : 0,
+                member_count: countByGroup[g.id as string] ?? 0,
             }));
             return res.status(200).json({ groups: mapped });
         }

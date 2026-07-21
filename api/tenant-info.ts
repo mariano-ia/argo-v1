@@ -97,11 +97,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const t = tenantMap.get(d.tenant_id) as Record<string, unknown> | undefined;
             if (!t) return null; // tenant deleted/missing
 
-            // Active players in this tenant. A roster slot = a CHILD, so count
-            // active children (not perfilamientos): not archived, not deleted,
-            // and not merged into another child.
+            // Active players in this tenant. A roster slot = a child WITH a profile.
+            // A child is created (and attached to a plantel) the instant a play
+            // STARTS, before answering anything; an in_flight-only child never
+            // resolved and must NOT occupy a slot (canonical rule + the
+            // check_roster_capacity RPC agree). Count current_perfilamiento (latest
+            // RESOLVED per child), filtering archived/deleted/merged.
             const { count } = await sb
-                .from('children')
+                .from('current_perfilamiento')
                 .select('*', { count: 'exact', head: true })
                 .eq('tenant_id', d.tenant_id)
                 .is('archived_at', null)

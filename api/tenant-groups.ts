@@ -147,29 +147,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     const { data: profiles } = await sb
                         .from('current_perfilamiento')
                         .select('id, child_name, child_age, sport, archetype_label, eje, motor, eje_secundario')
-                        .in('id', memberChildIds);
+                        .in('id', memberChildIds)
+                        .is('deleted_at', null)
+                        .is('archived_at', null);
                     for (const p of (profiles ?? []) as Record<string, unknown>[]) {
                         profileByChild[p.id as string] = p;
                     }
                 }
 
-                const flatMembers = (members ?? []).map((m: Record<string, unknown>) => {
-                    const s = profileByChild[m.child_id as string] ?? null;
-                    return {
-                        id: m.id,
-                        // Keep the response key `session_id` for client back-compat;
-                        // its value is now the child id (the membership key).
-                        session_id: m.child_id,
-                        added_at: m.added_at,
-                        child_name: s?.child_name ?? '',
-                        child_age: s?.child_age ?? null,
-                        sport: s?.sport ?? '',
-                        archetype_label: s?.archetype_label ?? '',
-                        eje: s?.eje ?? '',
-                        motor: s?.motor ?? '',
-                        eje_secundario: s?.eje_secundario ?? '',
-                    };
-                });
+                // Only surface members who actually have a resolved profile. A child
+                // is attached to the plantel the instant a play STARTS (before any
+                // answer), so unresolved starters would otherwise show as blank rows
+                // and inflate the count vs the roster/home numbers.
+                const flatMembers = (members ?? [])
+                    .filter((m: Record<string, unknown>) => profileByChild[m.child_id as string])
+                    .map((m: Record<string, unknown>) => {
+                        const s = profileByChild[m.child_id as string];
+                        return {
+                            id: m.id,
+                            // Keep the response key `session_id` for client back-compat;
+                            // its value is now the child id (the membership key).
+                            session_id: m.child_id,
+                            added_at: m.added_at,
+                            child_name: s?.child_name ?? '',
+                            child_age: s?.child_age ?? null,
+                            sport: s?.sport ?? '',
+                            archetype_label: s?.archetype_label ?? '',
+                            eje: s?.eje ?? '',
+                            motor: s?.motor ?? '',
+                            eje_secundario: s?.eje_secundario ?? '',
+                        };
+                    });
 
                 // Assigned coaches
                 const { data: coachRows } = await sb
@@ -187,7 +195,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             // ── GET without id: List teams ────────────────────────────────
             let listQuery = sb
                 .from('groups')
-                .select('id, name, slug, sport, created_at, group_members(count)')
+                .select('id, name, slug, sport, created_at')
                 .eq('tenant_id', tenant.id)
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false });
@@ -202,15 +210,41 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 return res.status(500).json({ error: 'Failed to fetch groups' });
             }
 
+            // member_count = members WITH a resolved profile only. A child joins the
+            // plantel at play START (before answering), so a raw group_members count
+            // would include in_flight-only starters and disagree with the roster, the
+            // home "Jugadores" stat, and the plantel detail list. Resolve in two steps
+            // (memberships → which child_ids have a resolved, non-archived profile).
+            const groupIds = (groups ?? []).map((g: Record<string, unknown>) => g.id as string);
+            const countByGroup: Record<string, number> = {};
+            if (groupIds.length > 0) {
+                const { data: memRows } = await sb
+                    .from('group_members')
+                    .select('group_id, child_id')
+                    .in('group_id', groupIds);
+                const childIds = Array.from(new Set((memRows ?? []).map((m: { child_id: string }) => m.child_id)));
+                const profiledSet = new Set<string>();
+                if (childIds.length > 0) {
+                    const { data: profiled } = await sb
+                        .from('current_perfilamiento')
+                        .select('id')
+                        .in('id', childIds)
+                        .is('deleted_at', null)
+                        .is('archived_at', null);
+                    for (const p of (profiled ?? []) as { id: string }[]) profiledSet.add(p.id);
+                }
+                for (const m of (memRows ?? []) as { group_id: string; child_id: string }[]) {
+                    if (profiledSet.has(m.child_id)) countByGroup[m.group_id] = (countByGroup[m.group_id] ?? 0) + 1;
+                }
+            }
+
             const mapped = (groups ?? []).map((g: Record<string, unknown>) => ({
                 id: g.id,
                 name: g.name,
                 slug: g.slug,
                 sport: g.sport ?? null,
                 created_at: g.created_at,
-                member_count: Array.isArray(g.group_members) && g.group_members[0]
-                    ? (g.group_members[0] as { count: number }).count
-                    : 0,
+                member_count: countByGroup[g.id as string] ?? 0,
             }));
 
             return res.status(200).json({ groups: mapped });
