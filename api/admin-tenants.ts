@@ -204,17 +204,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         .is('deleted_at', null)
                         .is('merged_into', null);
 
-                    // Total plays ever (append-only assessments) for the tenant.
+                    // Total completed assessments for the tenant. Exclude in_flight
+                    // starts (a child is created before answering; those are 0-answer
+                    // ghosts, not sessions) so this metric can't be inflated by them.
                     const { count: totalCount } = await sb
                         .from('perfilamientos')
                         .select('*', { count: 'exact', head: true })
                         .eq('tenant_id', t.id)
+                        .eq('status', 'resolved')
                         .is('deleted_at', null);
 
+                    // Last activity = last COMPLETED assessment (an in_flight start
+                    // must not reset the inactivity clock used by inactive-30).
                     const { data: lastSession } = await sb
                         .from('perfilamientos')
                         .select('created_at')
                         .eq('tenant_id', t.id)
+                        .eq('status', 'resolved')
                         .is('deleted_at', null)
                         .order('created_at', { ascending: false })
                         .limit(1)
