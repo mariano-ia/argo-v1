@@ -442,6 +442,30 @@ strong { color: var(--text-primary); font-weight: 600; }
 .ms-row__field { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.6rem; color: #22d3ee; margin-top: 6px; display: block; }
 
 /* ═══════════════════════════════════════
+   PRUEBAS (slide) — hero + gauges de reconocimiento
+   ═══════════════════════════════════════ */
+.pruebas-hero {
+  display: flex; align-items: baseline; gap: 14px;
+  padding: 18px 0 6px; margin-bottom: 26px;
+  border-bottom: 1px solid var(--border);
+}
+.pruebas-hero__num { font-size: 3.6rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); line-height: 1; }
+.pruebas-hero__label { font-size: 0.92rem; color: var(--text-secondary); font-weight: 500; }
+.pruebas-hero__label strong { color: var(--text-primary); }
+.gauge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.gauge { text-align: center; }
+.gauge__ring { position: relative; width: 128px; height: 128px; margin: 0 auto 14px; }
+.gauge__ring svg { display: block; width: 100%; height: 100%; }
+.gauge__pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); }
+.gauge__label { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
+.gauge__count { font-size: 0.76rem; color: var(--text-muted); margin: 0; }
+@media (max-width: 768px) {
+  .gauge-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+  .pruebas-hero__num { font-size: 2.6rem; }
+  .gauge__ring { width: 108px; height: 108px; }
+}
+
+/* ═══════════════════════════════════════
    FLIPCARD — 3D animated (juego → análisis → perfil)
    ═══════════════════════════════════════ */
 .flipcard { width: 100%; max-width: 380px; margin: 0 auto; }
@@ -631,7 +655,7 @@ strong { color: var(--text-primary); font-weight: 600; }
 <body>
 
 <!-- Slide counter (desktop only) -->
-<div class="slide-counter" id="slide-counter">1 / 12</div>
+<div class="slide-counter" id="slide-counter">1 / 13</div>
 
 <div class="scroll-hint" id="scroll-hint">
   <span>Desliza</span>
@@ -797,7 +821,7 @@ strong { color: var(--text-primary); font-weight: 600; }
                 <div class="fc-analysis__pulse"></div>
                 <span class="fc-analysis__title">Argo agrega los votos</span>
               </div>
-              <p class="fc-analysis__desc">Cada elección es un voto débil. Argo agrega los 12 votos y mide la brecha entre ejes para decidir <strong>cuánto puede afirmar</strong>.</p>
+              <p class="fc-analysis__desc">Cada elección es un voto. Argo agrega los 12 votos y mide la brecha entre ejes para decidir <strong>cuánto puede afirmar</strong>.</p>
               <div class="fc-analysis__bars" id="fc-bars"></div>
               <div class="fc-analysis__motor">
                 <span class="fc-analysis__motor-label">Su motor (aparte del perfil)</span>
@@ -1039,9 +1063,81 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span></div>
 </section>
 
-<!-- ══════════════ 11. EL LUGAR DEL PROFESIONAL ══════════════ -->
+<!-- ══════════════ 11. PUESTO A PRUEBA (RECONOCIMIENTO) ══════════════ -->
 <section class="slide slide--tint" data-slide="11">
   <div class="section-num">10</div>
+  <div class="slide-content">
+    <div class="label anim">Puesto a prueba</div>
+    <h2 class="anim" style="font-size:2.2rem; margin-bottom:10px;">Antes de afirmar algo, lo probamos.</h2>
+    <p class="anim" style="max-width:860px; margin-bottom:6px;">En cada prueba, un <strong>niño de 8 a 16 años</strong> jugó y <strong>su familia evaluó cuánto lo reconocía en el informe</strong>. Lo evaluó quien realmente lo recibe y lo usa. Una base amplia de uso real, no un ensayo aislado.</p>
+    <p class="anim" style="max-width:860px; margin:0 0 22px; font-size:0.82rem; color:var(--text-muted);">Muestra: niños argentinos de 8 a 16 años, participantes de distintas entidades deportivas.</p>
+    <div class="anim pruebas-hero">
+      <span class="pruebas-hero__num">1204</span>
+      <span class="pruebas-hero__label"><strong>el 93% de las familias estuvo muy de acuerdo</strong> con cómo el informe describió a su niño</span>
+    </div>
+    <div class="anim gauge-grid">
+      <div class="gauge">
+        <div class="gauge__ring">
+          <svg viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#ECE6F2" stroke-width="11"/>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#6D3F8C" stroke-width="11" stroke-linecap="round" stroke-dasharray="315.54 339.29" transform="rotate(-90 64 64)"/>
+          </svg>
+          <div class="gauge__pct">93%</div>
+        </div>
+        <p class="gauge__label">Muy de acuerdo</p>
+        <p class="gauge__count">1120 pruebas</p>
+      </div>
+      <div class="gauge">
+        <div class="gauge__ring">
+          <svg viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#ECE6F2" stroke-width="11"/>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#8B5CB0" stroke-width="11" stroke-linecap="round" stroke-dasharray="16.96 339.29" transform="rotate(-90 64 64)"/>
+          </svg>
+          <div class="gauge__pct">5%</div>
+        </div>
+        <p class="gauge__label">De acuerdo</p>
+        <p class="gauge__count">60 pruebas</p>
+      </div>
+      <div class="gauge">
+        <div class="gauge__ring">
+          <svg viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#ECE6F2" stroke-width="11"/>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#A87DC7" stroke-width="11" stroke-linecap="round" stroke-dasharray="5.09 339.29" transform="rotate(-90 64 64)"/>
+          </svg>
+          <div class="gauge__pct">1.5%</div>
+        </div>
+        <p class="gauge__label">Poco de acuerdo</p>
+        <p class="gauge__count">18 pruebas</p>
+      </div>
+      <div class="gauge">
+        <div class="gauge__ring">
+          <svg viewBox="0 0 128 128">
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#ECE6F2" stroke-width="11"/>
+            <circle cx="64" cy="64" r="54" fill="none" stroke="#C29FD9" stroke-width="11" stroke-linecap="round" stroke-dasharray="1.70 339.29" transform="rotate(-90 64 64)"/>
+          </svg>
+          <div class="gauge__pct">0.5%</div>
+        </div>
+        <p class="gauge__label">Nada de acuerdo</p>
+        <p class="gauge__count">6 pruebas</p>
+      </div>
+    </div>
+    <div class="anim" style="margin:24px 0 0; display:flex; flex-direction:column; gap:10px;">
+      <p style="font-size:0.8rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:8px; margin:0;">
+        <i data-lucide="info" style="width:14px;height:14px;color:var(--accent); flex-shrink:0; margin-top:3px;"></i>
+        <span>Qué mide este número: <strong style="color:var(--text-secondary);">cuánto reconoce cada familia a su niño en el informe</strong> (aceptación y resonancia de quien lo recibe).</span>
+      </p>
+      <p style="font-size:0.8rem; color:var(--text-muted); display:flex; align-items:flex-start; gap:8px; margin:0;">
+        <i data-lucide="shield-check" style="width:14px;height:14px;color:var(--accent); flex-shrink:0; margin-top:3px;"></i>
+        <span>Todas las pruebas se hicieron con <strong style="color:var(--text-secondary);">consentimiento de los padres</strong>. El flujo de consentimiento para menores estuvo integrado desde el inicio.</span>
+      </p>
+    </div>
+  </div>
+  <div class="brand-bar"><span>argomethod.com</span></div>
+</section>
+
+<!-- ══════════════ 12. EL LUGAR DEL PROFESIONAL ══════════════ -->
+<section class="slide" data-slide="12">
+  <div class="section-num">11</div>
   <div class="slide-content">
     <div class="label anim">El lugar del profesional</div>
     <h2 class="anim" style="font-size:2.2rem; margin-bottom:8px;">Argo no reemplaza tu juicio profesional. Lo alimenta.</h2>
@@ -1072,8 +1168,8 @@ strong { color: var(--text-primary); font-weight: 600; }
   <div class="brand-bar"><span>argomethod.com</span></div>
 </section>
 
-<!-- ══════════════ 12. GRACIAS ══════════════ -->
-<section class="slide slide--thanks" data-slide="12">
+<!-- ══════════════ 13. GRACIAS ══════════════ -->
+<section class="slide slide--thanks" data-slide="13">
   <div class="glow glow--violet" style="top:-150px; right:-110px;"></div>
   <div class="glow glow--indigo" style="bottom:-150px; left:-100px;"></div>
   <div class="slide-content" style="text-align:center;">
