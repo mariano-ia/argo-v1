@@ -223,7 +223,7 @@ export function buildHtml(args: {
     </div>
     ${brujula}
     <div style="padding:22px 32px 0;">
-      <div style="font-size:13.5px;color:#424245;line-height:1.6;">${args.saludo}</div>
+      <div style="font-size:13.5px;color:#424245;line-height:1.6;">${args.saludo.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')}</div>
     </div>
     <div style="padding:22px 32px 0;text-align:center;">
       <a href="${args.ctaUrl}" style="display:inline-block;background:${violet};color:#FFFFFF;font-size:15px;font-weight:600;padding:13px 28px;border-radius:12px;letter-spacing:-0.01em;text-decoration:none;">${args.ctaLabel}</a>

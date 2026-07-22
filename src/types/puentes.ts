@@ -41,7 +41,10 @@ export interface PuentePiece {
 export interface PuentesAiSections {
     saludo: string;
     perfil_adulto_breve: string;
-    puentes: [PuentePiece, PuentePiece, PuentePiece, PuentePiece];
+    // 5 bridges since 2026-07-22 (previa, presencia, traspié, conversación, largo
+    // plazo). A plain array (not a fixed tuple) so reports generated with the old
+    // 4-bridge engine still type-check when rendered.
+    puentes: PuentePiece[];
     cierre: string;
 }
 
