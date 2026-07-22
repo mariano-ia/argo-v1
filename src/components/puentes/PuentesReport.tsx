@@ -1,8 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Printer, Link2, CheckCircle } from 'lucide-react';
-import { AXIS_COLORS, AXIS_LABELS, AXIS_CHIP } from '../../lib/designTokens';
+import { AXIS_COLORS } from '../../lib/designTokens';
+import { getArchetypeLabel } from '../../lib/archetypeContentV4';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
+import { InfoTip } from '../ui/Tooltip';
+import { REPORT_REDESIGN_CSS } from '../report/reportRedesignStyles';
 import type {
     AdultAxis,
     AdultProfile,
@@ -42,17 +45,43 @@ interface Props {
 
 const EJE_ORDER: AdultAxis[] = ['D', 'I', 'S', 'C'];
 
+// Accent violet of the design system (v500 = marker / v600 = bridge label).
+const V500 = '#955FB5';
+const V600 = '#7A4D96';
+
 /** Convierte **negrita** (markdown) en <strong>. El engine (generate-puentes.ts)
  *  destaca 1-2 frases por bloque; sin esto el `**` se filtraría literal. */
 function renderRich(text: string): React.ReactNode[] {
     return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
         const m = part.match(/^\*\*([^*]+)\*\*$/);
         return m
-            ? <strong key={i} className="font-semibold text-argo-navy">{m[1]}</strong>
+            ? <strong key={i}>{m[1]}</strong>
             : <React.Fragment key={i}>{part}</React.Fragment>;
     });
 }
 
+// ── Vidrio de los orbes (mismas fórmulas que la maqueta / ReportV4View: orb_bg/orb_shadow) ──
+function hexToRgb(hex: string): [number, number, number] {
+    const h = hex.replace('#', '');
+    return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+function orbBg(hex: string): string {
+    const [r, g, b] = hexToRgb(hex);
+    return `radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%),` +
+        `radial-gradient(circle at 52% 55%, rgba(${r},${g},${b},.30), rgba(${r},${g},${b},.15) 62%, rgba(${r},${g},${b},.05) 100%)`;
+}
+function orbShadow(hex: string): string {
+    const [r, g, b] = hexToRgb(hex);
+    return `inset 0 0 0 1px rgba(${r},${g},${b},.16), inset 0 1px 12px rgba(255,255,255,.45), ` +
+        `0 14px 38px -18px rgba(${r},${g},${b},.30)`;
+}
+
+// Animación (morph + duración) de cada orbe de "Composición" — variedad orgánica, igual que ReportV4View.
+const MZ_MORPH: Record<string, string> = { D: 'argoOrbMorphA', I: 'argoOrbMorphB', S: 'argoOrbMorphA', C: 'argoOrbMorphB' };
+const MZ_DUR: Record<string, string> = { D: '9s', I: '8s', S: '10.5s', C: '7.5s' };
+
+// Espectro de presión: 3 estados con su posición fija sobre la pista.
+const PRESS_POS: Record<'regulado' | 'reactivo' | 'evitativo', number> = { regulado: 0.15, reactivo: 0.5, evitativo: 0.85 };
 
 const PRESSURE_DISPLAY: Record<string, Record<string, string>> = {
     es: { regulado: 'Regulado', reactivo: 'Reactivo', evitativo: 'Evitativo' },
@@ -90,6 +119,24 @@ const COMPOSITION_LABEL: Record<Lang, string> = {
     pt: 'Composição do perfil',
 };
 
+const COMPOSITION_TIP: Record<Lang, string> = {
+    es: 'Cómo se reparten tus respuestas entre los cuatro colores del modelo. El tamaño de cada orbe muestra cuánto pesa ese eje hoy.',
+    en: "How your answers spread across the model's four colors. Each orb's size shows how much that axis weighs today.",
+    pt: 'Como suas respostas se distribuem entre as quatro cores do modelo. O tamanho de cada orbe mostra quanto esse eixo pesa hoje.',
+};
+
+const PRESSURE_TIP: Record<Lang, string> = {
+    es: 'Cómo tiendes a responder cuando la situación aprieta: regulando y ordenando, reaccionando en caliente, o corriéndote del problema.',
+    en: 'How you tend to respond when things get tight: regulating and settling, reacting in the heat of the moment, or stepping away from the problem.',
+    pt: 'Como você tende a responder quando a situação aperta: regulando e organizando, reagindo no calor do momento, ou se afastando do problema.',
+};
+
+const HERO_EYEBROW: Record<Lang, string> = {
+    es: 'Tu perfil',
+    en: 'Your profile',
+    pt: 'Seu perfil',
+};
+
 const PAGE_EYEBROW: Record<Lang, string> = {
     es: 'Informe para el adulto',
     en: 'Report for the adult',
@@ -120,211 +167,87 @@ const FOREVER_NOTE: Record<Lang, string> = {
     pt: 'Guardamos seu perfil para reutilizá-lo em novas pontes sem repetir o questionário. Se quiser que apaguemos, escreva para hola@argomethod.com.',
 };
 
-const SectionIcons: Record<string, React.ReactNode> = {
-    compass: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="6.5"/><path d="M8 3v2M8 11v2M3 8h2M11 8h2"/><circle cx="8" cy="8" r="1.5" fill="#6366f1" stroke="none"/>
-        </svg>
-    ),
-    welcome: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M13 8.5V4a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.5"/><path d="M10.5 10.5l1.5 1.5 3-3"/>
-        </svg>
-    ),
-    profile: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 2C6.5 4 4 6.5 4 9a4 4 0 0 0 8 0c0-2.5-2.5-5-4-7z"/>
-        </svg>
-    ),
-    bridge1: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 12L8 3l6 9"/><path d="M2 14h12"/>
-        </svg>
-    ),
-    bridge2: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 2L3 9h4l-1 5 6-7h-4z"/>
-        </svg>
-    ),
-    bridge3: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 8a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3a3 3 0 0 1-3 3H5l-2 2v-2.3"/>
-            <circle cx="11" cy="12" r="1" fill="currentColor" stroke="none"/>
-        </svg>
-    ),
-    bridge4: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M2 12h12"/><path d="M5 9l3-5 3 5"/><circle cx="11" cy="3" r="1" fill="currentColor" stroke="none"/>
-        </svg>
-    ),
-    reflection: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M8 14c3.3 0 6-2.7 6-6S11.3 2 8 2 2 4.7 2 8c0 1.2.4 2.3 1 3.2L2 14l3-1"/>
-        </svg>
-    ),
-    closing: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 8l2 2 4-4"/>
-        </svg>
-    ),
-    info: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="6.5"/><path d="M8 5.5v3"/><circle cx="8" cy="11.5" r="0.5" fill="currentColor" stroke="none"/>
-        </svg>
-    ),
-    mail: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="3.5" width="12" height="9" rx="1.5"/><path d="M2.5 4.5l5.5 4 5.5-4"/>
-        </svg>
-    ),
-    pending: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="6.5"/><polyline points="8 4 8 8 11 10"/>
-        </svg>
-    ),
-    failed: (
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="8" cy="8" r="6.5"/><path d="M8 5v3.5"/><circle cx="8" cy="11" r="0.4" fill="currentColor" stroke="none"/>
-        </svg>
-    ),
+const GENERATING_NOTE: Record<Lang, (child: string | null) => string> = {
+    es: (child) => `Todavía estamos generando los puentes con ${child ?? 'el niño'}. Esto suele tardar unos segundos.`,
+    en: (child) => `We are still generating the bridges with ${child ?? 'the child'}. This usually takes a few seconds.`,
+    pt: (child) => `Ainda estamos gerando as pontes com ${child ?? 'a criança'}. Geralmente leva alguns segundos.`,
 };
 
-const SectionTitle: React.FC<{ title: string; icon: React.ReactNode }> = ({ title, icon }) => (
-    <div className="mb-5 flex items-center gap-2">
-        <span className="w-5 h-5 flex-shrink-0 flex items-center justify-center text-argo-grey">
-            <span className="w-4 h-4 block">{icon}</span>
-        </span>
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-argo-grey m-0">
-            {title}
-        </h3>
-    </div>
-);
-
-const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-    <div className={`bg-white rounded-[14px] p-7 shadow-argo ${className}`}>
-        {children}
-    </div>
-);
-
-interface AxisBarsProps {
-    counts: Record<AdultAxis, number>;
-    dominant: AdultAxis;
-    label: string;
+// Conector de la veta en el nombre serif, por idioma. Mismas formas que getVetaLabel (banda afirmada):
+// es "con veta X", en "with a X lean", pt "com veta X" — troceado en pre/word/post para colorear la X.
+function vetaConnector(lang: Lang, secondary: AdultAxis): { pre: string; word: string; post: string } {
+    const word = getArchetypeLabel(secondary, lang);
+    if (lang === 'en') return { pre: 'with a', word, post: 'lean' };
+    if (lang === 'pt') return { pre: 'com veta', word, post: '' };
+    return { pre: 'con veta', word, post: '' };
 }
 
-// Styled to match the child's report composition (ReportPage AxisBars): a
-// labelled section with a top separator, gray axis names, pill tracks, the
-// dominant axis at full color and the rest faded — no dots, no % numbers.
-const AxisBars: React.FC<AxisBarsProps> = ({ counts, dominant, label }) => {
-    const maxCount = Math.max(...EJE_ORDER.map(a => counts[a] || 0), 1);
+/** "Composición": reparte los 4 ejes (D,I,S,C) en % de sus votos, redondeo por resto mayor (Hamilton)
+ *  para que sumen 100 exactos — misma lógica que computeMezcla del informe del niño (reportV4.ts). */
+function computeMezcla(counts: Record<AdultAxis, number>): { axis: AdultAxis; pct: number }[] {
+    const c = EJE_ORDER.map((a) => counts[a] ?? 0);
+    const total = c.reduce((s, x) => s + x, 0);
+    if (total === 0) return EJE_ORDER.map((axis) => ({ axis, pct: 0 }));
+    const raw = c.map((x) => (x / total) * 100);
+    const pcts = raw.map(Math.floor);
+    const remainder = 100 - pcts.reduce((s, x) => s + x, 0);
+    const byFrac = raw.map((r, i) => ({ i, frac: r - Math.floor(r) })).sort((a, b) => b.frac - a.frac);
+    for (let k = 0; k < remainder; k++) pcts[byFrac[k].i]++;
+    return EJE_ORDER.map((axis, i) => ({ axis, pct: pcts[i] }));
+}
+
+const ORB_RING = (
+    <svg className="orb-ring" viewBox="0 0 400 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+        <circle cx="232" cy="172" r="152" fill="none" stroke="#D4BCE8" strokeWidth="1" strokeDasharray="2 8" opacity="0.6" />
+    </svg>
+);
+
+// CSS específico del Puente (clases que el rediseño del niño no tiene): divider del hero, bajada de sección,
+// sub-header del widget de presión, las 3 etiquetas del espectro, la triada de los puentes y la reflexión.
+// Scope-eado bajo `.argo-report-v4` (misma raíz que REPORT_REDESIGN_CSS) para no filtrar al resto de la app.
+const PUENTE_REDESIGN_CSS = `
+.argo-report-v4 .card + .card{margin-top:14px;}
+.argo-report-v4 .hero-divider{height:1px;margin:26px 0 20px;background:linear-gradient(90deg,transparent,var(--border) 12%,var(--border) 88%,transparent);}
+.argo-report-v4 .sec-sub{margin:-5px 0 9px 15px;font-size:12.5px;color:var(--grey);}
+.argo-report-v4 .widget-h{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--grey);margin-bottom:16px;}
+.argo-report-v4 .sp-labels3{position:relative;height:14px;margin-top:12px;}
+.argo-report-v4 .sp-labels3 span{position:absolute;transform:translateX(-50%);font-size:10.5px;font-weight:500;color:var(--light);white-space:nowrap;}
+.argo-report-v4 .sp-labels3 .sp-on{color:var(--v600);font-weight:700;}
+.argo-report-v4 .triad{display:flex;flex-direction:column;gap:14px;}
+.argo-report-v4 .tri{padding:1px 0 1px 14px;border-left:2px solid;}
+.argo-report-v4 .tri-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.argo-report-v4 .tri-text{display:block;font-size:14px;line-height:1.65;color:var(--sec);}
+.argo-report-v4 .tri-text strong{font-weight:600;color:var(--navy);}
+.argo-report-v4 .refl-sep{height:1px;margin:16px 0 14px;background:linear-gradient(90deg,transparent,var(--border) 18%,var(--border) 82%,transparent);}
+.argo-report-v4 .refl{font-size:13.5px;line-height:1.65;color:var(--sec);}
+.argo-report-v4 .refl strong{font-weight:600;color:var(--navy);}
+.argo-report-v4 .refl-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--v600);margin-bottom:5px;}
+.argo-report-v4 .notes{margin-top:24px;padding:0 6px;color:var(--grey);}
+.argo-report-v4 .notes p{margin:0 0 6px;font-size:12px;line-height:1.6;}
+.argo-report-v4 .notes .notes-mut{color:var(--light);font-size:11px;}
+`;
+
+/** Header de sección: punto de eje + título + (i) InfoTip + bajada opcional + hairline. */
+function SectionHeader({ titulo, dotColor, tip, sub }: { titulo: string; dotColor: string; tip?: string; sub?: string }) {
     return (
-        <div className="mt-4 pt-4 border-t border-argo-border">
-            <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-argo-light mb-3">{label}</p>
-            <div className="space-y-2">
-                {EJE_ORDER.map(axis => {
-                    const pct = ((counts[axis] || 0) / maxCount) * 100;
-                    const isDominant = axis === dominant;
-                    return (
-                        <div key={axis} className="flex items-center gap-3">
-                            <span className="text-[11px] font-medium text-argo-grey w-20 flex-shrink-0">
-                                {AXIS_LABELS[axis]}
-                            </span>
-                            <div className="flex-1 bg-argo-bg rounded-full h-2 overflow-hidden">
-                                <motion.div
-                                    className="h-full rounded-full"
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${pct}%` }}
-                                    transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0, 0, 1] }}
-                                    style={{ background: AXIS_COLORS[axis], opacity: isDominant ? 1 : 0.35 }}
-                                />
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+        <>
+            <h2 className="sec-h">
+                <span className="dot" style={{ background: dotColor }} />
+                <span>{titulo}</span>
+                {tip && <InfoTip text={tip} />}
+            </h2>
+            {sub && <div className="sec-sub">{sub}</div>}
+            <div className="title-rule" />
+        </>
     );
-};
-
-interface PressureIndicatorProps {
-    pressure: 'regulado' | 'reactivo' | 'evitativo';
-    lang: Lang;
 }
 
-const PressureIndicator: React.FC<PressureIndicatorProps> = ({ pressure, lang }) => {
-    const order: Array<'regulado' | 'reactivo' | 'evitativo'> = ['regulado', 'reactivo', 'evitativo'];
-    const display = PRESSURE_DISPLAY[lang] ?? PRESSURE_DISPLAY.es;
-    return (
-        <div className="mt-5 pt-4 border-t border-black/[0.06]">
-            <div className="text-[10px] text-argo-grey font-semibold tracking-[0.12em] uppercase mb-2">
-                {PRESSURE_LABEL[lang]}
-            </div>
-            <div className="flex gap-[3px]">
-                {order.map(p => (
-                    <div
-                        key={p}
-                        className={`h-1 flex-1 rounded-sm ${p === pressure ? 'bg-argo-violet-500' : 'bg-black/[0.06]'}`}
-                    />
-                ))}
-            </div>
-            <div className="flex justify-between mt-1.5">
-                {order.map(p => (
-                    <span
-                        key={p}
-                        className={`text-[10px] tracking-wide ${p === pressure ? 'text-argo-violet-500 font-bold' : 'text-argo-grey font-medium'}`}
-                    >
-                        {display[p]}
-                    </span>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-interface SubBlockProps {
-    label: string;
-    text: string;
-    color: string;
-    labelColor?: string;
-}
-
-const SubBlock: React.FC<SubBlockProps> = ({ label, text, color, labelColor }) => (
-    <div className="flex border border-[#D2D2D7] rounded-xl overflow-hidden">
-        <div className="w-1 flex-shrink-0" style={{ backgroundColor: color }} />
-        <div className="flex-1 p-4">
-            <p
-                className="text-[10px] font-bold tracking-[0.16em] uppercase mb-1.5 m-0"
-                style={{ color: labelColor ?? color }}
-            >
-                {label}
-            </p>
-            <p className="text-[13px] text-argo-secondary leading-relaxed m-0">{renderRich(text)}</p>
-        </div>
-    </div>
+/** Estado failure / generating de un puente (el niño activo sin ai_sections). */
+const StateCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <section className="card">
+        <div className="py-6 text-center">{children}</div>
+    </section>
 );
-
-const Reflection: React.FC<{ label: string; text: string }> = ({ label, text }) => (
-    <div className="mt-4 p-4 bg-[#F5F5F7] rounded-xl flex items-start gap-2.5">
-        <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-violet-500">
-            {SectionIcons.reflection}
-        </span>
-        <div className="flex-1">
-            <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-argo-violet-500 mb-1 m-0">
-                {label}
-            </p>
-            <p className="text-[13px] text-argo-navy font-medium leading-relaxed m-0">{renderRich(text)}</p>
-        </div>
-    </div>
-);
-
-// 5 bridges since 2026-07-22: previa, presencia, traspié, conversación, largo plazo.
-const BRIDGE_ICONS = [
-    SectionIcons.bridge1,
-    SectionIcons.bridge2,
-    SectionIcons.bridge3,
-    SectionIcons.bridge4,
-    SectionIcons.pending, // largo plazo → reloj (tiempo)
-];
 
 export function PuentesReport({
     lang,
@@ -359,16 +282,21 @@ export function PuentesReport({
         }
     };
 
-    // Filter children that have ai_sections — those that don't are still
-    // generating; we still show them in the switcher with a pending state.
     const activeChild = children[activeIdx] ?? null;
     const ai = activeChild?.ai_sections ?? null;
 
-    const adultAxis = adultProfile?.eje_primary;
-    const adultAxisColor = adultAxis ? AXIS_COLORS[adultAxis] : '#955FB5';
+    // Colores de eje (nunca hardcodeados): primario del adulto = acento; veta = segundo eje; niño = triada.
+    const accent = adultProfile?.eje_primary ? AXIS_COLORS[adultProfile.eje_primary] : V500;
+    const vetaAxis = adultProfile?.eje_secondary ?? null;
+    const vetaColor = vetaAxis ? AXIS_COLORS[vetaAxis] : V500;
     const childAxis = activeChild?.child_profile?.eje;
     const childAxisColor = childAxis && AXIS_COLORS[childAxis] ? AXIS_COLORS[childAxis] : '#86868B';
-    const violet = '#955FB5';
+
+    const veta = adultProfile && vetaAxis ? vetaConnector(lang, vetaAxis) : null;
+    const primaryLabel = adultProfile ? getArchetypeLabel(adultProfile.eje_primary, lang) : '';
+    const mezcla = adultProfile?.axis_counts ? computeMezcla(adultProfile.axis_counts) : null;
+    const pressurePos = adultProfile ? (PRESS_POS[adultProfile.pressure_style] ?? 0.5) * 100 : 50;
+    const pressDisplay = PRESSURE_DISPLAY[lang] ?? PRESSURE_DISPLAY.es;
 
     const showSwitcher = useMemo(() => children.length > 1, [children]);
 
@@ -399,220 +327,243 @@ export function PuentesReport({
                 </div>
             </div>
 
-            <div className="max-w-lg mx-auto px-4 py-8">
-                {/* Page header — the adult this report is for */}
-                <div className="mb-6">
-                    <p className="text-[10px] font-semibold tracking-[0.1em] uppercase text-argo-light mb-1.5">{PAGE_EYEBROW[lang]}</p>
-                    {recipientName && (
-                        <h1 className="text-2xl font-bold text-argo-navy tracking-tight">{recipientName}</h1>
-                    )}
-                    {recipientEmail && (
-                        <p className="text-xs text-argo-light mt-0.5">{recipientEmail}</p>
-                    )}
-                </div>
+            {/* Report body — scoped under .argo-report-v4 so the shared redesign CSS applies. Light theme only. */}
+            <div className="argo-report-v4 max-w-[700px] mx-auto px-4 sm:px-[18px] pt-6 pb-16">
+                <style dangerouslySetInnerHTML={{ __html: REPORT_REDESIGN_CSS + PUENTE_REDESIGN_CSS }} />
 
-                <motion.div
-                    initial={{ opacity: 0, y: 16 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3 pb-20"
-                >
-                    {/* ── 1. BRÚJULA: shared adult header (white card, like the child report) ── */}
-                    <div className="bg-white rounded-[14px] shadow-argo p-7">
-                        <div className="text-[28px] tracking-tight leading-tight">
-                            <span className="font-[800] text-argo-navy">Argo</span><span className="font-[100] text-argo-grey">Puente®</span>
-                        </div>
-
-                {adultProfile && (
-                    <div className="flex items-center gap-2.5 mt-3.5 flex-wrap">
-                        <span
-                            className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
-                            style={{ background: adultAxisColor }}
-                        />
-                        <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${AXIS_CHIP[adultProfile.eje_primary] ?? 'bg-violet-50 text-violet-700 border-violet-200'}`}>
-                            {AXIS_LABELS[adultProfile.eje_primary]}
-                        </span>
-                        {adultProfile.eje_secondary && (
-                            <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${AXIS_CHIP[adultProfile.eje_secondary] ?? 'bg-violet-50 text-violet-700 border-violet-200'}`}>
-                                con veta {AXIS_LABELS[adultProfile.eje_secondary]}
-                            </span>
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
+                    {/* Page header — the adult this report is for */}
+                    <div className="mb-[18px] px-0.5">
+                        <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-argo-light mb-1.5">{PAGE_EYEBROW[lang]}</p>
+                        {recipientName && (
+                            <h1 className="text-[26px] font-bold text-argo-navy tracking-[-0.02em] leading-tight">{recipientName}</h1>
+                        )}
+                        {recipientEmail && (
+                            <p className="text-xs text-argo-light mt-0.5">{recipientEmail}</p>
                         )}
                     </div>
-                )}
 
-                {adultProfile?.axis_counts && (
-                    <AxisBars counts={adultProfile.axis_counts} dominant={adultProfile.eje_primary} label={COMPOSITION_LABEL[lang]} />
-                )}
+                    {/* Child switcher (only when >1 children). Selecting a child swaps the per-child prose. */}
+                    {showSwitcher && (
+                        <section className="card">
+                            <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-argo-grey mb-3">
+                                {SWITCHER_LABEL[lang]}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {children.map((entry, idx) => {
+                                    const eje = entry.child_profile?.eje;
+                                    const color = eje && AXIS_COLORS[eje] ? AXIS_COLORS[eje] : '#86868B';
+                                    const isActive = idx === activeIdx;
+                                    const isReady = !!entry.ai_sections;
+                                    const isFailed = entry.status === 'failed';
+                                    // A failed bridge must be reachable so its retry card
+                                    // shows; only a still-generating child stays disabled.
+                                    const isSelectable = isReady || isFailed;
+                                    return (
+                                        <button
+                                            key={entry.puentes_session_id}
+                                            type="button"
+                                            onClick={() => isSelectable && setActiveIdx(idx)}
+                                            disabled={!isSelectable}
+                                            className={[
+                                                'px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5',
+                                                isActive
+                                                    ? 'text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                                    : isSelectable
+                                                        ? 'text-argo-navy bg-argo-bg hover:bg-argo-neutral border border-argo-border'
+                                                        : 'text-argo-grey bg-argo-bg border border-argo-border cursor-not-allowed opacity-60',
+                                            ].join(' ')}
+                                            style={isActive ? { backgroundColor: color } : undefined}
+                                        >
+                                            <span
+                                                className="w-1.5 h-1.5 rounded-full"
+                                                style={{ backgroundColor: isActive ? '#fff' : isFailed ? '#dc2626' : color }}
+                                            />
+                                            {entry.child_name || '—'}
+                                            {!isReady && (
+                                                <span className={`ml-1 text-[10px] ${isFailed ? 'text-red-500' : 'text-argo-grey'}`}>
+                                                    {isFailed ? '!' : '…'}
+                                                </span>
+                                            )}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
 
-                {adultProfile && (
-                    <PressureIndicator pressure={adultProfile.pressure_style} lang={lang} />
-                )}
-            </div>
-
-            {/* ── 2. CHILD SWITCHER (only when >1 children) ───────────────────── */}
-            {showSwitcher && (
-                <Card>
-                    <p className="text-[10px] font-semibold tracking-[0.18em] uppercase text-argo-grey mb-3">
-                        {SWITCHER_LABEL[lang]}
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        {children.map((entry, idx) => {
-                            const eje = entry.child_profile?.eje;
-                            const color = eje && AXIS_COLORS[eje] ? AXIS_COLORS[eje] : '#86868B';
-                            const isActive = idx === activeIdx;
-                            const isReady = !!entry.ai_sections;
-                            const isFailed = entry.status === 'failed';
-                            // A failed bridge must be reachable so its retry card
-                            // shows; only a still-generating child stays disabled.
-                            const isSelectable = isReady || isFailed;
-                            return (
-                                <button
-                                    key={entry.puentes_session_id}
-                                    type="button"
-                                    onClick={() => isSelectable && setActiveIdx(idx)}
-                                    disabled={!isSelectable}
-                                    className={[
-                                        'px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all flex items-center gap-1.5',
-                                        isActive
-                                            ? 'text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                                            : isSelectable
-                                                ? 'text-argo-navy bg-argo-bg hover:bg-argo-neutral border border-argo-border'
-                                                : 'text-argo-grey bg-argo-bg border border-argo-border cursor-not-allowed opacity-60',
-                                    ].join(' ')}
-                                    style={isActive ? { backgroundColor: color } : undefined}
-                                >
-                                    <span
-                                        className="w-1.5 h-1.5 rounded-full"
-                                        style={{ backgroundColor: isActive ? '#fff' : isFailed ? '#dc2626' : color }}
-                                    />
-                                    {entry.child_name || '—'}
-                                    {!isReady && (
-                                        <span className={`ml-1 w-3 h-3 inline-block ${isFailed ? 'text-red-500' : 'text-argo-grey'}`}>
-                                            {isFailed ? SectionIcons.failed : SectionIcons.pending}
-                                        </span>
+                    {/* ── HERO: adult's eje×veta name in serif + two glass orbs + saludo below a hairline ── */}
+                    <div className="card hero-lux">
+                        <div className="hx-grid">
+                            <div className="hx-left">
+                                <div className="text-[17px] tracking-tight mb-4">
+                                    <span className="font-[800] text-argo-navy">Argo</span><span className="font-[200] text-argo-grey">Puente®</span>
+                                </div>
+                                <p className="hx-eyebrow">{HERO_EYEBROW[lang]}</p>
+                                <h1 className="hx-name">
+                                    {adultProfile ? (
+                                        <>
+                                            <span className="np" style={{ color: accent }}>{primaryLabel}</span>
+                                            {veta && (
+                                                <>
+                                                    {' '}<span className="nc">{veta.pre}</span>{' '}
+                                                    <span className="nv" style={{ color: vetaColor }}>{veta.word}</span>
+                                                    {veta.post && <>{' '}<span className="nc">{veta.post}</span></>}
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <span className="np">ArgoPuente®</span>
                                     )}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </Card>
-            )}
-
-            {/* ── 3. SALUDO ────────────────────────────────────────────────────── */}
-            {ai && (
-                <Card>
-                    <SectionTitle title={c.report.greetingLabel} icon={SectionIcons.welcome} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.saludo)}</p>
-                    <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-[#F5F5F7] rounded-xl">
-                        <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-grey">{SectionIcons.info}</span>
-                        <p className="text-[11px] text-argo-grey leading-relaxed m-0">
-                            {lang === 'en'
-                                ? 'ArgoPuente® is not a clinical or therapeutic service. It is a lens for self-knowledge and connection in sport.'
-                                : lang === 'pt'
-                                    ? 'ArgoPuente® não é um serviço clínico nem terapêutico. É uma lente para o autoconhecimento e a conexão no esporte.'
-                                    : 'ArgoPuente® no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con el niño en el deporte.'}
-                        </p>
-                    </div>
-                </Card>
-            )}
-
-            {/* ── 4. TU ESTILO NATURAL ────────────────────────────────────────── */}
-            {ai && (
-                <Card>
-                    <SectionTitle title={c.report.adultProfileLabel} icon={SectionIcons.profile} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.perfil_adulto_breve)}</p>
-                </Card>
-            )}
-
-            {/* ── 5-8. LOS 4 PUENTES of the active child ──────────────────────── */}
-            {ai?.puentes.map((p, idx) => (
-                <motion.div
-                    key={`${activeChild?.puentes_session_id}-${idx}`}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.06 }}
-                >
-                    <Card>
-                        <SectionTitle title={c.report.puenteLabel(idx + 1)} icon={BRIDGE_ICONS[idx] ?? SectionIcons.bridge1} />
-                        <h2 className="text-[22px] font-light tracking-tight leading-tight text-argo-navy mb-4">
-                            {p.titulo}
-                        </h2>
-
-                        <div className="flex flex-col gap-2.5 mt-4">
-                            <SubBlock
-                                label={c.report.sectionChildState}
-                                text={p.como_esta_el}
-                                color={childAxisColor}
-                            />
-                            <SubBlock
-                                label={c.report.sectionAdultStrength}
-                                text={p.lo_que_traes}
-                                color={adultAxisColor}
-                            />
-                            <SubBlock
-                                label={c.report.sectionBridge}
-                                text={p.el_puente}
-                                color={violet}
-                            />
+                                </h1>
+                            </div>
+                            {adultProfile && (
+                                <div className="hx-right">
+                                    {ORB_RING}
+                                    {veta ? (
+                                        <>
+                                            <div className="orb orb-1" style={{ background: orbBg(accent), boxShadow: orbShadow(accent) }} />
+                                            <div className="orb orb-2" style={{ width: '56%', background: orbBg(vetaColor), boxShadow: orbShadow(vetaColor) }} />
+                                            <div className="opill opill-1"><span className="opill-dot" style={{ background: accent }} />{primaryLabel}</div>
+                                            <div className="opill opill-2"><span className="opill-dot" style={{ background: vetaColor }} />{veta.word}</div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="orb orb-1 orb-solo" style={{ background: orbBg(accent), boxShadow: orbShadow(accent) }} />
+                                            <div className="opill-solo"><span className="opill-dot" style={{ background: accent }} />{primaryLabel}</div>
+                                        </>
+                                    )}
+                                </div>
+                            )}
                         </div>
-
-                        <Reflection label={c.report.sectionReflection} text={p.pregunta_reflexion} />
-                    </Card>
-                </motion.div>
-            ))}
-
-            {/* ── 9. CIERRE ───────────────────────────────────────────────────── */}
-            {ai && (
-                <Card>
-                    <SectionTitle title={c.report.closingLabel} icon={SectionIcons.closing} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.cierre)}</p>
-                </Card>
-            )}
-
-            {/* If the active child's generation FAILED: say so and offer a retry
-                (an eternal spinner used to hide this state until the daily cron). */}
-            {!ai && activeChild && activeChild.status === 'failed' && (
-                <Card>
-                    <div className="text-center py-8">
-                        <p className="text-sm text-argo-secondary">{c.errors.failedBridge}</p>
-                        {onRetryChild && (
-                            <button
-                                onClick={() => onRetryChild(activeChild.puentes_session_id)}
-                                className="mt-4 inline-block text-sm font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 px-5 py-2.5 rounded-lg transition-colors"
-                            >
-                                {c.errors.retry}
-                            </button>
+                        {ai && (
+                            <>
+                                <div className="hero-divider" />
+                                <p className="body">{renderRich(ai.saludo)}</p>
+                            </>
                         )}
                     </div>
-                </Card>
-            )}
 
-            {/* If the active child is still generating */}
-            {!ai && activeChild && activeChild.status !== 'failed' && (
-                <Card>
-                    <div className="text-center py-8">
-                        <div className="inline-block w-10 h-10 rounded-full border-4 border-argo-violet-100 border-t-argo-violet-500 animate-spin mb-4" />
-                        <p className="text-sm text-argo-secondary">
-                            {lang === 'en'
-                                ? `We are still generating the bridges with ${activeChild.child_name}. This usually takes a few seconds.`
-                                : lang === 'pt'
-                                    ? `Ainda estamos gerando as pontes com ${activeChild.child_name}. Geralmente leva alguns segundos.`
-                                    : `Todavía estamos generando los puentes con ${activeChild.child_name}. Esto suele tardar unos segundos.`}
-                        </p>
+                    {/* ── COMPOSICIÓN: 4-orb mezcla + "Estilo bajo presión" spectrum (both per-adult).
+                        Mezcla only when axis_counts exist (old sessions fall back to just the spectrum). ── */}
+                    {adultProfile && (
+                        <section className="card">
+                            <SectionHeader titulo={COMPOSITION_LABEL[lang]} dotColor={accent} tip={COMPOSITION_TIP[lang]} />
+                            {mezcla && (
+                                <div className="mezcla">
+                                    {mezcla.map(({ axis, pct }) => {
+                                        const MIN = 22, MAX = 92;
+                                        const d = Math.round(MIN + (pct / 100) * (MAX - MIN));
+                                        const col = AXIS_COLORS[axis] ?? '#86868B';
+                                        return (
+                                            <div key={axis} className="mz-col">
+                                                <div className="mz-orb" style={{
+                                                    width: d, height: d, background: orbBg(col), boxShadow: orbShadow(col),
+                                                    animation: `${MZ_MORPH[axis] ?? 'argoOrbMorphA'} ${MZ_DUR[axis] ?? '9s'} ease-in-out infinite`,
+                                                }} />
+                                                <div className="mz-axis"><span className="mz-dot" style={{ background: col }} />{getArchetypeLabel(axis, lang)}</div>
+                                                <div className="mz-pct" style={{ color: col }}>{pct}%</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            {mezcla && <div className="mz-divider" />}
+                            <div className="widget-h"><span>{PRESSURE_LABEL[lang]}</span><InfoTip text={PRESSURE_TIP[lang]} /></div>
+                            <div className="spectrum">
+                                <div className="sp-track">
+                                    <span className="sp-mark" style={{ left: `${pressurePos}%`, background: orbBg(V500), boxShadow: orbShadow(V500) }} />
+                                </div>
+                                <div className="sp-labels3">
+                                    {(['regulado', 'reactivo', 'evitativo'] as const).map((k) => (
+                                        <span key={k} className={k === adultProfile.pressure_style ? 'sp-on' : ''} style={{ left: `${PRESS_POS[k] * 100}%` }}>
+                                            {pressDisplay[k]}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* ── TU ESTILO NATURAL ── */}
+                    {ai && (
+                        <section className="card">
+                            <SectionHeader titulo={c.report.adultProfileLabel} dotColor={accent} />
+                            <p className="body">{renderRich(ai.perfil_adulto_breve)}</p>
+                        </section>
+                    )}
+
+                    {/* ── THE 5 BRIDGES of the active child ── */}
+                    {ai?.puentes.map((p, idx) => {
+                        // Real engine titulo is "Title: bajada" — split on the first ": " for header + sub.
+                        const sep = p.titulo.indexOf(': ');
+                        const title = sep >= 0 ? p.titulo.slice(0, sep) : p.titulo;
+                        const bajada = sep >= 0 ? p.titulo.slice(sep + 2) : undefined;
+                        return (
+                            <React.Fragment key={`${activeChild?.puentes_session_id}-${idx}`}>
+                                {idx > 0 && <div className="sec-divider" />}
+                                <section className="card">
+                                    <SectionHeader titulo={title} dotColor={accent} sub={bajada} />
+                                    <div className="triad">
+                                        <div className="tri" style={{ borderColor: childAxisColor }}>
+                                            <span className="tri-label" style={{ color: childAxisColor }}>{c.report.sectionChildState}</span>
+                                            <span className="tri-text">{renderRich(p.como_esta_el)}</span>
+                                        </div>
+                                        <div className="tri" style={{ borderColor: accent }}>
+                                            <span className="tri-label" style={{ color: accent }}>{c.report.sectionAdultStrength}</span>
+                                            <span className="tri-text">{renderRich(p.lo_que_traes)}</span>
+                                        </div>
+                                        <div className="tri" style={{ borderColor: V600 }}>
+                                            <span className="tri-label" style={{ color: V600 }}>{c.report.sectionBridge}</span>
+                                            <span className="tri-text">{renderRich(p.el_puente)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="refl-sep" />
+                                    <div className="refl">
+                                        <span className="refl-label">{c.report.sectionReflection}</span>
+                                        {renderRich(p.pregunta_reflexion)}
+                                    </div>
+                                </section>
+                            </React.Fragment>
+                        );
+                    })}
+
+                    {/* ── CIERRE ── */}
+                    {ai && (
+                        <section className="card">
+                            <SectionHeader titulo={c.report.closingLabel} dotColor={accent} />
+                            <p className="body">{renderRich(ai.cierre)}</p>
+                        </section>
+                    )}
+
+                    {/* Active child's generation FAILED: say so and offer a retry. */}
+                    {!ai && activeChild && activeChild.status === 'failed' && (
+                        <StateCard>
+                            <p className="text-sm text-argo-secondary">{c.errors.failedBridge}</p>
+                            {onRetryChild && (
+                                <button
+                                    onClick={() => onRetryChild(activeChild.puentes_session_id)}
+                                    className="mt-4 inline-block text-sm font-semibold text-white bg-argo-violet-500 hover:bg-argo-violet-600 px-5 py-2.5 rounded-lg transition-colors"
+                                >
+                                    {c.errors.retry}
+                                </button>
+                            )}
+                        </StateCard>
+                    )}
+
+                    {/* Active child still generating. */}
+                    {!ai && activeChild && activeChild.status !== 'failed' && (
+                        <StateCard>
+                            <div className="inline-block w-10 h-10 rounded-full border-4 border-argo-violet-100 border-t-argo-violet-500 animate-spin mb-4" />
+                            <p className="text-sm text-argo-secondary">{GENERATING_NOTE[lang](activeChild.child_name)}</p>
+                        </StateCard>
+                    )}
+
+                    {/* ── EMAIL + FOREVER NOTES ── */}
+                    <div className="notes">
+                        <p>{EMAIL_NOTE[lang](recipientEmail ?? undefined)}</p>
+                        <p className="notes-mut">{FOREVER_NOTE[lang]}</p>
                     </div>
-                </Card>
-            )}
-
-            {/* ── 10. EMAIL + FOREVER NOTES ───────────────────────────────────── */}
-            <div className="px-7 py-3 text-argo-grey space-y-2">
-                <div className="flex items-center gap-2">
-                    <span className="w-4 h-4 flex-shrink-0">{SectionIcons.mail}</span>
-                    <p className="text-[12px] m-0 leading-relaxed">{EMAIL_NOTE[lang](recipientEmail ?? undefined)}</p>
-                </div>
-                <div className="flex items-start gap-2">
-                    <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-light">{SectionIcons.info}</span>
-                    <p className="text-[11px] m-0 leading-relaxed text-argo-light">{FOREVER_NOTE[lang]}</p>
-                </div>
-            </div>
                 </motion.div>
             </div>
         </div>
