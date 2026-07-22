@@ -1,4 +1,4 @@
-import html, re
+import html, re, json, os
 FONT_B64 = open('inter-var.b64').read().strip()
 SERIF_B64 = open('fraunces.b64').read().strip()
 
@@ -21,43 +21,19 @@ adult_color, veta_color, child_color = AXIS[adult_primary], AXIS[adult_veta], AX
 mix = {'D': 17, 'I': 21, 'S': 25, 'C': 37}   # composición del adulto (dominante C)
 pressure = 'regulado'                          # regulado | reactivo | evitativo
 
-saludo = ("Gracias por hacer este recorrido, Marian. Lo que sigue no es un manual sobre Mateo ni sobre ti, "
-          "sino un puente entre dos formas distintas de estar en la actividad. Léelo con calma: no hay una "
-          "manera correcta de acompañar, hay la tuya, y conocerla un poco mejor ya es media cancha ganada.")
-perfil_adulto = ("Tu estilo tiende a apoyarse en el **plan y la mirada larga**: sueles querer entender cómo "
-                 "conviene hacer las cosas antes de lanzarte, y eso les da a quienes te rodean una sensación de "
-                 "orden y previsibilidad. Bajo presión sueles mantener la calma y ordenar, más que empujar. Es un "
-                 "gran recurso, y también el punto desde donde a veces cuesta encontrarse con un chico que decide "
-                 "y arranca primero, y piensa después.")
-# Los 4 puentes son slots fijos del informe (momentos), no temas libres.
-puentes = [
-  {'nombre': 'Antes del juego',
-   'como_esta_el': 'Antes de entrar a jugar, Mateo quiere ya estar en movimiento: siente que arrancar es la forma de resolver, y la previa (calentar, esperar el turno, escuchar la charla) puede vivirla como frenar algo que en su cabeza ya empezó.',
-   'lo_que_traes': 'Tú sueles ver el paso siguiente y los riesgos antes de que aparezcan. Esa anticipación es un regalo: puede ahorrarle a Mateo más de un tropiezo.',
-   'el_puente': 'En lugar de pedirle que frene, prueba ofrecerle tu mirada como una pregunta corta antes de empezar: "¿y si esto no sale, cuál es el plan B?". Le sumas cabeza sin apagarle las ganas de entrar.',
-   'pregunta': '¿Qué idea corta podrías darle a Mateo antes del próximo partido, para que entre con un plan sin perder su impulso?'},
-  {'nombre': 'Cuando algo no sale bien',
-   'como_esta_el': 'Cuando algo no le sale, Mateo tiende a querer volver a la acción enseguida: quedarse a analizar puede sentirlo como quedarse atascado.',
-   'lo_que_traes': 'Tú sueles querer entender qué pasó para que no se repita. Esa lectura tranquila es justo lo que evita tropezar dos veces con la misma piedra.',
-   'el_puente': 'Dale primero el movimiento que necesita y deja el análisis para después, en frío: "ahora seguimos, y en un rato pensamos juntos qué ajustar". Así tu reflexión llega cuando él puede escucharla.',
-   'pregunta': '¿Cómo te suena separar el "seguimos" del "pensemos qué pasó", para que Mateo pueda recibir los dos?'},
-  {'nombre': 'Después del partido',
-   'como_esta_el': 'Cuando termina el partido, a Mateo lo mueve sentir que su empuje dejó una marca: el reconocimiento de lo que se animó a hacer suele ser su mejor combustible para la próxima.',
-   'lo_que_traes': 'Tú tiendes a reconocer el proceso y la decisión bien pensada, más que el golpe de efecto. Esa mirada le enseña que lo bien hecho también vale.',
-   'el_puente': 'Al terminar, une las dos cosas: reconoce su empuje y, en la misma frase, nombra la buena decisión que hubo detrás. "Me encantó cómo te animaste, y además elegiste bien el momento". Le hablas en su idioma y le sumas el tuyo.',
-   'pregunta': 'Después del próximo partido, ¿qué decisión concreta de Mateo podrías reconocer, además de sus ganas?'},
-  {'nombre': 'El largo plazo',
-   'como_esta_el': 'A Mateo lo enciende lo inmediato: quiere ver que su acción produce un efecto ya. El tiempo largo y los procesos que todavía no se ven suelen costarle más.',
-   'lo_que_traes': 'Tú aportas la mirada larga: sabes que las cosas buenas se construyen de a poco y no todo se resuelve en el primer intento.',
-   'el_puente': 'Tradúcele tu paciencia a metas cortas y visibles: en lugar de "esto lleva meses", "esta semana logramos esto". Conviertes tu horizonte largo en pequeñas victorias que él sí puede sentir.',
-   'pregunta': '¿Cuál sería una meta chica y concreta que Mateo pueda ver cumplida esta semana, como parte de algo más grande?'},
-]
-cierre = ("Ninguno de los dos tiene que cambiar quién es. El puente no es que Mateo se vuelva planificador ni que "
-          "tú te vuelvas impulsivo: es que cada uno le preste al otro un poco de su fortaleza. Tu calma y tu mirada "
-          "larga, su empuje y sus ganas. Juntos, son un gran equipo.")
+# Contenido = salida real del panel DISC (design-forward: veta tejida + negritas),
+# verificada con las guardas del repo (prohibidas/determinista/voseo/guiones). Ver puente_content.json.
+_C = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'puente_content.json'), encoding='utf-8'))
+saludo = _C['saludo']
+perfil_adulto = _C['perfil_adulto_breve']
+cierre = _C['cierre']
+# Los 4 puentes son slots fijos (momentos). Orden de DISPLAY: antes, después, cuando no sale, largo plazo.
+_DISPLAY_ORDER = ['antes', 'despues', 'frustracion', 'largo_plazo']
+_by_slot = {p['slot']: p for p in _C['puentes']}
+puentes = [_by_slot[s] for s in _DISPLAY_ORDER]
 
 L = {'eyebrow': 'Informe para el adulto', 'kicker': 'Tu perfil', 'greeting': 'Te damos la bienvenida',
-     'style': 'Tu estilo natural', 'closing': 'Para llevar', 'childState': 'Cómo tiende a estar',
+     'style': 'Tu estilo natural', 'closing': 'Tu próximo puente', 'closing_sub': 'Oportunidad de mejora', 'childState': 'Cómo tiende a estar',
      'adultStrength': 'Lo que tú traes', 'bridge': 'El puente', 'reflection': 'Una pregunta para llevarte',
      'composition': 'Composición del perfil', 'pressure': 'Estilo bajo presión', 'tipLabel': 'Qué mide esto'}
 PRESS = [('regulado', 'Regulado', 0.15), ('reactivo', 'Reactivo', 0.5), ('evitativo', 'Evitativo', 0.85)]
@@ -84,11 +60,12 @@ INFO_SVG = ('<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke=
 def tip(text):
     return (f'<span class="tipwrap"><button type="button" class="itip" aria-label="{esc(L["tipLabel"])}" '
             f'aria-expanded="false">{INFO_SVG}</button><span class="tipbox" role="tooltip">{esc(text)}</span></span>')
-def sec_head(title, dot=None, tiptext=None):
+def sec_head(title, dot=None, tiptext=None, sub=None):
     dotc = dot or adult_color
     t = tip(tiptext) if tiptext else ''
+    subhtml = f'<div class="sec-sub">{esc(sub)}</div>' if sub else ''
     return (f'<h2 class="sec-h"><span class="dot" style="background:{dotc}"></span>'
-            f'<span class="sec-t">{esc(title)}</span>{t}</h2><div class="title-rule"></div>')
+            f'<span class="sec-t">{esc(title)}</span>{t}</h2>{subhtml}<div class="title-rule"></div>')
 def aside(text): return f'<div class="ejemplo">{rich(text)}</div>'
 
 ORB_RING = ('<svg class="orb-ring" viewBox="0 0 400 360" preserveAspectRatio="xMidYMid meet" aria-hidden="true">'
@@ -150,12 +127,13 @@ def bridge_card(i, p):
       f'<div class="tri" style="border-color:{child_color}"><span class="tri-label" style="color:{child_color}">{esc(L["childState"])}</span><span class="tri-text">{rich(p["como_esta_el"])}</span></div>'
       f'<div class="tri" style="border-color:{adult_color}"><span class="tri-label" style="color:{adult_color}">{esc(L["adultStrength"])}</span><span class="tri-text">{rich(p["lo_que_traes"])}</span></div>'
       f'<div class="tri" style="border-color:{V600}"><span class="tri-label" style="color:{V600}">{esc(L["bridge"])}</span><span class="tri-text">{rich(p["el_puente"])}</span></div>')
-    return (f'<div class="card">{sec_head(p["nombre"])}'
+    return (f'<div class="card">{sec_head(p["titulo"], sub=p["bajada"])}'
             f'<div class="triad">{triad}</div>'
-            f'<div class="refl"><span class="refl-label">{esc(L["reflection"])}</span>{rich(p["pregunta"])}</div></div>')
+            f'<div class="refl-sep"></div>'
+            f'<div class="refl"><span class="refl-label">{esc(L["reflection"])}</span>{rich(p["pregunta_reflexion"])}</div></div>')
 
 bridges = '<div class="sec-divider"></div>'.join(bridge_card(i + 1, p) for i, p in enumerate(puentes))
-cierre_card = f'<div class="card">{sec_head(L["closing"])}<p class="body">{rich(cierre)}</p></div>'
+cierre_card = f'<div class="card">{sec_head(L["closing"], sub=L["closing_sub"])}<p class="body">{rich(cierre)}</p></div>'
 notes = ('<div class="notes">'
          f'<p>También te enviamos este informe a {esc(email)}. Puedes revisarlo cuando quieras.</p>'
          '<p class="notes-mut">Guardamos tu perfil para reutilizarlo en nuevos puentes sin repetir el cuestionario. '
@@ -219,6 +197,7 @@ body{margin:0;background:var(--page);color:var(--page-ink);font-family:"Inter",-
 /* sección */
 .sec-h{display:flex;align-items:center;gap:8px;margin:0 0 9px;font-size:15px;font-weight:600;color:var(--navy);}
 .dot{width:7px;height:7px;border-radius:999px;flex:none;}
+.sec-sub{margin:-5px 0 9px 15px;font-size:12.5px;color:var(--grey);}
 .title-rule{height:1px;margin:0 0 18px;background:linear-gradient(90deg,transparent,var(--border) 10%,var(--border) 90%,transparent);}
 .body{font-size:15px;line-height:1.72;color:var(--sec);margin:0;}
 .body strong,.tri-text strong,.refl strong{font-weight:600;color:var(--navy);}
@@ -247,8 +226,9 @@ body{margin:0;background:var(--page);color:var(--page-ink);font-family:"Inter",-
 .tri{padding:1px 0 1px 14px;border-left:2px solid;}
 .tri-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
 .tri-text{display:block;font-size:14px;line-height:1.65;color:var(--sec);}
-/* "Una pregunta para llevarte": mismo estilo que el aside al final de las cards del niño (filete violeta, sin caja) */
-.refl{margin-top:20px;padding:3px 0 3px 16px;border-left:2px solid var(--v200);font-size:13.5px;line-height:1.65;color:var(--sec);}
+/* "Una pregunta para llevarte": sin línea violeta (se confundía con el filete del puente); separador neutro arriba */
+.refl-sep{height:1px;margin:16px 0 14px;background:linear-gradient(90deg,transparent,var(--border) 18%,var(--border) 82%,transparent);}
+.refl{font-size:13.5px;line-height:1.65;color:var(--sec);}
 .refl-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--v600);margin-bottom:5px;}
 .notes{margin-top:24px;padding:0 6px;color:var(--grey);}
 .notes p{margin:0 0 6px;font-size:12px;line-height:1.6;}
