@@ -42,6 +42,25 @@ ES = {
     "S": "asegurarse de que todo el equipo estuviera bien",
     "C": "repasar cómo había llegado hasta ahí",
   },
+  # "Cuando le sale mal" (espejo de "Cuando le sale bien"). Panel de expertos DISC, revisado contra el guard.
+  "mal_anchor": {
+    "D": "suele querer **volver a intentarlo enseguida**, con todo su empuje: pone la mirada en el próximo intento antes que en lo que acaba de pasar",
+    "I": "suele vivirlo por el lado del vínculo: **tiende a buscar una mirada de apoyo** y a contar lo que pasó, y se recompone mejor cuando siente el apoyo cerca",
+    "S": "suele preocuparse sobre todo por **cómo repercute en el equipo**: tiende a quedarse un rato en silencio y a cargar con más de lo que le toca, porque le importa el conjunto",
+    "C": "suele querer **entender qué pasó**: tiende a repasar la jugada y a darle vueltas para encontrarle la lógica antes de seguir",
+  },
+  "mal_acompanar": {
+    "D": "**darle enseguida un próximo paso concreto** y, de a poco, invitarle a mirar un segundo qué ajustar, sin apagar ese impulso",
+    "I": "**empezar por el vínculo antes que por el consejo**: un gesto cálido primero, recordarle que el grupo sigue ahí y que esto no cambia en nada el cariño de los demás",
+    "S": "**reasegurarle que el equipo está bien** y ayudarle a soltar ese peso de más que se pone encima, con calma y recordándole que esto es de todos",
+    "C": "**ayudarle a cerrar el repaso** cuando ya dio con lo importante: recordarle con cariño que no todo necesita una explicación perfecta, y que volver a moverse también aclara",
+  },
+  "mal_ejemplo": {
+    "D": 'Cuando a ${n} algo no le sale y ya quiere ir por más, le suma escuchar un "me encanta que quieras seguir, probemos algo distinto la próxima".',
+    "I": 'A ${n} le cambia el momento un "esto no cambia nada entre nosotros, seguimos igual", dicho antes que cualquier consejo técnico.',
+    "S": 'Si ${n} se queda en silencio y como cargando con todo, ayuda un "el equipo está bien, esto lo resolvemos entre todos", más que pedirle que hable enseguida.',
+    "C": 'Después de darle muchas vueltas, a ${n} le ordena la cabeza un "quedémonos con una sola cosa para la próxima", mejor que seguir repasando cada detalle.',
+  },
   "context_word": {
     "inicio": "al arrancar algo nuevo", "adversidad": "cuando la cosa se complica",
     "esfuerzo": "cuando hay que sostener el esfuerzo",
@@ -50,7 +69,7 @@ ES = {
   "section_titles": {
     "receta": "Su mezcla", "contingencia": "Cómo cambia según la situación",
     "patron": "Su patrón de decisión", "motor": "Su motor", "tormenta": "Ante la tormenta",
-    "grupo": "Cuánto lo mueve el grupo", "logro": "Cuando le sale bien",
+    "grupo": "Cuánto lo mueve el grupo", "logro": "Cuando le sale bien", "mal": "Cuando le sale mal",
     "combustible": "Qué lo enciende", "palabras": "Palabras que conectan (y las que hacen ruido)",
     "guia": "Antes, durante y después", "reset": "Un reset que funciona", "ecos": "Más allá del deporte",
   },
@@ -105,6 +124,7 @@ ES = {
     "logro": "Cuando a ${n} le sale algo, ${anchor}.${ej} Lo vive así, y está muy bien. Acompañar a ${n} es ayudarle a también **registrar y celebrar lo logrado** antes de volver a arrancar.",
     "logro_ej_clause": " En el juego se vio con claridad, porque al llegar a la meta eligió **${metaChoice}**.",
     "logro_ejemplo": 'Después de un buen resultado, un simple "mira todo lo que conseguiste" ayuda a ${n} a que el disfrute también tenga su lugar.',
+    "mal": "Cuando algo no le sale como esperaba, ${n} ${anchor}. Es su forma de procesarlo, y tiene su valor. Acompañar a ${n} es ${acompanar}.",
     "grupo_join": "; y, por otro lado, ",
     "grupo_fallback": "el grupo aparece de a ratos",
   },
@@ -148,6 +168,9 @@ def build_lang(lang):
         "storm_ejemplo": c["storm_ejemplo"],
         "success_anchor": c["success_anchor"],
         "meta_choice": c["meta_choice"],
+        "mal_anchor": c["mal_anchor"],
+        "mal_acompanar": c["mal_acompanar"],
+        "mal_ejemplo": c["mal_ejemplo"],
         "context_word": c["context_word"],
         "section_titles": c["section_titles"],
         "group_titles": c["group_titles"],
@@ -191,6 +214,7 @@ export interface Bodies {
   grupo_intro_indiv: string; grupo_low: string; grupo_low_ej: string; grupo_words: GrupoWords; grupo_partes: GrupoPartes;
   grupo_present: string; grupo_present_ej: string; grupo_join: string; grupo_fallback: string;
   logro: string; logro_ej_clause: string; logro_ejemplo: string;
+  mal: string;
 }
 export interface CopyPack {
   meter_labels: string[];
@@ -201,6 +225,9 @@ export interface CopyPack {
   storm_ejemplo: Record<Axis, string>;
   success_anchor: Record<Axis, string>;
   meta_choice: Record<Axis, string>;
+  mal_anchor: Record<Axis, string>;
+  mal_acompanar: Record<Axis, string>;
+  mal_ejemplo: Record<Axis, string>;
   context_word: Record<string, string>;
   section_titles: Record<string, string>;
   group_titles: Record<string, string>;

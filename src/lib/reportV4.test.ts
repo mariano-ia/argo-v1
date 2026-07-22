@@ -6,7 +6,7 @@ import assert from 'node:assert';
 import { resolveEvidenceFicha } from './profileResolver';
 import {
   buildReportHero, buildMotorSection, buildRecetaSection, buildContingenciaSection,
-  buildTormentaSection, buildGrupoSection, buildLogroSection, buildPatronSection,
+  buildTormentaSection, buildGrupoSection, buildLogroSection, buildMalSection, buildPatronSection,
   buildCombustibleSection, buildPalabrasSection, buildGuiaSection, buildResetSection,
   buildEcosSection, buildReportV4, sportFrame,
 } from './reportV4';
@@ -162,6 +162,15 @@ test('logro: anclado al perfil + ejemplo de la meta (Q12)', () => {
   assert.ok(b.ejemplo && b.ejemplo.includes('Mateo'));
 });
 
+test('mal: espejo de logro, anclado al perfil + acompañar + ejemplo, sin placeholders', () => {
+  const b = buildMalSection(orderedFicha(DESVIO), CTX('Mateo')); // prim D
+  assert.match(b.cuerpo, /Cuando algo no le sale como esperaba, Mateo/);
+  assert.match(b.cuerpo, /volver a intentarlo enseguida/);         // anchor D
+  assert.match(b.cuerpo, /Acompañar a Mateo es/);
+  assert.ok(b.ejemplo && b.ejemplo.includes('Mateo'));
+  assert.ok(!/\{nombre\}|\$\{/.test(b.cuerpo + b.ejemplo));         // sin placeholders sin resolver
+});
+
 // ── Contenido de eje (D) ──
 test('contenido eje D: combustible, palabras, guía, reset y ecos con nombre inyectado', () => {
   const f = orderedFicha(DESVIO);
@@ -200,7 +209,7 @@ test('buildReportV4: ensambla hero + secciones ordenadas; omite lo no narratable
   const r = buildReportV4(orderedFicha(DESVIO3), CTX('Mateo'));
   assert.strictEqual(r.hero.arquetipoLabel, 'Impulsor con tonos de Estratega'); // 8-3-1-0, B2=2
   const ids = r.secciones.map((s) => s.id);
-  ['receta', 'contingencia', 'patron', 'tormenta', 'grupo', 'logro', 'combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
+  ['receta', 'contingencia', 'patron', 'tormenta', 'grupo', 'logro', 'mal', 'combustible', 'palabras', 'guia', 'reset', 'ecos'].forEach((id) =>
     assert.ok(ids.includes(id), `falta sección ${id}`));
   assert.ok(!ids.includes('motor'));
   assert.ok(r.omitidas.some((o) => o.id === 'motor' && o.motivo === 'sin_datos'));
