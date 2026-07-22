@@ -614,9 +614,6 @@ async function handleUnlockPaid(args: {
     // links. The payer email comes from the checkout; fall back to the session's.
     const payer = String(payerEmail || session.adult_email || '').trim().toLowerCase();
     const lang = (session.lang as string) || 'es';
-    const reportUrl = session.share_token
-        ? `${origin}/report/${sessionId}?token=${encodeURIComponent(session.share_token)}`
-        : `${origin}/report/${sessionId}`;
     if (payer && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payer)) {
         // Panel from the purchase (owner decision 2026-07-18): buying ArgoOne®
         // enables the panel immediately. The demo child was created with
@@ -860,7 +857,6 @@ async function handleReprofilePaid(args: { sb: any; purchaseId: string; provider
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle();
-        const reportUrl = perf?.share_token ? `${origin}/report/${perf.id}?token=${perf.share_token}` : `${origin}/one/panel`;
 
         // The payer's included puente (comp) toward the CURRENT perfilamiento.
         let bridgeUrl: string | null = null;
