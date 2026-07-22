@@ -125,3 +125,24 @@ Implementación de referencia: `preview/redesign-informes-2026-07/gen_preview.py
 - **Aire:** padding cards ~28/32 (hero ~36/38), `line-height` cuerpo ~1.72, espacios generosos entre párrafos/secciones/grupos.
 - **Disciplina de color:** eje = IDENTIDAD; violeta (`argo-violet-*`) = MARCA/INTERACCIÓN (el `(i)`, asides); verde PROHIBIDO salvo semántica real.
 - **(i) del sistema:** icono `Info` de lucide redondo, hover violeta, burbuja navy; tooltip `white-space:normal` + `max-width` (se ajusta al texto); variante que abre hacia arriba para bordes.
+
+---
+
+## PARTE G — Informe Puente (adulto), rediseño
+Maqueta: `preview/redesign-informes-2026-07/gen_puente.py` (+ `puente_content.json`) → `public/redesign/puente.html`.
+Aplica el design system de la Parte F al informe del adulto.
+
+**As-built de la maqueta:**
+- Hero: nombre del adulto en serif (eje×veta) + dos orbes de vidrio (sus dos ejes) + pills. El **saludo** va dentro de la card principal, debajo de las orbes, con divider. Sin título de bienvenida ni disclaimer clínico.
+- "Composición del perfil" = mezcla de 4 orbes. "Estilo bajo presión" = spectrum. Hairlines y `(i)` del sistema.
+- 4 puentes (slots fijos): **Antes del juego · la previa** / **Después del partido · la conversación** / **Cuando algo no sale · la frustración** / **El largo plazo · sostener su vínculo con el deporte**. Título + bajada real vía `sec_head(sub=...)`. Cada puente: triada (cómo tiende a estar / lo que tú traes / el puente) + reflexión.
+- Reflexión "Una pregunta para llevarte": aside sin línea violeta (separador neutro; la línea se confundía con el filete violeta del "el puente").
+- Cierre renombrado: **"Tu próximo puente / Oportunidad de mejora"**.
+
+**Decisión de contenido (owner, "vamos por B"):** la maqueta es **design-forward**, no espejo del engine actual. El contenido de muestra lo generó un **panel DISC** (3 lentes → merge → verify adversarial) siguiendo las reglas exactas de `api/generate-puentes.ts`, verificado con las guardas reales del repo (`reportGuards`: prohibidas/determinista/voseo/guiones). Enriquecimientos design-forward: **veta tejida en cada puente** (no solo en el nombre) + **negritas** en frases destacadas (como el niño) + largo real (el_puente 100-140 palabras).
+
+**DEUDA con el engine (pendiente, si se aprueba el diseño):** `api/generate-puentes.ts` HOY:
+- NO teje la veta en los 4 puentes (solo la pasa como contexto y la usa condicionalmente en `perfil_adulto_breve` + en el nombre eje×veta). Los puentes se guían por eje primario + motor + presión + historia/emoción.
+- NO usa negritas (a diferencia del engine del niño).
+- Los títulos de los puentes son fijos en código (con bajada tras `:`).
+Portear el diseño implica: instruir al prompt a **tejer la veta** en `el_puente`/`lo_que_traes` y a **marcar negritas**, más portar el layout a `PuentesReport.tsx` (hoy usa el sistema viejo de cards/barras).
