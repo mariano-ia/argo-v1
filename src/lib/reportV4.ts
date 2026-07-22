@@ -10,7 +10,7 @@
 // fuente de verdad (snapshot-guarded, reportV4.snapshot.test.ts); en/pt de las traducciones verificadas.
 // Nombres: docs/archetype-naming.md · Cálculo: docs/METODO-CALCULO-NUEVO.md · i18n: docs/METODO-V4-EN-PT-INTEGRACION.md.
 
-import type { EvidenceFicha, Axis, Registro, VotesEvidence } from './evidenceFicha';
+import type { EvidenceFicha, Axis, Registro, VotesEvidence, VetaBanda } from './evidenceFicha';
 import { getMotorInsight, getVetaLabel, getArchetypeLabel, getBlendName, getEjeBase } from './archetypeContentV4';
 import type { ReportBlock, Lang } from './archetypeContentV4';
 import { COPY, fill, listaClara } from './reportV4Copy';
@@ -81,9 +81,28 @@ export interface ReportHero {
   veta: { pre: string; word: string; post: string } | null;
   ejePrimario: Axis;             // para colorear (AXIS_COLORS[ejePrimario])
   ejeSecundario: Axis;           // para colorear la veta
+  vetaBanda: VetaBanda;          // fuerza de la veta ('sin'|'tentativa'|'afirmada'): dimensiona el orbe secundario del hero
   registro: Registro;
   meter: { level: number; labels: string[] };
+  // "Su mezcla": los 4 ejes en orden D,I,S,C con su proporción (%) de las 12 respuestas. Redondeo por
+  // resto mayor (Hamilton) para que los 4 sumen exactamente 100. Un eje con 0 votos queda en 0% (parte
+  // del perfil). Alimenta el radar de orbes del render; NO expone el conteo absoluto ("N de 12").
+  mezcla: { axis: Axis; pct: number }[];
   lead: string;                  // párrafo calibrado por registro (puede tener **negritas**)
+}
+
+/** Reparte los 4 ejes (D,I,S,C) en % de sus votos, con redondeo por resto mayor para que sumen 100. */
+function computeMezcla(receta: RecetaItem[]): { axis: Axis; pct: number }[] {
+  const order: Axis[] = ['D', 'I', 'S', 'C'];
+  const counts = order.map((ax) => receta.find((r) => r.axis === ax)?.count ?? 0);
+  const total = counts.reduce((s, c) => s + c, 0);
+  if (total === 0) return order.map((axis) => ({ axis, pct: 0 }));
+  const raw = counts.map((c) => (c / total) * 100);
+  const pcts = raw.map(Math.floor);
+  const remainder = 100 - pcts.reduce((s, c) => s + c, 0);               // entero en {0,1,2,3}
+  const byFrac = raw.map((r, i) => ({ i, frac: r - Math.floor(r) })).sort((a, b) => b.frac - a.frac);
+  for (let k = 0; k < remainder; k++) pcts[byFrac[k].i]++;
+  return order.map((axis, i) => ({ axis, pct: pcts[i] }));
 }
 
 /** El párrafo de encabezado, con el tono según el registro. Firme sobre el número, presente sobre el chico. */
@@ -133,8 +152,10 @@ export function buildReportHero(ficha: EvidenceFicha, ctx: ReportContext): Repor
     veta,
     ejePrimario: v.ejePrimario,
     ejeSecundario: v.ejeSecundario,
+    vetaBanda: v.vetaBanda,
     registro: v.registro,
     meter: { level: METER_LEVEL[v.registro], labels: pack.meter_labels },
+    mezcla: computeMezcla(ficha.signals.receta),
     lead: leadParagraph(v, ctx),
   };
 }
@@ -347,6 +368,10 @@ export interface ReportSection {
   bloque?: ReportBlock;        // kind 'texto'
   palabras?: PalabrasSection;  // kind 'palabras'
   guia?: GuiaSection;          // kind 'guia'
+  // Marcador de espectro (0..1) para el render: hairline con un mini-orbe que respira. Sale de la señal
+  // REAL de la sección (motor: tempoZona; patrón: si hay acople de ritmo), así el marcador nunca
+  // contradice el texto. Opcional: informes v4 viejos (sin este campo) simplemente no lo pintan.
+  spectrum?: { pos: number };
 }
 export interface ReportV4 {
   lang: Lang;                  // idioma en el que se armó (para que el render use el mismo COPY)
@@ -391,6 +416,17 @@ export function buildReportV4(ficha: EvidenceFicha, ctx: ReportContext): ReportV
   texto('reset', buildResetSection(ficha, ctx), 'sin_contenido');
   // 4. Más allá del deporte.
   texto('ecos', buildEcosSection(ficha, ctx), 'sin_contenido');
+
+  // Marcadores de espectro (render): posición REAL de la señal de cada sección, así el mini-orbe nunca
+  // contradice el texto. Motor: tempoZona (lento/intermedio/rápido). Patrón: si hay acople de ritmo,
+  // decidió en ritmos diversos; si no, parejo. Solo se adjuntan si la sección existe.
+  const MOTOR_POS: Record<'lento' | 'intermedio' | 'rapido', number> = { lento: 0.18, intermedio: 0.5, rapido: 0.82 };
+  const motorPos = ficha.motor.tempoZona ? MOTOR_POS[ficha.motor.tempoZona] : 0.5;
+  const patronPos = ficha.signals.ritmoAcople ? 0.74 : 0.26;
+  for (const s of secciones) {
+    if (s.id === 'motor') s.spectrum = { pos: motorPos };
+    if (s.id === 'patron') s.spectrum = { pos: patronPos };
+  }
 
   return { lang: langOf(ctx), hero, secciones, omitidas };
 }
