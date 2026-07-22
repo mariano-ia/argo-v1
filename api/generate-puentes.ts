@@ -74,6 +74,7 @@ const PROHIBITED_WORDS: string[] = [
     'agresivo', 'violento', 'torpe',
     'diagnóstico', 'diagnosticar', 'trastorno', 'patología', 'síndrome',
     'terapia', 'tratamiento',
+    'frustración', 'frustraciones', 'frustrado', 'frustrada', 'frustrante', 'frustrar', 'frustra', 'frustran',
     'siempre será', 'nunca podrá', 'nació para', 'está destinado',
     // Adult-parent specific: avoid blame language
     'culpa', 'culpable', 'malo padre', 'mala madre', 'fallaste',
@@ -84,6 +85,7 @@ const PROHIBITED_WORDS: string[] = [
     'aggressive', 'violent', 'clumsy',
     'diagnosis', 'disorder', 'pathology', 'syndrome',
     'therapy', 'treatment',
+    'frustration', 'frustrated', 'frustrating', 'frustrate',
     'will always be', 'will never', 'born to', 'is destined',
     'bad parent', 'you failed',
     'profiles clash', 'profiles conflict',
@@ -95,6 +97,7 @@ const PROHIBITED_WORDS: string[] = [
     'agressivo', 'violento', 'desajeitado',
     'transtorno', 'patologia', 'síndrome',
     'terapia', 'tratamento',
+    'frustração', 'frustrado', 'frustrada', 'frustrante', 'frustrar',
     'sempre será', 'nunca poderá', 'nasceu para',
     'culpa', 'mau pai', 'má mãe', 'falhou',
     'perfis chocam',
@@ -239,23 +242,26 @@ function buildPrompt(args: {
 
     const titles = lang === 'en' ? [
         'Before the game: the warm-up',
-        'When things go wrong: the frustration',
+        'During the game: your presence',
+        'When things go wrong: the setback',
         'After the match: the conversation',
         'In the long run: sustaining their bond with sport',
     ] : lang === 'pt' ? [
         'Antes do jogo: o pré-jogo',
-        'Quando algo não dá certo: a frustração',
+        'Durante o jogo: a presença',
+        'Quando algo não dá certo: o tropeço',
         'Depois da partida: a conversa',
         'No longo prazo: sustentar o vínculo com o esporte',
     ] : [
         'Antes del juego: la previa',
-        'Cuando algo no sale: la frustración',
+        'Durante el juego: la presencia',
+        'Cuando algo no sale: el traspié',
         'Después del partido: la conversación',
         'El largo plazo: sostener su vínculo con el deporte',
     ];
 
     return `Tarea: Generar un informe "ArgoPuente®" para un adulto responsable de ${childName} (deporte: ${sport}).
-El informe es un upsell tras el informe del niño y propone 4 PUENTES (no diagnósticos) entre el estilo natural del adulto y el del niño.
+El informe es un upsell tras el informe del niño y propone 5 PUENTES (no diagnósticos) entre el estilo natural del adulto y el del niño.
 
 PERFIL DEL NIÑO (ya conocido):
 - Arquetipo: ${childProfile.archetype_label || 'no especificado'}
@@ -278,11 +284,14 @@ REGLAS DE REDACCIÓN (estrictas):
 4. NUNCA culpabilizar al adulto. Cada puente reconoce primero lo que el adulto aporta naturalmente, después propone un puente.
 5. NUNCA usar lenguaje determinista ("siempre será", "nunca podrá", "está destinado a").
 6. NUNCA dar instrucciones prescriptivas ("debes", "tienes que"). Solo invitaciones ("podrías observar", "vale la pena registrar").
-7. NUNCA usar las siguientes palabras: error, problema, fallo, déficit, corregir, débil, agresivo, diagnóstico, trastorno, terapia, tratamiento, culpa, culpable.
+7. NUNCA usar las siguientes palabras: error, problema, fallo, déficit, corregir, débil, agresivo, diagnóstico, trastorno, terapia, tratamiento, culpa, culpable, frustración, frustrado, frustrante.
 8. ${langInstruction}
 9. Sin guiones largos (em dash, en dash). Si necesitas pausa, usa comas, paréntesis o punto.
-10. Cada puente debe combinar específicamente el perfil del niño con el del adulto. El Puente 2 (frustración) DEBE incorporar el estilo bajo presión del adulto (${pressureLabel}).
+10. Cada puente debe combinar específicamente el perfil del niño con el del adulto. El puente del traspié (cuando algo no sale, el 3º) DEBE incorporar el estilo bajo presión del adulto (${pressureLabel}).
 11. No conocemos el género del niño ni del adulto. Refiérete a cada uno por su nombre y evita pronombres y adjetivos con marca de género (nada de él/ella, contento/a, cansado/a, listo/a, nervioso/a, seguro/a). Cuando una concordancia en español o portugués sea inevitable, reformula la frase o usa el nombre en lugar del pronombre. Nunca asumas si es varón o mujer.
+12. VETA: ${ejeSecondaryLabel ? `el adulto tiene eje secundario (veta) ${ejeSecondaryLabel}. TÉJELO en el contenido de los puentes, no solo en el perfil: sobre todo en "lo_que_traes" y "el_puente", que se sientan los DOS ejes del adulto (${ejePrimaryLabel} y ${ejeSecondaryLabel}), no solo el primario.` : 'el adulto no tiene veta clara; trabaja solo su eje primario.'}
+13. NEGRITAS: destaca con **negrita** (markdown, dobles asteriscos) 1 o 2 frases CLAVE en cada "como_esta_el", "lo_que_traes" y "el_puente" (NO en la pregunta_reflexion, NO en saludo/perfil/cierre). Sobre la frase más significativa, nunca palabras sueltas al azar.
+14. NUNCA uses la palabra "frustración" (ni "frustrado", "frustrante"). Para ese momento habla del "traspié", de "cuando algo no sale", o describe la reacción sin etiquetarla.
 
 ESTRUCTURA EXACTA (devuelve SOLO este JSON, sin markdown):
 {
@@ -291,30 +300,37 @@ ESTRUCTURA EXACTA (devuelve SOLO este JSON, sin markdown):
   "puentes": [
     {
       "titulo": "${titles[0]}",
-      "como_esta_el": "2-3 frases probabilísticas sobre cómo tiende a estar ${childName} antes de jugar, según su perfil",
-      "lo_que_traes": "2-3 frases reconociendo lo que el adulto aporta naturalmente en ese momento, según su eje y motor",
-      "el_puente": "3-4 frases. Cómo se combinan ambos perfiles aquí. Observaciones o pequeños ajustes (no prescripciones). Lenguaje de invitación.",
+      "como_esta_el": "2-3 frases probabilísticas sobre cómo tiende a estar ${childName} antes de jugar (la previa), según su perfil",
+      "lo_que_traes": "2-3 frases reconociendo lo que el adulto aporta naturalmente en la previa, según su eje (y su veta si la tiene) y su motor",
+      "el_puente": "3-4 frases. Cómo se combinan ambos perfiles antes de empezar. Observaciones o pequeños ajustes (no prescripciones). Lenguaje de invitación.",
       "pregunta_reflexion": "Una pregunta abierta para sostener en el tiempo, en segunda persona"
     },
     {
       "titulo": "${titles[1]}",
-      "como_esta_el": "2-3 frases sobre cómo tiende a responder ${childName} cuando algo sale mal, según su perfil",
-      "lo_que_traes": "2-3 frases reconociendo cómo el adulto vive ese momento, según su eje",
+      "como_esta_el": "2-3 frases sobre cómo tiende a estar ${childName} DURANTE el juego, en vivo, según su perfil y su motor (ritmo): cómo lee el clima y las señales mientras juega",
+      "lo_que_traes": "2-3 frases reconociendo lo que el adulto transmite EN VIVO desde afuera (su temperatura, su presencia), según su eje (y su veta si la tiene), su motor y su estilo bajo presión",
+      "el_puente": "3-4 frases. El canal en tiempo real: lo que el adulto TRANSMITE (calma, señal, confianza) pesa tanto como lo que dice; vale para quien mira desde la tribuna Y para quien dirige desde la línea. La dosis de señal según el ritmo del niño. NO es cómo reaccionar cuando algo sale mal (eso va en el puente del traspié): aquí va la presencia estable de base.",
+      "pregunta_reflexion": "Una pregunta abierta sobre la presencia en vivo, en segunda persona"
+    },
+    {
+      "titulo": "${titles[2]}",
+      "como_esta_el": "2-3 frases sobre cómo tiende a responder ${childName} cuando algo sale mal (un traspié), según su perfil. NO uses la palabra frustración.",
+      "lo_que_traes": "2-3 frases reconociendo cómo el adulto vive ese momento, según su eje (y su veta si la tiene)",
       "el_puente": "3-4 frases. CRÍTICO: combinar el estilo del niño con el ESTILO BAJO PRESIÓN del adulto (${pressureLabel}). Este es el puente más sensible. Reconocer primero, invitar después.",
       "pregunta_reflexion": "Una pregunta para llevarse"
     },
     {
-      "titulo": "${titles[2]}",
-      "como_esta_el": "2-3 frases sobre el timing y la forma en que ${childName} procesa lo vivido, según su motor (ritmo)",
-      "lo_que_traes": "2-3 frases sobre el estilo conversacional natural del adulto",
-      "el_puente": "3-4 frases. Timing y lenguaje: cuándo abrir conversación, cuándo dar espacio, qué tipo de frases pueden llegar mejor.",
+      "titulo": "${titles[3]}",
+      "como_esta_el": "2-3 frases sobre el timing y la forma en que ${childName} procesa lo vivido después del partido, según su motor (ritmo). Cubre TANTO un partido difícil COMO uno muy bueno (no asumas que siempre salió mal).",
+      "lo_que_traes": "2-3 frases sobre el estilo conversacional natural del adulto, según su eje (y su veta si la tiene)",
+      "el_puente": "3-4 frases. Timing y lenguaje después de jugar, gane o pierda: cuándo abrir conversación, cuándo dar espacio, qué frases pueden llegar mejor. Incluye también cómo acompañar cuando salió MUY bien (celebrar sin inflar, nombrar lo que hizo más allá del resultado).",
       "pregunta_reflexion": "Una pregunta reflexiva"
     },
     {
-      "titulo": "${titles[3]}",
+      "titulo": "${titles[4]}",
       "como_esta_el": "2-3 frases sobre qué nutre el disfrute deportivo de ${childName} en el largo plazo, según su perfil",
       "lo_que_traes": "2-3 frases. Considera la historia deportiva del adulto (${historyLabel}) y su emoción dominante (${emotionLabel}). Reconoce sin juzgar.",
-      "el_puente": "3-4 frases. Prácticas sostenibles que protegen el gozo del niño en el deporte. Reconocer que ambas formas son válidas.",
+      "el_puente": "3-4 frases. Prácticas sostenibles que protegen el gozo del niño en el deporte. Deja claro que el cariño y el vínculo NO están atados al resultado de un partido. Reconocer que ambas formas son válidas.",
       "pregunta_reflexion": "Una pregunta de cierre"
     }
   ],
@@ -437,7 +453,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
 
         // Sanity check shape
-        if (!aiSections.puentes || !Array.isArray(aiSections.puentes) || aiSections.puentes.length !== 4) {
+        if (!aiSections.puentes || !Array.isArray(aiSections.puentes) || aiSections.puentes.length !== 5) {
             console.error('[generate-puentes] Invalid shape from AI:', JSON.stringify(aiSections).slice(0, 500));
             await sb.from('puentes_sessions').update({
                 status: 'failed',

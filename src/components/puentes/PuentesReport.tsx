@@ -42,6 +42,17 @@ interface Props {
 
 const EJE_ORDER: AdultAxis[] = ['D', 'I', 'S', 'C'];
 
+/** Convierte **negrita** (markdown) en <strong>. El engine (generate-puentes.ts)
+ *  destaca 1-2 frases por bloque; sin esto el `**` se filtraría literal. */
+function renderRich(text: string): React.ReactNode[] {
+    return text.split(/(\*\*[^*]+\*\*)/g).map((part, i) => {
+        const m = part.match(/^\*\*([^*]+)\*\*$/);
+        return m
+            ? <strong key={i} className="font-semibold text-argo-navy">{m[1]}</strong>
+            : <React.Fragment key={i}>{part}</React.Fragment>;
+    });
+}
+
 
 const PRESSURE_DISPLAY: Record<string, Record<string, string>> = {
     es: { regulado: 'Regulado', reactivo: 'Reactivo', evitativo: 'Evitativo' },
@@ -287,7 +298,7 @@ const SubBlock: React.FC<SubBlockProps> = ({ label, text, color, labelColor }) =
             >
                 {label}
             </p>
-            <p className="text-[13px] text-argo-secondary leading-relaxed m-0">{text}</p>
+            <p className="text-[13px] text-argo-secondary leading-relaxed m-0">{renderRich(text)}</p>
         </div>
     </div>
 );
@@ -301,16 +312,18 @@ const Reflection: React.FC<{ label: string; text: string }> = ({ label, text }) 
             <p className="text-[10px] font-bold tracking-[0.16em] uppercase text-argo-violet-500 mb-1 m-0">
                 {label}
             </p>
-            <p className="text-[13px] text-argo-navy font-medium leading-relaxed m-0">{text}</p>
+            <p className="text-[13px] text-argo-navy font-medium leading-relaxed m-0">{renderRich(text)}</p>
         </div>
     </div>
 );
 
+// 5 bridges since 2026-07-22: previa, presencia, traspié, conversación, largo plazo.
 const BRIDGE_ICONS = [
     SectionIcons.bridge1,
     SectionIcons.bridge2,
     SectionIcons.bridge3,
     SectionIcons.bridge4,
+    SectionIcons.pending, // largo plazo → reloj (tiempo)
 ];
 
 export function PuentesReport({
@@ -488,7 +501,7 @@ export function PuentesReport({
             {ai && (
                 <Card>
                     <SectionTitle title={c.report.greetingLabel} icon={SectionIcons.welcome} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.saludo}</p>
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.saludo)}</p>
                     <div className="mt-5 flex items-start gap-2.5 p-3.5 bg-[#F5F5F7] rounded-xl">
                         <span className="w-4 h-4 flex-shrink-0 mt-0.5 text-argo-grey">{SectionIcons.info}</span>
                         <p className="text-[11px] text-argo-grey leading-relaxed m-0">
@@ -506,7 +519,7 @@ export function PuentesReport({
             {ai && (
                 <Card>
                     <SectionTitle title={c.report.adultProfileLabel} icon={SectionIcons.profile} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.perfil_adulto_breve}</p>
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.perfil_adulto_breve)}</p>
                 </Card>
             )}
 
@@ -551,7 +564,7 @@ export function PuentesReport({
             {ai && (
                 <Card>
                     <SectionTitle title={c.report.closingLabel} icon={SectionIcons.closing} />
-                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{ai.cierre}</p>
+                    <p className="text-[14px] text-argo-secondary leading-relaxed m-0">{renderRich(ai.cierre)}</p>
                 </Card>
             )}
 
