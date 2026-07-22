@@ -24,7 +24,7 @@ function renderRich(text: string): React.ReactNode[] {
 // Si un grupo queda vacío (secciones omitidas), no se muestra.
 const GROUP_DEFS: { key: 'quien' | 'cancha' | 'acompanar' | 'masalla'; ids: string[] }[] = [
   { key: 'quien', ids: ['receta', 'contingencia', 'patron', 'motor'] },
-  { key: 'cancha', ids: ['tormenta', 'grupo', 'logro'] },
+  { key: 'cancha', ids: ['tormenta', 'grupo', 'logro', 'mal'] },
   { key: 'acompanar', ids: ['combustible', 'palabras', 'guia', 'reset'] },
   { key: 'masalla', ids: ['ecos'] },
 ];

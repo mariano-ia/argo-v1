@@ -72,7 +72,8 @@
         "palabras": "Words that connect (and the ones that jar)",
         "guia": "Before, during and after",
         "reset": "A reset that works",
-        "ecos": "Beyond the sport"
+        "ecos": "Beyond the sport",
+        "mal": "When things go wrong"
       },
       "group_titles": {
         "quien": "Who ${n} is today",
@@ -87,7 +88,25 @@
         "matices": "${n}'s game leans toward **${corta}**, with a clear presence of their second color.${veta} Today they tend to move through there, though it's not their only note: ${tail}.",
         "parejo": "${n} plays today with **two well-balanced engines**: ${dosCortas}. It's not indecision, quite the opposite: they have two registers and tend to choose according to what each moment calls for."
       },
-      "footer": "How to read this report. It describes **how ${n} tends to choose today**, not what they are or what they might become: it's a snapshot of their preferences right now, not a label. Profiles change with age and experience, **which is why we recommend re-profiling children every 6 months**. The sport only changes the frame for recognizing the profile; what is measured is the same in any activity."
+      "footer": "How to read this report. It describes **how ${n} tends to choose today**, not what they are or what they might become: it's a snapshot of their preferences right now, not a label. Profiles change with age and experience, **which is why we recommend re-profiling children every 6 months**. The sport only changes the frame for recognizing the profile; what is measured is the same in any activity.",
+      "mal_anchor": {
+        "D": "tends to want to **try again right away**, with all their drive: sets their sights on the next attempt more than on what just happened",
+        "I": "tends to experience it through connection: **is likely to seek a look of support** and to talk through what happened, and bounces back more easily when they feel support close by",
+        "S": "tends to worry above all about **how it affects the team**: is likely to go quiet for a while and to carry more than their share, because the group matters to them",
+        "C": "tends to want to **understand what happened**: is likely to replay the moment and turn it over in their mind to make sense of it before moving on"
+      },
+      "mal_acompanar": {
+        "D": "**giving them a concrete next step right away** and, little by little, inviting them to take a second to look at what to adjust, without dampening that drive",
+        "I": "**starting with connection before advice**: a warm gesture first, reminding them that the group is still there and that this changes nothing about how much others care for them",
+        "S": "**reassuring them that the team is okay** and helping them let go of that extra weight they put on themselves, calmly and reminding them that this belongs to everyone",
+        "C": "**helping them close the review** once they've found what matters: gently reminding them that not everything needs a perfect explanation, and that getting moving again also brings clarity"
+      },
+      "mal_ejemplo": {
+        "D": "When something doesn't go ${n}'s way and they already want to go for more, it helps to hear a \"I love that you want to keep going, let's try something different next time.\"",
+        "I": "For ${n}, a \"this doesn't change anything between us, we're the same as always,\" said before any technical tip, turns the whole moment around.",
+        "S": "If ${n} goes quiet and seems to be carrying it all, a \"the team is okay, we'll sort this out together\" helps more than asking them to talk right away.",
+        "C": "After turning it over a lot, a \"let's keep just one thing for next time\" helps settle ${n}'s mind, better than going back over every detail."
+      }
     },
     "pt": {
       "meter_labels": [
@@ -161,7 +180,8 @@
         "palabras": "Palavras que conectam (e as que fazem ruído)",
         "guia": "Antes, durante e depois",
         "reset": "Um reset que funciona",
-        "ecos": "Além do esporte"
+        "ecos": "Além do esporte",
+        "mal": "Quando dá errado"
       },
       "group_titles": {
         "quien": "Quem é ${n} hoje",
@@ -176,7 +196,25 @@
         "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
         "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
       },
-      "footer": "Como ler este relatório. Descreve **como ${n} tende a escolher hoje**, não o que é nem o que poderá chegar a fazer: é uma foto de suas preferências neste momento, não um rótulo. Os perfis mudam com a idade e a experiência, **por isso recomendamos perfilar as crianças novamente a cada 6 meses**. O esporte só muda o cenário para reconhecer o perfil; o que se mede é o mesmo em qualquer atividade."
+      "footer": "Como ler este relatório. Descreve **como ${n} tende a escolher hoje**, não o que é nem o que poderá chegar a fazer: é uma foto de suas preferências neste momento, não um rótulo. Os perfis mudam com a idade e a experiência, **por isso recomendamos perfilar as crianças novamente a cada 6 meses**. O esporte só muda o cenário para reconhecer o perfil; o que se mede é o mesmo em qualquer atividade.",
+      "mal_anchor": {
+        "D": "costuma querer **tentar de novo na hora**, com todo o seu ímpeto: coloca o olhar na próxima tentativa mais do que no que acabou de acontecer",
+        "I": "costuma viver isso pelo lado do vínculo: **tende a buscar um olhar de apoio** e a contar o que aconteceu, e se recompõe melhor quando sente o apoio por perto",
+        "S": "costuma se preocupar sobretudo com **como isso repercute na equipe**: tende a ficar um tempo em silêncio e a carregar mais do que lhe cabe, porque se importa com o conjunto",
+        "C": "costuma querer **entender o que aconteceu**: tende a revisar a jogada e a dar voltas para achar a lógica antes de seguir"
+      },
+      "mal_acompanar": {
+        "D": "**dar logo um próximo passo concreto** e, aos poucos, convidar a olhar por um segundo o que ajustar, sem apagar esse impulso",
+        "I": "**começar pelo vínculo antes do conselho**: um gesto carinhoso primeiro, lembrar que o grupo segue ali e que isso não muda em nada o carinho dos outros",
+        "S": "**reforçar que a equipe está bem** e ajudar a soltar esse peso a mais que coloca sobre si, com calma e lembrando que isso é de todos",
+        "C": "**ajudar a fechar a revisão** quando já chegou ao que importa: lembrar com carinho que nem tudo precisa de uma explicação perfeita, e que voltar a se mover também clareia"
+      },
+      "mal_ejemplo": {
+        "D": "Quando algo não sai para ${n} e já quer ir por mais, ajuda ouvir um \"adoro que você queira seguir, vamos tentar algo diferente da próxima vez\".",
+        "I": "Para ${n}, um \"isso não muda nada entre a gente, está tudo igual\", dito antes de qualquer conselho técnico, transforma o momento.",
+        "S": "Se ${n} fica em silêncio e como que carregando tudo, ajuda um \"a equipe está bem, isso a gente resolve juntos\", mais do que pedir para falar na hora.",
+        "C": "Depois de dar muitas voltas, um \"vamos ficar com uma só coisa para a próxima\" organiza a cabeça de ${n}, melhor do que seguir revisando cada detalhe."
+      }
     }
   },
   "bodies": {
@@ -234,7 +272,8 @@
         "logro": "When ${n} pulls something off, ${anchor}.${ej} That's how they experience it, and that's perfectly fine. Supporting ${n} means helping them also **notice and celebrate what they've achieved** before setting off again.",
         "logro_ej_clause": " It showed clearly in the game, because on reaching the finish they chose **${metaChoice}**.",
         "logro_ejemplo": "After a good result, a simple \"look at everything you accomplished\" helps ${n} give enjoyment its place too.",
-        "palabras_nota_suffix": "They're not a script, they're the key to the tone."
+        "palabras_nota_suffix": "They're not a script, they're the key to the tone.",
+        "mal": "When something doesn't go the way they hoped, ${n} ${anchor}. It's their way of processing it, and it has its worth. Supporting ${n} means ${acompanar}."
       },
       "motor": {
         "rapido_cuerpo": "In the reaction-and-decision mini-games, {nombre} moved with a **nimble pace**: they tend to read quickly and trust their first impulse. They usually **get actions going and resolve things with ease when a decision has to be made on the spot**. Supporting {nombre} means giving room for that speed and, little by little, offering chances to discover when it's worth taking one more second.",
@@ -299,7 +338,8 @@
         "logro": "Quando ${n} consegue algo, ${anchor}.${ej} Vive assim, e tudo bem. Acompanhar ${n} é ajudar também a **registrar e celebrar o que conquistou** antes de recomeçar.",
         "logro_ej_clause": " No jogo se viu com clareza, porque ao chegar à meta escolheu **${metaChoice}**.",
         "logro_ejemplo": "Depois de um bom resultado, um simples \"olha tudo o que você conseguiu\" ajuda ${n} a que o desfrute também tenha seu lugar.",
-        "palabras_nota_suffix": "Não são um roteiro, são a chave do tom."
+        "palabras_nota_suffix": "Não são um roteiro, são a chave do tom.",
+        "mal": "Quando algo não sai como esperava, ${n} ${anchor}. É o seu jeito de processar isso, e tem o seu valor. Acompanhar ${n} é ${acompanar}."
       },
       "motor": {
         "rapido_cuerpo": "Nos minijogos de reação e decisão, {nombre} se moveu com um **ritmo ágil**: tende a ler rápido e a confiar em seu primeiro impulso. Costuma **iniciar as ações e resolver com desenvoltura quando é preciso decidir na hora**. Acompanhar {nombre} é dar espaço para essa velocidade e, aos poucos, oferecer oportunidades para descobrir quando vale a pena levar um segundo a mais.",

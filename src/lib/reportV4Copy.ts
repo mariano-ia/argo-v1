@@ -20,6 +20,7 @@ export interface Bodies {
   grupo_intro_indiv: string; grupo_low: string; grupo_low_ej: string; grupo_words: GrupoWords; grupo_partes: GrupoPartes;
   grupo_present: string; grupo_present_ej: string; grupo_join: string; grupo_fallback: string;
   logro: string; logro_ej_clause: string; logro_ejemplo: string;
+  mal: string;
 }
 export interface CopyPack {
   meter_labels: string[];
@@ -30,6 +31,9 @@ export interface CopyPack {
   storm_ejemplo: Record<Axis, string>;
   success_anchor: Record<Axis, string>;
   meta_choice: Record<Axis, string>;
+  mal_anchor: Record<Axis, string>;
+  mal_acompanar: Record<Axis, string>;
+  mal_ejemplo: Record<Axis, string>;
   context_word: Record<string, string>;
   section_titles: Record<string, string>;
   group_titles: Record<string, string>;
@@ -96,6 +100,24 @@ export const COPY: Record<Lang, CopyPack> = {
       "S": "asegurarse de que todo el equipo estuviera bien",
       "C": "repasar cómo había llegado hasta ahí"
     },
+    "mal_anchor": {
+      "D": "suele querer **volver a intentarlo enseguida**, con todo su empuje: pone la mirada en el próximo intento antes que en lo que acaba de pasar",
+      "I": "suele vivirlo por el lado del vínculo: **tiende a buscar una mirada de apoyo** y a contar lo que pasó, y se recompone mejor cuando siente el apoyo cerca",
+      "S": "suele preocuparse sobre todo por **cómo repercute en el equipo**: tiende a quedarse un rato en silencio y a cargar con más de lo que le toca, porque le importa el conjunto",
+      "C": "suele querer **entender qué pasó**: tiende a repasar la jugada y a darle vueltas para encontrarle la lógica antes de seguir"
+    },
+    "mal_acompanar": {
+      "D": "**darle enseguida un próximo paso concreto** y, de a poco, invitarle a mirar un segundo qué ajustar, sin apagar ese impulso",
+      "I": "**empezar por el vínculo antes que por el consejo**: un gesto cálido primero, recordarle que el grupo sigue ahí y que esto no cambia en nada el cariño de los demás",
+      "S": "**reasegurarle que el equipo está bien** y ayudarle a soltar ese peso de más que se pone encima, con calma y recordándole que esto es de todos",
+      "C": "**ayudarle a cerrar el repaso** cuando ya dio con lo importante: recordarle con cariño que no todo necesita una explicación perfecta, y que volver a moverse también aclara"
+    },
+    "mal_ejemplo": {
+      "D": "Cuando a ${n} algo no le sale y ya quiere ir por más, le suma escuchar un \"me encanta que quieras seguir, probemos algo distinto la próxima\".",
+      "I": "A ${n} le cambia el momento un \"esto no cambia nada entre nosotros, seguimos igual\", dicho antes que cualquier consejo técnico.",
+      "S": "Si ${n} se queda en silencio y como cargando con todo, ayuda un \"el equipo está bien, esto lo resolvemos entre todos\", más que pedirle que hable enseguida.",
+      "C": "Después de darle muchas vueltas, a ${n} le ordena la cabeza un \"quedémonos con una sola cosa para la próxima\", mejor que seguir repasando cada detalle."
+    },
     "context_word": {
       "inicio": "al arrancar algo nuevo",
       "adversidad": "cuando la cosa se complica",
@@ -114,6 +136,7 @@ export const COPY: Record<Lang, CopyPack> = {
       "tormenta": "Ante la tormenta",
       "grupo": "Cuánto lo mueve el grupo",
       "logro": "Cuando le sale bien",
+      "mal": "Cuando le sale mal",
       "combustible": "Qué lo enciende",
       "palabras": "Palabras que conectan (y las que hacen ruido)",
       "guia": "Antes, durante y después",
@@ -187,6 +210,7 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro": "Cuando a ${n} le sale algo, ${anchor}.${ej} Lo vive así, y está muy bien. Acompañar a ${n} es ayudarle a también **registrar y celebrar lo logrado** antes de volver a arrancar.",
       "logro_ej_clause": " En el juego se vio con claridad, porque al llegar a la meta eligió **${metaChoice}**.",
       "logro_ejemplo": "Después de un buen resultado, un simple \"mira todo lo que conseguiste\" ayuda a ${n} a que el disfrute también tenga su lugar.",
+      "mal": "Cuando algo no le sale como esperaba, ${n} ${anchor}. Es su forma de procesarlo, y tiene su valor. Acompañar a ${n} es ${acompanar}.",
       "grupo_join": "; y, por otro lado, ",
       "grupo_fallback": "el grupo aparece de a ratos"
     },
@@ -257,6 +281,24 @@ export const COPY: Record<Lang, CopyPack> = {
       "S": "making sure the whole team was okay",
       "C": "reviewing how they had gotten there"
     },
+    "mal_anchor": {
+      "D": "tends to want to **try again right away**, with all their drive: sets their sights on the next attempt more than on what just happened",
+      "I": "tends to experience it through connection: **is likely to seek a look of support** and to talk through what happened, and bounces back more easily when they feel support close by",
+      "S": "tends to worry above all about **how it affects the team**: is likely to go quiet for a while and to carry more than their share, because the group matters to them",
+      "C": "tends to want to **understand what happened**: is likely to replay the moment and turn it over in their mind to make sense of it before moving on"
+    },
+    "mal_acompanar": {
+      "D": "**giving them a concrete next step right away** and, little by little, inviting them to take a second to look at what to adjust, without dampening that drive",
+      "I": "**starting with connection before advice**: a warm gesture first, reminding them that the group is still there and that this changes nothing about how much others care for them",
+      "S": "**reassuring them that the team is okay** and helping them let go of that extra weight they put on themselves, calmly and reminding them that this belongs to everyone",
+      "C": "**helping them close the review** once they've found what matters: gently reminding them that not everything needs a perfect explanation, and that getting moving again also brings clarity"
+    },
+    "mal_ejemplo": {
+      "D": "When something doesn't go ${n}'s way and they already want to go for more, it helps to hear a \"I love that you want to keep going, let's try something different next time.\"",
+      "I": "For ${n}, a \"this doesn't change anything between us, we're the same as always,\" said before any technical tip, turns the whole moment around.",
+      "S": "If ${n} goes quiet and seems to be carrying it all, a \"the team is okay, we'll sort this out together\" helps more than asking them to talk right away.",
+      "C": "After turning it over a lot, a \"let's keep just one thing for next time\" helps settle ${n}'s mind, better than going back over every detail."
+    },
     "context_word": {
       "inicio": "when starting something new",
       "adversidad": "when things get tough",
@@ -274,7 +316,8 @@ export const COPY: Record<Lang, CopyPack> = {
       "palabras": "Words that connect (and the ones that jar)",
       "guia": "Before, during and after",
       "reset": "A reset that works",
-      "ecos": "Beyond the sport"
+      "ecos": "Beyond the sport",
+      "mal": "When things go wrong"
     },
     "group_titles": {
       "quien": "Who ${n} is today",
@@ -343,6 +386,7 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro": "When ${n} pulls something off, ${anchor}.${ej} That's how they experience it, and that's perfectly fine. Supporting ${n} means helping them also **notice and celebrate what they've achieved** before setting off again.",
       "logro_ej_clause": " It showed clearly in the game, because on reaching the finish they chose **${metaChoice}**.",
       "logro_ejemplo": "After a good result, a simple \"look at everything you accomplished\" helps ${n} give enjoyment its place too.",
+      "mal": "When something doesn't go the way they hoped, ${n} ${anchor}. It's their way of processing it, and it has its worth. Supporting ${n} means ${acompanar}.",
       "grupo_join": "; and on the other hand, ",
       "grupo_fallback": "the group shows up now and then"
     },
@@ -413,6 +457,24 @@ export const COPY: Record<Lang, CopyPack> = {
       "S": "garantir que toda a equipe estivesse bem",
       "C": "revisar como tinha chegado até ali"
     },
+    "mal_anchor": {
+      "D": "costuma querer **tentar de novo na hora**, com todo o seu ímpeto: coloca o olhar na próxima tentativa mais do que no que acabou de acontecer",
+      "I": "costuma viver isso pelo lado do vínculo: **tende a buscar um olhar de apoio** e a contar o que aconteceu, e se recompõe melhor quando sente o apoio por perto",
+      "S": "costuma se preocupar sobretudo com **como isso repercute na equipe**: tende a ficar um tempo em silêncio e a carregar mais do que lhe cabe, porque se importa com o conjunto",
+      "C": "costuma querer **entender o que aconteceu**: tende a revisar a jogada e a dar voltas para achar a lógica antes de seguir"
+    },
+    "mal_acompanar": {
+      "D": "**dar logo um próximo passo concreto** e, aos poucos, convidar a olhar por um segundo o que ajustar, sem apagar esse impulso",
+      "I": "**começar pelo vínculo antes do conselho**: um gesto carinhoso primeiro, lembrar que o grupo segue ali e que isso não muda em nada o carinho dos outros",
+      "S": "**reforçar que a equipe está bem** e ajudar a soltar esse peso a mais que coloca sobre si, com calma e lembrando que isso é de todos",
+      "C": "**ajudar a fechar a revisão** quando já chegou ao que importa: lembrar com carinho que nem tudo precisa de uma explicação perfeita, e que voltar a se mover também clareia"
+    },
+    "mal_ejemplo": {
+      "D": "Quando algo não sai para ${n} e já quer ir por mais, ajuda ouvir um \"adoro que você queira seguir, vamos tentar algo diferente da próxima vez\".",
+      "I": "Para ${n}, um \"isso não muda nada entre a gente, está tudo igual\", dito antes de qualquer conselho técnico, transforma o momento.",
+      "S": "Se ${n} fica em silêncio e como que carregando tudo, ajuda um \"a equipe está bem, isso a gente resolve juntos\", mais do que pedir para falar na hora.",
+      "C": "Depois de dar muitas voltas, um \"vamos ficar com uma só coisa para a próxima\" organiza a cabeça de ${n}, melhor do que seguir revisando cada detalhe."
+    },
     "context_word": {
       "inicio": "ao começar algo novo",
       "adversidad": "quando a coisa complica",
@@ -430,7 +492,8 @@ export const COPY: Record<Lang, CopyPack> = {
       "palabras": "Palavras que conectam (e as que fazem ruído)",
       "guia": "Antes, durante e depois",
       "reset": "Um reset que funciona",
-      "ecos": "Além do esporte"
+      "ecos": "Além do esporte",
+      "mal": "Quando dá errado"
     },
     "group_titles": {
       "quien": "Quem é ${n} hoje",
@@ -499,6 +562,7 @@ export const COPY: Record<Lang, CopyPack> = {
       "logro": "Quando ${n} consegue algo, ${anchor}.${ej} Vive assim, e tudo bem. Acompanhar ${n} é ajudar também a **registrar e celebrar o que conquistou** antes de recomeçar.",
       "logro_ej_clause": " No jogo se viu com clareza, porque ao chegar à meta escolheu **${metaChoice}**.",
       "logro_ejemplo": "Depois de um bom resultado, um simples \"olha tudo o que você conseguiu\" ajuda ${n} a que o desfrute também tenha seu lugar.",
+      "mal": "Quando algo não sai como esperava, ${n} ${anchor}. É o seu jeito de processar isso, e tem o seu valor. Acompanhar ${n} é ${acompanar}.",
       "grupo_join": "; e, por outro lado, ",
       "grupo_fallback": "o grupo aparece de vez em quando"
     },

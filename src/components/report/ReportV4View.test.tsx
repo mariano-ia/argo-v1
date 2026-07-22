@@ -32,9 +32,10 @@ test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, p
   // Encabezado: nombre del niño + adulto responsable + fecha (como el legacy)
   assert.match(html, /Adulto responsable: Marian/);
   assert.match(html, /07 de julio de 2026/);
-  // Hero: perfil + veta coloreados
+  // Hero: perfil + veta coloreados. El conector varía por banda (con veta / con tonos de / con destellos de);
+  // Mateo (B2=2) => "con tonos de". Assert band-agnóstico para no quedar stale.
   assert.match(html, /Impulsor/);
-  assert.match(html, /con veta/);
+  assert.match(html, /con (veta|tonos de|destellos de)/);
   assert.match(html, /Estratega/);
   assert.match(html, /Mateo · 11 años · Fútbol/);
   // Negritas: al menos un <strong> del **markdown**
@@ -58,6 +59,9 @@ test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, p
   assert.match(html, /cada 6 meses/);
   // Motor presente (había juegos)
   assert.match(html, /Su motor/);
+  // Nueva sección "Cuando le sale mal" (espejo de logro), presente y ordenada tras "Cuando le sale bien"
+  assert.match(html, /Cuando le sale mal/);
+  assert.ok(html.indexOf('Cuando le sale bien') < html.indexOf('Cuando le sale mal'), 'mal va después de bien');
 });
 
 test('ReportV4View: informe v4 VIEJO (sin hero.veta, solo vetaLabel) NO pierde la veta', () => {

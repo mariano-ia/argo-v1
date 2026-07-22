@@ -269,6 +269,20 @@ export function buildLogroSection(ficha: EvidenceFicha, ctx: ReportContext): Rep
   };
 }
 
+/** "Cuando le sale mal": espejo de logro. Anclado en el eje primario (siempre presente), SIEMPRE por la
+ *  positiva y con compasión: nombra suave el tropiezo, lee la reacción como algo con su valor y da el
+ *  acompañamiento. Contenido DISC (panel de expertos, es fuente de verdad, revisado contra el guard). */
+export function buildMalSection(ficha: EvidenceFicha, ctx: ReportContext): ReportBlock {
+  const pack = packOf(ctx);
+  const b = pack.bodies;
+  const n = ctx.nombre;
+  const prim = ficha.votes.ejePrimario;
+  return {
+    cuerpo: fill(b.mal, { n, anchor: pack.mal_anchor[prim], acompanar: pack.mal_acompanar[prim] }),
+    ejemplo: fill(pack.mal_ejemplo[prim], { n }),
+  };
+}
+
 // ── Secciones de CONTENIDO por eje (leen el sustrato aprobado; null si el eje aún no tiene voz) ──
 export interface PalabrasSection { puente: string[]; ruido: string[]; nota: string; }
 export interface GuiaSection { lead: string; antes: string; durante: string; despues: string; ejemplo: string; }
@@ -351,6 +365,7 @@ export function buildReportV4(ficha: EvidenceFicha, ctx: ReportContext): ReportV
   texto('tormenta', buildTormentaSection(ficha, ctx));
   texto('grupo', buildGrupoSection(ficha, ctx));
   texto('logro', buildLogroSection(ficha, ctx));
+  texto('mal', buildMalSection(ficha, ctx));
   // 3. Cómo acompañarlo (contenido de eje).
   texto('combustible', buildCombustibleSection(ficha, ctx), 'sin_contenido');
   const palabras = buildPalabrasSection(ficha, ctx);
