@@ -36,6 +36,7 @@ export interface CopyPack {
   mal_ejemplo: Record<Axis, string>;
   context_word: Record<string, string>;
   section_titles: Record<string, string>;
+  cuantas: Record<string, string>;
   group_titles: Record<string, string>;
   lead: { veta_clause: string; rotundo: string; claro: string; matices: string; parejo: string; };
   footer: string;
@@ -137,11 +138,18 @@ export const COPY: Record<Lang, CopyPack> = {
       "grupo": "Cuánto lo mueve el grupo",
       "logro": "Cuando le sale bien",
       "mal": "Cuando le sale mal",
-      "combustible": "Qué lo enciende",
+      "combustible": "Qué lo motiva",
       "palabras": "Palabras que conectan (y las que hacen ruido)",
       "guia": "Antes, durante y después",
       "reset": "Un reset que funciona",
       "ecos": "Más allá del deporte"
+    },
+    "cuantas": {
+      "casi_todas": "en casi todas sus decisiones",
+      "mayoria": "en la mayoría de sus decisiones",
+      "muchas": "en muchas de sus decisiones",
+      "varias": "en varias de sus decisiones",
+      "algunas": "en algunas de sus decisiones"
     },
     "group_titles": {
       "quien": "Quién es ${n} hoy",
@@ -151,14 +159,14 @@ export const COPY: Record<Lang, CopyPack> = {
     },
     "lead": {
       "veta_clause": " Y detrás de ese empuje asoma una **veta ${vetaLabel}**: en varias escenas también eligió ${largaSec}.",
-      "rotundo": "El juego de ${n} se apoya **de lleno en ${corta}**: la eligió en ${top} de sus 12 decisiones, una señal muy marcada.${veta} Hoy, su manera de estar en la actividad pasa claramente por ahí: ${tail}.",
-      "claro": "El juego de ${n} se apoya **con claridad en ${corta}**: fue lo que eligió en ${top} de sus 12 decisiones.${veta} Hoy, su manera de estar en la actividad pasa por ahí: ${tail}.",
+      "rotundo": "El juego de ${n} se apoya **de lleno en ${corta}**: la eligió ${cuantas}, una señal muy marcada.${veta} Hoy, su manera de estar en la actividad pasa claramente por ahí: ${tail}.",
+      "claro": "El juego de ${n} se apoya **con claridad en ${corta}**: fue lo que eligió ${cuantas}.${veta} Hoy, su manera de estar en la actividad pasa por ahí: ${tail}.",
       "matices": "El juego de ${n} se inclina hacia **${corta}**, con una presencia clara de su segundo color.${veta} Hoy tiende a moverse por ahí, sin que sea su única nota: ${tail}.",
       "parejo": "${n} juega hoy con **dos motores bien parejos**: ${dosCortas}. No es indefinición, al contrario: dispone de dos registros y tiende a elegir según lo que pide cada momento."
     },
     "footer": "Cómo leer este informe. Describe **cómo tiende a elegir ${n} hoy**, no lo que es ni lo que va a llegar a ser: es una foto de sus preferencias en este momento, no una etiqueta. Los perfiles cambian con la edad y la experiencia, **por eso recomendamos volver a perfilar a los niños cada 6 meses**. El deporte solo cambia el marco para reconocer el perfil; lo que se mide es lo mismo en cualquier actividad.",
     "bodies": {
-      "receta_base": "En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de ${n} se destaca un ingrediente: **${corta}**, que eligió en ${count} de sus 12 decisiones.",
+      "receta_base": "En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de ${n} se destaca un ingrediente: **${corta}**, que eligió ${cuantas}.",
       "receta_presentes": " Muy cerca ${verbo2} ${lista}, que le ${suman} matices a su forma de jugar.",
       "receta_suaves": " ${listaCap}, en cambio, hoy ${verbo} menos en cómo decide: son colores que también tiene disponibles y que irán tomando su lugar con el tiempo.",
       "receta_verbos": {
@@ -312,12 +320,19 @@ export const COPY: Record<Lang, CopyPack> = {
       "tormenta": "Facing the storm",
       "grupo": "How much the group moves them",
       "logro": "When things go well",
-      "combustible": "What lights them up",
+      "combustible": "What motivates them",
       "palabras": "Words that connect (and the ones that jar)",
       "guia": "Before, during and after",
       "reset": "A reset that works",
       "ecos": "Beyond the sport",
       "mal": "When things go wrong"
+    },
+    "cuantas": {
+      "casi_todas": "in almost all of their decisions",
+      "mayoria": "in most of their decisions",
+      "muchas": "in many of their decisions",
+      "varias": "in several of their decisions",
+      "algunas": "in some of their decisions"
     },
     "group_titles": {
       "quien": "Who ${n} is today",
@@ -327,14 +342,14 @@ export const COPY: Record<Lang, CopyPack> = {
     },
     "lead": {
       "veta_clause": " And behind that drive a **${vetaLabel} streak** shows through: in several scenes they also chose ${largaSec}.",
-      "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it in ${top} of their 12 decisions, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
-      "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose in ${top} of their 12 decisions.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
+      "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it ${cuantas}, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
+      "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose ${cuantas}.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
       "matices": "${n}'s game leans toward **${corta}**, with a clear presence of their second color.${veta} Today they tend to move through there, though it's not their only note: ${tail}.",
       "parejo": "${n} plays today with **two well-balanced engines**: ${dosCortas}. It's not indecision, quite the opposite: they have two registers and tend to choose according to what each moment calls for."
     },
     "footer": "How to read this report. It describes **how ${n} tends to choose today**, not what they are or what they might become: it's a snapshot of their preferences right now, not a label. Profiles change with age and experience, **which is why we recommend re-profiling children every 6 months**. The sport only changes the frame for recognizing the profile; what is measured is the same in any activity.",
     "bodies": {
-      "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose in ${count} of their 12 decisions.",
+      "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose ${cuantas}.",
       "receta_presentes": " Close behind ${verbo2} ${lista}, which ${suman} nuance to how they play.",
       "receta_suaves": " ${listaCap}, on the other hand, ${verbo} less today in how they decide: these are colors they also have available and that will find their place over time.",
       "receta_verbos": {
@@ -488,12 +503,19 @@ export const COPY: Record<Lang, CopyPack> = {
       "tormenta": "Diante da tempestade",
       "grupo": "O quanto o grupo importa",
       "logro": "Quando dá certo",
-      "combustible": "O que acende a chama",
+      "combustible": "O que o motiva",
       "palabras": "Palavras que conectam (e as que fazem ruído)",
       "guia": "Antes, durante e depois",
       "reset": "Um reset que funciona",
       "ecos": "Além do esporte",
       "mal": "Quando dá errado"
+    },
+    "cuantas": {
+      "casi_todas": "em quase todas as suas decisões",
+      "mayoria": "na maioria de suas decisões",
+      "muchas": "em muitas de suas decisões",
+      "varias": "em várias de suas decisões",
+      "algunas": "em algumas de suas decisões"
     },
     "group_titles": {
       "quien": "Quem é ${n} hoje",
@@ -503,14 +525,14 @@ export const COPY: Record<Lang, CopyPack> = {
     },
     "lead": {
       "veta_clause": " E por trás desse impulso aparece uma **veia ${vetaLabel}**: em várias cenas também escolheu ${largaSec}.",
-      "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
-      "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
+      "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso ${cuantas}, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
+      "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu ${cuantas}.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
       "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
       "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
     },
     "footer": "Como ler este relatório. Descreve **como ${n} tende a escolher hoje**, não o que é nem o que poderá chegar a fazer: é uma foto de suas preferências neste momento, não um rótulo. Os perfis mudam com a idade e a experiência, **por isso recomendamos perfilar as crianças novamente a cada 6 meses**. O esporte só muda o cenário para reconhecer o perfil; o que se mede é o mesmo em qualquer atividade.",
     "bodies": {
-      "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu em ${count} de suas 12 decisões.",
+      "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu ${cuantas}.",
       "receta_presentes": " Bem perto ${verbo2} ${lista}, que ${suman} nuances à sua forma de jogar.",
       "receta_suaves": " ${listaCap}, por outro lado, hoje ${verbo} menos em como decide: são cores que também tem disponíveis e que vão ganhando seu lugar com o tempo.",
       "receta_verbos": {

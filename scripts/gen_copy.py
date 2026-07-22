@@ -70,8 +70,15 @@ ES = {
     "receta": "Su mezcla", "contingencia": "Cómo cambia según la situación",
     "patron": "Su patrón de decisión", "motor": "Su motor", "tormenta": "Ante la tormenta",
     "grupo": "Cuánto lo mueve el grupo", "logro": "Cuando le sale bien", "mal": "Cuando le sale mal",
-    "combustible": "Qué lo enciende", "palabras": "Palabras que conectan (y las que hacen ruido)",
+    "combustible": "Qué lo motiva", "palabras": "Palabras que conectan (y las que hacen ruido)",
     "guia": "Antes, durante y después", "reset": "Un reset que funciona", "ecos": "Más allá del deporte",
+  },
+  # Cuantificador de proporción (reemplaza el conteo absoluto "N de 12": expone menos el algoritmo).
+  # La preposición va incluida en la frase (pt contrae: na/em). Bandas por topCount en reportV4.ts.
+  "cuantas": {
+    "casi_todas": "en casi todas sus decisiones", "mayoria": "en la mayoría de sus decisiones",
+    "muchas": "en muchas de sus decisiones", "varias": "en varias de sus decisiones",
+    "algunas": "en algunas de sus decisiones",
   },
   # group_titles/footer: usados por el RENDER (ReportV4View), no snapshot-guarded. Reconciliar con la vista (paso 7).
   "group_titles": {
@@ -80,14 +87,14 @@ ES = {
   },
   "lead": {
     "veta_clause": " Y detrás de ese empuje asoma una **veta ${vetaLabel}**: en varias escenas también eligió ${largaSec}.",
-    "rotundo": "El juego de ${n} se apoya **de lleno en ${corta}**: la eligió en ${top} de sus 12 decisiones, una señal muy marcada.${veta} Hoy, su manera de estar en la actividad pasa claramente por ahí: ${tail}.",
-    "claro": "El juego de ${n} se apoya **con claridad en ${corta}**: fue lo que eligió en ${top} de sus 12 decisiones.${veta} Hoy, su manera de estar en la actividad pasa por ahí: ${tail}.",
+    "rotundo": "El juego de ${n} se apoya **de lleno en ${corta}**: la eligió ${cuantas}, una señal muy marcada.${veta} Hoy, su manera de estar en la actividad pasa claramente por ahí: ${tail}.",
+    "claro": "El juego de ${n} se apoya **con claridad en ${corta}**: fue lo que eligió ${cuantas}.${veta} Hoy, su manera de estar en la actividad pasa por ahí: ${tail}.",
     "matices": "El juego de ${n} se inclina hacia **${corta}**, con una presencia clara de su segundo color.${veta} Hoy tiende a moverse por ahí, sin que sea su única nota: ${tail}.",
     "parejo": "${n} juega hoy con **dos motores bien parejos**: ${dosCortas}. No es indefinición, al contrario: dispone de dos registros y tiende a elegir según lo que pide cada momento.",
   },
   "footer": "Cómo leer este informe. Describe **cómo tiende a elegir ${n} hoy**, no lo que es ni lo que va a llegar a ser: es una foto de sus preferencias en este momento, no una etiqueta. Los perfiles cambian con la edad y la experiencia, **por eso recomendamos volver a perfilar a los niños cada 6 meses**. El deporte solo cambia el marco para reconocer el perfil; lo que se mide es lo mismo en cualquier actividad.",
   "bodies": {
-    "receta_base": "En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de ${n} se destaca un ingrediente: **${corta}**, que eligió en ${count} de sus 12 decisiones.",
+    "receta_base": "En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de ${n} se destaca un ingrediente: **${corta}**, que eligió ${cuantas}.",
     "receta_presentes": " Muy cerca ${verbo2} ${lista}, que le ${suman} matices a su forma de jugar.",
     "receta_suaves": " ${listaCap}, en cambio, hoy ${verbo} menos en cómo decide: son colores que también tiene disponibles y que irán tomando su lugar con el tiempo.",
     "receta_verbos": {"aparece": "aparece", "aparecen": "aparecen", "suma": "suma", "suman": "suman", "pesa": "pesa", "pesan": "pesan", "ytambien": "y también", "y": "y"},
@@ -173,6 +180,7 @@ def build_lang(lang):
         "mal_ejemplo": c["mal_ejemplo"],
         "context_word": c["context_word"],
         "section_titles": c["section_titles"],
+        "cuantas": c["cuantas"],
         "group_titles": c["group_titles"],
         "lead": c["lead"],
         "footer": c["footer"],
@@ -230,6 +238,7 @@ export interface CopyPack {
   mal_ejemplo: Record<Axis, string>;
   context_word: Record<string, string>;
   section_titles: Record<string, string>;
+  cuantas: Record<string, string>;
   group_titles: Record<string, string>;
   lead: { veta_clause: string; rotundo: string; claro: string; matices: string; parejo: string; };
   footer: string;

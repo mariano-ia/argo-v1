@@ -79,7 +79,7 @@ function buildPrompt(source: ReturnType<typeof extractSource>, lang: string, nom
     const system = `Eres un reescritor cuidadoso de un informe de perfil conductual de un niño deportista. Recibes un informe YA escrito y correcto. Tu ÚNICA tarea es REESCRIBIR la prosa para que se lea como un documento fresco y DISTINTO, SIN cambiar ningún hecho. El informe debe leerse claramente diferente a otro informe de un perfil parecido, pero seguir siendo del MISMO niño.
 
 REGLAS ESTRICTAS:
-1. Conserva EXACTO todo número (contadores como "8 de 12", edades). No los cambies ni los borres.
+1. Conserva EXACTO todo número que aparezca (por ejemplo la edad). No los cambies ni los borres.
 2. Nunca cambies el arquetipo, los ejes, ni qué color/motor predomina. La lectura del perfil es intocable.
 3. Mismo significado por sección; variá las palabras, la estructura de las oraciones, el ritmo y el orden de las ideas dentro de cada sección.
 4. Mantené los marcadores **negrita** alrededor de las frases clave (podés moverlos, pero conservá un énfasis parecido).

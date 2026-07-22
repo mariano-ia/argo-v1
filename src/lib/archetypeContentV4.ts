@@ -122,7 +122,7 @@ export const OPPOSITE_TENDENCIA_KEYS = ['D_S', 'S_D', 'I_C', 'C_I'] as const;
 export interface EjeBaseContent {
   eje: Axis;
   label: string;             // 'Impulsor' (primario puro; el blend lo arma getBlendName)
-  combustible: ReportBlock;  // "Qué lo enciende"
+  combustible: ReportBlock;  // "Qué lo motiva"
   palabrasPuente: string[];  // frases del adulto que conectan con este motor
   palabrasRuido: string[];   // frases que suelen apagar/friccionar este motor
   palabrasNota: string;      // cierre de la sección palabras (tono, no guion)

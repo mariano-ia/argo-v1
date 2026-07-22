@@ -68,7 +68,7 @@
         "tormenta": "Facing the storm",
         "grupo": "How much the group moves them",
         "logro": "When things go well",
-        "combustible": "What lights them up",
+        "combustible": "What motivates them",
         "palabras": "Words that connect (and the ones that jar)",
         "guia": "Before, during and after",
         "reset": "A reset that works",
@@ -83,8 +83,8 @@
       },
       "lead": {
         "veta_clause": " And behind that drive a **${vetaLabel} streak** shows through: in several scenes they also chose ${largaSec}.",
-        "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it in ${top} of their 12 decisions, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
-        "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose in ${top} of their 12 decisions.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
+        "rotundo": "${n}'s game leans **all in on ${corta}**: they chose it ${cuantas}, a very strong signal.${veta} Today, the way they show up in the activity clearly runs through there: ${tail}.",
+        "claro": "${n}'s game leans **clearly on ${corta}**: it's what they chose ${cuantas}.${veta} Today, the way they show up in the activity runs through there: ${tail}.",
         "matices": "${n}'s game leans toward **${corta}**, with a clear presence of their second color.${veta} Today they tend to move through there, though it's not their only note: ${tail}.",
         "parejo": "${n} plays today with **two well-balanced engines**: ${dosCortas}. It's not indecision, quite the opposite: they have two registers and tend to choose according to what each moment calls for."
       },
@@ -105,7 +105,14 @@
         "D": "When something doesn't go ${n}'s way and they already want to go for more, it helps to hear a \"I love that you want to keep going, let's try something different next time.\"",
         "I": "For ${n}, a \"this doesn't change anything between us, we're the same as always,\" said before any technical tip, turns the whole moment around.",
         "S": "If ${n} goes quiet and seems to be carrying it all, a \"the team is okay, we'll sort this out together\" helps more than asking them to talk right away.",
-        "C": "After turning it over a lot, a \"let's keep just one thing for next time\" helps settle ${n}'s mind, better than going back over every detail."
+          "C": "After turning it over a lot, a \"let's keep just one thing for next time\" helps settle ${n}'s mind, better than going back over every detail."
+      },
+      "cuantas": {
+        "casi_todas": "in almost all of their decisions",
+        "mayoria": "in most of their decisions",
+        "muchas": "in many of their decisions",
+        "varias": "in several of their decisions",
+        "algunas": "in some of their decisions"
       }
     },
     "pt": {
@@ -176,7 +183,7 @@
         "tormenta": "Diante da tempestade",
         "grupo": "O quanto o grupo importa",
         "logro": "Quando dá certo",
-        "combustible": "O que acende a chama",
+        "combustible": "O que o motiva",
         "palabras": "Palavras que conectam (e as que fazem ruído)",
         "guia": "Antes, durante e depois",
         "reset": "Um reset que funciona",
@@ -191,8 +198,8 @@
       },
       "lead": {
         "veta_clause": " E por trás desse impulso aparece uma **veia ${vetaLabel}**: em várias cenas também escolheu ${largaSec}.",
-        "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso em ${top} de suas 12 decisões, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
-        "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu em ${top} de suas 12 decisões.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
+        "rotundo": "O jogo de ${n} se apoia **totalmente n${corta}**: escolheu isso ${cuantas}, um sinal muito marcado.${veta} Hoje, seu jeito de estar na atividade passa claramente por aí: ${tail}.",
+        "claro": "O jogo de ${n} se apoia **com clareza n${corta}**: foi o que escolheu ${cuantas}.${veta} Hoje, seu jeito de estar na atividade passa por aí: ${tail}.",
         "matices": "O jogo de ${n} se inclina para **${corta}**, com uma presença clara de sua segunda cor.${veta} Hoje tende a se mover por aí, sem que seja sua única nota: ${tail}.",
         "parejo": "${n} joga hoje com **dois motores bem equilibrados**: ${dosCortas}. Não é indefinição, pelo contrário: dispõe de dois registros e tende a escolher conforme o que cada momento pede."
       },
@@ -214,13 +221,20 @@
         "I": "Para ${n}, um \"isso não muda nada entre a gente, está tudo igual\", dito antes de qualquer conselho técnico, transforma o momento.",
         "S": "Se ${n} fica em silêncio e como que carregando tudo, ajuda um \"a equipe está bem, isso a gente resolve juntos\", mais do que pedir para falar na hora.",
         "C": "Depois de dar muitas voltas, um \"vamos ficar com uma só coisa para a próxima\" organiza a cabeça de ${n}, melhor do que seguir revisando cada detalhe."
+      },
+      "cuantas": {
+        "casi_todas": "em quase todas as suas decisões",
+        "mayoria": "na maioria de suas decisões",
+        "muchas": "em muitas de suas decisões",
+        "varias": "em várias de suas decisões",
+        "algunas": "em algumas de suas decisões"
       }
     }
   },
   "bodies": {
     "en": {
       "section_bodies": {
-        "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose in ${count} of their 12 decisions.",
+        "receta_base": "In Argo, every profile blends the model's four colors in its own way, and in ${n}'s, one ingredient stands out: **${corta}**, which they chose ${cuantas}.",
         "receta_presentes": " Close behind ${verbo2} ${lista}, which ${suman} nuance to how they play.",
         "receta_suaves": " ${listaCap}, on the other hand, ${verbo} less today in how they decide: these are colors they also have available and that will find their place over time.",
         "receta_verbos": {
@@ -286,7 +300,7 @@
     },
     "pt": {
       "section_bodies": {
-        "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu em ${count} de suas 12 decisões.",
+        "receta_base": "No Argo, cada perfil combina à sua maneira as quatro cores do modelo, e no de ${n} se destaca um ingrediente: **${corta}**, que escolheu ${cuantas}.",
         "receta_presentes": " Bem perto ${verbo2} ${lista}, que ${suman} nuances à sua forma de jogar.",
         "receta_suaves": " ${listaCap}, por outro lado, hoje ${verbo} menos em como decide: são cores que também tem disponíveis e que vão ganhando seu lugar com o tempo.",
         "receta_verbos": {

@@ -41,7 +41,7 @@ const DESVIO3: [number, 'D' | 'I' | 'S' | 'C'][] = [
 ];
 
 // ── Encabezado ──
-test('hero (8-3-1-0): registro claro, perfil + veta, tono "con claridad", cita 8 de 12', () => {
+test('hero (8-3-1-0): registro claro, perfil + veta, tono "con claridad", cita la proporción (no el número)', () => {
   const h = buildReportHero(fichaFor({ D: 8, C: 3, I: 1, S: 0 }), CTX('Mateo'));
   assert.strictEqual(h.arquetipoLabel, 'Impulsor con tonos de Estratega'); // B2=2 => "con tonos de"
   assert.strictEqual(h.primarioLabel, 'Impulsor');
@@ -49,16 +49,18 @@ test('hero (8-3-1-0): registro claro, perfil + veta, tono "con claridad", cita 8
   assert.strictEqual(h.registro, 'claro');
   assert.strictEqual(h.meter.level, 3);
   assert.match(h.lead, /\*\*con claridad en la acción\*\*/);
-  assert.match(h.lead, /8 de sus 12/);
+  assert.match(h.lead, /en la mayoría de sus decisiones/); // topCount 8 => banda "mayoria"
+  assert.ok(!/\d+ de sus 12/.test(h.lead), 'no expone el conteo absoluto');
   assert.match(h.lead, /veta estratega/);
 });
 
-test('hero rotundo (10-1-1-0): "de lleno" y cita el número', () => {
+test('hero rotundo (10-1-1-0): "de lleno" y cita la proporción (casi todas), sin número', () => {
   const h = buildReportHero(fichaFor({ D: 10, I: 1, S: 1, C: 0 }), CTX('Lucas'));
   assert.strictEqual(h.registro, 'rotundo');
   assert.strictEqual(h.meter.level, 4);
   assert.match(h.lead, /\*\*de lleno en la acción\*\*/);
-  assert.match(h.lead, /10 de sus 12/);
+  assert.match(h.lead, /en casi todas sus decisiones/); // topCount 10 => banda "casi_todas"
+  assert.ok(!/\d+ de sus 12/.test(h.lead), 'no expone el conteo absoluto');
 });
 
 test('hero parejo (6-6-0-0): igual da perfil + veta, nombra los dos motores', () => {
@@ -77,10 +79,11 @@ test('hero veta OPUESTA (D-7 S-5): nombre primario PURO, sin veta en el encabeza
 });
 
 // ── Secciones data-driven ──
-test('receta: describe su mezcla con la cifra + ejemplo, sin placeholders', () => {
-  const b = buildRecetaSection(orderedFicha(DESVIO), CTX('Mateo'));
+test('receta: describe su mezcla con la proporción + ejemplo, sin placeholders ni número', () => {
+  const b = buildRecetaSection(orderedFicha(DESVIO), CTX('Mateo')); // DESVIO = 9-2-1-0 => banda "mayoria"
   assert.match(b.cuerpo, /se destaca un ingrediente: \*\*la acción\*\*/);
-  assert.match(b.cuerpo, /9 de sus 12/);
+  assert.match(b.cuerpo, /en la mayoría de sus decisiones/);
+  assert.ok(!/\d+ de sus 12/.test(b.cuerpo), 'no expone el conteo absoluto');
   assert.ok(b.ejemplo && b.ejemplo.includes('Mateo'));
   assert.ok(!/\{nombre\}/.test(b.cuerpo + b.ejemplo));
 });

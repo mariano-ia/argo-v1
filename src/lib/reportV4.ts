@@ -55,6 +55,19 @@ function injectBlock(b: ReportBlock, nombre: string): ReportBlock {
   return { cuerpo: inject(b.cuerpo, nombre), ...(b.ejemplo ? { ejemplo: inject(b.ejemplo, nombre) } : {}) };
 }
 
+// Cuantificador de proporción por conteo del eje (de 12): reemplaza el número absoluto ("N de 12")
+// por una palabra ("casi todas / la mayoría / muchas / varias / algunas"). Owner 2026-07-21: abrir el
+// algoritmo con cifras genera desconfianza en quien no lo domina; la palabra dice lo mismo por la positiva.
+// Las bandas nunca chocan con el adjetivo del registro: por la aritmética de 12 respuestas, 'rotundo'
+// (B≥6) ⟹ topCount≥8 y 'claro' (B≥4) ⟹ topCount≥6, así que la cita siempre cae en muchas/mayoría/casi todas.
+function cuantasKey(count: number): string {
+  if (count >= 10) return 'casi_todas';
+  if (count >= 8) return 'mayoria';
+  if (count >= 6) return 'muchas';
+  if (count >= 4) return 'varias';
+  return 'algunas';
+}
+
 // ── Encabezado ──────────────────────────────────────────────────────────────
 const METER_LEVEL: Record<Registro, number> = { parejo: 1, matices: 2, claro: 3, rotundo: 4 };
 
@@ -85,7 +98,8 @@ function leadParagraph(v: VotesEvidence, ctx: ReportContext): string {
     ? fill(pack.lead.veta_clause, { vetaLabel: pack.veta_word[v.ejeSecundario], largaSec: pack.eje_word[v.ejeSecundario].larga })
     : '';
   const dosCortas = listaClara([corta, pack.eje_word[v.ejeSecundario].corta], pack.bodies.receta_verbos.y, pack.bodies.receta_verbos.ytambien);
-  return fill(pack.lead[v.registro], { n, corta, top: v.topCount, veta, tail, dosCortas });
+  const cuantas = pack.cuantas[cuantasKey(v.topCount)];
+  return fill(pack.lead[v.registro], { n, corta, cuantas, veta, tail, dosCortas });
 }
 
 /** Arma el encabezado del informe desde la ficha. El nombre + veta van SIEMPRE. */
@@ -138,7 +152,7 @@ export function buildRecetaSection(ficha: EvidenceFicha, ctx: ReportContext): Re
   const p = r[0];
   const presentes = r.slice(1).filter((x) => x.presencia === 'presente');
   const suaves = r.slice(1).filter((x) => x.presencia === 'apenas' || x.presencia === 'ausente');
-  let cuerpo = fill(b.receta_base, { n, corta: corta(p), count: p.count });
+  let cuerpo = fill(b.receta_base, { n, corta: corta(p), cuantas: pack.cuantas[cuantasKey(p.count)] });
   if (presentes.length) {
     const verbo2 = presentes.length > 1 ? rv.aparecen : rv.aparece;
     const suman = presentes.length > 1 ? rv.suman : rv.suma;
@@ -287,7 +301,7 @@ export function buildMalSection(ficha: EvidenceFicha, ctx: ReportContext): Repor
 export interface PalabrasSection { puente: string[]; ruido: string[]; nota: string; }
 export interface GuiaSection { lead: string; antes: string; durante: string; despues: string; ejemplo: string; }
 
-/** "Qué lo enciende" (combustible del eje). null si el eje aún no está redactado en ese idioma. */
+/** "Qué lo motiva" (combustible del eje). null si el eje aún no está redactado en ese idioma. */
 export function buildCombustibleSection(ficha: EvidenceFicha, ctx: ReportContext): ReportBlock | null {
   const c = getEjeBase(ficha.votes.ejePrimario, langOf(ctx));
   return c ? injectBlock(c.combustible, ctx.nombre) : null;
