@@ -245,7 +245,7 @@ export function buildHtml(args: {
 // the invited "abuela" (only holds a bridge, reached via a shared link) goes to
 // the bridge's own online page. Inlined (no cross-file imports on Vercel).
 async function resolvePanelDestination(
-    sb: ReturnType<typeof createClient>,
+    sb: ReturnType<typeof createClient<any, any>>,
     email: string,
     lang: string,
     origin: string,
