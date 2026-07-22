@@ -106,3 +106,22 @@ Hero -> grupo "Quién es hoy" (Su mezcla / Su patrón / Su motor) -> "Cómo se l
 - **No push sin OK explícito** (regla del proyecto). Este deploy a develop fue autorizado; NO va a `main`/producción sin "mandalo a producción".
 - `preview/` está en `.gitignore` -> se commitea con `git add -f`.
 - Deploy: Vercel sirve `public/redesign/*.html` como archivos reales (filesystem gana al rewrite SPA).
+
+---
+
+## PARTE F — Design System del rediseño (elementos nuevos, reutilizables)
+Vocabulario visual que salió del informe del niño y ahora es el sistema para el resto (Puente incluido).
+Implementación de referencia: `preview/redesign-informes-2026-07/gen_preview.py`.
+
+- **Fuentes:** Inter (cuerpo/UI) + **Fraunces** (serif de display, SOLO nombres/arquetipos). Embebidas b64 en la maqueta; en el real, sumar Fraunces al pipeline.
+- **Orbe (primitiva firma):** disco de vidrio transparente. `orb_bg(hex)` = 2 radiales (brillo blanco 36%/30% + teñido del color ~30% alpha que se desvanece a ~5%). `orb_shadow(hex)` = rim de color por `inset box-shadow` + halo suave. **Vivo:** `@keyframes orbMorphA/B` (morfa el `border-radius`) + float lento, ritmos distintos por orbe. SIEMPRE con `@media (prefers-reduced-motion: reduce){animation:none}`. Contenedor con `aspect-ratio` para que no se desborde en mobile.
+  - **Jerarquía de tamaño (identidad):** un solo eje 70% > primario compuesto 62% > secundario por banda de veta (destellos 40 / tonos 48 / veta 56); parejos iguales (56+56).
+- **Mezcla (4 orbes):** un orbe por eje dimensionado por su % (min 22px..96px), alineados a una base, con punto de color + nombre + % debajo. Los 4 siempre presentes (aunque 0%).
+- **Spectrum:** hairline (relleno tenue) con un **mini-orbe de vidrio que respira** como marcador sobre un eje con extremos rotulados. Para lecturas de dimensión (Pausado↔Ágil, etc.).
+- **Orbset:** 1-N mini orbes de vidrio dimensionados por valor, con label + %. Para comparaciones de eje (Involucrar↔Sostener).
+- **Timeline:** pasos en columna, cada uno con nodo mini-orbe del color del eje, conectados por un hilo vertical fino; label + texto por paso. Para secuencias (Antes/Durante/Después).
+- **Paneles glass:** paneles suaves con wash tenue del color del eje (o neutro), encabezados por un mini-orbe + label; contenido como líneas. Para pares (Conectan / Hacen ruido).
+- **Dividers hairline (se desvanecen en los extremos):** `title-rule` (debajo de cada título), `sec-divider` (entre secciones), `mz-divider` (dentro de una card, entre gráfico y texto).
+- **Aire:** padding cards ~28/32 (hero ~36/38), `line-height` cuerpo ~1.72, espacios generosos entre párrafos/secciones/grupos.
+- **Disciplina de color:** eje = IDENTIDAD; violeta (`argo-violet-*`) = MARCA/INTERACCIÓN (el `(i)`, asides); verde PROHIBIDO salvo semántica real.
+- **(i) del sistema:** icono `Info` de lucide redondo, hover violeta, burbuja navy; tooltip `white-space:normal` + `max-width` (se ajusta al texto); variante que abre hacia arriba para bordes.
