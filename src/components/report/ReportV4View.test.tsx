@@ -32,8 +32,8 @@ test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, p
   // Encabezado: nombre del niño + adulto responsable + fecha (como el legacy)
   assert.match(html, /Adulto responsable: Marian/);
   assert.match(html, /07 de julio de 2026/);
-  // Hero: perfil + veta coloreados. El conector varía por banda (con veta / con tonos de / con destellos de);
-  // Mateo (B2=2) => "con tonos de". Assert band-agnóstico para no quedar stale.
+  // Hero: perfil + veta coloreados. El conector varía por banda de veta (con veta / con tonos de /
+  // con destellos de); Mateo (B2=2) => "con tonos de". Assert band-agnóstico para no volver a quedar stale.
   assert.match(html, /Impulsor/);
   assert.match(html, /con (veta|tonos de|destellos de)/);
   assert.match(html, /Estratega/);
@@ -62,6 +62,15 @@ test('ReportV4View renderiza el informe real: hero, negritas, ejemplos, chips, p
   // Nueva sección "Cuando le sale mal" (espejo de logro), presente y ordenada tras "Cuando le sale bien"
   assert.match(html, /Cuando le sale mal/);
   assert.ok(html.indexOf('Cuando le sale bien') < html.indexOf('Cuando le sale mal'), 'mal va después de bien');
+  // Tooltips (i) por sección: usa el InfoTip del sistema (icono Info de lucide, hover violeta).
+  // El texto del tip va en portal (solo al abrir), por eso se verifica el icono, no el copy.
+  assert.match(html, /lucide-info/);
+  // "Qué lo motiva" (ex "Qué lo enciende")
+  assert.match(html, /Qué lo motiva/);
+  assert.ok(!/Qué lo enciende/.test(html), 'el título viejo ya no aparece');
+  // Su mezcla por proporción, sin exponer el conteo absoluto
+  assert.match(html, /en la mayoría de sus decisiones/);
+  assert.ok(!/\d+ de sus 12/.test(html), 'no expone "N de 12"');
 });
 
 test('ReportV4View: informe v4 VIEJO (sin hero.veta, solo vetaLabel) NO pierde la veta', () => {

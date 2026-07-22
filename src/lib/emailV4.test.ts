@@ -10,7 +10,7 @@ const hero = {
   vetaLabel: 'con veta Estratega',
   ejePrimario: 'D',
   ejeSecundario: 'C',
-  lead: 'El juego de Mateo se apoya **con claridad en la acción**: fue lo que eligió en 8 de sus 12 decisiones.',
+  lead: 'El juego de Mateo se apoya **con claridad en la acción**: fue lo que eligió en la mayoría de sus decisiones.',
 };
 const params = { nombreNino: 'Mateo', nombreAdulto: 'Marian', edad: 11, deporte: 'Fútbol', sessionId: 'abc', shareToken: 'tok', siteUrl: 'https://develop.argomethod.com', lang: 'es' };
 
