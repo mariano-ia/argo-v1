@@ -51,3 +51,34 @@ export const SECTION_TIPS: Record<Lang, Record<string, string>> = {
     ecos: "Como esse mesmo motor aparece no seu dia a dia, fora da quadra.",
   },
 };
+
+// Micro-copy del CHROME visual del informe v4 (rediseño 2026-07): la línea de "eyebrow" sobre el nombre,
+// la pastilla "Perfil ___" con su (i), y las etiquetas de los espectros (motor / patrón). Igual que
+// SECTION_TIPS: SOLO para el render, fuera del engine/IA/email/snapshot. Léxico alineado con los tips de
+// arriba ("rápido o pausado", "ritmo parejo"), así no introduce conceptos nuevos. es/en/pt.
+export interface ReportChrome {
+  eyebrow: string;        // encima del nombre del arquetipo ("Su perfil hoy")
+  meterPrefix: string;    // pastilla de confianza ("Perfil " + nivel actual)
+  meterTip: string;       // (i) de la pastilla: qué significa "cuán marcado está el perfil"
+  spectrum: { patron: [string, string]; motor: [string, string] };  // [izquierda, derecha]
+}
+export const REPORT_CHROME: Record<Lang, ReportChrome> = {
+  es: {
+    eyebrow: "Su perfil hoy",
+    meterPrefix: "Perfil",
+    meterTip: "Expresa cuán definido se ve el perfil hoy: si un eje sobresale con claridad o si conviven varios de forma pareja. No es una nota: un perfil parejo no es mejor ni peor, solo menos marcado.",
+    spectrum: { patron: ["Ritmo parejo", "Ritmo diverso"], motor: ["Pausado", "Ágil"] },
+  },
+  en: {
+    eyebrow: "Their profile today",
+    meterPrefix: "Profile",
+    meterTip: "It shows how defined the profile looks today: whether one axis stands out clearly or several coexist evenly. It isn't a grade: an even profile is neither better nor worse, just less pronounced.",
+    spectrum: { patron: ["Steady pace", "Varied pace"], motor: ["Measured", "Quick"] },
+  },
+  pt: {
+    eyebrow: "Seu perfil hoje",
+    meterPrefix: "Perfil",
+    meterTip: "Mostra quão definido o perfil parece hoje: se um eixo se destaca com clareza ou se vários convivem de forma equilibrada. Não é uma nota: um perfil equilibrado não é melhor nem pior, apenas menos marcado.",
+    spectrum: { patron: ["Ritmo constante", "Ritmo diverso"], motor: ["Pausado", "Ágil"] },
+  },
+};

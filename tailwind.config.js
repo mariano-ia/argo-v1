@@ -54,6 +54,7 @@ export default {
                 display:   ['Inter', 'sans-serif'],
                 adventure: ['"Lilita One"', 'cursive'],
                 quest:     ['"Quicksand"', 'sans-serif'],
+                serif:     ['Fraunces', 'ui-serif', 'serif'],
             },
             borderRadius: {
                 'argo-sm': '12px',
