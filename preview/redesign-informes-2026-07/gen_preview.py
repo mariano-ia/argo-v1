@@ -282,7 +282,8 @@ body{margin:0;background:var(--page);color:var(--page-ink);
 /* dos lentes de vidrio transparentes, claramente superpuestas (se cruzan en el centro-derecha) */
 .orb-1{width:62%;aspect-ratio:1;left:3%;top:6%;z-index:2;
   animation:orbMorphA 9s ease-in-out infinite,orbFloatA 12s ease-in-out infinite;}
-.orb-2{width:56%;aspect-ratio:1;left:33%;top:32%;z-index:1;
+/* orbe SECUNDARIO (veta): apenas más chico que el primario, para que se lea la jerarquía */
+.orb-2{width:50%;aspect-ratio:1;left:36%;top:34%;z-index:1;
   animation:orbMorphB 8s ease-in-out infinite,orbFloatB 14s ease-in-out infinite;}
 @keyframes orbMorphA{0%,100%{border-radius:58% 42% 47% 53% / 56% 51% 49% 44%}50%{border-radius:45% 55% 55% 45% / 50% 45% 55% 50%}}
 @keyframes orbMorphB{0%,100%{border-radius:52% 48% 44% 56% / 53% 47% 53% 47%}50%{border-radius:61% 39% 56% 44% / 46% 57% 43% 54%}}
@@ -301,7 +302,7 @@ body{margin:0;background:var(--page);color:var(--page-ink);
 .hx-conf{display:inline-flex;align-items:center;gap:6px;margin-top:16px;background:var(--v50);border:1px solid var(--v100);
   border-radius:999px;padding:5px 5px 5px 11px;font-size:11.5px;font-weight:600;color:var(--v600);}
 /* variantes de orbes/pills por caso */
-.orb-solo{width:60%;left:20%;top:9%;}                     /* un solo eje: orbe centrado */
+.orb-solo{width:70%;left:15%;top:6%;}                     /* un solo eje: orbe MÁS grande que el compuesto */
 .orb-1.orb-eq{width:56%;left:5%;top:11%;}                 /* parejos: mismo tamaño, solape simétrico */
 .orb-2.orb-eq{width:56%;left:35%;top:29%;}
 .opill-solo{position:absolute;display:inline-flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--border);
