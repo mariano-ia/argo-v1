@@ -29,27 +29,28 @@ perfil_adulto = ("Tu estilo tiende a apoyarse en el **plan y la mirada larga**: 
                  "orden y previsibilidad. Bajo presión sueles mantener la calma y ordenar, más que empujar. Es un "
                  "gran recurso, y también el punto desde donde a veces cuesta encontrarse con un chico que decide "
                  "y arranca primero, y piensa después.")
+# Los 4 puentes son slots fijos del informe (momentos), no temas libres.
 puentes = [
-  {'titulo': 'Cuando él arranca antes de pensar',
-   'como_esta_el': 'Mateo tiende a decidir y moverse rápido: siente que avanzar es la forma de resolver, y detenerse a planear puede vivirlo como frenar algo que ya estaba en marcha.',
+  {'nombre': 'Antes del juego',
+   'como_esta_el': 'Antes de entrar a jugar, Mateo quiere ya estar en movimiento: siente que arrancar es la forma de resolver, y la previa (calentar, esperar el turno, escuchar la charla) puede vivirla como frenar algo que en su cabeza ya empezó.',
    'lo_que_traes': 'Tú sueles ver el paso siguiente y los riesgos antes de que aparezcan. Esa anticipación es un regalo: puede ahorrarle a Mateo más de un tropiezo.',
-   'el_puente': 'En lugar de pedirle que frene, prueba ofrecerle tu mirada como una pregunta corta en movimiento: "¿y si esto no sale, cuál es el plan B?". Le sumas cabeza sin apagarle el impulso.',
-   'pregunta': '¿En qué momento de esta semana podrías dejar que Mateo arranque a su modo, y sumar tu mirada solo si hace falta?'},
-  {'titulo': 'El ritmo de cada uno',
-   'como_esta_el': 'A Mateo lo enciende lo inmediato: quiere ver que su acción produce un efecto ya. La espera y los procesos largos suelen costarle más.',
-   'lo_que_traes': 'Tú aportas el tiempo largo: sabes que las cosas buenas se construyen de a poco y no todo se resuelve en el primer intento.',
-   'el_puente': 'Tradúcele tu paciencia a metas cortas y visibles: en lugar de "esto lleva meses", "esta semana logramos esto". Conviertes tu horizonte largo en pequeñas victorias que él sí puede sentir.',
-   'pregunta': '¿Cuál sería una meta chica y concreta que Mateo pueda ver cumplida antes del fin de semana?'},
-  {'titulo': 'Cuando algo no sale',
+   'el_puente': 'En lugar de pedirle que frene, prueba ofrecerle tu mirada como una pregunta corta antes de empezar: "¿y si esto no sale, cuál es el plan B?". Le sumas cabeza sin apagarle las ganas de entrar.',
+   'pregunta': '¿Qué idea corta podrías darle a Mateo antes del próximo partido, para que entre con un plan sin perder su impulso?'},
+  {'nombre': 'Cuando algo no sale bien',
    'como_esta_el': 'Cuando algo no le sale, Mateo tiende a querer volver a la acción enseguida: quedarse a analizar puede sentirlo como quedarse atascado.',
    'lo_que_traes': 'Tú sueles querer entender qué pasó para que no se repita. Esa lectura tranquila es justo lo que evita tropezar dos veces con la misma piedra.',
    'el_puente': 'Dale primero el movimiento que necesita y deja el análisis para después, en frío: "ahora seguimos, y en un rato pensamos juntos qué ajustar". Así tu reflexión llega cuando él puede escucharla.',
    'pregunta': '¿Cómo te suena separar el "seguimos" del "pensemos qué pasó", para que Mateo pueda recibir los dos?'},
-  {'titulo': 'Lo que más lo motiva',
-   'como_esta_el': 'A Mateo lo mueve sentir que su empuje deja una marca concreta. El reconocimiento de su iniciativa suele ser su mejor combustible.',
+  {'nombre': 'Después del partido',
+   'como_esta_el': 'Cuando termina el partido, a Mateo lo mueve sentir que su empuje dejó una marca: el reconocimiento de lo que se animó a hacer suele ser su mejor combustible para la próxima.',
    'lo_que_traes': 'Tú tiendes a reconocer el proceso y la decisión bien pensada, más que el golpe de efecto. Esa mirada le enseña que lo bien hecho también vale.',
-   'el_puente': 'Une las dos cosas: reconoce su empuje y, en la misma frase, nombra la buena decisión que hubo detrás. "Me encantó cómo te animaste, y además elegiste bien el momento". Le hablas en su idioma y le sumas el tuyo.',
-   'pregunta': '¿Qué decisión concreta de Mateo podrías reconocer hoy, además de sus ganas?'},
+   'el_puente': 'Al terminar, une las dos cosas: reconoce su empuje y, en la misma frase, nombra la buena decisión que hubo detrás. "Me encantó cómo te animaste, y además elegiste bien el momento". Le hablas en su idioma y le sumas el tuyo.',
+   'pregunta': 'Después del próximo partido, ¿qué decisión concreta de Mateo podrías reconocer, además de sus ganas?'},
+  {'nombre': 'El largo plazo',
+   'como_esta_el': 'A Mateo lo enciende lo inmediato: quiere ver que su acción produce un efecto ya. El tiempo largo y los procesos que todavía no se ven suelen costarle más.',
+   'lo_que_traes': 'Tú aportas la mirada larga: sabes que las cosas buenas se construyen de a poco y no todo se resuelve en el primer intento.',
+   'el_puente': 'Tradúcele tu paciencia a metas cortas y visibles: en lugar de "esto lleva meses", "esta semana logramos esto". Conviertes tu horizonte largo en pequeñas victorias que él sí puede sentir.',
+   'pregunta': '¿Cuál sería una meta chica y concreta que Mateo pueda ver cumplida esta semana, como parte de algo más grande?'},
 ]
 cierre = ("Ninguno de los dos tiene que cambiar quién es. El puente no es que Mateo se vuelva planificador ni que "
           "tú te vuelvas impulsivo: es que cada uno le preste al otro un poco de su fortaleza. Tu calma y tu mirada "
@@ -149,7 +150,7 @@ def bridge_card(i, p):
       f'<div class="tri" style="border-color:{child_color}"><span class="tri-label" style="color:{child_color}">{esc(L["childState"])}</span><span class="tri-text">{rich(p["como_esta_el"])}</span></div>'
       f'<div class="tri" style="border-color:{adult_color}"><span class="tri-label" style="color:{adult_color}">{esc(L["adultStrength"])}</span><span class="tri-text">{rich(p["lo_que_traes"])}</span></div>'
       f'<div class="tri" style="border-color:{V600}"><span class="tri-label" style="color:{V600}">{esc(L["bridge"])}</span><span class="tri-text">{rich(p["el_puente"])}</span></div>')
-    return (f'<div class="card">{sec_head(f"Puente {i}")}<h3 class="bridge-title">{esc(p["titulo"])}</h3>'
+    return (f'<div class="card">{sec_head(p["nombre"])}'
             f'<div class="triad">{triad}</div>'
             f'<div class="refl"><span class="refl-label">{esc(L["reflection"])}</span>{rich(p["pregunta"])}</div></div>')
 
@@ -246,8 +247,9 @@ body{margin:0;background:var(--page);color:var(--page-ink);font-family:"Inter",-
 .tri{padding:1px 0 1px 14px;border-left:2px solid;}
 .tri-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
 .tri-text{display:block;font-size:14px;line-height:1.65;color:var(--sec);}
-.refl{margin-top:18px;background:var(--v50);border-radius:12px;padding:14px 16px;font-size:14px;line-height:1.6;color:var(--navy);}
-.refl-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--v600);margin-bottom:4px;}
+/* "Una pregunta para llevarte": mismo estilo que el aside al final de las cards del niño (filete violeta, sin caja) */
+.refl{margin-top:20px;padding:3px 0 3px 16px;border-left:2px solid var(--v200);font-size:13.5px;line-height:1.65;color:var(--sec);}
+.refl-label{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--v600);margin-bottom:5px;}
 .notes{margin-top:24px;padding:0 6px;color:var(--grey);}
 .notes p{margin:0 0 6px;font-size:12px;line-height:1.6;}
 .notes .notes-mut{color:var(--light);font-size:11px;}
