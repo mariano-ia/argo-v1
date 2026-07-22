@@ -27,8 +27,8 @@ _C = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pu
 saludo = _C['saludo']
 perfil_adulto = _C['perfil_adulto_breve']
 cierre = _C['cierre']
-# Los 4 puentes son slots fijos (momentos). Orden de DISPLAY: antes, después, cuando no sale, largo plazo.
-_DISPLAY_ORDER = ['antes', 'despues', 'frustracion', 'largo_plazo']
+# 5 puentes (slots fijos). Arco: previa, presencia, traspié, conversación, largo plazo.
+_DISPLAY_ORDER = ['antes', 'durante', 'traspie', 'despues', 'largo_plazo']
 _by_slot = {p['slot']: p for p in _C['puentes']}
 puentes = [_by_slot[s] for s in _DISPLAY_ORDER]
 
