@@ -1,0 +1,194 @@
+{
+ "profiles": [
+  {
+   "name": "Mateo",
+   "dep": "Fútbol",
+   "edad": 11,
+   "report": {
+    "lang": "es",
+    "hero": {
+     "nombre": "Mateo",
+     "arquetipoLabel": "Impulsor con tonos de Estratega",
+     "primarioLabel": "Impulsor",
+     "vetaLabel": "con tonos de Estratega",
+     "veta": {
+      "pre": "con tonos de",
+      "word": "Estratega",
+      "post": ""
+     },
+     "ejePrimario": "D",
+     "ejeSecundario": "C",
+     "registro": "claro",
+     "meter": {
+      "level": 3,
+      "labels": [
+       "Parejo",
+       "Con matices",
+       "Claro",
+       "De lleno"
+      ]
+     },
+     "lead": "El juego de Mateo se apoya **con claridad en la acción**: fue lo que eligió en la mayoría de sus decisiones. Y detrás de ese empuje asoma una **veta estratega**: en varias escenas también eligió mirar el plan antes de actuar. Hoy, su manera de estar en la actividad pasa por ahí: avanzar, decidir y hacer que las cosas se muevan."
+    },
+    "secciones": [
+     {
+      "id": "receta",
+      "titulo": "Su mezcla",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "En Argo, cada perfil mezcla a su manera los cuatro colores del modelo, y en el de Mateo se destaca un ingrediente: **la acción**, que eligió en la mayoría de sus decisiones. Muy cerca aparece **el detalle y el plan**, que le suma matices a su forma de jugar. El vínculo con los demás y el sostén del grupo, en cambio, hoy pesan menos en cómo decide: son colores que también tiene disponibles y que irán tomando su lugar con el tiempo.",
+       "ejemplo": "Ante una misma situación, Mateo tiende a preguntarse primero \"qué hago\" antes que \"con quién lo hago\"."
+      }
+     },
+     {
+      "id": "patron",
+      "titulo": "Su patrón de decisión",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "A lo largo del juego, Mateo **decidió en ritmos diversos**: resolvió más rápido justo en las elecciones que van con su motor principal, y ajustó el tiempo en las demás. Ese acople entre lo que elige y cuánto tarda es una huella muy personal, y cuenta algo lindo: **cuando algo le entusiasma de verdad, responde con soltura**.",
+       "ejemplo": "Frente a una decisión que le entusiasma, casi no la piensa; frente a una fuera de su terreno, se da su tiempo."
+      }
+     },
+     {
+      "id": "motor",
+      "titulo": "Su motor",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "En los mini-juegos de reacción y decisión, Mateo se movió con un **ritmo ágil**: tiende a leer rápido y a confiar en su primer impulso. Suele **arrancar las acciones y resolver con soltura cuando hay que decidir en el momento**. Acompañar a Mateo es darle lugar para esa velocidad y, de a poco, ofrecerle oportunidades para descubrir cuándo vale la pena tomarse un segundo más.",
+       "ejemplo": "Si algo hay que empezar, Mateo suele estar entre los primeros en arrancar. Sumarle la pregunta \"¿y si miro un segundo antes?\" ayuda a Mateo a crecer sin apagar su impulso."
+      }
+     },
+     {
+      "id": "tormenta",
+      "titulo": "Ante la tormenta",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Cuando las cosas se complican, Mateo no responde con una sola fórmula: **bajo presión suele tener más de un recurso**. Asoma una inclinación hacia **mirar el plan antes de actuar**, sin que sea su única salida, y esa flexibilidad es una señal valiosa: puede adaptarse a lo que cada momento pide.",
+       "ejemplo": "Ante un imprevisto, es probable que primero busque entender qué pasa y recién después se mueva."
+      }
+     },
+     {
+      "id": "grupo",
+      "titulo": "Cuánto lo mueve el grupo",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Entre los motores de Mateo, el vínculo con el equipo hoy **aparece más en segundo plano**, y es simplemente parte de su receta de este momento: no dice nada de su vida social ni de sus amistades. Su manera de sumar al grupo pasa hoy **más por el hacer que por lo emocional**, y cuando su aporte se nota, el vínculo suele venir después. Una linda forma de acercar a Mateo es **darle un rol donde su empuje tenga impacto en el equipo**.",
+       "ejemplo": "Invitar a Mateo a liderar el arranque de una jugada compartida acerca a Mateo al grupo desde su fortaleza, sin empujar a un lugar que hoy no es el suyo."
+      }
+     },
+     {
+      "id": "logro",
+      "titulo": "Cuando le sale bien",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Cuando a Mateo le sale algo, suele encenderse enseguida hacia **el próximo objetivo**: disfruta avanzando más que deteniéndose a saborear lo conseguido. En el juego se vio con claridad, porque al llegar a la meta eligió **mirar ya hacia el próximo reto**. Lo vive así, y está muy bien. Acompañar a Mateo es ayudarle a también **registrar y celebrar lo logrado** antes de volver a arrancar.",
+       "ejemplo": "Después de un buen resultado, un simple \"mira todo lo que conseguiste\" ayuda a Mateo a que el disfrute también tenga su lugar."
+      }
+     },
+     {
+      "id": "combustible",
+      "titulo": "Qué lo motiva",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Lo que más suele encender a Mateo es **tener un objetivo claro y sentir que su empuje mueve las cosas**. Cuando percibe que su iniciativa deja una marca concreta, se prende de verdad, y reconocer ese impacto es muchas veces su mejor combustible.",
+       "ejemplo": "Un \"gracias a que arrancaste, esto salió\" probablemente motive a Mateo mucho más que un elogio general."
+      }
+     },
+     {
+      "id": "palabras",
+      "titulo": "Palabras que conectan (y las que hacen ruido)",
+      "kind": "palabras",
+      "palabras": {
+       "puente": [
+        "Arranca tú con esto.",
+        "¿Qué propones para resolverlo?",
+        "Hoy marcas tú el ritmo.",
+        "Muéstrame cómo lo harías."
+       ],
+       "ruido": [
+        "Espera, todavía no te toca.",
+        "Hazlo tal cual te digo.",
+        "Mejor quédate al margen y observa."
+       ],
+       "nota": "No es un guion, es una brújula de tono: a Mateo suele **llegarle más lo que reconoce su iniciativa**, y hacerle ruido lo que frena su impulso sin explicarle por qué. Con eso en mente, las palabras exactas las pones tú."
+      }
+     },
+     {
+      "id": "guia",
+      "titulo": "Antes, durante y después",
+      "kind": "guia",
+      "guia": {
+       "lead": "Tres momentos donde una pequeña intención cambia mucho.",
+       "antes": "Ofrécele un objetivo concreto y un espacio para tomar la iniciativa. Saber que va a poder **arrancar algo suyo** enfoca y entusiasma a Mateo.",
+       "durante": "Si se acelera de más, en lugar de frenar el envión, **canaliza su empuje**: reconoce las ganas y súmale una lectura rápida antes de ir. Se trata de sumar, no de apagar.",
+       "despues": "Reconoce lo que **pone en movimiento**, no solo el resultado. A un perfil de acción suele llegarle más un \"lograste que todo arrancara\" que un elogio general.",
+       "ejemplo": "Si el sábado hay una actividad nueva, contarle \"vas a poder empezar tú\" transforma los nervios en ganas."
+      }
+     },
+     {
+      "id": "reset",
+      "titulo": "Un reset que funciona",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Cuando se frustra, a Mateo suele costarle quedarse a la espera, y eso es muy entendible en un perfil de acción. Lo que **más suele ayudar es una acción pequeña y concreta** para hacer en el momento: una tarea clara, un objetivo corto, algo que devuelva la sensación de estar avanzando.",
+       "ejemplo": "En vez de \"tranquilízate\", un \"ocúpate de esto un minuto\" suele reencauzar la situación mucho mejor."
+      }
+     },
+     {
+      "id": "ecos",
+      "titulo": "Más allá del deporte",
+      "kind": "texto",
+      "bloque": {
+       "cuerpo": "Este empuje por avanzar **no vive solo en el deporte**. Suele asomar cuando Mateo organiza un juego, propone planes o quiere resolver algo ya. Verlo en esos momentos ayuda a entender que no es impaciencia: es **su manera de estar en el mundo**.",
+       "ejemplo": "Si en casa es de los primeros en decir \"dale, hagamos esto\", estás viendo el mismo motor que mueve a Mateo en la actividad."
+      }
+     }
+    ],
+    "omitidas": [
+     {
+      "id": "contingencia",
+      "motivo": "sin_datos"
+     }
+    ]
+   }
+  }
+ ],
+ "tips": {
+  "receta": "El modelo Argo combina cuatro maneras de jugar (la acción, el vínculo, el sostén y el plan). Aquí se ve cuál pesa más en sus decisiones y cómo se ordenan las demás.",
+  "contingencia": "Mira si elige distinto según el momento (el arranque, la presión, el aguante). Solo lo contamos cuando el patrón es firme; si no, no forzamos una lectura.",
+  "patron": "Cruza qué elige con cuánto tarda en decidir. Muestra si resuelve a un ritmo parejo o si se agiliza justo en lo que más lo entusiasma.",
+  "motor": "Es su tempo: cuán rápido o pausado se mueve al jugar y decidir. Habla del ritmo, no del perfil.",
+  "tormenta": "Cómo tiende a reaccionar cuando las cosas se complican, leído en las escenas de adversidad del juego.",
+  "grupo": "Cuánto pesa el grupo en su forma de jugar: si suma entusiasmando e involucrando, o sosteniendo el clima.",
+  "logro": "Qué suele hacer cuando algo le sale: ir por el próximo objetivo, celebrarlo con otros o repasar cómo lo logró.",
+  "combustible": "Lo que lo pone en marcha y le da energía en la actividad, según el color que más lo mueve.",
+  "palabras": "Qué palabras y qué tono le llegan mejor, y cuáles pueden hacerle ruido, según su perfil.",
+  "guia": "Ideas concretas para acompañarlo en cada momento de la actividad, ajustadas a cómo funciona.",
+  "reset": "Qué suele ayudarlo a recomponerse cuando se frustra o algo no sale como esperaba.",
+  "ecos": "Cómo asoma este mismo motor en su día a día, fuera de la cancha."
+ },
+ "colors": {
+  "D": "#f97316",
+  "I": "#f59e0b",
+  "S": "#22c55e",
+  "C": "#6366f1"
+ },
+ "ui": {
+  "meter_header": "Qué tan marcado está su perfil hoy",
+  "conectan": "Conectan",
+  "ruido": "Hacen ruido",
+  "antes": "Antes",
+  "durante": "Durante",
+  "despues": "Después",
+  "adulto": "Adulto responsable",
+  "edad": "años"
+ },
+ "group_titles": {
+  "quien": "Quién es ${n} hoy",
+  "cancha": "Cómo se le ve en la actividad",
+  "acompanar": "Cómo acompañar a ${n}",
+  "masalla": "Más allá del deporte"
+ },
+ "footer": "Cómo leer este informe. Describe **cómo tiende a elegir ${n} hoy**, no lo que es ni lo que va a llegar a ser: es una foto de sus preferencias en este momento, no una etiqueta. Los perfiles cambian con la edad y la experiencia, **por eso recomendamos volver a perfilar a los niños cada 6 meses**. El deporte solo cambia el marco para reconocer el perfil; lo que se mide es lo mismo en cualquier actividad.",
+ "tipLabel": "Qué mide esta sección"
+}
