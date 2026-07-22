@@ -103,13 +103,14 @@ hero = f'''<div class="card hero-lux">
       <div class="wordmark"><span class="wm-a">Argo</span><span class="wm-b">Puente®</span></div>
       <p class="hx-eyebrow">{esc(L["kicker"])}</p>
       <h1 class="hx-name">{prof_name}</h1>
-      <p class="hx-lead">Así tiendes a estar tú en la actividad. El informe cruza tu estilo con el de {esc(child)} para tender puentes entre los dos.</p>
     </div>
     <div class="hx-right">{ORB_RING}
       {orb_div("orb-1", adult_color)}{orb_div("orb-2", veta_color, 56)}
       {pill(adult_color, AXIS_LABEL[adult_primary], "opill-1")}{pill(veta_color, AXIS_LABEL[adult_veta], "opill-2")}
     </div>
   </div>
+  <div class="hero-divider"></div>
+  <p class="hero-saludo">{rich(saludo)}</p>
 </div>'''
 
 # ── Composición: mezcla de 4 orbes por % ──
@@ -141,8 +142,6 @@ perfil_card = f'''<div class="card">{sec_head(L["composition"], tiptext="Cómo s
   {pressure_spectrum()}
 </div>'''
 
-saludo_card = (f'<div class="card">{sec_head(L["greeting"])}<p class="body">{rich(saludo)}</p>'
-               f'<div class="note">ArgoPuente® no es un servicio clínico ni terapéutico. Es una lente para autoconocerte y tender puentes con el niño en el deporte.</div></div>')
 estilo_card = f'<div class="card">{sec_head(L["style"])}<p class="body">{rich(perfil_adulto)}</p></div>'
 
 def bridge_card(i, p):
@@ -198,7 +197,9 @@ body{margin:0;background:var(--page);color:var(--page-ink);font-family:"Inter",-
 .hx-name{margin:0;font-family:"Fraunces","Inter",Georgia,serif;font-weight:440;font-size:clamp(21px,3.2vw,28px);line-height:1.12;letter-spacing:-.011em;color:var(--navy);}
 .hx-name .np{display:block;}
 .hx-name .nc{color:var(--navy);font-weight:400;}
-.hx-lead{margin:18px 0 0;font-size:13.5px;line-height:1.72;color:var(--sec);max-width:46ch;}
+.hero-divider{height:1px;margin:26px 0 20px;background:linear-gradient(90deg,transparent,var(--border) 12%,var(--border) 88%,transparent);}
+.hero-saludo{margin:0;font-size:15px;line-height:1.72;color:var(--sec);}
+.hero-saludo strong{font-weight:600;color:var(--navy);}
 .hx-right{position:relative;width:100%;aspect-ratio:1 / 0.9;}
 @media(max-width:659px){.hx-right{max-width:360px;margin:10px auto 0;}}
 .orb-ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
@@ -280,6 +281,6 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')hide();});})
 pagehead = (f'<div class="pagehead"><p class="eyebrow">{esc(L["eyebrow"])}</p>'
             f'<h1>{esc(recipient)}</h1><p class="email">{esc(email)}</p></div>')
 doc = (f'<title>Maqueta ArgoPuente · design system</title>{style}<div class="wrap">'
-       f'{banner}{pagehead}{hero}{perfil_card}{saludo_card}{estilo_card}{bridges}{cierre_card}{notes}</div>{script}')
+       f'{banner}{pagehead}{hero}{perfil_card}{estilo_card}{bridges}{cierre_card}{notes}</div>{script}')
 open('argo-puente-preview.html', 'w').write(doc)
 print('wrote argo-puente-preview.html', len(doc), 'chars')
