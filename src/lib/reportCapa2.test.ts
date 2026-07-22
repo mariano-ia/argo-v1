@@ -63,16 +63,24 @@ test('textSimilarity: identico ~1, reordenado ~0', () => {
 });
 
 test('factsPreserved: detecta un número alterado', () => {
-  const { base } = mateo();
+  const { base: base0 } = mateo();
+  // El copy v4 ya no cita conteos ("8 de 12" pasó a "en la mayoría..."); sembramos un número para
+  // ejercitar el guardián, que sigue vigente (protege la edad, el label y cualquier cifra futura).
+  const base: ReportV4 = JSON.parse(JSON.stringify(base0));
+  const rec = base.secciones.find((s) => s.id === 'receta')!;
+  rec.bloque!.cuerpo += ' Lo eligió 8 veces.';
   const good = assembleCapa2(base, variantFrom(base, rev)).report;
   assert.ok(factsPreserved(base, good).ok, 'reordenar preserva los números');
   // alterar un contador en la sección receta ("8" -> "9")
-  const bad = assembleCapa2(base, { sections: { receta: { cuerpo: base.secciones.find((s) => s.id === 'receta')!.bloque!.cuerpo.replace(/\b8\b/, '9') } } }).report;
+  const bad = assembleCapa2(base, { sections: { receta: { cuerpo: rec.bloque!.cuerpo.replace(/\b8\b/, '9') } } }).report;
   assert.ok(!factsPreserved(base, bad).ok, 'cambiar 8->9 debe fallar');
 });
 
 test('makeCapa2: RECHAZA sin variante / poco distinta / hechos alterados', () => {
-  const { ficha, base } = mateo();
+  const { ficha, base: base0 } = mateo();
+  // Semilla de número para el recaudo de hechos (el copy v4 ya no cita conteos, ver test anterior).
+  const base: ReportV4 = JSON.parse(JSON.stringify(base0));
+  base.secciones.find((s) => s.id === 'receta')!.bloque!.cuerpo += ' Lo eligió 8 veces.';
   const rejected: string[] = [];
   const onReject = (r: string) => rejected.push(r);
   // sin variante

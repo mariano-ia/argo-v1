@@ -9,6 +9,8 @@ import React from 'react';
 import type { ReportV4, ReportSection } from '../../lib/reportV4';
 import type { Lang } from '../../lib/archetypeContentV4';
 import { COPY, fill, type Ui } from '../../lib/reportV4Copy';
+import { SECTION_TIPS } from '../../lib/reportSectionTips';
+import { InfoTip } from '../ui/Tooltip';
 import { AXIS_COLORS } from '../../lib/designTokens';
 
 /** Convierte `**negrita**` en <strong>. El resto va como texto. */
@@ -38,12 +40,13 @@ const Ejemplo: React.FC<{ text: string; accent: string }> = ({ text, accent }) =
   </div>
 );
 
-function SectionBlock({ section, accent, veta, ui }: { section: ReportSection; accent: string; veta: string; ui: Ui }) {
+function SectionBlock({ section, accent, veta, ui, tip }: { section: ReportSection; accent: string; veta: string; ui: Ui; tip?: string }) {
   const dotColor = VETA_DOT.has(section.id) ? veta : accent;
   const Header = (
-    <h2 className="mb-2.5 flex items-center gap-2.5 text-sm font-bold tracking-tight text-argo-navy">
+    <h2 className="mb-2.5 flex items-center gap-2 text-sm font-bold tracking-tight text-argo-navy">
       <span className="h-2 w-2 flex-none rounded-full" style={{ background: dotColor }} />
-      {section.titulo}
+      <span>{section.titulo}</span>
+      {tip && <InfoTip text={tip} />}
     </h2>
   );
 
@@ -116,6 +119,7 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
   const ui = pack.ui;
   const accent = AXIS_COLORS[hero.ejePrimario] ?? '#955FB5';
   const veta = AXIS_COLORS[hero.ejeSecundario] ?? '#86868B';
+  const tips = SECTION_TIPS[lang] ?? SECTION_TIPS.es;
   const byId = new Map(report.secciones.map((s) => [s.id, s]));
   const kidMeta = [hero.nombre, edad ? `${edad} ${ui.edad}` : null, deporte || null, fecha || null].filter(Boolean).join(' · ');
 
@@ -188,7 +192,7 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
               <div className="text-[11px] font-bold uppercase tracking-widest text-argo-grey">{title}</div>
               <div className="mt-3 h-px bg-argo-border" />
             </div>
-            {secs.map((s) => <SectionBlock key={s.id} section={s} accent={accent} veta={veta} ui={ui} />)}
+            {secs.map((s) => <SectionBlock key={s.id} section={s} accent={accent} veta={veta} ui={ui} tip={tips[s.id]} />)}
           </div>
         );
       })}
