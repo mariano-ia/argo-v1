@@ -33,7 +33,7 @@ _by_slot = {p['slot']: p for p in _C['puentes']}
 puentes = [_by_slot[s] for s in _DISPLAY_ORDER]
 
 L = {'eyebrow': 'Informe para el adulto', 'kicker': 'Tu perfil', 'greeting': 'Te damos la bienvenida',
-     'style': 'Tu estilo natural', 'closing': 'Tu próximo puente', 'closing_sub': 'Oportunidad de mejora', 'childState': 'Cómo tiende a estar',
+     'style': 'Tu estilo natural', 'closing': 'Para llevar', 'childState': 'Cómo tiende a estar',
      'adultStrength': 'Lo que tú traes', 'bridge': 'El puente', 'reflection': 'Una pregunta para llevarte',
      'composition': 'Composición del perfil', 'pressure': 'Estilo bajo presión', 'tipLabel': 'Qué mide esto'}
 PRESS = [('regulado', 'Regulado', 0.15), ('reactivo', 'Reactivo', 0.5), ('evitativo', 'Evitativo', 0.85)]
@@ -133,7 +133,7 @@ def bridge_card(i, p):
             f'<div class="refl"><span class="refl-label">{esc(L["reflection"])}</span>{rich(p["pregunta_reflexion"])}</div></div>')
 
 bridges = '<div class="sec-divider"></div>'.join(bridge_card(i + 1, p) for i, p in enumerate(puentes))
-cierre_card = f'<div class="card">{sec_head(L["closing"], sub=L["closing_sub"])}<p class="body">{rich(cierre)}</p></div>'
+cierre_card = f'<div class="card">{sec_head(L["closing"])}<p class="body">{rich(cierre)}</p></div>'
 notes = ('<div class="notes">'
          f'<p>También te enviamos este informe a {esc(email)}. Puedes revisarlo cuando quieras.</p>'
          '<p class="notes-mut">Guardamos tu perfil para reutilizarlo en nuevos puentes sin repetir el cuestionario. '
