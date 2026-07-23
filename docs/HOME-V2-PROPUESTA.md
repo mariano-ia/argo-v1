@@ -19,13 +19,17 @@ y claro ArgoOne® y ArgoAcademy® (un método, dos mercados).
 
 1. **Hero**: campo de 4 orbes vivos con parallax al puntero + titular Fraunces con palabra rotativa
    ("a su manera / a pura chispa / en equipo / con calma / entendiéndolo todo", cada una en su color de eje).
-2. **Los 4 colores + el mezclador** ("Cuatro colores, doce perfiles, una mezcla única"): 4 cards orbe
-   interactivas que enseñan los ejes, y debajo **el mezclador**: el visitante elige primario y
-   acompañante y forma los **12 perfiles canónicos** (4 puros + 8 eje×veta) con nombre real en Fraunces,
-   orbes jerarquizados y una lectura por perfil. Las vetas ofrecidas excluyen los opuestos D-S / I-C
-   (nota al pie lo explica). Tocar una card de eje también setea el primario. Ajuste 2026-07-23: el
-   owner marcó que hablar solo de 4 "acotaba mucho"; la sección ahora muestra que 4 son los colores
-   y 12 los perfiles, y que la mezcla exacta hace único a cada niño.
+2. **La forja** ("4 colores principales, una mezcla única para entender a cada niño", copy del owner):
+   UN solo artefacto progresivo de 4 columnas que reemplazó a las cards + mezclador separados
+   (iteración 2026-07-23 con el owner). Columna 1: eliges el color principal (orbe + nombre Fraunces
+   + verbo). Columna 2 (se desbloquea al elegir): "un solo color" o la veta; el **opuesto aparece
+   deshabilitado con su explicación inline** ("opuesto al X: no forman nombre juntos"). Columnas 3-4:
+   el perfil contado, con 3 estados (invitación → "ahora elige qué lo acompaña" → perfil completo).
+   El resultado forma los **12 perfiles canónicos** (4 puros + 8 eje×veta) y remata con el bloque
+   "el nombre es solo la puerta": **su mezcla exacta (455 mezclas posibles**, las 12 decisiones
+   repartidas entre 4 colores, C(15,3)) y **su motor también medido** (spectrum decorativo
+   Pausado-Ágil, contado pero NO elegible, coherente con la regla motor-fuera-del-nombre) + CTA
+   al showcase del informe.
 3. **Mini odisea (#pruebalo)**: el visitante juega 3 decisiones (colores de opción POSICIONALES,
    nunca revelan eje) y ve formarse SU mezcla de orbes en vivo, con lectura honesta
    (3 = de lleno / 2+1 = con destellos de, bloqueado si es diagonal D-S o I-C / 1+1+1 = mezcla pareja)

@@ -244,70 +244,74 @@ button { font-family: var(--font-body); }
 .hero__scrollcue .cue-orb { width: 10px; height: 10px; border-radius: 50%; animation: cueDrop 2.4s ease-in-out infinite; }
 
 /* ═══════════════════════════════════════
-   LOS 4 COLORES — cards orbe interactivas
+   LA FORJA — un solo artefacto: elige el principal,
+   te pide el secundario, te cuenta el perfil
    ═══════════════════════════════════════ */
-.axes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 54px; }
-.axis-card {
-  position: relative; background: #fff; border: 1px solid var(--border); border-radius: 16px;
-  padding: 34px 26px 30px; text-align: center; cursor: pointer; overflow: hidden;
-  transition: transform 0.35s var(--ease-out), box-shadow 0.35s ease, border-color 0.3s ease;
-  box-shadow: var(--shadow-argo);
+.forge {
+  display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 54px;
+  background: #fff; border: 1px solid var(--border); border-radius: 22px;
+  box-shadow: var(--shadow-argo); overflow: hidden;
 }
-.axis-card:hover, .axis-card.is-open { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
-.axis-card__orb { width: 86px; height: 86px; margin: 0 auto 20px; transition: transform 0.4s var(--ease-out); }
-.axis-card:hover .axis-card__orb, .axis-card.is-open .axis-card__orb { transform: scale(1.12); }
-.axis-card__name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 460; margin-bottom: 4px; }
-.axis-card__verb { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em; }
-.axis-card__line {
-  font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);
-  max-height: 0; opacity: 0; overflow: hidden; margin-top: 0;
-  transition: max-height 0.45s var(--ease-out), opacity 0.4s ease, margin-top 0.45s var(--ease-out);
+.forge__col { padding: 28px 22px; border-right: 1px solid var(--border); }
+.forge__col--2 { transition: opacity 0.45s ease; }
+.forge__col--locked { opacity: 0.38; pointer-events: none; }
+.forge__step {
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
 }
-.axis-card:hover .axis-card__line, .axis-card.is-open .axis-card__line { max-height: 130px; opacity: 1; margin-top: 14px; }
-.axes-note { text-align: center; margin-top: 34px; font-size: 0.95rem; color: var(--text-muted); }
-.axes-note strong { font-weight: 600; color: var(--text-secondary); }
-
-/* ── el mezclador: 4 colores -> 12 perfiles con nombre ── */
-.mixer {
-  margin-top: 56px; background: #fff; border: 1px solid var(--border); border-radius: 20px;
-  box-shadow: var(--shadow-argo); padding: 38px 42px;
-  display: grid; grid-template-columns: 1fr 1.15fr; gap: 46px; align-items: center;
+.forge__step .n {
+  width: 19px; height: 19px; border-radius: 50%; background: var(--accent-wash); color: var(--accent);
+  border: 1px solid #EFE4F5; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; flex-shrink: 0;
 }
-.mixer__eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-.mixer__title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 440; margin-bottom: 22px; }
-.mixer__step { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
-.mixer__row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.mix-pick {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px;
-  padding: 7px 15px 7px 8px; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
-  cursor: pointer; transition: all 0.2s ease;
+.forge__opts { display: flex; flex-direction: column; gap: 6px; }
+.forge-opt {
+  display: flex; align-items: center; gap: 12px; text-align: left; width: 100%;
+  background: transparent; border: 1px solid transparent; border-radius: 14px; padding: 11px 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.25s, transform 0.25s var(--ease-out);
 }
-.mix-pick .morb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
-.mix-pick:hover { border-color: var(--border-strong); background: #fff; }
-.mix-pick.is-on { background: #fff; border-color: currentColor; box-shadow: var(--shadow-hover); }
-.mix-pick--none { padding-left: 15px; }
-.mixer__fine { font-size: 0.74rem; line-height: 1.6; color: var(--text-light); margin: 0; }
-.mixer__result {
-  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px;
-  padding: 32px 34px; text-align: center; position: relative; overflow: hidden; min-height: 330px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+.forge-opt:hover { background: var(--bg-elevated); }
+.forge-opt.is-on { border-color: currentColor; background: #fff; box-shadow: var(--shadow-hover); transform: translateX(2px); }
+.forge-opt__orb { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+.forge-opt__name { display: block; font-family: var(--font-display); font-size: 1.02rem; font-weight: 480; line-height: 1.2; }
+.forge-opt__verb { display: block; font-size: 0.69rem; color: var(--text-muted); line-height: 1.35; margin-top: 2px; }
+.forge-opt--none .forge-opt__name { font-family: var(--font-body); font-size: 0.86rem; font-weight: 600; color: var(--text-secondary); }
+.forge-opt--off { opacity: 0.42; cursor: not-allowed; }
+.forge-opt--off:hover { background: transparent; }
+.forge__result {
+  padding: 34px 38px; display: flex; flex-direction: column; justify-content: center;
+  min-height: 460px; background: linear-gradient(165deg, #fff 40%, var(--accent-wash));
+  border-right: 0;
 }
-.mixer__orbs { position: relative; width: 190px; height: 170px; margin: 0 auto 8px; }
-.mixer__orbs .orb { position: absolute; transition: width 0.7s var(--ease-out), height 0.7s var(--ease-out), opacity 0.5s ease; }
-.mixer__badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--accent); background: var(--accent-wash); border: 1px solid #EFE4F5;
-  border-radius: 999px; padding: 4px 12px; margin-bottom: 14px;
+.forge__orbs { position: relative; width: 200px; height: 172px; margin-bottom: 10px; }
+.forge__orbs .orb { position: absolute; transition: width 0.7s var(--ease-out), height 0.7s var(--ease-out); }
+.forge__badge {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: #fff; border: 1px solid #EFE4F5;
+  border-radius: 999px; padding: 4px 12px; margin-bottom: 12px;
 }
-.mixer__name { font-family: var(--font-display); font-size: clamp(1.35rem, 2.4vw, 1.7rem); font-weight: 450; line-height: 1.25; margin-bottom: 10px; }
-.mixer__name .nc { color: var(--text-primary); }
-.mixer__line { font-size: 0.88rem; line-height: 1.65; color: var(--text-secondary); max-width: 380px; margin: 0 auto; }
+.forge__name { font-family: var(--font-display); font-size: clamp(1.45rem, 2.5vw, 1.9rem); font-weight: 450; line-height: 1.22; margin-bottom: 10px; }
+.forge__name .nc { color: var(--text-primary); }
+.forge__line { font-size: 0.92rem; line-height: 1.7; color: var(--text-secondary); max-width: 430px; }
+.forge__hint { font-size: 0.86rem; color: var(--text-muted); margin-top: 8px; }
+.forge__deep { margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(29,29,31,0.08); max-width: 440px; }
+.forge__deep-title { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.forge__fact { display: flex; gap: 10px; align-items: flex-start; font-size: 0.8rem; line-height: 1.6; color: var(--text-secondary); margin-top: 10px; }
+.forge__fact .tick { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-soft); flex-shrink: 0; position: relative; top: 8px; }
+.forge__spec { margin: 10px 0 2px; max-width: 300px; }
+.forge__cta { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 0.85rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+.forge__cta:hover { text-decoration: underline; text-underline-offset: 3px; }
+.forge__idle { text-align: center; align-items: center; display: flex; flex-direction: column; }
+.forge__idle-orbs { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 22px; }
+.forge__idle-text { font-size: 0.95rem; line-height: 1.7; color: var(--text-muted); max-width: 340px; }
+.forge__idle-text strong { color: var(--text-secondary); }
 @media (max-width: 900px) {
-  .mixer { grid-template-columns: 1fr; gap: 28px; padding: 28px 22px; }
-  .mixer__result { min-height: 0; padding: 26px 20px; }
-  .mixer__orbs { width: 160px; height: 140px; }
+  .forge { grid-template-columns: 1fr; }
+  .forge__col { border-right: 0; border-bottom: 1px solid var(--border); }
+  .forge__result { min-height: 0; padding: 28px 22px; border-bottom: 0; }
+  .forge__orbs { width: 170px; height: 150px; }
 }
 
 /* ═══════════════════════════════════════
@@ -868,7 +872,6 @@ button { font-family: var(--font-body); }
    RESPONSIVE
    ═══════════════════════════════════════ */
 @media (max-width: 1024px) {
-  .axes-grid { grid-template-columns: repeat(2, 1fr); }
   .roster { grid-template-columns: repeat(2, 1fr); }
   .showcase__grid { grid-template-columns: 1fr; gap: 24px; padding: 0 24px; }
   .showcase__notes { min-height: 150px; order: 2; }
@@ -903,8 +906,6 @@ button { font-family: var(--font-body); }
   .hero { min-height: calc(96svh - 56px); }
 }
 @media (max-width: 560px) {
-  .axes-grid { grid-template-columns: 1fr; }
-  .axis-card__line { max-height: none; opacity: 1; margin-top: 12px; }
   .demo-row { grid-template-columns: 1fr; }
   .playground__tabs { width: 100%; }
   .pg-tab { flex: 1; justify-content: center; padding: 7px 8px; }
@@ -956,55 +957,21 @@ button { font-family: var(--font-body); }
   <div class="section-content">
     <div style="text-align:center; max-width:680px; margin:0 auto;">
       <div class="eyebrow anim">El punto de partida</div>
-      <h2 class="sec-title anim">Cuatro colores, <strong>doce perfiles</strong>, una mezcla única.</h2>
-      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">El método parte de cuatro colores. Toca cada esfera: detrás de cada una hay un niño que conoces.</p>
+      <h2 class="sec-title anim">4 colores principales, <strong>una mezcla única</strong> para entender a cada niño.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Elige un color y arma un perfil. Ninguno es mejor que otro.</p>
     </div>
-    <div class="axes-grid">
-      <button type="button" class="axis-card anim" data-axis="D">
-        <div class="axis-card__orb orb orb--d is-morph"></div>
-        <div class="axis-card__name" style="color:var(--ax-d);">Impulsor</div>
-        <div class="axis-card__verb">se enciende con el reto</div>
-        <p class="axis-card__line">Quiere que empiece ya. Decide rápido, empuja al equipo y necesita acción para estar en su zona.</p>
-      </button>
-      <button type="button" class="axis-card anim" data-axis="I">
-        <div class="axis-card__orb orb orb--i is-morph-b"></div>
-        <div class="axis-card__name" style="color:var(--ax-i);">Conector</div>
-        <div class="axis-card__verb">juega con y para los demás</div>
-        <p class="axis-card__line">Contagia energía, arma vínculos y da lo mejor cuando siente que el grupo está con él.</p>
-      </button>
-      <button type="button" class="axis-card anim" data-axis="S">
-        <div class="axis-card__orb orb orb--s is-morph"></div>
-        <div class="axis-card__name" style="color:var(--ax-s);">Sostenedor</div>
-        <div class="axis-card__verb">sostiene al equipo</div>
-        <p class="axis-card__line">La calma del grupo. Persiste, cuida a los demás y rinde mejor con un ritmo previsible.</p>
-      </button>
-      <button type="button" class="axis-card anim" data-axis="C">
-        <div class="axis-card__orb orb orb--c is-morph-b"></div>
-        <div class="axis-card__name" style="color:var(--ax-c);">Estratega</div>
-        <div class="axis-card__verb">primero entiende, después juega</div>
-        <p class="axis-card__line">Observa, analiza y busca el porqué. Cuando entiende el plan, ejecuta con precisión.</p>
-      </button>
-    </div>
-    <p class="axes-note anim"><strong>Ninguna es mejor que otra.</strong> Y casi ningún niño es de un solo color: por eso los perfiles se nombran como mezclas.</p>
 
-    <div class="mixer anim" id="mixer">
-      <div>
-        <p class="mixer__eyebrow">El mezclador</p>
-        <p class="mixer__title">Arma un perfil tú mismo.</p>
-        <p class="mixer__step">1 · El color que más pesa</p>
-        <div class="mixer__row" id="mix-primary"></div>
-        <p class="mixer__step">2 · El que lo acompaña</p>
-        <div class="mixer__row" id="mix-veta"></div>
-        <p class="mixer__fine">Los colores opuestos (Impulsor y Sostenedor, Conector y Estratega) no forman nombre juntos: cuando conviven, el informe lo cuenta dentro del perfil.</p>
+    <div class="forge anim" id="forge">
+      <div class="forge__col">
+        <p class="forge__step"><span class="n">1</span>El color principal</p>
+        <div class="forge__opts" id="forge-primary"></div>
       </div>
-      <div class="mixer__result">
-        <div class="mixer__orbs" id="mix-orbs"></div>
-        <span class="mixer__badge" id="mix-badge">Uno de los 12 perfiles</span>
-        <p class="mixer__name serif" id="mix-name"></p>
-        <p class="mixer__line" id="mix-line"></p>
+      <div class="forge__col forge__col--2 forge__col--locked" id="forge-col2">
+        <p class="forge__step"><span class="n">2</span><span id="forge-step2-label">El que lo acompaña</span></p>
+        <div class="forge__opts" id="forge-veta"></div>
       </div>
+      <div class="forge__result" id="forge-result"></div>
     </div>
-    <p class="axes-note anim" style="margin-top:26px; font-size:0.85rem;">El nombre es el resumen. La mezcla exacta de cada niño (cuánto pesa cada color) es lo que hace único su informe.</p>
   </div>
 </section>
 
@@ -1807,30 +1774,25 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, 3400);
 })();
 
-// ═══════════════ los 4 colores: tap en touch (y atajo al mezclador) ═══════════════
+// ═══════════════ LA FORJA: un solo artefacto, del color al perfil ═══════════════
 (function() {
-  document.querySelectorAll('.axis-card').forEach(function(card) {
-    card.addEventListener('click', function() {
-      var was = card.classList.contains('is-open');
-      document.querySelectorAll('.axis-card').forEach(function(c) { c.classList.remove('is-open'); });
-      if (!was) card.classList.add('is-open');
-      if (window.mixerSetPrimary) window.mixerSetPrimary(card.dataset.axis);
-    });
-  });
-})();
-
-// ═══════════════ el mezclador: 4 colores -> 12 perfiles con nombre ═══════════════
-(function() {
-  var elP = document.getElementById('mix-primary');
+  var elP = document.getElementById('forge-primary');
   if (!elP) return;
-  var elV = document.getElementById('mix-veta');
-  var elOrbs = document.getElementById('mix-orbs');
-  var elName = document.getElementById('mix-name');
-  var elLine = document.getElementById('mix-line');
+  var elV = document.getElementById('forge-veta');
+  var col2 = document.getElementById('forge-col2');
+  var step2Label = document.getElementById('forge-step2-label');
+  var out = document.getElementById('forge-result');
 
+  var VERBS = {
+    D: 'se enciende con el reto',
+    I: 'juega con y para los demás',
+    S: 'sostiene al equipo',
+    C: 'primero entiende, después juega'
+  };
   // vetas válidas por primario (los opuestos D-S e I-C no forman nombre)
   var VALID = { D: ['I', 'C'], I: ['D', 'S'], S: ['I', 'C'], C: ['D', 'S'] };
-  // los 12 perfiles canónicos: 4 puros + 8 mezclas
+  var DIAG = { D: 'S', S: 'D', I: 'C', C: 'I' };
+  // los 12 perfiles canónicos: 4 puros + 8 mezclas eje×veta
   var LINES = {
     'D':   'Pura acción: el reto lo enciende y el movimiento lo ordena. Suele ser quien arranca primero.',
     'D+I': 'Empuja y contagia: quiere ganar, y quiere que ganen todos juntos.',
@@ -1845,21 +1807,34 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     'C+D': 'Analiza y ejecuta: lectura fría, decisión valiente.',
     'C+S': 'Analiza con paciencia: entiende el juego completo y no se desordena.'
   };
-  var primary = 'D', veta = 'I';
+  var primary = null;
+  var veta;   // undefined = aún no eligió; null = un solo color; 'D'... = veta
 
-  function pick(ax, none) {
-    if (none) return '<button type="button" class="mix-pick mix-pick--none" data-veta="">Un solo color</button>';
-    return '<button type="button" class="mix-pick" data-ax="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
-      '<span class="morb orb ' + AX[ax].cls + '"></span>' + AX[ax].label + '</button>';
-  }
-  elP.innerHTML = ['D', 'I', 'S', 'C'].map(function(ax) { return pick(ax); }).join('');
+  elP.innerHTML = ['D', 'I', 'S', 'C'].map(function(ax) {
+    return '<button type="button" class="forge-opt" data-ax="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
+      '<span class="forge-opt__orb orb ' + AX[ax].cls + '"></span>' +
+      '<span><span class="forge-opt__name" style="color:' + AX[ax].hex + ';">' + AX[ax].label + '</span>' +
+      '<span class="forge-opt__verb">' + VERBS[ax] + '</span></span></button>';
+  }).join('');
 
-  function renderVetaRow() {
-    elV.innerHTML = pick(null, true) + VALID[primary].map(function(ax) {
-      return '<button type="button" class="mix-pick" data-veta="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
-        '<span class="morb orb ' + AX[ax].cls + '"></span>con veta ' + AX[ax].label + '</button>';
-    }).join('');
-    elV.querySelectorAll('.mix-pick').forEach(function(b) {
+  function renderVetaCol() {
+    if (!primary) return;
+    step2Label.textContent = 'El que acompaña al ' + AX[primary].label;
+    var others = ['D', 'I', 'S', 'C'].filter(function(ax) { return ax !== primary; });
+    var html = '<button type="button" class="forge-opt forge-opt--none" data-veta="">' +
+      '<span class="forge-opt__orb orb ' + AX[primary].cls + '" style="opacity:0.55;"></span>' +
+      '<span><span class="forge-opt__name">Un solo color</span>' +
+      '<span class="forge-opt__verb">el perfil puro, sin veta</span></span></button>';
+    others.forEach(function(ax) {
+      var off = ax === DIAG[primary];
+      html += '<button type="button" class="forge-opt' + (off ? ' forge-opt--off" disabled aria-disabled="true"' : '"') +
+        ' data-veta="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
+        '<span class="forge-opt__orb orb ' + AX[ax].cls + '"></span>' +
+        '<span><span class="forge-opt__name" style="color:' + AX[ax].hex + ';">con veta ' + AX[ax].label + '</span>' +
+        '<span class="forge-opt__verb">' + (off ? 'opuesto al ' + AX[primary].label + ': no forman nombre juntos' : VERBS[ax]) + '</span></span></button>';
+    });
+    elV.innerHTML = html;
+    elV.querySelectorAll('.forge-opt:not(.forge-opt--off)').forEach(function(b) {
       b.addEventListener('click', function() {
         veta = b.dataset.veta || null;
         syncVeta();
@@ -1869,51 +1844,82 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     syncVeta();
   }
   function syncVeta() {
-    elV.querySelectorAll('.mix-pick').forEach(function(b) {
-      b.classList.toggle('is-on', (b.dataset.veta || null) === veta);
+    elV.querySelectorAll('.forge-opt').forEach(function(b) {
+      b.classList.toggle('is-on', veta !== undefined && (b.dataset.veta || null) === veta);
     });
   }
   function syncPrimary() {
-    elP.querySelectorAll('.mix-pick').forEach(function(b) {
+    elP.querySelectorAll('.forge-opt').forEach(function(b) {
       b.classList.toggle('is-on', b.dataset.ax === primary);
     });
   }
-  function renderResult() {
-    var key = veta ? (primary + '+' + veta) : primary;
-    if (veta) {
-      elOrbs.innerHTML =
-        '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:120px; height:120px; top:2px; left:6px;"></div>' +
-        '<div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:84px; height:84px; bottom:0; right:10px;"></div>';
-      elName.innerHTML = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span> ' +
-        '<span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
-    } else {
-      elOrbs.innerHTML = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:140px; height:140px; top:8px; left:25px;"></div>';
-      elName.innerHTML = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span>';
-    }
-    elLine.textContent = LINES[key];
+
+  // el motor se cuenta (no se elige): mini spectrum decorativo del sistema
+  function motorSpec(hx, cls) {
+    return '<div class="mr-spec forge__spec"><div class="mr-spec__track">' +
+      '<span class="mr-spec__fill" style="width:62%; background:linear-gradient(90deg, transparent, ' + hx + '44);"></span>' +
+      '<span class="mr-spec__mark orb ' + cls + '" style="left:62%;"></span>' +
+      '</div><div class="mr-spec__ends"><span>Pausado</span><span>Ágil</span></div></div>';
   }
 
-  elP.querySelectorAll('.mix-pick').forEach(function(b) {
+  function renderResult() {
+    if (!primary) {
+      out.innerHTML = '<div class="forge__idle">' +
+        '<div class="forge__idle-orbs">' +
+        '<span class="orb orb--d is-live" style="width:54px; height:54px;"></span>' +
+        '<span class="orb orb--i is-live-b" style="width:44px; height:44px;"></span>' +
+        '<span class="orb orb--s is-live" style="width:48px; height:48px;"></span>' +
+        '<span class="orb orb--c is-live-b" style="width:58px; height:58px;"></span>' +
+        '</div>' +
+        '<p class="forge__idle-text"><strong>Ninguno es mejor que otro.</strong> Elige el color que más se parece al niño que acompañas y mira cómo se arma su perfil.</p>' +
+        '</div>';
+      return;
+    }
+    if (veta === undefined) {
+      out.innerHTML =
+        '<div class="forge__orbs"><div class="orb ' + AX[primary].cls + ' is-morph" style="width:130px; height:130px; top:14px; left:30px;"></div></div>' +
+        '<p class="forge__name serif"><span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span><span class="nc">...</span></p>' +
+        '<p class="forge__hint">Ese es el color que más pesa. Ahora elige qué lo acompaña: casi ningún niño es de un solo color.</p>';
+      return;
+    }
+    var key = veta ? (primary + '+' + veta) : primary;
+    var orbs, name;
+    if (veta) {
+      orbs = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:122px; height:122px; top:0; left:8px;"></div>' +
+        '<div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:86px; height:86px; bottom:0; right:14px;"></div>';
+      name = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span> ' +
+        '<span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
+    } else {
+      orbs = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:142px; height:142px; top:8px; left:24px;"></div>';
+      name = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span>';
+    }
+    out.innerHTML =
+      '<div class="forge__orbs">' + orbs + '</div>' +
+      '<span class="forge__badge">Uno de los 12 perfiles con nombre</span>' +
+      '<p class="forge__name serif">' + name + '</p>' +
+      '<p class="forge__line">' + LINES[key] + '</p>' +
+      '<div class="forge__deep">' +
+      '<p class="forge__deep-title">Y el nombre es solo la puerta</p>' +
+      '<div class="forge__fact"><span class="tick"></span><span><strong>Su mezcla exacta.</strong> Las 12 decisiones del juego se reparten entre los cuatro colores: 455 mezclas posibles.</span></div>' +
+      '<div class="forge__fact"><span class="tick"></span><span><strong>Su motor, también medido.</strong> El ritmo al que procesa y decide:</span></div>' +
+      motorSpec(AX[primary].hex, AX[primary].cls) +
+      '<a class="forge__cta" href="#argoone">Así se ve en un informe real <i data-lucide="arrow-down"></i></a>' +
+      '</div>';
+    lucide.createIcons();
+  }
+
+  elP.querySelectorAll('.forge-opt').forEach(function(b) {
     b.addEventListener('click', function() {
+      var changed = primary !== b.dataset.ax;
       primary = b.dataset.ax;
-      if (veta && VALID[primary].indexOf(veta) === -1) veta = VALID[primary][0];
+      col2.classList.remove('forge__col--locked');
+      if (changed && veta !== undefined && veta !== null && VALID[primary].indexOf(veta) === -1) veta = undefined;
       syncPrimary();
-      renderVetaRow();
+      renderVetaCol();
       renderResult();
     });
   });
 
-  window.mixerSetPrimary = function(ax) {
-    if (!AX[ax]) return;
-    primary = ax;
-    if (veta && VALID[primary].indexOf(veta) === -1) veta = VALID[primary][0];
-    syncPrimary();
-    renderVetaRow();
-    renderResult();
-  };
-
-  syncPrimary();
-  renderVetaRow();
   renderResult();
 })();
 
