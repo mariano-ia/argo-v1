@@ -42,10 +42,15 @@ y claro ArgoOne® y ArgoAcademy® (un método, dos mercados).
 5. **Un método, dos caminos**: cards espejo ArgoOne® (padres/responsables/entrenadores; "el niño juega
    y el responsable recibe los dos informes") y ArgoAcademy® (instituciones/clubes/colegios/academias;
    "los dos informes + el dashboard"), con mini flujos de orbes. Anclan a sus secciones.
-6. **Showcase ArgoOne® (scrollytelling)**: el "Perfil conductual de Benjamín (fútbol)" en miniatura
-   fiel al rediseño (hero eje×veta, Su mezcla con proporciones no números, spectrum del motor,
-   paneles de palabras, timeline antes/durante/después, reset) se recorre solo dentro de un marco
-   mientras el usuario scrollea; 4 anotaciones laterales se encienden por progreso.
+6. **Showcase ArgoOne® (scrollytelling) — PERSONALIZADO por el hero** (2026-07-23): el informe
+   individual de Benjamín en miniatura fiel al rediseño (hero eje×veta, Su mezcla con proporciones
+   no números, spectrum del motor, paneles de palabras, timeline, reset) se recorre solo mientras
+   scrolleas. **Si jugaste el hero, el informe ES tu resultado**: `window.personalizeReport(pick)`
+   re-renderiza las 8 secciones (copy por eje primario + cláusula de veta + colores de identidad +
+   mezcla + posición del motor) para el perfil formado, con un banner "Personalizado con tu
+   resultado: X con veta Z". El niño de ejemplo sigue siendo Benjamín (fútbol). Sin jugar, muestra
+   el default (Conector con veta Impulsor). Datos en `REPORT` dentro del `<script>`; el hero llama
+   a `personalizeReport` al completar las dos decisiones.
 7. **Showcase ArgoPuente®**: ídem más corto con "El puente entre Carlos y Benjamín (fútbol)"
    (donde se encuentran / la previa / el traspié típico / después de jugar).
 8. **Playground ArgoAcademy®**: un dashboard DE VERDAD interactivo (equipo de ejemplo "Las Gaviotas",

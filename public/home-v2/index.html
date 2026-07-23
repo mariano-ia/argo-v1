@@ -501,6 +501,17 @@ button { font-family: var(--font-body); }
 .mock-note { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; color: var(--text-light); margin-top: 14px; }
 .mock-note i, .mock-note svg { width: 13px; height: 13px; flex-shrink: 0; }
 
+/* banner "personalizado con tu resultado" (aparece tras jugar el hero) */
+.sc-banner {
+  display: none; align-items: center; gap: 11px; margin-bottom: 14px;
+  padding: 11px 16px; background: var(--accent-wash); border: 1px solid #EFE4F5;
+  border-radius: 12px; font-size: 0.84rem; line-height: 1.4; color: var(--text-secondary);
+  animation: rise 0.5s var(--ease-out) both;
+}
+.sc-banner.is-on { display: flex; }
+.sc-banner__orb { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; }
+.sc-banner strong { color: var(--text-primary); font-weight: 600; }
+
 /* ═══════════════════════════════════════
    ARGOONE — intro + puente
    ═══════════════════════════════════════ */
@@ -603,7 +614,12 @@ button { font-family: var(--font-body); }
 
 /* coach */
 .coach { max-width: 660px; margin: 0 auto; }
-.coach__thread { display: flex; flex-direction: column; gap: 12px; min-height: 190px; margin-bottom: 18px; }
+.coach__thread { display: flex; flex-direction: column; gap: 12px; height: 300px; overflow-y: auto; padding-right: 6px; margin-bottom: 16px; }
+.coach__thread::-webkit-scrollbar { width: 6px; }
+.coach__thread::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
+.coach-exit { background: var(--accent-wash); border: 1px solid #EFE4F5; border-radius: 14px; padding: 16px 18px; text-align: center; }
+.coach-exit__t { font-size: 0.86rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.coach-exit__d { font-size: 0.8rem; line-height: 1.55; color: var(--text-secondary); margin-bottom: 12px; }
 .coach-bubble { border-radius: 16px; padding: 13px 17px; font-size: 0.88rem; line-height: 1.6; max-width: 85%; }
 .coach-bubble--user { align-self: flex-end; background: var(--text-primary); color: #fff; border-bottom-right-radius: 4px; }
 .coach-bubble--argo { align-self: flex-start; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); border-bottom-left-radius: 4px; }
@@ -974,7 +990,7 @@ button { font-family: var(--font-body); }
         <div class="step-card__orbwrap"><div class="step-card__orb orb orb--i is-morph"></div><div class="step-card__icon"><i data-lucide="gamepad-2"></i></div></div>
         <p class="step-card__num">01</p>
         <p class="step-card__title">El niño juega su odisea</p>
-        <p class="step-card__desc">Una aventura náutica de 10 minutos desde el celular. Sin preguntas de examen: solo decisiones dentro de la historia.</p>
+        <p class="step-card__desc">Una aventura gamificada de 10 minutos desde el celular. Sin preguntas de examen: solo decisiones dentro de la historia.</p>
       </div>
       <div class="step-card anim">
         <div class="step-card__orbwrap"><div class="step-card__orb orb orb--v is-morph-b"></div><div class="step-card__icon"><i data-lucide="scan-search"></i></div></div>
@@ -989,7 +1005,6 @@ button { font-family: var(--font-body); }
         <p class="step-card__desc">Un informe cálido y práctico: qué lo motiva, qué palabras conectan y cómo acompañarlo antes, durante y después.</p>
       </div>
     </div>
-    <p class="steps-sci anim"><i data-lucide="shield-check"></i>Construido sobre el modelo DISC de William Moulton Marston (1928), adaptado al deporte infantil. No es un test psicológico ni predice el futuro deportivo de ningún niño.</p>
   </div>
 </section>
 
@@ -1011,7 +1026,7 @@ button { font-family: var(--font-body); }
           <span class="path-chip">Entrenadores</span>
         </div>
         <p class="path-card__claim">Un niño, dos informes.</p>
-        <p class="path-card__desc">El niño juega su odisea y el responsable recibe los dos informes: el perfil del niño y el Puente del adulto, para acompañarlo desde tu propio estilo.</p>
+        <p class="path-card__desc">El niño juega su odisea y el responsable recibe los dos informes: el del niño y el puente con el adulto, para acompañarlo desde tu propio estilo.</p>
         <div class="path-card__flow">
           <span class="path-flow__item"><span class="path-flow__orb orb orb--i"></span>El niño juega</span>
           <span class="path-flow__arrow">&rarr;</span>
@@ -1052,14 +1067,7 @@ button { font-family: var(--font-body); }
       <div class="eyebrow anim">El informe · Para familias y entrenadores</div>
       <p class="anim" style="font-size:1.5rem; letter-spacing:-0.02em; margin-bottom:14px;"><span class="l-argo">Argo</span><span class="l-thin">One®</span></p>
       <h2 class="sec-title anim">Cada deportista es diferente.<br><strong>La forma de acompañarlo también.</strong></h2>
-      <p class="sec-lead anim">El niño juega y el responsable recibe los dos informes. Desplázate y recorre el informe real de Benjamín, tal como llega al adulto que lo acompaña.</p>
-      <div class="one-callout anim">
-        <div class="one-callout__orb orb orb--v is-morph"></div>
-        <div>
-          <p class="one-callout__title">Incluye <span class="l-argo">Argo</span><span class="l-thin">Puente®</span>, el informe del adulto</p>
-          <p class="one-callout__desc">También te perfilas tú: una guía breve para saber cómo vincularte con el niño desde tu propio estilo, qué decirle en la previa y cómo abrir la charla después de jugar. Todo en la misma compra.</p>
-        </div>
-      </div>
+      <p class="sec-lead anim">Una modalidad con dos informes: el del niño y el puente con el adulto, en la misma compra. Desplázate y recorre el informe individual, tal como llega a quien lo acompaña.</p>
     </div>
   </div>
 </section>
@@ -1072,7 +1080,7 @@ button { font-family: var(--font-body); }
         <div class="showcase__notes" id="sc1-notes">
           <div class="showcase__note is-on">
             <p class="showcase__note-eyebrow">El informe del niño</p>
-            <p class="showcase__note-title">Perfil conductual de Benjamín <span style="color:var(--text-muted); font-weight:300;">(fútbol)</span></p>
+            <p class="showcase__note-title">El informe individual de Benjamín <span style="color:var(--text-muted); font-weight:300;">(fútbol)</span></p>
             <p class="showcase__note-desc">Así llega el informe al adulto. Empieza por su nombre de perfil y su mezcla: cuánto pesa cada color hoy, sin números fríos ni etiquetas.</p>
           </div>
           <div class="showcase__note">
@@ -1095,10 +1103,11 @@ button { font-family: var(--font-body); }
           </div>
         </div>
         <div>
+          <div class="sc-banner" id="sc1-banner"></div>
           <div class="doc-frame">
             <div class="doc-frame__bar">
               <div class="doc-frame__dots"><span></span><span></span><span></span></div>
-              <span class="doc-frame__title">Perfil conductual · Benjamín · 11 años · Fútbol</span>
+              <span class="doc-frame__title">Informe individual · Benjamín · 11 años · Fútbol</span>
             </div>
             <div class="doc-frame__scroller"><div class="doc-frame__content" id="sc1-content">
               <div class="mini-report">
@@ -1206,7 +1215,7 @@ button { font-family: var(--font-body); }
             <div class="showcase__note is-on">
               <p class="showcase__note-eyebrow">El informe del adulto · <span class="l-argo" style="color:inherit;">Argo</span>Puente®</p>
               <p class="showcase__note-title">El puente entre Carlos y Benjamín <span style="color:var(--text-muted); font-weight:300;">(fútbol)</span></p>
-              <p class="showcase__note-desc">Tú también tienes un estilo. El Puente cruza tu perfil con el del niño y te muestra dónde se encuentran y dónde pueden chocar.</p>
+              <p class="showcase__note-desc">Tú también tienes un estilo. El puente con el adulto cruza tu perfil con el del niño y te muestra dónde se encuentran y dónde pueden chocar.</p>
             </div>
             <div class="showcase__note">
               <p class="showcase__note-eyebrow">Momentos reales</p>
@@ -1227,7 +1236,7 @@ button { font-family: var(--font-body); }
           <div class="doc-frame" style="height:min(64svh,600px);">
             <div class="doc-frame__bar">
               <div class="doc-frame__dots"><span></span><span></span><span></span></div>
-              <span class="doc-frame__title">ArgoPuente® · Carlos y Benjamín · Fútbol</span>
+              <span class="doc-frame__title">Informe puente · Carlos y Benjamín</span>
             </div>
             <div class="doc-frame__scroller"><div class="doc-frame__content" id="sc2-content">
               <div class="mini-report">
@@ -1289,14 +1298,14 @@ button { font-family: var(--font-body); }
       <div class="eyebrow anim">El dashboard · Para instituciones, clubes, colegios y academias</div>
       <p class="anim" style="font-size:1.5rem; letter-spacing:-0.02em; margin-bottom:14px;"><span class="l-argo">Argo</span><span class="l-thin">Academy®</span></p>
       <h2 class="sec-title anim">Conocerlos de a uno<br><strong>para formar un equipo</strong>.</h2>
-      <p class="sec-lead anim">Incluye los dos informes y el dashboard. Este de abajo funciona de verdad: toca, pregunta y arrastra. Es un equipo de hockey de ejemplo.</p>
+      <p class="sec-lead anim">Incluye los dos informes y el dashboard. Este de abajo funciona de verdad: toca, pregunta y arrastra. Es un equipo de fútbol de ejemplo.</p>
     </div>
 
     <div class="playground anim">
       <div class="playground__bar">
         <div class="playground__id">
           <span class="orb orb--v is-morph" style="width:26px; height:26px;"></span>
-          Las Gaviotas <span class="sport">Hockey · Sub 12</span>
+          Los Argonautas <span class="sport">Fútbol · Sub 12</span>
         </div>
         <div class="playground__tabs">
           <button type="button" class="pg-tab is-on" data-tab="equipo"><i data-lucide="users"></i><span>Equipo</span></button>
@@ -1347,14 +1356,15 @@ button { font-family: var(--font-body); }
           <div class="coach">
             <p class="pg-hint"><i data-lucide="message-circle"></i>Hazle una pregunta a Argo Coach sobre este equipo, o elige una sugerida.</p>
             <div class="coach__thread" id="coach-thread">
-              <div class="coach-bubble coach-bubble--argo"><div class="tag">Argo Coach</div>Hola. Conozco los perfiles de Las Gaviotas. Pregúntame cómo motivar, acompañar o combinar a cualquiera del equipo.</div>
+              <div class="coach-bubble coach-bubble--argo"><div class="tag">Argo Coach</div>Hola. Conozco los perfiles de Los Argonautas. Elige una pregunta y te muestro cómo respondo.</div>
             </div>
             <div class="coach__chips" id="coach-chips">
               <button type="button" class="coach-chip">¿Cómo motivo a Pedro antes de un partido?</button>
               <button type="button" class="coach-chip">¿Cómo le hablo a Aurora cuando se frustra?</button>
               <button type="button" class="coach-chip">¿Quiénes pueden chocar si juegan juntos?</button>
+              <button type="button" class="coach-chip">¿Cómo aprovecho la energía de María?</button>
             </div>
-            <div class="coach__row">
+            <div class="coach__row" id="coach-row">
               <input type="text" class="coach__input" id="coach-input" placeholder="Escribe tu pregunta sobre el equipo..." maxlength="200">
               <button type="button" class="coach__send" id="coach-send" aria-label="Enviar"><i data-lucide="send"></i></button>
             </div>
@@ -1402,7 +1412,7 @@ button { font-family: var(--font-body); }
     <div class="pricing-grid">
       <div class="price-card anim">
         <p class="price-card__name"><span class="l-argo">Argo</span><span class="l-thin">One®</span></p>
-        <p class="price-card__tag">El informe del niño, con tu Puente incluido</p>
+        <p class="price-card__tag">Una modalidad con dos informes: el del niño y el puente con el adulto</p>
         <p class="price-card__price">$12.99 <small>pago único</small></p>
         <ul class="price-card__items">
           <li><i data-lucide="check"></i><span><strong>Su perfil y su mezcla.</strong> Cómo vive el deporte hoy, con su nivel de claridad.</span></li>
@@ -1410,11 +1420,8 @@ button { font-family: var(--font-body); }
           <li><i data-lucide="check"></i><span><strong>Su motor.</strong> A qué ritmo procesa y decide.</span></li>
           <li><i data-lucide="check"></i><span><strong>Palabras que conectan y palabras que hacen ruido.</strong></span></li>
           <li><i data-lucide="check"></i><span><strong>Antes, durante y después.</strong> Una guía para el día de la actividad.</span></li>
+          <li><i data-lucide="check"></i><span><strong>El puente con el adulto.</strong> Cómo acompañar desde tu propio estilo: la previa, la frustración y la charla después de jugar.</span></li>
         </ul>
-        <div class="price-card__puente">
-          <p class="price-card__puente-title">Tu Puente con el niño, incluido</p>
-          <p class="price-card__puente-desc">Cómo acompañar desde tu propio estilo: la previa, la frustración y la charla después de jugar.</p>
-        </div>
         <a class="btn btn--violet price-card__cta" href="/one">Comprar <span><span style="font-weight:800;">Argo</span><span style="font-weight:300;">One®</span></span></a>
         <p class="price-card__return"><a href="/one/panel">¿Ya lo compraste? Entra a tu panel</a></p>
       </div>
@@ -1424,7 +1431,7 @@ button { font-family: var(--font-body); }
         <p class="price-card__price" style="font-size:1.3rem; font-weight:500; padding:14px 0 15px;">A la medida de tu equipo</p>
         <ul class="price-card__items">
           <li><i data-lucide="check"></i><span><strong>Dashboard completo.</strong> Todo tu equipo y su evolución en un solo lugar.</span></li>
-          <li><i data-lucide="check"></i><span><strong>Los dos informes.</strong> El perfil de cada niño y el Puente para los adultos.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Los dos informes.</strong> El del niño y el puente con el adulto.</span></li>
           <li><i data-lucide="check"></i><span><strong>Química de grupo.</strong> Cómo conviven los perfiles dentro de cada línea.</span></li>
           <li><i data-lucide="check"></i><span><strong>Argo Coach.</strong> Un consultor con IA que conoce a tu equipo.</span></li>
           <li><i data-lucide="check"></i><span><strong>Predictor conductual.</strong> Qué hacer en cada situación real del deporte.</span></li>
@@ -1457,7 +1464,7 @@ button { font-family: var(--font-body); }
       <div class="orb orb--s is-live" style="width:52px; height:52px; right:28%; top:36%;"></div>
       <div class="orb orb--c is-live-b" style="width:70px; height:70px; right:4%; top:8%;"></div>
     </div>
-    <h2 class="cta-final__title anim">¿De qué color es tu deportista?</h2>
+    <h2 class="cta-final__title anim">¿De qué colores es tu deportista?</h2>
     <div class="cta-final__trust anim">
       <span><i data-lucide="clock"></i>10 minutos de juego</span>
       <span><i data-lucide="mail"></i>El informe llega al email</span>
@@ -1835,6 +1842,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       note = 'Tu segunda decisión fue por el lado opuesto (' + AX[s].label + '): los opuestos no forman nombre, el informe los cuenta por dentro. ' + base;
     }
     setCaption('La crew ya te leyó. Mira el teléfono.');
+    if (window.personalizeReport) window.personalizeReport({ primary: p, veta: veta, opp: (s === DIAG[p]) ? s : null });
     body.innerHTML = '<div class="ph-res">' + head(2) +
       '<p class="ph-scene">Su perfil hoy</p>' +
       '<div class="ph-res__orbs">' + orbs + '</div>' +
@@ -1843,7 +1851,7 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       '<p class="ph-res__note">' + note + '</p>' +
       '<div class="ph-res__ctas">' +
       '<a class="btn btn--violet" href="/demo">Jugar la odisea real gratis</a>' +
-      '<a class="btn btn--ghost" href="#argoone">Ver un informe completo</a>' +
+      '<a class="btn btn--ghost" href="#argoone" data-see-report>Ver el informe de este perfil</a>' +
       '</div>' +
       '<button type="button" class="ph-again" id="ph-again">Probar de nuevo</button></div>';
     document.getElementById('ph-again').addEventListener('click', function() {
@@ -1896,10 +1904,146 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   scrub('sc2-track', 'sc2-content', 'sc2-notes', 'sc2-dots');
 })();
 
+// ═══════════════ INFORME PERSONALIZADO (showcase 1 se adapta al resultado del hero) ═══════════════
+(function() {
+  var content = document.getElementById('sc1-content');
+  var banner = document.getElementById('sc1-banner');
+  if (!content) return;
+  var DIAG = { D: 'S', S: 'D', I: 'C', C: 'I' };
+  function rgb(hex) { hex = hex.replace('#', ''); return parseInt(hex.substr(0,2),16)+','+parseInt(hex.substr(2,2),16)+','+parseInt(hex.substr(4,2),16); }
+
+  var LEAD = {
+    D: 'Benjamín tiende a vivir el deporte desde la acción: quiere que empiece ya y decide rápido.',
+    I: 'Benjamín tiende a jugar con y para los demás: el equipo es su lugar.',
+    S: 'Benjamín tiende a sostener al equipo: constante, confiable y con un ritmo propio.',
+    C: 'Benjamín tiende a entender antes de jugar: observa, lee el juego y busca el porqué.'
+  };
+  var VETA = {
+    'D+I': ' Y cuando el partido se prende, contagia: quiere que todos entren en calor con él.',
+    'D+C': ' Y cuando puede, le pone plan a esa energía: no empuja a ciegas.',
+    'I+D': ' Y cuando el partido pide chispa, es el primero en encenderla.',
+    'I+S': ' Y cuida el clima: si alguien queda afuera, lo nota.',
+    'S+I': ' Y lo hace con calidez: sostiene al grupo cuidando a cada uno.',
+    'S+C': ' Y le gusta entender el porqué: sostiene con orden, no por inercia.',
+    'C+D': ' Y cuando lo tiene claro, se anima: la lectura termina en decisión.',
+    'C+S': ' Y lo hace con paciencia: entiende el juego entero antes de moverse.'
+  };
+  var MOTOR = {
+    D: { pos: 86, body: 'En el juego respondió casi sin pausa: la acción es su forma de pensar. Le sienta la dinámica; la espera sin propósito lo apaga.', aside: 'Por ejemplo: dale la primera tarea apenas llega. Arrancar en movimiento lo ordena.' },
+    I: { pos: 72, body: 'Tendió a responder rápido, sobre todo con otros cerca. Le sienta bien la dinámica; las esperas largas lo apagan un poco.', aside: 'Por ejemplo: si la actividad arranca tarde, dale un rol mientras tanto (repartir petos, armar el círculo). Se queda conectado.' },
+    S: { pos: 30, body: 'Se tomó su tiempo para decidir: procesa en profundidad antes de actuar. Con un ritmo previsible rinde a su mejor nivel.', aside: 'Por ejemplo: avísale los cambios con tiempo. Si el plan se mueve, cuéntaselo antes que al resto.' },
+    C: { pos: 42, body: 'Observó antes de responder: primero entiende, después juega. La prisa sin sentido lo saca de foco.', aside: 'Por ejemplo: dale un segundo antes de corregir y pregúntale qué vio. Suele sorprender.' }
+  };
+  var TORMENTA = {
+    D: 'Cuando algo sale mal, acelera: quiere resolverlo en el acto. Le sienta bien una tarea inmediata; quedarse quieto lo frustra.',
+    I: 'Cuando algo sale mal, Benjamín suele buscar primero las caras de los demás. Si encuentra un gesto de calma, se rearma rápido. Si percibe enojo alrededor, el error le pesa el doble.',
+    S: 'Cuando algo sale mal, no lo muestra, pero lo carga. Sigue cumpliendo aunque esté incómodo; un gesto de calma a tiempo lo libera.',
+    C: 'Cuando algo sale mal, se lo reprocha por dentro con dureza y quiere entender qué falló. Un análisis breve, más tarde, lo ordena mejor que un consuelo en caliente.'
+  };
+  var WORDS = {
+    D: { si: ['"Te tengo un reto"', '"Tú abres el camino"', '"A ver cuánto avanzas hoy"'], no: ['"Espera, no corras"', '"Quédate quieto"'] },
+    I: { si: ['"El equipo te necesita"', '"Qué bien ese pase"', '"Juguemos juntos esta"'], no: ['"Deja de charlar y concéntrate"', '"Esto es individual, arréglate solo"'] },
+    S: { si: ['"Cuento contigo"', '"Vamos paso a paso"', '"Estás firme, sigue así"'], no: ['"Cambio de planes, ya"', '"Arréglatelas solo"'] },
+    C: { si: ['"Buena lectura"', '"¿Qué viste tú?"', '"Tómate un segundo"'], no: ['"Apúrate"', '"No lo pienses tanto"'] }
+  };
+  var TL = {
+    D: { a: 'Dale un objetivo claro para el arranque: necesita saber contra qué se mide.', d: 'Reconoce cada avance concreto en voz alta; la acción vista lo enciende.', p: 'Ve al grano: qué salió, qué sigue. Los rodeos lo pierden.' },
+    I: { a: 'Un saludo con nombre y una sonrisa valen más que una arenga. Llega mejor si siente que lo esperaban.', d: 'Reconoce sus gestos de juego colectivo en voz alta. Es su combustible.', p: 'Pregunta primero cómo estuvo el grupo. Él va a llegar a su propio juego por ese camino.' },
+    S: { a: 'Anticípale el plan del día: lo previsible lo ordena.', d: 'Un gesto de que está todo bien vale más que una corrección al paso.', p: 'No exijas una reacción inmediata; dale tiempo para procesar.' },
+    C: { a: 'Respóndele las dudas concretas y dale su momento de silencio.', d: 'Explícale el porqué de lo que pides; con sentido, ejecuta mejor.', p: 'Ofrécele una lectura honesta, no un ánimo genérico.' }
+  };
+  var RESET = {
+    D: 'Cuando se satura, dale una vía de descarga física antes de hablar: correr, moverse. Después llega la palabra.',
+    I: 'Cuando se satura, no lo aísles: acompáñalo a un costado y quédate cerca sin hablar mucho. La presencia tranquila lo ordena más que cualquier consejo.',
+    S: 'Cuando se satura, un espacio conocido y sin demandas lo devuelve a su eje. La rutina lo cura.',
+    C: 'Cuando se satura, dale silencio y tiempo para reordenar solo. Vuelve con una pregunta, no con un reto.'
+  };
+  var CONF = { pure: 'Perfil muy marcado', veta: 'Perfil claro', diag: 'Perfil con matices' };
+
+  function mezcla(p, veta, opp) {
+    var oppOf = DIAG[p], out = {};
+    ['D', 'I', 'S', 'C'].forEach(function(ax) {
+      if (ax === p) out[ax] = { s: (!veta && !opp) ? 92 : 76, l: (!veta && !opp) ? 'La mayor parte' : 'Más de la mitad' };
+      else if (veta && ax === veta) out[ax] = { s: 48, l: '1 de cada 4' };
+      else if (opp && ax === opp) out[ax] = { s: 46, l: '1 de cada 4' };
+      else if (ax === oppOf) out[ax] = { s: 22, l: 'Casi nada' };
+      else out[ax] = { s: 30, l: 'Alguna' };
+    });
+    return out;
+  }
+
+  function render(pick) {
+    var p = pick.primary, veta = pick.veta || null, opp = pick.opp || null;
+    var col = AX[p].hex, dot = 'style="background:' + col + ';"';
+    var name, orbs, conf;
+    if (veta) {
+      name = '<span style="color:' + col + ';">' + AX[p].label + '</span> <span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
+      orbs = '<div class="orb ' + AX[p].cls + ' is-morph" style="width:62%; height:62%; top:4%; left:2%;"></div><div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:48%; height:48%; bottom:4%; right:2%;"></div>';
+      conf = CONF.veta;
+    } else {
+      name = '<span style="color:' + col + ';">' + AX[p].label + '</span>';
+      orbs = '<div class="orb ' + AX[p].cls + ' is-morph" style="width:70%; height:70%; top:10%; left:14%;"></div>';
+      conf = opp ? CONF.diag : CONF.pure;
+    }
+    var lead = LEAD[p] + (veta ? (VETA[p + '+' + veta] || '') : (opp ? ' También asomó algo de ' + AX[opp].label + ': los contrastes conviven, y el informe los cuenta por dentro.' : ' En el juego, casi todas sus decisiones fueron por el mismo lado.'));
+    var mz = mezcla(p, veta, opp);
+    var mzCols = ['D', 'I', 'S', 'C'].map(function(ax, i) {
+      return '<div class="mr-mix__col"><div class="orb ' + AX[ax].cls + ' ' + (i % 2 ? 'is-morph-b' : 'is-morph') + '" style="width:' + mz[ax].s + 'px;height:' + mz[ax].s + 'px;"></div><span class="mr-mix__label"><span class="dot" style="background:' + AX[ax].hex + ';"></span>' + AX[ax].label + '</span><span class="mr-mix__pct" style="color:' + AX[ax].hex + ';">' + mz[ax].l + '</span></div>';
+    }).join('');
+    var m = MOTOR[p], w = WORDS[p], tl = TL[p];
+
+    content.innerHTML =
+      '<div class="mini-report">' +
+      '<div class="mr-card"><p class="mr-eyebrow">Su perfil hoy</p><p class="mr-meta">Benjamín · 11 años · Fútbol</p>' +
+      '<div class="mr-hero"><div><p class="mr-name serif">' + name + '</p><p class="mr-lead">' + lead + '</p>' +
+      '<span class="mr-conf"><span style="color:var(--accent);">&#10022;</span> ' + conf + '</span></div>' +
+      '<div class="mr-hero__orbs">' + orbs + '</div></div></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Su mezcla</h3><div class="mr-rule"></div>' +
+      '<div class="mr-mix">' + mzCols + '</div><div class="mr-rule"></div>' +
+      '<p class="mr-body">La mayoría de sus decisiones en el juego salieron por el lado ' + AX[p].label + '. La proporción exacta entre los cuatro colores es lo que hace único su informe.</p></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Su motor</h3><div class="mr-rule"></div>' +
+      '<div class="mr-spec"><div class="mr-spec__track"><span class="mr-spec__fill" style="width:' + m.pos + '%; background:linear-gradient(90deg, transparent, rgba(' + rgb(col) + ',.28));"></span>' +
+      '<span class="mr-spec__mark orb ' + AX[p].cls + '" style="left:' + m.pos + '%;"></span></div><div class="mr-spec__ends"><span>Pausado</span><span>Ágil</span></div></div>' +
+      '<p class="mr-body">' + m.body + '</p><p class="mr-aside">' + m.aside + '</p></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Ante la tormenta</h3><div class="mr-rule"></div><p class="mr-body">' + TORMENTA[p] + '</p></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Palabras que conectan</h3><div class="mr-rule"></div><div class="mr-words">' +
+      '<div class="mr-wpanel" style="background:rgba(' + rgb(col) + ',.06); border-color:rgba(' + rgb(col) + ',.25);"><div class="mr-wpanel__head" style="color:' + col + ';"><span class="mr-wpanel__orb orb ' + AX[p].cls + '"></span>Conectan</div>' +
+      w.si.map(function(x) { return '<div class="mr-wline"><span class="tick" style="background:' + col + ';"></span>' + x + '</div>'; }).join('') + '</div>' +
+      '<div class="mr-wpanel" style="background:var(--bg-elevated); border-color:var(--border);"><div class="mr-wpanel__head" style="color:var(--text-muted);"><span class="mr-wpanel__orb orb orb--grey"></span>Hacen ruido</div>' +
+      w.no.map(function(x) { return '<div class="mr-wline" style="color:var(--text-muted);"><span class="tick" style="background:var(--text-light);"></span>' + x + '</div>'; }).join('') + '</div></div></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Antes, durante y después</h3><div class="mr-rule"></div><div class="mr-tl">' +
+      '<div class="mr-tl__step"><span class="mr-tl__node orb ' + AX[p].cls + '"></span><div><p class="mr-tl__label">Antes</p><p class="mr-tl__text">' + tl.a + '</p></div></div>' +
+      '<div class="mr-tl__step"><span class="mr-tl__node orb ' + AX[p].cls + '"></span><div><p class="mr-tl__label">Durante</p><p class="mr-tl__text">' + tl.d + '</p></div></div>' +
+      '<div class="mr-tl__step"><span class="mr-tl__node orb ' + AX[p].cls + '"></span><div><p class="mr-tl__label">Después</p><p class="mr-tl__text">' + tl.p + '</p></div></div></div></div>' +
+
+      '<div class="mr-card"><h3 class="mr-h2"><span class="dot" ' + dot + '></span>Un reset que le sirve</h3><div class="mr-rule"></div><p class="mr-body">' + RESET[p] + '</p></div>' +
+      '</div>';
+  }
+
+  window.personalizeReport = function(pick) {
+    if (!pick || !AX[pick.primary]) return;
+    render(pick);
+    if (banner) {
+      var full = AX[pick.primary].label + (pick.veta ? ' con veta ' + AX[pick.veta].label : '');
+      banner.innerHTML = '<span class="sc-banner__orb orb ' + AX[pick.primary].cls + ' is-morph"></span><span>Personalizado con tu resultado: <strong>' + full + '</strong>. Así se vería su informe completo.</span>';
+      banner.classList.add('is-on');
+    }
+  };
+
+  // default en carga: Benjamín = Conector con veta Impulsor
+  render({ primary: 'I', veta: 'D' });
+})();
+
+
 // ═══════════════ ACADEMY PLAYGROUND ═══════════════
 var PLAYERS = [
   { id: 'juan',   name: 'Juan',   age: 12, p: 'D', v: 'I',   conn: 'con veta',
-    lead: 'Juan tiende a empujar: quiere la bocha, quiere el arco, quiere ya. Y tiene una veta que contagia: cuando celebra, celebra con todos.',
+    lead: 'Juan tiende a empujar: quiere la pelota, quiere el arco, quiere ya. Y tiene una veta que contagia: cuando celebra, celebra con todos.',
     conecta: ['"Te tengo un desafío"', '"Tú abres el camino"', '"A ver cuánto mejoras hoy"'],
     ruido: ['"Espera tu turno"', '"No corras tanto"'],
     consejo: 'Dale un objetivo concreto por práctica. La espera sin propósito lo apaga; el reto medible lo ordena.' },
@@ -1961,7 +2105,7 @@ function archName(p, small) {
     return '<button type="button" class="player-card" data-player="' + p.id + '">' +
       '<span class="player-card__orb orb ' + AX[p.p].cls + '"></span>' +
       '<span><span class="player-card__name" style="display:block;">' + p.name + '</span>' +
-      '<span class="player-card__meta">' + p.age + ' años · Hockey</span></span>' +
+      '<span class="player-card__meta">' + p.age + ' años · Fútbol</span></span>' +
       '<span class="player-card__axis" style="border-color:' + AX[p.p].pillB + '; color:' + AX[p.p].pillC + ';">' + AX[p.p].label + '</span>' +
       '<span class="player-card__info">i</span></button>';
   }).join('');
@@ -1979,7 +2123,7 @@ function archName(p, small) {
       '<div style="position:relative; aspect-ratio:1; max-width:230px;">' + orbs + '</div>' +
       '<p class="mr-eyebrow" style="margin-top:14px;">Su perfil hoy</p>' +
       '<p class="serif" style="font-size:1.4rem; line-height:1.25; margin-bottom:4px;">' + archName(p) + '</p>' +
-      '<p style="font-size:0.76rem; color:var(--text-muted);">' + p.name + ' · ' + p.age + ' años · Hockey</p>' +
+      '<p style="font-size:0.76rem; color:var(--text-muted);">' + p.name + ' · ' + p.age + ' años · Fútbol</p>' +
       '</div>' +
       '<div>' +
       '<p class="mr-body" style="font-size:0.92rem; margin-bottom:18px;">' + p.lead + '</p>' +
@@ -2135,7 +2279,10 @@ function archName(p, small) {
   var thread = document.getElementById('coach-thread');
   var input = document.getElementById('coach-input');
   var send = document.getElementById('coach-send');
+  var chips = document.getElementById('coach-chips');
+  var row = document.getElementById('coach-row');
   if (!thread) return;
+  var MAX = 4, used = 0;
 
   var ANSWERS = [
     { keys: ['pedro', 'motiv'], text: 'Pedro suele responder mejor a la confianza tranquila que a la arenga. Antes del partido, prueba algo simple: dile que cuentas con él y cuál va a ser su primera tarea concreta. Su veta Estratega agradece saber el plan. ¿El partido es de local o van de visitante? Eso también le cambia el clima.' },
@@ -2146,7 +2293,7 @@ function archName(p, small) {
     { keys: ['mateo'], text: 'Mateo necesita un segundo más que el resto en cada ejercicio nuevo: no es duda, es lectura. Pregúntale qué vio antes de corregirlo; suele sorprender. Apurarlo en la primera repetición es la forma más rápida de apagarlo. ¿Te preocupa algo puntual de su juego?' },
     { keys: ['julia'], text: 'Julia es de las que sostienen al equipo sin pedir foco. El riesgo con estos perfiles es darlos por sentado: un reconocimiento en voz baja pero frecuente la mantiene encendida. Los cambios sorpresivos la desacomodan: avísale antes que al resto. ¿Hace cuánto no le dices lo que aporta?' }
   ];
-  var FALLBACK = 'Buena pregunta. En esta demo respondo solo sobre Las Gaviotas con guiones de ejemplo; en el dashboard real, Argo Coach conoce los perfiles de tu equipo y responde cualquier consulta con IA. ¿Quieres probar con una de las preguntas sugeridas?';
+  var FALLBACK = 'Buena pregunta. En esta demo respondo solo sobre Los Argonautas con guiones de ejemplo; en el dashboard real, Argo Coach conoce los perfiles de tu equipo y responde cualquier consulta con IA. ¿Quieres probar con una de las preguntas sugeridas?';
 
   function bubble(cls, html) {
     var b = document.createElement('div');
@@ -2165,15 +2312,30 @@ function archName(p, small) {
     }
     return found ? found.text : FALLBACK;
   }
+  function closeChat() {
+    // salida elegante: cierra la probadita sin seguir consumiendo la demo
+    if (chips) chips.style.display = 'none';
+    if (row) row.style.display = 'none';
+    var exit = document.createElement('div');
+    exit.className = 'coach-exit';
+    exit.innerHTML = '<p class="coach-exit__t">Hasta aquí la probadita del Coach</p>' +
+      '<p class="coach-exit__d">En el dashboard real, Argo Coach conoce a todo tu equipo y responde sin límite, con IA.</p>' +
+      '<button type="button" class="btn btn--violet" data-open-demo style="width:100%; justify-content:center; padding:10px;">Solicitar demo</button>';
+    thread.appendChild(exit);
+    thread.scrollTop = thread.scrollHeight;
+    lucide.createIcons();
+  }
   function ask(q) {
     q = (q || '').trim();
-    if (!q) return;
+    if (!q || used >= MAX) return;
+    used++;
     input.value = '';
     bubble('coach-bubble--user', q.replace(/&/g, '&amp;').replace(/</g, '&lt;'));
     var t = bubble('coach-bubble--argo', '<div class="tag">Argo Coach</div><div class="typing-dots"><span></span><span></span><span></span></div>');
     setTimeout(function() {
       t.innerHTML = '<div class="tag">Argo Coach</div>' + answer(q);
       thread.scrollTop = thread.scrollHeight;
+      if (used >= MAX) closeChat();
     }, REDUCED ? 60 : 1100);
   }
   document.querySelectorAll('#coach-chips .coach-chip').forEach(function(c) {
@@ -2268,7 +2430,7 @@ function archName(p, small) {
     { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
     { q: '¿Hay respuestas correctas o incorrectas?', a: 'No. Cada respuesta refleja una tendencia conductual, no un acierto ni un error. No se miden capacidades ni se emiten diagnósticos. Todas las respuestas son válidas.' },
     { q: '¿Es un test psicológico?', a: 'No. ArgoMethod® no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
-    { q: '¿Cuánto cuesta?', a: 'Puedes jugar la demo gratis y ver una vista del informe. ArgoOne® cuesta $12.99 e incluye el informe completo del niño y tu Puente como adulto. Para instituciones, ArgoAcademy® ofrece una prueba gratis de 14 días con hasta 8 niños.' },
+    { q: '¿Cuánto cuesta?', a: 'Puedes jugar la demo gratis y ver una vista del informe. ArgoOne® cuesta $12.99 e incluye el informe del niño y el puente con el adulto, en la misma compra. Para instituciones, ArgoAcademy® ofrece una prueba gratis de 14 días con hasta 8 niños.' },
     { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del menor, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' }
   ];
   var list = document.getElementById('faq-list');
@@ -2302,8 +2464,13 @@ function archName(p, small) {
       document.body.style.overflow = '';
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
-    document.querySelectorAll('[' + openAttr + ']').forEach(function(btn) { btn.addEventListener('click', open); });
-    document.querySelectorAll('[' + closeAttr + ']').forEach(function(btn) { btn.addEventListener('click', close); });
+    // delegado: cubre también botones agregados dinámicamente (p. ej. la salida del coach)
+    document.addEventListener('click', function(e) {
+      var t = e.target.closest ? e.target.closest('[' + openAttr + ']') : null;
+      if (t) open(e);
+      var c = e.target.closest ? e.target.closest('[' + closeAttr + ']') : null;
+      if (c) close();
+    });
     modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
     document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
   }
