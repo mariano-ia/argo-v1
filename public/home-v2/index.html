@@ -1,0 +1,2470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ArgoMethod® · Perfil conductual para jóvenes deportistas</title>
+<meta name="description" content="ArgoMethod® transforma una experiencia de juego de 10 minutos en un perfil conductual del niño, con claves prácticas para que familias, entrenadores e instituciones lo acompañen mejor en el deporte.">
+<meta name="robots" content="noindex">
+
+<!-- Fonts: Inter (cuerpo) + Fraunces (display serif, mismo sistema que el informe rediseñado) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fraunces:ital,opsz,wght@0,9..144,300..640;1,9..144,300..640&display=swap" rel="stylesheet">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+<!-- Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════
+   DESIGN TOKENS — Argo brand (light)
+   ═══════════════════════════════════════ */
+:root {
+  --bg-page: #FFFFFF;
+  --bg-elevated: #F8F8FA;
+  --bg-neutral: #F5F5F7;
+  --text-primary: #1D1D1F;
+  --text-secondary: #424245;
+  --text-muted: #86868B;
+  --text-light: #AEAEB2;
+  --accent: #7A4D96;
+  --accent-soft: #955FB5;
+  --accent-wash: #F9F5FC;
+  --border: #E8E8ED;
+  --border-strong: #D2D2D7;
+  --ax-d: #f97316;
+  --ax-i: #f59e0b;
+  --ax-s: #22c55e;
+  --ax-c: #6366f1;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --shadow-argo: 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-hover: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lift: 0 24px 60px -30px rgba(29,29,31,0.25);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.7;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D2D2D7; border-radius: 4px; }
+
+h1, h2, h3 { letter-spacing: -0.02em; line-height: 1.12; color: var(--text-primary); font-weight: 300; margin: 0; }
+p { color: var(--text-secondary); margin: 0; }
+a { color: inherit; }
+strong { color: var(--text-primary); font-weight: 600; }
+button { font-family: var(--font-body); }
+
+/* Serif display: SOLO para nombres de perfil y titulares hero (regla del rediseño de informes) */
+.serif { font-family: var(--font-display); font-weight: 420; letter-spacing: -0.01em; }
+
+/* ═══════════════════════════════════════
+   ORBES DE VIDRIO — primitiva firma del sistema
+   (gradientes portados de gen_preview.py)
+   ═══════════════════════════════════════ */
+.orb {
+  border-radius: 50%;
+  position: relative;
+}
+/* D Impulsor #f97316 = 249,115,22 */
+.orb--d { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(249,115,22,.30), rgba(249,115,22,.15) 62%, rgba(249,115,22,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(249,115,22,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(249,115,22,.30); }
+/* I Conector #f59e0b = 245,158,11 */
+.orb--i { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(245,158,11,.30), rgba(245,158,11,.15) 62%, rgba(245,158,11,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(245,158,11,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(245,158,11,.30); }
+/* S Sostenedor #22c55e = 34,197,94 */
+.orb--s { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(34,197,94,.30), rgba(34,197,94,.15) 62%, rgba(34,197,94,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(34,197,94,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(34,197,94,.30); }
+/* C Estratega #6366f1 = 99,102,241 */
+.orb--c { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(99,102,241,.30), rgba(99,102,241,.15) 62%, rgba(99,102,241,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(99,102,241,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(99,102,241,.30); }
+/* Neutro #AEAEB2 = 174,174,178 */
+.orb--grey { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(174,174,178,.30), rgba(174,174,178,.15) 62%, rgba(174,174,178,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(174,174,178,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(174,174,178,.30); }
+/* Violeta marca #7A4D96 = 122,77,150 */
+.orb--v { background: radial-gradient(circle at 36% 30%, rgba(255,255,255,.62), rgba(255,255,255,0) 48%), radial-gradient(circle at 52% 55%, rgba(122,77,150,.30), rgba(122,77,150,.15) 62%, rgba(122,77,150,.05) 100%);
+  box-shadow: inset 0 0 0 1px rgba(122,77,150,.16), inset 0 1px 12px rgba(255,255,255,.45), 0 14px 38px -18px rgba(122,77,150,.30); }
+
+@keyframes orbMorphA { 0%,100% { border-radius: 58% 42% 47% 53% / 56% 51% 49% 44%; } 50% { border-radius: 45% 55% 55% 45% / 50% 45% 55% 50%; } }
+@keyframes orbMorphB { 0%,100% { border-radius: 52% 48% 44% 56% / 53% 47% 53% 47%; } 50% { border-radius: 61% 39% 56% 44% / 46% 57% 43% 54%; } }
+@keyframes orbFloatA { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-14px,0); } }
+@keyframes orbFloatB { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,10px,0); } }
+@keyframes orbBreathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.orb.is-live   { animation: orbMorphA 9s ease-in-out infinite, orbFloatA 12s ease-in-out infinite; }
+.orb.is-live-b { animation: orbMorphB 8s ease-in-out infinite, orbFloatB 14s ease-in-out infinite; }
+.orb.is-morph   { animation: orbMorphA 9s ease-in-out infinite; }
+.orb.is-morph-b { animation: orbMorphB 8s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
+  html { scroll-behavior: auto; }
+}
+
+/* ═══════════════════════════════════════
+   NAV + PROGRESO DE TRAVESÍA
+   ═══════════════════════════════════════ */
+.site-nav {
+  position: sticky; top: 0; z-index: 500;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.site-nav__inner {
+  max-width: 1160px; margin: 0 auto;
+  padding: 0 24px; height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.site-nav__logo { font-size: 18px; letter-spacing: -0.02em; color: var(--text-primary); text-decoration: none; }
+.l-argo { font-weight: 800; }
+.l-thin { font-weight: 300; }
+.l-xthin { font-weight: 100; }
+.site-nav__links { display: flex; align-items: center; gap: 20px; }
+.site-nav__link {
+  font-weight: 500; font-size: 12.5px; color: var(--text-muted); text-decoration: none;
+  background: none; border: none; cursor: pointer; transition: color 0.2s ease;
+}
+.site-nav__link:hover { color: var(--text-primary); }
+.site-nav__link--mobile { display: none; }
+.site-nav__cta {
+  font-weight: 600; font-size: 12.5px; background: var(--accent-soft); color: #fff;
+  border-radius: 8px; padding: 8px 18px; text-decoration: none; border: none; cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+.site-nav__cta:hover { opacity: 0.9; }
+/* hairline de progreso con mini-orbe que viaja */
+.voyage { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; pointer-events: none; }
+.voyage__fill { height: 100%; width: 0%; background: linear-gradient(90deg, rgba(122,77,150,0), rgba(122,77,150,.55)); }
+.voyage__orb {
+  position: absolute; top: 50%; left: 0%;
+  width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════
+   SECCIONES
+   ═══════════════════════════════════════ */
+.section { padding: 110px 40px; position: relative; }
+.section--tint { background: var(--bg-neutral); }
+.section--wash { background: linear-gradient(180deg, #fff 0%, var(--accent-wash) 60%, #fff 100%); }
+.section-content { width: 100%; max-width: 1160px; margin: 0 auto; position: relative; z-index: 1; }
+.eyebrow {
+  font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.16em; color: var(--accent); margin-bottom: 16px;
+}
+.eyebrow--muted { color: var(--text-light); }
+.sec-title { font-size: clamp(1.8rem, 3.4vw, 2.6rem); font-weight: 320; overflow-wrap: break-word; }
+.sec-title strong { font-weight: 620; }
+.sec-lead { font-size: 1.02rem; line-height: 1.75; color: var(--text-secondary); max-width: 620px; margin-top: 18px; }
+/* hairline que se desvanece (title-rule del informe) */
+.hairline { height: 1px; border: 0; margin: 26px 0 0; background: linear-gradient(90deg, rgba(29,29,31,0), rgba(29,29,31,.14) 18%, rgba(29,29,31,.14) 82%, rgba(29,29,31,0)); }
+
+/* reveals */
+@keyframes rise { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.anim { opacity: 0; transform: translateY(30px); }
+.anim.anim--visible { animation: rise 0.8s var(--ease-out) both; }
+.anim.anim--visible:nth-child(1) { animation-delay: 0.04s; }
+.anim.anim--visible:nth-child(2) { animation-delay: 0.12s; }
+.anim.anim--visible:nth-child(3) { animation-delay: 0.20s; }
+.anim.anim--visible:nth-child(4) { animation-delay: 0.28s; }
+.anim.anim--visible:nth-child(5) { animation-delay: 0.36s; }
+
+/* cards del sistema */
+.card {
+  background: #fff; border-radius: 16px; padding: 28px 32px;
+  box-shadow: var(--shadow-argo); border: 1px solid var(--border);
+}
+
+/* botones */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-weight: 600; font-size: 0.92rem; letter-spacing: 0.01em;
+  border-radius: 10px; padding: 13px 26px; text-decoration: none; cursor: pointer;
+  border: none; transition: transform 0.25s var(--ease-out), box-shadow 0.25s ease, opacity 0.2s ease;
+}
+.btn i, .btn svg { width: 16px; height: 16px; }
+.btn--primary { background: var(--text-primary); color: #fff; }
+.btn--primary:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(29,29,31,.5); }
+.btn--violet { background: var(--accent-soft); color: #fff; }
+.btn--violet:hover { transform: translateY(-1px); box-shadow: 0 10px 24px -12px rgba(122,77,150,.6); }
+.btn--ghost { background: transparent; color: var(--text-primary); border: 1px solid var(--border-strong); }
+.btn--ghost:hover { border-color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   HERO — campo de orbes vivos + Fraunces
+   ═══════════════════════════════════════ */
+.hero {
+  position: relative; min-height: calc(100svh - 56px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 60px 24px 90px; overflow: hidden;
+  background:
+    radial-gradient(1200px 500px at 70% -10%, rgba(122,77,150,.06), rgba(122,77,150,0) 60%),
+    radial-gradient(900px 480px at 12% 110%, rgba(99,102,241,.05), rgba(99,102,241,0) 60%),
+    #fff;
+}
+.hero__field { position: absolute; inset: 0; pointer-events: none; }
+.hero__orb { position: absolute; will-change: transform; }
+.hero__orb-inner { width: 100%; height: 100%; }
+.hero__content { position: relative; z-index: 2; text-align: center; max-width: 880px; }
+.hero__kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-wash);
+  border: 1px solid #EFE4F5; border-radius: 999px; padding: 7px 16px; margin-bottom: 30px;
+}
+.hero__title {
+  font-family: var(--font-display); font-weight: 380;
+  font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1.06; letter-spacing: -0.015em;
+}
+.hero__title .hw { transition: color 0.6s ease; }
+.hero__sub {
+  font-size: clamp(1rem, 1.6vw, 1.16rem); line-height: 1.75; color: var(--text-secondary);
+  max-width: 640px; margin: 26px auto 0;
+}
+.hero__ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 38px; }
+.hero__scrollcue {
+  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light);
+  z-index: 2;
+}
+@keyframes cueDrop { 0%,100% { transform: translateY(0); opacity: .8; } 50% { transform: translateY(6px); opacity: .3; } }
+.hero__scrollcue .cue-orb { width: 10px; height: 10px; border-radius: 50%; animation: cueDrop 2.4s ease-in-out infinite; }
+
+/* ═══════════════════════════════════════
+   LOS 4 COLORES — cards orbe interactivas
+   ═══════════════════════════════════════ */
+.axes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 54px; }
+.axis-card {
+  position: relative; background: #fff; border: 1px solid var(--border); border-radius: 16px;
+  padding: 34px 26px 30px; text-align: center; cursor: pointer; overflow: hidden;
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s ease, border-color 0.3s ease;
+  box-shadow: var(--shadow-argo);
+}
+.axis-card:hover, .axis-card.is-open { transform: translateY(-6px); box-shadow: var(--shadow-lift); }
+.axis-card__orb { width: 86px; height: 86px; margin: 0 auto 20px; transition: transform 0.4s var(--ease-out); }
+.axis-card:hover .axis-card__orb, .axis-card.is-open .axis-card__orb { transform: scale(1.12); }
+.axis-card__name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 460; margin-bottom: 4px; }
+.axis-card__verb { font-size: 0.78rem; color: var(--text-muted); letter-spacing: 0.02em; }
+.axis-card__line {
+  font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);
+  max-height: 0; opacity: 0; overflow: hidden; margin-top: 0;
+  transition: max-height 0.45s var(--ease-out), opacity 0.4s ease, margin-top 0.45s var(--ease-out);
+}
+.axis-card:hover .axis-card__line, .axis-card.is-open .axis-card__line { max-height: 130px; opacity: 1; margin-top: 14px; }
+.axes-note { text-align: center; margin-top: 34px; font-size: 0.95rem; color: var(--text-muted); }
+.axes-note strong { font-weight: 600; color: var(--text-secondary); }
+
+/* ═══════════════════════════════════════
+   MINI-ODISEA — el visitante juega 3 decisiones
+   ═══════════════════════════════════════ */
+.play-wrap { max-width: 760px; margin: 0 auto; }
+.play-stage {
+  background: #fff; border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: var(--shadow-lift); padding: 40px 44px 36px; position: relative; overflow: hidden;
+  min-height: 380px;
+}
+.play-stage::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(600px 220px at 85% -40px, rgba(122,77,150,.05), transparent 70%);
+}
+.play-progress { display: flex; align-items: center; gap: 8px; margin-bottom: 26px; }
+.play-progress__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s, transform 0.3s; }
+.play-progress__dot.is-done { background: var(--accent-soft); }
+.play-progress__dot.is-now { background: var(--accent); transform: scale(1.35); }
+.play-progress__label { margin-left: auto; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-light); }
+.play-scene { font-size: 0.8rem; color: var(--accent); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+.play-q { font-family: var(--font-display); font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 440; line-height: 1.3; margin-bottom: 26px; }
+.play-opts { display: grid; gap: 12px; }
+.play-opt {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px;
+  padding: 15px 18px; cursor: pointer; font-size: 0.95rem; color: var(--text-secondary);
+  transition: transform 0.25s var(--ease-out), border-color 0.2s, background 0.2s, box-shadow 0.25s;
+  width: 100%;
+}
+.play-opt:hover { transform: translateX(4px); border-color: var(--border-strong); background: #fff; box-shadow: var(--shadow-hover); }
+.play-opt:active { transform: scale(0.99); }
+.play-opt__badge {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 0.8rem;
+}
+/* colores POSICIONALES de opción (convención del producto: A=cielo B=ámbar C=violeta D=esmeralda) */
+.play-opt__badge--a { background: #3B82F6; }
+.play-opt__badge--b { background: #F59E0B; }
+.play-opt__badge--c { background: #8B5CF6; }
+.play-opt__badge--d { background: #10B981; }
+@keyframes sceneIn { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: translateX(0); } }
+.play-body.is-entering { animation: sceneIn 0.45s var(--ease-out) both; }
+
+/* resultado: la mezcla se forma en vivo */
+.play-result { text-align: center; }
+.play-result__eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
+.play-mix { display: flex; align-items: flex-end; justify-content: center; gap: clamp(18px, 5vw, 44px); min-height: 130px; margin-bottom: 8px; }
+.play-mix__col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.play-mix__orb { transition: width 1s var(--ease-out), height 1s var(--ease-out); }
+.play-mix__label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
+.play-mix__dot { width: 7px; height: 7px; border-radius: 50%; }
+.play-mix__n { font-size: 0.72rem; font-weight: 700; }
+.play-result__name { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 440; margin-top: 26px; line-height: 1.25; }
+.play-result__read { font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); max-width: 520px; margin: 14px auto 0; }
+.play-result__honest {
+  display: inline-flex; align-items: flex-start; gap: 8px; text-align: left;
+  font-size: 0.78rem; line-height: 1.55; color: var(--text-muted);
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px;
+  padding: 10px 14px; margin-top: 24px; max-width: 480px;
+}
+.play-result__honest i, .play-result__honest svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; color: var(--accent); }
+.play-result__ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
+.play-again { background: none; border: none; font-size: 0.82rem; color: var(--text-muted); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin-top: 18px; }
+.play-again:hover { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════
+   CÓMO FUNCIONA — 3 pasos con orbes
+   ═══════════════════════════════════════ */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 54px; }
+.step-card { text-align: center; padding: 10px 18px; position: relative; }
+.step-card__orbwrap { position: relative; width: 96px; height: 96px; margin: 0 auto 22px; }
+.step-card__orb { width: 100%; height: 100%; }
+.step-card__icon {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  color: var(--text-primary); opacity: 0.75;
+}
+.step-card__icon i, .step-card__icon svg { width: 30px; height: 30px; stroke-width: 1.6; }
+.step-card__num { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.18em; color: var(--text-light); margin-bottom: 8px; }
+.step-card__title { font-size: 1.06rem; font-weight: 600; margin-bottom: 8px; color: var(--text-primary); }
+.step-card__desc { font-size: 0.88rem; line-height: 1.65; color: var(--text-secondary); max-width: 300px; margin: 0 auto; }
+.steps-sci {
+  margin-top: 52px; padding-top: 24px; border-top: 1px solid var(--border);
+  font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 9px; justify-content: center;
+  text-align: center;
+}
+.steps-sci i, .steps-sci svg { width: 15px; height: 15px; color: var(--accent); flex-shrink: 0; }
+
+/* ═══════════════════════════════════════
+   UN MÉTODO, DOS CAMINOS
+   ═══════════════════════════════════════ */
+.paths { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 54px; }
+.path-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 20px;
+  padding: 40px 40px 36px; position: relative; overflow: hidden; display: block; text-decoration: none;
+  transition: transform 0.35s var(--ease-out), box-shadow 0.35s ease;
+  box-shadow: var(--shadow-argo);
+}
+.path-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lift); }
+.path-card__glow { position: absolute; width: 260px; height: 260px; border-radius: 50%; top: -110px; right: -80px; opacity: 0.5; pointer-events: none; }
+.path-card__brand { font-size: 1.5rem; letter-spacing: -0.02em; margin-bottom: 14px; }
+.path-card__for { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+.path-chip {
+  font-size: 0.72rem; font-weight: 600; padding: 4px 12px; border-radius: 999px;
+  background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary);
+}
+.path-card__claim { font-family: var(--font-display); font-size: 1.28rem; font-weight: 440; line-height: 1.35; margin-bottom: 14px; color: var(--text-primary); }
+.path-card__desc { font-size: 0.92rem; line-height: 1.7; color: var(--text-secondary); }
+.path-card__flow { display: flex; align-items: center; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+.path-flow__item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary); }
+.path-flow__orb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+.path-flow__arrow { color: var(--text-light); font-size: 0.85rem; }
+.path-card__cta { display: inline-flex; align-items: center; gap: 7px; margin-top: 26px; font-size: 0.88rem; font-weight: 600; color: var(--accent); }
+.path-card__cta i, .path-card__cta svg { width: 15px; height: 15px; transition: transform 0.25s var(--ease-out); }
+.path-card:hover .path-card__cta i, .path-card:hover .path-card__cta svg { transform: translateX(4px); }
+
+/* ═══════════════════════════════════════
+   SHOWCASE DEL INFORME — scrollytelling
+   ═══════════════════════════════════════ */
+.showcase { position: relative; }
+.showcase__track { position: relative; height: 320vh; }
+.showcase__sticky {
+  position: sticky; top: 56px; height: calc(100svh - 56px);
+  display: flex; align-items: center; overflow: hidden;
+}
+.showcase__grid {
+  width: 100%; max-width: 1160px; margin: 0 auto; padding: 0 40px;
+  display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 60px; align-items: center;
+}
+.showcase__notes { position: relative; min-height: 300px; }
+.showcase__note { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s var(--ease-out); pointer-events: none; }
+.showcase__note.is-on { opacity: 1; transform: translateY(0); }
+.showcase__note-eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.showcase__note-title { font-family: var(--font-display); font-size: clamp(1.4rem, 2.6vw, 1.9rem); font-weight: 440; line-height: 1.25; margin-bottom: 14px; color: var(--text-primary); }
+.showcase__note-desc { font-size: 0.98rem; line-height: 1.75; color: var(--text-secondary); max-width: 420px; }
+.showcase__dots { position: absolute; left: 0; bottom: -46px; display: flex; gap: 8px; }
+.showcase__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s, transform 0.3s; }
+.showcase__dot.is-on { background: var(--accent); transform: scale(1.3); }
+
+/* el marco documento */
+.doc-frame {
+  background: #fff; border: 1px solid var(--border); border-radius: 22px;
+  box-shadow: var(--shadow-lift); overflow: hidden; position: relative;
+  height: min(74svh, 720px);
+}
+.doc-frame__bar {
+  display: flex; align-items: center; gap: 10px; padding: 13px 20px;
+  border-bottom: 1px solid var(--border); background: var(--bg-elevated);
+  position: relative; z-index: 3;
+}
+.doc-frame__dots { display: flex; gap: 5px; }
+.doc-frame__dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--border-strong); }
+.doc-frame__title { font-size: 0.74rem; font-weight: 600; color: var(--text-muted); letter-spacing: 0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.doc-frame__scroller { position: absolute; inset: 44px 0 0 0; overflow: hidden; }
+.doc-frame__content { will-change: transform; padding: 30px 30px 60px; background: var(--bg-neutral); }
+.doc-frame__fade-b { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(180deg, rgba(245,245,247,0), rgba(245,245,247,.9)); pointer-events: none; z-index: 2; }
+
+/* ── mini informe (miniatura fiel del rediseño) ── */
+.mini-report { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.mr-card { background: #fff; border-radius: 16px; padding: 24px 26px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.mr-eyebrow { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.mr-meta { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 12px; }
+.mr-name { font-family: var(--font-display); font-size: 1.35rem; font-weight: 440; line-height: 1.25; margin-bottom: 10px; }
+.mr-name .nc { color: var(--text-primary); }
+.mr-lead { font-size: 0.82rem; line-height: 1.7; color: var(--text-secondary); }
+.mr-conf { display: inline-flex; align-items: center; gap: 7px; margin-top: 14px; font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; }
+.mr-hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 18px; align-items: center; }
+.mr-hero__orbs { position: relative; aspect-ratio: 1; }
+.mr-hero__orbs .orb { position: absolute; }
+.mr-h2 { display: flex; align-items: center; gap: 9px; font-size: 0.92rem; font-weight: 600; color: var(--text-primary); }
+.mr-h2 .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.mr-rule { height: 1px; margin: 12px 0 14px; background: linear-gradient(90deg, rgba(29,29,31,0), rgba(29,29,31,.12) 15%, rgba(29,29,31,.12) 85%, rgba(29,29,31,0)); }
+.mr-body { font-size: 0.8rem; line-height: 1.7; color: var(--text-secondary); }
+.mr-aside {
+  margin-top: 12px; font-size: 0.76rem; line-height: 1.6; color: var(--text-secondary);
+  background: var(--accent-wash); border-left: 2px solid var(--accent-soft); border-radius: 0 10px 10px 0;
+  padding: 10px 14px;
+}
+/* mezcla mini */
+.mr-mix { display: flex; align-items: flex-end; justify-content: space-around; padding: 10px 0 4px; }
+.mr-mix__col { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.mr-mix__label { display: flex; align-items: center; gap: 5px; font-size: 0.6rem; font-weight: 600; color: var(--text-secondary); }
+.mr-mix__label .dot { width: 6px; height: 6px; border-radius: 50%; }
+.mr-mix__pct { font-size: 0.62rem; font-weight: 700; }
+/* spectrum mini */
+.mr-spec { margin: 14px 2px 4px; }
+.mr-spec__track { position: relative; height: 2px; background: var(--border); border-radius: 2px; }
+.mr-spec__fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
+.mr-spec__mark { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; animation: orbBreathe 4s ease-in-out infinite; }
+.mr-spec__ends { display: flex; justify-content: space-between; font-size: 0.62rem; color: var(--text-muted); margin-top: 10px; }
+/* palabras glass panels */
+.mr-words { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+.mr-wpanel { border-radius: 12px; padding: 14px 16px; border: 1px solid; }
+.mr-wpanel__head { display: flex; align-items: center; gap: 8px; font-size: 0.66rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+.mr-wpanel__orb { width: 16px; height: 16px; border-radius: 50%; }
+.mr-wline { display: flex; align-items: baseline; gap: 8px; font-size: 0.76rem; line-height: 1.5; color: var(--text-secondary); padding: 5px 0; border-top: 1px solid rgba(29,29,31,.05); }
+.mr-wline:first-of-type { border-top: 0; padding-top: 0; }
+.mr-wline .tick { width: 4px; height: 4px; border-radius: 50%; flex-shrink: 0; position: relative; top: -2px; }
+/* timeline mini */
+.mr-tl { display: flex; flex-direction: column; gap: 0; margin-top: 6px; }
+.mr-tl__step { display: grid; grid-template-columns: 22px 1fr; gap: 12px; position: relative; padding-bottom: 16px; }
+.mr-tl__step:last-child { padding-bottom: 0; }
+.mr-tl__step::before { content: ''; position: absolute; left: 10px; top: 20px; bottom: 0; width: 1px; background: var(--border); }
+.mr-tl__step:last-child::before { display: none; }
+.mr-tl__node { width: 20px; height: 20px; border-radius: 50%; margin-top: 1px; }
+.mr-tl__label { font-size: 0.7rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.mr-tl__text { font-size: 0.76rem; line-height: 1.6; color: var(--text-secondary); }
+
+/* nota "vista de referencia" */
+.mock-note { display: flex; align-items: center; gap: 7px; font-size: 0.72rem; color: var(--text-light); margin-top: 14px; }
+.mock-note i, .mock-note svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ═══════════════════════════════════════
+   ARGOONE — intro + puente
+   ═══════════════════════════════════════ */
+.one-intro { max-width: 760px; }
+.one-callout {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--accent-wash); border: 1px solid #EFE4F5; border-radius: 16px;
+  padding: 22px 26px; margin-top: 34px;
+}
+.one-callout__orb { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; }
+.one-callout__title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.one-callout__desc { font-size: 0.86rem; line-height: 1.65; color: var(--text-secondary); }
+
+/* ═══════════════════════════════════════
+   ACADEMY PLAYGROUND — dashboard interactivo
+   ═══════════════════════════════════════ */
+.playground {
+  background: #fff; border: 1px solid var(--border); border-radius: 22px;
+  box-shadow: var(--shadow-lift); overflow: hidden; margin-top: 54px;
+}
+.playground__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg-elevated);
+  flex-wrap: wrap;
+}
+.playground__id { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; font-weight: 600; }
+.playground__id .sport { font-size: 0.7rem; font-weight: 600; color: var(--text-muted); background: #fff; border: 1px solid var(--border); padding: 3px 10px; border-radius: 999px; }
+.playground__tabs { display: flex; gap: 4px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 4px; flex-wrap: wrap; }
+.pg-tab {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 0.78rem; font-weight: 600; color: var(--text-muted);
+  padding: 7px 14px; border-radius: 7px; transition: all 0.2s ease;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.pg-tab i, .pg-tab svg { width: 14px; height: 14px; }
+.pg-tab.is-on { background: var(--accent-wash); color: var(--accent); }
+.playground__stage { min-height: 470px; position: relative; }
+.pg-panel { display: none; padding: 28px; }
+.pg-panel.is-on { display: block; animation: rise 0.5s var(--ease-out) both; }
+.pg-hint { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 20px; }
+.pg-hint i, .pg-hint svg { width: 14px; height: 14px; color: var(--accent); flex-shrink: 0; }
+
+/* roster */
+.roster { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.player-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px;
+  padding: 14px 16px; cursor: pointer; text-align: left; width: 100%;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s, border-color 0.2s, background 0.2s;
+}
+.player-card:hover { transform: translateY(-3px); background: #fff; box-shadow: var(--shadow-hover); }
+.player-card__orb { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+.player-card__name { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+.player-card__meta { font-size: 0.68rem; color: var(--text-muted); }
+.player-card__axis { margin-left: auto; font-size: 0.64rem; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid; white-space: nowrap; }
+.player-card__info {
+  width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border-strong);
+  display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+  flex-shrink: 0; font-size: 0.66rem; font-style: italic; font-family: Georgia, serif; font-weight: 700;
+  transition: all 0.2s ease;
+}
+.player-card:hover .player-card__info { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* mini informe reducido (panel del jugador) */
+.mini-profile { display: none; }
+.mini-profile.is-on { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 26px; animation: rise 0.4s var(--ease-out) both; }
+.mini-profile__back { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); margin-bottom: 18px; }
+.mini-profile__back:hover { color: var(--text-primary); }
+.mini-profile__back i, .mini-profile__back svg { width: 14px; height: 14px; }
+
+/* química */
+.chem { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.chem-zone {
+  border: 1.5px dashed var(--border-strong); border-radius: 16px; padding: 18px;
+  min-height: 210px; transition: border-color 0.2s, background 0.2s;
+}
+.chem-zone.is-over { border-color: var(--accent-soft); background: var(--accent-wash); }
+.chem-zone__title { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 14px; }
+.chem-zone__list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; }
+.chem-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px 7px 8px; font-size: 0.8rem; font-weight: 600; color: var(--text-primary);
+  cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.chem-chip:hover { box-shadow: var(--shadow-hover); }
+.chem-chip.is-dragging { opacity: 0.35; }
+.chem-chip__orb { width: 22px; height: 22px; border-radius: 50%; }
+.chem-ghost { position: fixed; z-index: 900; pointer-events: none; transform: translate(-50%, -50%) scale(1.06); box-shadow: var(--shadow-lift); opacity: 0.95; }
+.chem-read { margin-top: 18px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 18px 22px; }
+.chem-read__title { display: flex; align-items: center; gap: 8px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.chem-read__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.chem-read__line { font-size: 0.84rem; line-height: 1.65; color: var(--text-secondary); }
+.chem-read__line strong { font-weight: 600; }
+.chem-balance { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.chem-balance__track { flex: 1; height: 4px; border-radius: 4px; background: var(--border); overflow: hidden; }
+.chem-balance__fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent-soft), var(--accent)); transition: width 0.6s var(--ease-out); }
+.chem-balance__label { font-size: 0.66rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+
+/* coach */
+.coach { max-width: 660px; margin: 0 auto; }
+.coach__thread { display: flex; flex-direction: column; gap: 12px; min-height: 190px; margin-bottom: 18px; }
+.coach-bubble { border-radius: 16px; padding: 13px 17px; font-size: 0.88rem; line-height: 1.6; max-width: 85%; }
+.coach-bubble--user { align-self: flex-end; background: var(--text-primary); color: #fff; border-bottom-right-radius: 4px; }
+.coach-bubble--argo { align-self: flex-start; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); border-bottom-left-radius: 4px; }
+.coach-bubble--argo .tag { font-size: 0.64rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 5px; }
+.coach__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.coach-chip {
+  font-size: 0.76rem; font-weight: 500; color: var(--text-secondary);
+  background: #fff; border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 7px 14px; cursor: pointer; transition: all 0.2s ease;
+}
+.coach-chip:hover { border-color: var(--accent-soft); color: var(--accent); background: var(--accent-wash); }
+.coach__row { display: flex; gap: 10px; }
+.coach__input {
+  flex: 1; border: 1px solid var(--border-strong); border-radius: 10px;
+  padding: 11px 16px; font-size: 0.88rem; font-family: var(--font-body); color: var(--text-primary);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.coach__input:focus { border-color: var(--accent-soft); box-shadow: 0 0 0 3px rgba(122,77,150,.12); }
+.coach__send {
+  background: var(--accent-soft); color: #fff; border: none; border-radius: 10px;
+  width: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.coach__send:hover { opacity: 0.9; }
+.coach__send i, .coach__send svg { width: 16px; height: 16px; }
+.typing-dots { display: inline-flex; gap: 4px; padding: 4px 0; }
+.typing-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-light); animation: typingB 1.2s ease-in-out infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes typingB { 0%,60%,100% { transform: translateY(0); opacity: .4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+/* predictor */
+.pred { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 26px; }
+.pred__pick-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+.pred__players { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+.pred-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: #fff; border: 1px solid var(--border-strong); border-radius: 999px;
+  padding: 6px 13px 6px 7px; font-size: 0.78rem; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.pred-pill .porb { width: 20px; height: 20px; border-radius: 50%; }
+.pred-pill.is-on { border-color: var(--accent); color: var(--accent); background: var(--accent-wash); }
+.pred__sits { display: flex; flex-direction: column; gap: 8px; }
+.pred-sit {
+  text-align: left; background: #fff; border: 1px solid var(--border); border-radius: 10px;
+  padding: 11px 15px; font-size: 0.82rem; font-weight: 500; color: var(--text-secondary); cursor: pointer;
+  transition: all 0.2s ease; display: flex; align-items: center; gap: 9px;
+}
+.pred-sit i, .pred-sit svg { width: 15px; height: 15px; color: var(--text-light); flex-shrink: 0; }
+.pred-sit:hover { border-color: var(--border-strong); }
+.pred-sit.is-on { border-color: var(--accent); background: var(--accent-wash); color: var(--accent); }
+.pred-sit.is-on i, .pred-sit.is-on svg { color: var(--accent); }
+.pred__out { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 24px 26px; min-height: 300px; }
+.pred__out-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; height: 100%; min-height: 250px; color: var(--text-light); font-size: 0.85rem; text-align: center; }
+.pred__out-empty .orb { width: 52px; height: 52px; }
+.pred__who { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.pred__who .porb { width: 30px; height: 30px; border-radius: 50%; }
+.pred__who-name { font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.pred__who-arch { font-family: var(--font-display); font-size: 0.85rem; }
+.pred__sit-label { font-size: 0.76rem; color: var(--text-muted); margin-bottom: 16px; }
+.pred__behaviors { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+.pred-beh { display: flex; align-items: baseline; gap: 10px; font-size: 0.84rem; line-height: 1.6; color: var(--text-secondary); }
+.pred-beh .tick { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; position: relative; top: -2px; }
+.pred__how { border-top: 1px solid var(--border); padding-top: 16px; }
+.pred__how-label { display: flex; align-items: center; gap: 7px; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.pred__how-text { font-size: 0.85rem; line-height: 1.7; color: var(--text-secondary); }
+.pred__prob { font-size: 0.7rem; color: var(--text-light); margin-top: 14px; }
+
+/* ═══════════════════════════════════════
+   PRECIOS
+   ═══════════════════════════════════════ */
+.pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; margin-top: 54px; max-width: 920px; margin-left: auto; margin-right: auto; }
+.price-card {
+  background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 38px 38px 34px;
+  position: relative; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-argo); transition: transform 0.35s var(--ease-out), box-shadow 0.35s;
+}
+.price-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lift); }
+.price-card__name { font-size: 1.45rem; letter-spacing: -0.02em; margin-bottom: 6px; }
+.price-card__tag { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 18px; }
+.price-card__price { font-size: 2.3rem; font-weight: 300; letter-spacing: -0.03em; color: var(--text-primary); margin-bottom: 20px; }
+.price-card__price small { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
+.price-card__items { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 26px; }
+.price-card__items li { display: flex; gap: 10px; font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); }
+.price-card__items li i, .price-card__items li svg { width: 15px; height: 15px; color: var(--ax-s); flex-shrink: 0; margin-top: 3px; }
+.price-card__items li strong { font-weight: 600; }
+.price-card__puente { background: var(--accent-wash); border: 1px solid #EFE4F5; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; }
+.price-card__puente-title { font-size: 0.82rem; font-weight: 700; color: var(--accent); margin-bottom: 3px; }
+.price-card__puente-desc { font-size: 0.78rem; line-height: 1.6; color: var(--text-secondary); }
+.price-card__cta { margin-top: auto; text-align: center; justify-content: center; }
+.price-card__return { text-align: center; margin-top: 12px; font-size: 0.76rem; }
+.price-card__return a { color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   FAQ
+   ═══════════════════════════════════════ */
+.faq-wrap { max-width: 720px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-item__q {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  background: none; border: none; cursor: pointer; text-align: left;
+  padding: 20px 4px; font-size: 0.98rem; font-weight: 600; color: var(--text-primary);
+}
+.faq-item__q i, .faq-item__q svg { width: 17px; height: 17px; color: var(--text-light); flex-shrink: 0; transition: transform 0.3s var(--ease-out); }
+.faq-item.is-open .faq-item__q i, .faq-item.is-open .faq-item__q svg { transform: rotate(45deg); color: var(--accent); }
+.faq-item__a {
+  max-height: 0; overflow: hidden; font-size: 0.9rem; line-height: 1.75; color: var(--text-secondary);
+  transition: max-height 0.45s var(--ease-out), padding 0.45s var(--ease-out);
+  padding: 0 4px;
+}
+.faq-item.is-open .faq-item__a { max-height: 400px; padding: 0 4px 22px; }
+
+/* ═══════════════════════════════════════
+   CTA FINAL
+   ═══════════════════════════════════════ */
+.cta-final { text-align: center; overflow: hidden; }
+.cta-final__orbs { position: relative; height: 120px; max-width: 420px; margin: 0 auto 20px; }
+.cta-final__orbs .orb { position: absolute; }
+.cta-final__title { font-family: var(--font-display); font-size: clamp(1.8rem, 3.6vw, 2.7rem); font-weight: 400; line-height: 1.15; }
+.cta-final__trust { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; margin-top: 26px; font-size: 0.82rem; color: var(--text-muted); }
+.cta-final__trust span { display: inline-flex; align-items: center; gap: 7px; }
+.cta-final__trust i, .cta-final__trust svg { width: 15px; height: 15px; color: var(--accent); }
+.cta-final__ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
+
+/* ═══════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════ */
+.site-footer { border-top: 1px solid var(--border); padding: 40px 40px 46px; }
+.site-footer__inner { max-width: 1160px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.site-footer__brand { display: flex; align-items: center; gap: 16px; }
+.site-footer__logo { font-size: 16px; }
+.coppa-badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 600;
+  color: var(--text-muted); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px;
+  text-decoration: none;
+}
+.coppa-badge i, .coppa-badge svg { width: 13px; height: 13px; color: var(--ax-s); }
+.site-footer__links { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-muted); }
+.site-footer__links a { text-decoration: none; color: var(--text-muted); }
+.site-footer__links a:hover { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════
+   MODALES (demo + login) — del sistema
+   ═══════════════════════════════════════ */
+.demo-modal {
+  position: fixed; inset: 0; z-index: 800; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+  background: rgba(29,29,31,0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.demo-modal.is-open { display: flex; opacity: 1; }
+.demo-modal__panel {
+  width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
+  background: #fff; border-radius: 18px; padding: 30px;
+  box-shadow: 0 24px 80px -20px rgba(0,0,0,0.35);
+  transform: translateY(14px); transition: transform 0.3s var(--ease-out);
+}
+.demo-modal.is-open .demo-modal__panel { transform: translateY(0); }
+.demo-modal__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 6px; }
+.demo-modal__title { font-size: 19px; font-weight: 600; letter-spacing: -0.02em; color: var(--text-primary); }
+.demo-modal__sub { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin: 4px 0 20px; }
+.demo-modal__close {
+  background: none; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+  color: var(--text-muted); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all 0.2s ease;
+}
+.demo-modal__close:hover { color: var(--text-primary); border-color: var(--border-strong); }
+.demo-modal__close i, .demo-modal__close svg { width: 16px; height: 16px; }
+.demo-field { margin-bottom: 14px; }
+.demo-label { display: block; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+.demo-input, .demo-select {
+  width: 100%; border: 1px solid var(--border-strong); border-radius: 10px;
+  padding: 10px 14px; font-size: 0.9rem; font-family: var(--font-body); color: var(--text-primary);
+  outline: none; background: #fff; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.demo-input:focus, .demo-select:focus { border-color: var(--accent-soft); box-shadow: 0 0 0 3px rgba(122,77,150,.12); }
+.demo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.demo-consent { display: flex; align-items: flex-start; gap: 9px; font-size: 0.76rem; line-height: 1.5; color: var(--text-muted); margin: 16px 0 18px; }
+.demo-consent input { margin-top: 3px; }
+.demo-submit {
+  width: 100%; background: var(--accent-soft); color: #fff; border: none; border-radius: 10px;
+  padding: 13px; font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.demo-submit:hover { opacity: 0.92; }
+.demo-submit:disabled { opacity: 0.6; cursor: default; }
+.demo-error { display: none; font-size: 0.8rem; color: #B42318; background: #FCEBEA; border: 1px solid #F3C7C4; border-radius: 8px; padding: 9px 13px; margin-bottom: 14px; }
+.demo-error.is-visible { display: block; }
+.demo-spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: -2px; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.login-opt {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; margin-bottom: 10px;
+  text-decoration: none; transition: border-color 0.2s, background 0.2s;
+}
+.login-opt:hover { border-color: var(--accent-soft); background: var(--accent-wash); }
+.login-opt__orb { width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0; }
+.login-opt__name { font-size: 0.92rem; font-weight: 600; color: var(--text-primary); }
+.login-opt__desc { font-size: 0.76rem; color: var(--text-muted); }
+
+/* ═══════════════════════════════════════
+   CHAT WIDGET
+   ═══════════════════════════════════════ */
+.chat-fab {
+  position: fixed; bottom: 22px; right: 22px; z-index: 700;
+  width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer;
+  background: var(--text-primary); display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 8px 30px -8px rgba(0,0,0,0.4); transition: transform 0.25s var(--ease-out);
+}
+.chat-fab:hover { transform: scale(1.06); }
+.chat-fab__close { display: none; color: #fff; font-size: 17px; }
+.chat-fab.is-open .chat-fab__icon { display: none; }
+.chat-fab.is-open .chat-fab__close { display: block; }
+.chat-panel {
+  position: fixed; bottom: 86px; right: 22px; z-index: 700;
+  width: min(370px, calc(100vw - 32px)); max-height: min(540px, 70vh);
+  background: #fff; border: 1px solid var(--border); border-radius: 18px;
+  box-shadow: 0 24px 80px -20px rgba(0,0,0,0.3);
+  display: none; flex-direction: column; overflow: hidden;
+}
+.chat-panel.is-open { display: flex; }
+.chat-panel__header { display: flex; align-items: center; gap: 10px; padding: 15px 18px; border-bottom: 1px solid var(--border); background: var(--bg-elevated); }
+.chat-panel__status { width: 9px; height: 9px; border-radius: 50%; background: var(--ax-s); }
+.chat-panel__title { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+.chat-panel__subtitle { font-size: 0.7rem; color: var(--text-muted); }
+.chat-panel__messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 160px; }
+.chat-msg { border-radius: 14px; padding: 10px 14px; font-size: 0.84rem; line-height: 1.55; max-width: 88%; }
+.chat-msg--assistant { align-self: flex-start; background: var(--bg-elevated); color: var(--text-secondary); border-bottom-left-radius: 4px; }
+.chat-msg--user { align-self: flex-end; background: var(--text-primary); color: #fff; border-bottom-right-radius: 4px; }
+.chat-panel__typing { font-size: 0.78rem; color: var(--text-light); padding: 4px 8px; }
+.chat-panel__suggestions { display: flex; flex-wrap: wrap; gap: 7px; padding: 0 16px 12px; }
+.chat-chip { font-size: 0.72rem; color: var(--text-secondary); background: #fff; border: 1px solid var(--border-strong); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.chat-chip:hover { border-color: var(--accent-soft); color: var(--accent); }
+.chat-panel__input-row { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--border); }
+.chat-panel__input { flex: 1; border: 1px solid var(--border-strong); border-radius: 9px; padding: 9px 13px; font-size: 0.84rem; font-family: var(--font-body); outline: none; }
+.chat-panel__input:focus { border-color: var(--accent-soft); }
+.chat-panel__send { background: var(--text-primary); border: none; border-radius: 9px; width: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.chat-panel__send:disabled { opacity: 0.5; }
+.chat-panel__limit { display: none; font-size: 0.68rem; color: var(--text-light); text-align: center; padding: 0 0 10px; }
+
+/* ═══════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .axes-grid { grid-template-columns: repeat(2, 1fr); }
+  .roster { grid-template-columns: repeat(2, 1fr); }
+  .showcase__grid { grid-template-columns: 1fr; gap: 24px; padding: 0 24px; }
+  .showcase__notes { min-height: 150px; order: 2; }
+  .showcase__note { justify-content: flex-start; }
+  .showcase__note-desc { max-width: 100%; }
+  .showcase__dots { bottom: -30px; }
+  .doc-frame { height: min(52svh, 520px); }
+}
+@media (max-width: 768px) {
+  .section { padding: 72px 20px; }
+  .sec-title { font-size: clamp(1.45rem, 6.2vw, 1.9rem); }
+  .hero__field { opacity: 0.6; }
+  .site-nav__link--desktop { display: none; }
+  .site-nav__link--mobile { display: inline-block; }
+  .paths { grid-template-columns: 1fr; }
+  .path-card { padding: 30px 26px; }
+  .steps { grid-template-columns: 1fr; gap: 40px; }
+  .play-stage { padding: 28px 22px; }
+  .mini-profile.is-on { grid-template-columns: 1fr; }
+  .chem { grid-template-columns: 1fr; }
+  .chem-read__grid { grid-template-columns: 1fr; gap: 12px; }
+  .pred { grid-template-columns: 1fr; }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .mr-words { grid-template-columns: 1fr; }
+  .mr-hero { grid-template-columns: 1fr; }
+  .mr-hero__orbs { max-width: 200px; margin: 0 auto; }
+  .roster { grid-template-columns: 1fr; }
+  .playground__stage { min-height: 0; }
+  .pg-panel { padding: 20px 16px; }
+  .site-footer { padding: 32px 20px 38px; }
+  .hero__title { font-size: clamp(2.1rem, 9vw, 2.8rem); }
+  .hero { min-height: calc(96svh - 56px); }
+}
+@media (max-width: 560px) {
+  .axes-grid { grid-template-columns: 1fr; }
+  .axis-card__line { max-height: none; opacity: 1; margin-top: 12px; }
+  .demo-row { grid-template-columns: 1fr; }
+  .playground__tabs { width: 100%; }
+  .pg-tab { flex: 1; justify-content: center; padding: 7px 8px; }
+  .pg-tab span { display: none; }
+  .pg-tab i, .pg-tab svg { width: 17px; height: 17px; }
+}
+</style>
+</head>
+<body>
+<!-- ══════════════ NAV ══════════════ -->
+<nav class="site-nav">
+  <div class="site-nav__inner">
+    <a class="site-nav__logo" href="#top"><span class="l-argo">Argo</span><span class="l-xthin">Method®</span></a>
+    <div class="site-nav__links">
+      <a class="site-nav__link site-nav__link--desktop" href="#pruebalo">Pruébalo</a>
+      <a class="site-nav__link site-nav__link--desktop" href="#argoone">Argo<span style="font-weight:700;">One®</span></a>
+      <a class="site-nav__link site-nav__link--desktop" href="#argoacademy">Argo<span style="font-weight:700;">Academy®</span></a>
+      <a class="site-nav__link site-nav__link--desktop" href="#precios">Precios</a>
+      <button type="button" class="site-nav__link site-nav__link--mobile" data-open-login>Entrar</button>
+      <a class="site-nav__link site-nav__link--desktop" href="#" data-open-login style="cursor:pointer;">Entrar</a>
+      <a class="site-nav__cta" href="/demo">Jugar gratis</a>
+    </div>
+  </div>
+  <div class="voyage"><div class="voyage__fill" id="voyage-fill"></div><div class="voyage__orb orb orb--v" id="voyage-orb"></div></div>
+</nav>
+
+<!-- ══════════════ HERO ══════════════ -->
+<header class="hero" id="top">
+  <div class="hero__field" id="hero-field">
+    <div class="hero__orb" data-depth="0.030" style="top:8%; left:6%; width:clamp(120px,16vw,220px); height:clamp(120px,16vw,220px);"><div class="hero__orb-inner orb orb--d is-live"></div></div>
+    <div class="hero__orb" data-depth="0.055" style="top:56%; left:12%; width:clamp(70px,9vw,130px); height:clamp(70px,9vw,130px);"><div class="hero__orb-inner orb orb--s is-live-b"></div></div>
+    <div class="hero__orb" data-depth="0.040" style="top:12%; right:8%; width:clamp(90px,12vw,170px); height:clamp(90px,12vw,170px);"><div class="hero__orb-inner orb orb--i is-live-b"></div></div>
+    <div class="hero__orb" data-depth="0.070" style="top:60%; right:10%; width:clamp(110px,14vw,200px); height:clamp(110px,14vw,200px);"><div class="hero__orb-inner orb orb--c is-live"></div></div>
+  </div>
+  <div class="hero__content">
+    <span class="hero__kicker">Perfil conductual para deportistas de 8 a 16 años</span>
+    <h1 class="hero__title">Cada niño vive el deporte<br><span class="hw" id="hw-word" style="color:var(--ax-d); font-style:italic;">a su manera</span>.</h1>
+    <p class="hero__sub">Un juego de 10 minutos lee cómo decide, qué lo motiva y qué necesita escuchar. El adulto que lo acompaña recibe un informe claro para entenderlo mejor, en la cancha y fuera de ella.</p>
+    <div class="hero__ctas">
+      <a class="btn btn--primary" href="/demo">Jugar gratis <i data-lucide="arrow-right"></i></a>
+      <a class="btn btn--ghost" href="#pruebalo">Pruébalo aquí mismo, en 30 segundos</a>
+    </div>
+  </div>
+  <div class="hero__scrollcue"><span class="cue-orb orb orb--v"></span>Descubre</div>
+</header>
+
+<!-- ══════════════ LOS 4 COLORES ══════════════ -->
+<section class="section" id="colores">
+  <div class="section-content">
+    <div style="text-align:center; max-width:680px; margin:0 auto;">
+      <div class="eyebrow anim">El punto de partida</div>
+      <h2 class="sec-title anim">Cuatro maneras de <strong>vivir el deporte</strong>.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Toca cada esfera. Detrás de cada una hay un niño que conoces.</p>
+    </div>
+    <div class="axes-grid">
+      <button type="button" class="axis-card anim" data-axis="D">
+        <div class="axis-card__orb orb orb--d is-morph"></div>
+        <div class="axis-card__name" style="color:var(--ax-d);">Impulsor</div>
+        <div class="axis-card__verb">se enciende con el reto</div>
+        <p class="axis-card__line">Quiere que empiece ya. Decide rápido, empuja al equipo y necesita acción para estar en su zona.</p>
+      </button>
+      <button type="button" class="axis-card anim" data-axis="I">
+        <div class="axis-card__orb orb orb--i is-morph-b"></div>
+        <div class="axis-card__name" style="color:var(--ax-i);">Conector</div>
+        <div class="axis-card__verb">juega con y para los demás</div>
+        <p class="axis-card__line">Contagia energía, arma vínculos y da lo mejor cuando siente que el grupo está con él.</p>
+      </button>
+      <button type="button" class="axis-card anim" data-axis="S">
+        <div class="axis-card__orb orb orb--s is-morph"></div>
+        <div class="axis-card__name" style="color:var(--ax-s);">Sostenedor</div>
+        <div class="axis-card__verb">sostiene al equipo</div>
+        <p class="axis-card__line">La calma del grupo. Persiste, cuida a los demás y rinde mejor con un ritmo previsible.</p>
+      </button>
+      <button type="button" class="axis-card anim" data-axis="C">
+        <div class="axis-card__orb orb orb--c is-morph-b"></div>
+        <div class="axis-card__name" style="color:var(--ax-c);">Estratega</div>
+        <div class="axis-card__verb">primero entiende, después juega</div>
+        <p class="axis-card__line">Observa, analiza y busca el porqué. Cuando entiende el plan, ejecuta con precisión.</p>
+      </button>
+    </div>
+    <p class="axes-note anim"><strong>Ninguna es mejor que otra.</strong> Y casi ningún niño es una sola: el perfil real es una mezcla, con un color que pesa más.</p>
+  </div>
+</section>
+
+<!-- ══════════════ MINI ODISEA ══════════════ -->
+<section class="section section--wash" id="pruebalo">
+  <div class="section-content">
+    <div style="text-align:center; max-width:640px; margin:0 auto 44px;">
+      <div class="eyebrow anim">Pruébalo tú</div>
+      <h2 class="sec-title anim">Tres decisiones bastan para <strong>ver cómo funciona</strong>.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Responde como el niño que acompañas (o como el niño que fuiste). Mira cómo se forma una mezcla en vivo.</p>
+    </div>
+    <div class="play-wrap anim">
+      <div class="play-stage" id="play-stage">
+        <div class="play-progress" id="play-progress">
+          <span class="play-progress__dot is-now"></span>
+          <span class="play-progress__dot"></span>
+          <span class="play-progress__dot"></span>
+          <span class="play-progress__label" id="play-label">Decisión 1 de 3</span>
+        </div>
+        <div class="play-body" id="play-body"></div>
+      </div>
+      <p class="mock-note" style="justify-content:center;"><i data-lucide="info"></i>Esto es un vistazo de 30 segundos. La odisea real del niño dura 10 minutos y lee 12 decisiones.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CÓMO FUNCIONA ══════════════ -->
+<section class="section" id="como-funciona">
+  <div class="section-content">
+    <div style="text-align:center; max-width:640px; margin:0 auto;">
+      <div class="eyebrow anim">El método</div>
+      <h2 class="sec-title anim">Un juego que <strong>lee mientras se juega</strong>.</h2>
+    </div>
+    <div class="steps">
+      <div class="step-card anim">
+        <div class="step-card__orbwrap"><div class="step-card__orb orb orb--i is-morph"></div><div class="step-card__icon"><i data-lucide="gamepad-2"></i></div></div>
+        <p class="step-card__num">01</p>
+        <p class="step-card__title">El niño juega su odisea</p>
+        <p class="step-card__desc">Una aventura náutica de 10 minutos desde el celular. Sin preguntas de examen: solo decisiones dentro de la historia.</p>
+      </div>
+      <div class="step-card anim">
+        <div class="step-card__orbwrap"><div class="step-card__orb orb orb--v is-morph-b"></div><div class="step-card__icon"><i data-lucide="scan-search"></i></div></div>
+        <p class="step-card__num">02</p>
+        <p class="step-card__title">El método lee sus decisiones</p>
+        <p class="step-card__desc">Cada elección refleja una tendencia conductual. Argo las cruza y arma la mezcla del perfil, con su nivel de claridad.</p>
+      </div>
+      <div class="step-card anim">
+        <div class="step-card__orbwrap"><div class="step-card__orb orb orb--s is-morph"></div><div class="step-card__icon"><i data-lucide="mail-open"></i></div></div>
+        <p class="step-card__num">03</p>
+        <p class="step-card__title">El adulto recibe las claves</p>
+        <p class="step-card__desc">Un informe cálido y práctico: qué lo motiva, qué palabras conectan y cómo acompañarlo antes, durante y después.</p>
+      </div>
+    </div>
+    <p class="steps-sci anim"><i data-lucide="shield-check"></i>Construido sobre el modelo DISC de William Moulton Marston (1928), adaptado al deporte infantil. No es un test psicológico ni predice el futuro deportivo de ningún niño.</p>
+  </div>
+</section>
+
+<!-- ══════════════ UN MÉTODO, DOS CAMINOS ══════════════ -->
+<section class="section section--tint" id="caminos">
+  <div class="section-content">
+    <div style="text-align:center; max-width:680px; margin:0 auto;">
+      <div class="eyebrow anim">Un método, dos caminos</div>
+      <h2 class="sec-title anim">El mismo método, <strong>a tu escala</strong>.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Para un niño o para toda una institución. En los dos casos, el adulto siempre recibe el informe del niño.</p>
+    </div>
+    <div class="paths">
+      <a class="path-card anim" href="#argoone">
+        <div class="path-card__glow orb orb--v"></div>
+        <p class="path-card__brand"><span class="l-argo">Argo</span><span class="l-thin">One®</span></p>
+        <div class="path-card__for">
+          <span class="path-chip">Padres y madres</span>
+          <span class="path-chip">Responsables</span>
+          <span class="path-chip">Entrenadores</span>
+        </div>
+        <p class="path-card__claim">Un niño, dos informes.</p>
+        <p class="path-card__desc">El niño juega su odisea y el responsable recibe los dos informes: el perfil del niño y el Puente del adulto, para acompañarlo desde tu propio estilo.</p>
+        <div class="path-card__flow">
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--i"></span>El niño juega</span>
+          <span class="path-flow__arrow">&rarr;</span>
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--v"></span>Argo lee</span>
+          <span class="path-flow__arrow">&rarr;</span>
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--s"></span>Recibes los dos informes</span>
+        </div>
+        <span class="path-card__cta">Ver el informe por dentro <i data-lucide="arrow-down"></i></span>
+      </a>
+      <a class="path-card anim" href="#argoacademy">
+        <div class="path-card__glow orb orb--c"></div>
+        <p class="path-card__brand"><span class="l-argo">Argo</span><span class="l-thin">Academy®</span></p>
+        <div class="path-card__for">
+          <span class="path-chip">Instituciones</span>
+          <span class="path-chip">Clubes</span>
+          <span class="path-chip">Colegios</span>
+          <span class="path-chip">Academias</span>
+        </div>
+        <p class="path-card__claim">Conocerlos de a uno para formar un equipo.</p>
+        <p class="path-card__desc">Cada niño del plantel juega su odisea. La institución recibe los informes y un dashboard vivo: perfiles, química de grupo, predictor y un coach con IA.</p>
+        <div class="path-card__flow">
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--i"></span>El equipo juega</span>
+          <span class="path-flow__arrow">&rarr;</span>
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--v"></span>Informes</span>
+          <span class="path-flow__arrow">+</span>
+          <span class="path-flow__item"><span class="path-flow__orb orb orb--d"></span>Dashboard del equipo</span>
+        </div>
+        <span class="path-card__cta">Probar el dashboard <i data-lucide="arrow-down"></i></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ ARGOONE: INTRO ══════════════ -->
+<section class="section" id="argoone" style="padding-bottom:40px;">
+  <div class="section-content">
+    <div class="one-intro">
+      <div class="eyebrow anim">El informe · Para familias y entrenadores</div>
+      <p class="anim" style="font-size:1.5rem; letter-spacing:-0.02em; margin-bottom:14px;"><span class="l-argo">Argo</span><span class="l-thin">One®</span></p>
+      <h2 class="sec-title anim">Cada deportista es diferente.<br><strong>La forma de acompañarlo también.</strong></h2>
+      <p class="sec-lead anim">El niño juega y el responsable recibe los dos informes. Desplázate y recorre el informe real de Benjamín, tal como llega al adulto que lo acompaña.</p>
+      <div class="one-callout anim">
+        <div class="one-callout__orb orb orb--v is-morph"></div>
+        <div>
+          <p class="one-callout__title">Incluye <span class="l-argo">Argo</span><span class="l-thin">Puente®</span>, el informe del adulto</p>
+          <p class="one-callout__desc">También te perfilas tú: una guía breve para saber cómo vincularte con el niño desde tu propio estilo, qué decirle en la previa y cómo abrir la charla después de jugar. Todo en la misma compra.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SHOWCASE 1: EL INFORME DEL NIÑO ══════════════ -->
+<div class="showcase" id="showcase-informe">
+  <div class="showcase__track" id="sc1-track">
+    <div class="showcase__sticky">
+      <div class="showcase__grid">
+        <div class="showcase__notes" id="sc1-notes">
+          <div class="showcase__note is-on">
+            <p class="showcase__note-eyebrow">El informe del niño</p>
+            <p class="showcase__note-title">Perfil conductual de Benjamín <span style="color:var(--text-muted); font-weight:300;">(fútbol)</span></p>
+            <p class="showcase__note-desc">Así llega el informe al adulto. Empieza por su nombre de perfil y su mezcla: cuánto pesa cada color hoy, sin números fríos ni etiquetas.</p>
+          </div>
+          <div class="showcase__note">
+            <p class="showcase__note-eyebrow">Su motor</p>
+            <p class="showcase__note-title">A qué ritmo procesa y decide.</p>
+            <p class="showcase__note-desc">Cada sección tiene su lectura y un ejemplo concreto de la actividad. El motor muestra si tiende a lo pausado o a lo ágil, y qué necesita en cada caso.</p>
+          </div>
+          <div class="showcase__note">
+            <p class="showcase__note-eyebrow">Palabras que conectan</p>
+            <p class="showcase__note-title">Cómo hablarle para que te escuche de verdad.</p>
+            <p class="showcase__note-desc">Frases que suelen conectar con su perfil y frases que suelen generar ruido. Pequeños cambios de lenguaje, grandes cambios de clima.</p>
+          </div>
+          <div class="showcase__note">
+            <p class="showcase__note-eyebrow">Cómo acompañar</p>
+            <p class="showcase__note-title">Antes, durante y después de jugar.</p>
+            <p class="showcase__note-desc">Una línea de tiempo simple para el día de la actividad, y un reset para cuando se satura. Práctico, cálido y sin jerga.</p>
+          </div>
+          <div class="showcase__dots" id="sc1-dots">
+            <span class="showcase__dot is-on"></span><span class="showcase__dot"></span><span class="showcase__dot"></span><span class="showcase__dot"></span>
+          </div>
+        </div>
+        <div>
+          <div class="doc-frame">
+            <div class="doc-frame__bar">
+              <div class="doc-frame__dots"><span></span><span></span><span></span></div>
+              <span class="doc-frame__title">Perfil conductual · Benjamín · 11 años · Fútbol</span>
+            </div>
+            <div class="doc-frame__scroller"><div class="doc-frame__content" id="sc1-content">
+              <div class="mini-report">
+                <!-- hero -->
+                <div class="mr-card">
+                  <p class="mr-eyebrow">Su perfil hoy</p>
+                  <p class="mr-meta">Benjamín · 11 años · Fútbol</p>
+                  <div class="mr-hero">
+                    <div>
+                      <p class="mr-name serif"><span style="color:var(--ax-i);">Conector</span> <span class="nc">con veta</span> <span style="color:var(--ax-d);">Impulsor</span></p>
+                      <p class="mr-lead">Benjamín tiende a jugar con y para los demás: el equipo es su lugar. Y cuando el partido pide chispa, aparece una veta que empuja y quiere resolver ya.</p>
+                      <span class="mr-conf"><span style="color:var(--accent);">&#10022;</span> Perfil claro</span>
+                    </div>
+                    <div class="mr-hero__orbs">
+                      <div class="orb orb--i is-morph" style="width:62%; height:62%; top:4%; left:2%;"></div>
+                      <div class="orb orb--d is-morph-b" style="width:48%; height:48%; bottom:4%; right:2%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <!-- mezcla -->
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Su mezcla</h3>
+                  <div class="mr-rule"></div>
+                  <div class="mr-mix">
+                    <div class="mr-mix__col"><div class="orb orb--d is-morph-b" style="width:44px;height:44px;"></div><span class="mr-mix__label"><span class="dot" style="background:var(--ax-d);"></span>Impulsor</span><span class="mr-mix__pct" style="color:var(--ax-d);">1 de cada 4</span></div>
+                    <div class="mr-mix__col"><div class="orb orb--i is-morph" style="width:74px;height:74px;"></div><span class="mr-mix__label"><span class="dot" style="background:var(--ax-i);"></span>Conector</span><span class="mr-mix__pct" style="color:var(--ax-i);">Más de la mitad</span></div>
+                    <div class="mr-mix__col"><div class="orb orb--s is-morph" style="width:26px;height:26px;"></div><span class="mr-mix__label"><span class="dot" style="background:var(--ax-s);"></span>Sostenedor</span><span class="mr-mix__pct" style="color:var(--ax-s);">Alguna</span></div>
+                    <div class="mr-mix__col"><div class="orb orb--c is-morph-b" style="width:22px;height:22px;"></div><span class="mr-mix__label"><span class="dot" style="background:var(--ax-c);"></span>Estratega</span><span class="mr-mix__pct" style="color:var(--ax-c);">Casi nada</span></div>
+                  </div>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">La mayoría de sus decisiones en el juego salieron por el lado del vínculo: mirar al equipo, sumar a otros, celebrar juntos. Una de cada cuatro fue pura acción.</p>
+                </div>
+                <!-- motor -->
+                <div class="mr-card" id="sc1-motor">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Su motor</h3>
+                  <div class="mr-rule"></div>
+                  <div class="mr-spec">
+                    <div class="mr-spec__track">
+                      <span class="mr-spec__fill" style="width:72%; background:linear-gradient(90deg, transparent, rgba(245,158,11,.28));"></span>
+                      <span class="mr-spec__mark orb orb--i" style="left:72%;"></span>
+                    </div>
+                    <div class="mr-spec__ends"><span>Pausado</span><span>Ágil</span></div>
+                  </div>
+                  <p class="mr-body">En el juego tendió a responder rápido, sobre todo cuando había otros cerca. Le sienta bien la dinámica; las esperas largas lo apagan un poco.</p>
+                  <p class="mr-aside">Por ejemplo: si la actividad arranca tarde, dale un rol mientras tanto (repartir petos, armar el círculo). Se queda conectado.</p>
+                </div>
+                <!-- tormenta -->
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Ante la tormenta</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">Cuando algo sale mal, Benjamín suele buscar primero las caras de los demás. Si encuentra un gesto de calma, se rearma rápido. Si percibe enojo alrededor, el error le pesa el doble.</p>
+                </div>
+                <!-- palabras -->
+                <div class="mr-card" id="sc1-palabras">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Palabras que conectan</h3>
+                  <div class="mr-rule"></div>
+                  <div class="mr-words">
+                    <div class="mr-wpanel" style="background:rgba(245,158,11,.06); border-color:rgba(245,158,11,.25);">
+                      <div class="mr-wpanel__head" style="color:var(--ax-i);"><span class="mr-wpanel__orb orb orb--i"></span>Conectan</div>
+                      <div class="mr-wline"><span class="tick" style="background:var(--ax-i);"></span>"El equipo te necesita"</div>
+                      <div class="mr-wline"><span class="tick" style="background:var(--ax-i);"></span>"Qué bien ese pase"</div>
+                      <div class="mr-wline"><span class="tick" style="background:var(--ax-i);"></span>"Juguemos juntos esta"</div>
+                    </div>
+                    <div class="mr-wpanel" style="background:var(--bg-elevated); border-color:var(--border);">
+                      <div class="mr-wpanel__head" style="color:var(--text-muted);"><span class="mr-wpanel__orb orb orb--grey"></span>Hacen ruido</div>
+                      <div class="mr-wline" style="color:var(--text-muted);"><span class="tick" style="background:var(--text-light);"></span>"Deja de charlar y concéntrate"</div>
+                      <div class="mr-wline" style="color:var(--text-muted);"><span class="tick" style="background:var(--text-light);"></span>"Esto es individual, arréglate solo"</div>
+                    </div>
+                  </div>
+                </div>
+                <!-- timeline -->
+                <div class="mr-card" id="sc1-timeline">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Antes, durante y después</h3>
+                  <div class="mr-rule"></div>
+                  <div class="mr-tl">
+                    <div class="mr-tl__step"><span class="mr-tl__node orb orb--i"></span><div><p class="mr-tl__label">Antes</p><p class="mr-tl__text">Un saludo con nombre y una sonrisa valen más que una arenga. Llega mejor si siente que lo esperaban.</p></div></div>
+                    <div class="mr-tl__step"><span class="mr-tl__node orb orb--i"></span><div><p class="mr-tl__label">Durante</p><p class="mr-tl__text">Reconoce sus gestos de juego colectivo en voz alta. Es su combustible.</p></div></div>
+                    <div class="mr-tl__step"><span class="mr-tl__node orb orb--i"></span><div><p class="mr-tl__label">Después</p><p class="mr-tl__text">Pregunta primero cómo estuvo el grupo. Él va a llegar a su propio juego por ese camino.</p></div></div>
+                  </div>
+                </div>
+                <!-- reset -->
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-i);"></span>Un reset que le sirve</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">Cuando se satura, no lo aísles: acompáñalo a un costado y quédate cerca sin hablar mucho. La presencia tranquila de alguien lo ordena más que cualquier consejo.</p>
+                </div>
+              </div>
+            </div></div>
+            <div class="doc-frame__fade-b"></div>
+          </div>
+          <p class="mock-note"><i data-lucide="info"></i>Vista de referencia con un perfil de ejemplo. El informe real es más extenso y personalizado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SHOWCASE 2: EL PUENTE ══════════════ -->
+<div class="showcase" id="showcase-puente">
+  <div class="showcase__track" id="sc2-track" style="height:240vh;">
+    <div class="showcase__sticky">
+      <div class="showcase__grid" style="grid-template-columns: 1.1fr 0.9fr;">
+        <div style="order:2;">
+          <div class="showcase__notes" id="sc2-notes" style="min-height:260px;">
+            <div class="showcase__note is-on">
+              <p class="showcase__note-eyebrow">El informe del adulto · <span class="l-argo" style="color:inherit;">Argo</span>Puente®</p>
+              <p class="showcase__note-title">El puente entre Carlos y Benjamín <span style="color:var(--text-muted); font-weight:300;">(fútbol)</span></p>
+              <p class="showcase__note-desc">Tú también tienes un estilo. El Puente cruza tu perfil con el del niño y te muestra dónde se encuentran y dónde pueden chocar.</p>
+            </div>
+            <div class="showcase__note">
+              <p class="showcase__note-eyebrow">Momentos reales</p>
+              <p class="showcase__note-title">Qué decir en la previa. Y qué hacer con la frustración.</p>
+              <p class="showcase__note-desc">Guías concretas para los momentos que importan: antes de jugar, cuando algo sale mal y la charla del después. Escritas para tu estilo, no para un adulto genérico.</p>
+            </div>
+            <div class="showcase__note">
+              <p class="showcase__note-eyebrow">El traspié</p>
+              <p class="showcase__note-title">Tu punto ciego, dicho con cariño.</p>
+              <p class="showcase__note-desc">Cada cruce de perfiles tiene su traspié típico. Nombrarlo a tiempo es la mitad de evitarlo.</p>
+            </div>
+            <div class="showcase__dots" id="sc2-dots">
+              <span class="showcase__dot is-on"></span><span class="showcase__dot"></span><span class="showcase__dot"></span>
+            </div>
+          </div>
+        </div>
+        <div style="order:1;">
+          <div class="doc-frame" style="height:min(64svh,600px);">
+            <div class="doc-frame__bar">
+              <div class="doc-frame__dots"><span></span><span></span><span></span></div>
+              <span class="doc-frame__title">ArgoPuente® · Carlos y Benjamín · Fútbol</span>
+            </div>
+            <div class="doc-frame__scroller"><div class="doc-frame__content" id="sc2-content">
+              <div class="mini-report">
+                <div class="mr-card">
+                  <p class="mr-eyebrow">El puente entre ustedes</p>
+                  <p class="mr-meta">Carlos (adulto) · Benjamín · 11 años · Fútbol</p>
+                  <div class="mr-hero">
+                    <div>
+                      <p class="mr-name serif"><span style="color:var(--ax-c);">Carlos</span> <span class="nc">y</span> <span style="color:var(--ax-i);">Benjamín</span></p>
+                      <p class="mr-lead">Tú tiendes al plan y al detalle. Benjamín tiende al vínculo y a la chispa. Este informe es el puente entre esas dos formas de vivir el mismo partido.</p>
+                    </div>
+                    <div class="mr-hero__orbs">
+                      <div class="orb orb--c is-morph" style="width:56%; height:56%; top:6%; left:4%;"></div>
+                      <div class="orb orb--i is-morph-b" style="width:56%; height:56%; bottom:6%; right:4%;"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-c);"></span>Donde se encuentran</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">A los dos les importa hacer las cosas bien. Tú lo llamas orden; él lo llama jugar lindo con los suyos. Cuando le explicas el porqué de un ejercicio con una sonrisa, se encuentran a mitad del puente.</p>
+                </div>
+                <div class="mr-card" id="sc2-previa">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-c);"></span>La previa</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">Tu instinto es repasar el plan. El suyo es buscar clima. Dale una sola idea clara y después suéltalo a saludar a sus compañeros: llega mejor al partido por esa puerta.</p>
+                  <p class="mr-aside">Prueba esta semana: cambia "repasemos lo que tienes que hacer" por "qué lindo verte con el grupo, hoy una sola cosa: disfruta el primer pase".</p>
+                </div>
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-c);"></span>Cuando algo sale mal</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">Tú tiendes a analizar el error en el momento. Él necesita primero saber que el vínculo está intacto. Un gesto de calma ahora; el análisis, mañana. En ese orden el mensaje llega entero.</p>
+                </div>
+                <div class="mr-card" id="sc2-traspie">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-c);"></span>El traspié típico</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">El cruce Estratega y Conector suele tropezar aquí: tú das detalles cuando él busca un gesto. Si notas que sus ojos se van del pizarrón a sus amigos, no es falta de respeto: es su forma de recargar. Resume y déjalo ir.</p>
+                </div>
+                <div class="mr-card">
+                  <h3 class="mr-h2"><span class="dot" style="background:var(--ax-c);"></span>Después de jugar</h3>
+                  <div class="mr-rule"></div>
+                  <p class="mr-body">Su mejor charla no empieza con "qué pasó en el segundo tiempo". Empieza con "se los veía bien juntos hoy". Desde ahí, él solo te lleva al partido.</p>
+                </div>
+              </div>
+            </div></div>
+            <div class="doc-frame__fade-b"></div>
+          </div>
+          <p class="mock-note"><i data-lucide="info"></i>Vista de referencia con perfiles de ejemplo. Incluido en ArgoOne®, sin costo extra.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ ARGOACADEMY: PLAYGROUND ══════════════ -->
+<section class="section section--tint" id="argoacademy">
+  <div class="section-content">
+    <div class="one-intro">
+      <div class="eyebrow anim">El dashboard · Para instituciones, clubes, colegios y academias</div>
+      <p class="anim" style="font-size:1.5rem; letter-spacing:-0.02em; margin-bottom:14px;"><span class="l-argo">Argo</span><span class="l-thin">Academy®</span></p>
+      <h2 class="sec-title anim">Conocerlos de a uno<br><strong>para formar un equipo</strong>.</h2>
+      <p class="sec-lead anim">Incluye los dos informes y el dashboard. Este de abajo funciona de verdad: toca, pregunta y arrastra. Es un equipo de hockey de ejemplo.</p>
+    </div>
+
+    <div class="playground anim">
+      <div class="playground__bar">
+        <div class="playground__id">
+          <span class="orb orb--v is-morph" style="width:26px; height:26px;"></span>
+          Las Gaviotas <span class="sport">Hockey · Sub 12</span>
+        </div>
+        <div class="playground__tabs">
+          <button type="button" class="pg-tab is-on" data-tab="equipo"><i data-lucide="users"></i><span>Equipo</span></button>
+          <button type="button" class="pg-tab" data-tab="quimica"><i data-lucide="flask-conical"></i><span>Química de grupo</span></button>
+          <button type="button" class="pg-tab" data-tab="coach"><i data-lucide="message-circle"></i><span>Argo Coach</span></button>
+          <button type="button" class="pg-tab" data-tab="predictor"><i data-lucide="compass"></i><span>Predictor</span></button>
+        </div>
+      </div>
+      <div class="playground__stage">
+
+        <!-- TAB: EQUIPO -->
+        <div class="pg-panel is-on" data-panel="equipo">
+          <p class="pg-hint"><i data-lucide="mouse-pointer-click"></i>Toca un jugador para abrir su mini informe.</p>
+          <div class="roster" id="pg-roster"></div>
+          <div class="mini-profile" id="pg-miniprofile"></div>
+        </div>
+
+        <!-- TAB: QUÍMICA -->
+        <div class="pg-panel" data-panel="quimica">
+          <p class="pg-hint"><i data-lucide="hand"></i>Arrastra jugadores de una línea a la otra y mira cómo cambia la química.</p>
+          <div class="chem">
+            <div class="chem-zone" data-zone="a">
+              <p class="chem-zone__title"><span class="orb orb--d" style="width:14px;height:14px;border-radius:50%;"></span>Línea A</p>
+              <div class="chem-zone__list" data-list="a"></div>
+            </div>
+            <div class="chem-zone" data-zone="b">
+              <p class="chem-zone__title"><span class="orb orb--c" style="width:14px;height:14px;border-radius:50%;"></span>Línea B</p>
+              <div class="chem-zone__list" data-list="b"></div>
+            </div>
+          </div>
+          <div class="chem-read">
+            <p class="chem-read__title"><i data-lucide="sparkles" style="width:13px;height:13px;"></i>Lectura de la química</p>
+            <div class="chem-read__grid">
+              <div>
+                <div class="chem-balance"><span class="chem-balance__label">Línea A</span><div class="chem-balance__track"><div class="chem-balance__fill" id="chem-bal-a" style="width:50%;"></div></div></div>
+                <p class="chem-read__line" id="chem-read-a"></p>
+              </div>
+              <div>
+                <div class="chem-balance"><span class="chem-balance__label">Línea B</span><div class="chem-balance__track"><div class="chem-balance__fill" id="chem-bal-b" style="width:50%;"></div></div></div>
+                <p class="chem-read__line" id="chem-read-b"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: COACH -->
+        <div class="pg-panel" data-panel="coach">
+          <div class="coach">
+            <p class="pg-hint"><i data-lucide="message-circle"></i>Hazle una pregunta a Argo Coach sobre este equipo, o elige una sugerida.</p>
+            <div class="coach__thread" id="coach-thread">
+              <div class="coach-bubble coach-bubble--argo"><div class="tag">Argo Coach</div>Hola. Conozco los perfiles de Las Gaviotas. Pregúntame cómo motivar, acompañar o combinar a cualquiera del equipo.</div>
+            </div>
+            <div class="coach__chips" id="coach-chips">
+              <button type="button" class="coach-chip">¿Cómo motivo a Pedro antes de un partido?</button>
+              <button type="button" class="coach-chip">¿Cómo le hablo a Aurora cuando se frustra?</button>
+              <button type="button" class="coach-chip">¿Quiénes pueden chocar si juegan juntos?</button>
+            </div>
+            <div class="coach__row">
+              <input type="text" class="coach__input" id="coach-input" placeholder="Escribe tu pregunta sobre el equipo..." maxlength="200">
+              <button type="button" class="coach__send" id="coach-send" aria-label="Enviar"><i data-lucide="send"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: PREDICTOR -->
+        <div class="pg-panel" data-panel="predictor">
+          <p class="pg-hint"><i data-lucide="compass"></i>Elige un jugador y una situación real del deporte.</p>
+          <div class="pred">
+            <div>
+              <p class="pred__pick-label">Jugador</p>
+              <div class="pred__players" id="pred-players"></div>
+              <p class="pred__pick-label">Situación</p>
+              <div class="pred__sits">
+                <button type="button" class="pred-sit" data-sit="previa"><i data-lucide="timer"></i>Los nervios de la previa</button>
+                <button type="button" class="pred-sit" data-sit="error"><i data-lucide="circle-slash"></i>Un error en pleno juego</button>
+                <button type="button" class="pred-sit" data-sit="noquiere"><i data-lucide="cloud-rain"></i>El día que no quiere ir</button>
+                <button type="button" class="pred-sit" data-sit="derrota"><i data-lucide="flag"></i>Después de una derrota</button>
+              </div>
+            </div>
+            <div class="pred__out" id="pred-out">
+              <div class="pred__out-empty">
+                <span class="orb orb--v is-morph"></span>
+                Elige un jugador y una situación para ver una lectura anticipada de su conducta.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <p class="mock-note anim"><i data-lucide="info"></i>Demo interactiva con perfiles de ejemplo. El dashboard real trabaja con tu equipo y tiene más herramientas.</p>
+  </div>
+</section>
+
+<!-- ══════════════ PRECIOS ══════════════ -->
+<section class="section" id="precios">
+  <div class="section-content">
+    <div style="text-align:center; max-width:640px; margin:0 auto;">
+      <div class="eyebrow anim">Precios</div>
+      <h2 class="sec-title anim">Planes para <strong>cada escala</strong>.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Del informe del niño y su adulto, a la plataforma de tu institución.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card anim">
+        <p class="price-card__name"><span class="l-argo">Argo</span><span class="l-thin">One®</span></p>
+        <p class="price-card__tag">El informe del niño, con tu Puente incluido</p>
+        <p class="price-card__price">$12.99 <small>pago único</small></p>
+        <ul class="price-card__items">
+          <li><i data-lucide="check"></i><span><strong>Su perfil y su mezcla.</strong> Cómo vive el deporte hoy, con su nivel de claridad.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Qué lo motiva.</strong> Lo que lo enciende y lo que lo sostiene.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Su motor.</strong> A qué ritmo procesa y decide.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Palabras que conectan y palabras que hacen ruido.</strong></span></li>
+          <li><i data-lucide="check"></i><span><strong>Antes, durante y después.</strong> Una guía para el día de la actividad.</span></li>
+        </ul>
+        <div class="price-card__puente">
+          <p class="price-card__puente-title">Tu Puente con el niño, incluido</p>
+          <p class="price-card__puente-desc">Cómo acompañar desde tu propio estilo: la previa, la frustración y la charla después de jugar.</p>
+        </div>
+        <a class="btn btn--violet price-card__cta" href="/one">Comprar <span><span style="font-weight:800;">Argo</span><span style="font-weight:300;">One®</span></span></a>
+        <p class="price-card__return"><a href="/one/panel">¿Ya lo compraste? Entra a tu panel</a></p>
+      </div>
+      <div class="price-card anim">
+        <p class="price-card__name"><span class="l-argo">Argo</span><span class="l-thin">Academy®</span></p>
+        <p class="price-card__tag">La plataforma de tu institución o equipo</p>
+        <p class="price-card__price" style="font-size:1.3rem; font-weight:500; padding:14px 0 15px;">A la medida de tu equipo</p>
+        <ul class="price-card__items">
+          <li><i data-lucide="check"></i><span><strong>Dashboard completo.</strong> Todo tu equipo y su evolución en un solo lugar.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Los dos informes.</strong> El perfil de cada niño y el Puente para los adultos.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Química de grupo.</strong> Cómo conviven los perfiles dentro de cada línea.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Argo Coach.</strong> Un consultor con IA que conoce a tu equipo.</span></li>
+          <li><i data-lucide="check"></i><span><strong>Predictor conductual.</strong> Qué hacer en cada situación real del deporte.</span></li>
+        </ul>
+        <button type="button" class="btn btn--primary price-card__cta" data-open-demo>Solicitar demo</button>
+        <p class="price-card__return" style="opacity:0;">.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FAQ ══════════════ -->
+<section class="section section--tint">
+  <div class="section-content">
+    <div class="faq-wrap">
+      <div style="text-align:center; margin-bottom:44px;">
+        <div class="eyebrow anim" style="margin-bottom:0;">Preguntas frecuentes</div>
+      </div>
+      <div class="anim" id="faq-list"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ CTA FINAL ══════════════ -->
+<section class="section cta-final">
+  <div class="section-content">
+    <div class="cta-final__orbs">
+      <div class="orb orb--d is-live" style="width:64px; height:64px; left:6%; top:24%;"></div>
+      <div class="orb orb--i is-live-b" style="width:46px; height:46px; left:32%; top:2%;"></div>
+      <div class="orb orb--s is-live" style="width:52px; height:52px; right:28%; top:36%;"></div>
+      <div class="orb orb--c is-live-b" style="width:70px; height:70px; right:4%; top:8%;"></div>
+    </div>
+    <h2 class="cta-final__title anim">¿De qué color es tu deportista?</h2>
+    <div class="cta-final__trust anim">
+      <span><i data-lucide="clock"></i>10 minutos de juego</span>
+      <span><i data-lucide="mail"></i>El informe llega al email</span>
+      <span><i data-lucide="smartphone"></i>Sin apps ni instalaciones</span>
+    </div>
+    <div class="cta-final__ctas anim">
+      <a class="btn btn--primary" href="/demo">Jugar gratis <i data-lucide="arrow-right"></i></a>
+      <a class="btn btn--ghost" href="/one">Comprar <span><span style="font-weight:800;">Argo</span><span style="font-weight:300;">One®</span></span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo"><span class="l-argo">Argo</span><span class="l-xthin">Method®</span></span>
+      <a class="coppa-badge" href="/privacy" title="This platform complies with the Children's Online Privacy Protection Act">
+        <i data-lucide="shield-check"></i>
+        <span>COPPA Compliant</span>
+      </a>
+    </div>
+    <div class="site-footer__links">
+      <a href="/one/panel">Mi panel ArgoOne®</a>
+      <a href="https://www.yacare.io" target="_blank" rel="noopener noreferrer">Yacaré Lab</a>
+      <a href="/blog">Blog</a>
+      <a href="/privacy">Privacidad</a>
+      <a href="/terms">Términos</a>
+      <span>© 2026 Argo.</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════ MODAL: SOLICITAR DEMO ══════════════ -->
+<div class="demo-modal" id="demoModal" role="dialog" aria-modal="true" aria-labelledby="demoTitle">
+  <div class="demo-modal__panel">
+    <div id="demoFormWrap">
+      <div class="demo-modal__head">
+        <p class="demo-modal__title" id="demoTitle">Solicitar demo de <span style="font-weight:800;">Argo</span><span style="font-weight:300;">Academy</span><span style="font-weight:300;font-size:12px;vertical-align:top;">&reg;</span></p>
+        <button type="button" class="demo-modal__close" data-close-demo aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <p class="demo-modal__sub">Déjanos tus datos y el equipo te contacta para coordinar una demo, sin compromiso.</p>
+      <form id="demoForm" novalidate>
+        <p class="demo-error" id="demoError"></p>
+        <div class="demo-field">
+          <label class="demo-label" for="demoName">Nombre y apellido *</label>
+          <input class="demo-input" id="demoName" name="name" type="text" autocomplete="name" required>
+        </div>
+        <div class="demo-field">
+          <label class="demo-label" for="demoEmail">Email *</label>
+          <input class="demo-input" id="demoEmail" name="email" type="email" autocomplete="email" required>
+        </div>
+        <div class="demo-field">
+          <label class="demo-label" for="demoInstitution">Institución o equipo *</label>
+          <input class="demo-input" id="demoInstitution" name="institution" type="text" autocomplete="organization" required>
+        </div>
+        <div class="demo-row">
+          <div class="demo-field">
+            <label class="demo-label" for="demoWhatsapp">WhatsApp *</label>
+            <input class="demo-input" id="demoWhatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="+54 11 ..." autocomplete="tel" required>
+          </div>
+          <div class="demo-field">
+            <label class="demo-label" for="demoCountry">País *</label>
+            <select class="demo-select" id="demoCountry" name="country" required>
+              <option value="">Elige</option>
+              <option>Argentina</option>
+              <option>Uruguay</option>
+              <option>Chile</option>
+              <option>Paraguay</option>
+              <option>Bolivia</option>
+              <option>Perú</option>
+              <option>Ecuador</option>
+              <option>Colombia</option>
+              <option>Venezuela</option>
+              <option>México</option>
+              <option>España</option>
+              <option>Estados Unidos</option>
+              <option>Brasil</option>
+              <option>Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="demo-row">
+          <div class="demo-field">
+            <label class="demo-label" for="demoSport">Deporte</label>
+            <select class="demo-select" id="demoSport" name="sport">
+              <option value="">Elige</option>
+              <option>Fútbol</option>
+              <option>Hockey</option>
+              <option>Rugby</option>
+              <option>Básquet</option>
+              <option>Vóley</option>
+              <option>Hándbol</option>
+              <option>Tenis</option>
+              <option>Natación</option>
+              <option>Gimnasia</option>
+              <option>Atletismo</option>
+              <option>Multideporte</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="demo-field">
+            <label class="demo-label" for="demoTeamSize">Cantidad de niños</label>
+            <select class="demo-select" id="demoTeamSize" name="team_size">
+              <option value="">Elige</option>
+              <option>Hasta 20</option>
+              <option>20 a 50</option>
+              <option>50 a 100</option>
+              <option>100 a 300</option>
+              <option>Más de 300</option>
+            </select>
+          </div>
+        </div>
+        <input type="text" name="company_url" autocomplete="off" tabindex="-1" style="position:absolute; left:-9999px;" aria-hidden="true">
+        <label class="demo-consent">
+          <input type="checkbox" id="demoConsent" name="consent" required>
+          <span>Acepto que Argo me contacte por email o WhatsApp para coordinar la demo. Tus datos no se comparten con terceros.</span>
+        </label>
+        <button type="submit" class="demo-submit" id="demoSubmit">Enviar solicitud</button>
+      </form>
+    </div>
+    <div id="demoSuccess" style="display:none;">
+      <div class="demo-modal__head" style="justify-content:flex-end;">
+        <button type="button" class="demo-modal__close" data-close-demo aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <div style="text-align:center; padding: 10px 10px 26px;">
+        <div class="orb orb--s is-morph" style="width:64px; height:64px; margin:0 auto 18px;"></div>
+        <p style="font-size:1.1rem; font-weight:600; color:var(--text-primary); margin-bottom:8px;">Recibimos tu solicitud</p>
+        <p style="font-size:0.88rem; color:var(--text-secondary);">El equipo te contacta en breve para coordinar la demo. Gracias por el interés.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL: ENTRAR ══════════════ -->
+<div class="demo-modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <div class="demo-modal__panel" style="max-width:420px;">
+    <div class="demo-modal__head">
+      <p class="demo-modal__title" id="loginTitle">Entrar</p>
+      <button type="button" class="demo-modal__close" data-close-login aria-label="Cerrar"><i data-lucide="x"></i></button>
+    </div>
+    <p class="demo-modal__sub">Elige tu acceso.</p>
+    <a class="login-opt" href="/one/panel">
+      <span class="login-opt__orb orb orb--v"></span>
+      <span>
+        <span class="login-opt__name" style="display:block;"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">One®</span></span>
+        <span class="login-opt__desc">Mi panel de informes</span>
+      </span>
+    </a>
+    <a class="login-opt" href="/signup?login=1">
+      <span class="login-opt__orb orb orb--c"></span>
+      <span>
+        <span class="login-opt__name" style="display:block;"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">Academy®</span></span>
+        <span class="login-opt__desc">El dashboard de mi institución</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<!-- ══════════════ CHAT WIDGET ══════════════ -->
+<button class="chat-fab" id="chat-fab" aria-label="Abrir chat">
+  <svg class="chat-fab__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+  </svg>
+  <span class="chat-fab__close">&#10005;</span>
+</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-panel__header">
+    <div class="chat-panel__status"></div>
+    <div>
+      <div class="chat-panel__title">Argo Asistente</div>
+      <div class="chat-panel__subtitle">Pregunta lo que quieras sobre el producto</div>
+    </div>
+  </div>
+  <div class="chat-panel__messages" id="chat-messages"></div>
+  <div class="chat-panel__suggestions" id="chat-suggestions">
+    <button class="chat-chip">¿Funciona para deportes individuales?</button>
+    <button class="chat-chip">¿Qué tan preciso es el perfil?</button>
+    <button class="chat-chip">¿Cómo ayuda al entrenador?</button>
+  </div>
+  <div class="chat-panel__input-row">
+    <input class="chat-panel__input" id="chat-input" type="text" placeholder="Escribe tu pregunta..." maxlength="500" />
+    <button class="chat-panel__send" id="chat-send" aria-label="Enviar">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+  <div class="chat-panel__limit" id="chat-limit"></div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });
+
+// ═══════════════ shared data ═══════════════
+var AX = {
+  D: { label: 'Impulsor',   hex: '#f97316', cls: 'orb--d', pillB: '#FED7AA', pillC: '#C2410C' },
+  I: { label: 'Conector',   hex: '#f59e0b', cls: 'orb--i', pillB: '#FDE68A', pillC: '#B45309' },
+  S: { label: 'Sostenedor', hex: '#22c55e', cls: 'orb--s', pillB: '#BBF7D0', pillC: '#15803D' },
+  C: { label: 'Estratega',  hex: '#6366f1', cls: 'orb--c', pillB: '#C7D2FE', pillC: '#4338CA' }
+};
+var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ═══════════════ scroll reveals ═══════════════
+(function() {
+  var observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.anim').forEach(function(el) { el.classList.add('anim--visible'); });
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.section, .hero').forEach(function(s) { observer.observe(s); });
+})();
+
+// ═══════════════ voyage progress (nav hairline) ═══════════════
+(function() {
+  var fill = document.getElementById('voyage-fill');
+  var orb = document.getElementById('voyage-orb');
+  if (!fill) return;
+  var ticking = false;
+  function update() {
+    ticking = false;
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    fill.style.width = p + '%';
+    orb.style.left = p + '%';
+  }
+  window.addEventListener('scroll', function() {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+})();
+
+// ═══════════════ hero: parallax de orbes + palabra viva ═══════════════
+(function() {
+  var hero = document.getElementById('top');
+  var orbs = hero ? hero.querySelectorAll('.hero__orb') : [];
+  if (hero && !REDUCED && window.matchMedia('(hover: hover)').matches) {
+    var raf = null;
+    hero.addEventListener('pointermove', function(e) {
+      if (raf) return;
+      raf = requestAnimationFrame(function() {
+        raf = null;
+        var r = hero.getBoundingClientRect();
+        var dx = e.clientX - (r.left + r.width / 2);
+        var dy = e.clientY - (r.top + r.height / 2);
+        orbs.forEach(function(o) {
+          var d = parseFloat(o.dataset.depth || '0.04');
+          o.style.transform = 'translate3d(' + (dx * d) + 'px,' + (dy * d) + 'px,0)';
+        });
+      });
+    });
+    hero.addEventListener('pointerleave', function() {
+      orbs.forEach(function(o) { o.style.transform = ''; });
+    });
+  }
+  // rotación de la palabra del titular
+  var word = document.getElementById('hw-word');
+  if (!word || REDUCED) return;
+  var WORDS = [
+    { t: 'a su manera', c: 'var(--accent)' },
+    { t: 'a pura chispa', c: AX.D.hex },
+    { t: 'en equipo', c: AX.I.hex },
+    { t: 'con calma', c: AX.S.hex },
+    { t: 'entendiéndolo todo', c: AX.C.hex }
+  ];
+  var wi = 0;
+  setInterval(function() {
+    wi = (wi + 1) % WORDS.length;
+    word.style.opacity = '0';
+    setTimeout(function() {
+      word.textContent = WORDS[wi].t;
+      word.style.color = WORDS[wi].c;
+      word.style.transition = 'opacity 0.5s ease, color 0.5s ease';
+      word.style.opacity = '1';
+    }, 420);
+  }, 3400);
+})();
+
+// ═══════════════ los 4 colores: tap en touch ═══════════════
+(function() {
+  document.querySelectorAll('.axis-card').forEach(function(card) {
+    card.addEventListener('click', function() {
+      var was = card.classList.contains('is-open');
+      document.querySelectorAll('.axis-card').forEach(function(c) { c.classList.remove('is-open'); });
+      if (!was) card.classList.add('is-open');
+    });
+  });
+})();
+
+// ═══════════════ MINI ODISEA ═══════════════
+(function() {
+  var body = document.getElementById('play-body');
+  var progress = document.getElementById('play-progress');
+  var label = document.getElementById('play-label');
+  if (!body) return;
+
+  // opciones en orden aleatorio por escena; los colores de opción son POSICIONALES (nunca revelan el eje)
+  var SCENES = [
+    {
+      scene: 'Escena 1 · La tormenta',
+      q: 'En medio del juego, todo se complica de golpe. ¿Qué te sale primero?',
+      opts: [
+        { ax: 'D', t: 'Me lanzo a resolverlo yo' },
+        { ax: 'I', t: 'Busco a los demás: juntos es más fácil' },
+        { ax: 'S', t: 'Me mantengo firme y sostengo lo mío' },
+        { ax: 'C', t: 'Paro un segundo para entender qué pasó' }
+      ]
+    },
+    {
+      scene: 'Escena 2 · La isla nueva',
+      q: 'Llegan a un lugar desconocido. ¿Cómo entras tú?',
+      opts: [
+        { ax: 'I', t: 'Hago amigos apenas bajo del barco' },
+        { ax: 'C', t: 'Observo todo el mapa antes de moverme' },
+        { ax: 'D', t: 'Exploro primero, pregunto después' },
+        { ax: 'S', t: 'Prefiero un plan conocido antes de avanzar' }
+      ]
+    },
+    {
+      scene: 'Escena 3 · La previa',
+      q: 'Momentos antes de algo importante. ¿Qué haces?',
+      opts: [
+        { ax: 'S', t: 'Busco mi rutina de siempre' },
+        { ax: 'D', t: 'Quiero que empiece ya' },
+        { ax: 'C', t: 'Repaso mentalmente cada detalle' },
+        { ax: 'I', t: 'Hablo, río, contagio energía' }
+      ]
+    }
+  ];
+  var READS = {
+    D: 'Decisiones que empujan: acción primero, ajuste después. A este perfil lo enciende el reto y lo apaga la espera sin propósito.',
+    I: 'Decisiones que buscan a los demás: la energía viene del vínculo. A este perfil lo enciende sentirse parte y lo apaga jugar en soledad.',
+    S: 'Decisiones que sostienen: constancia, rutina y cuidado del grupo. A este perfil lo ordena lo previsible y lo desacomoda el cambio brusco.',
+    C: 'Decisiones que primero entienden: observar, analizar y después actuar. A este perfil lo enciende el porqué y lo incomoda la prisa sin plan.'
+  };
+  var DIAG = { D: 'S', S: 'D', I: 'C', C: 'I' };
+  var answers = [];
+  var step = 0;
+
+  function renderScene() {
+    var s = SCENES[step];
+    var letters = ['a', 'b', 'c', 'd'];
+    var html = '<p class="play-scene">' + s.scene + '</p><p class="play-q serif">' + s.q + '</p><div class="play-opts">';
+    s.opts.forEach(function(o, i) {
+      html += '<button type="button" class="play-opt" data-ax="' + o.ax + '">' +
+        '<span class="play-opt__badge play-opt__badge--' + letters[i] + '">' + letters[i].toUpperCase() + '</span>' + o.t + '</button>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+    body.classList.remove('is-entering');
+    void body.offsetWidth;
+    body.classList.add('is-entering');
+    body.querySelectorAll('.play-opt').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        answers.push(btn.dataset.ax);
+        step++;
+        updateProgress();
+        if (step < SCENES.length) renderScene();
+        else renderResult();
+      });
+    });
+  }
+
+  function updateProgress() {
+    var dots = progress.querySelectorAll('.play-progress__dot');
+    dots.forEach(function(d, i) {
+      d.classList.toggle('is-done', i < step);
+      d.classList.toggle('is-now', i === step && step < SCENES.length);
+    });
+    label.textContent = step < SCENES.length ? ('Decisión ' + (step + 1) + ' de 3') : 'Tu mezcla';
+  }
+
+  function renderResult() {
+    var counts = { D: 0, I: 0, S: 0, C: 0 };
+    answers.forEach(function(a) { counts[a]++; });
+    var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
+    var p = sorted[0], sec = sorted[1];
+    var SIZES = [22, 46, 68, 88];
+
+    var mixHtml = '<div class="play-mix">';
+    ['D', 'I', 'S', 'C'].forEach(function(ax, i) {
+      var d = SIZES[counts[ax]];
+      mixHtml += '<div class="play-mix__col">' +
+        '<div class="play-mix__orb orb ' + AX[ax].cls + ' ' + (i % 2 ? 'is-morph-b' : 'is-morph') + '" style="width:' + d + 'px; height:' + d + 'px;"></div>' +
+        '<span class="play-mix__label"><span class="play-mix__dot" style="background:' + AX[ax].hex + ';"></span>' + AX[ax].label + '</span>' +
+        '<span class="play-mix__n" style="color:' + AX[ax].hex + ';">' + counts[ax] + ' de 3</span></div>';
+    });
+    mixHtml += '</div>';
+
+    var name, read;
+    if (counts[p] === 3) {
+      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span> <span style="color:var(--text-muted); font-weight:300;">de lleno</span>';
+      read = 'Las tres decisiones salieron por el mismo lado. ' + READS[p];
+    } else if (counts[p] === 2 && counts[sec] === 1 && DIAG[p] !== sec) {
+      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span> <span style="color:var(--text-primary);">con destellos de</span> <span style="color:' + AX[sec].hex + ';">' + AX[sec].label + '</span>';
+      read = READS[p] + ' Y asomó un destello ' + AX[sec].label.toLowerCase() + ': la mezcla es lo normal.';
+    } else if (counts[p] === 2) {
+      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span>';
+      read = READS[p] + ' También asomó una decisión por el lado opuesto: los perfiles reales conviven con sus contrastes.';
+    } else {
+      name = '<span style="color:var(--text-primary);">Una mezcla pareja</span>';
+      read = 'Tres decisiones, tres colores distintos. En una muestra tan corta eso se llama perfil parejo: ningún costado domina todavía.';
+    }
+
+    body.innerHTML =
+      '<div class="play-result is-entering">' +
+      '<p class="play-result__eyebrow">Lo que se asomó en tres decisiones</p>' +
+      mixHtml +
+      '<p class="play-result__name serif">' + name + '</p>' +
+      '<p class="play-result__read">' + read + '</p>' +
+      '<div class="play-result__honest"><i data-lucide="info"></i><span>Tres decisiones muestran una tendencia, no un perfil. La odisea real lee 12 decisiones del niño, calcula la claridad del resultado y genera el informe completo.</span></div>' +
+      '<div class="play-result__ctas">' +
+      '<a class="btn btn--violet" href="/demo">Jugar la odisea real gratis</a>' +
+      '<a class="btn btn--ghost" href="#argoone">Ver el informe por dentro</a>' +
+      '</div>' +
+      '<div><button type="button" class="play-again" id="play-again">Probar de nuevo</button></div>' +
+      '</div>';
+    lucide.createIcons();
+    document.getElementById('play-again').addEventListener('click', function() {
+      answers = []; step = 0; updateProgress(); renderScene();
+    });
+  }
+
+  renderScene();
+})();
+
+// ═══════════════ SHOWCASES — scrollytelling del informe ═══════════════
+(function() {
+  function scrub(trackId, contentId, notesId, dotsId) {
+    var track = document.getElementById(trackId);
+    var content = document.getElementById(contentId);
+    if (!track || !content) return;
+    var notes = document.getElementById(notesId).querySelectorAll('.showcase__note');
+    var dots = document.getElementById(dotsId).querySelectorAll('.showcase__dot');
+    var ticking = false;
+    function update() {
+      ticking = false;
+      var rect = track.getBoundingClientRect();
+      var stickyH = window.innerHeight - 56;
+      var total = rect.height - stickyH;
+      if (total <= 0) return;
+      var p = (56 - rect.top) / total;
+      p = Math.max(0, Math.min(1, p));
+      var scroller = content.parentElement;
+      var maxShift = Math.max(0, content.scrollHeight - scroller.clientHeight);
+      content.style.transform = 'translate3d(0,' + (-p * maxShift) + 'px,0)';
+      var idx = Math.min(notes.length - 1, Math.floor(p * notes.length));
+      notes.forEach(function(n, i) { n.classList.toggle('is-on', i === idx); });
+      dots.forEach(function(d, i) { d.classList.toggle('is-on', i === idx); });
+    }
+    window.addEventListener('scroll', function() {
+      if (!ticking) { ticking = true; requestAnimationFrame(update); }
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+  scrub('sc1-track', 'sc1-content', 'sc1-notes', 'sc1-dots');
+  scrub('sc2-track', 'sc2-content', 'sc2-notes', 'sc2-dots');
+})();
+
+// ═══════════════ ACADEMY PLAYGROUND ═══════════════
+var PLAYERS = [
+  { id: 'juan',   name: 'Juan',   age: 12, p: 'D', v: 'I',   conn: 'con veta',
+    lead: 'Juan tiende a empujar: quiere la bocha, quiere el arco, quiere ya. Y tiene una veta que contagia: cuando celebra, celebra con todos.',
+    conecta: ['"Te tengo un desafío"', '"Tú abres el camino"', '"A ver cuánto mejoras hoy"'],
+    ruido: ['"Espera tu turno"', '"No corras tanto"'],
+    consejo: 'Dale un objetivo concreto por práctica. La espera sin propósito lo apaga; el reto medible lo ordena.' },
+  { id: 'pedro',  name: 'Pedro',  age: 11, p: 'S', v: 'C',   conn: 'con veta',
+    lead: 'Pedro sostiene: es el que siempre está, el que no falla dos veces lo mismo. Su veta analítica le pide entender el porqué de cada ejercicio.',
+    conecta: ['"Cuento contigo"', '"Vamos paso a paso"', '"Mira el porqué de esto"'],
+    ruido: ['"Improvisa"', '"Cambio de planes, ya"'],
+    consejo: 'Anticípale los cambios. Si el plan se mueve, díselo antes que al resto y explícale el motivo: lo procesa y lo sostiene.' },
+  { id: 'maria',  name: 'María',  age: 12, p: 'I', v: null,  conn: null,
+    lead: 'María juega con y para las demás: arma clima, celebra ajeno y levanta cabezas. Su energía es del grupo y para el grupo.',
+    conecta: ['"El equipo te necesita"', '"Qué bien ese pase"', '"Contágiales tu energía"'],
+    ruido: ['"Deja de charlar"', '"Esto es individual"'],
+    consejo: 'Úsala de puente: cuando el grupo está caído, una tarea social (armar la ronda, recibir a las nuevas) la enciende y enciende a todas.' },
+  { id: 'mateo',  name: 'Mateo',  age: 10, p: 'C', v: 'S',   conn: 'con veta',
+    lead: 'Mateo primero entiende, después juega. Observa el ejercicio completo antes de entrar y ejecuta con una precisión que sorprende.',
+    conecta: ['"Buena lectura"', '"¿Qué viste tú?"', '"Tómate un segundo"'],
+    ruido: ['"Apúrate"', '"No lo pienses tanto"'],
+    consejo: 'No lo apures en la primera repetición: pregúntale qué vio. Cuando explica su lectura, se gana el lugar que su juego tranquilo no siempre muestra.' },
+  { id: 'julia',  name: 'Julia',  age: 11, p: 'S', v: 'I',   conn: 'con veta',
+    lead: 'Julia es la calma que agranda a las demás: constante, confiable y con una veta cálida que cuida el clima del grupo.',
+    conecta: ['"Contigo el equipo está tranquilo"', '"Sigue así"', '"Juntas es más fácil"'],
+    ruido: ['"Sorpresa: hoy todo distinto"', '"Arréglatelas sola"'],
+    consejo: 'Reconócela en voz baja pero seguido. No pide el centro de la escena; sí necesita saber que su constancia se ve.' },
+  { id: 'aurora', name: 'Aurora', age: 9,  p: 'D', v: 'C',   conn: 'con veta',
+    lead: 'Aurora empuja con plan: quiere ganar y quiere saber cómo. Intensa en el juego, exigente consigo misma hasta el detalle.',
+    conecta: ['"Te tengo un reto con truco"', '"Buena decisión"', '"¿Cuál es tu plan?"'],
+    ruido: ['"Da igual cómo salga"', '"Era solo un juego"'],
+    consejo: 'Cuando se frustra, no minimices: dale el dato ("el segundo tiro fue mejor que el primero") y un próximo paso concreto. El vacío la frustra; la ruta la calma.' }
+];
+var CHEM_START = { a: ['juan', 'maria', 'pedro'], b: ['mateo', 'julia', 'aurora'] };
+
+function playerById(id) { return PLAYERS.filter(function(p) { return p.id === id; })[0]; }
+function archName(p, small) {
+  var h = '<span style="color:' + AX[p.p].hex + ';">' + AX[p.p].label + '</span>';
+  if (p.v) h += ' <span style="color:var(--text-primary);">' + p.conn + '</span> <span style="color:' + AX[p.v].hex + ';">' + AX[p.v].label + '</span>';
+  return h;
+}
+
+// ── tabs ──
+(function() {
+  var tabs = document.querySelectorAll('.pg-tab');
+  var panels = document.querySelectorAll('.pg-panel');
+  tabs.forEach(function(t) {
+    t.addEventListener('click', function() {
+      tabs.forEach(function(x) { x.classList.toggle('is-on', x === t); });
+      panels.forEach(function(pn) { pn.classList.toggle('is-on', pn.dataset.panel === t.dataset.tab); });
+    });
+  });
+})();
+
+// ── equipo: roster + mini informe ──
+(function() {
+  var roster = document.getElementById('pg-roster');
+  var mini = document.getElementById('pg-miniprofile');
+  if (!roster) return;
+  var hint = roster.parentElement.querySelector('.pg-hint');
+
+  roster.innerHTML = PLAYERS.map(function(p) {
+    return '<button type="button" class="player-card" data-player="' + p.id + '">' +
+      '<span class="player-card__orb orb ' + AX[p.p].cls + '"></span>' +
+      '<span><span class="player-card__name" style="display:block;">' + p.name + '</span>' +
+      '<span class="player-card__meta">' + p.age + ' años · Hockey</span></span>' +
+      '<span class="player-card__axis" style="border-color:' + AX[p.p].pillB + '; color:' + AX[p.p].pillC + ';">' + AX[p.p].label + '</span>' +
+      '<span class="player-card__info">i</span></button>';
+  }).join('');
+
+  function openProfile(p) {
+    roster.style.display = 'none';
+    hint.style.display = 'none';
+    var orbs = p.v
+      ? '<div class="orb ' + AX[p.p].cls + ' is-morph" style="width:58%; aspect-ratio:1; position:absolute; top:4%; left:2%;"></div>' +
+        '<div class="orb ' + AX[p.v].cls + ' is-morph-b" style="width:44%; aspect-ratio:1; position:absolute; bottom:4%; right:4%;"></div>'
+      : '<div class="orb ' + AX[p.p].cls + ' is-morph" style="width:68%; aspect-ratio:1; position:absolute; top:14%; left:14%;"></div>';
+    mini.innerHTML =
+      '<div>' +
+      '<button type="button" class="mini-profile__back" id="mini-back"><i data-lucide="arrow-left"></i>Volver al equipo</button>' +
+      '<div style="position:relative; aspect-ratio:1; max-width:230px;">' + orbs + '</div>' +
+      '<p class="mr-eyebrow" style="margin-top:14px;">Su perfil hoy</p>' +
+      '<p class="serif" style="font-size:1.4rem; line-height:1.25; margin-bottom:4px;">' + archName(p) + '</p>' +
+      '<p style="font-size:0.76rem; color:var(--text-muted);">' + p.name + ' · ' + p.age + ' años · Hockey</p>' +
+      '</div>' +
+      '<div>' +
+      '<p class="mr-body" style="font-size:0.92rem; margin-bottom:18px;">' + p.lead + '</p>' +
+      '<div class="mr-words" style="margin-bottom:16px;">' +
+      '<div class="mr-wpanel" style="background:rgba(' + hexRgb(AX[p.p].hex) + ',.06); border-color:rgba(' + hexRgb(AX[p.p].hex) + ',.25);">' +
+      '<div class="mr-wpanel__head" style="color:' + AX[p.p].hex + ';"><span class="mr-wpanel__orb orb ' + AX[p.p].cls + '"></span>Conectan</div>' +
+      p.conecta.map(function(w) { return '<div class="mr-wline"><span class="tick" style="background:' + AX[p.p].hex + ';"></span>' + w + '</div>'; }).join('') +
+      '</div>' +
+      '<div class="mr-wpanel" style="background:var(--bg-elevated); border-color:var(--border);">' +
+      '<div class="mr-wpanel__head" style="color:var(--text-muted);"><span class="mr-wpanel__orb orb orb--grey"></span>Hacen ruido</div>' +
+      p.ruido.map(function(w) { return '<div class="mr-wline" style="color:var(--text-muted);"><span class="tick" style="background:var(--text-light);"></span>' + w + '</div>'; }).join('') +
+      '</div></div>' +
+      '<p class="mr-aside">' + p.consejo + '</p>' +
+      '<p class="mock-note"><i data-lucide="info"></i>Mini informe reducido. El informe completo tiene muchas más secciones.</p>' +
+      '</div>';
+    mini.classList.add('is-on');
+    lucide.createIcons();
+    document.getElementById('mini-back').addEventListener('click', function() {
+      mini.classList.remove('is-on');
+      roster.style.display = '';
+      hint.style.display = '';
+    });
+  }
+  function hexRgb(h) {
+    h = h.replace('#', '');
+    return parseInt(h.substr(0, 2), 16) + ',' + parseInt(h.substr(2, 2), 16) + ',' + parseInt(h.substr(4, 2), 16);
+  }
+  roster.querySelectorAll('.player-card').forEach(function(card) {
+    card.addEventListener('click', function() { openProfile(playerById(card.dataset.player)); });
+  });
+})();
+
+// ── química: drag & drop + lectura ──
+(function() {
+  var listA = document.querySelector('[data-list="a"]');
+  var listB = document.querySelector('[data-list="b"]');
+  if (!listA) return;
+
+  function chip(p) {
+    var el = document.createElement('span');
+    el.className = 'chem-chip';
+    el.dataset.player = p.id;
+    el.innerHTML = '<span class="chem-chip__orb orb ' + AX[p.p].cls + '"></span>' + p.name;
+    return el;
+  }
+  CHEM_START.a.forEach(function(id) { listA.appendChild(chip(playerById(id))); });
+  CHEM_START.b.forEach(function(id) { listB.appendChild(chip(playerById(id))); });
+
+  function zoneMembers(list) {
+    return Array.prototype.map.call(list.querySelectorAll('.chem-chip'), function(c) { return playerById(c.dataset.player); });
+  }
+  function names(arr) {
+    var ns = arr.map(function(p) { return p.name; });
+    if (ns.length === 1) return ns[0];
+    return ns.slice(0, -1).join(', ') + ' y ' + ns[ns.length - 1];
+  }
+  function reading(members) {
+    if (!members.length) return { text: 'Sin jugadores en esta línea. Arrastra a alguien para leer su química.', bal: 10 };
+    var by = { D: [], I: [], S: [], C: [] };
+    members.forEach(function(p) { by[p.p].push(p); });
+    var present = ['D', 'I', 'S', 'C'].filter(function(ax) { return by[ax].length; });
+    var bal = Math.round((present.length / 4) * 100);
+    var t;
+    if (members.length === 1) {
+      var p0 = members[0];
+      t = '<strong>' + p0.name + '</strong> en soledad: perfil ' + AX[p0.p].label + '. Toda línea se lee mejor de a dos o más.';
+    } else if (present.length === 1) {
+      var ax = present[0];
+      var solo = {
+        D: 'pura chispa. Van a empujar fuerte y rápido, pero nadie pone la pausa. Puede ayudar sumar un perfil que estabilice.',
+        I: 'pura energía social. El clima va a ser buenísimo; el foco puede costar. Un perfil que ordene les viene bien.',
+        S: 'pura constancia. Línea confiable y pareja; puede faltarle chispa para arrancar. Un perfil impulsor la despierta.',
+        C: 'pura lectura. Van a entender el juego mejor que nadie; puede faltar quien se anime primero. Una chispa les suma.'
+      };
+      t = '<strong>' + names(members) + '</strong>: ' + solo[ax];
+    } else if (present.length >= 3) {
+      t = '<strong>Mezcla equilibrada.</strong> Hay chispa, vínculo y sostén: los roles tienden a repartirse solos. Línea con recursos para casi cualquier partido.';
+    } else if (by.D.length && by.S.length) {
+      t = 'La chispa de <strong>' + names(by.D) + '</strong> y la calma de <strong>' + names(by.S) + '</strong> suelen equilibrarse bien: una arranca, la otra sostiene.';
+    } else if (by.D.length && by.I.length) {
+      t = 'Mucha energía junta: <strong>' + names(by.D.concat(by.I)) + '</strong> arrancan solas. Ojo con los días torcidos: nadie pone la pausa.';
+    } else if (by.S.length && by.C.length) {
+      t = 'Línea estable y pensante: <strong>' + names(by.S.concat(by.C)) + '</strong> no regalan nada. Puede faltarle chispa para los arranques.';
+    } else if (by.I.length && by.C.length) {
+      t = 'Clima y lectura: <strong>' + names(by.I.concat(by.C)) + '</strong> se complementan si se escuchan. El vínculo abre lo que el análisis ordena.';
+    } else {
+      t = '<strong>' + names(members) + '</strong>: mezcla con matices. Obsérvala en la práctica: los perfiles se acomodan jugando.';
+    }
+    return { text: t + ' <span style="color:var(--text-light);">(lectura orientativa)</span>', bal: bal };
+  }
+  function update() {
+    var ra = reading(zoneMembers(listA));
+    var rb = reading(zoneMembers(listB));
+    document.getElementById('chem-read-a').innerHTML = ra.text;
+    document.getElementById('chem-read-b').innerHTML = rb.text;
+    document.getElementById('chem-bal-a').style.width = ra.bal + '%';
+    document.getElementById('chem-bal-b').style.width = rb.bal + '%';
+  }
+  update();
+
+  // drag con pointer events + fallback tap (mueve a la otra línea)
+  var drag = null;
+  document.addEventListener('pointerdown', function(e) {
+    var c = e.target.closest ? e.target.closest('.chem-chip') : null;
+    if (!c) return;
+    drag = { chip: c, x0: e.clientX, y0: e.clientY, moved: false, ghost: null };
+    e.preventDefault();
+  });
+  document.addEventListener('pointermove', function(e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x0, dy = e.clientY - drag.y0;
+    if (!drag.moved && (dx * dx + dy * dy) > 36) {
+      drag.moved = true;
+      drag.ghost = drag.chip.cloneNode(true);
+      drag.ghost.classList.add('chem-ghost');
+      document.body.appendChild(drag.ghost);
+      drag.chip.classList.add('is-dragging');
+    }
+    if (drag.moved) {
+      drag.ghost.style.left = e.clientX + 'px';
+      drag.ghost.style.top = e.clientY + 'px';
+      document.querySelectorAll('.chem-zone').forEach(function(z) {
+        var r = z.getBoundingClientRect();
+        z.classList.toggle('is-over', e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom);
+      });
+    }
+  });
+  document.addEventListener('pointerup', function(e) {
+    if (!drag) return;
+    var chipEl = drag.chip;
+    if (drag.moved) {
+      var target = null;
+      document.querySelectorAll('.chem-zone').forEach(function(z) {
+        var r = z.getBoundingClientRect();
+        if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) target = z;
+        z.classList.remove('is-over');
+      });
+      if (target) target.querySelector('.chem-zone__list').appendChild(chipEl);
+      if (drag.ghost) drag.ghost.remove();
+      chipEl.classList.remove('is-dragging');
+    } else {
+      // tap: pasa a la otra línea
+      var other = chipEl.parentElement === listA ? listB : listA;
+      other.appendChild(chipEl);
+    }
+    drag = null;
+    update();
+  });
+})();
+
+// ── coach: respuestas guionadas ──
+(function() {
+  var thread = document.getElementById('coach-thread');
+  var input = document.getElementById('coach-input');
+  var send = document.getElementById('coach-send');
+  if (!thread) return;
+
+  var ANSWERS = [
+    { keys: ['pedro', 'motiv'], text: 'Pedro suele responder mejor a la confianza tranquila que a la arenga. Antes del partido, prueba algo simple: dile que cuentas con él y cuál va a ser su primera tarea concreta. Su veta Estratega agradece saber el plan. ¿El partido es de local o van de visitante? Eso también le cambia el clima.' },
+    { keys: ['aurora', 'frustra'], text: 'Cuando Aurora se frustra, minimizar suele empeorarlo ("no pasa nada" le suena a que no la vieron). Funciona mejor darle un dato real y un próximo paso: "el segundo tiro fue mejor que el primero, en la próxima práctica lo pulimos". Su perfil Impulsor con veta Estratega se calma con ruta, no con consuelo. ¿En qué momento la notas más frustrada: durante el juego o después?' },
+    { keys: ['chocar', 'choqu', 'juntos', 'tension'], text: 'La dupla a observar suele ser Juan y Aurora: dos perfiles Impulsores que quieren el mismo rol. No es un problema, es energía sin repartir: dales objetivos distintos dentro de la misma jugada y suelen convertirse en sociedad. María cerca de cualquiera de los dos ayuda a bajar la temperatura. ¿Los has visto discutir en la práctica o más en los partidos?' },
+    { keys: ['juan'], text: 'A Juan lo enciende el desafío directo: un objetivo concreto por práctica ("hoy, tres recuperaciones") lo ordena más que pedirle calma. La espera sin propósito lo apaga. ¿Qué te gustaría trabajar con él primero: el arranque o el manejo de los días torcidos?' },
+    { keys: ['maria', 'maría'], text: 'María rinde al nivel de su vínculo con el grupo: si el clima está bien, ella juega bien. Cuando el equipo está caído, dale una tarea social (armar la ronda, recibir a las nuevas) y va a levantar a todas. ¿Cómo está el clima del grupo esta semana?' },
+    { keys: ['mateo'], text: 'Mateo necesita un segundo más que el resto en cada ejercicio nuevo: no es duda, es lectura. Pregúntale qué vio antes de corregirlo; suele sorprender. Apurarlo en la primera repetición es la forma más rápida de apagarlo. ¿Te preocupa algo puntual de su juego?' },
+    { keys: ['julia'], text: 'Julia es de las que sostienen al equipo sin pedir foco. El riesgo con estos perfiles es darlos por sentado: un reconocimiento en voz baja pero frecuente la mantiene encendida. Los cambios sorpresivos la desacomodan: avísale antes que al resto. ¿Hace cuánto no le dices lo que aporta?' }
+  ];
+  var FALLBACK = 'Buena pregunta. En esta demo respondo solo sobre Las Gaviotas con guiones de ejemplo; en el dashboard real, Argo Coach conoce los perfiles de tu equipo y responde cualquier consulta con IA. ¿Quieres probar con una de las preguntas sugeridas?';
+
+  function bubble(cls, html) {
+    var b = document.createElement('div');
+    b.className = 'coach-bubble ' + cls;
+    b.innerHTML = html;
+    thread.appendChild(b);
+    thread.scrollTop = thread.scrollHeight;
+    return b;
+  }
+  function answer(q) {
+    var lq = q.toLowerCase();
+    var found = null;
+    for (var i = 0; i < ANSWERS.length; i++) {
+      var hit = ANSWERS[i].keys.filter(function(k) { return lq.indexOf(k) !== -1; }).length;
+      if (hit) { found = ANSWERS[i]; break; }
+    }
+    return found ? found.text : FALLBACK;
+  }
+  function ask(q) {
+    q = (q || '').trim();
+    if (!q) return;
+    input.value = '';
+    bubble('coach-bubble--user', q.replace(/&/g, '&amp;').replace(/</g, '&lt;'));
+    var t = bubble('coach-bubble--argo', '<div class="tag">Argo Coach</div><div class="typing-dots"><span></span><span></span><span></span></div>');
+    setTimeout(function() {
+      t.innerHTML = '<div class="tag">Argo Coach</div>' + answer(q);
+      thread.scrollTop = thread.scrollHeight;
+    }, REDUCED ? 60 : 1100);
+  }
+  document.querySelectorAll('#coach-chips .coach-chip').forEach(function(c) {
+    c.addEventListener('click', function() { ask(c.textContent); });
+  });
+  send.addEventListener('click', function() { ask(input.value); });
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') ask(input.value); });
+})();
+
+// ── predictor conductual ──
+(function() {
+  var playersEl = document.getElementById('pred-players');
+  var out = document.getElementById('pred-out');
+  if (!playersEl) return;
+
+  var SITS = {
+    previa:   { label: 'Los nervios de la previa' },
+    error:    { label: 'Un error en pleno juego' },
+    noquiere: { label: 'El día que no quiere ir' },
+    derrota:  { label: 'Después de una derrota' }
+  };
+  var PRED = {
+    D: {
+      previa:   { beh: ['Suele acelerarse: quiere que empiece ya', 'Puede ponerse impaciente con la charla previa', 'Descarga los nervios en movimiento'], how: 'Dale una misión concreta para el arranque ("primeros cinco minutos, presiona tú"). Canaliza el motor en vez de frenarlo.' },
+      error:    { beh: ['Tiende a enojarse consigo en caliente', 'Quiere revancha inmediata', 'Puede arrastrar el enojo a la siguiente jugada'], how: 'No lo saques del juego: dale una tarea inmediata que lo reenfoque. El análisis del error, después y en corto.' },
+      noquiere: { beh: ['Rara vez es cansancio: suele ser falta de reto', 'Se aburre si la actividad se volvió previsible', 'Lo dice de frente o con el cuerpo'], how: 'Pregúntale qué le gustaría que la actividad tuviera. Un desafío nuevo suele reencenderlo más que un sermón.' },
+      derrota:  { beh: ['La vive como algo personal', 'Busca culpables (a veces él mismo)', 'Se recupera rápido si hay revancha a la vista'], how: 'Valida el enojo sin agrandarlo y ponle fecha a la revancha: "el jueves lo trabajamos". Necesita horizonte, no consuelo largo.' }
+    },
+    I: {
+      previa:   { beh: ['Habla más de lo habitual: descarga en el vínculo', 'Busca contacto con el grupo o la tribuna', 'Su nervio es social: mira caras'], how: 'No lo aísles para "concentrarlo": déjalo saludar y reír. Llega mejor al partido por esa puerta.' },
+      error:    { beh: ['Busca la mirada de los demás enseguida', 'Un gesto de enojo alrededor le pesa el doble', 'Se rearma rápido con una señal de calma'], how: 'Una palmada o un "seguimos" a tiempo lo devuelve al partido. El error se conversa después, sin público.' },
+      noquiere: { beh: ['Suele ser un tema de vínculo, no de deporte', 'Puede haber un roce con alguien del grupo', 'Le cuesta decirlo directamente'], how: 'Pregunta por las personas antes que por la actividad: "¿cómo estás con el grupo?". La respuesta suele estar aquí.' },
+      derrota:  { beh: ['Le duele más el clima triste que el resultado', 'Intenta animar a los demás aunque él esté mal', 'Necesita hablar para procesar'], how: 'Dale espacio de charla: cómo estuvo el grupo, qué se dijeron. El resultado se elabora hablando.' }
+    },
+    S: {
+      previa:   { beh: ['Se aferra a su rutina de siempre', 'El nervio no se le nota: se le acumula', 'Un cambio de último momento lo desacomoda'], how: 'Protege su rutina y anticípale todo lo que puedas: quién juega, dónde, a qué hora. Lo previsible es su calma.' },
+      error:    { beh: ['No lo muestra, pero lo carga', 'Puede volverse más conservador después del error', 'Sigue cumpliendo aunque esté incómodo'], how: 'No confundas su silencio con que está bien. Un "eso le pasa a cualquiera, sigue igual" en voz baja lo libera.' },
+      noquiere: { beh: ['Es una señal a escuchar: no suele faltar', 'Puede haber acumulado algo que no dijo', 'Le cuesta pedir ayuda'], how: 'Tómalo en serio y pregunta en privado, sin presión. Que sepa que su lugar está seguro aunque hoy no vaya.' },
+      derrota:  { beh: ['Piensa en cómo quedaron los demás', 'La procesa lento, a veces hasta el día siguiente', 'No la convierte en drama, pero la guarda'], how: 'No exijas una reacción inmediata. Al día siguiente, una charla corta y tranquila cierra lo que el partido dejó abierto.' }
+    },
+    C: {
+      previa:   { beh: ['Repasa mentalmente cada detalle', 'Pregunta cosas específicas (cancha, rival, rol)', 'El desorden alrededor lo tensa más que el rival'], how: 'Responde sus preguntas con datos concretos y dale su momento de silencio. La información es su manta de seguridad.' },
+      error:    { beh: ['Se lo reprocha por dentro con dureza', 'Quiere entender exactamente qué falló', 'Puede quedarse rumiando la jugada'], how: 'Ofrécele el análisis que busca, pero acotado: "lo vemos el jueves con calma". Nombrar el plan le corta la rumia.' },
+      noquiere: { beh: ['Suele tener un motivo específico y pensado', 'Quizás algo dejó de tener sentido para él', 'Si le preguntan bien, lo explica'], how: 'Pregúntale el porqué de verdad y escucha la respuesta completa: suele ser más razonable de lo esperado.' },
+      derrota:  { beh: ['Analiza el partido entero por su cuenta', 'Es más duro consigo que cualquier adulto', 'Agradece una lectura honesta, no un ánimo vacío'], how: 'Dale una devolución concreta con una cosa buena real y una a mejorar. El elogio genérico le suena falso.' }
+    }
+  };
+
+  var selP = null, selS = null;
+  playersEl.innerHTML = PLAYERS.map(function(p) {
+    return '<button type="button" class="pred-pill" data-player="' + p.id + '"><span class="porb orb ' + AX[p.p].cls + '"></span>' + p.name + '</button>';
+  }).join('');
+
+  function render() {
+    if (!selP || !selS) return;
+    var p = playerById(selP);
+    var d = PRED[p.p][selS];
+    out.innerHTML =
+      '<div class="pred__who"><span class="porb orb ' + AX[p.p].cls + ' is-morph"></span>' +
+      '<div><span class="pred__who-name">' + p.name + '</span> <span class="pred__who-arch">' + archName(p) + '</span></div></div>' +
+      '<p class="pred__sit-label">' + SITS[selS].label + '</p>' +
+      '<div class="pred__behaviors">' + d.beh.map(function(b) {
+        return '<div class="pred-beh"><span class="tick" style="background:' + AX[p.p].hex + ';"></span>' + b + '</div>';
+      }).join('') + '</div>' +
+      '<div class="pred__how"><p class="pred__how-label"><i data-lucide="hand-heart" style="width:13px;height:13px;"></i>Cómo acompañar</p>' +
+      '<p class="pred__how-text">' + d.how + '</p></div>' +
+      '<p class="pred__prob">Lectura probabilística según su perfil. Cada niño es más grande que su informe.</p>';
+    lucide.createIcons();
+  }
+  playersEl.querySelectorAll('.pred-pill').forEach(function(b) {
+    b.addEventListener('click', function() {
+      selP = b.dataset.player;
+      playersEl.querySelectorAll('.pred-pill').forEach(function(x) { x.classList.toggle('is-on', x === b); });
+      render();
+    });
+  });
+  document.querySelectorAll('.pred-sit').forEach(function(b) {
+    b.addEventListener('click', function() {
+      selS = b.dataset.sit;
+      document.querySelectorAll('.pred-sit').forEach(function(x) { x.classList.toggle('is-on', x === b); });
+      render();
+    });
+  });
+})();
+
+// ═══════════════ FAQ ═══════════════
+(function() {
+  var FAQS = [
+    { q: '¿Qué es ArgoMethod®?', a: 'Una herramienta de perfilamiento conductual para deportistas jóvenes (8 a 16 años) basada en el modelo DISC. A través de una experiencia de juego de 10 minutos, genera un informe personalizado que ayuda al adulto responsable a entender cómo piensa, siente y reacciona cada deportista en el deporte.' },
+    { q: '¿Qué es el modelo DISC?', a: 'DISC es un modelo de comportamiento observable utilizado en todo el mundo durante más de 30 años. Describe cuatro patrones conductuales: Impulsor (orientado a la acción), Conector (orientado a las personas), Sostenedor (orientado a la estabilidad) y Estratega (orientado al análisis). Argo adapta este marco al deporte juvenil con lenguaje para niños y una experiencia gamificada.' },
+    { q: '¿Para quién es el informe?', a: 'Para el adulto que acompaña al deportista: entrenadores, padres, madres o referentes de instituciones deportivas. El informe llega por email al finalizar la experiencia. No es un informe para el menor: es una herramienta para que el adulto pueda acompañar mejor.' },
+    { q: '¿Se necesita crear una cuenta?', a: 'No. Solo se completa un formulario breve con nombre, edad y deporte. Sin contraseñas, sin descargas, sin instalar nada.' },
+    { q: '¿Hay respuestas correctas o incorrectas?', a: 'No. Cada respuesta refleja una tendencia conductual, no un acierto ni un error. No se miden capacidades ni se emiten diagnósticos. Todas las respuestas son válidas.' },
+    { q: '¿Es un test psicológico?', a: 'No. ArgoMethod® no sustituye a psicólogos deportivos ni a especialistas en desarrollo infantil. Es una herramienta de observación conductual que ofrece un punto de partida para individualizar el acompañamiento deportivo.' },
+    { q: '¿Cuánto cuesta?', a: 'Puedes jugar la demo gratis y ver una vista del informe. ArgoOne® cuesta $12.99 e incluye el informe completo del niño y tu Puente como adulto. Para instituciones, ArgoAcademy® ofrece una prueba gratis de 14 días con hasta 8 niños.' },
+    { q: '¿Qué datos recopilan?', a: 'Nombre del adulto, email, nombre del menor, edad y deporte. Las respuestas del juego se usan exclusivamente para generar el informe. No vendemos ni compartimos datos con terceros.' }
+  ];
+  var list = document.getElementById('faq-list');
+  if (!list) return;
+  FAQS.forEach(function(faq) {
+    var item = document.createElement('div');
+    item.className = 'faq-item';
+    item.innerHTML = '<button class="faq-item__q"><span>' + faq.q + '</span><i data-lucide="plus"></i></button><p class="faq-item__a">' + faq.a + '</p>';
+    item.querySelector('.faq-item__q').addEventListener('click', function() {
+      item.classList.toggle('is-open');
+    });
+    list.appendChild(item);
+  });
+})();
+
+// ═══════════════ modales ═══════════════
+(function() {
+  function wire(modalId, openAttr, closeAttr) {
+    var modal = document.getElementById(modalId);
+    if (!modal) return;
+    var lastFocus = null;
+    function open(e) {
+      if (e) e.preventDefault();
+      lastFocus = document.activeElement;
+      modal.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+      lucide.createIcons();
+    }
+    function close() {
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+      if (lastFocus && lastFocus.focus) lastFocus.focus();
+    }
+    document.querySelectorAll('[' + openAttr + ']').forEach(function(btn) { btn.addEventListener('click', open); });
+    document.querySelectorAll('[' + closeAttr + ']').forEach(function(btn) { btn.addEventListener('click', close); });
+    modal.addEventListener('click', function(e) { if (e.target === modal) close(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+  }
+  wire('loginModal', 'data-open-login', 'data-close-login');
+  wire('demoModal', 'data-open-demo', 'data-close-demo');
+})();
+
+// demo form → /api/demo-request
+(function() {
+  var form = document.getElementById('demoForm');
+  if (!form) return;
+  var errorEl = document.getElementById('demoError');
+  var submitBtn = document.getElementById('demoSubmit');
+  var formWrap = document.getElementById('demoFormWrap');
+  var successWrap = document.getElementById('demoSuccess');
+  function showError(msg) { errorEl.textContent = msg; errorEl.classList.add('is-visible'); }
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    errorEl.classList.remove('is-visible');
+    var fd = new FormData(form);
+    function g(k) { var v = fd.get(k); return (v == null ? '' : String(v)).trim(); }
+    var consentEl = document.getElementById('demoConsent');
+    var data = {
+      name: g('name'), email: g('email'), institution: g('institution'),
+      whatsapp: g('whatsapp'), country: g('country'), sport: g('sport'),
+      team_size: g('team_size'), consent: !!(consentEl && consentEl.checked),
+      company_url: g('company_url'), source: 'home-v2', lang: 'es'
+    };
+    if (!data.name || !data.email || !data.institution || !data.whatsapp || !data.country) { showError('Completa los campos obligatorios.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { showError('Revisa tu email.'); return; }
+    if (!data.consent) { showError('Necesitamos tu permiso para contactarte.'); return; }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="demo-spinner"></span> Enviando...';
+    fetch('/api/demo-request', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data)
+    })
+      .then(function(res) { return res.json().then(function(j) { return { ok: res.ok, body: j }; }); })
+      .then(function(r) {
+        if (!r.ok) throw new Error((r.body && r.body.error) || 'error');
+        formWrap.style.display = 'none';
+        successWrap.style.display = 'block';
+        lucide.createIcons();
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Enviar solicitud';
+        showError('No pudimos enviar tu solicitud. Intenta de nuevo en un momento.');
+      });
+  });
+})();
+
+// ═══════════════ chat widget (misma API que la home actual) ═══════════════
+(function() {
+  var MAX_MSGS = 10;
+  var msgCount = 0;
+  var loading = false;
+  var history = [];
+  var fab = document.getElementById('chat-fab');
+  var panel = document.getElementById('chat-panel');
+  var messagesEl = document.getElementById('chat-messages');
+  var suggestionsEl = document.getElementById('chat-suggestions');
+  var input = document.getElementById('chat-input');
+  var sendBtn = document.getElementById('chat-send');
+  var limitEl = document.getElementById('chat-limit');
+  if (!fab) return;
+
+  function addMsg(role, content) {
+    var div = document.createElement('div');
+    div.className = 'chat-msg chat-msg--' + (role === 'user' ? 'user' : 'assistant');
+    div.innerHTML = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  addMsg('assistant', 'Hola. Soy el asistente de ArgoMethod®. Puedo responder preguntas sobre el producto, precios, cómo funciona y más. ¿En qué puedo ayudarte?');
+
+  fab.addEventListener('click', function() {
+    var open = panel.classList.toggle('is-open');
+    fab.classList.toggle('is-open', open);
+    if (open) setTimeout(function() { input.focus(); }, 200);
+  });
+  function updateLimit() {
+    var remaining = MAX_MSGS - msgCount;
+    if (remaining <= 3) {
+      limitEl.style.display = 'block';
+      limitEl.textContent = remaining + (remaining === 1 ? ' mensaje restante' : ' mensajes restantes');
+    }
+    if (remaining <= 0) { input.disabled = true; sendBtn.disabled = true; }
+  }
+  function send(text) {
+    text = (text || '').trim();
+    if (!text || loading || msgCount >= MAX_MSGS) return;
+    suggestionsEl.style.display = 'none';
+    addMsg('user', text);
+    history.push({ role: 'user', content: text });
+    input.value = '';
+    msgCount++;
+    updateLimit();
+    loading = true;
+    sendBtn.disabled = true;
+    var typing = document.createElement('div');
+    typing.className = 'chat-panel__typing';
+    typing.textContent = 'Pensando...';
+    messagesEl.appendChild(typing);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    fetch('/api/deck-chat', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: history.slice(-8) })
+    })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        typing.remove();
+        var reply = data.content || 'Lo siento, no pude procesar eso. Intenta de nuevo.';
+        history.push({ role: 'assistant', content: reply });
+        addMsg('assistant', reply);
+      })
+      .catch(function() {
+        typing.remove();
+        addMsg('assistant', 'Error de conexión. Intenta de nuevo.');
+      })
+      .finally(function() {
+        loading = false;
+        if (msgCount < MAX_MSGS) sendBtn.disabled = false;
+      });
+  }
+  sendBtn.addEventListener('click', function() { send(input.value); });
+  input.addEventListener('keydown', function(e) { if (e.key === 'Enter') send(input.value); });
+  suggestionsEl.querySelectorAll('.chat-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() { send(chip.textContent); });
+  });
+})();
+</script>
+</body>
+</html>
