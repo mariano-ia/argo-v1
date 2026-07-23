@@ -15,6 +15,7 @@ import { COPY, fill, type Ui } from '../../lib/reportV4Copy';
 import { SECTION_TIPS, REPORT_CHROME } from '../../lib/reportSectionTips';
 import { InfoTip } from '../ui/Tooltip';
 import { AXIS_COLORS } from '../../lib/designTokens';
+import { useCardFade } from './useCardFade';
 import { REPORT_REDESIGN_CSS } from './reportRedesignStyles';
 
 /** Convierte `**negrita**` en <strong>. El resto va como texto. */
@@ -246,9 +247,10 @@ export const ReportV4View: React.FC<ReportV4ViewProps> = ({ report, edad, deport
 
   const levelWord = (hero.meter.labels[hero.meter.level - 1] ?? '').toLowerCase();
   const orbSize = VETA_ORB_SIZE[hero.vetaBanda] ?? 48;
+  const fadeRef = useCardFade<HTMLDivElement>();
 
   return (
-    <div className="argo-report-v4 mx-auto max-w-[740px]">
+    <div ref={fadeRef} className="argo-report-v4 mx-auto max-w-[740px]">
       <style dangerouslySetInnerHTML={{ __html: REPORT_REDESIGN_CSS }} />
 
       {/* Hero premium: nombre serif + dos orbes de vidrio + pills flotantes + pastilla de confianza */}
