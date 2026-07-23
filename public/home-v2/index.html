@@ -267,6 +267,49 @@ button { font-family: var(--font-body); }
 .axes-note { text-align: center; margin-top: 34px; font-size: 0.95rem; color: var(--text-muted); }
 .axes-note strong { font-weight: 600; color: var(--text-secondary); }
 
+/* ── el mezclador: 4 colores -> 12 perfiles con nombre ── */
+.mixer {
+  margin-top: 56px; background: #fff; border: 1px solid var(--border); border-radius: 20px;
+  box-shadow: var(--shadow-argo); padding: 38px 42px;
+  display: grid; grid-template-columns: 1fr 1.15fr; gap: 46px; align-items: center;
+}
+.mixer__eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.mixer__title { font-family: var(--font-display); font-size: 1.4rem; font-weight: 440; margin-bottom: 22px; }
+.mixer__step { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 10px; }
+.mixer__row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+.mix-pick {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 15px 7px 8px; font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);
+  cursor: pointer; transition: all 0.2s ease;
+}
+.mix-pick .morb { width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0; }
+.mix-pick:hover { border-color: var(--border-strong); background: #fff; }
+.mix-pick.is-on { background: #fff; border-color: currentColor; box-shadow: var(--shadow-hover); }
+.mix-pick--none { padding-left: 15px; }
+.mixer__fine { font-size: 0.74rem; line-height: 1.6; color: var(--text-light); margin: 0; }
+.mixer__result {
+  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px;
+  padding: 32px 34px; text-align: center; position: relative; overflow: hidden; min-height: 330px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.mixer__orbs { position: relative; width: 190px; height: 170px; margin: 0 auto 8px; }
+.mixer__orbs .orb { position: absolute; transition: width 0.7s var(--ease-out), height 0.7s var(--ease-out), opacity 0.5s ease; }
+.mixer__badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-wash); border: 1px solid #EFE4F5;
+  border-radius: 999px; padding: 4px 12px; margin-bottom: 14px;
+}
+.mixer__name { font-family: var(--font-display); font-size: clamp(1.35rem, 2.4vw, 1.7rem); font-weight: 450; line-height: 1.25; margin-bottom: 10px; }
+.mixer__name .nc { color: var(--text-primary); }
+.mixer__line { font-size: 0.88rem; line-height: 1.65; color: var(--text-secondary); max-width: 380px; margin: 0 auto; }
+@media (max-width: 900px) {
+  .mixer { grid-template-columns: 1fr; gap: 28px; padding: 28px 22px; }
+  .mixer__result { min-height: 0; padding: 26px 20px; }
+  .mixer__orbs { width: 160px; height: 140px; }
+}
+
 /* ═══════════════════════════════════════
    MINI-ODISEA — el visitante juega 3 decisiones
    ═══════════════════════════════════════ */
@@ -913,8 +956,8 @@ button { font-family: var(--font-body); }
   <div class="section-content">
     <div style="text-align:center; max-width:680px; margin:0 auto;">
       <div class="eyebrow anim">El punto de partida</div>
-      <h2 class="sec-title anim">Cuatro maneras de <strong>vivir el deporte</strong>.</h2>
-      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Toca cada esfera. Detrás de cada una hay un niño que conoces.</p>
+      <h2 class="sec-title anim">Cuatro colores, <strong>doce perfiles</strong>, una mezcla única.</h2>
+      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">El método parte de cuatro colores. Toca cada esfera: detrás de cada una hay un niño que conoces.</p>
     </div>
     <div class="axes-grid">
       <button type="button" class="axis-card anim" data-axis="D">
@@ -942,7 +985,26 @@ button { font-family: var(--font-body); }
         <p class="axis-card__line">Observa, analiza y busca el porqué. Cuando entiende el plan, ejecuta con precisión.</p>
       </button>
     </div>
-    <p class="axes-note anim"><strong>Ninguna es mejor que otra.</strong> Y casi ningún niño es una sola: el perfil real es una mezcla, con un color que pesa más.</p>
+    <p class="axes-note anim"><strong>Ninguna es mejor que otra.</strong> Y casi ningún niño es de un solo color: por eso los perfiles se nombran como mezclas.</p>
+
+    <div class="mixer anim" id="mixer">
+      <div>
+        <p class="mixer__eyebrow">El mezclador</p>
+        <p class="mixer__title">Arma un perfil tú mismo.</p>
+        <p class="mixer__step">1 · El color que más pesa</p>
+        <div class="mixer__row" id="mix-primary"></div>
+        <p class="mixer__step">2 · El que lo acompaña</p>
+        <div class="mixer__row" id="mix-veta"></div>
+        <p class="mixer__fine">Los colores opuestos (Impulsor y Sostenedor, Conector y Estratega) no forman nombre juntos: cuando conviven, el informe lo cuenta dentro del perfil.</p>
+      </div>
+      <div class="mixer__result">
+        <div class="mixer__orbs" id="mix-orbs"></div>
+        <span class="mixer__badge" id="mix-badge">Uno de los 12 perfiles</span>
+        <p class="mixer__name serif" id="mix-name"></p>
+        <p class="mixer__line" id="mix-line"></p>
+      </div>
+    </div>
+    <p class="axes-note anim" style="margin-top:26px; font-size:0.85rem;">El nombre es el resumen. La mezcla exacta de cada niño (cuánto pesa cada color) es lo que hace único su informe.</p>
   </div>
 </section>
 
@@ -1745,15 +1807,114 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, 3400);
 })();
 
-// ═══════════════ los 4 colores: tap en touch ═══════════════
+// ═══════════════ los 4 colores: tap en touch (y atajo al mezclador) ═══════════════
 (function() {
   document.querySelectorAll('.axis-card').forEach(function(card) {
     card.addEventListener('click', function() {
       var was = card.classList.contains('is-open');
       document.querySelectorAll('.axis-card').forEach(function(c) { c.classList.remove('is-open'); });
       if (!was) card.classList.add('is-open');
+      if (window.mixerSetPrimary) window.mixerSetPrimary(card.dataset.axis);
     });
   });
+})();
+
+// ═══════════════ el mezclador: 4 colores -> 12 perfiles con nombre ═══════════════
+(function() {
+  var elP = document.getElementById('mix-primary');
+  if (!elP) return;
+  var elV = document.getElementById('mix-veta');
+  var elOrbs = document.getElementById('mix-orbs');
+  var elName = document.getElementById('mix-name');
+  var elLine = document.getElementById('mix-line');
+
+  // vetas válidas por primario (los opuestos D-S e I-C no forman nombre)
+  var VALID = { D: ['I', 'C'], I: ['D', 'S'], S: ['I', 'C'], C: ['D', 'S'] };
+  // los 12 perfiles canónicos: 4 puros + 8 mezclas
+  var LINES = {
+    'D':   'Pura acción: el reto lo enciende y el movimiento lo ordena. Suele ser quien arranca primero.',
+    'D+I': 'Empuja y contagia: quiere ganar, y quiere que ganen todos juntos.',
+    'D+C': 'Empuja con plan: la intensidad de la acción con el porqué de cada jugada.',
+    'I':   'El equipo es su lugar: juega con y para los demás, y su energía es del grupo.',
+    'I+D': 'Conecta y enciende: arma clima y le pone chispa a cada práctica.',
+    'I+S': 'Conecta y cuida: la energía del grupo con un corazón que sostiene.',
+    'S':   'La calma que sostiene: constancia, rutina y cuidado de los suyos.',
+    'S+I': 'Sostiene con calidez: confiable para el equipo, atento a cada compañero.',
+    'S+C': 'Sostiene con lectura: constante, ordenado y difícil de desacomodar.',
+    'C':   'Primero entiende, después juega: el porqué es su combustible.',
+    'C+D': 'Analiza y ejecuta: lectura fría, decisión valiente.',
+    'C+S': 'Analiza con paciencia: entiende el juego completo y no se desordena.'
+  };
+  var primary = 'D', veta = 'I';
+
+  function pick(ax, none) {
+    if (none) return '<button type="button" class="mix-pick mix-pick--none" data-veta="">Un solo color</button>';
+    return '<button type="button" class="mix-pick" data-ax="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
+      '<span class="morb orb ' + AX[ax].cls + '"></span>' + AX[ax].label + '</button>';
+  }
+  elP.innerHTML = ['D', 'I', 'S', 'C'].map(function(ax) { return pick(ax); }).join('');
+
+  function renderVetaRow() {
+    elV.innerHTML = pick(null, true) + VALID[primary].map(function(ax) {
+      return '<button type="button" class="mix-pick" data-veta="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
+        '<span class="morb orb ' + AX[ax].cls + '"></span>con veta ' + AX[ax].label + '</button>';
+    }).join('');
+    elV.querySelectorAll('.mix-pick').forEach(function(b) {
+      b.addEventListener('click', function() {
+        veta = b.dataset.veta || null;
+        syncVeta();
+        renderResult();
+      });
+    });
+    syncVeta();
+  }
+  function syncVeta() {
+    elV.querySelectorAll('.mix-pick').forEach(function(b) {
+      b.classList.toggle('is-on', (b.dataset.veta || null) === veta);
+    });
+  }
+  function syncPrimary() {
+    elP.querySelectorAll('.mix-pick').forEach(function(b) {
+      b.classList.toggle('is-on', b.dataset.ax === primary);
+    });
+  }
+  function renderResult() {
+    var key = veta ? (primary + '+' + veta) : primary;
+    if (veta) {
+      elOrbs.innerHTML =
+        '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:120px; height:120px; top:2px; left:6px;"></div>' +
+        '<div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:84px; height:84px; bottom:0; right:10px;"></div>';
+      elName.innerHTML = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span> ' +
+        '<span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
+    } else {
+      elOrbs.innerHTML = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:140px; height:140px; top:8px; left:25px;"></div>';
+      elName.innerHTML = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span>';
+    }
+    elLine.textContent = LINES[key];
+  }
+
+  elP.querySelectorAll('.mix-pick').forEach(function(b) {
+    b.addEventListener('click', function() {
+      primary = b.dataset.ax;
+      if (veta && VALID[primary].indexOf(veta) === -1) veta = VALID[primary][0];
+      syncPrimary();
+      renderVetaRow();
+      renderResult();
+    });
+  });
+
+  window.mixerSetPrimary = function(ax) {
+    if (!AX[ax]) return;
+    primary = ax;
+    if (veta && VALID[primary].indexOf(veta) === -1) veta = VALID[primary][0];
+    syncPrimary();
+    renderVetaRow();
+    renderResult();
+  };
+
+  syncPrimary();
+  renderVetaRow();
+  renderResult();
 })();
 
 // ═══════════════ MINI ODISEA ═══════════════
