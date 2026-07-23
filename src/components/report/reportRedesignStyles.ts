@@ -21,6 +21,12 @@ export const REPORT_REDESIGN_CSS = `
 }
 /* card = shell "papel": radio 16, sombra sutil, sin borde. */
 .argo-report-v4 .card{background:var(--paper);border-radius:16px;padding:28px 32px;box-shadow:var(--shadow);color:var(--sec);}
+/* Fade-in de cards con el scroll (activado por el hook useCardFade que agrega .cards-fade). El reveal
+   es @keyframes, no transition, para que el ocultado inicial no anime. Sin .cards-fade: todo visible. */
+.argo-report-v4.cards-fade .card{opacity:0;}
+.argo-report-v4.cards-fade .card.in-view{animation:argoCardIn .55s cubic-bezier(.22,.61,.36,1) forwards;}
+@keyframes argoCardIn{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:none;}}
+@media (prefers-reduced-motion:reduce){.argo-report-v4.cards-fade .card{opacity:1;}.argo-report-v4.cards-fade .card.in-view{animation:none;}}
 /* ── Hero premium: serif de display + orbes de vidrio vivos + pills flotantes ── */
 .argo-report-v4 .hero-lux{padding:36px 38px;overflow:visible;}
 .argo-report-v4 .hx-grid{display:grid;grid-template-columns:1fr;gap:22px;}

@@ -5,6 +5,7 @@ import { AXIS_COLORS } from '../../lib/designTokens';
 import { getArchetypeLabel } from '../../lib/archetypeContentV4';
 import { getPuentesCopy } from '../../lib/puentesTranslations';
 import { InfoTip } from '../ui/Tooltip';
+import { useCardFade } from '../report/useCardFade';
 import { REPORT_REDESIGN_CSS } from '../report/reportRedesignStyles';
 import type {
     AdultAxis,
@@ -36,6 +37,7 @@ interface Props {
     adultProfile?: AdultProfile | null;
     recipientEmail?: string | null;
     recipientName?: string | null;
+    fecha?: string | null;   // fecha ya formateada ("23 de julio de 2026"); PuentesFlow la pasa en prod
     children: ChildEntry[];
     // Re-launch generation for a bridge whose AI generation FAILED (status
     // 'failed'). Provided by PuentesFlow; without it failed bridges show the
@@ -114,10 +116,18 @@ const COPIED_LABEL: Record<Lang, string> = {
 };
 
 const COMPOSITION_LABEL: Record<Lang, string> = {
-    es: 'Composición del perfil',
-    en: 'Profile composition',
-    pt: 'Composição do perfil',
+    es: 'Tu mezcla',
+    en: 'Your mix',
+    pt: 'Sua mistura',
 };
+
+const ENCUENTRO_LABEL: Record<Lang, string> = {
+    es: 'El punto de encuentro',
+    en: 'The meeting point',
+    pt: 'O ponto de encontro',
+};
+
+const TU_LABEL: Record<Lang, string> = { es: 'Tú', en: 'You', pt: 'Você' };
 
 const COMPOSITION_TIP: Record<Lang, string> = {
     es: 'Cómo se reparten tus respuestas entre los cuatro colores del modelo. El tamaño de cada orbe muestra cuánto pesa ese eje hoy.',
@@ -132,16 +142,13 @@ const PRESSURE_TIP: Record<Lang, string> = {
 };
 
 const HERO_EYEBROW: Record<Lang, string> = {
-    es: 'Tu perfil',
-    en: 'Your profile',
-    pt: 'Seu perfil',
+    es: 'Tu perfil hoy',
+    en: 'Your profile today',
+    pt: 'Seu perfil hoje',
 };
 
-const PAGE_EYEBROW: Record<Lang, string> = {
-    es: 'Informe para el adulto',
-    en: 'Report for the adult',
-    pt: 'Relatório para o adulto',
-};
+// "{niño} y tú" (tuteo; el producto no usa voseo). Encabeza el informe como el vínculo, no como "informe para el adulto".
+const AND_YOU: Record<Lang, string> = { es: 'y tú', en: 'and you', pt: 'e você' };
 
 const SWITCHER_LABEL: Record<Lang, string> = {
     es: 'Los puentes con',
@@ -225,6 +232,14 @@ const PUENTE_REDESIGN_CSS = `
 .argo-report-v4 .notes{margin-top:24px;padding:0 6px;color:var(--grey);}
 .argo-report-v4 .notes p{margin:0 0 6px;font-size:12px;line-height:1.6;}
 .argo-report-v4 .notes .notes-mut{color:var(--light);font-size:11px;}
+/* El punto de encuentro: dos orbes de vidrio (adulto + niño) cruzándose, centrados; texto debajo */
+.argo-report-v4 .enc-orbs{position:relative;height:184px;margin:8px 0 18px;}
+.argo-report-v4 .enc-orb{position:absolute;top:20px;width:150px;height:150px;border-radius:50%;will-change:border-radius;}
+.argo-report-v4 .enc-orb-a{left:calc(50% - 135px);animation:argoOrbMorphA 9s ease-in-out infinite;}
+.argo-report-v4 .enc-orb-c{left:calc(50% - 15px);animation:argoOrbMorphB 11s ease-in-out infinite;}
+.argo-report-v4 .enc-pill-a{top:6px;left:calc(50% - 162px);right:auto;bottom:auto;}
+.argo-report-v4 .enc-pill-c{bottom:6px;right:calc(50% - 162px);top:auto;left:auto;}
+@media (prefers-reduced-motion:reduce){.argo-report-v4 .enc-orb{animation:none;}}
 `;
 
 /** Header de sección: punto de eje + título + (i) InfoTip + bajada opcional + hairline. */
@@ -253,11 +268,12 @@ export function PuentesReport({
     lang,
     adultProfile,
     recipientEmail,
-    recipientName,
+    fecha,
     children,
     onRetryChild,
 }: Props) {
     const c = getPuentesCopy(lang);
+    const fadeRef = useCardFade<HTMLDivElement>();
     const [activeIdx, setActiveIdx] = useState(0);
     const [copied, setCopied] = useState(false);
     const handleCopy = () => {
@@ -328,21 +344,10 @@ export function PuentesReport({
             </div>
 
             {/* Report body — scoped under .argo-report-v4 so the shared redesign CSS applies. Light theme only. */}
-            <div className="argo-report-v4 max-w-[700px] mx-auto px-4 sm:px-[18px] pt-6 pb-16">
+            <div ref={fadeRef} className="argo-report-v4 max-w-[700px] mx-auto px-4 sm:px-[18px] pt-6 pb-16">
                 <style dangerouslySetInnerHTML={{ __html: REPORT_REDESIGN_CSS + PUENTE_REDESIGN_CSS }} />
 
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-                    {/* Page header — the adult this report is for */}
-                    <div className="mb-[18px] px-0.5">
-                        <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-argo-light mb-1.5">{PAGE_EYEBROW[lang]}</p>
-                        {recipientName && (
-                            <h1 className="text-[26px] font-bold text-argo-navy tracking-[-0.02em] leading-tight">{recipientName}</h1>
-                        )}
-                        {recipientEmail && (
-                            <p className="text-xs text-argo-light mt-0.5">{recipientEmail}</p>
-                        )}
-                    </div>
-
+                <motion.div>
                     {/* Child switcher (only when >1 children). Selecting a child swaps the per-child prose. */}
                     {showSwitcher && (
                         <section className="card">
@@ -396,26 +401,23 @@ export function PuentesReport({
                     <div className="card hero-lux">
                         <div className="hx-grid">
                             <div className="hx-left">
-                                <div className="text-[17px] tracking-tight mb-4">
-                                    <span className="font-[800] text-argo-navy">Argo</span><span className="font-[200] text-argo-grey">Puente®</span>
+                                <div className="hx-meta">
+                                    <div className="kidmeta">{(activeChild?.child_name || '—')} {AND_YOU[lang]}{fecha ? ` · ${fecha}` : ''}</div>
                                 </div>
                                 <p className="hx-eyebrow">{HERO_EYEBROW[lang]}</p>
-                                <h1 className="hx-name">
-                                    {adultProfile ? (
-                                        <>
-                                            <span className="np" style={{ color: accent }}>{primaryLabel}</span>
-                                            {veta && (
-                                                <>
-                                                    {' '}<span className="nc">{veta.pre}</span>{' '}
-                                                    <span className="nv" style={{ color: vetaColor }}>{veta.word}</span>
-                                                    {veta.post && <>{' '}<span className="nc">{veta.post}</span></>}
-                                                </>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <span className="np">ArgoPuente®</span>
-                                    )}
-                                </h1>
+                                {adultProfile && (
+                                    <h1 className="hx-name">
+                                        <span className="np" style={{ color: accent }}>{primaryLabel}</span>
+                                        {veta && (
+                                            <>
+                                                {' '}<span className="nc">{veta.pre}</span>{' '}
+                                                <span className="nv" style={{ color: vetaColor }}>{veta.word}</span>
+                                                {veta.post && <>{' '}<span className="nc">{veta.post}</span></>}
+                                            </>
+                                        )}
+                                    </h1>
+                                )}
+                                {ai && <p className="hx-lead">{renderRich(ai.saludo)}</p>}
                             </div>
                             {adultProfile && (
                                 <div className="hx-right">
@@ -436,13 +438,21 @@ export function PuentesReport({
                                 </div>
                             )}
                         </div>
-                        {ai && (
-                            <>
-                                <div className="hero-divider" />
-                                <p className="body">{renderRich(ai.saludo)}</p>
-                            </>
-                        )}
                     </div>
+
+                    {/* ── EL PUNTO DE ENCUENTRO: orbes cruzándose (adulto + niño) a la izquierda + puntos en común a la derecha ── */}
+                    {adultProfile && childAxis && (
+                        <section className="card">
+                            <SectionHeader titulo={ENCUENTRO_LABEL[lang]} dotColor={V600} sub={`${activeChild?.child_name || ''} ${AND_YOU[lang]}`} />
+                            <div className="enc-orbs">
+                                <div className="enc-orb enc-orb-a" style={{ background: orbBg(accent), boxShadow: orbShadow(accent) }} />
+                                <div className="enc-orb enc-orb-c" style={{ background: orbBg(childAxisColor), boxShadow: orbShadow(childAxisColor) }} />
+                                <div className="opill enc-pill-a"><span className="opill-dot" style={{ background: accent }} />{TU_LABEL[lang]} · {primaryLabel}</div>
+                                <div className="opill enc-pill-c"><span className="opill-dot" style={{ background: childAxisColor }} />{activeChild?.child_name} · {getArchetypeLabel(childAxis as 'D' | 'I' | 'S' | 'C', lang)}</div>
+                            </div>
+                            {ai?.punto_encuentro && <p className="body">{renderRich(ai.punto_encuentro)}</p>}
+                        </section>
+                    )}
 
                     {/* ── COMPOSICIÓN: 4-orb mezcla + "Estilo bajo presión" spectrum (both per-adult).
                         Mezcla only when axis_counts exist (old sessions fall back to just the spectrum). ── */}

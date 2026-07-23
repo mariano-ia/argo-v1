@@ -399,6 +399,7 @@ export default function PuentesFlow() {
                 adultProfile={adultProfile}
                 recipientEmail={recipientEmail}
                 recipientName={recipientName}
+                fecha={new Date().toLocaleDateString(lang === 'en' ? 'en-US' : lang === 'pt' ? 'pt-BR' : 'es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                 children={children}
                 onRetryChild={retryChildGeneration}
             />

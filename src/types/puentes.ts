@@ -46,6 +46,9 @@ export interface PuentesAiSections {
     // 4-bridge engine still type-check when rendered.
     puentes: PuentePiece[];
     cierre: string;
+    // "El punto de encuentro": puntos en común entre el adulto y el niño (breve). Opcional:
+    // los informes generados antes de que el engine lo produzca no lo traen.
+    punto_encuentro?: string;
 }
 
 export type PuentesPurchaseStatus = 'pending' | 'paid' | 'failed' | 'refunded';
