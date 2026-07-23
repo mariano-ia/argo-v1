@@ -17,24 +17,28 @@ y claro ArgoOne® y ArgoAcademy® (un método, dos mercados).
 
 ## Secciones (en orden)
 
-1. **Hero**: campo de 4 orbes vivos con parallax al puntero + titular Fraunces con palabra rotativa
-   ("a su manera / a pura chispa / en equipo / con calma / entendiéndolo todo", cada una en su color de eje).
-2. **La forja** ("4 colores principales, una mezcla única para entender a cada niño", copy del owner):
-   UN solo artefacto progresivo de 4 columnas que reemplazó a las cards + mezclador separados
-   (iteración 2026-07-23 con el owner). Columna 1: eliges el color principal (orbe + nombre Fraunces
-   + verbo). Columna 2 (se desbloquea al elegir): "un solo color" o la veta; el **opuesto aparece
-   deshabilitado con su explicación inline** ("opuesto al X: no forman nombre juntos"). Columnas 3-4:
-   el perfil contado, con 3 estados (invitación → "ahora elige qué lo acompaña" → perfil completo).
-   El resultado forma los **12 perfiles canónicos** (4 puros + 8 eje×veta) y remata con el bloque
-   "el nombre es solo la puerta": **su mezcla exacta (455 mezclas posibles**, las 12 decisiones
-   repartidas entre 4 colores, C(15,3)) y **su motor también medido** (spectrum decorativo
-   Pausado-Ágil, contado pero NO elegible, coherente con la regla motor-fuera-del-nombre) + CTA
-   al showcase del informe.
-3. **Mini odisea (#pruebalo)**: el visitante juega 3 decisiones (colores de opción POSICIONALES,
-   nunca revelan eje) y ve formarse SU mezcla de orbes en vivo, con lectura honesta
-   (3 = de lleno / 2+1 = con destellos de, bloqueado si es diagonal D-S o I-C / 1+1+1 = mezcla pareja)
-   y nota "tres decisiones son una tendencia, no un perfil". CTA a /demo.
-4. **Cómo funciona**: 3 pasos con orbes (juega → el método lee → el adulto recibe claves) + línea DISC.
+1. **HERO = escenario interactivo "la crew te pregunta"** (iteración 2026-07-23, concepto del owner;
+   reemplazó al hero de orbes + la forja + la mini odisea, que se ELIMINARON):
+   - **Escenario**: el loop ya aprobado del puerto (`/scenes/video/port.mp4`, 340K, la nave Argos
+     llegando al muelle) como video de fondo + una capa PLACEHOLDER de 4 sprites de la crew
+     (`public/home-v2/crew/`, limpiados de su falsa transparencia con flood-fill PIL y recortados)
+     parados en el muelle mirando a cámara, con idle bob y **reacciones CSS por eje**
+     (D salto / I se inclinan juntos / S se plantan / C ladean la cabeza).
+   - **Secuencia**: llegada (la crew entra) → "Te miran. Esperan tu decisión." (caption pill) →
+     aparece el TELÉFONO con la pregunta 1 → al responder, la crew REACCIONA (animación + caption
+     narrativo) → pregunta 2 (determina la veta, JUGADA, no elegida) → el teléfono muestra
+     "Su perfil hoy": nombre eje×veta + orbes + lectura + nota honesta (12 decisiones reales,
+     455 mezclas, su motor) + CTAs (/demo, #argoone) + probar de nuevo.
+   - **Reglas de naming respetadas**: 2ª decisión == primario → perfil puro; == diagonal (D-S/I-C) →
+     puro + nota "los opuestos no forman nombre"; si no → "X con veta Z" (las 12 combinaciones).
+   - **Mobile**: SIN mockup (el visitante ya está en un teléfono): el video full-bleed recortado,
+     titular compacto arriba, y las preguntas como **hoja inferior** (bottom sheet) con el caption
+     narrativo dentro de la hoja. El mockup de teléfono es solo desktop.
+   - **VIDEO TODO** (marcado en código): cuando existan los clips reales de la crew (llegada /
+     espera-loop / 4 reacciones, todos anclados al MISMO frame), `setStage()` conmuta clips y la
+     capa de sprites se retira. La API de estados ya queda lista. Los captions actuales por eje
+     sirven como brief de los prompts de video.
+2. **Cómo funciona**: 3 pasos con orbes (juega → el método lee → el adulto recibe claves) + línea DISC.
 5. **Un método, dos caminos**: cards espejo ArgoOne® (padres/responsables/entrenadores; "el niño juega
    y el responsable recibe los dos informes") y ArgoAcademy® (instituciones/clubes/colegios/academias;
    "los dos informes + el dashboard"), con mini flujos de orbes. Anclan a sus secciones.

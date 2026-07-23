@@ -203,181 +203,157 @@ button { font-family: var(--font-body); }
 .btn--ghost:hover { border-color: var(--text-muted); }
 
 /* ═══════════════════════════════════════
-   HERO — campo de orbes vivos + Fraunces
+   HERO — escenario de video (la crew llega y pregunta)
+   + teléfono que responde. Los sprites CSS son el
+   PLACEHOLDER del video real de la crew: cuando existan
+   los clips (llegada/espera/reacciones), setStage() los
+   reemplaza sin tocar el resto.
    ═══════════════════════════════════════ */
 .hero {
-  position: relative; min-height: calc(100svh - 56px);
-  display: flex; align-items: center; justify-content: center;
-  padding: 60px 24px 90px; overflow: hidden;
-  background:
-    radial-gradient(1200px 500px at 70% -10%, rgba(122,77,150,.06), rgba(122,77,150,0) 60%),
-    radial-gradient(900px 480px at 12% 110%, rgba(99,102,241,.05), rgba(99,102,241,0) 60%),
-    #fff;
+  position: relative; height: calc(100svh - 56px); min-height: 660px;
+  overflow: hidden; background: #FDF4E8;
 }
-.hero__field { position: absolute; inset: 0; pointer-events: none; }
-.hero__orb { position: absolute; will-change: transform; }
-.hero__orb-inner { width: 100%; height: 100%; }
-.hero__content { position: relative; z-index: 2; text-align: center; max-width: 880px; }
+.stage { position: absolute; inset: 0; }
+.stage__video {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; object-position: center 62%;
+}
+.stage__crew {
+  position: absolute; left: 0; right: 0; bottom: -6px; z-index: 2;
+  padding-right: 26%; /* deja libre la zona del teléfono */
+  display: flex; align-items: flex-end; justify-content: center; gap: clamp(4px, 2vw, 26px);
+  opacity: 0; transform: translateY(36px);
+  transition: opacity 0.9s ease, transform 0.9s var(--ease-out);
+  pointer-events: none;
+}
+.stage__crew.is-in { opacity: 1; transform: translateY(0); }
+.crew-kid {
+  height: clamp(120px, 23svh, 205px); width: auto;
+  filter: drop-shadow(0 14px 16px rgba(60,30,0,0.22));
+  transform-origin: 50% 100%;
+}
+@keyframes kidBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.stage__crew.is-in .crew-kid { animation: kidBob 3.2s ease-in-out infinite; }
+.stage__crew.is-in .crew-kid:nth-child(2) { animation-delay: 0.6s; }
+.stage__crew.is-in .crew-kid:nth-child(3) { animation-delay: 1.1s; }
+.stage__crew.is-in .crew-kid:nth-child(4) { animation-delay: 1.7s; }
+/* reacciones por eje (storyboard del video real) */
+@keyframes kidJump { 0%,100% { transform: translateY(0); } 30% { transform: translateY(-26px) scale(1.04); } 55% { transform: translateY(0); } 75% { transform: translateY(-12px); } }
+@keyframes kidHuddle { 0%,100% { transform: translateX(0) rotate(0); } 40%,70% { transform: translateX(var(--lean, 10px)) rotate(var(--tilt, 4deg)); } }
+@keyframes kidPlant { 0%,100% { transform: scaleY(1); } 35%,75% { transform: scaleY(0.94) scaleX(1.04); } }
+@keyframes kidThink { 0%,100% { transform: rotate(0); } 35%,75% { transform: rotate(-7deg) translateY(-4px); } }
+.stage__crew.react-D .crew-kid { animation: kidJump 1.3s var(--ease-out); }
+.stage__crew.react-D .crew-kid:nth-child(2) { animation-delay: 0.1s; }
+.stage__crew.react-D .crew-kid:nth-child(3) { animation-delay: 0.18s; }
+.stage__crew.react-D .crew-kid:nth-child(4) { animation-delay: 0.26s; }
+.stage__crew.react-I .crew-kid { animation: kidHuddle 1.5s ease-in-out; }
+.stage__crew.react-I .crew-kid:nth-child(1) { --lean: 16px; --tilt: 5deg; }
+.stage__crew.react-I .crew-kid:nth-child(2) { --lean: 7px; --tilt: 2deg; }
+.stage__crew.react-I .crew-kid:nth-child(3) { --lean: -7px; --tilt: -2deg; }
+.stage__crew.react-I .crew-kid:nth-child(4) { --lean: -16px; --tilt: -5deg; }
+.stage__crew.react-S .crew-kid { animation: kidPlant 1.4s ease-in-out; }
+.stage__crew.react-C .crew-kid { animation: kidThink 1.5s ease-in-out; }
+.stage__wash {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    linear-gradient(100deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.88) 24%, rgba(255,255,255,0.42) 44%, rgba(255,255,255,0) 60%),
+    linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 16%);
+}
+.stage__caption {
+  position: absolute; left: 40px; bottom: 24px; z-index: 5;
+  display: inline-flex; align-items: center; gap: 9px;
+  background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--border); border-radius: 999px; padding: 8px 16px;
+  font-size: 0.78rem; font-weight: 500; color: var(--text-secondary);
+  box-shadow: var(--shadow-hover); max-width: min(420px, 60vw);
+  transition: opacity 0.4s ease;
+}
+@keyframes capPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+.stage__caption .cap-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-soft); flex-shrink: 0; animation: capPulse 1.8s ease-in-out infinite; }
+.stage__caption.is-swap { opacity: 0; }
+
+.hero__grid {
+  position: relative; z-index: 4; height: 100%;
+  max-width: 1160px; margin: 0 auto; padding: 0 40px;
+  display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 30px; align-items: center;
+}
+.hero__copy { max-width: 470px; }
 .hero__kicker {
   display: inline-flex; align-items: center; gap: 8px;
-  font-size: 0.72rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase;
+  font-size: 0.7rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
   color: var(--accent); background: var(--accent-wash);
-  border: 1px solid #EFE4F5; border-radius: 999px; padding: 7px 16px; margin-bottom: 30px;
+  border: 1px solid #EFE4F5; border-radius: 999px; padding: 6px 14px; margin-bottom: 24px;
 }
 .hero__title {
   font-family: var(--font-display); font-weight: 380;
-  font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1.06; letter-spacing: -0.015em;
+  font-size: clamp(2rem, 3.9vw, 3.2rem); line-height: 1.08; letter-spacing: -0.015em;
 }
-.hero__title .hw { transition: color 0.6s ease; }
+.hero__title .hw { color: var(--accent); font-style: italic; }
 .hero__sub {
-  font-size: clamp(1rem, 1.6vw, 1.16rem); line-height: 1.75; color: var(--text-secondary);
-  max-width: 640px; margin: 26px auto 0;
+  font-size: clamp(0.95rem, 1.3vw, 1.06rem); line-height: 1.7; color: var(--text-secondary);
+  margin-top: 20px; max-width: 420px;
 }
-.hero__ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 38px; }
-.hero__scrollcue {
-  position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-light);
-  z-index: 2;
-}
-@keyframes cueDrop { 0%,100% { transform: translateY(0); opacity: .8; } 50% { transform: translateY(6px); opacity: .3; } }
-.hero__scrollcue .cue-orb { width: 10px; height: 10px; border-radius: 50%; animation: cueDrop 2.4s ease-in-out infinite; }
+.hero__alt { display: inline-flex; align-items: center; gap: 7px; margin-top: 24px; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-decoration: none; }
+.hero__alt:hover { color: var(--text-primary); }
+.hero__alt i, .hero__alt svg { width: 15px; height: 15px; }
 
-/* ═══════════════════════════════════════
-   LA FORJA — un solo artefacto: elige el principal,
-   te pide el secundario, te cuenta el perfil
-   ═══════════════════════════════════════ */
-.forge {
-  display: grid; grid-template-columns: 1fr 1fr 2fr; margin-top: 54px;
-  background: #fff; border: 1px solid var(--border); border-radius: 22px;
-  box-shadow: var(--shadow-argo); overflow: hidden;
+/* ── el teléfono (desktop: mockup / mobile: hoja inferior) ── */
+.hero__phone { display: flex; justify-content: center; align-items: center; }
+.phone {
+  width: min(330px, 30vw); background: #1D1D1F; border-radius: 46px; padding: 11px;
+  box-shadow: 0 40px 90px -30px rgba(29,29,31,0.5);
+  opacity: 0; transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s var(--ease-out);
 }
-.forge__col { padding: 28px 22px; border-right: 1px solid var(--border); }
-.forge__col--2 { transition: opacity 0.45s ease; }
-.forge__col--locked { opacity: 0.38; pointer-events: none; }
-.forge__step {
-  font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--text-muted); margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+.phone.is-in { opacity: 1; transform: translateY(0); }
+.phone__screen {
+  position: relative; background: linear-gradient(180deg, #FDFCF8 0%, #F2F6FA 100%);
+  border-radius: 36px; padding: 20px 18px 18px; min-height: 520px;
+  display: flex; flex-direction: column; overflow: hidden;
 }
-.forge__step .n {
-  width: 19px; height: 19px; border-radius: 50%; background: var(--accent-wash); color: var(--accent);
-  border: 1px solid #EFE4F5; display: inline-flex; align-items: center; justify-content: center;
-  font-size: 0.62rem; flex-shrink: 0;
+.phone__notch { width: 84px; height: 18px; background: #1D1D1F; border-radius: 999px; margin: 0 auto 14px; flex-shrink: 0; }
+.ph-cap { display: none; }
+.ph-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.ph-head__brand { font-size: 0.72rem; letter-spacing: -0.01em; color: var(--text-primary); }
+.ph-dots { display: flex; gap: 6px; }
+.ph-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s, transform 0.3s; }
+.ph-dots span.is-done { background: var(--accent-soft); }
+.ph-dots span.is-now { background: var(--accent); transform: scale(1.3); }
+.ph-scene { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+.ph-q { font-family: var(--font-display); font-size: 1.12rem; font-weight: 450; line-height: 1.32; margin-bottom: 18px; color: var(--text-primary); }
+.ph-opts { display: flex; flex-direction: column; gap: 9px; }
+.ph-opt {
+  display: flex; align-items: center; gap: 11px; text-align: left; width: 100%;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  padding: 11px 13px; cursor: pointer; font-size: 0.82rem; line-height: 1.4; color: var(--text-secondary);
+  transition: transform 0.22s var(--ease-out), border-color 0.2s, box-shadow 0.22s;
 }
-.forge__opts { display: flex; flex-direction: column; gap: 6px; }
-.forge-opt {
-  display: flex; align-items: center; gap: 12px; text-align: left; width: 100%;
-  background: transparent; border: 1px solid transparent; border-radius: 14px; padding: 11px 12px;
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, box-shadow 0.25s, transform 0.25s var(--ease-out);
-}
-.forge-opt:hover { background: var(--bg-elevated); }
-.forge-opt.is-on { border-color: currentColor; background: #fff; box-shadow: var(--shadow-hover); transform: translateX(2px); }
-.forge-opt__orb { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-.forge-opt__name { display: block; font-family: var(--font-display); font-size: 1.02rem; font-weight: 480; line-height: 1.2; }
-.forge-opt__verb { display: block; font-size: 0.69rem; color: var(--text-muted); line-height: 1.35; margin-top: 2px; }
-.forge-opt--none .forge-opt__name { font-family: var(--font-body); font-size: 0.86rem; font-weight: 600; color: var(--text-secondary); }
-.forge-opt--off { opacity: 0.42; cursor: not-allowed; }
-.forge-opt--off:hover { background: transparent; }
-.forge__result {
-  padding: 34px 38px; display: flex; flex-direction: column; justify-content: center;
-  min-height: 460px; background: linear-gradient(165deg, #fff 40%, var(--accent-wash));
-  border-right: 0;
-}
-.forge__orbs { position: relative; width: 200px; height: 172px; margin-bottom: 10px; }
-.forge__orbs .orb { position: absolute; transition: width 0.7s var(--ease-out), height 0.7s var(--ease-out); }
-.forge__badge {
-  align-self: flex-start; display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.64rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: var(--accent); background: #fff; border: 1px solid #EFE4F5;
-  border-radius: 999px; padding: 4px 12px; margin-bottom: 12px;
-}
-.forge__name { font-family: var(--font-display); font-size: clamp(1.45rem, 2.5vw, 1.9rem); font-weight: 450; line-height: 1.22; margin-bottom: 10px; }
-.forge__name .nc { color: var(--text-primary); }
-.forge__line { font-size: 0.92rem; line-height: 1.7; color: var(--text-secondary); max-width: 430px; }
-.forge__hint { font-size: 0.86rem; color: var(--text-muted); margin-top: 8px; }
-.forge__deep { margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(29,29,31,0.08); max-width: 440px; }
-.forge__deep-title { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
-.forge__fact { display: flex; gap: 10px; align-items: flex-start; font-size: 0.8rem; line-height: 1.6; color: var(--text-secondary); margin-top: 10px; }
-.forge__fact .tick { width: 5px; height: 5px; border-radius: 50%; background: var(--accent-soft); flex-shrink: 0; position: relative; top: 8px; }
-.forge__spec { margin: 10px 0 2px; max-width: 300px; }
-.forge__cta { display: inline-flex; align-items: center; gap: 7px; margin-top: 18px; font-size: 0.85rem; font-weight: 600; color: var(--accent); text-decoration: none; }
-.forge__cta:hover { text-decoration: underline; text-underline-offset: 3px; }
-.forge__idle { text-align: center; align-items: center; display: flex; flex-direction: column; }
-.forge__idle-orbs { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 22px; }
-.forge__idle-text { font-size: 0.95rem; line-height: 1.7; color: var(--text-muted); max-width: 340px; }
-.forge__idle-text strong { color: var(--text-secondary); }
-@media (max-width: 900px) {
-  .forge { grid-template-columns: 1fr; }
-  .forge__col { border-right: 0; border-bottom: 1px solid var(--border); }
-  .forge__result { min-height: 0; padding: 28px 22px; border-bottom: 0; }
-  .forge__orbs { width: 170px; height: 150px; }
-}
-
-/* ═══════════════════════════════════════
-   MINI-ODISEA — el visitante juega 3 decisiones
-   ═══════════════════════════════════════ */
-.play-wrap { max-width: 760px; margin: 0 auto; }
-.play-stage {
-  background: #fff; border: 1px solid var(--border); border-radius: 20px;
-  box-shadow: var(--shadow-lift); padding: 40px 44px 36px; position: relative; overflow: hidden;
-  min-height: 380px;
-}
-.play-stage::before {
-  content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(600px 220px at 85% -40px, rgba(122,77,150,.05), transparent 70%);
-}
-.play-progress { display: flex; align-items: center; gap: 8px; margin-bottom: 26px; }
-.play-progress__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); transition: background 0.3s, transform 0.3s; }
-.play-progress__dot.is-done { background: var(--accent-soft); }
-.play-progress__dot.is-now { background: var(--accent); transform: scale(1.35); }
-.play-progress__label { margin-left: auto; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-light); }
-.play-scene { font-size: 0.8rem; color: var(--accent); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
-.play-q { font-family: var(--font-display); font-size: clamp(1.25rem, 2.4vw, 1.6rem); font-weight: 440; line-height: 1.3; margin-bottom: 26px; }
-.play-opts { display: grid; gap: 12px; }
-.play-opt {
-  display: flex; align-items: center; gap: 14px; text-align: left;
-  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px;
-  padding: 15px 18px; cursor: pointer; font-size: 0.95rem; color: var(--text-secondary);
-  transition: transform 0.25s var(--ease-out), border-color 0.2s, background 0.2s, box-shadow 0.25s;
-  width: 100%;
-}
-.play-opt:hover { transform: translateX(4px); border-color: var(--border-strong); background: #fff; box-shadow: var(--shadow-hover); }
-.play-opt:active { transform: scale(0.99); }
-.play-opt__badge {
-  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+.ph-opt:hover { border-color: var(--border-strong); box-shadow: var(--shadow-hover); transform: translateX(3px); }
+.ph-opt:active { transform: scale(0.98); }
+.ph-opt__badge {
+  width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
-  color: #fff; font-weight: 700; font-size: 0.8rem;
+  color: #fff; font-weight: 700; font-size: 0.7rem;
 }
-/* colores POSICIONALES de opción (convención del producto: A=cielo B=ámbar C=violeta D=esmeralda) */
-.play-opt__badge--a { background: #3B82F6; }
-.play-opt__badge--b { background: #F59E0B; }
-.play-opt__badge--c { background: #8B5CF6; }
-.play-opt__badge--d { background: #10B981; }
-@keyframes sceneIn { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: translateX(0); } }
-.play-body.is-entering { animation: sceneIn 0.45s var(--ease-out) both; }
-
-/* resultado: la mezcla se forma en vivo */
-.play-result { text-align: center; }
-.play-result__eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--accent); margin-bottom: 22px; }
-.play-mix { display: flex; align-items: flex-end; justify-content: center; gap: clamp(18px, 5vw, 44px); min-height: 130px; margin-bottom: 8px; }
-.play-mix__col { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.play-mix__orb { transition: width 1s var(--ease-out), height 1s var(--ease-out); }
-.play-mix__label { display: flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); }
-.play-mix__dot { width: 7px; height: 7px; border-radius: 50%; }
-.play-mix__n { font-size: 0.72rem; font-weight: 700; }
-.play-result__name { font-family: var(--font-display); font-size: clamp(1.4rem, 3vw, 1.9rem); font-weight: 440; margin-top: 26px; line-height: 1.25; }
-.play-result__read { font-size: 0.95rem; line-height: 1.7; color: var(--text-secondary); max-width: 520px; margin: 14px auto 0; }
-.play-result__honest {
-  display: inline-flex; align-items: flex-start; gap: 8px; text-align: left;
-  font-size: 0.78rem; line-height: 1.55; color: var(--text-muted);
-  background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px;
-  padding: 10px 14px; margin-top: 24px; max-width: 480px;
-}
-.play-result__honest i, .play-result__honest svg { width: 14px; height: 14px; flex-shrink: 0; margin-top: 2px; color: var(--accent); }
-.play-result__ctas { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 28px; }
-.play-again { background: none; border: none; font-size: 0.82rem; color: var(--text-muted); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; margin-top: 18px; }
-.play-again:hover { color: var(--text-primary); }
+/* colores POSICIONALES (convención del producto: nunca revelan eje) */
+.ph-opt__badge--a { background: #3B82F6; }
+.ph-opt__badge--b { background: #F59E0B; }
+.ph-opt__badge--c { background: #8B5CF6; }
+.ph-opt__badge--d { background: #10B981; }
+.ph-wait { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--text-muted); font-size: 0.82rem; min-height: 220px; }
+.ph-body { animation: rise 0.45s var(--ease-out) both; display: flex; flex-direction: column; flex: 1; }
+/* resultado dentro del teléfono */
+.ph-res { display: flex; flex-direction: column; flex: 1; animation: rise 0.5s var(--ease-out) both; }
+.ph-res__orbs { position: relative; height: 120px; margin: 4px 0 10px; }
+.ph-res__orbs .orb { position: absolute; }
+.ph-res__name { font-family: var(--font-display); font-size: 1.32rem; font-weight: 450; line-height: 1.22; margin-bottom: 8px; }
+.ph-res__name .nc { color: var(--text-primary); }
+.ph-res__line { font-size: 0.8rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 10px; }
+.ph-res__note { font-size: 0.7rem; line-height: 1.55; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; padding: 8px 11px; margin-bottom: 14px; }
+.ph-res__ctas { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+.ph-res__ctas .btn { justify-content: center; padding: 11px 18px; font-size: 0.82rem; }
+.ph-again { background: none; border: none; cursor: pointer; font-size: 0.74rem; color: var(--text-muted); text-decoration: underline; text-underline-offset: 3px; margin-top: 10px; align-self: center; }
+.ph-again:hover { color: var(--text-primary); }
 
 /* ═══════════════════════════════════════
    CÓMO FUNCIONA — 3 pasos con orbes
@@ -883,13 +859,11 @@ button { font-family: var(--font-body); }
 @media (max-width: 768px) {
   .section { padding: 72px 20px; }
   .sec-title { font-size: clamp(1.45rem, 6.2vw, 1.9rem); }
-  .hero__field { opacity: 0.6; }
   .site-nav__link--desktop { display: none; }
   .site-nav__link--mobile { display: inline-block; }
   .paths { grid-template-columns: 1fr; }
   .path-card { padding: 30px 26px; }
   .steps { grid-template-columns: 1fr; gap: 40px; }
-  .play-stage { padding: 28px 22px; }
   .mini-profile.is-on { grid-template-columns: 1fr; }
   .chem { grid-template-columns: 1fr; }
   .chem-read__grid { grid-template-columns: 1fr; gap: 12px; }
@@ -902,8 +876,27 @@ button { font-family: var(--font-body); }
   .playground__stage { min-height: 0; }
   .pg-panel { padding: 20px 16px; }
   .site-footer { padding: 32px 20px 38px; }
-  .hero__title { font-size: clamp(2.1rem, 9vw, 2.8rem); }
-  .hero { min-height: calc(96svh - 56px); }
+  /* hero mobile: el visitante YA está en el teléfono -> hoja inferior, sin mockup */
+  .hero { height: calc(100svh - 56px); min-height: 600px; }
+  .hero__grid { display: block; padding: 0; }
+  .hero__copy { position: absolute; top: 14px; left: 20px; right: 20px; z-index: 4; max-width: none; }
+  .hero__kicker { font-size: 0.58rem; padding: 5px 11px; margin-bottom: 10px; }
+  .hero__title { font-size: 1.45rem; }
+  .hero__sub { font-size: 0.8rem; margin-top: 8px; max-width: 330px; }
+  .hero__alt { display: none; }
+  .hero__phone { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; display: block; }
+  .phone { width: 100%; background: transparent; padding: 0; border-radius: 0; box-shadow: none; transform: translateY(40px); }
+  .phone.is-in { transform: translateY(0); }
+  .phone__screen { border-radius: 22px 22px 0 0; min-height: 0; max-height: 70svh; overflow-y: auto; box-shadow: 0 -14px 44px rgba(0,0,0,0.16); padding: 14px 18px 18px; }
+  .phone__notch { display: none; }
+  .ph-cap { display: flex; align-items: center; gap: 7px; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 10px; }
+  .ph-cap::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent-soft); flex-shrink: 0; animation: capPulse 1.8s ease-in-out infinite; }
+  .ph-cap:empty { display: none; }
+  .stage__caption { display: none; }
+  .stage__crew { bottom: 40%; }
+  .crew-kid { height: clamp(88px, 15svh, 140px); }
+  .stage__video { object-position: center 55%; }
+  .stage__wash { background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.75) 15%, rgba(255,255,255,0) 34%); }
 }
 @media (max-width: 560px) {
   .demo-row { grid-template-columns: 1fr; }
@@ -920,7 +913,7 @@ button { font-family: var(--font-body); }
   <div class="site-nav__inner">
     <a class="site-nav__logo" href="#top"><span class="l-argo">Argo</span><span class="l-xthin">Method®</span></a>
     <div class="site-nav__links">
-      <a class="site-nav__link site-nav__link--desktop" href="#pruebalo">Pruébalo</a>
+      <a class="site-nav__link site-nav__link--desktop" href="#como-funciona">Cómo funciona</a>
       <a class="site-nav__link site-nav__link--desktop" href="#argoone">Argo<span style="font-weight:700;">One®</span></a>
       <a class="site-nav__link site-nav__link--desktop" href="#argoacademy">Argo<span style="font-weight:700;">Academy®</span></a>
       <a class="site-nav__link site-nav__link--desktop" href="#precios">Precios</a>
@@ -932,71 +925,42 @@ button { font-family: var(--font-body); }
   <div class="voyage"><div class="voyage__fill" id="voyage-fill"></div><div class="voyage__orb orb orb--v" id="voyage-orb"></div></div>
 </nav>
 
-<!-- ══════════════ HERO ══════════════ -->
+<!-- ══════════════ HERO — la crew llega y te pregunta ══════════════ -->
 <header class="hero" id="top">
-  <div class="hero__field" id="hero-field">
-    <div class="hero__orb" data-depth="0.030" style="top:8%; left:6%; width:clamp(120px,16vw,220px); height:clamp(120px,16vw,220px);"><div class="hero__orb-inner orb orb--d is-live"></div></div>
-    <div class="hero__orb" data-depth="0.055" style="top:56%; left:12%; width:clamp(70px,9vw,130px); height:clamp(70px,9vw,130px);"><div class="hero__orb-inner orb orb--s is-live-b"></div></div>
-    <div class="hero__orb" data-depth="0.040" style="top:12%; right:8%; width:clamp(90px,12vw,170px); height:clamp(90px,12vw,170px);"><div class="hero__orb-inner orb orb--i is-live-b"></div></div>
-    <div class="hero__orb" data-depth="0.070" style="top:60%; right:10%; width:clamp(110px,14vw,200px); height:clamp(110px,14vw,200px);"><div class="hero__orb-inner orb orb--c is-live"></div></div>
+  <div class="stage" id="stage">
+    <video class="stage__video" autoplay muted loop playsinline poster="/scenes/video/posters/port.webp" aria-hidden="true">
+      <source src="/scenes/video/port.mp4" type="video/mp4">
+    </video>
+    <!-- VIDEO TODO: capa placeholder de la crew. Cuando existan los clips reales
+         (llegada / espera-loop / 4 reacciones, todos anclados al mismo frame),
+         setStage() hace el swap de clips y esta capa de sprites desaparece. -->
+    <div class="stage__crew" id="stage-crew" aria-hidden="true">
+      <img class="crew-kid" src="/home-v2/crew/crew-1.png" alt="">
+      <img class="crew-kid" src="/home-v2/crew/crew-3.png" alt="">
+      <img class="crew-kid" src="/home-v2/crew/crew-6.png" alt="">
+      <img class="crew-kid" src="/home-v2/crew/crew-5.png" alt="">
+    </div>
+    <div class="stage__wash"></div>
+    <div class="stage__caption" id="stage-caption"><span class="cap-dot"></span><span id="stage-caption-text">La crew está llegando al puerto...</span></div>
   </div>
-  <div class="hero__content">
-    <span class="hero__kicker">Perfil conductual para deportistas de 8 a 16 años</span>
-    <h1 class="hero__title">Cada niño vive el deporte<br><span class="hw" id="hw-word" style="color:var(--ax-d); font-style:italic;">a su manera</span>.</h1>
-    <p class="hero__sub">Un juego de 10 minutos lee cómo decide, qué lo motiva y qué necesita escuchar. El adulto que lo acompaña recibe un informe claro para entenderlo mejor, en la cancha y fuera de ella.</p>
-    <div class="hero__ctas">
-      <a class="btn btn--primary" href="/demo">Jugar gratis <i data-lucide="arrow-right"></i></a>
-      <a class="btn btn--ghost" href="#pruebalo">Pruébalo aquí mismo, en 30 segundos</a>
+  <div class="hero__grid">
+    <div class="hero__copy">
+      <span class="hero__kicker">Perfil conductual para deportistas de 8 a 16 años</span>
+      <h1 class="hero__title">Cada niño vive el deporte <span class="hw">a su manera</span>.</h1>
+      <p class="hero__sub">La crew del Argo te hace dos preguntas. Responde como el niño que acompañas y mira lo que pasa en el puerto.</p>
+      <a class="hero__alt" href="/demo">O ve directo: juega la odisea real gratis <i data-lucide="arrow-right"></i></a>
     </div>
-  </div>
-  <div class="hero__scrollcue"><span class="cue-orb orb orb--v"></span>Descubre</div>
-</header>
-
-<!-- ══════════════ LOS 4 COLORES ══════════════ -->
-<section class="section" id="colores">
-  <div class="section-content">
-    <div style="text-align:center; max-width:680px; margin:0 auto;">
-      <div class="eyebrow anim">El punto de partida</div>
-      <h2 class="sec-title anim">4 colores principales, <strong>una mezcla única</strong> para entender a cada niño.</h2>
-      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Elige un color y arma un perfil. Ninguno es mejor que otro.</p>
-    </div>
-
-    <div class="forge anim" id="forge">
-      <div class="forge__col">
-        <p class="forge__step"><span class="n">1</span>El color principal</p>
-        <div class="forge__opts" id="forge-primary"></div>
-      </div>
-      <div class="forge__col forge__col--2 forge__col--locked" id="forge-col2">
-        <p class="forge__step"><span class="n">2</span><span id="forge-step2-label">El que lo acompaña</span></p>
-        <div class="forge__opts" id="forge-veta"></div>
-      </div>
-      <div class="forge__result" id="forge-result"></div>
-    </div>
-  </div>
-</section>
-
-<!-- ══════════════ MINI ODISEA ══════════════ -->
-<section class="section section--wash" id="pruebalo">
-  <div class="section-content">
-    <div style="text-align:center; max-width:640px; margin:0 auto 44px;">
-      <div class="eyebrow anim">Pruébalo tú</div>
-      <h2 class="sec-title anim">Tres decisiones bastan para <strong>ver cómo funciona</strong>.</h2>
-      <p class="sec-lead anim" style="margin-left:auto; margin-right:auto;">Responde como el niño que acompañas (o como el niño que fuiste). Mira cómo se forma una mezcla en vivo.</p>
-    </div>
-    <div class="play-wrap anim">
-      <div class="play-stage" id="play-stage">
-        <div class="play-progress" id="play-progress">
-          <span class="play-progress__dot is-now"></span>
-          <span class="play-progress__dot"></span>
-          <span class="play-progress__dot"></span>
-          <span class="play-progress__label" id="play-label">Decisión 1 de 3</span>
+    <div class="hero__phone">
+      <div class="phone" id="phone">
+        <div class="phone__screen">
+          <div class="phone__notch"></div>
+          <p class="ph-cap" id="stage-caption-m"></p>
+          <div id="phone-body" style="display:flex; flex-direction:column; flex:1;"></div>
         </div>
-        <div class="play-body" id="play-body"></div>
       </div>
-      <p class="mock-note" style="justify-content:center;"><i data-lucide="info"></i>Esto es un vistazo de 30 segundos. La odisea real del niño dura 10 minutos y lee 12 decisiones.</p>
     </div>
   </div>
-</section>
+</header>
 
 <!-- ══════════════ CÓMO FUNCIONA ══════════════ -->
 <section class="section" id="como-funciona">
@@ -1728,71 +1692,71 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   update();
 })();
 
-// ═══════════════ hero: parallax de orbes + palabra viva ═══════════════
+// ═══════════════ HERO — director de escena (placeholder del video real) ═══════════════
 (function() {
-  var hero = document.getElementById('top');
-  var orbs = hero ? hero.querySelectorAll('.hero__orb') : [];
-  if (hero && !REDUCED && window.matchMedia('(hover: hover)').matches) {
-    var raf = null;
-    hero.addEventListener('pointermove', function(e) {
-      if (raf) return;
-      raf = requestAnimationFrame(function() {
-        raf = null;
-        var r = hero.getBoundingClientRect();
-        var dx = e.clientX - (r.left + r.width / 2);
-        var dy = e.clientY - (r.top + r.height / 2);
-        orbs.forEach(function(o) {
-          var d = parseFloat(o.dataset.depth || '0.04');
-          o.style.transform = 'translate3d(' + (dx * d) + 'px,' + (dy * d) + 'px,0)';
-        });
-      });
-    });
-    hero.addEventListener('pointerleave', function() {
-      orbs.forEach(function(o) { o.style.transform = ''; });
-    });
-  }
-  // rotación de la palabra del titular
-  var word = document.getElementById('hw-word');
-  if (!word || REDUCED) return;
-  var WORDS = [
-    { t: 'a su manera', c: 'var(--accent)' },
-    { t: 'a pura chispa', c: AX.D.hex },
-    { t: 'en equipo', c: AX.I.hex },
-    { t: 'con calma', c: AX.S.hex },
-    { t: 'entendiéndolo todo', c: AX.C.hex }
-  ];
-  var wi = 0;
-  setInterval(function() {
-    wi = (wi + 1) % WORDS.length;
-    word.style.opacity = '0';
+  var crew = document.getElementById('stage-crew');
+  var cap = document.getElementById('stage-caption');
+  var capText = document.getElementById('stage-caption-text');
+  var capM = document.getElementById('stage-caption-m');
+  var phone = document.getElementById('phone');
+  var body = document.getElementById('phone-body');
+  if (!crew || !body) return;
+
+  // VIDEO TODO: cuando existan los clips reales de la crew, este director pasa a
+  // conmutar fuentes del <video> (llegada -> espera-loop -> reaccion-{D,I,S,C} ->
+  // espera-loop) manteniendo exactamente esta misma API de estados; la capa de
+  // sprites y sus animaciones CSS se retiran.
+  function setCaption(t) {
+    if (capM) capM.textContent = t;
+    cap.classList.add('is-swap');
     setTimeout(function() {
-      word.textContent = WORDS[wi].t;
-      word.style.color = WORDS[wi].c;
-      word.style.transition = 'opacity 0.5s ease, color 0.5s ease';
-      word.style.opacity = '1';
-    }, 420);
-  }, 3400);
-})();
+      capText.textContent = t;
+      cap.classList.remove('is-swap');
+    }, REDUCED ? 0 : 350);
+  }
+  function crewReact(ax) {
+    crew.classList.remove('react-D', 'react-I', 'react-S', 'react-C');
+    void crew.offsetWidth;
+    crew.classList.add('react-' + ax);
+    setTimeout(function() { crew.classList.remove('react-' + ax); }, 1700);
+  }
 
-// ═══════════════ LA FORJA: un solo artefacto, del color al perfil ═══════════════
-(function() {
-  var elP = document.getElementById('forge-primary');
-  if (!elP) return;
-  var elV = document.getElementById('forge-veta');
-  var col2 = document.getElementById('forge-col2');
-  var step2Label = document.getElementById('forge-step2-label');
-  var out = document.getElementById('forge-result');
-
-  var VERBS = {
-    D: 'se enciende con el reto',
-    I: 'juega con y para los demás',
-    S: 'sostiene al equipo',
-    C: 'primero entiende, después juega'
-  };
-  // vetas válidas por primario (los opuestos D-S e I-C no forman nombre)
-  var VALID = { D: ['I', 'C'], I: ['D', 'S'], S: ['I', 'C'], C: ['D', 'S'] };
-  var DIAG = { D: 'S', S: 'D', I: 'C', C: 'I' };
-  // los 12 perfiles canónicos: 4 puros + 8 mezclas eje×veta
+  // colores de opción POSICIONALES (convención del producto: nunca revelan eje)
+  var QUESTIONS = [
+    {
+      scene: 'Escena 1 · La llegada',
+      q: 'La crew llega a un puerto desconocido. ¿Qué haces primero?',
+      opts: [
+        { ax: 'D', t: 'Bajo primero y exploro' },
+        { ax: 'I', t: 'Saludo a los que están en el muelle' },
+        { ax: 'S', t: 'Ayudo a amarrar el barco' },
+        { ax: 'C', t: 'Observo todo antes de bajar' }
+      ],
+      react: {
+        D: 'La crew baja corriendo a explorar.',
+        I: 'La crew saluda a todo el puerto.',
+        S: 'La crew amarra el barco, firme.',
+        C: 'La crew estudia primero el lugar.'
+      }
+    },
+    {
+      scene: 'Escena 2 · La tormenta se acerca',
+      q: 'El cielo se oscurece de golpe. ¿Qué te sale hacer?',
+      opts: [
+        { ax: 'I', t: 'Junto al equipo: juntos es más fácil' },
+        { ax: 'C', t: 'Paro un segundo y leo la situación' },
+        { ax: 'D', t: 'Me lanzo a resolverlo ya' },
+        { ax: 'S', t: 'Sostengo firme lo que me toca' }
+      ],
+      react: {
+        D: 'Ya están corriendo a asegurar la vela.',
+        I: 'Se juntan en círculo: nadie queda solo.',
+        S: 'Manos firmes al timón: nada se suelta.',
+        C: 'Leen el cielo antes de moverse.'
+      }
+    }
+  ];
+  // los 12 perfiles canónicos (4 puros + 8 eje×veta)
   var LINES = {
     'D':   'Pura acción: el reto lo enciende y el movimiento lo ordena. Suele ser quien arranca primero.',
     'D+I': 'Empuja y contagia: quiere ganar, y quiere que ganen todos juntos.',
@@ -1807,257 +1771,95 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     'C+D': 'Analiza y ejecuta: lectura fría, decisión valiente.',
     'C+S': 'Analiza con paciencia: entiende el juego completo y no se desordena.'
   };
-  var primary = null;
-  var veta;   // undefined = aún no eligió; null = un solo color; 'D'... = veta
-
-  elP.innerHTML = ['D', 'I', 'S', 'C'].map(function(ax) {
-    return '<button type="button" class="forge-opt" data-ax="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
-      '<span class="forge-opt__orb orb ' + AX[ax].cls + '"></span>' +
-      '<span><span class="forge-opt__name" style="color:' + AX[ax].hex + ';">' + AX[ax].label + '</span>' +
-      '<span class="forge-opt__verb">' + VERBS[ax] + '</span></span></button>';
-  }).join('');
-
-  function renderVetaCol() {
-    if (!primary) return;
-    step2Label.textContent = 'El que acompaña al ' + AX[primary].label;
-    var others = ['D', 'I', 'S', 'C'].filter(function(ax) { return ax !== primary; });
-    var html = '<button type="button" class="forge-opt forge-opt--none" data-veta="">' +
-      '<span class="forge-opt__orb orb ' + AX[primary].cls + '" style="opacity:0.55;"></span>' +
-      '<span><span class="forge-opt__name">Un solo color</span>' +
-      '<span class="forge-opt__verb">el perfil puro, sin veta</span></span></button>';
-    others.forEach(function(ax) {
-      var off = ax === DIAG[primary];
-      html += '<button type="button" class="forge-opt' + (off ? ' forge-opt--off" disabled aria-disabled="true"' : '"') +
-        ' data-veta="' + ax + '" style="color:' + AX[ax].pillC + ';">' +
-        '<span class="forge-opt__orb orb ' + AX[ax].cls + '"></span>' +
-        '<span><span class="forge-opt__name" style="color:' + AX[ax].hex + ';">con veta ' + AX[ax].label + '</span>' +
-        '<span class="forge-opt__verb">' + (off ? 'opuesto al ' + AX[primary].label + ': no forman nombre juntos' : VERBS[ax]) + '</span></span></button>';
-    });
-    elV.innerHTML = html;
-    elV.querySelectorAll('.forge-opt:not(.forge-opt--off)').forEach(function(b) {
-      b.addEventListener('click', function() {
-        veta = b.dataset.veta || null;
-        syncVeta();
-        renderResult();
-      });
-    });
-    syncVeta();
-  }
-  function syncVeta() {
-    elV.querySelectorAll('.forge-opt').forEach(function(b) {
-      b.classList.toggle('is-on', veta !== undefined && (b.dataset.veta || null) === veta);
-    });
-  }
-  function syncPrimary() {
-    elP.querySelectorAll('.forge-opt').forEach(function(b) {
-      b.classList.toggle('is-on', b.dataset.ax === primary);
-    });
-  }
-
-  // el motor se cuenta (no se elige): mini spectrum decorativo del sistema
-  function motorSpec(hx, cls) {
-    return '<div class="mr-spec forge__spec"><div class="mr-spec__track">' +
-      '<span class="mr-spec__fill" style="width:62%; background:linear-gradient(90deg, transparent, ' + hx + '44);"></span>' +
-      '<span class="mr-spec__mark orb ' + cls + '" style="left:62%;"></span>' +
-      '</div><div class="mr-spec__ends"><span>Pausado</span><span>Ágil</span></div></div>';
-  }
-
-  function renderResult() {
-    if (!primary) {
-      out.innerHTML = '<div class="forge__idle">' +
-        '<div class="forge__idle-orbs">' +
-        '<span class="orb orb--d is-live" style="width:54px; height:54px;"></span>' +
-        '<span class="orb orb--i is-live-b" style="width:44px; height:44px;"></span>' +
-        '<span class="orb orb--s is-live" style="width:48px; height:48px;"></span>' +
-        '<span class="orb orb--c is-live-b" style="width:58px; height:58px;"></span>' +
-        '</div>' +
-        '<p class="forge__idle-text"><strong>Ninguno es mejor que otro.</strong> Elige el color que más se parece al niño que acompañas y mira cómo se arma su perfil.</p>' +
-        '</div>';
-      return;
-    }
-    if (veta === undefined) {
-      out.innerHTML =
-        '<div class="forge__orbs"><div class="orb ' + AX[primary].cls + ' is-morph" style="width:130px; height:130px; top:14px; left:30px;"></div></div>' +
-        '<p class="forge__name serif"><span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span><span class="nc">...</span></p>' +
-        '<p class="forge__hint">Ese es el color que más pesa. Ahora elige qué lo acompaña: casi ningún niño es de un solo color.</p>';
-      return;
-    }
-    var key = veta ? (primary + '+' + veta) : primary;
-    var orbs, name;
-    if (veta) {
-      orbs = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:122px; height:122px; top:0; left:8px;"></div>' +
-        '<div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:86px; height:86px; bottom:0; right:14px;"></div>';
-      name = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span> ' +
-        '<span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
-    } else {
-      orbs = '<div class="orb ' + AX[primary].cls + ' is-morph" style="width:142px; height:142px; top:8px; left:24px;"></div>';
-      name = '<span style="color:' + AX[primary].hex + ';">' + AX[primary].label + '</span>';
-    }
-    out.innerHTML =
-      '<div class="forge__orbs">' + orbs + '</div>' +
-      '<span class="forge__badge">Uno de los 12 perfiles con nombre</span>' +
-      '<p class="forge__name serif">' + name + '</p>' +
-      '<p class="forge__line">' + LINES[key] + '</p>' +
-      '<div class="forge__deep">' +
-      '<p class="forge__deep-title">Y el nombre es solo la puerta</p>' +
-      '<div class="forge__fact"><span class="tick"></span><span><strong>Su mezcla exacta.</strong> Las 12 decisiones del juego se reparten entre los cuatro colores: 455 mezclas posibles.</span></div>' +
-      '<div class="forge__fact"><span class="tick"></span><span><strong>Su motor, también medido.</strong> El ritmo al que procesa y decide:</span></div>' +
-      motorSpec(AX[primary].hex, AX[primary].cls) +
-      '<a class="forge__cta" href="#argoone">Así se ve en un informe real <i data-lucide="arrow-down"></i></a>' +
-      '</div>';
-    lucide.createIcons();
-  }
-
-  elP.querySelectorAll('.forge-opt').forEach(function(b) {
-    b.addEventListener('click', function() {
-      var changed = primary !== b.dataset.ax;
-      primary = b.dataset.ax;
-      col2.classList.remove('forge__col--locked');
-      if (changed && veta !== undefined && veta !== null && VALID[primary].indexOf(veta) === -1) veta = undefined;
-      syncPrimary();
-      renderVetaCol();
-      renderResult();
-    });
-  });
-
-  renderResult();
-})();
-
-// ═══════════════ MINI ODISEA ═══════════════
-(function() {
-  var body = document.getElementById('play-body');
-  var progress = document.getElementById('play-progress');
-  var label = document.getElementById('play-label');
-  if (!body) return;
-
-  // opciones en orden aleatorio por escena; los colores de opción son POSICIONALES (nunca revelan el eje)
-  var SCENES = [
-    {
-      scene: 'Escena 1 · La tormenta',
-      q: 'En medio del juego, todo se complica de golpe. ¿Qué te sale primero?',
-      opts: [
-        { ax: 'D', t: 'Me lanzo a resolverlo yo' },
-        { ax: 'I', t: 'Busco a los demás: juntos es más fácil' },
-        { ax: 'S', t: 'Me mantengo firme y sostengo lo mío' },
-        { ax: 'C', t: 'Paro un segundo para entender qué pasó' }
-      ]
-    },
-    {
-      scene: 'Escena 2 · La isla nueva',
-      q: 'Llegan a un lugar desconocido. ¿Cómo entras tú?',
-      opts: [
-        { ax: 'I', t: 'Hago amigos apenas bajo del barco' },
-        { ax: 'C', t: 'Observo todo el mapa antes de moverme' },
-        { ax: 'D', t: 'Exploro primero, pregunto después' },
-        { ax: 'S', t: 'Prefiero un plan conocido antes de avanzar' }
-      ]
-    },
-    {
-      scene: 'Escena 3 · La previa',
-      q: 'Momentos antes de algo importante. ¿Qué haces?',
-      opts: [
-        { ax: 'S', t: 'Busco mi rutina de siempre' },
-        { ax: 'D', t: 'Quiero que empiece ya' },
-        { ax: 'C', t: 'Repaso mentalmente cada detalle' },
-        { ax: 'I', t: 'Hablo, río, contagio energía' }
-      ]
-    }
-  ];
-  var READS = {
-    D: 'Decisiones que empujan: acción primero, ajuste después. A este perfil lo enciende el reto y lo apaga la espera sin propósito.',
-    I: 'Decisiones que buscan a los demás: la energía viene del vínculo. A este perfil lo enciende sentirse parte y lo apaga jugar en soledad.',
-    S: 'Decisiones que sostienen: constancia, rutina y cuidado del grupo. A este perfil lo ordena lo previsible y lo desacomoda el cambio brusco.',
-    C: 'Decisiones que primero entienden: observar, analizar y después actuar. A este perfil lo enciende el porqué y lo incomoda la prisa sin plan.'
-  };
   var DIAG = { D: 'S', S: 'D', I: 'C', C: 'I' };
   var answers = [];
-  var step = 0;
 
-  function renderScene() {
-    var s = SCENES[step];
+  function dots(i) {
+    return '<div class="ph-dots">' + [0, 1, 2].map(function(n) {
+      return '<span class="' + (n < i ? 'is-done' : (n === i ? 'is-now' : '')) + '"></span>';
+    }).join('') + '</div>';
+  }
+  function head(i) {
+    return '<div class="ph-head"><span class="ph-head__brand"><span style="font-weight:800;">Argo</span><span style="font-weight:300;">Method®</span></span>' + dots(i) + '</div>';
+  }
+
+  function renderQ(i) {
+    var q = QUESTIONS[i];
     var letters = ['a', 'b', 'c', 'd'];
-    var html = '<p class="play-scene">' + s.scene + '</p><p class="play-q serif">' + s.q + '</p><div class="play-opts">';
-    s.opts.forEach(function(o, i) {
-      html += '<button type="button" class="play-opt" data-ax="' + o.ax + '">' +
-        '<span class="play-opt__badge play-opt__badge--' + letters[i] + '">' + letters[i].toUpperCase() + '</span>' + o.t + '</button>';
-    });
-    html += '</div>';
-    body.innerHTML = html;
-    body.classList.remove('is-entering');
-    void body.offsetWidth;
-    body.classList.add('is-entering');
-    body.querySelectorAll('.play-opt').forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        answers.push(btn.dataset.ax);
-        step++;
-        updateProgress();
-        if (step < SCENES.length) renderScene();
-        else renderResult();
-      });
+    body.innerHTML = '<div class="ph-body">' + head(i) +
+      '<p class="ph-scene">' + q.scene + '</p>' +
+      '<p class="ph-q">' + q.q + '</p>' +
+      '<div class="ph-opts">' + q.opts.map(function(o, k) {
+        return '<button type="button" class="ph-opt" data-ax="' + o.ax + '">' +
+          '<span class="ph-opt__badge ph-opt__badge--' + letters[k] + '">' + letters[k].toUpperCase() + '</span>' + o.t + '</button>';
+      }).join('') + '</div></div>';
+    body.querySelectorAll('.ph-opt').forEach(function(btn) {
+      btn.addEventListener('click', function() { answer(i, btn.dataset.ax); });
     });
   }
 
-  function updateProgress() {
-    var dots = progress.querySelectorAll('.play-progress__dot');
-    dots.forEach(function(d, i) {
-      d.classList.toggle('is-done', i < step);
-      d.classList.toggle('is-now', i === step && step < SCENES.length);
-    });
-    label.textContent = step < SCENES.length ? ('Decisión ' + (step + 1) + ' de 3') : 'Tu mezcla';
+  function answer(i, ax) {
+    answers[i] = ax;
+    crewReact(ax);
+    setCaption(QUESTIONS[i].react[ax]);
+    body.innerHTML = '<div class="ph-body">' + head(i) +
+      '<div class="ph-wait"><div class="typing-dots"><span></span><span></span><span></span></div>Leyendo tu decisión...</div></div>';
+    setTimeout(function() {
+      if (i === 0) {
+        setCaption('Ahora esperan tu segunda decisión...');
+        renderQ(1);
+      } else {
+        renderResult();
+      }
+    }, REDUCED ? 150 : 1700);
   }
 
   function renderResult() {
-    var counts = { D: 0, I: 0, S: 0, C: 0 };
-    answers.forEach(function(a) { counts[a]++; });
-    var sorted = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; });
-    var p = sorted[0], sec = sorted[1];
-    var SIZES = [22, 46, 68, 88];
-
-    var mixHtml = '<div class="play-mix">';
-    ['D', 'I', 'S', 'C'].forEach(function(ax, i) {
-      var d = SIZES[counts[ax]];
-      mixHtml += '<div class="play-mix__col">' +
-        '<div class="play-mix__orb orb ' + AX[ax].cls + ' ' + (i % 2 ? 'is-morph-b' : 'is-morph') + '" style="width:' + d + 'px; height:' + d + 'px;"></div>' +
-        '<span class="play-mix__label"><span class="play-mix__dot" style="background:' + AX[ax].hex + ';"></span>' + AX[ax].label + '</span>' +
-        '<span class="play-mix__n" style="color:' + AX[ax].hex + ';">' + counts[ax] + ' de 3</span></div>';
-    });
-    mixHtml += '</div>';
-
-    var name, read;
-    if (counts[p] === 3) {
-      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span> <span style="color:var(--text-muted); font-weight:300;">de lleno</span>';
-      read = 'Las tres decisiones salieron por el mismo lado. ' + READS[p];
-    } else if (counts[p] === 2 && counts[sec] === 1 && DIAG[p] !== sec) {
-      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span> <span style="color:var(--text-primary);">con destellos de</span> <span style="color:' + AX[sec].hex + ';">' + AX[sec].label + '</span>';
-      read = READS[p] + ' Y asomó un destello ' + AX[sec].label.toLowerCase() + ': la mezcla es lo normal.';
-    } else if (counts[p] === 2) {
+    var p = answers[0], s = answers[1];
+    var veta = (s !== p && s !== DIAG[p]) ? s : null;
+    var key = veta ? (p + '+' + veta) : p;
+    var name, orbs, note;
+    var base = 'La odisea real lee 12 decisiones del niño y mide además su mezcla exacta (entre 455 posibles) y su motor.';
+    if (veta) {
+      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span> <span class="nc">con veta</span> <span style="color:' + AX[veta].hex + ';">' + AX[veta].label + '</span>';
+      orbs = '<div class="orb ' + AX[p].cls + ' is-morph" style="width:96px; height:96px; top:0; left:12px;"></div>' +
+        '<div class="orb ' + AX[veta].cls + ' is-morph-b" style="width:66px; height:66px; bottom:0; left:88px;"></div>';
+      note = 'Dos decisiones son una probadita, no un perfil. ' + base;
+    } else if (s === p) {
       name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span>';
-      read = READS[p] + ' También asomó una decisión por el lado opuesto: los perfiles reales conviven con sus contrastes.';
+      orbs = '<div class="orb ' + AX[p].cls + ' is-morph" style="width:106px; height:106px; top:4px; left:34px;"></div>';
+      note = 'Tus dos decisiones fueron por el mismo lado: se asoma un perfil de un solo color. ' + base;
     } else {
-      name = '<span style="color:var(--text-primary);">Una mezcla pareja</span>';
-      read = 'Tres decisiones, tres colores distintos. En una muestra tan corta eso se llama perfil parejo: ningún costado domina todavía.';
+      name = '<span style="color:' + AX[p].hex + ';">' + AX[p].label + '</span>';
+      orbs = '<div class="orb ' + AX[p].cls + ' is-morph" style="width:106px; height:106px; top:4px; left:34px;"></div>';
+      note = 'Tu segunda decisión fue por el lado opuesto (' + AX[s].label + '): los opuestos no forman nombre, el informe los cuenta por dentro. ' + base;
     }
-
-    body.innerHTML =
-      '<div class="play-result is-entering">' +
-      '<p class="play-result__eyebrow">Lo que se asomó en tres decisiones</p>' +
-      mixHtml +
-      '<p class="play-result__name serif">' + name + '</p>' +
-      '<p class="play-result__read">' + read + '</p>' +
-      '<div class="play-result__honest"><i data-lucide="info"></i><span>Tres decisiones muestran una tendencia, no un perfil. La odisea real lee 12 decisiones del niño, calcula la claridad del resultado y genera el informe completo.</span></div>' +
-      '<div class="play-result__ctas">' +
+    setCaption('La crew ya te leyó. Mira el teléfono.');
+    body.innerHTML = '<div class="ph-res">' + head(2) +
+      '<p class="ph-scene">Su perfil hoy</p>' +
+      '<div class="ph-res__orbs">' + orbs + '</div>' +
+      '<p class="ph-res__name serif">' + name + '</p>' +
+      '<p class="ph-res__line">' + LINES[key] + '</p>' +
+      '<p class="ph-res__note">' + note + '</p>' +
+      '<div class="ph-res__ctas">' +
       '<a class="btn btn--violet" href="/demo">Jugar la odisea real gratis</a>' +
-      '<a class="btn btn--ghost" href="#argoone">Ver el informe por dentro</a>' +
+      '<a class="btn btn--ghost" href="#argoone">Ver un informe completo</a>' +
       '</div>' +
-      '<div><button type="button" class="play-again" id="play-again">Probar de nuevo</button></div>' +
-      '</div>';
-    lucide.createIcons();
-    document.getElementById('play-again').addEventListener('click', function() {
-      answers = []; step = 0; updateProgress(); renderScene();
+      '<button type="button" class="ph-again" id="ph-again">Probar de nuevo</button></div>';
+    document.getElementById('ph-again').addEventListener('click', function() {
+      answers = [];
+      setCaption('Te esperan de nuevo. Tu decisión...');
+      renderQ(0);
     });
   }
 
-  renderScene();
+  // secuencia: llegada -> la crew entra -> espera + aparece el teléfono con la pregunta
+  setTimeout(function() { crew.classList.add('is-in'); }, REDUCED ? 50 : 800);
+  setTimeout(function() {
+    setCaption('Te miran. Esperan tu decisión.');
+    phone.classList.add('is-in');
+    renderQ(0);
+  }, REDUCED ? 150 : 2400);
 })();
 
 // ═══════════════ SHOWCASES — scrollytelling del informe ═══════════════
